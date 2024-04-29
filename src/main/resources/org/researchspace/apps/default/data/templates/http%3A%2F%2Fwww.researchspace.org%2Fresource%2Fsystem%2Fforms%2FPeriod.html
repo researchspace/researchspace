@@ -31,7 +31,7 @@
                           entity_measurement="http://www.researchspace.org/pattern/system/entity/measurement"
 
                           period_took_place_on_physical_thing="http://www.researchspace.org/pattern/system/period/took_place_on_physical_thing"
-                          entity_depicted_by="http://www.researchspace.org/pattern/system/entity/depicted_by_manMadeThing"
+                          entity_depicts_range="http://www.researchspace.org/pattern/system/entity/depicts_range"
                           entity_subject_of="http://www.researchspace.org/pattern/system/entity/subject_of_propositional_object"
                           entity_refers_to_range="http://www.researchspace.org/pattern/system/entity/refers_to_range"
 
@@ -387,11 +387,54 @@
                                             nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
         </semantic-form-autocomplete-input> 
 
-        <semantic-form-autocomplete-input   for='entity_depicted_by' 
-                                            label="Depicted by"
-                                            placeholder="Select what depicts the period" 
-                                            nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'> 
-        </semantic-form-autocomplete-input>
+        <div class="inline-composite-container">
+            <semantic-form-composite-input  for="entity_depicts_range" 
+                                            label="Depicted by" 
+                                            new-subject-template="/PC62_depicts/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                            fields='[[fieldDefinitions
+                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                
+                                                      depicts_thing_domain="http://www.researchspace.org/pattern/system/depicts/domain"
+                                                      mode_of_depiction="http://www.researchspace.org/pattern/system/depicts/mode_of_depiction"
+                                                    ]]'>
+  
+            <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC62_depicts'> </semantic-form-hidden-input>
+  
+            <div class="form-inline-inputs">
+              <div style="flex: 1;">
+                <semantic-form-autocomplete-input for='depicts_thing_domain' 
+                                                  render-header="false"
+                                                  placeholder="Select what depicts the period"
+                                                  nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'>
+                </semantic-form-autocomplete-input>
+              </div>
+              <div style="flex: 1;">
+                <semantic-form-tree-picker-input  for="mode_of_depiction" 
+                                                  render-header="false"
+                                                  placeholder="Select mode of depiction"
+                                                  close-dropdown-on-selection='true'
+                                                  tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/mode_of_depiction>", 
+                                                                  "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/mode_of_depiction>",
+                                                                  "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+  
+                                                  scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                              "view": "vocabulary-content",
+                                                                              "scheme": "http://www.researchspace.org/resource/vocab/mode_of_depiction",
+                                                                              "tooltip": "Open list of mode of depictions"
+                                                                            }'
+                                                  
+                                                  nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                        scheme="http://www.researchspace.org/resource/vocab/mode_of_depiction"
+                                                                                        entityType="mode of depiction" }}{{{{/raw}}}}'
+  
+                                                  query-item-label='SELECT ?label WHERE {
+                                                                      ?item skos:prefLabel ?label .
+                                                                  }'>
+                  </semantic-form-tree-picker-input>
+              </div>
+            </div>
+            </semantic-form-composite-input>
+        </div>
 
         <semantic-form-autocomplete-input   for='entity_subject_of' 
                                             label="Subject of"

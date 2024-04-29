@@ -1,0 +1,77 @@
+
+<http://www.researchspace.org/pattern/system/visual_item/shown_by/context> {
+  <http://www.researchspace.org/pattern/system/visual_item/shown_by> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E24_Physical_Man-Made_Thing>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/visual_item>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-3262a269164f44cd9a4db5ce13e8dcb5-k640m;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.w3.org/2000/01/rdf-schema#label> "Visual item shown by";
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-3262a269164f44cd9a4db5ce13e8dcb5-8b670r;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E36_Visual_Item>;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-3262a269164f44cd9a4db5ce13e8dcb5-zawev;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-3262a269164f44cd9a4db5ce13e8dcb5-utev;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-3262a269164f44cd9a4db5ce13e8dcb5-akbn4e;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-29T10:53:19.556+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-3262a269164f44cd9a4db5ce13e8dcb5-akbn4e a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E24_Physical_Man-Made_Thing .
+    ?value crm:P102_has_title ?title . 
+    ?title a crm:E35_Title . 
+    ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
+    ?title crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-3262a269164f44cd9a4db5ce13e8dcb5-utev a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+    $subject crm:P65i_is_shown_by $value . 
+    $value crm:P65_shows_visual_item $subject .
+} WHERE {
+    $subject crm:P65i_is_shown_by $value . 
+    $value crm:P65_shows_visual_item $subject .
+      
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E24_Physical_Man-Made_Thing .
+    ?value crm:P102_has_title ?title . 
+    ?title a crm:E35_Title . 
+    ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
+    ?title crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-3262a269164f44cd9a4db5ce13e8dcb5-k640m a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  	$subject crm:P65i_is_shown_by $value . 
+   
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E24_Physical_Man-Made_Thing .
+    ?value crm:P102_has_title ?title . 
+    ?title a crm:E35_Title . 
+    ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
+    ?title crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-3262a269164f44cd9a4db5ce13e8dcb5-8b670r a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+    $subject crm:P65i_is_shown_by $value . 
+    $value crm:P65_shows_visual_item $subject .
+} WHERE {}""" .
+  
+  _:genid-3262a269164f44cd9a4db5ce13e8dcb5-zawev a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E24_Physical_Man-Made_Thing .
+    ?value crm:P102_has_title ?title . 
+    ?title a crm:E35_Title . 
+    ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
+    ?title crm:P190_has_symbolic_content ?label .
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label) LIMIT 10""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/visual_item/shown_by> .
+}

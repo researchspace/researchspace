@@ -174,9 +174,9 @@ module.exports = function(isProd) {
                                 sourceMap: true,
                                 url: {
                                     filter: (url, resourcePath) => {
-                                      // ignore images that are included in css files that point to /assets
+                                      // ignore resources that are included in css files that point to /assets
                                       // they are going to be served at runtime, we don't need to bundle them
-                                      if (url.includes("/assets/images")) {
+                                      if (url.startsWith("/assets/")) {
                                         return false;
                                       }                        
                                       return true;

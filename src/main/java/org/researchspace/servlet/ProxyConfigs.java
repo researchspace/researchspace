@@ -193,9 +193,8 @@ public class ProxyConfigs {
 
                 URI uri = null;
                 uri = new URI(proxyConfig.targetUri);
-                if (uri.getHost() == null) {
-                    throw new IllegalArgumentException("Missing host for the proxy target URL: " + proxyConfig.targetUri
-                            + ". Relative paths for proxies are not supported.");
+                if (!uri.isAbsolute()) {
+                    throw new IllegalArgumentException("Relative paths for proxies are not supported: " + proxyConfig.targetUri);
                 }
 
                 proxyMap.put(proxyKey, pmap);

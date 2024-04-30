@@ -11,7 +11,8 @@
                         entity_document="http://www.researchspace.org/pattern/system/entity/documents"
                         entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
 
-                        symbolic_object_content="http://www.researchspace.org/pattern/system/symbolic_object/has_symbolic_content"
+                        symbolic_object_content="http://www.researchspace.org/pattern/system/symbolic_object/has_symbolic_contentMin1Max1"
+                        linguistic_object_has_language="http://www.researchspace.org/pattern/system/linguistic_object/has_language"
                         linguistic_object_has_translation="http://www.researchspace.org/pattern/system/linguistic_object/has_translation"
                         linguistic_object_is_translation_of="http://www.researchspace.org/pattern/system/linguistic_object/is_translation_of"
                         man-made_thing_primary_title="http://www.researchspace.org/pattern/system/man-made_thing/PC102_has_title_primary"
@@ -71,16 +72,33 @@
       <rs-tab event-key="detail" title="Details">
         <div class="form-2column-container">
           <div>
-            <semantic-form-text-input for="symbolic_object_content" multiline=true label="Content/value" languages='["en"]' require-language=true placeholder="Enter the complete, identifying representation of its content"></semantic-form-text-input>
+            <semantic-form-text-input for="symbolic_object_content" multiline=true label="Content/value" placeholder="Enter the complete, identifying representation of its content"></semantic-form-text-input>
             
-            <semantic-form-text-input for="linguistic_object_has_translation" multiline=true label="Translation" placeholder="Enter translation" languages='["ar","de","el","es","fr","ga","it","ja","ko","nl","zh","zh-CN","zh-TW"]' require-language=true></semantic-form-text-input> 
+            <semantic-form-autocomplete-input for='linguistic_object_has_language' 
+                                              label="Language"
+                                              placeholder="Select language in which it is, at least partially, expressed" 
+                                              nested-form-templates='[ 
+                                                  {
+                                                      "label": "Language",
+                                                      "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Language\" nested=true editable=true mode=\"new\" }}{{{{/raw}}}}"
+                                                  }
+                                              ]'> 
+            </semantic-form-autocomplete-input>
 
-            <semantic-form-text-input for="linguistic_object_is_translation_of" multiline=true label="Is translation of" placeholder="Enter linguistic object that has this as translation"></semantic-form-text-input> 
+            <semantic-form-autocomplete-input   for='linguistic_object_has_translation' 
+                                                label="Translation" 
+                                                placeholder="Select translation" 
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_linguisticObjects]]'> 
+            </semantic-form-autocomplete-input> 
 
-            <semantic-form-text-input for="entity_description" multiline=true label="Description/comment" placeholder="Enter description/comment"></semantic-form-text-input>
-
+            <semantic-form-autocomplete-input   for='linguistic_object_is_translation_of' 
+                                                label="Is translation of" 
+                                                placeholder="Select linguistic object that has this as translation" 
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_linguisticObjects]]'> 
+            </semantic-form-autocomplete-input> 
+            
             <div class="inline-composite-container">
-              <semantic-form-composite-input  for="man-made_thing_primary_title" 
+              <semantic-form-composite-input  for="man-made_thing_title" 
                                               label="Linguistic object name/title"
                                               new-subject-template="/PC102_has_title/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
                                               fields='[[fieldDefinitions
@@ -193,42 +211,25 @@
                 </semantic-form-composite-input>
             </div>
 
-            <div class="inline-composite-container">
-              <semantic-form-composite-input  for="entity_preferred_id"
-                                              label="Preferred identifier"
-                                              new-subject-template="/entity_id" 
-                                              fields='[[fieldDefinitions
-                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
-                                                      has_type="http://www.researchspace.org/pattern/system/entity/has_type"
-                                                      identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
-                                                  ]]'
-                                              >
-                          
-                  <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
-                  <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/entity_preferred_id'></semantic-form-hidden-input>
-                      
-                  <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter preferred identifier"></semantic-form-text-input>
+            <semantic-form-autocomplete-input   for="entity_preferred_id" 
+                                                label="Preferred identifier"
+                                                placeholder="Select preferred identifier" 
+                                                nested-form-templates='[ 
+                                                    {
+                                                        "label": "Identifier",
+                                                        "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Identifier\" nested=true editable=true mode=\"new\" }}
+                                                                        {{{{/raw}}}}"
+                                                    }
+                                                ]'>
+            </semantic-form-autocomplete-input>
 
-              </semantic-form-composite-input>
-            </div>
+            <semantic-form-autocomplete-input   for="entity_id" 
+                                                label="Other identifier"
+                                                placeholder="Select other identifier" 
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_appellations]]'>
+            </semantic-form-autocomplete-input>
 
-            <div class="inline-composite-container">
-              <semantic-form-composite-input  for="entity_id"
-                                              label="Other identifier"
-                                              new-subject-template="/entity_id/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-                                              fields='[[fieldDefinitions
-                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
-                                                      has_type="http://www.researchspace.org/pattern/system/entity/has_type"
-                                                      identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
-                                                  ]]'
-                                              >
-                          
-                  <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
-                  <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/entity_id'></semantic-form-hidden-input>
-                      
-                  <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier"></semantic-form-text-input>
-              </semantic-form-composite-input>
-            </div>
+            <semantic-form-text-input for="entity_description" multiline=true label="Description/comment" placeholder="Enter description/comment"></semantic-form-text-input>
             
           </div>
 

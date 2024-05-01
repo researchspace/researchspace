@@ -19,15 +19,17 @@
   _:genid-e991f97ceca442efb8f555e6cd0dd958-p8zh0h a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
 	?value a ?ontologyClass .
-    ?ontologyClass rdfs:subClassOf* crm:E71_Man-Made_Thing .
-  	{ 
-      ?value crm:P1_is_identified_by ?appellation .
-      ?appellation a crm:E41_Appellation .
-      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-      ?appellation crm:P190_has_symbolic_content ?label .
-	} UNION {
-      ?value skos:prefLabel ?label .
-	}
+  ?ontologyClass rdfs:subClassOf* crm:E71_Man-Made_Thing .
+  { 
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+  } UNION {
+    ?value skos:prefLabel ?label .
+  } UNION {
+    ?value crm:P190_has_symbolic_content ?label .
+  }
   FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ASC(?label) 
   LIMIT 10 """ .
@@ -36,30 +38,34 @@
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
   	$subject crm:P01_has_domain $value .
       
-	?value a ?ontologyClass .
+	  ?value a ?ontologyClass .
     ?ontologyClass rdfs:subClassOf* crm:E71_Man-Made_Thing .
-  	{ 
+    { 
       ?value crm:P1_is_identified_by ?appellation .
       ?appellation a crm:E41_Appellation .
       ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
       ?appellation crm:P190_has_symbolic_content ?label .
-	} UNION {
+    } UNION {
       ?value skos:prefLabel ?label .
-	}
+    } UNION {
+      ?value crm:P190_has_symbolic_content ?label .
+    }
 }""" .
   
   _:genid-e991f97ceca442efb8f555e6cd0dd958-ny9he a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
 	?value a ?ontologyClass .
-    ?ontologyClass rdfs:subClassOf* crm:E71_Man-Made_Thing .
-  	{ 
-      ?value crm:P1_is_identified_by ?appellation .
-      ?appellation a crm:E41_Appellation .
-      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-      ?appellation crm:P190_has_symbolic_content ?label .
-	} UNION {
-      ?value skos:prefLabel ?label .
-	}
+  ?ontologyClass rdfs:subClassOf* crm:E71_Man-Made_Thing .
+  { 
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+  } UNION {
+    ?value skos:prefLabel ?label .
+  } UNION {
+    ?value crm:P190_has_symbolic_content ?label .
+  }
 } ORDER BY ASC(LCASE(STR(?label)))""" .
   
   _:genid-e991f97ceca442efb8f555e6cd0dd958-otxc5 a <http://spinrdf.org/sp#Query>;
@@ -77,15 +83,17 @@
     $value crm:P01i_is_domain_of $subject . 
       
 	?value a ?ontologyClass .
-    ?ontologyClass rdfs:subClassOf* crm:E71_Man-Made_Thing .
-  	{ 
-      ?value crm:P1_is_identified_by ?appellation .
-      ?appellation a crm:E41_Appellation .
-      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-      ?appellation crm:P190_has_symbolic_content ?label .
-	} UNION {
-      ?value skos:prefLabel ?label .
-	}
+  ?ontologyClass rdfs:subClassOf* crm:E71_Man-Made_Thing .
+  { 
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+  } UNION {
+    ?value skos:prefLabel ?label .
+  } UNION {
+    ?value crm:P190_has_symbolic_content ?label .
+  }
 }""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>

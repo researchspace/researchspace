@@ -11,7 +11,7 @@
                         entity_document="http://www.researchspace.org/pattern/system/entity/documents"
                         entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
 
-                        man-made_thing_primary_title="http://www.researchspace.org/pattern/system/man-made_thing/PC102_has_title_primary"
+                        entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
                         man-made_thing_title="http://www.researchspace.org/pattern/system/man-made_thing/PC102_has_title"
                         symbolic_object_content="http://www.researchspace.org/pattern/system/symbolic_object/has_symbolic_content"
                         entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
@@ -69,118 +69,62 @@
       <rs-tab event-key="detail" title="Details">
         <div class="form-2column-container">
           <div>
+
+            <semantic-form-text-input for="entity_primary_appellation" label="Information object name/appellation" placeholder="Enter name/appellation"></semantic-form-text-input>
+
             <div class="inline-composite-container">
-                <semantic-form-composite-input  for="man-made_thing_primary_title" 
-                                                label="Information object name/title"
-                                                new-subject-template="/PC102_has_title/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
-                                                fields='[[fieldDefinitions
-                                                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                            resource_type="http://www.researchspace.org/pattern/system/has_title/resource_type"
-            
-                                                            has_title_range="http://www.researchspace.org/pattern/system/has_title/range"
-                                                            title_type="http://www.researchspace.org/pattern/system/has_title/title_type"
-                                                        ]]'>
-            
-                  <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC102_has_title'> </semantic-form-hidden-input>
-                  <semantic-form-hidden-input for="resource_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/primary_title'> </semantic-form-hidden-input>
-            
-                  <div class="form-inline-inputs">
-                    <div style="flex: 1;">
-                      <semantic-form-autocomplete-input for='has_title_range'  
-                                                        render-header="false"
-                                                        placeholder="Select name/title" 
-                                                        nested-form-templates='[ 
-                                                            {
-                                                                "label": "Title",
-                                                                "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Title\" nested=true editable=true mode=\"new\"}}
-                                                                            {{{{/raw}}}}"
-                                                            }
-                                                        ]'> 
-                      </semantic-form-autocomplete-input> 
-                    </div>
-                    <div style="flex: 1;">
-                      <semantic-form-tree-picker-input  for="title_type" 
-                                                        render-header="false"
-                                                        placeholder="Select title type"
-                                                        close-dropdown-on-selection='true'
-                                                        tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/title_type>", 
-                                                                        "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/title_type>",
-                                                                        "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
-            
-                                                        scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                    "view": "vocabulary-content",
-                                                                                    "scheme": "http://www.researchspace.org/resource/vocab/title_type",
-                                                                                    "tooltip": "Open list of title types"
-                                                                                  }'
-                                                        
-                                                        nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                              scheme="http://www.researchspace.org/resource/vocab/title_type"
-                                                                                              entityType="title type" }}{{{{/raw}}}}'
-            
-                                                        query-item-label='SELECT ?label WHERE {
-                                                                            ?item skos:prefLabel ?label .
-                                                                        }'>
-                      </semantic-form-tree-picker-input>
-                    </div>
+              <semantic-form-composite-input  for="man-made_thing_title" 
+                                              label="Title"
+                                              new-subject-template="/PC102_has_title/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                              fields='[[fieldDefinitions
+                                                          classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+          
+                                                          has_title_range="http://www.researchspace.org/pattern/system/has_title/range"
+                                                          title_type="http://www.researchspace.org/pattern/system/has_title/title_type"
+                                                      ]]'>
+          
+                <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC102_has_title'> </semantic-form-hidden-input>
+                
+                <div class="form-inline-inputs">
+                  <div style="flex: 1;">
+                    <semantic-form-autocomplete-input for='has_title_range'
+                                                      render-header="false"
+                                                      placeholder="Select title" 
+                                                      nested-form-templates='[ 
+                                                          {
+                                                              "label": "Title",
+                                                              "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Title\" nested=true editable=true mode=\"new\"}}
+                                                                          {{{{/raw}}}}"
+                                                          }
+                                                      ]'> 
+                    </semantic-form-autocomplete-input> 
                   </div>
-                </semantic-form-composite-input>
-            </div>
-            
-            <div class="inline-composite-container">
-                <semantic-form-composite-input  for="man-made_thing_title" 
-                                                label="Other title/name"
-                                                new-subject-template="/PC102_has_title/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
-                                                fields='[[fieldDefinitions
-                                                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                            resource_type="http://www.researchspace.org/pattern/system/has_title/resource_type"
-            
-                                                            has_title_range="http://www.researchspace.org/pattern/system/has_title/range"
-                                                            title_type="http://www.researchspace.org/pattern/system/has_title/title_type"
-                                                        ]]'>
-            
-                  <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC102_has_title'> </semantic-form-hidden-input>
-                  <semantic-form-hidden-input for="resource_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/title'> </semantic-form-hidden-input>
-            
-                  <div class="form-inline-inputs">
-                    <div style="flex: 1;">
-                      <semantic-form-autocomplete-input for='has_title_range'
-                                                        render-header="false"
-                                                        placeholder="Select title/name" 
-                                                        nested-form-templates='[ 
-                                                            {
-                                                                "label": "Title",
-                                                                "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Title\" nested=true editable=true mode=\"new\"}}
-                                                                            {{{{/raw}}}}"
-                                                            }
-                                                        ]'> 
-                      </semantic-form-autocomplete-input> 
-                    </div>
-                    <div style="flex: 1;">
-                      <semantic-form-tree-picker-input  for="title_type" 
-                                                        render-header="false"
-                                                        placeholder="Select title type"
-                                                        close-dropdown-on-selection='true'
-                                                        tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/title_type>", 
-                                                                        "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/title_type>",
-                                                                        "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
-            
-                                                        scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                    "view": "vocabulary-content",
-                                                                                    "scheme": "http://www.researchspace.org/resource/vocab/title_type",
-                                                                                    "tooltip": "Open list of title types"
-                                                                                  }'
-                                                        
-                                                        nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                              scheme="http://www.researchspace.org/resource/vocab/title_type"
-                                                                                              entityType="title type" }}{{{{/raw}}}}'
-            
-                                                        query-item-label='SELECT ?label WHERE {
-                                                                            ?item skos:prefLabel ?label .
-                                                                        }'>
-                      </semantic-form-tree-picker-input>
-                    </div>
+                  <div style="flex: 1;">
+                    <semantic-form-tree-picker-input  for="title_type" 
+                                                      render-header="false"
+                                                      placeholder="Select title type"
+                                                      close-dropdown-on-selection='true'
+                                                      tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/title_type>", 
+                                                                      "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/title_type>",
+                                                                      "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+          
+                                                      scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                  "view": "vocabulary-content",
+                                                                                  "scheme": "http://www.researchspace.org/resource/vocab/title_type",
+                                                                                  "tooltip": "Open list of title types"
+                                                                                }'
+                                                      
+                                                      nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                            scheme="http://www.researchspace.org/resource/vocab/title_type"
+                                                                                            entityType="title type" }}{{{{/raw}}}}'
+          
+                                                      query-item-label='SELECT ?label WHERE {
+                                                                          ?item skos:prefLabel ?label .
+                                                                      }'>
+                    </semantic-form-tree-picker-input>
                   </div>
-                </semantic-form-composite-input>
+                </div>
+              </semantic-form-composite-input>
             </div>
 
             <semantic-form-text-input for="symbolic_object_content" multiline=true label="Content/value" placeholder="Enter the complete, identifying representation of its content"></semantic-form-text-input>

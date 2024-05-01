@@ -1,6 +1,6 @@
 <semantic-form [[> rsp:FormDefaults]] 
                persistence='{"type": "sparql", "targetGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
-               new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/mark/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
+               new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/inscription/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
                fields='[[fieldDefinitions
                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                         inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
@@ -11,11 +11,14 @@
                         entity_document="http://www.researchspace.org/pattern/system/entity/documents"
                         entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
 
-                        man-made_thing_primary_title="http://www.researchspace.org/pattern/system/man-made_thing/PC102_has_title_primary"
-                        man-made_thing_title="http://www.researchspace.org/pattern/system/man-made_thing/PC102_has_title"
+                        symbolic_object_content="http://www.researchspace.org/pattern/system/symbolic_object/has_symbolic_contentMin1Max1"
+                        linguistic_object_has_language="http://www.researchspace.org/pattern/system/linguistic_object/has_language"
+                        linguistic_object_has_translation="http://www.researchspace.org/pattern/system/linguistic_object/has_translation"
+                        linguistic_object_is_translation_of="http://www.researchspace.org/pattern/system/linguistic_object/is_translation_of"
                         visual_item_is_main_representation="http://www.researchspace.org/pattern/system/visual_item/is_main_representation"
                         visual_item_represents="http://www.researchspace.org/pattern/system/visual_item/represents"
-                        symbolic_object_content="http://www.researchspace.org/pattern/system/symbolic_object/has_symbolic_content"
+                        man-made_thing_primary_title="http://www.researchspace.org/pattern/system/man-made_thing/PC102_has_title_primary"
+                        man-made_thing_title="http://www.researchspace.org/pattern/system/man-made_thing/PC102_has_title"
                         entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
                         entity_id="http://www.researchspace.org/pattern/system/entity/identifier"
                         entity_description="http://www.researchspace.org/pattern/system/entity/description"
@@ -62,7 +65,7 @@
 >
 
   <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
-    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E37_Mark'></semantic-form-hidden-input>
+    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E34_Inscription'></semantic-form-hidden-input>
 
     {{#if scheme}}
       <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
@@ -72,63 +75,100 @@
       <rs-tab event-key="detail" title="Details">
         <div class="form-2column-container">
           <div>
+            <semantic-form-text-input for="symbolic_object_content" multiline=true label="Content/value" placeholder="Enter the complete, identifying representation of its content"></semantic-form-text-input>
+            
+            <semantic-form-autocomplete-input for='linguistic_object_has_language' 
+                                              label="Language"
+                                              placeholder="Select language in which it is, at least partially, expressed" 
+                                              nested-form-templates='[ 
+                                                  {
+                                                      "label": "Language",
+                                                      "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Language\" nested=true editable=true mode=\"new\" }}{{{{/raw}}}}"
+                                                  }
+                                              ]'> 
+            </semantic-form-autocomplete-input>
+
+            <semantic-form-autocomplete-input   for='linguistic_object_has_translation' 
+                                                label="Translation" 
+                                                placeholder="Select translation" 
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_linguisticObjects]]'> 
+            </semantic-form-autocomplete-input> 
+
+            <semantic-form-autocomplete-input   for='linguistic_object_is_translation_of' 
+                                                label="Is translation of" 
+                                                placeholder="Select linguistic object that has this as translation" 
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_linguisticObjects]]'> 
+            </semantic-form-autocomplete-input> 
+
+            <semantic-form-autocomplete-input   for='visual_item_is_main_representation' 
+                                                label="Is main representation of" 
+                                                placeholder="Select what has the inscription as main representation" 
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_allEntities]]'> 
+            </semantic-form-autocomplete-input> 
+
+            <semantic-form-autocomplete-input   for='visual_item_represents' 
+                                                label="Represents" 
+                                                placeholder="Select what the inscription visually represents" 
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_allEntities]]'> 
+            </semantic-form-autocomplete-input> 
+            
             <div class="inline-composite-container">
-                <semantic-form-composite-input  for="man-made_thing_primary_title" 
-                                                label="Mark name/title"
-                                                new-subject-template="/PC102_has_title/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
-                                                fields='[[fieldDefinitions
-                                                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                            resource_type="http://www.researchspace.org/pattern/system/has_title/resource_type"
-            
-                                                            has_title_range="http://www.researchspace.org/pattern/system/has_title/range"
-                                                            title_type="http://www.researchspace.org/pattern/system/has_title/title_type"
-                                                        ]]'>
-            
-                  <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC102_has_title'> </semantic-form-hidden-input>
-                  <semantic-form-hidden-input for="resource_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/primary_title'> </semantic-form-hidden-input>
-            
-                  <div class="form-inline-inputs">
-                    <div style="flex: 1;">
-                      <semantic-form-autocomplete-input for='has_title_range'  
-                                                        render-header="false"
-                                                        placeholder="Select name/title" 
-                                                        nested-form-templates='[ 
-                                                            {
-                                                                "label": "Title",
-                                                                "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Title\" nested=true editable=true mode=\"new\"}}
-                                                                            {{{{/raw}}}}"
-                                                            }
-                                                        ]'> 
-                      </semantic-form-autocomplete-input> 
-                    </div>
-                    <div style="flex: 1;">
-                      <semantic-form-tree-picker-input  for="title_type" 
-                                                        render-header="false"
-                                                        placeholder="Select title type"
-                                                        close-dropdown-on-selection='true'
-                                                        tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/title_type>", 
-                                                                        "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/title_type>",
-                                                                        "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
-            
-                                                        scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                    "view": "vocabulary-content",
-                                                                                    "scheme": "http://www.researchspace.org/resource/vocab/title_type",
-                                                                                    "tooltip": "Open list of title types"
-                                                                                  }'
-                                                        
-                                                        nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                              scheme="http://www.researchspace.org/resource/vocab/title_type"
-                                                                                              entityType="title type" }}{{{{/raw}}}}'
-            
-                                                        query-item-label='SELECT ?label WHERE {
-                                                                            ?item skos:prefLabel ?label .
-                                                                        }'>
-                      </semantic-form-tree-picker-input>
-                    </div>
+              <semantic-form-composite-input  for="man-made_thing_title" 
+                                              label="Inscription name/title"
+                                              new-subject-template="/PC102_has_title/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                              fields='[[fieldDefinitions
+                                                          classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                          resource_type="http://www.researchspace.org/pattern/system/has_title/resource_type"
+          
+                                                          has_title_range="http://www.researchspace.org/pattern/system/has_title/range"
+                                                          title_type="http://www.researchspace.org/pattern/system/has_title/title_type"
+                                                      ]]'>
+          
+                <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC102_has_title'> </semantic-form-hidden-input>
+                <semantic-form-hidden-input for="resource_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/primary_title'> </semantic-form-hidden-input>
+          
+                <div class="form-inline-inputs">
+                  <div style="flex: 1;">
+                    <semantic-form-autocomplete-input for='has_title_range'  
+                                                      render-header="false"
+                                                      placeholder="Select name/title" 
+                                                      nested-form-templates='[ 
+                                                          {
+                                                              "label": "Title",
+                                                              "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Title\" nested=true editable=true mode=\"new\"}}
+                                                                          {{{{/raw}}}}"
+                                                          }
+                                                      ]'> 
+                    </semantic-form-autocomplete-input> 
                   </div>
-                </semantic-form-composite-input>
+                  <div style="flex: 1;">
+                    <semantic-form-tree-picker-input  for="title_type" 
+                                                      render-header="false"
+                                                      placeholder="Select title type"
+                                                      close-dropdown-on-selection='true'
+                                                      tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/title_type>", 
+                                                                      "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/title_type>",
+                                                                      "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+          
+                                                      scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                  "view": "vocabulary-content",
+                                                                                  "scheme": "http://www.researchspace.org/resource/vocab/title_type",
+                                                                                  "tooltip": "Open list of title types"
+                                                                                }'
+                                                      
+                                                      nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                            scheme="http://www.researchspace.org/resource/vocab/title_type"
+                                                                                            entityType="title type" }}{{{{/raw}}}}'
+          
+                                                      query-item-label='SELECT ?label WHERE {
+                                                                          ?item skos:prefLabel ?label .
+                                                                      }'>
+                    </semantic-form-tree-picker-input>
+                  </div>
+                </div>
+              </semantic-form-composite-input>
             </div>
-            
+          
             <div class="inline-composite-container">
                 <semantic-form-composite-input  for="man-made_thing_title" 
                                                 label="Other title/name"
@@ -186,22 +226,6 @@
                 </semantic-form-composite-input>
             </div>
 
-            <semantic-form-autocomplete-input   for='visual_item_is_main_representation' 
-                                                label="Is main representation of" 
-                                                placeholder="Select what has the mark as main representation" 
-                                                nested-form-templates='[[> Platform:NestedFormTemplates_allEntities]]'> 
-            </semantic-form-autocomplete-input> 
-
-            <semantic-form-autocomplete-input   for='visual_item_represents' 
-                                                label="Represents" 
-                                                placeholder="Select what the mark visually represents" 
-                                                nested-form-templates='[[> Platform:NestedFormTemplates_allEntities]]'> 
-            </semantic-form-autocomplete-input> 
-
-            <semantic-form-text-input for="symbolic_object_content" multiline=true label="Content/value" placeholder="Enter the complete, identifying representation of its content"></semantic-form-text-input>
-            
-            <semantic-form-text-input for="entity_description" multiline=true label="Description/comment" placeholder="Enter description/comment"></semantic-form-text-input>
-
             <semantic-form-autocomplete-input   for="entity_preferred_id" 
                                                 label="Preferred identifier"
                                                 placeholder="Select preferred identifier" 
@@ -219,6 +243,8 @@
                                                 placeholder="Select other identifier" 
                                                 nested-form-templates='[[> Platform:NestedFormTemplates_appellations]]'>
             </semantic-form-autocomplete-input>
+
+            <semantic-form-text-input for="entity_description" multiline=true label="Description/comment" placeholder="Enter description/comment"></semantic-form-text-input>
             
           </div>
 
@@ -258,7 +284,7 @@
         {{#if scheme}}
             <semantic-form-tree-picker-input  for='propositional_object_is_component_of' 
                                                 label="Part of" 
-                                                placeholder="Select the item of which the mark is structural part of" 
+                                                placeholder="Select the item of which the inscription is structural part of" 
                                                 default-values='[{{#if broader}}"{{broader}}"{{/if}}]'
                                                 tree-patterns='{"scheme": "{{scheme}}",
                                                                 "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
@@ -279,7 +305,7 @@
 
             <semantic-form-tree-picker-input    for='propositional_object_has_component' 
                                                 label="Components" 
-                                                placeholder="Select component (structural part) of the mark" 
+                                                placeholder="Select component (structural part) of the inscription" 
                                                 tree-patterns='{"scheme": "{{scheme}}",
                                                                 "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
                                                                 "relationPattern": "?item crm:P148i_is_component_of ?parent",
@@ -355,13 +381,13 @@
                 <div class="page__section-container formHierarchyInputs-container">    
                     <semantic-form-autocomplete-input   for='propositional_object_is_component_of' 
                                                         label="Part of" 
-                                                        placeholder="Select the item of which the mark is structural part of" 
+                                                        placeholder="Select the item of which the inscription is structural part of" 
                                                         nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
                     </semantic-form-autocomplete-input>
 
                     <semantic-form-autocomplete-input   for='propositional_object_has_component' 
                                                         label="Components" 
-                                                        placeholder="Select component (structural part) of the mark" 
+                                                        placeholder="Select component (structural part) of the inscription" 
                                                         nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'>
                     </semantic-form-autocomplete-input>
                 </div>
@@ -375,7 +401,7 @@
         {{#if scheme}}
           <semantic-form-tree-picker-input  for='symbolic_object_incorporated_in' 
                                             label="Incorporated in" 
-                                            placeholder="Select what incorporates the mark" 
+                                            placeholder="Select what incorporates the inscription" 
                                             default-values='[{{#if broader}}"{{broader}}"{{/if}}]'
                                             tree-patterns='{"scheme": "{{scheme}}",
                                                               "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
@@ -396,7 +422,7 @@
 
           <semantic-form-tree-picker-input    for='information_object_incorporates' 
                                               label="Incorporates" 
-                                              placeholder="Select what is included in the mark"
+                                              placeholder="Select what is included in the inscription"
                                               tree-patterns='{"scheme": "{{scheme}}",
                                                               "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
                                                               "relationPattern": "?item crm:P165i_is_incorporated_in ?parent",
@@ -472,13 +498,13 @@
               <div class="page__section-container formHierarchyInputs-container">    
                 <semantic-form-autocomplete-input   for='symbolic_object_incorporated_in' 
                                                     label="Incorporated in" 
-                                                    placeholder="Select what incorporates the mark" 
+                                                    placeholder="Select what incorporates the inscription" 
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_informationObjects]]'> 
                 </semantic-form-autocomplete-input> 
 
                 <semantic-form-autocomplete-input   for='information_object_incorporates' 
                                                     label="Incorporates" 
-                                                    placeholder="Select what is included in the mark" 
+                                                    placeholder="Select what is included in the inscription" 
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_symbolicObjects]]'> 
                 </semantic-form-autocomplete-input> 
               </div>
@@ -490,13 +516,13 @@
     
         <semantic-form-autocomplete-input   for='man-made_thing_was_intended_for' 
                                             label="Was intended for" 
-                                            placeholder="Select the type describing the intended usage of the mark" 
+                                            placeholder="Select the type describing the intended usage of the inscription" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_types]]'>
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='thing_general_use' 
                                             label="Had as general use" 
-                                            placeholder="Select the type of use that the mark was actually employed for" 
+                                            placeholder="Select the type of use that the inscription was actually employed for" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_types]]'>
         </semantic-form-autocomplete-input>
 
@@ -531,7 +557,7 @@
 
         <semantic-form-autocomplete-input   for='legal_object_right_held_by_actor' 
                                             label="Right held by" 
-                                            placeholder="Select actor who holds legal right on the mark" 
+                                            placeholder="Select actor who holds legal right on the inscription" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'> 
         </semantic-form-autocomplete-input> 
 
@@ -541,7 +567,7 @@
 
         <semantic-form-autocomplete-input   for='symbolic_object_used_in' 
                                             label="Used in" 
-                                            placeholder="Select the assignment that used the mark as constituent of an identifier" 
+                                            placeholder="Select the assignment that used the inscription as constituent of an identifier" 
                                             nested-form-templates='[ 
                                                 {
                                                     "label": "Identifier assignment",
@@ -554,7 +580,7 @@
 
         <semantic-form-autocomplete-input   for='conceptual_object_created_by' 
                                             label="Created by" 
-                                            placeholder="Select the event that created the mark" 
+                                            placeholder="Select the event that created the inscription" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_creations]]'>  
         </semantic-form-autocomplete-input> 
 
@@ -575,7 +601,7 @@
                 <div style="flex: 1;">
                   <semantic-form-autocomplete-input for='was_intended_use_of_activity_domain' 
                                                     render-header="false"
-                                                    placeholder="Select activity for which the mark was made for" 
+                                                    placeholder="Select activity for which the inscription was made for" 
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>
                   </semantic-form-autocomplete-input> 
                 </div>
@@ -626,7 +652,7 @@
                     <semantic-form-autocomplete-input for='used_specific_object_activity_domain' 
                                                       label="Used for" 
                                                       render-header="false"
-                                                      placeholder="Select activity in which the use of the mark was essential to the performance or outcome" 
+                                                      placeholder="Select activity in which the use of the inscription was essential to the performance or outcome" 
                                                       nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'> 
                     </semantic-form-autocomplete-input> 
                   </div>
@@ -661,37 +687,37 @@
 
         <semantic-form-autocomplete-input   for='persistent_item_present_at' 
                                             label="Present at" 
-                                            placeholder="Select event in which the mark had an active or passive presence" 
+                                            placeholder="Select event in which the inscription had an active or passive presence" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_events]]'>  
         </semantic-form-autocomplete-input> 
 
         <semantic-form-autocomplete-input   for='persistent_item_brought_into_existence_by' 
                                             label="Brought into existence by" 
-                                            placeholder="Select event that brought the mark into existence" 
+                                            placeholder="Select event that brought the inscription into existence" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_beginningOfExistences]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='persistent_item_taken_out_of_existence_by' 
                                             label="Taken out of existence by" 
-                                            placeholder="Select event that took the mark out of existence" 
+                                            placeholder="Select event that took the inscription out of existence" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_endOfExistences]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_influenced_activity' 
                                             label="Influenced"
-                                            placeholder="Select activity influenced by the mark" 
+                                            placeholder="Select activity influenced by the inscription" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_motivated_activity' 
                                             label="Motivated"
-                                            placeholder="Select activity motivated by the mark" 
+                                            placeholder="Select activity motivated by the inscription" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_attributed_by_attribute_assignment' 
                                             label="Attributed by"
-                                            placeholder="Select what assigned attribute to the mark" 
+                                            placeholder="Select what assigned attribute to the inscription" 
                                             nested-form-templates='[ 
                                                 {
                                                     "label": "Attribute assignment",
@@ -704,7 +730,7 @@
 
         <semantic-form-autocomplete-input   for='entity_assigned_by_attribute_assignment' 
                                             label="Assigned by"
-                                            placeholder="Select what assigned the mark" 
+                                            placeholder="Select what assigned the inscription" 
                                             nested-form-templates='[ 
                                                 {
                                                     "label": "Attribute assignment",
@@ -733,13 +759,13 @@
 
         <semantic-form-autocomplete-input   for='visual_item_shown_by' 
                                             label="Is shown by"
-                                            placeholder="Select item that shows the mark" 
+                                            placeholder="Select item that shows the inscription" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'> 
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='symbolic_object_carried_by' 
                                             label="Carried by"
-                                            placeholder="Select what carries the mark" 
+                                            placeholder="Select what carries the inscription" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
         </semantic-form-autocomplete-input>
 
@@ -760,7 +786,7 @@
                 <div style="flex: 1;">
                   <semantic-form-autocomplete-input for='shows_features_of_range'  
                                                     render-header="false"
-                                                    placeholder="Select thing that has similarity with the mark" 
+                                                    placeholder="Select thing that has similarity with the inscription" 
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_things]]'> 
                   </semantic-form-autocomplete-input> 
                 </div>
@@ -809,7 +835,7 @@
                 <div style="flex: 1;">
                   <semantic-form-autocomplete-input for='shows_features_of_domain'  
                                                     render-header="false"
-                                                    placeholder="Select thing that shows similarity with the mark" 
+                                                    placeholder="Select thing that shows similarity with the inscription" 
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_things]]'> 
                   </semantic-form-autocomplete-input> 
                 </div>
@@ -858,7 +884,7 @@
             <div style="flex: 1;">
               <semantic-form-autocomplete-input for='depicts_thing_domain' 
                                                 render-header="false"
-                                                placeholder="Select what depicts the mark"
+                                                placeholder="Select what depicts the inscription"
                                                 nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'>
               </semantic-form-autocomplete-input>
             </div>
@@ -892,7 +918,7 @@
 
         <semantic-form-autocomplete-input   for='entity_subject_of' 
                                             label="Subject of"
-                                            placeholder="Select what is about the mark" 
+                                            placeholder="Select what is about the inscription" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
         </semantic-form-autocomplete-input>
 
@@ -913,7 +939,7 @@
                     <div style="flex: 1;">
                         <semantic-form-autocomplete-input for='refers_to_propObj_domain' 
                                                         render-header="false"
-                                                        placeholder="Select what refers to the mark" 
+                                                        placeholder="Select what refers to the inscription" 
                                                         nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'>
                         </semantic-form-autocomplete-input>
                     </div>
@@ -951,7 +977,7 @@
 
         <semantic-form-autocomplete-input   for='propositional_object_is_about' 
                                             label="Is about" 
-                                            placeholder="Select what the mark is subject of" 
+                                            placeholder="Select what the inscription is subject of" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_allEntities]]'> 
         </semantic-form-autocomplete-input> 
 
@@ -972,7 +998,7 @@
               <div style="flex: 1;">
                 <semantic-form-autocomplete-input for='refers_to_entity_range' 
                                                   render-header="false"
-                                                  placeholder="Select what the mark refers to" 
+                                                  placeholder="Select what the inscription refers to" 
                                                   nested-form-templates='[[> Platform:NestedFormTemplates_allEntities]]'>
                 </semantic-form-autocomplete-input>
               </div>
@@ -1014,6 +1040,5 @@
   </div>
   
   <semantic-form-errors></semantic-form-errors>
-  [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}mark{{/if}}']] 
+  [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}inscription{{/if}}']] 
 </semantic-form>
-

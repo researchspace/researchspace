@@ -162,81 +162,23 @@
                                               ]'>
             </semantic-form-autocomplete-input>
 
-            <div class="inline-composite-container">
-              <semantic-form-composite-input  for="entity_preferred_id"
-                                              label="Preferred identifier"
-                                              new-subject-template="/entity_preferred_id" 
-                                              fields='[[fieldDefinitions
-                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+            <semantic-form-autocomplete-input   for="entity_preferred_id" 
+                                                label="Preferred identifier"
+                                                placeholder="Select preferred identifier" 
+                                                nested-form-templates='[ 
+                                                    {
+                                                        "label": "Identifier",
+                                                        "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Identifier\" nested=true editable=true mode=\"new\" }}
+                                                                        {{{{/raw}}}}"
+                                                    }
+                                                ]'>
+            </semantic-form-autocomplete-input>
 
-                                                      identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
-                                                      identifier_type="http://www.researchspace.org/pattern/system/identifier/identifier_type"
-                                                  ]]'
-                                              >
-                          
-                  <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
-                      
-                  <div class="form-inline-inputs">
-                      <div style="min-width: 40%;">
-                          <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter preferred identifier"></semantic-form-text-input>
-                      </div>
-                      <div style="flex: 1;">
-                          <semantic-form-select-input for='identifier_type' 
-                                                      label="Identifier type" 
-                                                      render-header=false
-                                                      placeholder="Select identifier type" 
-                                                      nested-form-templates='[ 
-                                                          {
-                                                              "label": "Identifier",
-                                                              "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
-                                                                                              scheme=\"http://www.researchspace.org/resource/system/vocab/identifier\"
-                                                                                              entityType=\"identifier\" }}
-                                                                              {{{{/raw}}}}"
-                                                          }
-                                                      ]'>
-                          </semantic-form-select-input>
-                      </div>
-                  </div>
-              </semantic-form-composite-input>
-            </div>
-
-            <div class="inline-composite-container">
-              <semantic-form-composite-input  for="entity_id"
-                                              label="Other identifier"
-                                              new-subject-template="/entity_id/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-                                              fields='[[fieldDefinitions
-                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
-
-                                                      identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
-                                                      identifier_type="http://www.researchspace.org/pattern/system/identifier/identifier_type"
-                                                  ]]'
-                                              >
-                          
-                  <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
-                      
-                  <div class="form-inline-inputs">
-                      <div style="min-width: 40%;">
-                          <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier"></semantic-form-text-input>
-                      </div>
-                      <div style="flex: 1;">
-                          <semantic-form-select-input for='identifier_type' 
-                                                      label="Identifier type" 
-                                                      render-header=false
-                                                      placeholder="Select identifier type" 
-                                                      nested-form-templates='[ 
-                                                          {
-                                                              "label": "Identifier",
-                                                              "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
-                                                                                              scheme=\"http://www.researchspace.org/resource/system/vocab/identifier\"
-                                                                                              entityType=\"identifier\" }}
-                                                                              {{{{/raw}}}}"
-                                                          }
-                                                      ]'>
-                          </semantic-form-select-input>
-                      </div>
-                  </div>
-              </semantic-form-composite-input>
-            </div>
+            <semantic-form-autocomplete-input   for="entity_id" 
+                                                label="Other identifier"
+                                                placeholder="Select other identifier" 
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_appellations]]'>
+            </semantic-form-autocomplete-input>
           </div>
 
           <div class="form-media-column">

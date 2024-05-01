@@ -175,7 +175,7 @@ export class DashboardComponent extends Component<Props, State> {
     
     this.onAddNewItem({
       ...this.frameLabel(label),
-      ...(data as AddFrameEventData),
+      ...(data),
       data,
     });
   }
@@ -377,12 +377,22 @@ export class DashboardComponent extends Component<Props, State> {
           return { items: newItems };
         },
         () => {
-          this.layoutRef.current.addTabToActiveTabSet(
-            {
-              'type': 'tab', 'name': item.label, 'component': "item", 'config': {'itemId': item.id},
-             'className': viewConfig?.iconName || viewConfig?.iconClass || 'no-icon-button', 'icon': 'add'
-            }
-          );
+          if(item.data?.openAsDragAndDrop) {
+            this.layoutRef.current.addTabWithDragAndDrop('Drag me where you want',
+              {
+                'type': 'tab', 'name': item.label, 'component': "item", 'config': {'itemId': item.id},
+               'className': viewConfig?.iconName || viewConfig?.iconClass || 'no-icon-button', 'icon': 'add'
+              }
+            );
+          } else {
+            this.layoutRef.current.addTabToActiveTabSet(
+              {
+                'type': 'tab', 'name': item.label, 'component': "item", 'config': {'itemId': item.id},
+               'className': viewConfig?.iconName || viewConfig?.iconClass || 'no-icon-button', 'icon': 'add'
+              }
+            );
+          }
+          
           this.onSelectView({
             itemId: item.id,
             viewId: item.viewId,

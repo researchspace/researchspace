@@ -41,7 +41,7 @@ import { RdfLiteral } from 'platform/ontodia/src/ontodia';
 
 type nestedFormEl = {
   label?: string,
-  nestedForm?: string
+  nestedForm?: string,
   modalId?: string
 }
 
@@ -61,7 +61,6 @@ interface SelectValue {
 
 interface State {
   nestedForm?: React.ReactElement<any>;
-  //nestedFormScheme
   nestedFormOpen?: boolean;
   activeForm?: string;
   valueSelectedWithoutEditForm?: boolean;
@@ -102,9 +101,12 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
     if (FieldValue.isAtomic(this.props.value)) {
       const rdfNode = FieldValue.asRdfNode(this.props.value);      
       getResourceConfigurationEditForm(Rdf.iri(rdfNode.value),this.context)
-          .then(resourceFormIri=>{
-            if (resourceFormIri) {
-                this.setState({activeForm: `{{> "${resourceFormIri}" nested=true editable=true mode="edit" }}`});
+          .then(binding=>{
+            if (binding.resourceFormIri.value) {
+              if (binding.scheme.value)
+                this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit" scheme="${binding.scheme.value}"}}`});
+              else  
+                this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit"}}`});
             }
             else
                 {this.setState({activeForm: undefined, valueSelectedWithoutEditForm: true});}})
@@ -185,9 +187,12 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
   private onNestedFormSubmit = (value: AtomicValue) => {    
     if (value) {
       getResourceConfigurationEditForm(Rdf.iri(value.value.value),this.context)
-          .then(resourceFormIri=>{
-            if (resourceFormIri) {
-                this.setState({activeForm: `{{> "${resourceFormIri}" nested=true editable=true mode="edit" }}`});
+          .then(binding=>{
+            if (binding.resourceFormIri.value) {
+              if (binding.scheme.value)
+                this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit" scheme="${binding.scheme.value}"}}`});
+              else  
+                this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit"}}`});
             }
             else
                 {this.setState({activeForm: undefined, valueSelectedWithoutEditForm: true});}})
@@ -291,10 +296,13 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
       });
       
       getResourceConfigurationEditForm(Rdf.iri(selected.value.value),this.context)
-          .then(resourceFormIri=>{
-            if (resourceFormIri) {
-                this.setState({activeForm: `{{> "${resourceFormIri}" nested=true editable=true mode="edit" }}`});
-            }
+          .then(binding=>{
+            if (binding.resourceFormIri.value) {
+              if (binding.scheme.value)
+                this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit" scheme="${binding.scheme.value}"}}`});
+              else  
+                this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit"}}`});
+            }       
             else
                 {this.setState({activeForm: undefined, valueSelectedWithoutEditForm: true});}})
           .catch(error => {this.setState({activeForm: undefined, valueSelectedWithoutEditForm: true});});

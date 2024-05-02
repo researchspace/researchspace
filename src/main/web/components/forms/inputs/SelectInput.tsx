@@ -44,7 +44,7 @@ import {getResourceConfigurationEditForm} from './ResourceConfigHelper';
 
 type nestedFormEl = {
   label?: string,
-  nestedForm?: string
+  nestedForm?: string,
   modalId?: string
 }
 
@@ -168,6 +168,24 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
         nestedFormTemplates: this.props.nestedFormTemplates
       })
     }
+
+    if (FieldValue.isAtomic(this.props.value)) {
+      const rdfNode = FieldValue.asRdfNode(this.props.value);      
+      getResourceConfigurationEditForm(Rdf.iri(rdfNode.value),this.context)
+          .then(binding=>{
+            if (binding.resourceFormIri.value) {
+              if (binding.scheme.value)
+                this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit" scheme="${binding.scheme.value}"}}`});
+              else  
+                this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit"}}`});
+            }
+            else
+                {this.setState({activeForm: undefined, valueSelectedWithoutEditForm: true});}})
+          .catch(error => {this.setState({activeForm: undefined, valueSelectedWithoutEditForm: true});});
+    } else {
+      this.setState({activeForm: undefined, valueSelectedWithoutEditForm: false});
+    }
+
   }
 
   componentWillUnmount() {
@@ -177,9 +195,12 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
   private onValueChanged = (value?: SparqlBindingValue) => {
     if (value) {
       getResourceConfigurationEditForm(Rdf.iri(value.value.value),this.context)
-          .then(resourceFormIri=>{
-            if (resourceFormIri) {
-                this.setState({activeForm: `{{> "${resourceFormIri}" nested=true editable=true mode="edit" }}`});
+          .then(binding=>{
+            if (binding.resourceFormIri.value) {
+              if (binding.scheme.value)
+                this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit" scheme="${binding.scheme.value}"}}`});
+              else  
+                this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit"}}`});
             }
             else
                 {this.setState({activeForm: undefined, valueSelectedWithoutEditForm: true});}})
@@ -207,11 +228,14 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
       return FieldValue.empty;
     }
 
-    getResourceConfigurationEditForm(Rdf.iri(findCorresponding.value.value),this.context).
-        then(resourceFormIri=>{
-          if (resourceFormIri) {  
-            this.setState({activeForm: `{{> "${resourceFormIri}" nested=true editable=true mode="edit" }}`});
-          }
+    getResourceConfigurationEditForm(Rdf.iri(findCorresponding.value.value),this.context)
+        .then(binding=>{
+            if (binding.resourceFormIri.value) {
+              if (binding.scheme.value)
+                this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit" scheme="${binding.scheme.value}"}}`});
+              else  
+                this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit"}}`});
+            }
           else {
             this.setState({activeForm: undefined, valueSelectedWithoutEditForm: true}); 
           }
@@ -240,7 +264,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
     }
   };
 
-  private valueRenderer = (v: AtomicValue | undefined) => { console.log("no valuevv");
+  private valueRenderer = (v: AtomicValue | undefined) => {
     // that is if user adds a new input which get's empty as initial field value
     if (!v) {
       return;
@@ -264,7 +288,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
   private openSelectedNestedForm(formTemplate: string) {
     tryExtractNestedForm(this.props.children, this.context, formTemplate)
       .then(nestedForm => {
-        if (nestedForm != undefined) {
+        if (nestedForm != undefined) {console.log(nestedForm);
          this.setState({nestedForm});
           this.toggleNestedForm()
         }
@@ -378,9 +402,13 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
   private onNestedFormSubmit = (value: AtomicValue) => {
     if (value) {     
       getResourceConfigurationEditForm(Rdf.iri(value.value.value),this.context).
-        then(resourceFormIri=>{
-          if (resourceFormIri)             
-              this.setState({activeForm: `{{> "${resourceFormIri}" nested=true editable=true mode="edit" }}`})});
+        then(binding=>{
+            if (binding.resourceFormIri.value) {
+              if (binding.scheme.value)
+                this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit" scheme="${binding.scheme.value}"}}`});
+              else  
+                this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit"}}`});
+        }});
     } else {
       this.setState({activeForm: undefined, valueSelectedWithoutEditForm: false});
     }

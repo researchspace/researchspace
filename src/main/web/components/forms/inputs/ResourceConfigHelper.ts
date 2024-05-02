@@ -44,7 +44,7 @@ const SPARQL_QUERY = SparqlUtil.Sparql`
 /**
  * 
  */
-export function getResourceConfigurationEditForm(iri:Rdf.Iri, context: any): Promise<string> {
+export function getResourceConfigurationEditForm(iri:Rdf.Iri, context: any): Promise<SparqlClient.Binding> {
   return new Promise((resolve) => {
     if(iri) {
       const query = SparqlClient.setBindings(SPARQL_QUERY, { __resourceIri__: iri});
@@ -85,22 +85,23 @@ export function buildResourceFormIriQuery(queryResultBindings: SparqlClient.Bind
       UNION_QUERY.push(
         `{ 
           BIND(${iri} AS ?item)
-            BIND(<${b.config.value}> AS ?config)
-            ${b.resourceRestrictionPattern ? b.resourceRestrictionPattern.value : ''}
-            ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
-        }`
+          BIND(<${b.config.value}> AS ?config)
+          ${b.resourceRestrictionPattern ? b.resourceRestrictionPattern.value : ''}
+          ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIri .
+          OPTIONAL {?item crm:P71i_is_listed_in|skos:inScheme ?scheme}
+        } `
       )
     })
-    return `SELECT ?resourceFormIRI WHERE { ${UNION_QUERY.join('UNION')} }`
+    console.log(`SELECT ?resourceFormIri ?scheme WHERE { ${UNION_QUERY.join('UNION')} }`);
+    return `SELECT ?resourceFormIri ?scheme WHERE { ${UNION_QUERY.join('UNION')} } LIMIT 1 `
 }
 
-export function findResourceConfigurationEditForm(queryResultBindings: SparqlClient.Bindings, iri: Rdf.Iri, context: any): Promise<string> {
+export function findResourceConfigurationEditForm(queryResultBindings: SparqlClient.Bindings, iri: Rdf.Iri, context: any): Promise<SparqlClient.Binding> {
   return new Promise((resolve) => {
     const RESOURCE_FORM_IRI_QUERY = this.buildResourceFormIriQuery(queryResultBindings, iri)
     SparqlClient.select(RESOURCE_FORM_IRI_QUERY, {context: context.semanticContext})
     .onValue((fr) => {
-        const resourceFormIri = fr.results.bindings[0].resourceFormIRI.value;
-        resolve(resourceFormIri);    
+        resolve(fr.results.bindings[0]);    
     })
     .onError((err) => console.error('Error during resource form query execution ',err))
   });

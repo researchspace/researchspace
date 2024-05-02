@@ -78,7 +78,8 @@
       {{else}}
       <rs-tab event-key="upload" title="Upload">
       {{/if}}
-        <div class="FileUploader-container">
+      <div style="{{#if node}}display: flex; gap: 3px;{{/if}}">
+        <div class="FileUploader-container" style="flex: 1;">
           <semantic-form-file-input for='document_url' 
                                     label='Document file'
                                     storage='images'
@@ -102,6 +103,30 @@
               </div>
           </semantic-form-file-input>
         </div>
+        {{#if node}}
+          <div style="align-self: end; height: 40px;">
+            <semantic-query query='SELECT ?file ?fileName WHERE {
+                                    BIND(<{{node}}> as ?doc) .
+                                    ?doc crm:P1_is_identified_by ?file .
+                                    ?file rs:PX_has_file_name ?fileName .
+                                    ?file rs:PX_has_media_type "application/pdf" .
+                                  }'
+                            template='{{> template}}'
+            >
+              <template id='template'>
+                <div>
+                  <button class="btn btn-default" style="height: 40px;">
+                    <a href="/file?fileName={{bindings.0.fileName.value}}&storage=images&mode=open&mediaType=application%2Fpdf" target="_blank" title='open document' class="btn-textAndIcon">
+                      <rs-icon icon-type="round" icon-name="open_in_new"></rs-icon>
+                      <span>Open</span>
+                    </a>
+                  </button>
+                </div>
+              </template>
+            </semantic-query>
+          </div>
+        {{/if}}
+      </div>
       
         <semantic-form-text-input for="entity_primary_appellation" label="Document name" placeholder="Enter name/appellation"></semantic-form-text-input>
 
@@ -270,17 +295,25 @@
                                               tree-patterns='{"scheme": "{{scheme}}",
                                                               "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
                                                               "relationPattern": "?item crm:P148i_is_component_of ?parent",
-                                                              "labelPattern": "?item crm:P102_has_title ?title . 
-                                                                              ?title a crm:E35_Title . 
-                                                                              ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
-                                                                              ?title crm:P190_has_symbolic_content ?label ."
+                                                              "labelPattern": "{ 
+                                                                                ?item crm:P1_is_identified_by ?appellation .
+                                                                                ?appellation a crm:E41_Appellation .
+                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                                ?appellation crm:P190_has_symbolic_content ?label .
+                                                                              } UNION {
+                                                                                ?item crm:P190_has_symbolic_content ?label .
+                                                                              }"
                                                               }'
 
                                               query-item-label='SELECT ?label WHERE {
-                                                                  ?item crm:P102_has_title ?title . 
-                                                                  ?title a crm:E35_Title . 
-                                                                  ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
-                                                                  ?title crm:P190_has_symbolic_content ?label .
+                                                                { 
+                                                                  ?item crm:P1_is_identified_by ?appellation .
+                                                                  ?appellation a crm:E41_Appellation .
+                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                  ?appellation crm:P190_has_symbolic_content ?label .
+                                                                } UNION {
+                                                                  ?item crm:P190_has_symbolic_content ?label .
+                                                                }
                                                               }'> 
           </semantic-form-tree-picker-input>  
 
@@ -290,17 +323,25 @@
                                               tree-patterns='{"scheme": "{{scheme}}",
                                                               "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
                                                               "relationPattern": "?item crm:P148i_is_component_of ?parent",
-                                                              "labelPattern": "?item crm:P102_has_title ?title . 
-                                                                              ?title a crm:E35_Title . 
-                                                                              ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
-                                                                              ?title crm:P190_has_symbolic_content ?label ."
+                                                              "labelPattern": "{ 
+                                                                                  ?item crm:P1_is_identified_by ?appellation .
+                                                                                  ?appellation a crm:E41_Appellation .
+                                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                                  ?appellation crm:P190_has_symbolic_content ?label .
+                                                                                } UNION {
+                                                                                  ?item crm:P190_has_symbolic_content ?label .
+                                                                                }"
                                                               }'
 
                                               query-item-label='SELECT ?label WHERE {
-                                                                  ?item crm:P102_has_title ?title . 
-                                                                  ?title a crm:E35_Title . 
-                                                                  ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
-                                                                  ?title crm:P190_has_symbolic_content ?label .
+                                                                  { 
+                                                                    ?item crm:P1_is_identified_by ?appellation .
+                                                                    ?appellation a crm:E41_Appellation .
+                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                    ?appellation crm:P190_has_symbolic_content ?label .
+                                                                  } UNION {
+                                                                    ?item crm:P190_has_symbolic_content ?label .
+                                                                  }
                                                               }'> 
           </semantic-form-tree-picker-input> 
         {{else}}
@@ -330,10 +371,14 @@
                                 <template id='nodeTemplate'>
                                     <semantic-query query='SELECT ?node ?nodeLabel WHERE {
                                                                 BIND (<{{node.value}}> as ?node)
-                                                                ?node crm:P102_has_title ?title . 
-                                                                ?title a crm:E35_Title . 
-                                                                ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
-                                                                ?title crm:P190_has_symbolic_content ?label .
+                                                                { 
+                                                                  ?node crm:P1_is_identified_by ?appellation .
+                                                                  ?appellation a crm:E41_Appellation .
+                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                  ?appellation crm:P190_has_symbolic_content ?nodeLabel .
+                                                                } UNION {
+                                                                  ?node crm:P190_has_symbolic_content ?nodeLabel .
+                                                                }
                                                             }'
                                                     template='{{> template}}'>
                                         
@@ -386,17 +431,25 @@
                                             tree-patterns='{"scheme": "{{scheme}}",
                                                               "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
                                                               "relationPattern": "?item crm:P165i_is_incorporated_in ?parent",
-                                                              "labelPattern": "?item crm:P102_has_title ?title . 
-                                                                              ?title a crm:E35_Title . 
-                                                                              ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
-                                                                              ?title crm:P190_has_symbolic_content ?label ."
+                                                              "labelPattern": " { 
+                                                                                  ?item crm:P1_is_identified_by ?appellation .
+                                                                                  ?appellation a crm:E41_Appellation .
+                                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                                  ?appellation crm:P190_has_symbolic_content ?label .
+                                                                                } UNION {
+                                                                                  ?item crm:P190_has_symbolic_content ?label .
+                                                                                }"
                                                               }'
 
                                             query-item-label='SELECT ?label WHERE {
-                                                                  ?item crm:P102_has_title ?title . 
-                                                                  ?title a crm:E35_Title . 
-                                                                  ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
-                                                                  ?title crm:P190_has_symbolic_content ?label .
+                                                                { 
+                                                                  ?item crm:P1_is_identified_by ?appellation .
+                                                                  ?appellation a crm:E41_Appellation .
+                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                  ?appellation crm:P190_has_symbolic_content ?label .
+                                                                } UNION {
+                                                                  ?item crm:P190_has_symbolic_content ?label .
+                                                                }
                                                               }'> 
           </semantic-form-tree-picker-input>  
 
@@ -406,17 +459,25 @@
                                               tree-patterns='{"scheme": "{{scheme}}",
                                                               "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
                                                               "relationPattern": "?item crm:P165i_is_incorporated_in ?parent",
-                                                              "labelPattern": "?item crm:P102_has_title ?title . 
-                                                                              ?title a crm:E35_Title . 
-                                                                              ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
-                                                                              ?title crm:P190_has_symbolic_content ?label ."
+                                                              "labelPattern": "{ 
+                                                                                  ?item crm:P1_is_identified_by ?appellation .
+                                                                                  ?appellation a crm:E41_Appellation .
+                                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                                  ?appellation crm:P190_has_symbolic_content ?label .
+                                                                                } UNION {
+                                                                                  ?item crm:P190_has_symbolic_content ?label .
+                                                                                }"
                                                               }'
 
                                               query-item-label='SELECT ?label WHERE {
-                                                                  ?item crm:P102_has_title ?title . 
-                                                                  ?title a crm:E35_Title . 
-                                                                  ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
-                                                                  ?title crm:P190_has_symbolic_content ?label .
+                                                                { 
+                                                                  ?item crm:P1_is_identified_by ?appellation .
+                                                                  ?appellation a crm:E41_Appellation .
+                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                  ?appellation crm:P190_has_symbolic_content ?label .
+                                                                } UNION {
+                                                                  ?item crm:P190_has_symbolic_content ?label .
+                                                                }
                                                               }'> 
           </semantic-form-tree-picker-input> 
         {{else}}
@@ -446,10 +507,14 @@
                                 <template id='nodeTemplate'>
                                     <semantic-query query='SELECT ?node ?nodeLabel WHERE {
                                                                 BIND (<{{node.value}}> as ?node)
-                                                                ?node crm:P102_has_title ?title . 
-                                                                ?title a crm:E35_Title . 
-                                                                ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
-                                                                ?title crm:P190_has_symbolic_content ?label .
+                                                                { 
+                                                                  ?node crm:P1_is_identified_by ?appellation .
+                                                                  ?appellation a crm:E41_Appellation .
+                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                  ?appellation crm:P190_has_symbolic_content ?nodeLabel .
+                                                                } UNION {
+                                                                  ?node crm:P190_has_symbolic_content ?nodeLabel .
+                                                                }
                                                             }'
                                                     template='{{> template}}'>
                                         

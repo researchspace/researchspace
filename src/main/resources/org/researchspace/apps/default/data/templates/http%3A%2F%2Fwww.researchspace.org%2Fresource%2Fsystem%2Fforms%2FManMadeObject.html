@@ -5,14 +5,13 @@
                             classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                             inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
                             entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
-                            entity_has_type="http://www.researchspace.org/pattern/system/entity/has_type"
                             
                             entity_image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
                             entity_image="http://www.researchspace.org/pattern/system/entity/images"
                             entity_document="http://www.researchspace.org/pattern/system/entity/documents"
                             entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
 
-                            man-made_thing_primary_title="http://www.researchspace.org/pattern/system/man-made_thing/PC102_has_title_primary"
+                            entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
                             man-made_thing_title="http://www.researchspace.org/pattern/system/man-made_thing/PC102_has_title"
                             entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
                             entity_preferred_id_min1="http://www.researchspace.org/pattern/system/entity/preferred_identifier_min1"
@@ -64,14 +63,14 @@
                             physical_thing_carries_symbolic_object="http://www.researchspace.org/pattern/system/physical_thing/carries_symbolic_object"
                             thing_shows_features_of_thing="http://www.researchspace.org/pattern/system/thing/PC130_shows_features_of"
                             thing_has_features_of_thing="http://www.researchspace.org/pattern/system/thing/PC130_shows_features_of_range"
-                            entity_depicted_by="http://www.researchspace.org/pattern/system/entity/depicted_by_manMadeThing"
+                            entity_depicts_range="http://www.researchspace.org/pattern/system/entity/depicts_range"
                             entity_subject_of="http://www.researchspace.org/pattern/system/entity/subject_of_propositional_object"
                             entity_refers_to_range="http://www.researchspace.org/pattern/system/entity/refers_to_range"
 
                             physical_object_bears_feature="http://www.researchspace.org/pattern/system/physical_object/bears_feature"
 
                             physical_man-made_thing_visual_item="http://www.researchspace.org/pattern/system/physical_man-made_thing/shows_visual_item"
-                            physical_man-made_thing_depicts="http://www.researchspace.org/pattern/system/physical_man-made_thing/depicts"
+                            physical_man-made_thing_depicts="http://www.researchspace.org/pattern/system/physical_man-made_thing/PC62_depicts"
 
                         ]]'>
 
@@ -86,83 +85,32 @@
             <rs-tab event-key="detail" title="Details">
                 <div class="form-2column-container">
                     <div>
-                        <div class="inline-composite-container">
-                            <semantic-form-composite-input  for="man-made_thing_primary_title" 
-                                                            label="Man-made object name/title"
-                                                            new-subject-template="/PC102_has_title/primary_title"
-                                                            fields='[[fieldDefinitions
-                                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                                        resource_type="http://www.researchspace.org/pattern/system/has_title/resource_type"
-                        
-                                                                        has_title_range="http://www.researchspace.org/pattern/system/has_title/range"
-                                                                        title_type="http://www.researchspace.org/pattern/system/has_title/title_type"
-                                                                    ]]'>
-                        
-                              <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC102_has_title'> </semantic-form-hidden-input>
-                              <semantic-form-hidden-input for="resource_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/primary_title'> </semantic-form-hidden-input>
-                        
-                              <div class="form-inline-inputs">
-                                <div style="flex: 1;">
-                                  <semantic-form-autocomplete-input for='has_title_range'  
-                                                                    render-header="false"
-                                                                    placeholder="Select name/title" 
-                                                                    nested-form-templates='[ 
-                                                                        {
-                                                                            "label": "Title",
-                                                                            "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Title\" nested=true editable=true mode=\"new\"}}
-                                                                                        {{{{/raw}}}}"
-                                                                        }
-                                                                    ]'> 
-                                  </semantic-form-autocomplete-input> 
-                                </div>
-                                <div style="flex: 1;">
-                                  <semantic-form-tree-picker-input  for="title_type" 
-                                                                    render-header="false"
-                                                                    placeholder="Select title type"
-                                                                    close-dropdown-on-selection='true'
-                                                                    tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/title_type>", 
-                                                                                    "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/title_type>",
-                                                                                    "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
-                        
-                                                                    scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                                "view": "vocabulary-content",
-                                                                                                "scheme": "http://www.researchspace.org/resource/vocab/title_type",
-                                                                                                "tooltip": "Open list of title types"
-                                                                                              }'
-                                                                    
-                                                                    nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                                          scheme="http://www.researchspace.org/resource/vocab/title_type"
-                                                                                                          entityType="title type" }}{{{{/raw}}}}'
-                        
-                                                                    query-item-label='SELECT ?label WHERE {
-                                                                                        ?item skos:prefLabel ?label .
-                                                                                    }'>
-                                  </semantic-form-tree-picker-input>
-                                </div>
-                              </div>
-                            </semantic-form-composite-input>
-                        </div>
+                        {{#if apiResourceName}}
+                            <div class="focused-input-container">
+                                <semantic-form-text-input for="entity_primary_appellation" label="Man-made object name/appellation" placeholder="Enter name/appellation" default-value="{{apiResourceName}}" force-defaults=true></semantic-form-text-input>
+                            </div>
+                        {{else}}
+                            <semantic-form-text-input for="entity_primary_appellation" label="Man-made object name/appellation" placeholder="Enter name/appellation"></semantic-form-text-input>
+                        {{/if}}
                         
                         <div class="inline-composite-container">
                             <semantic-form-composite-input  for="man-made_thing_title" 
-                                                            label="Other title/name"
+                                                            label="Title"
                                                             new-subject-template="/PC102_has_title/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
                                                             fields='[[fieldDefinitions
                                                                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                                        resource_type="http://www.researchspace.org/pattern/system/has_title/resource_type"
                         
                                                                         has_title_range="http://www.researchspace.org/pattern/system/has_title/range"
                                                                         title_type="http://www.researchspace.org/pattern/system/has_title/title_type"
                                                                     ]]'>
                         
                               <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC102_has_title'> </semantic-form-hidden-input>
-                              <semantic-form-hidden-input for="resource_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/title'> </semantic-form-hidden-input>
-                        
+                              
                               <div class="form-inline-inputs">
                                 <div style="flex: 1;">
                                   <semantic-form-autocomplete-input for='has_title_range'
                                                                     render-header="false"
-                                                                    placeholder="Select title/name" 
+                                                                    placeholder="Select title" 
                                                                     nested-form-templates='[ 
                                                                         {
                                                                             "label": "Title",
@@ -208,95 +156,115 @@
                             <semantic-form-text-input for="entity_description" label="Description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
                         {{/if}}
 
-                        <div class="inline-composite-container">
-                            <semantic-form-composite-input  for="{{#if apiResourceMuseumId}}entity_preferred_id_min1{{else}}entity_preferred_id{{/if}}"
-                                                            label="Preferred identifier"
-                                                            new-subject-template="/entity_preferred_id" 
-                                                            fields='[[fieldDefinitions
-                                                                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
-              
-                                                                    identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
-                                                                    identifier_type="http://www.researchspace.org/pattern/system/identifier/identifier_type"
-                                                                ]]'
-                                                            >
+                        {{#if apiResourceMuseumId}}
+                            <div class="inline-composite-container">
+                                <semantic-form-composite-input  for="entity_preferred_id_min1"
+                                                                label="Preferred identifier"
+                                                                new-subject-template="/entity_preferred_id" 
+                                                                fields='[[fieldDefinitions
+                                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+                
+                                                                        symbolic_object_content="http://www.researchspace.org/pattern/system/symbolic_object/has_symbolic_contentMin1Max1"
+                                                                        identifier_type="http://www.researchspace.org/pattern/system/identifier/identifier_type"
+                                                                    ]]'
+                                                                >
+                                            
+                                    <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
                                         
-                                <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
-                                    
-                                <div class="form-inline-inputs">
-                                    <div style="min-width: 40%;">
-                                        {{#if apiResourceMuseumId}}
-                                            <div class="focused-input-container">
-                                                <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter preferred identifier" default-value="{{apiResourceMuseumId}}" force-defaults=true></semantic-form-text-input>
-                                            </div>
-                                        {{else}}
-                                            <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter preferred identifier"></semantic-form-text-input>
-                                        {{/if}}
+                                    <div class="form-inline-inputs">
+                                        <div style="flex: 1;">
+                                                <div class="focused-input-container">
+                                                    <semantic-form-text-input for="symbolic_object_content" render-header=false placeholder="Enter preferred identifier" default-value="{{apiResourceMuseumId}}" force-defaults=true></semantic-form-text-input>
+                                                </div>
+                                        </div>
+                                        <div style="flex: 1;" class="{{#if apiResourceMuseumIdType}}focused-input-container{{/if}}">
+                                            <semantic-form-select-input for='identifier_type' 
+                                                                        label="Identifier type" 
+                                                                        render-header=false
+                                                                        placeholder="Select identifier type" 
+                                                                        default-value="{{#if apiResourceMuseumIdType}}{{apiResourceMuseumIdType}}{{/if}}"
+                                                                        nested-form-templates='[ 
+                                                                            {
+                                                                                "label": "Identifier",
+                                                                                "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
+                                                                                                                scheme=\"http://www.researchspace.org/resource/system/vocab/identifier\"
+                                                                                                                entityType=\"identifier\" }}
+                                                                                                {{{{/raw}}}}"
+                                                                            }
+                                                                        ]'>
+                                            </semantic-form-select-input>
+                                        </div>
                                     </div>
-                                    <div style="flex: 1;" class="{{#if apiResourceMuseumIdType}}focused-input-container{{/if}}">
-                                        <semantic-form-select-input for='identifier_type' 
-                                                                    label="Identifier type" 
-                                                                    render-header=false
-                                                                    placeholder="Select identifier type" 
-                                                                    default-value="{{#if apiResourceMuseumIdType}}{{apiResourceMuseumIdType}}{{/if}}"
-                                                                    nested-form-templates='[ 
-                                                                        {
-                                                                            "label": "Identifier",
-                                                                            "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
-                                                                                                            scheme=\"http://www.researchspace.org/resource/system/vocab/identifier\"
-                                                                                                            entityType=\"identifier\" }}
-                                                                                            {{{{/raw}}}}"
-                                                                        }
-                                                                    ]'>
-                                        </semantic-form-select-input>
-                                    </div>
-                                </div>
-                            </semantic-form-composite-input>
-                        </div>
-              
-                        <div class="inline-composite-container">
-                            <semantic-form-composite-input  for="{{#if apiResourceSystemId}}entity_id_min1{{else}}entity_id{{/if}}"
-                                                            label="Other identifier"
-                                                            new-subject-template="/entity_id/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-                                                            fields='[[fieldDefinitions
-                                                                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
-              
-                                                                    identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
-                                                                    identifier_type="http://www.researchspace.org/pattern/system/identifier/identifier_type"
-                                                                ]]'
-                                                            >
+                                </semantic-form-composite-input>
+                            </div>
+                        {{else}}
+                            <semantic-form-autocomplete-input   for="entity_preferred_id" 
+                                                                label="Preferred identifier"
+                                                                placeholder="Select preferred identifier" 
+                                                                nested-form-templates='[ 
+                                                                    {
+                                                                        "label": "Identifier",
+                                                                        "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Identifier\" 
+                                                                                                        nested=true 
+                                                                                                        editable=true 
+                                                                                                        mode=\"new\" 
+                                                                                                    }}
+                                                                                        {{{{/raw}}}}"
+                                                                    }
+                                                                ]'>
+                            </semantic-form-autocomplete-input>
+                        {{/if}}
+
+                        {{#if apiResourceSystemId}}
+                            <div class="inline-composite-container">
+                                <semantic-form-composite-input  for="entity_id_min1"
+                                                                label="Other identifier"
+                                                                new-subject-template="/entity_id/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                                fields='[[fieldDefinitions
+                                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+                
+                                                                        symbolic_object_content="http://www.researchspace.org/pattern/system/symbolic_object/has_symbolic_contentMin1Max1"
+                                                                        identifier_type="http://www.researchspace.org/pattern/system/identifier/identifier_type"
+                                                                    ]]'
+                                                                >
+                                            
+                                    <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
                                         
-                                <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
-                                    
-                                <div class="form-inline-inputs">
-                                    <div style="min-width: 40%;">
-                                        {{#if apiResourceSystemId}}
-                                            <div class="focused-input-container">
-                                                <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier" default-value="{{apiResourceSystemId}}" force-defaults=true></semantic-form-text-input>
-                                            </div>
-                                        {{else}}
-                                            <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier"></semantic-form-text-input>
-                                        {{/if}}
+                                    <div class="form-inline-inputs">
+                                        <div class="focused-input-container" style="flex: 1;">
+                                            {{#if apiResourceSystemId}}
+                                            <semantic-form-text-input for="symbolic_object_content" render-header=false placeholder="Enter identifier" default-value="{{apiResourceSystemId}}" force-defaults=true></semantic-form-text-input>
+                                            {{else}}
+                                            <semantic-form-text-input for="symbolic_object_content" render-header=false placeholder="Enter identifier"></semantic-form-text-input>
+                                            {{/if}}
+                                        </div>
+                                        <div style="flex: 1;" class="focused-input-container">
+                                            <semantic-form-select-input for='identifier_type' 
+                                                                        label="Identifier type" 
+                                                                        render-header=false
+                                                                        placeholder="Select identifier type" 
+                                                                        default-value="{{#if apiResourceSystemId}}http://www.researchspace.org/resource/system/vocab/identifier/system_id{{/if}}" 
+                                                                        nested-form-templates='[ 
+                                                                            {
+                                                                                "label": "Identifier",
+                                                                                "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
+                                                                                                                scheme=\"http://www.researchspace.org/resource/system/vocab/identifier\"
+                                                                                                                entityType=\"identifier\" }}
+                                                                                                {{{{/raw}}}}"
+                                                                            }
+                                                                        ]'>
+                                            </semantic-form-select-input>
+                                        </div>
                                     </div>
-                                    <div style="flex: 1;" class="{{#if apiResourceSystemId}}focused-input-container{{/if}}">
-                                        <semantic-form-select-input for='identifier_type' 
-                                                                    label="Identifier type" 
-                                                                    render-header=false
-                                                                    placeholder="Select identifier type" 
-                                                                    default-value="{{#if apiResourceSystemId}}http://www.researchspace.org/resource/system/vocab/identifier/system_id{{/if}}" 
-                                                                    nested-form-templates='[ 
-                                                                        {
-                                                                            "label": "Identifier",
-                                                                            "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
-                                                                                                            scheme=\"http://www.researchspace.org/resource/system/vocab/identifier\"
-                                                                                                            entityType=\"identifier\" }}
-                                                                                            {{{{/raw}}}}"
-                                                                        }
-                                                                    ]'>
-                                        </semantic-form-select-input>
-                                    </div>
-                                </div>
-                            </semantic-form-composite-input>
-                        </div>
+                                </semantic-form-composite-input>
+                            </div>
+                        {{else}}
+                            <semantic-form-autocomplete-input   for="entity_id" 
+                                                                label="Other identifier"
+                                                                placeholder="Select other identifier" 
+                                                                nested-form-templates='[[> Platform:NestedFormTemplates_appellations]]'>
+                            </semantic-form-autocomplete-input>
+                        {{/if}}
                         
                     </div>
 
@@ -451,7 +419,7 @@
                             <template id='physicalThingComponents'>
                                 <div class="page__section-container formHierarchyView-container">
                                     <div class="form-header-withButtons">
-                                        <h4 style="margin: 0; align-self: end;">Components view</h4>
+                                        <h4>Components</h4>
                                         <div class="btn-form-actions"> 
                                             <mp-event-trigger id='{{viewId}}-physicalThing-componentsView-refresh-trigger' 
                                                             type='Component.TemplateUpdate' 
@@ -1084,11 +1052,54 @@
                     </semantic-form-composite-input>
                 </div>
 
-                <semantic-form-autocomplete-input   for='entity_depicted_by' 
-                                                    label="Depicted by"
-                                                    placeholder="Select what depicts the man-made object" 
-                                                    nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'> 
-                </semantic-form-autocomplete-input>
+                <div class="inline-composite-container">
+                    <semantic-form-composite-input  for="entity_depicts_range" 
+                                                    label="Depicted by" 
+                                                    new-subject-template="/PC62_depicts/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                                    fields='[[fieldDefinitions
+                                                              classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                        
+                                                              depicts_thing_domain="http://www.researchspace.org/pattern/system/depicts/domain"
+                                                              mode_of_depiction="http://www.researchspace.org/pattern/system/depicts/mode_of_depiction"
+                                                            ]]'>
+          
+                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC62_depicts'> </semantic-form-hidden-input>
+          
+                    <div class="form-inline-inputs">
+                      <div style="flex: 1;">
+                        <semantic-form-autocomplete-input for='depicts_thing_domain' 
+                                                          render-header="false"
+                                                          placeholder="Select what depicts the man-made object"
+                                                          nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'>
+                        </semantic-form-autocomplete-input>
+                      </div>
+                      <div style="flex: 1;">
+                        <semantic-form-tree-picker-input  for="mode_of_depiction" 
+                                                          render-header="false"
+                                                          placeholder="Select mode of depiction"
+                                                          close-dropdown-on-selection='true'
+                                                          tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/mode_of_depiction>", 
+                                                                          "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/mode_of_depiction>",
+                                                                          "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+          
+                                                          scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                      "view": "vocabulary-content",
+                                                                                      "scheme": "http://www.researchspace.org/resource/vocab/mode_of_depiction",
+                                                                                      "tooltip": "Open list of mode of depictions"
+                                                                                    }'
+                                                          
+                                                          nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                scheme="http://www.researchspace.org/resource/vocab/mode_of_depiction"
+                                                                                                entityType="mode of depiction" }}{{{{/raw}}}}'
+          
+                                                          query-item-label='SELECT ?label WHERE {
+                                                                              ?item skos:prefLabel ?label .
+                                                                          }'>
+                          </semantic-form-tree-picker-input>
+                      </div>
+                    </div>
+                    </semantic-form-composite-input>
+                </div>
 
                 <semantic-form-autocomplete-input   for='entity_subject_of' 
                                                     label="Subject of"
@@ -1165,11 +1176,54 @@
 
             <rs-tab event-key="more" title="More">
 
-                <semantic-form-autocomplete-input   for='physical_man-made_thing_depicts' 
+                <div class="inline-composite-container">
+                    <semantic-form-composite-input  for="physical_man-made_thing_depicts" 
                                                     label="Depicts" 
-                                                    placeholder="Select what is depicted by the man-made object" 
-                                                    nested-form-templates='[[> Platform:NestedFormTemplates_allEntities]]'> 
-                </semantic-form-autocomplete-input> 
+                                                    new-subject-template="/PC62_depicts/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                                    fields='[[fieldDefinitions
+                                                              classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                        
+                                                              depicts_entity_range="http://www.researchspace.org/pattern/system/depicts/range"
+                                                              mode_of_depiction="http://www.researchspace.org/pattern/system/depicts/mode_of_depiction"
+                                                            ]]'>
+          
+                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC62_depicts'> </semantic-form-hidden-input>
+          
+                    <div class="form-inline-inputs">
+                      <div style="flex: 1;">
+                        <semantic-form-autocomplete-input for='depicts_entity_range' 
+                                                          render-header="false"
+                                                          placeholder="Select what is depicted by the man-made object"
+                                                          nested-form-templates='[[> Platform:NestedFormTemplates_allEntities]]'>
+                        </semantic-form-autocomplete-input>
+                      </div>
+                      <div style="flex: 1;">
+                        <semantic-form-tree-picker-input  for="mode_of_depiction" 
+                                                          render-header="false"
+                                                          placeholder="Select mode of depiction"
+                                                          close-dropdown-on-selection='true'
+                                                          tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/mode_of_depiction>", 
+                                                                          "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/mode_of_depiction>",
+                                                                          "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+          
+                                                          scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                      "view": "vocabulary-content",
+                                                                                      "scheme": "http://www.researchspace.org/resource/vocab/mode_of_depiction",
+                                                                                      "tooltip": "Open list of mode of depictions"
+                                                                                    }'
+                                                          
+                                                          nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                scheme="http://www.researchspace.org/resource/vocab/mode_of_depiction"
+                                                                                                entityType="mode of depiction" }}{{{{/raw}}}}'
+          
+                                                          query-item-label='SELECT ?label WHERE {
+                                                                              ?item skos:prefLabel ?label .
+                                                                          }'>
+                          </semantic-form-tree-picker-input>
+                      </div>
+                    </div>
+                    </semantic-form-composite-input>
+                </div>
                 
             </rs-tab>
 

@@ -1,9 +1,8 @@
 <semantic-form id='{{#if formId}}{{formId}}{{else}}{{viewId}}-vocab-form{{/if}}' 
                 post-action="event"
                 subject='{{node}}'
-                persistence='{"type": "sparql", "targetGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/assets/images{{/if}}"}'
-                new-subject-template='/EX_Digital_Image/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
-
+                persistence='{"type": "sparql", "targetInsertGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/assets/images{{/if}}"}'
+                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/image/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
                 fields='[[fieldDefinitions
                             classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                             inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
@@ -13,8 +12,8 @@
                             image_name="http://www.researchspace.org/pattern/system/image/label"
                             image_description="http://www.researchspace.org/pattern/system/entity/description"
 
-                            image_represents_entity="http://www.researchspace.org/pattern/system/image/represents_entity"
-                            image_main_represents_entity="http://www.researchspace.org/pattern/system/image/main_represents_entity"
+                            image_represents_entity="http://www.researchspace.org/pattern/system/visual_item/represents"
+                            image_main_represents_entity="http://www.researchspace.org/pattern/system/visual_item/is_main_representation"
                           ]]'
               >
               
@@ -30,76 +29,6 @@
             {{else}}
                 <rs-tab event-key="upload" title="Upload">
             {{/if}}
-
-                {{#ifCond mode "===" "new"}}
-                    {{#if object}}
-                        <semantic-form-hidden-input for="image_represents_entity" default-value='{{object}}'> </semantic-form-hidden-input>
-                    
-                        <div style="margin-top: 25px;">
-                        <b>Object: </b>
-                        <mp-draggable iri='{{object}}'>
-                            <span>
-                            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                            urlqueryparam-view='entity-editor' urlqueryparam-resource-iri='{{object}}' draggable='false'> 
-                                <mp-label iri="{{object}}" class='text-underline'></mp-label>
-                            </semantic-link>
-                            </span>
-                        </mp-draggable>
-                        </div>
-                    {{/if}}
-                {{/ifCond}} 
-
-                {{#ifCond mode "===" "edit"}}
-                    <semantic-query query='SELECT DISTINCT ?entity WHERE {
-                                                ?entity <http://www.researchspace.org/ontology/PX_has_main_representation> <{{node}}> .
-                                            }'
-                                    template='{{> template}}'>
-                                
-                        <template id='template'>
-                            <div>
-                            <div style="display: flex; align-items: baseline; column-gap: 5px;padding: 25px 0 5px 0px;">
-                                <h5 style="margin: 0;">Image is main representation of:</h5>
-                                {{#each bindings}}
-                                {{#if @first}}{{else}}; &nbsp;{{/if}}
-                                <span>
-                                    <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                        urlqueryparam-view='entity-editor' 
-                                                        urlqueryparam-resource-iri='{{entity.value}}'
-                                                        >
-                                        <mp-label iri="{{entity.value}}" class='text-link'></mp-label>
-                                    </semantic-link>
-                                </span>
-                                {{/each}}
-                            </div>
-                            </div>
-                        </template>
-                    </semantic-query>
-
-                    <semantic-query query='SELECT DISTINCT ?entity WHERE {
-                                                ?entity crm:P138i_has_representation <{{node}}>   .
-                                            }'
-                                    template='{{> template}}'>
-                                
-                        <template id='template'>
-                            <div>
-                            <div style="display: flex; align-items: baseline; column-gap: 5px;padding: 25px 0 5px 0px;">
-                                <h5 style="margin: 0;">Image represents:</h5>
-                                {{#each bindings}}
-                                {{#if @first}}{{else}}; &nbsp;{{/if}}
-                                <span>
-                                    <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                        urlqueryparam-view='entity-editor' 
-                                                        urlqueryparam-resource-iri='{{entity.value}}'
-                                                        >
-                                        <mp-label iri="{{entity.value}}" class='text-link'></mp-label>
-                                    </semantic-link>
-                                </span>
-                                {{/each}}
-                            </div>
-                            </div>
-                        </template>
-                    </semantic-query>
-                {{/ifCond}}
             
                 <div style="display: flex; align-items:stretch; column-gap:30px; flex-wrap: wrap;">
                     <div class="FileUploader-container">
@@ -128,8 +57,60 @@
                         </semantic-form-file-input>
                     </div>
                 <div style="flex: 1;">
-                    <semantic-form-text-input for='image_name' label='Image name/title' placeholder='Enter image name/title'></semantic-form-text-input>
-                    <semantic-form-text-input for='image_description' label='Image description' placeholder='Enter image description' multiline='true'></semantic-form-text-input>
+                    <div class="inline-composite-container">
+                        <semantic-form-composite-input  for="man-made_thing_title" 
+                                                        label="Title"
+                                                        new-subject-template="/PC102_has_title/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                                        fields='[[fieldDefinitions
+                                                                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                    
+                                                                    has_title_range="http://www.researchspace.org/pattern/system/has_title/range"
+                                                                    title_type="http://www.researchspace.org/pattern/system/has_title/title_type"
+                                                                ]]'>
+                    
+                          <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC102_has_title'> </semantic-form-hidden-input>
+                          
+                          <div class="form-inline-inputs">
+                            <div style="flex: 1;">
+                              <semantic-form-autocomplete-input for='has_title_range'
+                                                                render-header="false"
+                                                                placeholder="Select title" 
+                                                                nested-form-templates='[ 
+                                                                    {
+                                                                        "label": "Title",
+                                                                        "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Title\" nested=true editable=true mode=\"new\"}}
+                                                                                    {{{{/raw}}}}"
+                                                                    }
+                                                                ]'> 
+                              </semantic-form-autocomplete-input> 
+                            </div>
+                            <div style="flex: 1;">
+                              <semantic-form-tree-picker-input  for="title_type" 
+                                                                render-header="false"
+                                                                placeholder="Select title type"
+                                                                close-dropdown-on-selection='true'
+                                                                tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/title_type>", 
+                                                                                "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/title_type>",
+                                                                                "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+                    
+                                                                scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                            "view": "vocabulary-content",
+                                                                                            "scheme": "http://www.researchspace.org/resource/vocab/title_type",
+                                                                                            "tooltip": "Open list of title types"
+                                                                                          }'
+                                                                
+                                                                nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                      scheme="http://www.researchspace.org/resource/vocab/title_type"
+                                                                                                      entityType="title type" }}{{{{/raw}}}}'
+                    
+                                                                query-item-label='SELECT ?label WHERE {
+                                                                                    ?item skos:prefLabel ?label .
+                                                                                }'>
+                              </semantic-form-tree-picker-input>
+                            </div>
+                          </div>
+                        </semantic-form-composite-input>
+                    </div>
                 </div>
                 </div>
             </rs-tab>

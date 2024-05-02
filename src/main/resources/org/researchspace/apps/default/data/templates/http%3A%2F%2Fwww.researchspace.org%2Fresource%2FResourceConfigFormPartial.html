@@ -35,59 +35,60 @@
                >
 
     <div class='resource-editView-formHeader'>
-      {{#ifCond mode "==" "new"}}
-        <h2 class="resource-editView-formHeader-title">New configuration</h2> 
-      {{else}}
-        <semantic-query query="SELECT ?label WHERE {
-                                <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label .
-                              }"
-                        template='{{> template}}'>
+      <div style="flex: 1;">
+        {{#ifCond mode "==" "new"}}
+          <h2 class="resource-editView-formHeader-title">New configuration</h2> 
+        {{else}}
+          <semantic-query query="SELECT ?label WHERE {
+                                  <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label .
+                                }"
+                          template='{{> template}}'>
 
-          <template id='template'>
-            <div>
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <h2 class="resource-editView-formHeader-title">
-                  {{#switch mode}}
-                    {{#case "edit" break=true}}
-                      <span class="text-first-letter-uppercase">
-                        {{bindings.0.label.value}}
-                      </span>
-                    {{/case}}
+            <template id='template'>
+              <div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <h2 class="resource-editView-formHeader-title">
+                    {{#switch mode}}
+                      {{#case "edit" break=true}}
+                        <span class="text-first-letter-uppercase">
+                          {{bindings.0.label.value}}
+                        </span>
+                      {{/case}}
 
-                    {{#case "view" break=true}}
-                      <span class="text-first-letter-uppercase">
-                        {{bindings.0.label.value}}
-                      </span>
-                    {{/case}}
+                      {{#case "view" break=true}}
+                        <span class="text-first-letter-uppercase">
+                          {{bindings.0.label.value}}
+                        </span>
+                      {{/case}}
 
-                    {{#default}}
-                      <div></div>
-                    {{/default}}
-                  {{/switch}}
-                </h2>
+                      {{#default}}
+                        <div></div>
+                      {{/default}}
+                    {{/switch}}
+                  </h2>
 
-                {{#if node}}
-                  <semantic-if query='ASK { <{{node}}> crm:P2_has_type <http://www.researchspace.org/pattern/system/resource_configuration/configuration_type/system> . }'
-                              then='{{> then}}'>
-          
-                    <template id='then'>
-                      <mp-popover title="System resource configuration">
-                        <mp-popover-trigger placement="bottom" trigger='["click","hover","focus"]'> 
-                          <div class="badge badge--secondary">System</div>
-                        </mp-popover-trigger>
-                        <mp-popover-content>
-                          A system resource configuration can't be deleted; its ontology class and type can't be modified.
-                        </mp-popover-content>
-                      </mp-popover>
-                    </template>
-                  </semantic-if>
-                {{/if}}
+                  {{#if node}}
+                    <semantic-if query='ASK { <{{node}}> crm:P2_has_type <http://www.researchspace.org/pattern/system/resource_configuration/configuration_type/system> . }'
+                                then='{{> then}}'>
+            
+                      <template id='then'>
+                        <mp-popover title="System resource configuration">
+                          <mp-popover-trigger placement="bottom" trigger='["click","hover","focus"]'> 
+                            <div class="badge badge--secondary">System</div>
+                          </mp-popover-trigger>
+                          <mp-popover-content>
+                            A system resource configuration can't be deleted; its ontology class and type can't be modified.
+                          </mp-popover-content>
+                        </mp-popover>
+                      </template>
+                    </semantic-if>
+                  {{/if}}
+                </div>
               </div>
-            </div>
-          </template>
-        </semantic-query>
-      {{/ifCond}}
-
+            </template>
+          </semantic-query>
+        {{/ifCond}}
+      </div>
       <div class="btn-inline-container">
         {{#ifCond mode "!==" "new"}}
           <mp-copy-to-clipboard text='{{node}}' message='IRI has been copied'>

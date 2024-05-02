@@ -146,60 +146,61 @@
           <mp-event-target-template-render id='{{viewId}}-term-forms' template='{{> template}}'>
             <template id='template'>
               <div class='resource-editView-formHeader'>
-                {{#switch mode}}
-                  {{#case "new" break=true}}
-                    {{#if broader}}
-                      <h2 class="resource-editView-formHeader-title">
-                        New 
-                        {{#if collectionLabel}}
-                          <span>{{collectionLabel}}</span>
-                        {{else}}
-                          <mp-label iri='{{collection}}' style="text-transform: lowercase;"></mp-label>
-                        {{/if}}
-                        {{#ifCond resourceP2Type '===' 'http://www.researchspace.org/resource/system/vocab/resource_type/user'}}
-                          member of
-                        {{else}}
-                          narrower to 
-                        {{/ifCond}}
-                        {{#if resourceLabelPattern}}
-                          <semantic-query query="SELECT ?label WHERE {
-                                                  BIND(<{{broader}}> as ?item) .
-                                                  {{resourceLabelPattern}}
-                                                }"
-                                          template='{{> template}}'>
-
-                            <template id='template'>
-                                <span>{{bindings.0.label.value}}</span>
-                            </template>
-                          </semantic-query>
-                        {{else}}
-                          <mp-label iri='{{broader}}'></mp-label>
-                        {{/if}}
-                      </h2>
-                    {{else}}
-
-                      <h2 class="resource-editView-formHeader-title">New 
-                        {{#if collection}}
+                <div class="resource-editView-formHeader-title-container">
+                  {{#switch mode}}
+                    {{#case "new" break=true}}
+                      {{#if broader}}
+                        <h2 class="resource-editView-formHeader-title">
+                          New 
                           {{#if collectionLabel}}
                             <span>{{collectionLabel}}</span>
                           {{else}}
                             <mp-label iri='{{collection}}' style="text-transform: lowercase;"></mp-label>
                           {{/if}}
-                        {{else}}
-                          <span>{{resourceName}}</span>
-                        {{/if}}
-                      </h2>
-                    {{/if}}
-                  {{/case}}
+                          {{#ifCond resourceP2Type '===' 'http://www.researchspace.org/resource/system/vocab/resource_type/user'}}
+                            member of
+                          {{else}}
+                            narrower to 
+                          {{/ifCond}}
+                          {{#if resourceLabelPattern}}
+                            <semantic-query query="SELECT ?label WHERE {
+                                                    BIND(<{{broader}}> as ?item) .
+                                                    {{resourceLabelPattern}}
+                                                  }"
+                                            template='{{> template}}'>
 
-                  {{#case "edit" break=true}}
-                    <h2 class="resource-editView-formHeader-title">
-                      <div>
+                              <template id='template'>
+                                  <span>{{bindings.0.label.value}}</span>
+                              </template>
+                            </semantic-query>
+                          {{else}}
+                            <mp-label iri='{{broader}}'></mp-label>
+                          {{/if}}
+                        </h2>
+                      {{else}}
+
+                        <h2 class="resource-editView-formHeader-title">New 
+                          {{#if collection}}
+                            {{#if collectionLabel}}
+                              <span>{{collectionLabel}}</span>
+                            {{else}}
+                              <mp-label iri='{{collection}}' style="text-transform: lowercase;"></mp-label>
+                            {{/if}}
+                          {{else}}
+                            <span>{{resourceName}}</span>
+                          {{/if}}
+                        </h2>
+                      {{/if}}
+                    {{/case}}
+
+                    {{#case "edit" break=true}}
+                      <h2 class="resource-editView-formHeader-title">
                         <div class="link-draggable">
                           <rs-icon icon-type="round" icon-name="drag_indicator"></rs-icon>
+                        
                           <mp-draggable iri='{{iri}}'>
-                            <div>
-                              <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
+                            <div class="text-truncate">
+                              <mp-label iri='{{iri}}' class=""></mp-label>
                               [[!--
                               {{#if resourceLabelPattern}}
                                   <semantic-query query="SELECT ?label WHERE {
@@ -213,159 +214,100 @@
                                     </template>
                                   </semantic-query>
                                 {{else}}
-                                  <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
-                                {{/if}} --]]
-                              </div>
+                                  <mp-label iri='{{iri}}'></mp-label>
+                                {{/if}} --]]</div>
                           </mp-draggable>
                         </div>
-                        {{#if resourceName}}
-                          <div class="text-type-subheader" style="margin-left: 22px; margin-top: 5px;">
-                            {{resourceName}}
-                          </div>
-                        {{/if}}
-                      </div>
-                    </h2>
-                  {{/case}}
-
-                  {{#case "view" break=true}}
-                    <h2 class="resource-editView-formHeader-title">
-                      <div>
-                        <div class="link-draggable">
-                          <rs-icon icon-type="round" icon-name="drag_indicator"></rs-icon>
-                          <mp-draggable iri='{{iri}}'>
-                            <div>
-                              <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
-                              {{#if resourceLabelPattern}}
-                                  <semantic-query query="SELECT ?label ?labelElse WHERE {
-                                                          BIND(<{{iri}}> as ?item) .                                                         
-                                                          {{resourceLabelPattern}}
-                                                        }"
-                                                  template='{{> template}}'>
-
-                                    <template id='template'>
-                                        <div>{{bindings.0.label.value}}</div>
-                                    </template>
-                                  </semantic-query>
-                                {{else}}
-                                  <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
-                                {{/if}} --]]
-                              </div>
-                          </mp-draggable>
+                      </h2>
+                      {{#if resourceName}}
+                        <div class="color-base" style="font-size: 21px; padding-bottom: 3px;">|</div>
+                        <div class="text-type-subheader" style="margin-right: 30px;">
+                          {{#if resourceIcon}}
+                            <rs-icon icon-type="rounded" icon-name="{{resourceIcon}}" symbol=true></rs-icon>
+                          {{else}}
+                            <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol=true></rs-icon>
+                          {{/if}}
+                            <div>{{resourceName}}</div>
                         </div>
-                        {{#if resourceName}}
-                          <div class="text-type-subheader" style="margin-left: 22px; margin-top: 5px;">
-                            {{resourceName}}
-                          </div>
-                        {{/if}}
-                      </div>
-                    </h2>
-                  {{/case}}
-                
-                  {{#case "deleted" break=true}}
-                    <mp-event-target-template-render id='{{viewId}}-deleted-state' template='{{> template}}'>
-                      <template id='template'>
-                        {{#if hideMessage}}
-                        {{else}}
-                            <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%;">
-                              <div class="success-documentation-section-icon-container">
-                                <rs-icon icon-type="round" icon-name="done"></rs-icon>
-                              </div>
+                      {{/if}}
+                    {{/case}}
 
-                              <div style="flex: 1;"> 
-                                <div class="success-documentation-section-title">Success!</div>
-                                <div class="success-documentation-section-content">
-                                  <span style="text-transform: capitalize;">{{label}}</span>
-                                  <span> has been deleted.</span>
+                    {{#case "view" break=true}}
+                      <h2 class="resource-editView-formHeader-title">
+                        <div>
+                          <div class="link-draggable">
+                            <rs-icon icon-type="round" icon-name="drag_indicator"></rs-icon>
+                            <mp-draggable iri='{{iri}}'>
+                              <div>
+                                <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
+                                {{#if resourceLabelPattern}}
+                                    <semantic-query query="SELECT ?label ?labelElse WHERE {
+                                                            BIND(<{{iri}}> as ?item) .                                                         
+                                                            {{resourceLabelPattern}}
+                                                          }"
+                                                    template='{{> template}}'>
+
+                                      <template id='template'>
+                                          <div>{{bindings.0.label.value}}</div>
+                                      </template>
+                                    </semantic-query>
+                                  {{else}}
+                                    <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
+                                  {{/if}} --]]
                                 </div>
-                              </div>
-                              
-                              <mp-event-trigger id='{{viewId}}-cancel-deleted-state-message-{{iri}}'
-                                                type='Component.TemplateUpdate'
-                                                data='{ "hideMessage": "true" }'
-                                                targets='["{{viewId}}-deleted-state"]'
-                              >
-                                <button class="btn btn-documentation">
-                                  <rs-icon icon-type="round" icon-name="close"></rs-icon>
-                                </button>
-                              </mp-event-trigger>
+                            </mp-draggable>
+                          </div>
+                          {{#if resourceName}}
+                            <div class="text-type-subheader" style="margin-left: 22px; margin-top: 5px;">
+                              {{resourceName}}
                             </div>
-                        {{/if}}
-                      </template>
-                    </mp-event-target-template-render>
-                  {{/case}}
-                {{/switch}}
+                          {{/if}}
+                        </div>
+                      </h2>
+                    {{/case}}
+                  
+                    {{#case "deleted" break=true}}
+                      <mp-event-target-template-render id='{{viewId}}-deleted-state' template='{{> template}}'>
+                        <template id='template'>
+                          {{#if hideMessage}}
+                          {{else}}
+                              <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%;">
+                                <div class="success-documentation-section-icon-container">
+                                  <rs-icon icon-type="round" icon-name="done"></rs-icon>
+                                </div>
+
+                                <div style="flex: 1;"> 
+                                  <div class="success-documentation-section-title">Success!</div>
+                                  <div class="success-documentation-section-content">
+                                    <span style="text-transform: capitalize;">{{label}}</span>
+                                    <span> has been deleted.</span>
+                                  </div>
+                                </div>
+                                
+                                <mp-event-trigger id='{{viewId}}-cancel-deleted-state-message-{{iri}}'
+                                                  type='Component.TemplateUpdate'
+                                                  data='{ "hideMessage": "true" }'
+                                                  targets='["{{viewId}}-deleted-state"]'
+                                >
+                                  <button class="btn btn-documentation">
+                                    <rs-icon icon-type="round" icon-name="close"></rs-icon>
+                                  </button>
+                                </mp-event-trigger>
+                              </div>
+                          {{/if}}
+                        </template>
+                      </mp-event-target-template-render>
+                    {{/case}}
+                  {{/switch}}
+                </div>
 
                 {{#if mode}}
                   <div class="btn-inline-container">
+
                     {{#if (eq mode "new")}}
                       [[> rsp:ImportFromExternalSource]] 
-                    {{/if}}
-                    {{#if (or (eq mode "new") (eq mode "deleted") )}}
-                    {{else}}
-                      <semantic-query query='SELECT ?item ?file ?fileName WHERE {
-                                            BIND(<{{iri}}> as ?item) .
-                                            ?item a crm:E31_Document .
-                                            ?item crm:P1_is_identified_by ?file .
-                                            ?file rs:PX_has_file_name ?fileName .
-                                            ?file rs:PX_has_media_type "application/pdf" .
-                                          }'
-                                    template='{{> template}}'
-                        >
-                          <template id='template'>
-                            <a  href="/file?fileName={{bindings.0.fileName.value}}&storage=images&mode=open&mediaType=application%2Fpdf" 
-                                target="_blank"
-                                title="open document"
-                            >
-                                <button type="button" name='open' class="btn btn-default btn-textAndIcon" title="Open document">
-                                  <rs-icon icon-type="round" icon-name="open_in_new"></rs-icon>
-                                  Open
-                                </button>
-                            </a>
-                            
-                            <mp-file-download  download-url="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}">
-                                <button type="button" name='download' class="btn btn-default btn-textAndIcon" title="Download document">
-                                  <rs-icon icon-type="round" icon-name="download"></rs-icon>
-                                  Download
-                                </button>
-                            </mp-file-download>
-                          </template>
-                      </semantic-query>
+                    {{/if}} 
 
-                      <semantic-query query='SELECT ?item ?file ?fileName ?mediaType WHERE {
-                                            BIND(<{{iri}}> as ?item) .
-                                            ?item a rs:EX_Digital_Image .
-                                            ?item crm:P1_is_identified_by ?file .
-                                            ?file rs:PX_has_file_name ?fileName .
-                                            ?file rs:PX_has_media_type ?mediaType .
-                                          }'
-                                    template='{{> template}}'
-                        >
-                          <template id='template'>
-                            <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                                      urlqueryparam-view='iiif' 
-                                                      urlqueryparam-resource='{{bindings.0.item.value}}'>
-                              <button type="button" name='open' class="btn btn-default btn-textAndIcon" title="Open image">
-                                <rs-icon icon-type="round" icon-name="open_in_new"></rs-icon>
-                                Open
-                              </button>
-                            </semantic-link-container>
-
-                          <mp-file-download  download-url="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}">
-                              <button type="button" name='download' class="btn btn-default btn-textAndIcon" title="Download image">
-                                <rs-icon icon-type="round" icon-name="download"></rs-icon>
-                                Download
-                              </button>
-                          </mp-file-download>
-                        </template>
-                      </semantic-query>
-
-                      <mp-copy-to-clipboard text='{{iri}}' message='{{resourceName}} IRI has been copied'>
-                        <button class="btn btn-default btn-textAndIcon" title="Copy IRI">
-                          <rs-icon icon-type="round" icon-name="content_copy"></rs-icon>
-                          Copy IRI
-                        </button>
-                      </mp-copy-to-clipboard>
-                    {{/if}}
                     {{#if (not (eq mode "deleted"))}}
                       <mp-event-trigger id='{{viewId}}-form-refresh-trigger' 
                                         type='Component.TemplateUpdate' 
@@ -382,6 +324,78 @@
                             Refresh
                         </button>
                       </mp-event-trigger>
+                    {{/if}}
+
+                    {{#if (or (eq mode "new") (eq mode "deleted") )}}
+                    {{else}}
+                      <bs-dropdown id='{{viewId}}-form-action-dropdown' pull-right=true class="dropdown-no-caret">
+                        <bs-dropdown-toggle>
+                          <rs-icon icon-type="round" icon-name="more_vert"></rs-icon>
+                        </bs-dropdown-toggle>
+                        <bs-dropdown-menu>
+                            <semantic-query query='SELECT ?item ?file ?fileName WHERE {
+                                                  BIND(<{{iri}}> as ?item) .
+                                                  ?item a crm:E31_Document .
+                                                  ?item crm:P1_is_identified_by ?file .
+                                                  ?file rs:PX_has_file_name ?fileName .
+                                                  ?file rs:PX_has_media_type "application/pdf" .
+                                                }'
+                                          template='{{> template}}'
+                              >
+                                <template id='template'>
+                                  <bs-menu-item href="/file?fileName={{bindings.0.fileName.value}}&storage=images&mode=open&mediaType=application%2Fpdf" target="_blank" title='open document'>
+                                    <rs-icon icon-type="round" icon-name="open_in_new" class="icon-left"></rs-icon>
+                                    <span>Open document</span>
+                                  </bs-menu-item>
+                                  <mp-file-download  download-url="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}">
+                                    <bs-menu-item>
+                                      <rs-icon icon-type="round" icon-name="download" class="icon-left"></rs-icon>
+                                      <span>Download document</span>
+                                    </bs-menu-item>
+                                  </mp-file-download>
+                                  <hr>
+                                </template>
+                            </semantic-query>
+      
+                            <semantic-query query='SELECT ?item ?file ?fileName ?mediaType WHERE {
+                                                  BIND(<{{iri}}> as ?item) .
+                                                  ?item a rs:EX_Digital_Image .
+                                                  ?item crm:P1_is_identified_by ?file .
+                                                  ?file rs:PX_has_file_name ?fileName .
+                                                  ?file rs:PX_has_media_type ?mediaType .
+                                                }'
+                                          template='{{> template}}'
+                              >
+                                <template id='template'>
+                                  <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                                            urlqueryparam-view='iiif' 
+                                                            urlqueryparam-resource='{{bindings.0.item.value}}'>
+                                    <bs-menu-item>
+                                      <rs-icon icon-type="round" icon-name="open_in_new" class="icon-left"></rs-icon>
+                                      <span>Open image</span>
+                                    </bs-menu-item>
+                                  </semantic-link-container>
+      
+                                  <mp-file-download  download-url="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}">
+                                    <bs-menu-item>
+                                      <rs-icon icon-type="round" icon-name="download" class="icon-left"></rs-icon>
+                                      <span>Download image</span>
+                                    </bs-menu-item>
+                                  </mp-file-download>
+                                  <hr>
+                              </template>
+                            </semantic-query>
+      
+                            
+                            <mp-copy-to-clipboard text='{{iri}}' message='{{resourceName}} IRI has been copied'>
+                              <bs-menu-item>
+                                <rs-icon icon-type="round" icon-name="content_copy" class="icon-left"></rs-icon>
+                                <span>Copy resource IRI</span>
+                              </bs-menu-item>
+                            </mp-copy-to-clipboard>
+                          
+                        </bs-dropdown-menu>
+                      </bs-dropdown>
                     {{/if}}
                   </div>
                 {{/if}}

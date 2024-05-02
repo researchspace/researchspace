@@ -61,6 +61,7 @@ interface SelectValue {
 
 interface State {
   nestedForm?: React.ReactElement<any>;
+  //nestedFormScheme
   nestedFormOpen?: boolean;
   activeForm?: string;
   valueSelectedWithoutEditForm?: boolean;
@@ -97,12 +98,26 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
         nestedFormTemplates: this.props.nestedFormTemplates
       })
     }
+
+    if (FieldValue.isAtomic(this.props.value)) {
+      const rdfNode = FieldValue.asRdfNode(this.props.value);      
+      getResourceConfigurationEditForm(Rdf.iri(rdfNode.value),this.context)
+          .then(resourceFormIri=>{
+            if (resourceFormIri) {
+                this.setState({activeForm: `{{> "${resourceFormIri}" nested=true editable=true mode="edit" }}`});
+            }
+            else
+                {this.setState({activeForm: undefined, valueSelectedWithoutEditForm: true});}})
+          .catch(error => {this.setState({activeForm: undefined, valueSelectedWithoutEditForm: true});});
+    } else {
+      this.setState({activeForm: undefined, valueSelectedWithoutEditForm: false});
+    }
   }
 
   public openSelectedNestedForm(formTemplate: string) {
     tryExtractNestedForm(this.props.children, this.context, formTemplate)
       .then(nestedForm => {
-        if (nestedForm != undefined) {
+        if (nestedForm != undefined) { console.log(nestedForm);
          this.setState({nestedForm});
           this.toggleNestedForm()
         }
@@ -157,7 +172,7 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
             title={value?.label.value ?? this.state.labelFormSelected}
             definition={this.props.definition}
             onSubmit={this.onNestedFormSubmit}      
-            onCancel={() => {console.log("cancel");this.setState({ nestedFormOpen: false });}}
+            onCancel={() => {this.setState({ nestedFormOpen: false });}}
             parent={this.htmlElement}
           >
             {this.state.nestedForm}

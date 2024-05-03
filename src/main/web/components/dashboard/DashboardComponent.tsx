@@ -366,7 +366,7 @@ export class DashboardComponent extends Component<Props, State> {
 
   private onAddNewItem = (item: Item = this.frameLabel()) => {
     // check if an item with the same resourceIri is already in the tabset
-    const itemIsAlreadyOpen = this.state.items.filter((i) => item.resourceIri && i.resourceIri === item.resourceIri)
+    const itemIsAlreadyOpen = this.state.items.filter((i) => item.resourceIri && i.resourceIri === item.resourceIri && i.viewId === item.viewId)
     // if is already open, then select it and set to active, otherwise it will create a new tab with the selected item
     if(itemIsAlreadyOpen.length > 0) {
       this.state.layout.doAction(FlexLayout.Actions.selectTab(item.resourceIri))

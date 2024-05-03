@@ -175,7 +175,7 @@ export class DashboardComponent extends Component<Props, State> {
     
     this.onAddNewItem({
       ...this.frameLabel(label),
-      ...(data as AddFrameEventData),
+      ...(data),
       data,
     });
   }
@@ -246,7 +246,6 @@ export class DashboardComponent extends Component<Props, State> {
         .observe({
           value: ({ data }) => {
             const {viewId, resourceIri, resourceEditorLabel} = data as AddFrameEventData
-
             if(resourceIri) {
               this.subscription = LabelsService.getLabel(Rdf.iri(resourceIri)).observe({
                 value: (label) => {
@@ -366,6 +365,18 @@ export class DashboardComponent extends Component<Props, State> {
   }
 
   private onAddNewItem = (item: Item = this.frameLabel()) => {
+    // check if an item with the same resourceIri is already in the tabset
+    const itemIsAlreadyOpen = this.state.items.filter((i) => item.resourceIri && i.resourceIri === item.resourceIri)
+    // if is already open, then select it and set to active, otherwise it will create a new tab with the selected item
+    if(itemIsAlreadyOpen.length > 0) {
+      this.state.layout.doAction(FlexLayout.Actions.selectTab(item.resourceIri))
+      this.onSelectView({
+        itemId: item.id,
+        viewId: item.viewId,
+        resourceIri: item.resourceIri,
+      });
+      return
+    }
     const viewConfig = this.props.views.find(({id}) => id === item.viewId);
     if (viewConfig?.unique && this.state.items.find(i => i.viewId === item.viewId)) {
       return;
@@ -379,7 +390,7 @@ export class DashboardComponent extends Component<Props, State> {
         () => {
           this.layoutRef.current.addTabToActiveTabSet(
             {
-              'type': 'tab', 'name': item.label, 'component': "item", 'config': {'itemId': item.id},
+              'type': 'tab', 'id': item.resourceIri, 'name': item.label, 'component': "item", 'config': {'itemId': item.id},
              'className': viewConfig?.iconName || viewConfig?.iconClass || 'no-icon-button', 'icon': 'add'
             }
           );

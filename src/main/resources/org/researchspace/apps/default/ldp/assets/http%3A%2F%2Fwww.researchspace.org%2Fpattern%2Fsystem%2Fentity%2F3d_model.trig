@@ -1,0 +1,64 @@
+
+<http://www.researchspace.org/pattern/system/entity/3d_model/context> {
+  <http://www.researchspace.org/pattern/system/entity/3d_model> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.researchspace.org/ontology/EX_3D_Model>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/entity>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "3d model";
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-a5a3b7601e2646878a043d1f894553db-dayajy;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-a5a3b7601e2646878a043d1f894553db-i7wf7m;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-a5a3b7601e2646878a043d1f894553db-na0ene;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-a5a3b7601e2646878a043d1f894553db-bxcxth;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-05-03T14:24:33.893+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-a5a3b7601e2646878a043d1f894553db-bxcxth a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject rs:PX_has_3Dmodel $value .
+  $value rs:PX_is_3Dmodel_of $subject .
+} WHERE {}""" .
+  
+  _:genid-a5a3b7601e2646878a043d1f894553db-dayajy a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  ?value a rs:EX_3D_Model .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label) 
+  LIMIT 10""" .
+  
+  _:genid-a5a3b7601e2646878a043d1f894553db-na0ene a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+   $subject rs:PX_has_3Dmodel $value .
+      
+  ?value a rs:EX_3D_Model .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-a5a3b7601e2646878a043d1f894553db-i7wf7m a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+  $subject rs:PX_has_3Dmodel $value .
+  $value rs:PX_is_3Dmodel_of $subject .
+} WHERE {
+  $subject rs:PX_has_3Dmodel $value .
+  $value rs:PX_is_3Dmodel_of $subject .
+      
+  ?value a rs:EX_3D_Model .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/entity/3d_model> .
+}

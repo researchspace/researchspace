@@ -175,6 +175,7 @@ export class DashboardComponent extends Component<Props, State> {
     
     this.onAddNewItem({
       ...this.frameLabel(label),
+     // ...(data as AddFrameEventData),
       ...(data),
       data,
     });
@@ -365,11 +366,12 @@ export class DashboardComponent extends Component<Props, State> {
   }
 
   private onAddNewItem = (item: Item = this.frameLabel()) => {
+   
     // check if an item with the same resourceIri is already in the tabset
     const itemIsAlreadyOpen = this.state.items.filter((i) => item.resourceIri && i.resourceIri === item.resourceIri && i.viewId === item.viewId)
     // if is already open, then select it and set to active, otherwise it will create a new tab with the selected item
-    if(itemIsAlreadyOpen.length > 0) {
-      this.state.layout.doAction(FlexLayout.Actions.selectTab(item.resourceIri))
+    if(itemIsAlreadyOpen.length > 0) { 
+      this.state.layout.doAction(FlexLayout.Actions.selectTab(item.resourceIri+item.viewId))
       this.onSelectView({
         itemId: item.id,
         viewId: item.viewId,
@@ -387,13 +389,13 @@ export class DashboardComponent extends Component<Props, State> {
           newItems.push(item);
           return { items: newItems };
         },
-        () => {
-          this.layoutRef.current.addTabToActiveTabSet(
-            {
-              'type': 'tab', 'id': item.resourceIri, 'name': item.label, 'component': "item", 'config': {'itemId': item.id},
-             'className': viewConfig?.iconName || viewConfig?.iconClass || 'no-icon-button', 'icon': 'add'
-            }
-          );
+        () => {       
+            this.layoutRef.current.addTabToActiveTabSet(
+              {
+                'type': 'tab', 'id':item.resourceIri+item.viewId, 'name': item.label, 'component': "item", 'config': {'itemId': item.id},
+                'className': viewConfig?.iconName || viewConfig?.iconClass || 'no-icon-button', 'icon': 'add'
+              }
+            );
           this.onSelectView({
             itemId: item.id,
             viewId: item.viewId,

@@ -11,8 +11,14 @@
                 <bs-nav-item event-key="{{viewId}}-resourceForm-docs" class='form-tabs-subtabs-trigger'>
                     Documents
                 </bs-nav-item>
+                <bs-nav-item event-key="{{viewId}}-resourceForm-videos" class='form-tabs-subtabs-trigger'>
+                    Videos
+                </bs-nav-item>
+                <bs-nav-item event-key="{{viewId}}-resourceForm-3d" class='form-tabs-subtabs-trigger'>
+                    3D models
+                </bs-nav-item>
                 <bs-nav-item event-key="{{viewId}}-resourceForm-representations" class='form-tabs-subtabs-trigger'>
-                    Representations
+                    Visual representations
                 </bs-nav-item>
             </bs-nav>
                 
@@ -29,9 +35,6 @@
                                         <div class="form-tabs-subtabs-content--title-actions">
                                             <button class="btn btn-icon" title="preview">
                                                 <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
-                                            </button>
-                                            <button class="btn btn-icon" title="download">
-                                                <rs-icon icon-type="round" icon-name="download"></rs-icon>
                                             </button>
             
                                             <mp-event-trigger id='{{viewId}}-image-annotation-add-frame-trigger' 
@@ -134,9 +137,6 @@
                                             <button class="btn btn-icon" title="preview">
                                                 <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
                                             </button>
-                                            <button class="btn btn-icon" title="download">
-                                                <rs-icon icon-type="round" icon-name="download"></rs-icon>
-                                            </button>
                 
                                             <mp-event-trigger id='{{viewId}}-document-annotation-add-frame-trigger' 
                                                                     type='Dashboard.AddFrame' 
@@ -205,19 +205,172 @@
                     </bs-tab-container>
                 </bs-tab-pane>
 
-                <bs-tab-pane event-key="{{viewId}}-resourceForm-representations" class="form-tabs-subtabs-content">
+                <bs-tab-pane event-key="{{viewId}}-resourceForm-videos" class="form-tabs-subtabs-content">
                     <bs-tab-container id="{{viewId}}-form-document-tabs" default-active-key="thumbnailView" class="form-assetView-tabs">
                         <div>
                             <div class="form-tabs-subtabs-content--title">
-                                <h4>Representations</h4>
+                                <h4>Video</h4>
                                 <div>
                                     {{#if node}}
                                         <div class="form-tabs-subtabs-content--title-actions">
                                             <button class="btn btn-icon" title="preview">
                                                 <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
                                             </button>
-                                            <button class="btn btn-icon" title="download">
-                                                <rs-icon icon-type="round" icon-name="download"></rs-icon>
+                
+                                            <mp-event-trigger id='{{viewId}}-document-annotation-add-frame-trigger' 
+                                                                    type='Dashboard.AddFrame' 
+                                                                    data='{"resourceIri": "{{node}}", 
+                                                                            "viewId": "objectImageObservation", 
+                                                                            "objectIri": "{{node}}",
+                                                                            "frameId": "{{viewId}}"}' 
+                                                                    targets='["thinking-frames"]'>
+                                                <button class="btn btn-icon" title="View/Annotations">
+                                                    <rs-icon icon-type="round" icon-name="photo_size_select_large"></rs-icon>
+                                                </button>
+                                            </mp-event-trigger>
+                                        </div>
+                                    {{/if}}
+                            
+                                    <bs-nav bs-style="icon-tabs">
+                                        <bs-nav-item event-key="thumbnailView" title="thumbnail view">
+                                            <rs-icon icon-type="round" icon-name="view_module"></rs-icon>
+                                        </bs-nav-item>
+                                        <bs-nav-item event-key="listView" title="list view">
+                                            <rs-icon icon-type="round" icon-name="view_list"></rs-icon>
+                                        </bs-nav-item>
+                                    </bs-nav>
+                                </div>
+                            </div>
+                
+                            <bs-tab-content>
+                                <bs-tab-pane event-key="thumbnailView">
+                                    <div style="padding:20px;">
+                                        <div class="dragAndDrop-input-container">
+                                            <semantic-form-drag-and-drop-input  for='entity_video' label="Videos" render-header=false
+                                                                                placeholder-item-template="<div class='placeholder-item'>
+                                                                                                                <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                                                                <div>Drag document from 
+                                                                                                                    <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' 
+                                                                                                                    class='text-link-action' urlqueryparam-view='system-assets'>Video Library</semantic-link>
+                                                                                                                    or click to upload</div>
+                                                                                                            </div>"
+                                                                                nested-form-template='{{{{raw}}}}{{> forms:Video nested=true editable=true mode="new"}}{{{{/raw}}}}'
+                                                                                                            >
+                                            </semantic-form-drag-and-drop-input>
+                                        </div>
+                                    </div>
+                                </bs-tab-pane>
+    
+                                <bs-tab-pane event-key="listView">
+                                    <div style="padding:20px;">
+                                        <semantic-form-select-input for='entity_video' 
+                                                                    label="Videos"
+                                                                    render-header="false"
+                                                                    placeholder="Select video" 
+                                                                    nested-form-templates='[ 
+                                                                        {
+                                                                            "label": "Video",
+                                                                            "nestedForm": "{{{{raw}}}}
+                                                                                            {{> \"http://www.researchspace.org/resource/system/forms/Video\" nested=true editable=true mode=\"new\"}}
+                                                                                        {{{{/raw}}}}"
+                                                                        }
+                                                                    ]'> 
+                                        </semantic-form-select-input>
+                                    </div>
+                                </bs-tab-pane>
+                            </bs-tab-content>
+                        </div>
+                    </bs-tab-container>
+                </bs-tab-pane>
+
+                <bs-tab-pane event-key="{{viewId}}-resourceForm-3d" class="form-tabs-subtabs-content">
+                    <bs-tab-container id="{{viewId}}-form-document-tabs" default-active-key="thumbnailView" class="form-assetView-tabs">
+                        <div>
+                            <div class="form-tabs-subtabs-content--title">
+                                <h4>3D models</h4>
+                                <div>
+                                    {{#if node}}
+                                        <div class="form-tabs-subtabs-content--title-actions">
+                                            <button class="btn btn-icon" title="preview">
+                                                <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
+                                            </button>
+                
+                                            <mp-event-trigger id='{{viewId}}-document-annotation-add-frame-trigger' 
+                                                                    type='Dashboard.AddFrame' 
+                                                                    data='{"resourceIri": "{{node}}", 
+                                                                            "viewId": "objectImageObservation", 
+                                                                            "objectIri": "{{node}}",
+                                                                            "frameId": "{{viewId}}"}' 
+                                                                    targets='["thinking-frames"]'>
+                                                <button class="btn btn-icon" title="View/Annotations">
+                                                    <rs-icon icon-type="round" icon-name="photo_size_select_large"></rs-icon>
+                                                </button>
+                                            </mp-event-trigger>
+                                        </div>
+                                    {{/if}}
+                            
+                                    <bs-nav bs-style="icon-tabs">
+                                        <bs-nav-item event-key="thumbnailView" title="thumbnail view">
+                                            <rs-icon icon-type="round" icon-name="view_module"></rs-icon>
+                                        </bs-nav-item>
+                                        <bs-nav-item event-key="listView" title="list view">
+                                            <rs-icon icon-type="round" icon-name="view_list"></rs-icon>
+                                        </bs-nav-item>
+                                    </bs-nav>
+                                </div>
+                            </div>
+                
+                            <bs-tab-content>
+                                <bs-tab-pane event-key="thumbnailView">
+                                    <div style="padding:20px;">
+                                        <div class="dragAndDrop-input-container">
+                                            <semantic-form-drag-and-drop-input  for='entity_3d_model' label="3D model" render-header=false
+                                                                                placeholder-item-template="<div class='placeholder-item'>
+                                                                                                                <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                                                                <div>Drag file from 
+                                                                                                                    <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' 
+                                                                                                                    class='text-link-action' urlqueryparam-view='system-assets'>File Library</semantic-link>
+                                                                                                                    or click to upload</div>
+                                                                                                            </div>"
+                                                                                nested-form-template='{{{{raw}}}}{{> forms:3dModel nested=true editable=true mode="new"}}{{{{/raw}}}}'
+                                                                                                            >
+                                            </semantic-form-drag-and-drop-input>
+                                        </div>
+                                    </div>
+                                </bs-tab-pane>
+    
+                                <bs-tab-pane event-key="listView">
+                                    <div style="padding:20px;">
+                                        <semantic-form-select-input for='entity_3d_model' 
+                                                                    label="3D model"
+                                                                    render-header="false"
+                                                                    placeholder="Select file" 
+                                                                    nested-form-templates='[ 
+                                                                        {
+                                                                            "label": "3D model",
+                                                                            "nestedForm": "{{{{raw}}}}
+                                                                                            {{> \"http://www.researchspace.org/resource/system/forms/3dModel\" nested=true editable=true mode=\"new\"}}
+                                                                                        {{{{/raw}}}}"
+                                                                        }
+                                                                    ]'> 
+                                        </semantic-form-select-input>
+                                    </div>
+                                </bs-tab-pane>
+                            </bs-tab-content>
+                        </div>
+                    </bs-tab-container>
+                </bs-tab-pane>
+
+                <bs-tab-pane event-key="{{viewId}}-resourceForm-representations" class="form-tabs-subtabs-content">
+                    <bs-tab-container id="{{viewId}}-form-document-tabs" default-active-key="listView" class="form-assetView-tabs">
+                        <div>
+                            <div class="form-tabs-subtabs-content--title">
+                                <h4>Visual representations</h4>
+                                <div>
+                                    {{#if node}}
+                                        <div class="form-tabs-subtabs-content--title-actions">
+                                            <button class="btn btn-icon" title="preview">
+                                                <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
                                             </button>
                 
                                             <mp-event-trigger id='{{viewId}}-representation-annotation-add-frame-trigger' 
@@ -249,10 +402,9 @@
                                 <bs-tab-pane event-key="thumbnailView">
                                     <div style="padding:20px;">
                                         <div class="dragAndDrop-input-container">
-                                            <semantic-form-drag-and-drop-input  for='entity_has_representation' label="Representations" render-header=false
+                                            <semantic-form-drag-and-drop-input  for='entity_has_representation' label="Visual representations" render-header=false readonly='true'
                                                                                 placeholder-item-template="<div class='placeholder-item'>
-                                                                                                                <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                                                                                                                <div>Drag representation</div>
+                                                                                                                <div>View visual representation</div>
                                                                                                             </div>"
                                                                                                             >
                                             </semantic-form-drag-and-drop-input>
@@ -262,12 +414,55 @@
     
                                 <bs-tab-pane event-key="listView">
                                     <div style="padding:20px;">
-                                        <semantic-form-select-input for='entity_has_representation' 
-                                                                    label="Representation"
-                                                                    render-header=false
-                                                                    placeholder="Select representation" 
-                                                                    nested-form-templates='[[> Platform:NestedFormTemplates_visualItems]]'>  
-                                        </semantic-form-select-input>
+                                        <div class="inline-composite-container">
+                                            <semantic-form-composite-input  for="entity_represents_range" 
+                                                                            label="Has visual representation"
+                                                                            render-header="false"
+                                                                            new-subject-template="/PC138_represents/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                                                            fields='[[fieldDefinitions
+                                                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                                                
+                                                                                      represents_visualItem_domain="http://www.researchspace.org/pattern/system/represents/domain"
+                                                                                      mode_of_representation="http://www.researchspace.org/pattern/system/represents/mode_of_representation"
+                                                                                    ]]'>
+                                  
+                                            <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC138_represents'> </semantic-form-hidden-input>
+                                  
+                                            <div class="form-inline-inputs">
+                                              <div style="flex: 1;">
+                                                <semantic-form-autocomplete-input   for='represents_visualItem_domain' 
+                                                                                    render-header="false"
+                                                                                    placeholder="Select what visually represents the entity"
+                                                                                    nested-form-templates='[[> Platform:NestedFormTemplates_visualItems]]'>
+                                                </semantic-form-autocomplete-input>
+                                              </div>
+                                              <div style="flex: 1;">
+                                                <semantic-form-tree-picker-input  for="mode_of_representation" 
+                                                                                  render-header="false"
+                                                                                  placeholder="Select mode of representation"
+                                                                                  close-dropdown-on-selection='true'
+                                                                                  tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/mode_of_representation>", 
+                                                                                                  "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/mode_of_representation>",
+                                                                                                  "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+                                  
+                                                                                  scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                                              "view": "vocabulary-content",
+                                                                                                              "scheme": "http://www.researchspace.org/resource/vocab/mode_of_representation",
+                                                                                                              "tooltip": "Open list of mode of representations"
+                                                                                                            }'
+                                                                                  
+                                                                                  nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                                        scheme="http://www.researchspace.org/resource/vocab/mode_of_representation"
+                                                                                                                        entityType="mode of representation" }}{{{{/raw}}}}'
+                                  
+                                                                                  query-item-label='SELECT ?label WHERE {
+                                                                                                      ?item skos:prefLabel ?label .
+                                                                                                  }'>
+                                                  </semantic-form-tree-picker-input>
+                                              </div>
+                                            </div>
+                                            </semantic-form-composite-input>
+                                          </div>
                                     </div>
                                 </bs-tab-pane>
                             </bs-tab-content>

@@ -173,8 +173,8 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
       const rdfNode = FieldValue.asRdfNode(this.props.value);      
       getResourceConfigurationEditForm(Rdf.iri(rdfNode.value),this.context)
           .then(binding=>{
-            if (binding.resourceFormIri.value) {
-              if (binding.scheme.value)
+            if (binding.resourceFormIri) {
+              if (binding.scheme)
                 this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit" scheme="${binding.scheme.value}"}}`});
               else  
                 this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit"}}`});
@@ -196,8 +196,8 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
     if (value) {
       getResourceConfigurationEditForm(Rdf.iri(value.value.value),this.context)
           .then(binding=>{
-            if (binding.resourceFormIri.value) {
-              if (binding.scheme.value)
+            if (binding.resourceFormIri) {
+              if (binding.scheme)
                 this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit" scheme="${binding.scheme.value}"}}`});
               else  
                 this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit"}}`});
@@ -230,8 +230,8 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
 
     getResourceConfigurationEditForm(Rdf.iri(findCorresponding.value.value),this.context)
         .then(binding=>{
-            if (binding.resourceFormIri.value) {
-              if (binding.scheme.value)
+            if (binding.resourceFormIri) {
+              if (binding.scheme)
                 this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit" scheme="${binding.scheme.value}"}}`});
               else  
                 this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit"}}`});
@@ -403,8 +403,8 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
     if (value) {     
       getResourceConfigurationEditForm(Rdf.iri(value.value.value),this.context).
         then(binding=>{
-            if (binding.resourceFormIri.value) {
-              if (binding.scheme.value)
+            if (binding.resourceFormIri) {
+              if (binding.scheme)
                 this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit" scheme="${binding.scheme.value}"}}`});
               else  
                 this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit"}}`});

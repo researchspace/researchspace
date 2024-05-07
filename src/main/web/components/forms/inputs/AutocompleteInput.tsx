@@ -102,8 +102,8 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
       const rdfNode = FieldValue.asRdfNode(this.props.value);      
       getResourceConfigurationEditForm(Rdf.iri(rdfNode.value),this.context)
           .then(binding=>{
-            if (binding.resourceFormIri.value) {
-              if (binding.scheme.value)
+            if (binding.resourceFormIri) {
+              if (binding.scheme)
                 this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit" scheme="${binding.scheme.value}"}}`});
               else  
                 this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit"}}`});
@@ -119,7 +119,7 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
   public openSelectedNestedForm(formTemplate: string) {
     tryExtractNestedForm(this.props.children, this.context, formTemplate)
       .then(nestedForm => {
-        if (nestedForm != undefined) { console.log(nestedForm);
+        if (nestedForm != undefined) {
          this.setState({nestedForm});
           this.toggleNestedForm()
         }
@@ -188,8 +188,8 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
     if (value) {
       getResourceConfigurationEditForm(Rdf.iri(value.value.value),this.context)
           .then(binding=>{
-            if (binding.resourceFormIri.value) {
-              if (binding.scheme.value)
+            if (binding.resourceFormIri) {
+              if (binding.scheme)
                 this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit" scheme="${binding.scheme.value}"}}`});
               else  
                 this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit"}}`});
@@ -296,12 +296,12 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
       });
       
       getResourceConfigurationEditForm(Rdf.iri(selected.value.value),this.context)
-          .then(binding=>{
-            if (binding.resourceFormIri.value) {
-              if (binding.scheme.value)
+          .then(binding=>{ 
+            if (binding.resourceFormIri) {
+              if (binding.scheme)
                 this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit" scheme="${binding.scheme.value}"}}`});
-              else  
-                this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit"}}`});
+              else  {
+                this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit"}}`});}
             }       
             else
                 {this.setState({activeForm: undefined, valueSelectedWithoutEditForm: true});}})

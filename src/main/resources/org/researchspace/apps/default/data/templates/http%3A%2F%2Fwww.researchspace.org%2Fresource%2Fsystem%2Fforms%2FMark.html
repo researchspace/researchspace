@@ -9,12 +9,15 @@
                         entity_image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
                         entity_image="http://www.researchspace.org/pattern/system/entity/images"
                         entity_document="http://www.researchspace.org/pattern/system/entity/documents"
+                        entity_video="http://www.researchspace.org/pattern/system/entity/video"
+                        entity_3d_model="http://www.researchspace.org/pattern/system/entity/3d_model"
                         entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
+                        entity_represents_range="http://www.researchspace.org/pattern/system/entity/represents_range"
 
                         entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
                         man-made_thing_title="http://www.researchspace.org/pattern/system/man-made_thing/PC102_has_title"
-                        visual_item_is_main_representation="http://www.researchspace.org/pattern/system/visual_item/is_main_representation"
-                        visual_item_represents="http://www.researchspace.org/pattern/system/visual_item/represents"
+                        mark_type="http://www.researchspace.org/pattern/system/mark/type"
+                        visual_item_PC138_represents="http://www.researchspace.org/pattern/system/visual_item/PC138_represents"
                         symbolic_object_content="http://www.researchspace.org/pattern/system/symbolic_object/has_symbolic_content"
                         entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
                         entity_id="http://www.researchspace.org/pattern/system/entity/identifier"
@@ -130,17 +133,78 @@
               </semantic-form-composite-input>
             </div>
 
-            <semantic-form-autocomplete-input   for='visual_item_is_main_representation' 
-                                                label="Is main representation of" 
-                                                placeholder="Select what has the mark as main representation" 
-                                                nested-form-templates='[[> Platform:NestedFormTemplates_allEntities]]'> 
-            </semantic-form-autocomplete-input> 
+            <semantic-form-tree-picker-input for="mark_type" 
+                                              label="Mark type" 
+                                              placeholder="Select type" 
+                                              close-dropdown-on-selection='true'
+                                              tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/mark_type>", 
+                                                              "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/mark_type>",
+                                                              "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
 
-            <semantic-form-autocomplete-input   for='visual_item_represents' 
-                                                label="Represents" 
-                                                placeholder="Select what the mark visually represents" 
-                                                nested-form-templates='[[> Platform:NestedFormTemplates_allEntities]]'> 
-            </semantic-form-autocomplete-input> 
+                                              scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                          "view": "vocabulary-content",
+                                                                          "scheme": "http://www.researchspace.org/resource/vocab/mark_type",
+                                                                          "tooltip": "Open list of mark types"
+                                                                        }'
+                                              
+                                              nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                    scheme="http://www.researchspace.org/resource/vocab/mark_type"
+                                                                                    entityType="mark type" }}{{{{/raw}}}}'
+
+                                              query-item-label='SELECT ?label WHERE {
+                                                                  ?item skos:prefLabel ?label .
+                                                                }'
+                                          
+            ></semantic-form-tree-picker-input>
+
+            <div class="inline-composite-container">
+              <semantic-form-composite-input  for="visual_item_PC138_represents" 
+                                              label="Visually represents"
+                                              new-subject-template="/PC138_represents/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                              fields='[[fieldDefinitions
+                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                  
+                                                        represents_entity_range="http://www.researchspace.org/pattern/system/represents/range"
+                                                        mode_of_representation="http://www.researchspace.org/pattern/system/represents/mode_of_representation"
+                                                      ]]'>
+    
+              <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC138_represents'> </semantic-form-hidden-input>
+    
+              <div class="form-inline-inputs">
+                <div style="flex: 1;">
+                  <semantic-form-autocomplete-input for='represents_entity_range' 
+                                                    render-header="false"
+                                                    placeholder="Select what is visually represented by the mark" 
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_allEntities]]'>
+                  </semantic-form-autocomplete-input>
+                </div>
+                <div style="flex: 1;">
+                  <semantic-form-tree-picker-input  for="mode_of_representation" 
+                                                    render-header="false"
+                                                    placeholder="Select mode of representation"
+                                                    close-dropdown-on-selection='true'
+                                                    tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/mode_of_representation>", 
+                                                                    "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/mode_of_representation>",
+                                                                    "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+    
+                                                    scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                "view": "vocabulary-content",
+                                                                                "scheme": "http://www.researchspace.org/resource/vocab/mode_of_representation",
+                                                                                "tooltip": "Open list of mode of representations"
+                                                                              }'
+                                                    
+                                                    nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                          scheme="http://www.researchspace.org/resource/vocab/mode_of_representation"
+                                                                                          entityType="mode of representation" }}{{{{/raw}}}}'
+    
+                                                    query-item-label='SELECT ?label WHERE {
+                                                                        ?item skos:prefLabel ?label .
+                                                                    }'>
+                    </semantic-form-tree-picker-input>
+                </div>
+              </div>
+              </semantic-form-composite-input>
+            </div>
 
             <semantic-form-text-input for="symbolic_object_content" multiline=true label="Mark content/value" placeholder="Enter the complete, identifying representation of its content"></semantic-form-text-input>
             
@@ -523,19 +587,6 @@
 
       <rs-tab event-key="event" title="Events">
 
-        <semantic-form-autocomplete-input   for='symbolic_object_used_in' 
-                                            label="Used in" 
-                                            placeholder="Select the assignment that used the mark as constituent of an identifier" 
-                                            nested-form-templates='[ 
-                                                {
-                                                    "label": "Identifier assignment",
-                                                    "nestedForm": "{{{{raw}}}}
-                                                                    {{> \"http://www.researchspace.org/resource/system/forms/IdentifierAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                {{{{/raw}}}}"
-                                                }
-                                            ]'>  
-        </semantic-form-autocomplete-input> 
-
         <semantic-form-autocomplete-input   for='conceptual_object_created_by' 
                                             label="Created by" 
                                             placeholder="Select the event that created the mark" 
@@ -592,6 +643,19 @@
             </semantic-form-composite-input>
         </div>
 
+        <semantic-form-autocomplete-input   for='symbolic_object_used_in' 
+                                            label="Used in" 
+                                            placeholder="Select the assignment that used the mark as constituent of an identifier" 
+                                            nested-form-templates='[ 
+                                                {
+                                                    "label": "Identifier assignment",
+                                                    "nestedForm": "{{{{raw}}}}
+                                                                    {{> \"http://www.researchspace.org/resource/system/forms/IdentifierAssignment\" nested=true editable=true mode=\"new\"}}
+                                                                {{{{/raw}}}}"
+                                                }
+                                            ]'>  
+        </semantic-form-autocomplete-input> 
+        
         <div class="inline-composite-container">
             <semantic-form-composite-input  for="thing_used_specific_object_range" 
                                             label="Used for"

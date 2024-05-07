@@ -6,6 +6,7 @@
 
                                 OPTIONAL { ?cidocType rdfs:subClassOf* crm:E41_Appellation . BIND("true" as ?isE41) }
                                 OPTIONAL { ?cidocType rdfs:subClassOf* crm:E33_Linguistic_Object . BIND("true" as ?isE33) }
+                                OPTIONAL { ?cidocType rdfs:subClassOf* crmdig:D1_Digital_Object . BIND("true" as ?isD1) }
                                 OPTIONAL { ?cidocType rdfs:subClassOf* crm:E55_Type . BIND("true" as ?isE55) }   
                                 OPTIONAL { ?cidocType rdfs:subClassOf* crm:E52_Time-Span . BIND("true" as ?isE52) }
                                 
@@ -14,11 +15,10 @@
                                         (if (BOUND(?isE55), 
                                                 "skos",
                                         (if ( BOUND(?isE41),
-                                                "appellation",
-                                        (if ( BOUND(?isE33),
-                                                "linguisticObject",
-                                            "entity" )))))))
+                                            (if ( BOUND(?isE33), "linguisticObject","appellation"))    
+                                        , (if(BOUND(?isD1),"appellation","entity")))))))
                                         as ?typename )
+                                BIND( if(BOUND(?isD1),"appellation","entity") as ?typename)
                             }'
         cases='{"timespan": "{{> timespan}}", 
                 "skos": "{{> skos}}", 
@@ -50,15 +50,14 @@
             {{/forms:Entity_partial}}     
         </template>
 
-        <template id='entity'>
-            {{#> forms:Entity_partial}}
+        <template id='entity'>           
+           {{#> forms:Entity_partial}}
                 <semantic-form-text-input for="entity_primary_appellation" label="Name/appellation" placeholder="Enter name/appellation"></semantic-form-text-input>                             
-            {{/forms:Entity_partial}}     
+            {{/forms:Entity_partial}}  
         </template>
 
     </semantic-switch>
 {{else}}
     {{> forms:Entity_partial}}
 {{/if}}
-
 

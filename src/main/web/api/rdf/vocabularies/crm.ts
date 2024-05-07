@@ -17,22 +17,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export { default as rdfs } from './rdfs';
-export { default as rdf } from './rdf';
-export { default as xsd } from './xsd';
-export { default as dc } from './dc';
-export { default as dct } from './dct';
-export { default as crm } from './crm';
-export { default as sp } from './sp';
-export { default as spl } from './spl';
-export { default as spin } from './spin';
-export { default as ldp } from './ldp';
-export { default as oa } from './oa';
-export { default as field } from './field';
+import * as Rdf from '../core/Rdf';
 
-export { default as prov } from './prov';
+module crm {
+  export var _NAMESPACE = 'http://www.cidoc-crm.org/cidoc-crm/';
+  export const iri = (s: string) => Rdf.iri(_NAMESPACE + s);
 
-export { default as persist } from './persist';
-export { default as VocabPlatform } from './platform';
+  export const symbolic_content = iri('P190_has_symbolic_content');
+}
 
-export { default as workflow } from './workflow';
+export default crm;

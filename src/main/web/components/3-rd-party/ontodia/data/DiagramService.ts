@@ -31,7 +31,7 @@ import {
 
 import { Rdf } from 'platform/api/rdf';
 import * as JsonLd from 'platform/api/rdf/formats/JsonLd';
-import { rdf, rdfs, VocabPlatform } from 'platform/api/rdf/vocabularies/vocabularies';
+import { rdf, rdfs, crm, VocabPlatform } from 'platform/api/rdf/vocabularies/vocabularies';
 import { SparqlClient, SparqlUtil, QueryContext } from 'platform/api/sparql';
 import { LdpService } from 'platform/api/services/ldp';
 import { getThumbnails } from 'platform/api/services/resource-thumbnail';
@@ -137,7 +137,7 @@ export function getDiagramByIri(
           // this assumes json-ld to be in expanded mode, and it should be right after toRDF
           const oldDiagram = JSON.parse(json[0][ontodiaNsv0.diagramLayoutString.value][0]['@value']);
           return Kefir.constant({
-            label: json[0][rdfs.label.value] as string,
+            label: json[0][crm.symbolic_content.value] as string,
             diagram: convertToSerializedDiagram({
               layoutData: oldDiagram.layoutData,
               linkTypeOptions: oldDiagram.linkSettings,
@@ -145,7 +145,7 @@ export function getDiagramByIri(
           });
         } else {
           return JsonLd.frame(json, JSONLD_DIAGRAM_FRAME, { documentLoader }).map((diagram) => ({
-            label: diagram['@graph'][0][rdfs.label.value] as string,
+            label: diagram['@graph'][0][crm.symbolic_content.value] as string,
             diagram: {
               linkTypeOptions: [],
               ...diagram['@graph'][0],
@@ -170,8 +170,7 @@ function makeDiagramResource(
   if ((jsonldDiagram['@context'] = DIAGRAM_CONTEXT_URL_V1)) {
     jsonldDiagram['@context'] = OntodiaContextV1['@context'];
   }
-
-  jsonldDiagram[rdfs.label.value] = name;
+  jsonldDiagram[crm.symbolic_content.value] = name;
   jsonldDiagram['@id'] = diagramIri;
   // warning! this heavily assumes that RDF will only place predicates to diagram resource
   // otherwise proper ttl-to-jsonld parsing is required, assumed to be done in 3.0

@@ -10,9 +10,12 @@
                           entity_image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
                           entity_image="http://www.researchspace.org/pattern/system/entity/images"
                           entity_document="http://www.researchspace.org/pattern/system/entity/documents"
+                          entity_video="http://www.researchspace.org/pattern/system/entity/video"
+                          entity_3d_model="http://www.researchspace.org/pattern/system/entity/3d_model"
                           entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
+                          entity_represents_range="http://www.researchspace.org/pattern/system/entity/represents_range"
 
-                          timespan_text_value="http://www.researchspace.org/pattern/system/timespan/time_appellationMin1"
+                          timespan_text_value="http://www.researchspace.org/pattern/system/timespan/time_primitive_appellationMin1"
                           timespan_beginning="http://www.researchspace.org/pattern/system/timespan/beginning"
                           timespan_end="http://www.researchspace.org/pattern/system/timespan/end"
                           timespan_date="http://www.researchspace.org/pattern/system/timespan/at_some_time_within"
@@ -27,7 +30,6 @@
 
                           entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
                           entity_id="http://www.researchspace.org/pattern/system/entity/identifier"
-                          entity_has_type="http://www.researchspace.org/pattern/system/entity/has_type"
                           entity_description="http://www.researchspace.org/pattern/system/entity/description"
 
                           timespan_is_time-span_of="http://www.researchspace.org/pattern/system/timespan/is_time-span_of"
@@ -37,7 +39,7 @@
                           entity_influenced_activity="http://www.researchspace.org/pattern/system/entity/influenced_activity"
                           entity_motivated_activity="http://www.researchspace.org/pattern/system/entity/motivated_activity"
                           
-                          entity_depicted_by="http://www.researchspace.org/pattern/system/entity/depicted_by_manMadeThing"
+                          entity_depicts_range="http://www.researchspace.org/pattern/system/entity/depicts_range"
                           entity_subject_of="http://www.researchspace.org/pattern/system/entity/subject_of_propositional_object"
                           entity_refers_to_range="http://www.researchspace.org/pattern/system/entity/refers_to_range"
                 ]]'>
@@ -134,81 +136,23 @@
               </semantic-form-composite-input>
             </div>
 
-            <div class="inline-composite-container">
-              <semantic-form-composite-input  for="entity_preferred_id"
-                                              label="Preferred identifier"
-                                              new-subject-template="/entity_preferred_id" 
-                                              fields='[[fieldDefinitions
-                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+            <semantic-form-autocomplete-input   for="entity_preferred_id" 
+                                                label="Preferred identifier"
+                                                placeholder="Select preferred identifier" 
+                                                nested-form-templates='[ 
+                                                    {
+                                                        "label": "Identifier",
+                                                        "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Identifier\" nested=true editable=true mode=\"new\" }}
+                                                                        {{{{/raw}}}}"
+                                                    }
+                                                ]'>
+            </semantic-form-autocomplete-input>
 
-                                                      identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
-                                                      identifier_type="http://www.researchspace.org/pattern/system/identifier/identifier_type"
-                                                  ]]'
-                                              >
-                          
-                  <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
-                      
-                  <div class="form-inline-inputs">
-                      <div style="min-width: 40%;">
-                          <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter preferred identifier"></semantic-form-text-input>
-                      </div>
-                      <div style="flex: 1;">
-                          <semantic-form-select-input for='identifier_type' 
-                                                      label="Identifier type" 
-                                                      render-header=false
-                                                      placeholder="Select identifier type" 
-                                                      nested-form-templates='[ 
-                                                          {
-                                                              "label": "Identifier",
-                                                              "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
-                                                                                              scheme=\"http://www.researchspace.org/resource/system/vocab/identifier\"
-                                                                                              entityType=\"identifier\" }}
-                                                                              {{{{/raw}}}}"
-                                                          }
-                                                      ]'>
-                          </semantic-form-select-input>
-                      </div>
-                  </div>
-              </semantic-form-composite-input>
-            </div>
-
-            <div class="inline-composite-container">
-              <semantic-form-composite-input  for="entity_id"
-                                              label="Other identifier"
-                                              new-subject-template="/entity_id/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-                                              fields='[[fieldDefinitions
-                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
-
-                                                      identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
-                                                      identifier_type="http://www.researchspace.org/pattern/system/identifier/identifier_type"
-                                                  ]]'
-                                              >
-                          
-                  <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
-                      
-                  <div class="form-inline-inputs">
-                      <div style="min-width: 40%;">
-                          <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier"></semantic-form-text-input>
-                      </div>
-                      <div style="flex: 1;">
-                          <semantic-form-select-input for='identifier_type' 
-                                                      label="Identifier type" 
-                                                      render-header=false
-                                                      placeholder="Select identifier type" 
-                                                      nested-form-templates='[ 
-                                                          {
-                                                              "label": "Identifier",
-                                                              "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
-                                                                                              scheme=\"http://www.researchspace.org/resource/system/vocab/identifier\"
-                                                                                              entityType=\"identifier\" }}
-                                                                              {{{{/raw}}}}"
-                                                          }
-                                                      ]'>
-                          </semantic-form-select-input>
-                      </div>
-                  </div>
-              </semantic-form-composite-input>
-            </div>
+            <semantic-form-autocomplete-input   for="entity_id" 
+                                                label="Other identifier"
+                                                placeholder="Select other identifier" 
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_appellations]]'>
+            </semantic-form-autocomplete-input>
 
             <semantic-form-text-input for="entity_description" multiline="true" label="Timespan description/comment" placeholder="Enter description/comment"></semantic-form-text-input>
           </div>
@@ -289,7 +233,7 @@
                   <template id='timespanComponents'>
                       <div class="page__section-container formHierarchyView-container">
                       <div class="form-header-withButtons">
-                          <h4 style="margin: 0; align-self: end;">Components view</h4>
+                          <h4>Components</h4>
                           <div class="btn-form-actions"> 
                           <mp-event-trigger id='{{viewId}}-timespan-componentsView-refresh-trigger' 
                                               type='Component.TemplateUpdate' 
@@ -464,11 +408,54 @@
 
       <rs-tab event-key="thing" title="Things">
 
-        <semantic-form-autocomplete-input   for='entity_depicted_by' 
-                                            label="Depicted by"
-                                            placeholder="Select what depicts the timespan" 
-                                            nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'> 
-        </semantic-form-autocomplete-input>
+        <div class="inline-composite-container">
+          <semantic-form-composite-input  for="entity_depicts_range" 
+                                          label="Depicted by" 
+                                          new-subject-template="/PC62_depicts/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                          fields='[[fieldDefinitions
+                                                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                              
+                                                    depicts_thing_domain="http://www.researchspace.org/pattern/system/depicts/domain"
+                                                    mode_of_depiction="http://www.researchspace.org/pattern/system/depicts/mode_of_depiction"
+                                                  ]]'>
+
+          <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC62_depicts'> </semantic-form-hidden-input>
+
+          <div class="form-inline-inputs">
+            <div style="flex: 1;">
+              <semantic-form-autocomplete-input for='depicts_thing_domain' 
+                                                render-header="false"
+                                                placeholder="Select what depicts the timespan"
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'>
+              </semantic-form-autocomplete-input>
+            </div>
+            <div style="flex: 1;">
+              <semantic-form-tree-picker-input  for="mode_of_depiction" 
+                                                render-header="false"
+                                                placeholder="Select mode of depiction"
+                                                close-dropdown-on-selection='true'
+                                                tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/mode_of_depiction>", 
+                                                                "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/mode_of_depiction>",
+                                                                "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+
+                                                scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                            "view": "vocabulary-content",
+                                                                            "scheme": "http://www.researchspace.org/resource/vocab/mode_of_depiction",
+                                                                            "tooltip": "Open list of mode of depictions"
+                                                                          }'
+                                                
+                                                nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                      scheme="http://www.researchspace.org/resource/vocab/mode_of_depiction"
+                                                                                      entityType="mode of depiction" }}{{{{/raw}}}}'
+
+                                                query-item-label='SELECT ?label WHERE {
+                                                                    ?item skos:prefLabel ?label .
+                                                                }'>
+                </semantic-form-tree-picker-input>
+            </div>
+          </div>
+          </semantic-form-composite-input>
+      </div>
 
         <semantic-form-autocomplete-input for='entity_subject_of' 
                                     label="Subject of"
@@ -493,7 +480,7 @@
             <div style="flex: 1;">
               <semantic-form-autocomplete-input for='refers_to_propObj_domain' 
                                                 render-header="false"
-                                                placeholder="Select what refers to the entity" 
+                                                placeholder="Select what refers to the timespan" 
                                                 nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'>
               </semantic-form-autocomplete-input>
             </div>

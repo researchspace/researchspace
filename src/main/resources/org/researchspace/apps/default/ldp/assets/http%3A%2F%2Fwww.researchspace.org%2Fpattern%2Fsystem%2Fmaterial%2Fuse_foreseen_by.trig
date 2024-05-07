@@ -1,0 +1,76 @@
+
+<http://www.researchspace.org/pattern/system/material/use_foreseen_by/context> {
+  _:genid-412c22b247c749f681c9f453d010d449-1qsmu a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  ?value a crm:E29_Design_or_Procedure .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  <http://www.researchspace.org/pattern/system/material/use_foreseen_by> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-412c22b247c749f681c9f453d010d449-1qsmu;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E29_Design_or_Procedure>;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-412c22b247c749f681c9f453d010d449-w1jkkn;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.w3.org/2000/01/rdf-schema#comment> """Designs and procedures commonly foresee the use of a particular material. The fabrication of adobe bricks, for example, requires straw, clay and water. This property enables this to be documented.
+This property is not intended for the documentation of materials that were used on a particular occasion when a procedure was executed.""";
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.w3.org/2000/01/rdf-schema#label> "Material use foreseen by"@en;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-412c22b247c749f681c9f453d010d449-pzp1gg;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-412c22b247c749f681c9f453d010d449-engt0m;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E57_Material>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-412c22b247c749f681c9f453d010d449-v8uewb;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/material>;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-23T19:39:47.917+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-412c22b247c749f681c9f453d010d449-engt0m a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+  $subject crm:P68i_use_foreseen_by $value . 
+  $value crm:P68_foresees_use_of $subject .
+} WHERE {
+  $subject crm:P68i_use_foreseen_by $value . 
+  $value crm:P68_foresees_use_of $subject .
+      
+  ?value a crm:E29_Design_or_Procedure .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-412c22b247c749f681c9f453d010d449-v8uewb a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  $subject crm:P68i_use_foreseen_by $value . 
+     
+  ?value a crm:E29_Design_or_Procedure .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-412c22b247c749f681c9f453d010d449-w1jkkn a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  ?value a crm:E29_Design_or_Procedure .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ?label
+  LIMIT 10""" .
+  
+  _:genid-412c22b247c749f681c9f453d010d449-pzp1gg a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P68i_use_foreseen_by $value . 
+  $value crm:P68_foresees_use_of $subject .
+} WHERE {}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/material/use_foreseen_by> .
+}

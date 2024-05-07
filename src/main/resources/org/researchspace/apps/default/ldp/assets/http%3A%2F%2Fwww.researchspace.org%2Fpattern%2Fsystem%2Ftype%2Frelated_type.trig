@@ -1,28 +1,23 @@
+
 <http://www.researchspace.org/pattern/system/type/related_type/context> {
-  
   <http://www.researchspace.org/pattern/system/type/related_type> a <http://www.researchspace.org/resource/system/fields/Field>,
       <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
     <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E55_Type>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-be0551e499a84b7984320439f47b5d9c-ote0lg;
     <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E55_Type>;
     <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
     <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-eca2155afffe4f26bcc141c2834504ef-3i2r9g;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/type>;
     <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-be0551e499a84b7984320439f47b5d9c-m768nr;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-be0551e499a84b7984320439f47b5d9c-emem1s;
     <http://www.w3.org/2000/01/rdf-schema#label> "Related type";
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-eca2155afffe4f26bcc141c2834504ef-w8cg;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-eca2155afffe4f26bcc141c2834504ef-j2ai2h;
-    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-eca2155afffe4f26bcc141c2834504ef-sum30q;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-be0551e499a84b7984320439f47b5d9c-1g7ujf;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-be0551e499a84b7984320439f47b5d9c-30k0g;
     <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-02-19T18:46:42.761Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-23T10:54:03.753+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
   
-  _:genid-eca2155afffe4f26bcc141c2834504ef-j2ai2h a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-    $subject skos:related ?value .
-    ?value skos:related $subject .
-} WHERE {
-}""" .
-  
-  _:genid-eca2155afffe4f26bcc141c2834504ef-w8cg a <http://spinrdf.org/sp#Query>;
+  _:genid-be0551e499a84b7984320439f47b5d9c-m768nr a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
     $subject skos:related ?value .
     
@@ -31,7 +26,30 @@
     ?value skos:prefLabel ?label .
 }""" .
   
-  _:genid-eca2155afffe4f26bcc141c2834504ef-3i2r9g a <http://spinrdf.org/sp#Query>;
+  _:genid-be0551e499a84b7984320439f47b5d9c-1g7ujf a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E55_Type .
+  ?value skos:prefLabel ?label .
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-be0551e499a84b7984320439f47b5d9c-emem1s a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+    $subject skos:related ?value .
+    ?value skos:related $subject .
+} WHERE {
+}""" .
+  
+  _:genid-be0551e499a84b7984320439f47b5d9c-30k0g a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E55_Type .
+  ?value skos:prefLabel ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-be0551e499a84b7984320439f47b5d9c-ote0lg a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """DELETE {  
     $subject skos:related ?value .
     ?value skos:related $subject .
@@ -43,13 +61,6 @@
     ?ontologyClass rdfs:subClassOf* crm:E55_Type .
     ?value skos:prefLabel ?label .
 }""" .
-  
-  _:genid-eca2155afffe4f26bcc141c2834504ef-sum30q a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
-  ?value a ?ontologyClass .
-  ?ontologyClass rdfs:subClassOf* crm:E55_Type .
-  ?value skos:prefLabel ?label .
-} ORDER BY ASC(LCASE(STR(?label)))""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
       <http://www.researchspace.org/pattern/system/type/related_type> .

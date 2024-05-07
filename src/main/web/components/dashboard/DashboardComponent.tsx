@@ -18,7 +18,9 @@
 
 import * as React from 'react';
 import { uniqueId, isEmpty } from 'lodash';
-import FlexLayout, { Model, Node, TabNode, Layout, TabSetNode, DockLocation } from 'flexlayout-react';
+import FlexLayout, { Model, Node, Action, Actions,
+                     TabNode, Layout, TabSetNode,
+                     DockLocation } from 'flexlayout-react';
 
 import { setFrameNavigation } from 'platform/api/navigation';
 import { Component } from 'platform/api/components';
@@ -87,6 +89,11 @@ export interface DashboardLinkedViewConfig {
    * SPARQL Ask query that is used to check whether it is possible to display a specific resource type in the specific view. Resource IRI is injected into the query using the <code>?value</code> binding variable.
    */
   checkQuery?: string;
+
+  /**
+   * Allows initiating a component/template without a resource.
+   */
+  resourceNotRequired?: boolean;
 }
 
 export interface Props {
@@ -168,21 +175,24 @@ export class DashboardComponent extends Component<Props, State> {
     
     this.onAddNewItem({
       ...this.frameLabel(label),
-      ...(data as AddFrameEventData),
+      ...(data),
       data,
     });
   }
+
+
+  private defaultLayoutProps = {
+    "borderBarSize": 36,
+    "tabSetTabStripHeight": 36,
+    "splitterSize": 6 ,
+  };
 
   constructor(props: Props, context: any) {
     super(props, context);
     this.state = {
       items: [],
       layout: FlexLayout.Model.fromJson({
-        global: { 
-          "borderBarSize": 36,
-          "tabSetTabStripHeight": 36,
-          "splitterSize": 6 ,
-        },
+        global: this.defaultLayoutProps,
         borders: [
           {
 		        "type": "border",
@@ -236,7 +246,6 @@ export class DashboardComponent extends Component<Props, State> {
         .observe({
           value: ({ data }) => {
             const {viewId, resourceIri, resourceEditorLabel} = data as AddFrameEventData
-
             if(resourceIri) {
               this.subscription = LabelsService.getLabel(Rdf.iri(resourceIri)).observe({
                 value: (label) => {
@@ -277,7 +286,7 @@ export class DashboardComponent extends Component<Props, State> {
               .getBorders()
               .find(b => b.getLocation() === DockLocation.LEFT)
               .getId(),
-          {'type': 'tab', 'name': panelConfig.label, 'component': "leftItem", 'config': i, 'enableClose': false, 'className': panelConfig.class }
+          {'type': 'tab', 'name': panelConfig.label, 'component': "leftItem", 'config': { 'panelIndex': i }, 'enableClose': false, 'className': panelConfig.class }
         )
       );
     }
@@ -290,7 +299,7 @@ export class DashboardComponent extends Component<Props, State> {
               .getBorders()
               .find(b => b.getLocation() === DockLocation.RIGHT)
               .getId(),
-          {'type': 'tab', 'name': panelConfig.label, 'component': "rightItem", 'config': i,  'enableClose': false, 'className': panelConfig.class }
+          {'type': 'tab', 'name': panelConfig.label, 'component': "rightItem", 'config': { 'panelIndex': i }, 'enableClose': false, 'className': panelConfig.class }
         )
       );
     }
@@ -356,6 +365,18 @@ export class DashboardComponent extends Component<Props, State> {
   }
 
   private onAddNewItem = (item: Item = this.frameLabel()) => {
+    // check if an item with the same resourceIri is already in the tabset
+    const itemIsAlreadyOpen = this.state.items.filter((i) => item.resourceIri && i.resourceIri === item.resourceIri && i.viewId === item.viewId)
+    // if is already open, then select it and set to active, otherwise it will create a new tab with the selected item
+    if(itemIsAlreadyOpen.length > 0) {
+      this.state.layout.doAction(FlexLayout.Actions.selectTab(item.resourceIri))
+      this.onSelectView({
+        itemId: item.id,
+        viewId: item.viewId,
+        resourceIri: item.resourceIri,
+      });
+      return
+    }
     const viewConfig = this.props.views.find(({id}) => id === item.viewId);
     if (viewConfig?.unique && this.state.items.find(i => i.viewId === item.viewId)) {
       return;
@@ -368,7 +389,10 @@ export class DashboardComponent extends Component<Props, State> {
         },
         () => {
           this.layoutRef.current.addTabToActiveTabSet(
-            {'type': 'tab', 'name': item.label, 'component': "item", 'config': item.id, 'className': viewConfig?.iconName || viewConfig?.iconClass || 'no-icon-button', 'icon': 'add'}
+            {
+              'type': 'tab', 'id': item.resourceIri, 'name': item.label, 'component': "item", 'config': {'itemId': item.id},
+             'className': viewConfig?.iconName || viewConfig?.iconClass || 'no-icon-button', 'icon': 'add'
+            }
           );
           this.onSelectView({
             itemId: item.id,
@@ -427,22 +451,6 @@ export class DashboardComponent extends Component<Props, State> {
   //   );
   // }
 
-  private renderBody(item: Item) {
-    const view = item.viewId ? this.props.views.find(({ id }) => id === item.viewId) : undefined;
-    if (!view || !view.itemBodyTemplate) {
-      return null;
-    }
-    return (
-      <TemplateItem
-        key={item.id}
-        template={{
-          source: view.itemBodyTemplate,
-          options: { iri: item.resourceIri, dashboardId: item.id },
-        }}
-      />
-    );
-  }
-
   private removeItem(itemId: string) {
     this.setState(
       (prevState): State => {
@@ -459,18 +467,18 @@ export class DashboardComponent extends Component<Props, State> {
     );
   }
 
-  private onRemoveItem(item: Item) {
+  private onRemoveItem(action: Action, itemId: string) {
+    const item = this.state.items.find(item => item.id == itemId);
     const removeItem = () => {
-      if (item.linkedBy) {
-        this.state.items.forEach(({ id, linkedBy }) => {
-          if (linkedBy === item.linkedBy) {
-            this.removeItem(id);
-          }
-        });
-      } else {
-        this.removeItem(item.id);
-      }
+      // go through all items and remove all items "nested" in the current one
+      this.state.items.forEach(({ id, linkedBy }) => {
+        if (linkedBy === itemId) {
+          this.removeItem(id);
+        }
+      });
+      this.removeItem(item.id);
     };
+
     if (item.isDirty) {
       const dialogRef = 'removing-confirmation';
       const onHide = () => getOverlaySystem().hide(dialogRef);
@@ -483,18 +491,27 @@ export class DashboardComponent extends Component<Props, State> {
             onHide();
             if (confirm) {
               removeItem();
+
+              // if user confirms tab close we want to re-send initial close event to FlexLayout
+              this.state.layout.doAction(action);
             }
           }}
         />
       );
+
+      // we return undefined to signal to FlexLayout that we want to interrupt tab close action
+      return undefined;
     } else {
       removeItem();
+
+      // if close action doesn't requires confirmation then we just propagate initial action
+      return action;
     }
   }
 
 
   private onSelectView({ itemId, viewId, resourceIri }: { itemId: string; viewId: string; resourceIri: string }) {
-    const { linkedViews } = this.props;
+    const { linkedViews, views } = this.props;
     this.setState(
       (prevState): State => {
         const newItems = [...prevState.items];
@@ -502,16 +519,65 @@ export class DashboardComponent extends Component<Props, State> {
           if (item.id !== itemId) {
             return;
           }
+
           const linkedView = linkedViews.find((view) => view.id === viewId);
           if (linkedView) {
-            const index = newItems.findIndex(({ id }) => id === itemId);
+            // map through all linked view, create items. then create new tabset and add them
             const items = linkedView.viewIds.map((id) => ({
               ...this.frameLabel(),
               viewId: id,
               resourceIri: resourceIri,
               linkedBy: itemId,
             }));
-            newItems.splice(index, 1, ...items);
+
+            const newTabs = items.map(newItem => {
+              const viewConfig = this.props.views.find(({id}) => id === newItem.viewId);
+              return {
+				        "type": "tabset",
+                "enableDrop": false,
+                "config": {
+                  "type": "nested"
+                },
+				        "children": [
+                  {
+                    'type': 'tab',
+                    'name': newItem.label,
+                    'enableClose': false,
+                    'enableDrag': false,
+                    'component': "item", 'config': { 'itemId': newItem.id }, 'className': viewConfig?.iconName || viewConfig?.iconClass || 'no-icon-button', 'icon': 'add'}
+
+                ]
+              };
+            });
+
+
+            let linkedNodeTabId: string;
+            prevState.layout.visitNodes(node => {
+              if (node.getType() === TabNode.TYPE && (node as TabNode).getConfig().itemId === itemId) {
+                linkedNodeTabId = node.getId();
+              }
+            });
+            prevState.layout.doAction(
+              FlexLayout.Actions.updateNodeAttributes(linkedNodeTabId, {
+                component: 'nested',
+                config: {
+                  'itemId': itemId,
+                  'model': {
+								    'global': {
+                      ...this.defaultLayoutProps,
+									    'tabSetTabLocation': 'bottom',
+								    },
+								    'borders': [],
+								    'layout': {
+                      'type': 'row',
+                      'children': newTabs
+                    }
+                  }
+                }
+              })
+            );
+
+            newItems.push(...items);
           } else {
             newItems[index] = { ...item, viewId, resourceIri };
           }
@@ -562,6 +628,7 @@ export class DashboardComponent extends Component<Props, State> {
         iconClass: linkedView.iconClass,
         description: linkedView.description,
         checkQuery: linkedView.checkQuery,
+        resourceNotRequired: linkedView.resourceNotRequired
       });
     });
     const linkedFrames: Array<{ frameId: string; frameVariable: string }> = [];
@@ -583,6 +650,7 @@ export class DashboardComponent extends Component<Props, State> {
           viewId={item.viewId}
           homePageIri={homePageIri}
           resourceIri={item.resourceIri}
+          gridView={true}
           data={item.data}
           linkedFrames={linkedFrames}
           onSelect={({ viewId, resourceIri }) =>
@@ -596,13 +664,34 @@ export class DashboardComponent extends Component<Props, State> {
     );
   }
 
+  private tabIcons = () =>
+    ({
+      'close': <Icon iconType='round' iconName='close'/>,
+      'maximize': <Icon iconType='round' iconName='fullscreen'/>,
+      'restore': <Icon iconType='round' iconName='close_fullscreen'/>,
+      'more': <Icon iconType='round' iconName='arrow_drop_down'/>,
+    });
+
   private factory = (node: TabNode) => {
-    if (node.getComponent() === 'leftItem') {
-      return <TemplateItem template={{source: this.props.leftPanels[node.getConfig()].template}} />;
-    } else if (node.getComponent() === 'rightItem') {
-      return <TemplateItem template={{source: this.props.rightPanels[node.getConfig()].template}} />;
+    const component = node.getComponent();
+    if (component === 'leftItem') {
+      return <TemplateItem template={{source: this.props.leftPanels[node.getConfig().panelIndex].template}} />;
+    } else if (component === 'rightItem') {
+      return <TemplateItem template={{source: this.props.rightPanels[node.getConfig().panelIndex].template}} />;
+    } else if (component === 'nested') {
+      let model = node.getExtraData().model;
+      if (model == null) {
+        node.getExtraData().model = Model.fromJson(node.getConfig().model);
+        model = node.getExtraData().model;
+      }
+      return <FlexLayout.Layout model={model} factory={this.factory} icons={this.tabIcons()} />;
     } else {
-      return this.renderView(this.state.items.find(item => item.id === node.getConfig()));
+      const item = this.state.items.find(item => item.id === node.getConfig().itemId);
+      if (item) {
+        return this.renderView(this.state.items.find(item => item.id === node.getConfig().itemId));
+      } else {
+        return null;
+      }
     }
   }
 
@@ -618,15 +707,29 @@ export class DashboardComponent extends Component<Props, State> {
   // }
 
   private onRenderTabSet = (node: TabSetNode, renderValues: {stickyButtons: React.ReactNode[]}) => {
-    renderValues.stickyButtons.push(
-      <button className='flexlayout__tab_toolbar_sticky_button'
-        onMouseDown={event=> event.stopPropagation()}
-        onClick={(event) => {
-          this.onAddNewItem();
-        }}>
-        <Icon iconType='round' iconName='add'/>
-      </button>
-    );
+    // we don't want to render new tab button for nested tabsets
+    // because currently they are used only in linked views,
+    // where we don't allow new netsted tabs
+    if(node.getConfig()?.type !== 'nested') {
+      renderValues.stickyButtons.push(
+        <button className='flexlayout__tab_toolbar_sticky_button'
+          onMouseDown={event=> event.stopPropagation()}
+          onClick={(event) => {
+            this.onAddNewItem();
+          }}>
+          <Icon iconType='round' iconName='add'/>
+        </button>
+      );
+    }
+  }
+
+  private onLayoutAction = (action: Action) => {
+    if (action.type === Actions.DELETE_TAB) {
+      const tab = this.state.layout.getNodeById(action.data.node) as TabNode;
+      return this.onRemoveItem(action, tab.getConfig().itemId);
+    } else {
+      return action;
+    }
   }
 
   render() {
@@ -636,15 +739,8 @@ export class DashboardComponent extends Component<Props, State> {
         model={this.state.layout}
         factory={this.factory}
         onRenderTabSet={this.onRenderTabSet}
-        icons={
-          {
-            'close': <Icon iconType='round' iconName='close'/>,
-            'maximize': <Icon iconType='round' iconName='fullscreen'/>,
-            'restore': <Icon iconType='round' iconName='close_fullscreen'/>,
-            'more': <Icon iconType='round' iconName='arrow_drop_down'/>,
-
-          }
-        }
+        onAction={this.onLayoutAction}
+        icons={this.tabIcons()}
       />
     );
   }

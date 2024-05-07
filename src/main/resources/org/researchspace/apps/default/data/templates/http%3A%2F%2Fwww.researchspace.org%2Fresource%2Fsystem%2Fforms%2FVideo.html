@@ -1,0 +1,27 @@
+<semantic-form id='{{#if formId}}{{formId}}{{else}}{{viewId}}-vocab-form{{/if}}' 
+                post-action="event"
+                subject='{{node}}'
+                persistence='{"type": "sparql", "targetInsertGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/assets/videos{{/if}}"}'
+                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/video/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
+                fields='[[fieldDefinitions
+                
+                          ]]'
+              >
+              
+    <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
+        <semantic-form-hidden-input for='classtype' default-value='http://www.researchspace.org/ontology/EX_Streaming_Video'> </semantic-form-hidden-input>
+        {{#if scheme}}
+            <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
+        {{/if}}
+
+    </div>
+  
+    <semantic-form-errors></semantic-form-errors>
+
+    {{#ifCond mode "===" "new"}}
+        [[> rsp:FormDefaultActions actionType='Upload' formEntity='video' assetForm=true assetStorage='tmp']]
+    {{else}}
+        [[> rsp:FormDefaultActions formEntity='video' assetForm=true assetStorage='tmp']]
+    {{/ifCond}}
+  
+</semantic-form>

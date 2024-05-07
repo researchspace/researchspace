@@ -2,6 +2,7 @@
                                 ?resourceConfiguration ?resourceName ?resourceOntologyClass ?resourceP2Type ?resourceFormIRI 
                                 ?resourceMembershipProperty ?resourceBroaderProperty ?resourceOrderPattern 
                                 ?resourceRestrictionPattern ?resourceLabelPattern 
+                                ?resourceIcon
                                  ?managedByResourceConfig
                             
                         WHERE {
@@ -41,6 +42,9 @@
                             OPTIONAL {
                               ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_label_sparql_pattern> ?resourceLabelPattern .
                             }
+                            OPTIONAL {
+                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .
+                            }
                           } LIMIT 1'
   >
     <template id='template'>
@@ -59,6 +63,7 @@
           resourceMembershipProperty=bindings.0.resourceMembershipProperty.value 
           resourceBroaderProperty=bindings.0.resourceBroaderProperty.value 
           resourceOrderPattern=bindings.0.resourceOrderPattern.value 
+          resourceIcon=bindings.0.resourceIcon.value
           mode=mode 
           iri=iri}}
       {{else}}
@@ -78,7 +83,7 @@
           resourceMembershipProperty=bindings.0.resourceMembershipProperty.value 
           resourceBroaderProperty=bindings.0.resourceBroaderProperty.value 
           resourceOrderPattern=bindings.0.resourceOrderPattern.value 
-
+          resourceIcon=bindings.0.resourceIcon.value
           selectedEntity=selectedEntity}}
       {{/ifCond}}
     </template>

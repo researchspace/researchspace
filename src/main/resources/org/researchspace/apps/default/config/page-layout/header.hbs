@@ -130,6 +130,7 @@
                                                 FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>)
                                                 FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>)
                                                 FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item>)
+                                                FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/User>)
                                               } ORDER BY ASC(?resourceName)'
 
                                         tuple-template='\{{> newResourceCard}}',
@@ -183,9 +184,9 @@
                                                   FILTER (EXISTS {?resourceOntologyClass rdfs:subClassOf crm:E1_CRM_Entity} || (?resourceOntologyClass = crm:E1_CRM_Entity)) 
 
                                               } ORDER BY ASC(?resourceName)'
-
                                         tuple-template='\{{> newResourceCard}}',
-                                        options='{"showFilter":true, "resultsPerPage":50}'
+                                        
+                                        options='{"showFilter":true, "resultsPerPage":300}'
                       >
                         <template id='newResourceCard'>
                           <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
@@ -283,7 +284,8 @@
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>,
-                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>)
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/User>)
                                                 )
 
                                                 FILTER EXISTS {?resourceOntologyClass rdfs:subClassOf* crm:E39_Actor} 
@@ -389,6 +391,7 @@
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>,
 
                                                   #following resources are removed as listed in System resources
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Document>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Image>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation>,
@@ -431,6 +434,7 @@
                         <semantic-table  id='newResource-tab-results'
                                         query='SELECT ?resourceConfig ?resourceName ?resourceFormIRI ?resourceIcon WHERE {
                                                 VALUES (?resourceConfig) { 
+                                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document>)
                                                   (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Document>)
                                                   (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Image>)
                                                   (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation>)
@@ -439,7 +443,6 @@
                                                   (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>)
                                                   (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Term>)
                                                   (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>)
-                                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/User>)
                                                 }
 
                                                 ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceName .
@@ -972,10 +975,20 @@
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
               urlqueryparam-view='entity-editor' 
+              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Biological_object'
+              urlqueryparam-mode='new'
+            >
+               biological object
+            </semantic-link>
+          </bs-menu-item>
+
+          <bs-menu-item>
+            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+              urlqueryparam-view='entity-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Man-made_object'
               urlqueryparam-mode='new'
             >
-               object
+               man-made object
             </semantic-link>
           </bs-menu-item>
 
@@ -997,6 +1010,26 @@
               urlqueryparam-mode='new'
             >
                series
+            </semantic-link>
+          </bs-menu-item>
+
+          <bs-menu-item>
+            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+              urlqueryparam-view='entity-editor' 
+              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Site'
+              urlqueryparam-mode='new'
+            >
+               site
+            </semantic-link>
+          </bs-menu-item>
+
+          <bs-menu-item>
+            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+              urlqueryparam-view='entity-editor' 
+              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Man-made_feature'
+              urlqueryparam-mode='new'
+            >
+               man made feature
             </semantic-link>
           </bs-menu-item>
 
@@ -1087,6 +1120,16 @@
                 urlqueryparam-mode='new'
               >
             term
+            </semantic-link>
+          </bs-menu-item>
+
+          <bs-menu-item>
+            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                urlqueryparam-view='entity-editor' 
+                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Title'
+                urlqueryparam-mode='new'
+              >
+            title
             </semantic-link>
           </bs-menu-item>
 
@@ -1292,7 +1335,7 @@
         </li>
 
         <li>
-          <bs-dropdown id="navbar-dropdown" class="feedback-dropdown">
+        {{!--  <bs-dropdown id="navbar-dropdown" class="feedback-dropdown">
               <bs-dropdown-toggle class="btn btn-icon">
                 <rs-icon icon-type="round" icon-name="forum"></rs-icon>
               </bs-dropdown-toggle>
@@ -1307,7 +1350,32 @@
                     All feedback
                   </bs-menu-item>
               </bs-dropdown-menu>
-          </bs-dropdown>
+          </bs-dropdown> --}}
+            <mp-overlay-dialog title="Contact us" type="modal" bs-size="large">
+              <mp-overlay-dialog-trigger>
+                <button class="btn btn-icon">
+                  <rs-icon icon-type="round" icon-name="forum"></rs-icon>
+                </button>
+              </mp-overlay-dialog-trigger>
+
+              <mp-overlay-dialog-content>
+                This version of ResearchSpace has been created and released by Kartography CIC.
+
+                <a href="https://researchspace.org/" title="ResearchSpace" target="_blank" class="text-link-action">
+                  ResearchSpace
+                </a>
+
+                <a href="https://researchspace.org/blog/" title="ResearchSpace blog" target="_blank" class="text-link-action">
+                  ResearchSpace blog
+                </a>
+
+                <a href="https://kartography.org/" title="Kartography" target="_blank" class="text-link-action">
+                  Kartography
+                </a>
+                
+              </mp-overlay-dialog-content>
+          </mp-overlay-dialog>
+          
         </li>
 
         <li>

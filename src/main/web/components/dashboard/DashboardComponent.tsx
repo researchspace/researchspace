@@ -389,10 +389,14 @@ export class DashboardComponent extends Component<Props, State> {
           newItems.push(item);
           return { items: newItems };
         },
-        () => {       
+        () => {
+            let newFrameId = item.id;
+            if (item.resourceIri && item.viewId)
+              newFrameId = item.resourceIri+item.viewId;
+
             this.layoutRef.current.addTabToActiveTabSet(
               {
-                'type': 'tab', 'id':item.resourceIri+item.viewId, 'name': item.label, 'component': "item", 'config': {'itemId': item.id},
+                'type': 'tab', 'id':newFrameId, 'name': item.label, 'component': "item", 'config': {'itemId': item.id},
                 'className': viewConfig?.iconName || viewConfig?.iconClass || 'no-icon-button', 'icon': 'add'
               }
             );

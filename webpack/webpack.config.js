@@ -41,8 +41,6 @@ module.exports = function(isProd) {
     const publicPath = '/assets/no_auth/';
 
     const config = {
-        stats: 'minimal',
-
         // we want source maps for prod and dev builds
         // we can't use eval source-maps because they don't work
         // with css/scss files
@@ -101,7 +99,7 @@ module.exports = function(isProd) {
                     },
                     styles: {
                         name: 'styles',
-                        test: /(\.css$)|(\.scss$)/,
+                        type: "css/mini-extract",
                         chunks: 'all',
                         enforce: true,
                     },

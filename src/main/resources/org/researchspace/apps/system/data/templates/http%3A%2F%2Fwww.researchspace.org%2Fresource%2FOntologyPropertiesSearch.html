@@ -252,7 +252,7 @@
                                 <semantic-search-result>
                                   <div class="ontology-property-table">
                                     <semantic-table id='ontology-property-table' 
-                                                    query="SELECT DISTINCT ?property ?propertyLabel ?propertyOntologyURI ?rangeOntologyURI ?description ?propertyFromClass 
+                                                    query="SELECT DISTINCT ?property ?range ?propertyLabel ?propertyOntologyURI ?rangeOntologyURI ?description ?propertyFromClass 
                                                            WHERE {
                                                             BIND(?subject as ?property) 
   
@@ -321,7 +321,7 @@
                                                   no-result-template='{{> noResults}}'
                                                   column-configuration='[
                                                                           {"displayName": "Property URI", "variableName": "propertyOntologyURI", "cellTemplate": "{{> propertyURI}}" },
-                                                                          {"displayName": "Range class", "variableName": "rangeOntologyURI", "cellTemplate": "{{> rangeClass}}"},
+                                                                          {"displayName": "Range class",  "cellTemplate": "{{> rangeClass}}"},
                                                                           {"displayName": "Description/Examples", "variableName": "description", "cellTemplate": "{{> description}}"},
                                                                           {"displayName": "Property inherited from class", "variableName": "propertyFromClass"}
                                                                           
@@ -340,7 +340,7 @@
                                             <div class="text-link">{{propertyOntologyURI.value}}</div>
                                           </mp-overlay-dialog-trigger>
                                           <mp-overlay-dialog-content>
-                                            <mp-page-loader iri="http://www.researchspace.org/resource/{{property.value}}"></mp-page-loader>
+                                            <mp-page-loader iri="{{property.value}}" context="{{property.value}}"></mp-page-loader>
                                           </mp-overlay-dialog-content>
                                         </mp-overlay-dialog>
                                       </template>
@@ -353,7 +353,7 @@
                                             <div class="text-link">{{rangeOntologyURI.value}}</div>
                                           </mp-overlay-dialog-trigger>
                                           <mp-overlay-dialog-content>
-                                            <mp-page-loader iri="http://www.researchspace.org/resource/{{rangeOntologyURI.value}}"></mp-page-loader>
+                                            <mp-page-loader iri="{{range.value}}" context="{{range.value}}"></mp-page-loader>
                                           </mp-overlay-dialog-content>
                                         </mp-overlay-dialog>
                                       </template>

@@ -15,8 +15,8 @@
 <div class="resource-editView-container">
 
 {{#if collection}}
-  <mp-splitpane min-size=140 default-size=400 default-open='true' class="frame-split-pane">
-    <div data-flex-layout="column top-stretch">
+  <mp-splitpane min-size=140 default-size=400 default-open='true' class-name="xxxxx">
+    <div class="split-pane__leftsidebar">
       <mp-splitpane-toggle-on>
         <button class="btn-toggle-on">
           <div class="btn-toggle-on-content">
@@ -27,7 +27,7 @@
         </button>
       </mp-splitpane-toggle-on>
       <mp-splitpane-toggle-off>
-        <div class="split-pane__leftsidebar-header">
+        <div class="split-pane__sidebar-header">
           <button data-flex-layout='row center-left' class="btn-toggle-off">
             <h4 style="width: 100%; text-align: left;" class="text-first-letter-uppercase">
               {{#if collectionLabel}}
@@ -43,7 +43,6 @@
       <mp-splitpane-sidebar-open style="flex: 1;">
         <div class="split-pane__sidebar-open">
           <div class="collection-terms-area">
-            
             {{#if editable}}
               <mp-event-trigger id='{{viewId}}-form-new-trigger' 
                                 type='Component.TemplateUpdate' 
@@ -333,20 +332,22 @@
                           <rs-icon icon-type="round" icon-name="more_vert"></rs-icon>
                         </bs-dropdown-toggle>
                         <bs-dropdown-menu>
-                            <semantic-query query='SELECT ?item ?file ?fileName WHERE {
+                            <semantic-query query='SELECT ?item ?file ?fileName ?fileMediaType WHERE {
                                                   BIND(<{{iri}}> as ?item) .
                                                   ?item a crm:E31_Document .
                                                   ?item crm:P1_is_identified_by ?file .
                                                   ?file rs:PX_has_file_name ?fileName .
-                                                  ?file rs:PX_has_media_type "application/pdf" .
+                                                  ?file rs:PX_has_media_type ?fileMediaType .
                                                 }'
                                           template='{{> template}}'
                               >
                                 <template id='template'>
-                                  <bs-menu-item href="/file?fileName={{bindings.0.fileName.value}}&storage=images&mode=open&mediaType=application%2Fpdf" target="_blank" title='open document'>
-                                    <rs-icon icon-type="round" icon-name="open_in_new" class="icon-left"></rs-icon>
-                                    <span>Open document</span>
-                                  </bs-menu-item>
+                                  {{#ifCond bindings.0.fileMediaType.value "==" "application/pdf"}}
+                                    <bs-menu-item href="/file?fileName={{bindings.0.fileName.value}}&storage=images&mode=open&mediaType=application%2Fpdf" target="_blank" title='open document'>
+                                      <rs-icon icon-type="round" icon-name="open_in_new" class="icon-left"></rs-icon>
+                                      <span>Open document</span>
+                                    </bs-menu-item>
+                                  {{/ifCond}}
                                   <mp-file-download  download-url="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}">
                                     <bs-menu-item>
                                       <rs-icon icon-type="round" icon-name="download" class="icon-left"></rs-icon>
@@ -386,7 +387,6 @@
                               </template>
                             </semantic-query>
       
-                            
                             <mp-copy-to-clipboard text='{{iri}}' message='{{resourceName}} IRI has been copied'>
                               <bs-menu-item>
                                 <rs-icon icon-type="round" icon-name="content_copy" class="icon-left"></rs-icon>

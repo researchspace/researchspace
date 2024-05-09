@@ -28,17 +28,15 @@
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
   ?value a ?ontologyClass .
   ?ontologyClass rdfs:subClassOf* crm:E70_Thing .
-  	{ 
-      ?value crm:P1_is_identified_by ?appellation .
-      ?appellation a crm:E41_Appellation .
-      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-       
-      ?appellation crm:P190_has_symbolic_content ?label .
+  { 
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
 	} UNION {
-      ?value crm:P102_has_title ?title . 
-      ?title a crm:E35_Title . 
-      ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
-      ?title crm:P190_has_symbolic_content ?label .
+      ?value skos:prefLabel ?label .
+	} UNION {
+      ?value crm:P190_has_symbolic_content ?label .
 	}
   FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ASC(?label) 
@@ -49,40 +47,36 @@
 	$subject crm:P93_took_out_of_existence $value . 
     $value crm:P93i_was_taken_out_of_existence_by $subject .
 } WHERE {
-	$subject crm:P93_took_out_of_existence $value . 
+	  $subject crm:P93_took_out_of_existence $value . 
     $value crm:P93i_was_taken_out_of_existence_by $subject .
       
     ?value a ?ontologyClass .
     ?ontologyClass rdfs:subClassOf* crm:E70_Thing .
-  	{ 
+    { 
       ?value crm:P1_is_identified_by ?appellation .
       ?appellation a crm:E41_Appellation .
       ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-       
       ?appellation crm:P190_has_symbolic_content ?label .
-	} UNION {
-      ?value crm:P102_has_title ?title . 
-      ?title a crm:E35_Title . 
-      ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
-      ?title crm:P190_has_symbolic_content ?label .
-	}
+    } UNION {
+        ?value skos:prefLabel ?label .
+    } UNION {
+        ?value crm:P190_has_symbolic_content ?label .
+    }
 }""" .
   
   _:genid-a00047679ec94933878a0f4e2a9336b6-u3mbd a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
   ?value a ?ontologyClass .
   ?ontologyClass rdfs:subClassOf* crm:E70_Thing .
-  	{ 
-      ?value crm:P1_is_identified_by ?appellation .
-      ?appellation a crm:E41_Appellation .
-      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-       
-      ?appellation crm:P190_has_symbolic_content ?label .
+  { 
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
 	} UNION {
-      ?value crm:P102_has_title ?title . 
-      ?title a crm:E35_Title . 
-      ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
-      ?title crm:P190_has_symbolic_content ?label .
+      ?value skos:prefLabel ?label .
+	} UNION {
+      ?value crm:P190_has_symbolic_content ?label .
 	}
 } ORDER BY ASC(LCASE(STR(?label)))""" .
   
@@ -92,18 +86,16 @@
       
    	?value a ?ontologyClass .
     ?ontologyClass rdfs:subClassOf* crm:E70_Thing .
-  	{ 
+    { 
       ?value crm:P1_is_identified_by ?appellation .
       ?appellation a crm:E41_Appellation .
       ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-       
       ?appellation crm:P190_has_symbolic_content ?label .
-	} UNION {
-      ?value crm:P102_has_title ?title . 
-      ?title a crm:E35_Title . 
-      ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
-      ?title crm:P190_has_symbolic_content ?label .
-	}
+    } UNION {
+        ?value skos:prefLabel ?label .
+    } UNION {
+        ?value crm:P190_has_symbolic_content ?label .
+    }
 }""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>

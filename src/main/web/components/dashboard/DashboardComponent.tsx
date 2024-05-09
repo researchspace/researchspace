@@ -246,7 +246,6 @@ export class DashboardComponent extends Component<Props, State> {
         .observe({
           value: ({ data }) => {
             const {viewId, resourceIri, resourceEditorLabel} = data as AddFrameEventData
-
             if(resourceIri) {
               this.subscription = LabelsService.getLabel(Rdf.iri(resourceIri)).observe({
                 value: (label) => {
@@ -366,6 +365,19 @@ export class DashboardComponent extends Component<Props, State> {
   }
 
   private onAddNewItem = (item: Item = this.frameLabel()) => {
+   
+    // check if an item with the same resourceIri is already in the tabset
+    const itemIsAlreadyOpen = this.state.items.filter((i) => item.resourceIri && i.resourceIri === item.resourceIri && i.viewId === item.viewId)
+    // if is already open, then select it and set to active, otherwise it will create a new tab with the selected item
+    if(itemIsAlreadyOpen.length > 0) { 
+      this.state.layout.doAction(FlexLayout.Actions.selectTab(item.resourceIri+item.viewId))
+      this.onSelectView({
+        itemId: item.id,
+        viewId: item.viewId,
+        resourceIri: item.resourceIri,
+      });
+      return
+    }
     const viewConfig = this.props.views.find(({id}) => id === item.viewId);
     if (viewConfig?.unique && this.state.items.find(i => i.viewId === item.viewId)) {
       return;
@@ -377,22 +389,25 @@ export class DashboardComponent extends Component<Props, State> {
           return { items: newItems };
         },
         () => {
-          if(item.data?.openAsDragAndDrop) {
-            this.layoutRef.current.addTabWithDragAndDrop('Drag me where you want',
-              {
-                'type': 'tab', 'name': item.label, 'component': "item", 'config': {'itemId': item.id},
-               'className': viewConfig?.iconName || viewConfig?.iconClass || 'no-icon-button', 'icon': 'add'
-              }
-            );
-          } else {
-            this.layoutRef.current.addTabToActiveTabSet(
-              {
-                'type': 'tab', 'name': item.label, 'component': "item", 'config': {'itemId': item.id},
-               'className': viewConfig?.iconName || viewConfig?.iconClass || 'no-icon-button', 'icon': 'add'
-              }
-            );
-          }
-          
+            let newFrameId = item.id;
+            if (item.resourceIri && item.viewId)
+              newFrameId = item.resourceIri+item.viewId;
+
+            if(item.data?.openAsDragAndDrop) {
+              this.layoutRef.current.addTabWithDragAndDrop('Drag me where you want',
+                {
+                  'type': 'tab', 'id':newFrameId, 'name': item.label, 'component': "item", 'config': {'itemId': item.id},
+                 'className': viewConfig?.iconName || viewConfig?.iconClass || 'no-icon-button', 'icon': 'add'
+                }
+              );
+            } else {
+              this.layoutRef.current.addTabToActiveTabSet(
+                {
+                  'type': 'tab', 'id':newFrameId, 'name': item.label, 'component': "item", 'config': {'itemId': item.id},
+                  'className': viewConfig?.iconName || viewConfig?.iconClass || 'no-icon-button', 'icon': 'add'
+                }
+              );
+            }
           this.onSelectView({
             itemId: item.id,
             viewId: item.viewId,

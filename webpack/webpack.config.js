@@ -22,6 +22,7 @@ const webpack = require('webpack');
 const AssetsPlugin = require('assets-webpack-plugin');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const defaults = require('./defaults')();
 
 /**
@@ -40,8 +41,6 @@ module.exports = function(isProd) {
     const publicPath = '/assets/no_auth/';
 
     const config = {
-        stats: 'minimal',
-
         // we want source maps for prod and dev builds
         // we can't use eval source-maps because they don't work
         // with css/scss files
@@ -49,7 +48,10 @@ module.exports = function(isProd) {
         resolveLoader: {
             modules: [path.resolve(ROOT_DIR, 'node_modules'), __dirname]
         },
-        cache: true,
+        cache: {
+            type: 'filesystem',
+            cacheDirectory: path.resolve(ROOT_DIR, 'build/webpack_temp_cache'),
+        },
         entry: {
             'app': path.join(SRC, 'app/app.ts'),
             'page-renderer': path.join(SRC, 'app/external/PageRenderer.ts')
@@ -58,13 +60,15 @@ module.exports = function(isProd) {
             path: path.join(DIST, 'no_auth'),
             filename: '[name].js',
             chunkFilename: '[name].js',
+            // use faster hashing algorithm, see https://webpack.js.org/configuration/output/#outputhashfunction
+            hashFunction: 'xxhash64',
             publicPath
         },
         optimization: {
             runtimeChunk: 'single',
-            providedExports: false,
-            usedExports: false,
-            concatenateModules: false,
+            moduleIds: 'named',
+            chunkIds: 'named',
+            emitOnErrors: true,
             splitChunks: {
                 chunks: 'all',
                 maxInitialRequests: Infinity,
@@ -73,24 +77,29 @@ module.exports = function(isProd) {
                 minChunks: 1,
                 cacheGroups: {
                     api: {
-                      test: /src[\\/]main[\\/]web[\\/]api[\\/]/,
-                      name: 'api',
-                      enforce: true
+                        test: /src[\\/]main[\\/]web[\\/]api[\\/]/,
+                        name: 'api',
+                        enforce: true
                     },
-                    vendor: {
+                    defaultVendors: {
                         test: /[\\/]node_modules[\\/]/,
                         enforce: true,
                         name(module) {
                             // get the name. E.g. node_modules/packageName/not/this/part.js
                             // or node_modules/packageName
-                            const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1];
-                            // npm package names are URL-safe, but some servers don't like @ symbols
-                            return `npm.${packageName.replace('@', '')}`;
+                            const match = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/);
+                            if (match) {
+                                const packageName = match[1];
+                                // npm package names are URL-safe, but some servers don't like @ symbols
+                                return `npm.${packageName.replace('@', '')}`;
+                            } else {
+                                return 'vendor';
+                            }
                         },
                     },
                     styles: {
                         name: 'styles',
-                        test: /(\.css$)|(\.scss$)/,
+                        type: "css/mini-extract",
                         chunks: 'all',
                         enforce: true,
                     },
@@ -109,12 +118,10 @@ module.exports = function(isProd) {
                 {
                     test: /(\.ts$)|(\.tsx$)/,
                     use: [
-                        'cache-loader',
                         {
                             loader: 'ts-loader',
                             options: {
                                 transpileOnly: true,
-                                experimentalWatchApi: true,
                             }
                         }
                     ],
@@ -124,10 +131,7 @@ module.exports = function(isProd) {
                     test: /\.scss$/,
                     include: PROJECT.cssModulesBasedComponents,
                     use: [
-                        {
-                            loader: MiniCssExtractPlugin.loader,
-                        },
-                        'cache-loader',
+                        MiniCssExtractPlugin.loader,
                         {
                             loader: '@teamsupercell/typings-for-css-modules-loader',
                             options: {
@@ -139,10 +143,10 @@ module.exports = function(isProd) {
                             options: {
                                 sourceMap: true,
                                 modules: {
+                                    exportLocalsConvention: 'camel-case',
                                     localIdentName: '[name]--[local]',
                                 },
                                 importLoaders: 2,
-                                localsConvention: 'camelCase',
                             }
                         },
                         {
@@ -151,6 +155,7 @@ module.exports = function(isProd) {
                                 sourceMap: true,
                                 sassOptions: {
                                     outputStyle: 'expanded',
+                                    quietDeps: true,
                                 }
                             }
                         }
@@ -159,15 +164,22 @@ module.exports = function(isProd) {
                 {
                     test: /\.scss$/,
                     use: [
-                        {
-                            loader: MiniCssExtractPlugin.loader,
-                        },
-                        'cache-loader',
+                        MiniCssExtractPlugin.loader,
                         {
                             loader: 'css-loader',
                             options : {
                                 importLoaders: 2,
                                 sourceMap: true,
+                                url: {
+                                    filter: (url, resourcePath) => {
+                                      // ignore resources that are included in css files that point to /assets
+                                      // they are going to be served at runtime, we don't need to bundle them
+                                      if (url.startsWith("/assets/")) {
+                                        return false;
+                                      }                        
+                                      return true;
+                                    },
+                                }
                             }
                         },
                         {
@@ -176,7 +188,8 @@ module.exports = function(isProd) {
                                 sourceMap: true,
                                 sassOptions: {
                                     // we need to use expanded to not lose selectors with no styles for which we also need to generate typescript typings
-                                    outputStyle: 'expanded'
+                                    outputStyle: 'expanded',
+                                    quietDeps: true,
                                 }
                             }
                         }
@@ -186,16 +199,9 @@ module.exports = function(isProd) {
                 {
                     test: /\.css$/,
                     use: [
-                        {
-                            loader: MiniCssExtractPlugin.loader,
-                        },
-                        'cache-loader',
+                        MiniCssExtractPlugin.loader,
                         {
                             loader: 'css-loader',
-                            options: {
-                                // plain css-loader is mainly used for mirador, where we need to enable url resolution to properly embed images form jquery-ui that is in node_modules
-                                url: true,
-                            },
                         }
                     ],
                 },
@@ -212,39 +218,39 @@ module.exports = function(isProd) {
                 },
                 {
                     test: /\.png$/,
-                    use: [{
-                        loader: 'url-loader',
-                        options: {
-                            limit: 100000,
-                            mimetype: 'image/png'
-                        }
-                    }],
+                    type: 'asset/inline',
                 },
                 {
                     test: /\.gif$/,
-                    loader: "file-loader",
+                    type: 'asset/resource',
                 },
                 {
                     test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-                    use: [{
-                        loader: 'url-loader',
-                        options: {
-                            limit: 10000,
-                            mimetype: 'application/font-woff'
-                        }
-                    }],
+                    type: 'asset/resource',
+                    generator: {
+                        filename: '[name][ext]'
+                    }
                 },
                 {
                     test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-                    loader: "file-loader",
+                    // we use resource for fonts even so webpack documentation recommends inline, because
+                    // otherwise we get 20MB style file with all icon fonts variations inlined
+                    type: 'asset/resource',
+                    generator: {
+                        filename: '[name][ext]'
+                    }    
                 },
                 {
                     test: path.join(ROOT_DIR, 'node_modules/codemirror/lib/codemirror.js'),
-                    loader: "expose-loader?CodeMirror",
+                    loader: "expose-loader",
+                    options: {
+                        exposes: ["CodeMirror"]
+                    }
                 },
-
-                // needed for ontodia
-                {test: /\.ttl$/, use: ['raw-loader']},
+                {
+                    test: /\.ttl$/,
+                    type: 'asset/source',
+                },
             ],
             noParse: [/.+zone\.js\/dist\/.+/]
         },
@@ -261,7 +267,15 @@ module.exports = function(isProd) {
                     'jsonld': path.join(ROOT_DIR, 'node_modules/jsonld/dist/jsonld.js'),
                 },
             ),
-            extensions: ['.ts', '.tsx', '.js']
+            extensions: ['.ts', '.tsx', '.js', '.scss'],
+
+            // these node.js dependencies are not used in the browser, but required by some libraries that we are using, 
+            fallback: { 
+                'stream': false, 'buffer': false, 
+                'punycode': false, 'http': false, 'https': false, 'url': false, 'path': false,
+                'crypto': false, 'os': false, 'assert': false, 'fs': false, 
+                'net': false, 'tls': false, 'zlib': false,
+            }
         },
         externals: {
             'google': 'false',
@@ -272,6 +286,11 @@ module.exports = function(isProd) {
             'react/lib/ReactContext': true
         },
         plugins: [
+            new ForkTsCheckerWebpackPlugin({
+                typescript: {
+                  config: path.resolve(__dirname, '../tsconfig.json'),
+                }
+            }),    
             new CircularDependencyPlugin({
                 // exclude detection of files based on a RegExp
                 exclude: /src\/main\/web\/ontodia|node_modules/,
@@ -288,16 +307,18 @@ module.exports = function(isProd) {
             new webpack.ProvidePlugin({
                 'cytoscape': 'cytoscape',
                 '$': 'jquery',
-                'jQuery': "jquery"
+                'jQuery': 'jquery'
             }),
 
             //do not bundle mirador images
             new webpack.NormalModuleReplacementPlugin(/\.\/images\/ui-.*/, 'node-noop'),
-
-            new webpack.WatchIgnorePlugin([
-                /scss\.d\.ts$/
-            ]),
-
+            new webpack.NormalModuleReplacementPlugin(
+                /^util$/,
+                path.join(ROOT_DIR, 'webpack/util-module.js')
+            ),          
+            new webpack.WatchIgnorePlugin({
+                paths: [/scss\.d\.ts$/]
+            }),
             new AssetsPlugin({
                 entrypoints: true,
                 manifestFirst: true,

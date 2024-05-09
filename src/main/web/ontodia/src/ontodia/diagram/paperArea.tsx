@@ -603,7 +603,7 @@ export class PaperArea extends React.Component<PaperAreaProps, State> {
     }
   };
 
-  private onWheel = (e: MouseWheelEvent) => {
+  private onWheel = (e: WheelEvent) => {
     if (this.shouldStartZooming(e)) {
       e.preventDefault();
       const delta = Math.max(-1, Math.min(1, e.deltaY || e.deltaX));

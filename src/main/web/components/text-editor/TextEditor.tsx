@@ -147,7 +147,7 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
 
         ?__resourceIri__ mp:fileName ?__fileName__.
         ?__resourceIri__ mp:mediaType "text/html".
-        ?__resourceIri__ rdfs:label ?__label__ .
+        ?__resourceIri__ crm:P190_has_symbolic_content ?__label__ .
         ?__resourceIri__ crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative> .
       } WHERE {}
     `,
@@ -244,7 +244,6 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
   // - drag and drop
 
   emptyBlock = (props: RenderNodeProps) => {
-    console.log("removing block");
     return (
       <div {...props.attributes}>
       {

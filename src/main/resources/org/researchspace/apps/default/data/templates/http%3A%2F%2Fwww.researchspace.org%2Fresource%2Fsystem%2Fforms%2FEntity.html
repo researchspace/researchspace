@@ -4,24 +4,26 @@
 
                                 ?node a ?cidocType .
 
-                                OPTIONAL {?cidocType rdfs:subClassOf* crm:E71_Man-Made_Thing . BIND("true" as ?isE71)
-                                    OPTIONAL {?cidocType rdfs:subClassOf* crm:E55_Type . BIND("true" as ?isE55)}                
-                                }
-
-                                OPTIONAL {?cidocType rdfs:subClassOf* crm:E52_Time-Span . BIND("true" as ?isE52)}
+                                OPTIONAL { ?cidocType rdfs:subClassOf* crm:E41_Appellation . BIND("true" as ?isE41) }
+                                OPTIONAL { ?cidocType rdfs:subClassOf* crm:E33_Linguistic_Object . BIND("true" as ?isE33) }
+                                OPTIONAL { ?cidocType rdfs:subClassOf* crmdig:D1_Digital_Object . BIND("true" as ?isD1) }
+                                OPTIONAL { ?cidocType rdfs:subClassOf* crm:E55_Type . BIND("true" as ?isE55) }   
+                                OPTIONAL { ?cidocType rdfs:subClassOf* crm:E52_Time-Span . BIND("true" as ?isE52) }
                                 
                                 BIND( if (BOUND(?isE52),
                                             "timespan" ,
-                                    (if (bound(?isE55), 
+                                        (if (BOUND(?isE55), 
                                                 "skos",
-                                    (if ( BOUND(?isE71),
-                                                    "thing",
-                                            "entity" )))))
+                                        (if ( BOUND(?isE41),
+                                            (if ( BOUND(?isE33), "linguisticObject","appellation"))    
+                                        , (if(BOUND(?isD1),"appellation","entity")))))))
                                         as ?typename )
+                                BIND( if(BOUND(?isD1),"appellation","entity") as ?typename)
                             }'
         cases='{"timespan": "{{> timespan}}", 
                 "skos": "{{> skos}}", 
-                "thing": "{{> thing}}",
+                "appellation": "{{> appellation}}",
+                "linguisticObject": "{{> linguisticObject}}",
                 "entity": "{{> entity}}"}'>
 
         <template id='timespan'>
@@ -36,21 +38,26 @@
             {{/forms:Entity_partial}}     
         </template>
 
-        <template id='thing'>
+        <template id='appellation'>
             {{#> forms:Entity_partial}}
-                <semantic-form-text-input for="man-made_thing_primary_title" label="Title/name" placeholder="Enter title/name"></semantic-form-text-input>                             
+                <semantic-form-text-input for="symbolic_object_content" label="Content/value" placeholder="Enter content/value"></semantic-form-text-input>                             
             {{/forms:Entity_partial}}     
         </template>
 
-        <template id='entity'>
+        <template id='linguisticObject'>
             {{#> forms:Entity_partial}}
-                <semantic-form-text-input for="entity_primary_appellation" label="Name/appellation" placeholder="Enter name/appellation"></semantic-form-text-input>                             
+                <semantic-form-text-input for="symbolic_object_content" label="Content/value" placeholder="Enter content/value"></semantic-form-text-input>                             
             {{/forms:Entity_partial}}     
+        </template>
+
+        <template id='entity'>           
+           {{#> forms:Entity_partial}}
+                <semantic-form-text-input for="entity_primary_appellation" label="Name/appellation" placeholder="Enter name/appellation"></semantic-form-text-input>                             
+            {{/forms:Entity_partial}}  
         </template>
 
     </semantic-switch>
 {{else}}
     {{> forms:Entity_partial}}
 {{/if}}
-
 

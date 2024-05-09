@@ -33,24 +33,21 @@ module.exports = function() {
     // We don't have any browser caching in dev environment so hash is not needed anyway.
     config.output.hotUpdateChunkFilename = '[id].hot-update.js';
 
-    config.optimization = {
-        minimize: true,
-        minimizer: [
-            new CssMinimizerPlugin(
-                {
-                    minimizerOptions: {
-                    preset: [
-                        "default",
-                        {
-                        discardComments: { removeAll: true },
-                        },
-                    ],
+    config.optimization.minimize = true;
+    config.optimization.minimizer = [
+        new CssMinimizerPlugin(
+            {
+                minimizerOptions: {
+                preset: [
+                    "default",
+                    {
+                    discardComments: { removeAll: true },
                     },
-                }
-            ) // Updated for Webpack 5
-        ]
-    };
-
+                ],
+                },
+            }
+        )
+    ];
 
     config.output.pathinfo = false;
 

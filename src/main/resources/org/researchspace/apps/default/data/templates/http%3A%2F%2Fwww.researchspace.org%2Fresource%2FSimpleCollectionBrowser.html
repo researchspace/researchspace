@@ -332,10 +332,14 @@
                           <rs-icon icon-type="round" icon-name="more_vert"></rs-icon>
                         </bs-dropdown-toggle>
                         <bs-dropdown-menu>
-                            <semantic-query query='SELECT ?item ?file ?fileName ?fileMediaType WHERE {
+                            <semantic-query query='SELECT ?item ?itemClass ?file ?fileType ?fileName ?fileMediaType WHERE {
                                                   BIND(<{{iri}}> as ?item) .
-                                                  ?item a crm:E31_Document .
+                                                  ?item a ?itemClass . 
+                                                  FILTER(?itemClass in (crm:E31_Document, crm:E32_Authority_Document, frbroo:F21_Recording_Work))
                                                   ?item crm:P1_is_identified_by ?file .
+                                                  OPTIONAL {
+                                                    ?file crm:P2_has_type ?fileType .
+                                                  }
                                                   ?file rs:PX_has_file_name ?fileName .
                                                   ?file rs:PX_has_media_type ?fileMediaType .
                                                 }'
@@ -351,7 +355,16 @@
                                   <mp-file-download  download-url="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}">
                                     <bs-menu-item>
                                       <rs-icon icon-type="round" icon-name="download" class="icon-left"></rs-icon>
-                                      <span>Download document</span>
+                                      <span>Download 
+                                        {{#if (eq bindings.0.fileType.value "http://www.researchspace.org/resource/system/vocab/digital_object_type/video")}}
+                                          video file
+                                        {{else if (eq bindings.0.fileType.value "http://www.researchspace.org/resource/system/vocab/digital_object_type/audio")}}
+                                          audio file
+                                        {{else if (or (eq bindings.0.itemClass.value "http://www.cidoc-crm.org/cidoc-crm/E31_Document") (eq bindings.0.itemClass.value "http://www.cidoc-crm.org/cidoc-crm/E32_Authority_Document") (eq bindings.0.fileType.value "http://www.researchspace.org/resource/system/vocab/digital_object_type/3Dmodel"))}}
+                                          document file
+                                        {{else}}
+                                        {{/if}}
+                                      </span>
                                     </bs-menu-item>
                                   </mp-file-download>
                                   <hr>
@@ -368,14 +381,19 @@
                                           template='{{> template}}'
                               >
                                 <template id='template'>
-                                  <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                                            urlqueryparam-view='iiif' 
-                                                            urlqueryparam-resource='{{bindings.0.item.value}}'>
-                                    <bs-menu-item>
-                                      <rs-icon icon-type="round" icon-name="open_in_new" class="icon-left"></rs-icon>
-                                      <span>Open image</span>
-                                    </bs-menu-item>
-                                  </semantic-link-container>
+
+                                  <mp-event-trigger id='{{viewId}}-image-annotation-add-frame-trigger' 
+                                                    type='Dashboard.AddFrame' 
+                                                    data='{"resourceIri": "{{bindings.0.item.value}}", 
+                                                            "viewId": "objectImageObservation", 
+                                                            "objectIri": "{{bindings.0.item.value}}",
+                                                            "frameId": "{{viewId}}"}' 
+                                                    targets='["thinking-frames"]'>
+                                      <bs-menu-item>
+                                        <rs-icon icon-type="round" icon-name="photo_size_select_large" class="icon-left"></rs-icon>
+                                        <span>View image/annotations</span>
+                                      </bs-menu-item>
+                                  </mp-event-trigger>
       
                                   <mp-file-download  download-url="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}">
                                     <bs-menu-item>

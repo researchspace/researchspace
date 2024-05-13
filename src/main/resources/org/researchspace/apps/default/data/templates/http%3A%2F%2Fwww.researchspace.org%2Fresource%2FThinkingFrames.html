@@ -35,8 +35,13 @@
 
 <div class='page_100vh thinking-frames-page'>
   <rs-dashboard
+    home-page-iri="http://www.researchspace.org/resource/SystemActivityFrame"
     [[#if (urlParam "view")]]
-      initial-view='{"view": "[[urlParam "view"]]", "resource": "[[urlParam "resource"]]" [[#if (urlParam "entityTypeConfig")]] , "data": {"entityTypeConfig": "[[urlParam "entityTypeConfig"]]"} [[/if]]}'
+      initial-view='{"view": "[[urlParam "view"]]", 
+                    "resource": "[[urlParam "resource"]]" 
+                    [[#if (urlParam "entityTypeConfig")]] , 
+                      "data": {"entityTypeConfig": "[[urlParam "entityTypeConfig"]]"} 
+                    [[/if]]}'
     [[/if]] 
     [[#if view]]
       initial-view='{"view": "[[view]]", "resource": "[[resource]]"}'
@@ -46,7 +51,7 @@
     {
     	"id": "simple-search",
       "label": "Search",
-      "iconClass": "rs-icon rs-icon-semantic_search",
+      "iconClass": "fa fa-search",
       "checkQuery": "ASK { ?value a rso:Semantic_Search . }",
       "template": "{{> simpleSearchTemplate}}",
       "resourceNotRequired": true,
@@ -55,8 +60,8 @@
 
     {
     	"id": "entity-search",
-      "label": "Search",
-      "iconClass": "rs-icon rs-icon-semantic_search",
+      "label": "Entity search",
+      "iconClass": "fa fa-search",
       "checkQuery": "ASK { ?value a rso:Semantic_Search . }",
       "template": "{{> entitySearchTemplate}}",
       "resourceNotRequired": true,
@@ -75,10 +80,10 @@
 
     {
     	"id": "iiif",
-      "label": "Image Viewer",
+      "label": "Image viewer",
       "description": "Drag and drop an entity here to view and compare related high-resolution images",
       "dropAreaDescription": "Drag and drop any entity here to view and compare related high-resolution images",
-      "iconClass": "rs-icon rs-icon-images",
+      "iconClass": "fa fa-picture-o",
       "template": "{{> iiifTemplate}}",
       "frameVariable": "miradorVariable",
       "type": "view"
@@ -89,7 +94,7 @@
       "label": "Map",
       "description": "Drag and drop a place here to explore related geographic information",
       "dropAreaDescription": "Drag and drop here any entity of type PLACE (with associated geographic coordinates) to explore related geographic information",
-      "iconClass": "rs-icon rs-icon-map_location_grouped",
+      "iconClass": "fa fa-map-marker",
       "checkQuery": "ASK { 
         ?value a crm:E53_Place . 
         ?value <http://www.cidoc-crm.org/cidoc-crm/P168_place_is_defined_by> ?coordinates . }",
@@ -99,7 +104,7 @@
 
     {
     	"id": "entity-editor",
-      "label": "Entity Editor",
+      "label": "Entities",
       "description": "Creare and author an entity through custom forms",
       "iconClass": "rs-icon rs-icon-form_edit",
       "template": "{{> entityEditor}}",
@@ -110,8 +115,8 @@
     {
     	"id": "authority-editor",
       "label": "Authorities",
-      "description": "Create, view and edit vocabulary lists and term authorities",
       "iconClass": "iconmoon iconmoon-books",
+      "description": "Create, view and edit vocabulary lists and term authorities",
       "template": "{{> authorityEditor}}",
       "resourceNotRequired": true,
       "type": "authoring"
@@ -119,26 +124,26 @@
 
     {
     	"id": "authority-content",
-      "label": "Authority Content",
-      "iconClass": "rs-icon rs-icon-form_edit",
+      "label": "Authority content",
+      "iconClass": "iconmoon iconmoon-books",
       "template": "{{> authorityContent}}",
        "type": "authoring-content"
     },
 
     {
     	"id": "authority-entity-configuration",
-      "label": "Authority and Entity Configuration",
-      "iconClass": "rs-icon rs-icon-form_edit",
+      "label": "Authority and entity configuration",
       "template": "{{> authorityAndEntityConfiguration}}",
+      "iconClass": "fa fa-cog",
       "resourceNotRequired": true,
       "type": "configuration"
     },
 
     {
     	"id": "knowledge-map",
-      "label": "Knowledge Map",
+      "label": "Knowledge map",
       "description": "Express research thinking and processes as networks of relations",
-      "iconClass": "rs-icon rs-icon-diagram",
+      "iconClass": "fa fa-sitemap",
       "template": "{{> ontodiaTemplate}}",
       "itemBodyTemplate": "{{> itemBodyTemplate}}",
       "resourceNotRequired": true,
@@ -148,9 +153,9 @@
 
     {
     	"id": "semantic-narrative",
-      "label": "Semantic Narrative",
+      "label": "Semantic narrative",
       "description": "Compose and share your research through an evolving narrative",
-      "iconClass": "rs-icon rs-icon-page",
+      "iconClass": "fa fa-file-text",
       "template": "{{> semanticNarrativeTemplate}}",
       "itemBodyTemplate": "{{> itemBodyTemplate}}",
       "resourceNotRequired": true,
@@ -161,7 +166,7 @@
 
     {
     	"id": "objectImageObservation",
-      "label": "Object Observations through Images",
+      "label": "Object observations through images",
       "description": "Drag and drop an object here to combine image annotations with form authoring",
       "dropAreaDescription": "Drag and drop any entity of type MAN-MADE OBJECT here to combine image annotations with data authoring through forms",
       "iconClass": "rs-icon rs-icon-area_annotation",
@@ -192,7 +197,7 @@
 
 [[!--     {
     	"id": "featureSimilarityKm",
-      "label": "Exploring and Comparing (Visual) Features",
+      "label": "Exploring and comparing (visual) features",
       "iconClass": "rs-icon rs-icon-diagram",
       "template": "{{> featureSimilarityKm }}",
       "itemBodyTemplate": "{{> itemBodyTemplate}}",
@@ -202,7 +207,8 @@
 
     {
     	"id": "system-narrative",
-      "label": "Narratives",
+      "label": "Semantic narratives",
+      "iconClass": "fa fa-files-o",
       "template": "{{> systemNarrativesTemplate}}",
       "resourceNotRequired": true,
       "type": "view-system"
@@ -210,7 +216,8 @@
     
     {
     	"id": "system-knowledge-maps",
-      "label": "Knowledge Maps",
+      "label": "Knowledge maps",
+      "iconClass": "rs-icon rs-icon-diagram",
       "template": "{{> systemKnowledgeMapsTemplate}}",
       "resourceNotRequired": true,
       "type": "view-system"
@@ -218,31 +225,25 @@
     
     {
     	"id": "system-assets",
-      "label": "Digital Assets",
+      "label": "Assets",
       "template": "{{> systemDigitalAssetsTemplate}}",
+      "iconClass": "iconmoon iconmoon-file-picture",
       "resourceNotRequired": true,
       "type": "view-system"
     },
     
     {
     	"id": "system-activity",
-      "label": "Activities",
+      "label": "Dashboard",
       "template": "{{> systemActivityTemplate}}",
-      "resourceNotRequired": true,
-      "type": "view-system"
-    },
-
-    {
-    	"id": "system-projects",
-      "label": "Projects",
-      "template": "{{> systemProjects}}",
+      "iconClass": "fa fa-th-large",
       "resourceNotRequired": true,
       "type": "view-system"
     },
 
     {
     	"id": "mapEntitySearch",
-      "label": "Objects Referred By Place",
+      "label": "Objects referred by place",
       "iconClass": "rs-icon rs-icon-area_annotation",
       "template": "{{> mapEntitySearch}}",
       "type": "referred"
@@ -252,7 +253,7 @@
     [[#if (hasPermission "forms:ldp:*")]]
     linked-views='[{
       "id": "image-graph-authoring",
-      "label": "Image Graph Authoring",
+      "label": "Image graph authoring",
       "description": "Drag and drop an entity here to combine image annotations with knowledge map authoring",
       "dropAreaDescription": "Drag and drop an entity here to combine image annotations with data authoring through the knowledge map system",
       "iconClass": "rs-icon rs-icon-image_annotation_grouped",
@@ -263,8 +264,9 @@
     ]'
     [[/if]]
 
-    left-panels='[{"label": "Clipboard", "template": "{{> clipboard}}"}]'
     right-panels='[{"label": "Details", "template": "{{> details}}"}]'
+    left-panels='[{"label": "Clipboard", "template": "{{> clipboard}}", "class": "fa fa-clipboard"}]'
+
     >
     <template id='clipboard'>
         [[> rsp:Clipboard id="clipboard" defaultViewMode="grid"]]
@@ -322,9 +324,6 @@
     </template>
     <template id='systemActivityTemplate'>
       [[> rsp:SystemActivityFrame]]
-    </template>
-    <template id='systemProjects'>
-      [[> rsp:SystemProjects]]
     </template>
     <template id='ontodiaTemplate'>
       [[> rsp:ThinkingFramesKnowledgeMapTemplate]]

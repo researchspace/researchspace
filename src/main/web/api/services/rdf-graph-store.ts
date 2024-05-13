@@ -90,7 +90,7 @@ class GraphStoreService {
   }): Kefir.Property<string> {
     const req = request
       .put(GRAPH_STORE_SERVICEURL)
-      .query({ uri: targetGraph.value, repository: repository })
+      .query({ graph: targetGraph.value, repository: repository })
       .send(turtleString)
       .type('text/turtle');
 

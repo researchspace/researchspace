@@ -31,7 +31,7 @@ import { TreeNode, mergeRemovingDuplicates } from './NodeModel';
 
 export interface Node extends TreeNode {
   readonly iri: Rdf.Iri;
-  readonly label?: Rdf.Literal;
+  label?: Rdf.Literal;
   readonly children?: ReadonlyArray<Node>;
   readonly reachedLimit?: boolean;
   /** search relevance */

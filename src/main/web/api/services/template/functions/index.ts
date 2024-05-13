@@ -23,6 +23,7 @@ import { DateTimeFunctions } from './DateTimeFunctions';
 import { RdfFunctions } from './RdfFunctions';
 import { UriComponentFunctions } from './UriComponentFunctions';
 import { NumbersFunctions } from './NumbersFunctions';
+import { StringsFunctions } from './StringsFunctions';
 
 export const DefaultHelpers = {
   ...DataContextFunctions,
@@ -31,6 +32,7 @@ export const DefaultHelpers = {
   ...RdfFunctions,
   ...UriComponentFunctions,
   ...NumbersFunctions,
+  ...StringsFunctions
 };
 
 export { ContextCapturer, CapturedContext } from './DataContextFunctions';

@@ -23,6 +23,11 @@ import * as fileSaver from 'file-saver';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 import { Component } from 'platform/api/components';
 
+import * as LabelsService from 'platform/api/services/resource-label';
+import * as Kefir from 'kefir';
+import { Rdf } from 'platform/api/rdf';
+import { titleHolder } from 'platform/components/text-editor/TextEditor.scss';
+
 /**
  * Component to trigger the download of a SPARQL result set.
  * Downloading starts when the child element has been clicked,
@@ -52,25 +57,57 @@ export interface Props {
    */
   header: SparqlUtil.ResultFormat;
   /**
-   * (optional) file name
+   * (optional) file name: if provided, will be used as filename
    */
   filename?: string;
+  /**
+   * (optional) downloadResourceIri: if provided, will be used to retrieve the label that will be used as filename. 
+   * In case filename is provided, downloadResourceIri will be ignored
+   */
+  downloadResourceIri?: string;
 }
 
 class SparqlDownloadComponent extends Component<Props, {}> {
+  private subscription: Kefir.Subscription;
   private onSave = (event: React.SyntheticEvent<any>) => {
     event.preventDefault();
 
     const results = [];
+    const {downloadResourceIri, filename} = this.props
+    const FALLBACK_FILENAME = 'file.csv'
+
     SparqlClient.sendSparqlQuery(this.props.query, this.props.header, { context: this.context.semanticContext })
       .onValue((response) => {
         results.push(response);
       })
       .onEnd(() => {
         let blob = new Blob(results, { type: this.props.header });
-        fileSaver.saveAs(blob, this.props.filename || 'file.txt');
+
+        if(!downloadResourceIri && !filename) {
+          fileSaver.saveAs(blob, FALLBACK_FILENAME);
+          return
+        }
+
+        if(filename) {
+          fileSaver.saveAs(blob, filename || FALLBACK_FILENAME);
+          return
+        }
+
+        if(downloadResourceIri && !filename) {
+          const context = this.context.semanticContext;
+          this.subscription = LabelsService.getLabel(Rdf.iri(downloadResourceIri), { context }).observe({
+            value: (label) => fileSaver.saveAs(blob, label),
+            error: () => fileSaver.saveAs(blob, FALLBACK_FILENAME),
+          });
+          return
+        }
+        
       });
   };
+
+  componentWillUnmount() {
+    this.subscription.unsubscribe();
+  }
 
   public render() {
     const child = Children.only(this.props.children) as ReactElement<any>;

@@ -35,6 +35,11 @@ import org.researchspace.repository.MpRepositoryVocabulary;
  * Holds one generic parameter: service URL.
  * 
  * @author Andriy Nikolov <an@metaphacts.com>
+ * 
+ * Update for generic purpose
+ * 
+ * @modifier Janmaruko Hōrensō <@gspinaci>
+ * 
  *
  */
 public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImplConfig {
@@ -49,11 +54,11 @@ public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImpl
     private String unResolvedUsername;
     private String unResolvedPassword;
 
-    public AbstractServiceWrappingSailConfig() {
+    protected AbstractServiceWrappingSailConfig() {
 
     }
 
-    public AbstractServiceWrappingSailConfig(String type) {
+    protected AbstractServiceWrappingSailConfig(String type) {
         super(type);
     }
 
@@ -61,7 +66,7 @@ public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImpl
     public void validate() throws SailConfigException {
         super.validate();
         if (StringUtils.isEmpty(url)) {
-            throw new SailConfigException("REST service URL is not provided");
+            throw new SailConfigException("SAIL service URL is not provided");
         }
     }
 

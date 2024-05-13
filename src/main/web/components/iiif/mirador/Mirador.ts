@@ -164,8 +164,8 @@ Mirador.AnnotationTooltip.prototype.editorTemplate = globalHandlebars.compile(
   <form id="annotation-editor-{{windowId}}" class="annotation-editor annotation-tooltip" {{#if id}}data-anno-id="{{id}}"{{/if}}>
     <div>
       <div class="button-container">
-        <a href="#cancel" class="cancel"><i class="fa fa-times-circle-o"></i>{{t "cancel"}}</a>
-        <a href="#save" class="save"><i class="fa fa-floppy-o"></i>{{t "save"}}</a>
+        <a href="#cancel" class="cancel"><button class="btn btn-default">{{t "cancel"}}</button></a>
+        <a href="#save" class="save"><button class="btn btn-action">{{t "save"}}</button></a>
       </div>
     </div>
   </form>

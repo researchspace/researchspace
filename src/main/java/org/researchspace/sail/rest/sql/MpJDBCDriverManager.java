@@ -37,7 +37,7 @@ public class MpJDBCDriverManager {
 
     private final CopyOnWriteArrayList<Driver> registeredDrivers = new CopyOnWriteArrayList<>();
 
-    public MpJDBCDriverManager() {
+    protected MpJDBCDriverManager() {
     }
 
     public Connection getConnection(String url) throws SQLException {
@@ -65,45 +65,41 @@ public class MpJDBCDriverManager {
     public Connection getConnection(String url, java.util.Properties info) throws SQLException {
 
         if (url == null) {
-            throw new SQLException("The url cannot be null", "08001");
+          throw new SQLException("The url cannot be null", "08001");
         }
 
-        logger.trace("DriverManager.getConnection(\"" + url + "\")");
+        logger.trace("getConnection: {}", url);
 
         SQLException reason = null;
         SQLException originalReason = null;
 
         try {
-            return DriverManager.getConnection(url, info);
+          return DriverManager.getConnection(url, info);
         } catch (SQLException e) {
-            originalReason = e;
+          originalReason = e;
         }
 
         for (Driver driver : registeredDrivers) {
-            try {
-                Connection con = driver.connect(url, info);
-                if (con != null) {
-                    logger.trace("getConnection returning " + driver.getClass().getName());
-                    return (con);
-                }
-            } catch (SQLException ex) {
-                if (reason == null) {
-                    reason = ex;
-                }
+          try {
+            Connection con = driver.connect(url, info);
+            if (con != null) {
+              logger.trace("getConnection: returning {}", driver.getClass().getName());
+              return (con);
             }
-        }
-
-        if (reason == null) {
-            reason = originalReason;
+          } catch (SQLException ex) {
+            if (reason == null) {
+              reason = ex;
+            }
+          }
         }
 
         // if we got here nobody could connect.
         if (reason != null) {
-            logger.warn("getConnection failed: " + reason);
-            throw reason;
+          logger.trace("getConnection: failed {}", reason);
+          throw reason;
         }
 
-        logger.warn("getConnection: no suitable driver found for " + url);
+        logger.warn("getConnection: no suitable driver found for {}", url);
         throw new SQLException("No suitable driver found for " + url, "08001");
     }
 

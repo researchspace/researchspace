@@ -36,9 +36,9 @@
    </mp-splitpane-toggle-off>
 
    <mp-splitpane-sidebar-open style="flex: 1; overflow: hidden;">
-    <div class="split-pane__sidebar-open">
-        [[> resourceSidebarContent]]
-    </div>
+        <div class="split-pane__sidebar-open">
+            [[> resourceSidebarContent]]
+        </div>
   </mp-splitpane-sidebar-open>
 
 </div>
@@ -86,7 +86,11 @@
                                                                                                                 <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
                                                                                                                 <div>Drag audio from 
                                                                                                                     <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' 
-                                                                                                                    class='text-link' urlqueryparam-view='system-assets'>Audio Library</semantic-link>
+                                                                                                                                    class='text-link' 
+                                                                                                                                    urlqueryparam-view='system-assets'
+                                                                                                                                    urlqueryparam-open-as-drag-and-drop='true'>
+                                                                                                                                    Audio Library
+                                                                                                                    </semantic-link>
                                                                                                                     or click to upload</div>
                                                                                                             </div>"
                                                                                 nested-form-template='{{{{raw}}}}{{> forms:Audio nested=true editable=true mode="new"}}{{{{/raw}}}}'
@@ -144,7 +148,11 @@
                                                                                                                 <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
                                                                                                                 <div>Drag document from 
                                                                                                                     <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' 
-                                                                                                                    class='text-link' urlqueryparam-view='system-assets'>Document Library</semantic-link>
+                                                                                                                                    class='text-link' 
+                                                                                                                                    urlqueryparam-view='system-assets'
+                                                                                                                                    urlqueryparam-open-as-drag-and-drop='true'>
+                                                                                                                                    Document Library
+                                                                                                                    </semantic-link>
                                                                                                                     or click to upload</div>
                                                                                                             </div>"
                                                                                 nested-form-template='{{{{raw}}}}{{> forms:Document nested=true editable=true mode="new"}}{{{{/raw}}}}'
@@ -210,23 +218,35 @@
                                 <h4>Images</h4>
                                 <div style="display: flex;align-items: center;gap: 20px;">
                                     {{#if node}}
-                                        <div class="form-tabs-subtabs-content--title-actions">
-                                            <button class="btn btn-icon" title="preview">
-                                                <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
-                                            </button>
-            
-                                            <mp-event-trigger id='{{viewId}}-image-annotation-add-frame-trigger' 
-                                                                type='Dashboard.AddFrame' 
-                                                                data='{"resourceIri": "{{node}}", 
-                                                                        "viewId": "objectImageObservation", 
-                                                                        "objectIri": "{{node}}",
-                                                                        "frameId": "{{viewId}}"}' 
-                                                                targets='["thinking-frames"]'>
-                                                <button class="btn btn-icon" title="View/Annotations">
-                                                    <rs-icon icon-type="round" icon-name="photo_size_select_large"></rs-icon>
-                                                </button>
-                                            </mp-event-trigger>
-                                        </div>
+                                        <semantic-if    query='ASK { <{{node}}> crm:P138i_has_representation|rso:PX_has_main_representation ?image . 
+                                                                    ?image a rso:EX_Digital_Image .
+                                                                    ?image crm:P1_is_identified_by ?appellation .
+                                                                    ?appellation a crm:E41_Appellation .
+                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                    ?appellation crm:P190_has_symbolic_content ?label .
+                                                                }'
+                                                        then='{{> then}}'>
+
+                                            <template id='then'>
+                                                <div class="form-tabs-subtabs-content--title-actions">
+                                                    <button class="btn btn-icon" title="preview">
+                                                        <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
+                                                    </button>
+                    
+                                                    <mp-event-trigger id='{{viewId}}-image-annotation-add-frame-trigger' 
+                                                                        type='Dashboard.AddFrame' 
+                                                                        data='{"resourceIri": "{{node}}", 
+                                                                                "viewId": "objectImageObservation", 
+                                                                                "objectIri": "{{node}}",
+                                                                                "frameId": "{{viewId}}"}' 
+                                                                        targets='["thinking-frames"]'>
+                                                        <button class="btn btn-icon" title="View/Annotations">
+                                                            <rs-icon icon-type="round" icon-name="photo_size_select_large"></rs-icon>
+                                                        </button>
+                                                    </mp-event-trigger>
+                                                </div>
+                                            </template>
+                                        </semantic-if>
                                     {{/if}}
                                 
                                     <bs-nav bs-style="icon-tabs">
@@ -248,7 +268,11 @@
                                                                                                                 <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
                                                                                                                 <div>Drag main image from 
                                                                                                                     <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' 
-                                                                                                                    class='text-link' urlqueryparam-view='system-assets'>Image Library</semantic-link>
+                                                                                                                                    class='text-link' 
+                                                                                                                                    urlqueryparam-view='system-assets'
+                                                                                                                                    urlqueryparam-open-as-drag-and-drop='true'>
+                                                                                                                                    Image Library
+                                                                                                                    </semantic-link>
                                                                                                                     or click to upload</div>
                                                                                                             </div>"
                                                                                 nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
@@ -260,7 +284,11 @@
                                                                                                                 <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
                                                                                                                 <div>Drag images from 
                                                                                                                     <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' 
-                                                                                                                    class='text-link' urlqueryparam-view='system-assets'>Image Library</semantic-link>
+                                                                                                                                    class='text-link' 
+                                                                                                                                    urlqueryparam-view='system-assets'
+                                                                                                                                    urlqueryparam-open-as-drag-and-drop='true'>
+                                                                                                                                    Image Library
+                                                                                                                    </semantic-link>
                                                                                                                     or click to upload</div>
                                                                                                             </div>"
                                                                                 nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
@@ -399,14 +427,6 @@
                             <div class="form-tabs-subtabs-content--title">
                                 <h4>3D models</h4>
                                 <div style="display: flex;align-items: center;gap: 20px;">
-                                    {{#if node}}
-                                        <div class="form-tabs-subtabs-content--title-actions">
-                                            <button class="btn btn-icon" title="preview">
-                                                <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
-                                            </button>
-                                        </div>
-                                    {{/if}}
-                            
                                     <bs-nav bs-style="icon-tabs">
                                         <bs-nav-item event-key="thumbnailView" title="thumbnail view">
                                             <rs-icon icon-type="round" icon-name="view_module"></rs-icon>
@@ -427,7 +447,11 @@
                                                                                                                 <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
                                                                                                                 <div>Drag file from 
                                                                                                                     <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' 
-                                                                                                                    class='text-link' urlqueryparam-view='system-assets'>File Library</semantic-link>
+                                                                                                                                    class='text-link' 
+                                                                                                                                    urlqueryparam-view='system-assets'
+                                                                                                                                    urlqueryparam-open-as-drag-and-drop='true'>
+                                                                                                                                    3D model Library
+                                                                                                                    </semantic-link>
                                                                                                                     or click to upload</div>
                                                                                                             </div>"
                                                                                 nested-form-template='{{{{raw}}}}{{> forms:3dModel nested=true editable=true mode="new"}}{{{{/raw}}}}'
@@ -467,23 +491,40 @@
                                     <h4>Signature</h4>
                                     <div style="display: flex;align-items: center;gap: 20px;">
                                         {{#if node}}
-                                            <div class="form-tabs-subtabs-content--title-actions">
-                                                <button class="btn btn-icon" title="preview">
-                                                    <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
-                                                </button>
-                
-                                                <mp-event-trigger id='{{viewId}}-image-annotation-add-frame-trigger' 
-                                                                    type='Dashboard.AddFrame' 
-                                                                    data='{"resourceIri": "{{node}}", 
-                                                                            "viewId": "objectImageObservation", 
-                                                                            "objectIri": "{{node}}",
-                                                                            "frameId": "{{viewId}}"}' 
-                                                                    targets='["thinking-frames"]'>
-                                                    <button class="btn btn-icon" title="View/Annotations">
-                                                        <rs-icon icon-type="round" icon-name="photo_size_select_large"></rs-icon>
-                                                    </button>
-                                                </mp-event-trigger>
-                                            </div>
+                                            <semantic-if    query='ASK { <{{node}}> crm:P14i_performed ?creation .
+                                                                        ?creation crm:P94_has_created ?signature .
+                                                                        ?signature a crm:E26_Physical_Feature .
+                                                                    
+                                                                        ?signature crm:P65_shows_visual_item ?mark .
+                                                                        ?mark a crm:E37_Mark .
+                                                                        ?mark crm:P2_has_type <http://www.researchspace.org/resource/vocab/mark_type/signature> .
+                                                                        
+                                                                        ?signature crm:P138i_has_representation ?signatureImage .
+                                                                        ?signatureImage a rs:EX_Digital_Image .
+                                                                        ?signatureImage crm:P138_represents ?signature . 
+                                                                    }'
+                                                            then='{{> then}}'>
+
+                                                <template id='then'>
+                                                    <div class="form-tabs-subtabs-content--title-actions">
+                                                        <button class="btn btn-icon" title="preview">
+                                                            <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
+                                                        </button>
+
+                                                        <mp-event-trigger id='{{viewId}}-image-annotation-add-frame-trigger' 
+                                                                        type='Dashboard.AddFrame' 
+                                                                        data='{"resourceIri": "{{node}}", 
+                                                                                "viewId": "objectImageObservation", 
+                                                                                "objectIri": "{{node}}",
+                                                                                "frameId": "{{viewId}}"}' 
+                                                                        targets='["thinking-frames"]'>
+                                                        <button class="btn btn-icon" title="View/Annotations">
+                                                            <rs-icon icon-type="round" icon-name="photo_size_select_large"></rs-icon>
+                                                        </button>
+                                                    </mp-event-trigger>
+                                                    </div>
+                                                </template>
+                                            </semantic-if>
                                         {{/if}}
                                     
                                         <bs-nav bs-style="icon-tabs">
@@ -505,7 +546,11 @@
                                                                                                                 <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
                                                                                                                 <div>Drag image from 
                                                                                                                     <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' 
-                                                                                                                    class='text-link-action' urlqueryparam-view='system-assets'>Image Library</semantic-link>
+                                                                                                                                    class='text-link-action' 
+                                                                                                                                    urlqueryparam-view='system-assets'
+                                                                                                                                    urlqueryparam-open-as-drag-and-drop='true'>
+                                                                                                                                    Image Library
+                                                                                                                    </semantic-link>
                                                                                                                     or click to upload</div>
                                                                                                             </div>"
                                                                                     nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
@@ -545,11 +590,24 @@
                                 <h4>Videos</h4>
                                 <div style="display: flex;align-items: center;gap: 20px;">
                                     {{#if node}}
-                                        <div class="form-tabs-subtabs-content--title-actions">
-                                            <button class="btn btn-icon" title="preview">
-                                                <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
-                                            </button>
-                                        </div>
+                                        <semantic-if    query='ASK { <{{node}}> crm:P129i_is_subject_of ?video . 
+                                                                    ?video a frbroo:F21_Recording_Work .
+                                                                    ?video crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_video> .
+                                                                    ?video crm:P1_is_identified_by ?appellation .
+                                                                    ?appellation a crm:E41_Appellation .
+                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                    ?appellation crm:P190_has_symbolic_content ?label .
+                                                                }'
+                                                        then='{{> then}}'>
+
+                                            <template id='then'>
+                                                <div class="form-tabs-subtabs-content--title-actions">
+                                                    <button class="btn btn-icon" title="preview">
+                                                        <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
+                                                    </button>
+                                                </div>
+                                            </template>
+                                        </semantic-if>
                                     {{/if}}
                             
                                     <bs-nav bs-style="icon-tabs">
@@ -572,7 +630,11 @@
                                                                                                                 <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
                                                                                                                 <div>Drag document from 
                                                                                                                     <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' 
-                                                                                                                    class='text-link' urlqueryparam-view='system-assets'>Video Library</semantic-link>
+                                                                                                                                    class='text-link' 
+                                                                                                                                    urlqueryparam-view='system-assets'
+                                                                                                                                    urlqueryparam-open-as-drag-and-drop='true'>
+                                                                                                                                    Video Library
+                                                                                                                    </semantic-link>
                                                                                                                     or click to upload</div>
                                                                                                             </div>"
                                                                                 nested-form-template='{{{{raw}}}}{{> forms:Video nested=true editable=true mode="new"}}{{{{/raw}}}}'

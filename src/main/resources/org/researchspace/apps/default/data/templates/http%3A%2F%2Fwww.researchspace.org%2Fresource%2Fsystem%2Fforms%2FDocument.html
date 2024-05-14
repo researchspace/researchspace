@@ -9,12 +9,14 @@
                           entity_image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
                           entity_image="http://www.researchspace.org/pattern/system/entity/images"
                           entity_document="http://www.researchspace.org/pattern/system/entity/documents"
-                          entity_video="http://www.researchspace.org/pattern/system/entity/video"
-                          entity_3d_model="http://www.researchspace.org/pattern/system/entity/3d_model"
+                          entity_video="http://www.researchspace.org/pattern/system/entity/subject_of_video"
+                          entity_audio="http://www.researchspace.org/pattern/system/entity/subject_of_audio"
+                          entity_3d_model="http://www.researchspace.org/pattern/system/entity/subject_of_3Dmodel"
                           entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
                           entity_represents_range="http://www.researchspace.org/pattern/system/entity/represents_range"
+                          entity_data_folder="http://www.researchspace.org/pattern/system/entity/data_folder_link"
   
-                          document_url="http://www.researchspace.org/pattern/system/document/url"
+                          entity_file_identifier="http://www.researchspace.org/pattern/system/entity/file_identifier"
                           entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
                           man-made_thing_title="http://www.researchspace.org/pattern/system/man-made_thing/PC102_has_title"
                           document_type="http://www.researchspace.org/pattern/system/document/type"
@@ -83,10 +85,10 @@
       {{/if}}
       <div style="{{#if node}}display: flex; gap: 3px;{{/if}}">
         <div class="FileUploader-container" style="flex: 1;">
-          <semantic-form-file-input for='document_url' 
+          <semantic-form-file-input for='entity_file_identifier' 
                                     label='Document file'
+                                    accept-pattern='application/*,text/*' 
                                     storage='images'
-                                    accept-pattern='application/*' 
                                     temp-storage='tmp'
                                     name-predicate-iri='http://www.researchspace.org/ontology/PX_has_file_name'
                                     media-type-predicate-iri='http://www.researchspace.org/ontology/PX_has_media_type'
@@ -102,7 +104,8 @@
           >
               <div className='placeholder-item'>
                 <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                <div>Drag .pdf or .doc file or click to upload</div>
+                <p>Drag file or click to upload</p>
+                <div>Supported format: .pdf .doc .xml .ppt .pptx .json .rdf .html .rtf .ics .md .zip</div>
               </div>
           </semantic-form-file-input>
         </div>
@@ -1081,10 +1084,9 @@
       </rs-tab> 
 
       [[> rsp:FormMetadataTab]]
-
-      [[> rsp:FormAssetTab]]
       
     </rs-tabs>
+    
   </div>
   
   <semantic-form-errors></semantic-form-errors>

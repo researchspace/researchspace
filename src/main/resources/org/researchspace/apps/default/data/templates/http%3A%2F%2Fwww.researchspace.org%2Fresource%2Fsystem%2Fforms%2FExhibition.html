@@ -12,8 +12,9 @@
                         entity_image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
                         entity_image="http://www.researchspace.org/pattern/system/entity/images"
                         entity_document="http://www.researchspace.org/pattern/system/entity/documents"
-                        entity_video="http://www.researchspace.org/pattern/system/entity/video"
-                        entity_3d_model="http://www.researchspace.org/pattern/system/entity/3d_model"
+                        entity_video="http://www.researchspace.org/pattern/system/entity/subject_of_video"
+                        entity_audio="http://www.researchspace.org/pattern/system/entity/subject_of_audio"
+                        entity_3d_model="http://www.researchspace.org/pattern/system/entity/subject_of_3Dmodel"
                         entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
                         entity_represents_range="http://www.researchspace.org/pattern/system/entity/represents_range"
                         entity_data_folder="http://www.researchspace.org/pattern/system/entity/data_folder_link"
@@ -71,10 +72,10 @@
 
       {{#if scheme}}<semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>{{/if}}
 
-      <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs"> 
-        <rs-tab event-key="detail" title="Details">
-
-          <div class="form-2column-container">
+      <mp-splitpane id='{{viewId}}-entity-resource-sidebar' min-size=63 default-size=400 snap-threshold=200 default-open=true always-render=true primary='second' class="entity-resource-sidebar">
+        <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs"> 
+          
+          <rs-tab event-key="detail" title="Details">
             <div>
                 <semantic-form-text-input for="entity_primary_appellation" label="Exhibition title" placeholder="Enter exhibition title"></semantic-form-text-input>
                 
@@ -199,36 +200,6 @@
                                                     placeholder="Select other identifier" 
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_appellations]]'>
                 </semantic-form-autocomplete-input>
-              </div>
-    
-              <div class="form-media-column">
-                <semantic-form-text-input for='entity_data_folder' label="Exhibition data folder" placeholder="Enter data folder link"></semantic-form-text-input>
-                <div class="dragAndDrop-input-container">
-                    <semantic-form-drag-and-drop-input for='entity_image_main_representation' label="Main image" 
-                                                        placeholder-item-template="<div class='placeholder-item'>
-                                                                                        <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                                                                                        <div>Drag main image from 
-                                                                                            <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' 
-                                                                                            class='text-link-action' urlqueryparam-view='system-assets'>Image Library</semantic-link>
-                                                                                            or click to upload</div>
-                                                                                    </div>"
-                                                        nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
-                    </semantic-form-drag-and-drop-input>
-                </div>
-    
-                <div class="dragAndDrop-input-container">
-                    <semantic-form-drag-and-drop-input  for='entity_image' label="More images" 
-                                                        placeholder-item-template="<div class='placeholder-item'>
-                                                                                        <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                                                                                        <div>Drag images from 
-                                                                                            <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' 
-                                                                                            class='text-link-action' urlqueryparam-view='system-assets'>Image Library</semantic-link>
-                                                                                            or click to upload</div>
-                                                                                    </div>"
-                                                        nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
-                    </semantic-form-drag-and-drop-input>
-                </div>
-              </div>
             </div>
           </rs-tab>
     
@@ -864,9 +835,10 @@
     
           [[> rsp:FormMetadataTab]]
     
-          [[> rsp:FormAssetTab]]
-    
         </rs-tabs>
+
+        [[> rsp:FormAssetSidebar]]
+      </mp-splitpane>
           
     </div>
   

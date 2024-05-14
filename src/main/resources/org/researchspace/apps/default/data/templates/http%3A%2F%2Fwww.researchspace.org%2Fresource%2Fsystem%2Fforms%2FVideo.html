@@ -5,13 +5,16 @@
                 new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/video/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
                 fields='[[fieldDefinitions
                             classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                            entity_resource_type="http://www.researchspace.org/pattern/system/entity/resource_type"
                             inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
                             entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
                             
-                            video_id="http://www.researchspace.org/pattern/system/video/identifier"
+                            entity_file_identifier="http://www.researchspace.org/pattern/system/entity/file_identifierMin0"
+                            entity_file_URLidentifier="http://www.researchspace.org/pattern/system/entity/file_URLidentifier"
                             entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
                             man-made_thing_title="http://www.researchspace.org/pattern/system/man-made_thing/PC102_has_title"
-                            video_is_video_of="http://www.researchspace.org/pattern/system/video/is_video_of"           
+                            propositional_object_is_about="http://www.researchspace.org/pattern/system/propositional_object/is_about"
+                            propositional_object_refers_to_domain="http://www.researchspace.org/pattern/system/propositional_object/PC67_refers_to"            
                             entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
                             entity_id="http://www.researchspace.org/pattern/system/entity/identifier"
                             entity_description="http://www.researchspace.org/pattern/system/entity/description"
@@ -19,19 +22,10 @@
                             propositional_object_is_component_of="http://www.researchspace.org/pattern/system/propositional_object/is_component_of"
                             propositional_object_has_component="http://www.researchspace.org/pattern/system/propositional_object/has_component"
 
-                            information_object_incorporates="http://www.researchspace.org/pattern/system/information_object/incorporates"
-                            symbolic_object_incorporated_in="http://www.researchspace.org/pattern/system/symbolic_object/incorporated_in"
-                            symbolic_object_part_of="http://www.researchspace.org/pattern/system/symbolic_object/part_of"
-                            symbolic_object_composed_of="http://www.researchspace.org/pattern/system/symbolic_object/composed_of"
-
                             man-made_thing_was_intended_for="http://www.researchspace.org/pattern/system/man-made_thing/was_intended_for"
                             thing_general_use="http://www.researchspace.org/pattern/system/thing/had_as_general_use"
                             thing_dimension="http://www.researchspace.org/pattern/system/thing/dimension"
 
-                            legal_object_subject_to_right="http://www.researchspace.org/pattern/system/legal_object/subject_to_right"
-                            legal_object_right_held_by_actor="http://www.researchspace.org/pattern/system/legal_object/right_held_by"
-
-                            symbolic_object_used_in="http://www.researchspace.org/pattern/system/symbolic_object/used_in"
                             conceptual_object_created_by="http://www.researchspace.org/pattern/system/conceptual_object/created_by"
                             man-made_thing_was_intended_use_of_range="http://www.researchspace.org/pattern/system/man-made_thing/was_intended_use_of_range"
                             thing_used_specific_object_range="http://www.researchspace.org/pattern/system/thing/used_specific_object_range"
@@ -44,21 +38,18 @@
                             entity_assigned_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/assigned_by_attribute_assignment"
                             entity_measurement="http://www.researchspace.org/pattern/system/entity/measurement"
 
-                            visual_item_shown_by="http://www.researchspace.org/pattern/system/visual_item/shown_by"
-                            symbolic_object_carried_by="http://www.researchspace.org/pattern/system/symbolic_object/carried_by"
                             thing_shows_features_of_thing="http://www.researchspace.org/pattern/system/thing/PC130_shows_features_of"
                             thing_has_features_of_thing="http://www.researchspace.org/pattern/system/thing/PC130_shows_features_of_range"
                             entity_depicts_range="http://www.researchspace.org/pattern/system/entity/depicts_range"
                             entity_subject_of="http://www.researchspace.org/pattern/system/entity/subject_of_propositional_object"
                             entity_refers_to_range="http://www.researchspace.org/pattern/system/entity/refers_to_range"
-
-                            propositional_object_is_about="http://www.researchspace.org/pattern/system/propositional_object/is_about"
-                            propositional_object_refers_to_domain="http://www.researchspace.org/pattern/system/propositional_object/PC67_refers_to"               
-                          ]]'
+                                          
+                        ]]'
               >
               
     <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
-        <semantic-form-hidden-input for='classtype' default-value='http://www.researchspace.org/ontology/EX_Streaming_Video'> </semantic-form-hidden-input>
+        <semantic-form-hidden-input for='classtype' default-value='http://iflastandards.info/ns/fr/frbr/frbroo/F21_Recording_Work'> </semantic-form-hidden-input>
+        <semantic-form-hidden-input for="entity_resource_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/recording_video'> </semantic-form-hidden-input>
         {{#if scheme}}
             <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
         {{/if}}
@@ -130,11 +121,60 @@
                             </semantic-form-composite-input>
                         </div>
 
-                        <semantic-form-autocomplete-input   for='video_is_video_of' 
-                                                            label="Is video of" 
-                                                            placeholder="Select what has the video as representation" 
+                        <semantic-form-autocomplete-input   for='propositional_object_is_about' 
+                                                            label="Is about/is video of" 
+                                                            placeholder="Select what the video is subject of" 
                                                             nested-form-templates='[[> Platform:NestedFormTemplates_allEntities]]'> 
                         </semantic-form-autocomplete-input> 
+                
+                        <div class="inline-composite-container">
+                            <semantic-form-composite-input  for="propositional_object_refers_to_domain" 
+                                                            label="Refers to"
+                                                            new-subject-template="/PC67_refers_to/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                                            fields='[[fieldDefinitions
+                                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                                
+                                                                        refers_to_entity_range="http://www.researchspace.org/pattern/system/refers_to/range"
+                                                                        type_of_reference="http://www.researchspace.org/pattern/system/refers_to/type_of_reference"
+                                                                    ]]'>
+                    
+                            <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC67_refers_to'> </semantic-form-hidden-input>
+                    
+                            <div class="form-inline-inputs">
+                                <div style="flex: 1;">
+                                <semantic-form-autocomplete-input for='refers_to_entity_range' 
+                                                                    render-header="false"
+                                                                    placeholder="Select what the video refers to" 
+                                                                    nested-form-templates='[[> Platform:NestedFormTemplates_allEntities]]'>
+                                </semantic-form-autocomplete-input>
+                                </div>
+                                <div style="flex: 1;">
+                                <semantic-form-tree-picker-input  for="type_of_reference" 
+                                                                    render-header="false"
+                                                                    placeholder="Select type of reference"
+                                                                    close-dropdown-on-selection='true'
+                                                                    tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/type_of_reference>", 
+                                                                                    "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/type_of_reference>",
+                                                                                    "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+                    
+                                                                    scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                                "view": "vocabulary-content",
+                                                                                                "scheme": "http://www.researchspace.org/resource/vocab/type_of_reference",
+                                                                                                "tooltip": "Open list of type of references"
+                                                                                            }'
+                                                                    
+                                                                    nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                        scheme="http://www.researchspace.org/resource/vocab/type_of_reference"
+                                                                                                        entityType="type of reference" }}{{{{/raw}}}}'
+                    
+                                                                    query-item-label='SELECT ?label WHERE {
+                                                                                        ?item skos:prefLabel ?label .
+                                                                                    }'>
+                                    </semantic-form-tree-picker-input>
+                                </div>
+                            </div>
+                            </semantic-form-composite-input>
+                        </div>
 
                         <semantic-form-text-input for="entity_description" multiline=true label="Description/comment" placeholder="Enter description/comment"></semantic-form-text-input>
 
@@ -293,142 +333,6 @@
                     </div>
                 {{/if}}
             </rs-tab>
-    
-            <rs-tab event-key="incorporatedParts" title="Components (incorporated parts)">
-    
-            {{#if scheme}}
-                <semantic-form-tree-picker-input  for='symbolic_object_incorporated_in' 
-                                                label="Incorporated in" 
-                                                placeholder="Select what incorporates the video" 
-                                                default-values='[{{#if broader}}"{{broader}}"{{/if}}]'
-                                                tree-patterns='{"scheme": "{{scheme}}",
-                                                                    "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
-                                                                    "relationPattern": "?item crm:P165i_is_incorporated_in ?parent",
-                                                                    "labelPattern": " { 
-                                                                                        ?item crm:P1_is_identified_by ?appellation .
-                                                                                        ?appellation a crm:E41_Appellation .
-                                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                                        ?appellation crm:P190_has_symbolic_content ?label .
-                                                                                    } UNION {
-                                                                                        ?item crm:P190_has_symbolic_content ?label .
-                                                                                    }"
-                                                                    }'
-    
-                                                query-item-label='SELECT ?label WHERE {
-                                                                    { 
-                                                                        ?item crm:P1_is_identified_by ?appellation .
-                                                                        ?appellation a crm:E41_Appellation .
-                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                        ?appellation crm:P190_has_symbolic_content ?label .
-                                                                    } UNION {
-                                                                        ?item crm:P190_has_symbolic_content ?label .
-                                                                    }
-                                                                    }'> 
-                </semantic-form-tree-picker-input>  
-    
-                <semantic-form-tree-picker-input    for='information_object_incorporates' 
-                                                    label="Incorporates" 
-                                                    placeholder="Select what is included in the video"
-                                                    tree-patterns='{"scheme": "{{scheme}}",
-                                                                    "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
-                                                                    "relationPattern": "?item crm:P165i_is_incorporated_in ?parent",
-                                                                    "labelPattern": "{ 
-                                                                                        ?item crm:P1_is_identified_by ?appellation .
-                                                                                        ?appellation a crm:E41_Appellation .
-                                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                                        ?appellation crm:P190_has_symbolic_content ?label .
-                                                                                    } UNION {
-                                                                                        ?item crm:P190_has_symbolic_content ?label .
-                                                                                    }"
-                                                                    }'
-    
-                                                    query-item-label='SELECT ?label WHERE {
-                                                                    { 
-                                                                        ?item crm:P1_is_identified_by ?appellation .
-                                                                        ?appellation a crm:E41_Appellation .
-                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                        ?appellation crm:P190_has_symbolic_content ?label .
-                                                                    } UNION {
-                                                                        ?item crm:P190_has_symbolic_content ?label .
-                                                                    }
-                                                                    }'> 
-                </semantic-form-tree-picker-input> 
-            {{else}}
-                <div class="hierarchyView-form-container">
-                    <div class="page__section-container formHierarchyView-container">
-                        <div class="form-header-withButtons">
-                            <h4>Components (incorporated parts)</h4>
-                        </div>
-                        <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
-                            {{#if node}}
-                                {{#bind informationObject=node }}
-                                <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
-                                                        BIND(<{{node}}> as ?informationObject)
-                                                        
-                                                        { ?informationObject crm:P165_incorporates ?node . }
-                                                        UNION
-                                                        { ?informationObject crm:P165_incorporates ?parent . }
-                                                        
-                                                        ?node crm:P165i_is_incorporated_in ?parent .
-    
-                                                        FILTER(ISIRI(?node))
-                                                    }
-                                                    ORDER BY (?node)' 
-    
-                                                tuple-template='{{> nodeTemplate}}'>
-                                                
-                                    <template id='nodeTemplate'>
-                                        <semantic-query query='SELECT ?node ?nodeLabel WHERE {
-                                                                    BIND (<{{node.value}}> as ?node)
-                                                                    { 
-                                                                        ?node crm:P1_is_identified_by ?appellation .
-                                                                        ?appellation a crm:E41_Appellation .
-                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                        ?appellation crm:P190_has_symbolic_content ?nodeLabel .
-                                                                    } UNION {
-                                                                        ?node crm:P190_has_symbolic_content ?nodeLabel .
-                                                                    }
-                                                                }'
-                                                        template='{{> template}}'>
-                                            
-                                            <template id='template'>
-                                                <div>
-                                                    {{#ifCond bindings.0.node.value "===" informationObject}}
-                                                        <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                    {{else}}
-                                                        <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                        urlqueryparam-view='entity-editor' 
-                                                                        urlqueryparam-resource-iri='{{node.value}}'
-                                                                        >
-                                                            <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                        </semantic-link>
-                                                    {{/ifCond}}
-                                                </div>
-                                            </template>
-                                        </semantic-query>
-                                    </template>  
-                                </semantic-tree>
-                                {{/bind}}
-                            {{/if}}
-                        </div>
-                    </div>
-    
-                    <div class="page__section-container formHierarchyInputs-container">    
-                    <semantic-form-autocomplete-input   for='symbolic_object_incorporated_in' 
-                                                        label="Incorporated in" 
-                                                        placeholder="Select what incorporates the video" 
-                                                        nested-form-templates='[[> Platform:NestedFormTemplates_informationObjects]]'> 
-                    </semantic-form-autocomplete-input> 
-    
-                    <semantic-form-autocomplete-input   for='information_object_incorporates' 
-                                                        label="Incorporates" 
-                                                        placeholder="Select what is included in the video" 
-                                                        nested-form-templates='[[> Platform:NestedFormTemplates_symbolicObjects]]'> 
-                    </semantic-form-autocomplete-input> 
-                    </div>
-                </div>
-            {{/if}}
-            </rs-tab>
             
             <rs-tab event-key="type" title="Type/Dimensions">
                 <div class="form-2column-flex">
@@ -457,32 +361,6 @@
                                                                 }
                                                             ]'> 
                         </semantic-form-autocomplete-input>
-                    </div>
-                </div>
-            </rs-tab>
-    
-            <rs-tab event-key="right" title="Right">
-                <div class="form-2column-flex">
-                    [[> videoUploadSection ]]
-                    <div style="flex: 1;">
-                        <semantic-form-autocomplete-input   for='legal_object_subject_to_right' 
-                                                            label="Legal rights"
-                                                            placeholder="Enter legal rights" 
-                                                            nested-form-templates='[ 
-                                                                {
-                                                                    "label": "Right",
-                                                                    "nestedForm": "{{{{raw}}}}
-                                                                                    {{> \"http://www.researchspace.org/resource/system/forms/Right\" nested=true editable=true mode=\"new\"}}
-                                                                                {{{{/raw}}}}"
-                                                                }
-                                                            ]'>  
-                        </semantic-form-autocomplete-input>
-                
-                        <semantic-form-autocomplete-input   for='legal_object_right_held_by_actor' 
-                                                            label="Right held by" 
-                                                            placeholder="Select actor who holds legal right on the video" 
-                                                            nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'> 
-                        </semantic-form-autocomplete-input> 
                     </div>
                 </div>
             </rs-tab>
@@ -546,19 +424,6 @@
                                 </div>
                             </semantic-form-composite-input>
                         </div>
-                
-                        <semantic-form-autocomplete-input   for='symbolic_object_used_in' 
-                                                            label="Used in" 
-                                                            placeholder="Select the assignment that used the video as constituent of an identifier" 
-                                                            nested-form-templates='[ 
-                                                                {
-                                                                    "label": "Identifier assignment",
-                                                                    "nestedForm": "{{{{raw}}}}
-                                                                                    {{> \"http://www.researchspace.org/resource/system/forms/IdentifierAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                                {{{{/raw}}}}"
-                                                                }
-                                                            ]'>  
-                        </semantic-form-autocomplete-input> 
                 
                         <div class="inline-composite-container">
                             <semantic-form-composite-input  for="thing_used_specific_object_range" 
@@ -687,17 +552,6 @@
                 <div class="form-2column-flex">
                     [[> videoUploadSection ]]
                     <div style="flex: 1;">
-                        <semantic-form-autocomplete-input   for='visual_item_shown_by' 
-                                                            label="Is shown by"
-                                                            placeholder="Select item that shows the video" 
-                                                            nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'> 
-                        </semantic-form-autocomplete-input>
-                
-                        <semantic-form-autocomplete-input   for='symbolic_object_carried_by' 
-                                                            label="Carried by"
-                                                            placeholder="Select what carries the video" 
-                                                            nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
-                        </semantic-form-autocomplete-input>
                 
                         <div class="inline-composite-container">
                             <semantic-form-composite-input  for="thing_shows_features_of_thing" 
@@ -904,85 +758,83 @@
                 </div>
             </rs-tab>
     
-            <rs-tab event-key="more" title="More">
-                <div class="form-2column-flex">
-                    [[> videoUploadSection ]]
-                    <div style="flex: 1;">    
-                        <semantic-form-autocomplete-input   for='propositional_object_is_about' 
-                                                            label="Is about" 
-                                                            placeholder="Select what the video is subject of" 
-                                                            nested-form-templates='[[> Platform:NestedFormTemplates_allEntities]]'> 
-                        </semantic-form-autocomplete-input> 
-                
-                        <div class="inline-composite-container">
-                            <semantic-form-composite-input  for="propositional_object_refers_to_domain" 
-                                                            label="Refers to"
-                                                            new-subject-template="/PC67_refers_to/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
-                                                            fields='[[fieldDefinitions
-                                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                                                
-                                                                        refers_to_entity_range="http://www.researchspace.org/pattern/system/refers_to/range"
-                                                                        type_of_reference="http://www.researchspace.org/pattern/system/refers_to/type_of_reference"
-                                                                    ]]'>
-                    
-                            <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC67_refers_to'> </semantic-form-hidden-input>
-                    
-                            <div class="form-inline-inputs">
-                                <div style="flex: 1;">
-                                <semantic-form-autocomplete-input for='refers_to_entity_range' 
-                                                                    render-header="false"
-                                                                    placeholder="Select what the video refers to" 
-                                                                    nested-form-templates='[[> Platform:NestedFormTemplates_allEntities]]'>
-                                </semantic-form-autocomplete-input>
-                                </div>
-                                <div style="flex: 1;">
-                                <semantic-form-tree-picker-input  for="type_of_reference" 
-                                                                    render-header="false"
-                                                                    placeholder="Select type of reference"
-                                                                    close-dropdown-on-selection='true'
-                                                                    tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/type_of_reference>", 
-                                                                                    "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/type_of_reference>",
-                                                                                    "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
-                    
-                                                                    scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                                "view": "vocabulary-content",
-                                                                                                "scheme": "http://www.researchspace.org/resource/vocab/type_of_reference",
-                                                                                                "tooltip": "Open list of type of references"
-                                                                                            }'
-                                                                    
-                                                                    nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                                        scheme="http://www.researchspace.org/resource/vocab/type_of_reference"
-                                                                                                        entityType="type of reference" }}{{{{/raw}}}}'
-                    
-                                                                    query-item-label='SELECT ?label WHERE {
-                                                                                        ?item skos:prefLabel ?label .
-                                                                                    }'>
-                                    </semantic-form-tree-picker-input>
-                                </div>
-                            </div>
-                            </semantic-form-composite-input>
-                        </div>
-                    </div>
-                </div>
-            </rs-tab> 
-    
             [[> rsp:FormMetadataTab]]
             
         </rs-tabs>
 
         [[#*inline "videoUploadSection"]]
-            <div class="FileUploader-container page__section-container formFileUpload-container">
-                <semantic-form-file-input   for='video_id' 
+            <div class="FileUploader-container page__section-container formFileUpload-container ">
+                <semantic-form-text-input for="entity_file_URLidentifier" label="Video URL" placeholder="Enter video URL"></semantic-form-text-input>
+
+                {{#if node}}
+                    <semantic-query query='SELECT ?videoURL WHERE {
+                                            BIND(<{{node}}> as ?entity)
+                                            ?entity crm:P129i_is_subject_of ?digital_object .
+                                            ?digital_object a crmdig:D1_Digital_Object .
+                                            ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                                            ?digital_object crm:P190_has_symbolic_content ?videoURL .
+                                        
+                                            ?digital_object crmdig:L11i_was_output_of ?video_embed .
+                                            ?video_embed a crmdig:D7_Digital_Machine_Event .
+                                            ?video_embed crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/digital_object_embed> .
+                                        }'
+                                    template='{{> template}}'
+	                >
+                        <template id='template'>
+                            <div>
+                                <div style="margin-top: 10px;">
+                                    <iframe src='{{bindings.0.videoURL.value}}' 
+                                            frameborder="0" 
+                                            allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
+                                            width="358" height="230"
+                                            allowfullscreen>
+                                    </iframe>
+                                </div>
+                            </div>
+                        </template>
+                    </semantic-query>
+                {{/if}}
+
+                {{#if node}}
+                    <div style="display: flex; align-items: baseline; justify-content: space-between">
+                        <div class="customFormHeader">Video file</div>
+                        <div style="display: flex; align-items: center; column-gap: 3px; margin-right: -3px;">
+                            <semantic-query query='SELECT ?file ?fileName ?fileMediaType WHERE {
+                                                        BIND(<{{node}}> as ?video) .
+                                                        ?video crm:P1_is_identified_by ?file .
+                                                        ?file crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/video> .
+                                                        ?file rs:PX_has_file_name ?fileName .
+                                                        ?file rs:PX_has_media_type ?fileMediaType .
+                                                    }'
+                                        template='{{> template}}'
+                            >
+                                <template id='template'>
+                                    <mp-file-download  download-url="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}">
+                                        <button class="btn btn-icon" title="Download video">
+                                            <rs-icon icon-type="round" icon-name="download"></rs-icon>
+                                        </button>
+                                    </mp-file-download>
+                                </template>
+                            </semantic-query>
+                        </div>
+                    </div>
+                {{else}}
+                    <div class="customFormHeader">Video file</div>
+                {{/if}}
+                <semantic-form-file-input   for='entity_file_identifier' 
                                             label='Video file'
-                                            from-url-or-drop='true'
-                                            accept-pattern='image/*' 
+                                            render-header="false"
+                                            from-url-or-drop='false'
+                                            accept-pattern='video/*' 
                                             storage='images'
                                             temp-storage='tmp'
                                             name-predicate-iri='http://www.researchspace.org/ontology/PX_has_file_name'
                                             media-type-predicate-iri='http://www.researchspace.org/ontology/PX_has_media_type'
                                             resource-query='PREFIX rs: <http://www.researchspace.org/ontology/>
+                                                            PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
                                                             CONSTRUCT {
                                                                 ?__resourceIri__ a rs:EX_File.
+                                                                ?__resourceIri__ crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/video> .
                                                                 ?__resourceIri__ rs:PX_has_file_name ?__fileName__.
                                                                 ?__resourceIri__ rs:PX_has_media_type ?__mediaType__.
                                                             } WHERE {}'
@@ -992,22 +844,12 @@
                 >
                 <div className='placeholder-item'>
                     <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                    <div>Drag video or click to upload</div>
+                    <p>Drag video file or click to upload</p>
+                    <div>Supported format: .mpeg .mp4 .ogg .quicktime .webm .x-ms-wmv .x-flv .3gpp .3gpp2</div>
                 </div>
                 </semantic-form-file-input>
-
-                {{#if node}}
-                    <div style="margin-top: 20px;">
-                        <iframe src='{{node}}' 
-                                frameborder="0" 
-                                allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
-                                width="308" height="230"
-                                allowfullscreen>
-                        </iframe>
-                        [[!-- https://www.youtube.com/embed/GiqG9J5ohXQ?si=EQK6JKD3LpVyt3K3 --]]
-                    </div>
-                {{/if}}
             </div>
+
         [[/inline]]
 
     </div>

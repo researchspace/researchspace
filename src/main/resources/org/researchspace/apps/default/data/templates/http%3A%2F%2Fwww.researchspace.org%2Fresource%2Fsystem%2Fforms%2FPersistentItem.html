@@ -14,6 +14,7 @@
                             entity_3d_model="http://www.researchspace.org/pattern/system/entity/subject_of_3Dmodel"
                             entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
                             entity_represents_range="http://www.researchspace.org/pattern/system/entity/represents_range"
+                            entity_data_folder="http://www.researchspace.org/pattern/system/entity/data_folder_link"
                             
                             entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
                             entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
@@ -43,9 +44,9 @@
             <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
         {{/if}}
 
-        <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
-            <rs-tab event-key="detail" title="Details">
-                <div class="form-2column-container">
+        <mp-splitpane id='{{viewId}}-entity-resource-sidebar' min-size=63 default-size=400 snap-threshold=200 default-open=true always-render=true primary='second' class="entity-resource-sidebar">
+            <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
+                <rs-tab event-key="detail" title="Details">
                     <div>
                         <semantic-form-text-input for="entity_primary_appellation" label="Persistent item name" placeholder="Enter persistent item name"> </semantic-form-text-input>
                         <semantic-form-text-input for="entity_description" label="Persistent item description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
@@ -69,224 +70,195 @@
                         </semantic-form-autocomplete-input>
                         
                     </div>
+                </rs-tab>
 
-                    <div class="form-media-column">
-                        <div class="dragAndDrop-input-container">
-                            <semantic-form-drag-and-drop-input for='entity_image_main_representation' label="Main image" 
-                                                                placeholder-item-template="<div class='placeholder-item'>
-                                                                                                <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                                                                                                <div>Drag main image from 
-                                                                                                    <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' 
-                                                                                                    class='text-link-action' urlqueryparam-view='system-assets'>Image Library</semantic-link>
-                                                                                                    or click to upload</div>
-                                                                                            </div>"
-                                                                nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
-                            </semantic-form-drag-and-drop-input>
-                        </div>
+                <rs-tab event-key="event" title="Events">
+
+                    <semantic-form-autocomplete-input   for='persistent_item_present_at' 
+                                                        label="Present at" 
+                                                        placeholder="Select event in which the persistent item had an active or passive presence" 
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_events]]'>  
+                    </semantic-form-autocomplete-input> 
+
+                    <semantic-form-autocomplete-input   for='persistent_item_brought_into_existence_by' 
+                                                        label="Brought into existence by" 
+                                                        placeholder="Select event that brought the persistent item into existence" 
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_beginningOfExistences]]'>  
+                    </semantic-form-autocomplete-input>
+
+                    <semantic-form-autocomplete-input   for='persistent_item_taken_out_of_existence_by' 
+                                                        label="Taken out of existence by" 
+                                                        placeholder="Select event that took the persistent item out of existence" 
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_endOfExistences]]'>  
+                    </semantic-form-autocomplete-input>
+
+                    <semantic-form-autocomplete-input   for='entity_influenced_activity' 
+                                                        label="Influenced"
+                                                        placeholder="Select activity influenced by the persistent item" 
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
+                    </semantic-form-autocomplete-input>
+
+                    <semantic-form-autocomplete-input   for='entity_motivated_activity' 
+                                                        label="Motivated"
+                                                        placeholder="Select activity motivated by the persistent item" 
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
+                    </semantic-form-autocomplete-input>
+
+                    <semantic-form-autocomplete-input   for='entity_attributed_by_attribute_assignment' 
+                                                        label="Attributed by"
+                                                        placeholder="Select what assigned attribute to the persistent item" 
+                                                        nested-form-templates='[ 
+                                                            {
+                                                                "label": "Attribute assignment",
+                                                                "nestedForm": "{{{{raw}}}}
+                                                                                {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
+                                                                            {{{{/raw}}}}"
+                                                            }
+                                                        ]'>  
+                    </semantic-form-autocomplete-input>
+
+                    <semantic-form-autocomplete-input   for='entity_assigned_by_attribute_assignment' 
+                                                        label="Assigned by"
+                                                        placeholder="Select what assigned the persistent item" 
+                                                        nested-form-templates='[ 
+                                                            {
+                                                                "label": "Attribute assignment",
+                                                                "nestedForm": "{{{{raw}}}}
+                                                                                {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
+                                                                            {{{{/raw}}}}"
+                                                            }
+                                                        ]'>  
+                    </semantic-form-autocomplete-input>
+
+                    <semantic-form-autocomplete-input   for='entity_measurement' 
+                                                        label="Measured by"
+                                                        placeholder="Select measurement" 
+                                                        nested-form-templates='[ 
+                                                            {
+                                                                "label": "Measurement",
+                                                                "nestedForm": "{{{{raw}}}}
+                                                                                {{> \"http://www.researchspace.org/resource/system/forms/Measurement\" nested=true editable=true mode=\"new\"}}
+                                                                            {{{{/raw}}}}"
+                                                            }
+                                                        ]'>  
+                    </semantic-form-autocomplete-input>
+                </rs-tab>
+
+                <rs-tab event-key="thing" title="Things">
+
+                    <div class="inline-composite-container">
+                        <semantic-form-composite-input  for="entity_depicts_range" 
+                                                        label="Depicted by" 
+                                                        new-subject-template="/PC62_depicts/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                                        fields='[[fieldDefinitions
+                                                                classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                            
+                                                                depicts_thing_domain="http://www.researchspace.org/pattern/system/depicts/domain"
+                                                                mode_of_depiction="http://www.researchspace.org/pattern/system/depicts/mode_of_depiction"
+                                                                ]]'>
             
-                        <div class="dragAndDrop-input-container">
-                            <semantic-form-drag-and-drop-input  for='entity_image' label="More images" 
-                                                                placeholder-item-template="<div class='placeholder-item'>
-                                                                                                <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                                                                                                <div>Drag images from 
-                                                                                                    <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' 
-                                                                                                    class='text-link-action' urlqueryparam-view='system-assets'>Image Library</semantic-link>
-                                                                                                    or click to upload</div>
-                                                                                            </div>"
-                                                                nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
-                            </semantic-form-drag-and-drop-input>
+                        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC62_depicts'> </semantic-form-hidden-input>
+            
+                        <div class="form-inline-inputs">
+                        <div style="flex: 1;">
+                            <semantic-form-autocomplete-input for='depicts_thing_domain' 
+                                                            render-header="false"
+                                                            placeholder="Select what depicts the persistent item"
+                                                            nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'>
+                            </semantic-form-autocomplete-input>
                         </div>
+                        <div style="flex: 1;">
+                            <semantic-form-tree-picker-input  for="mode_of_depiction" 
+                                                            render-header="false"
+                                                            placeholder="Select mode of depiction"
+                                                            close-dropdown-on-selection='true'
+                                                            tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/mode_of_depiction>", 
+                                                                            "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/mode_of_depiction>",
+                                                                            "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+            
+                                                            scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                        "view": "vocabulary-content",
+                                                                                        "scheme": "http://www.researchspace.org/resource/vocab/mode_of_depiction",
+                                                                                        "tooltip": "Open list of mode of depictions"
+                                                                                        }'
+                                                            
+                                                            nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                    scheme="http://www.researchspace.org/resource/vocab/mode_of_depiction"
+                                                                                                    entityType="mode of depiction" }}{{{{/raw}}}}'
+            
+                                                            query-item-label='SELECT ?label WHERE {
+                                                                                ?item skos:prefLabel ?label .
+                                                                            }'>
+                            </semantic-form-tree-picker-input>
+                        </div>
+                        </div>
+                        </semantic-form-composite-input>
                     </div>
-                    
-                </div>
-            </rs-tab>
 
-            <rs-tab event-key="event" title="Events">
+                    <semantic-form-autocomplete-input   for='entity_subject_of' 
+                                                        label="Subject of"
+                                                        placeholder="Select what is about the persistent item" 
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
+                    </semantic-form-autocomplete-input>
 
-                <semantic-form-autocomplete-input   for='persistent_item_present_at' 
-                                                    label="Present at" 
-                                                    placeholder="Select event in which the persistent item had an active or passive presence" 
-                                                    nested-form-templates='[[> Platform:NestedFormTemplates_events]]'>  
-                </semantic-form-autocomplete-input> 
-
-                <semantic-form-autocomplete-input   for='persistent_item_brought_into_existence_by' 
-                                                    label="Brought into existence by" 
-                                                    placeholder="Select event that brought the persistent item into existence" 
-                                                    nested-form-templates='[[> Platform:NestedFormTemplates_beginningOfExistences]]'>  
-                </semantic-form-autocomplete-input>
-
-                <semantic-form-autocomplete-input   for='persistent_item_taken_out_of_existence_by' 
-                                                    label="Taken out of existence by" 
-                                                    placeholder="Select event that took the persistent item out of existence" 
-                                                    nested-form-templates='[[> Platform:NestedFormTemplates_endOfExistences]]'>  
-                </semantic-form-autocomplete-input>
-
-                <semantic-form-autocomplete-input   for='entity_influenced_activity' 
-                                                    label="Influenced"
-                                                    placeholder="Select activity influenced by the persistent item" 
-                                                    nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
-                </semantic-form-autocomplete-input>
-
-                <semantic-form-autocomplete-input   for='entity_motivated_activity' 
-                                                    label="Motivated"
-                                                    placeholder="Select activity motivated by the persistent item" 
-                                                    nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
-                </semantic-form-autocomplete-input>
-
-                <semantic-form-autocomplete-input   for='entity_attributed_by_attribute_assignment' 
-                                                    label="Attributed by"
-                                                    placeholder="Select what assigned attribute to the persistent item" 
-                                                    nested-form-templates='[ 
-                                                        {
-                                                            "label": "Attribute assignment",
-                                                            "nestedForm": "{{{{raw}}}}
-                                                                            {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                        {{{{/raw}}}}"
-                                                        }
-                                                    ]'>  
-                </semantic-form-autocomplete-input>
-
-                <semantic-form-autocomplete-input   for='entity_assigned_by_attribute_assignment' 
-                                                    label="Assigned by"
-                                                    placeholder="Select what assigned the persistent item" 
-                                                    nested-form-templates='[ 
-                                                        {
-                                                            "label": "Attribute assignment",
-                                                            "nestedForm": "{{{{raw}}}}
-                                                                            {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                        {{{{/raw}}}}"
-                                                        }
-                                                    ]'>  
-                </semantic-form-autocomplete-input>
-
-                <semantic-form-autocomplete-input   for='entity_measurement' 
-                                                    label="Measured by"
-                                                    placeholder="Select measurement" 
-                                                    nested-form-templates='[ 
-                                                        {
-                                                            "label": "Measurement",
-                                                            "nestedForm": "{{{{raw}}}}
-                                                                            {{> \"http://www.researchspace.org/resource/system/forms/Measurement\" nested=true editable=true mode=\"new\"}}
-                                                                        {{{{/raw}}}}"
-                                                        }
-                                                    ]'>  
-                </semantic-form-autocomplete-input>
-            </rs-tab>
-
-            <rs-tab event-key="thing" title="Things">
-
-                <div class="inline-composite-container">
-                    <semantic-form-composite-input  for="entity_depicts_range" 
-                                                    label="Depicted by" 
-                                                    new-subject-template="/PC62_depicts/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
-                                                    fields='[[fieldDefinitions
-                                                              classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                                        
-                                                              depicts_thing_domain="http://www.researchspace.org/pattern/system/depicts/domain"
-                                                              mode_of_depiction="http://www.researchspace.org/pattern/system/depicts/mode_of_depiction"
-                                                            ]]'>
-          
-                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC62_depicts'> </semantic-form-hidden-input>
-          
-                    <div class="form-inline-inputs">
-                      <div style="flex: 1;">
-                        <semantic-form-autocomplete-input for='depicts_thing_domain' 
-                                                          render-header="false"
-                                                          placeholder="Select what depicts the persistent item"
-                                                          nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'>
-                        </semantic-form-autocomplete-input>
-                      </div>
-                      <div style="flex: 1;">
-                        <semantic-form-tree-picker-input  for="mode_of_depiction" 
-                                                          render-header="false"
-                                                          placeholder="Select mode of depiction"
-                                                          close-dropdown-on-selection='true'
-                                                          tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/mode_of_depiction>", 
-                                                                          "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/mode_of_depiction>",
-                                                                          "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
-          
-                                                          scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                      "view": "vocabulary-content",
-                                                                                      "scheme": "http://www.researchspace.org/resource/vocab/mode_of_depiction",
-                                                                                      "tooltip": "Open list of mode of depictions"
-                                                                                    }'
-                                                          
-                                                          nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                                scheme="http://www.researchspace.org/resource/vocab/mode_of_depiction"
-                                                                                                entityType="mode of depiction" }}{{{{/raw}}}}'
-          
-                                                          query-item-label='SELECT ?label WHERE {
-                                                                              ?item skos:prefLabel ?label .
-                                                                          }'>
-                          </semantic-form-tree-picker-input>
-                      </div>
+                    <div class="inline-composite-container">
+                        <semantic-form-composite-input  for="entity_refers_to_range" 
+                                                        label="Referred to by"
+                                                        new-subject-template="/PC67_refers_to/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                                        fields='[[fieldDefinitions
+                                                                classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                            
+                                                                refers_to_propObj_domain="http://www.researchspace.org/pattern/system/refers_to/domain"
+                                                                type_of_reference="http://www.researchspace.org/pattern/system/refers_to/type_of_reference"
+                                                                ]]'>
+            
+                        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC67_refers_to'> </semantic-form-hidden-input>
+            
+                        <div class="form-inline-inputs">
+                        <div style="flex: 1;">
+                            <semantic-form-autocomplete-input for='refers_to_propObj_domain' 
+                                                            render-header="false"
+                                                            placeholder="Select what refers to the persistent item" 
+                                                            nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'>
+                            </semantic-form-autocomplete-input>
+                        </div>
+                        <div style="flex: 1;">
+                            <semantic-form-tree-picker-input  for="type_of_reference" 
+                                                            render-header="false"
+                                                            placeholder="Select type of reference"
+                                                            close-dropdown-on-selection='true'
+                                                            tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/type_of_reference>", 
+                                                                            "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/type_of_reference>",
+                                                                            "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+            
+                                                            scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                        "view": "vocabulary-content",
+                                                                                        "scheme": "http://www.researchspace.org/resource/vocab/type_of_reference",
+                                                                                        "tooltip": "Open list of type of references"
+                                                                                        }'
+                                                            
+                                                            nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                    scheme="http://www.researchspace.org/resource/vocab/type_of_reference"
+                                                                                                    entityType="type of reference" }}{{{{/raw}}}}'
+            
+                                                            query-item-label='SELECT ?label WHERE {
+                                                                                ?item skos:prefLabel ?label .
+                                                                            }'>
+                            </semantic-form-tree-picker-input>
+                        </div>
+                        </div>
+                        </semantic-form-composite-input>
                     </div>
-                    </semantic-form-composite-input>
-                </div>
 
-                <semantic-form-autocomplete-input   for='entity_subject_of' 
-                                                    label="Subject of"
-                                                    placeholder="Select what is about the persistent item" 
-                                                    nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
-                </semantic-form-autocomplete-input>
+                </rs-tab>
 
-                <div class="inline-composite-container">
-                    <semantic-form-composite-input  for="entity_refers_to_range" 
-                                                    label="Referred to by"
-                                                    new-subject-template="/PC67_refers_to/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
-                                                    fields='[[fieldDefinitions
-                                                              classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                                        
-                                                              refers_to_propObj_domain="http://www.researchspace.org/pattern/system/refers_to/domain"
-                                                              type_of_reference="http://www.researchspace.org/pattern/system/refers_to/type_of_reference"
-                                                            ]]'>
-          
-                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC67_refers_to'> </semantic-form-hidden-input>
-          
-                    <div class="form-inline-inputs">
-                      <div style="flex: 1;">
-                        <semantic-form-autocomplete-input for='refers_to_propObj_domain' 
-                                                          render-header="false"
-                                                          placeholder="Select what refers to the persistent item" 
-                                                          nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'>
-                        </semantic-form-autocomplete-input>
-                      </div>
-                      <div style="flex: 1;">
-                        <semantic-form-tree-picker-input  for="type_of_reference" 
-                                                          render-header="false"
-                                                          placeholder="Select type of reference"
-                                                          close-dropdown-on-selection='true'
-                                                          tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/type_of_reference>", 
-                                                                          "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/type_of_reference>",
-                                                                          "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
-          
-                                                          scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                      "view": "vocabulary-content",
-                                                                                      "scheme": "http://www.researchspace.org/resource/vocab/type_of_reference",
-                                                                                      "tooltip": "Open list of type of references"
-                                                                                    }'
-                                                          
-                                                          nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                                scheme="http://www.researchspace.org/resource/vocab/type_of_reference"
-                                                                                                entityType="type of reference" }}{{{{/raw}}}}'
-          
-                                                          query-item-label='SELECT ?label WHERE {
-                                                                              ?item skos:prefLabel ?label .
-                                                                          }'>
-                          </semantic-form-tree-picker-input>
-                      </div>
-                    </div>
-                    </semantic-form-composite-input>
-                </div>
+                [[> rsp:FormMetadataTab]]
 
-            </rs-tab>
+            </rs-tabs>
 
-            [[> rsp:FormMetadataTab]]
-
-            [[> rsp:FormAssetTab]]
-
-        </rs-tabs>
-
+            [[> rsp:FormAssetSidebar]]
+        </mp-splitpane>
+        
     </div>
 
     <semantic-form-errors></semantic-form-errors>  

@@ -19,7 +19,7 @@
 
                         template="{{> countAvailableConfigurationsTemplate}}">
         
-            <template id="countAvailableConfigurationsTemplate">
+            <template id="countAvailableConfigurationsTemplate">      
                 [[!-- Check for existing configurations available and when multiple direct the user to the Resource Config section --]]
                 {{#ifCond bindings.length "==" "0"}}
                   <p>There is no configuration for the given entity. See <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames" 
@@ -71,37 +71,38 @@
                                     {{/ifCond}}
                                      
                                     {{#ifCond bindings.0.c2.value "==" 1}}  
-                                 
-                                    {
-                                          <{{iri}}> rdf:type ?resourceOntologyClass  ;
-                                                      crm:P2_has_type ?resourceP2Type .
+                                      {
+                                        <{{iri}}> rdf:type ?resourceOntologyClass  ;
+                                                    crm:P2_has_type ?resourceP2Type .
 
-                                          ?config a <http://www.researchspace.org/resource/system/resource_configuration> ;
-                                                    <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  ;
-                                                    <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .
+                                        ?config a <http://www.researchspace.org/resource/system/resource_configuration> ;
+                                                  <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  ;
+                                                  <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .
 
-                                          OPTIONAL {
-                                            ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern .
-                                          }                              
-                                          OPTIONAL {
-                                            ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty .
-                                          }
-                                          OPTIONAL {
-                                            ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
-                                          }
-                                        } 
+                                        OPTIONAL {
+                                          ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern .
+                                        }                              
+                                        OPTIONAL {
+                                          ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty .
+                                        }
+                                        OPTIONAL {
+                                          ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
+                                        }
+                                      } 
                                     {{/ifCond}}
                                     {{#ifCond bindings.0.c1.value "==" 0}}
-                                       {
-                                            ?config rdf:type Platform:resource_configuration;
-                                              <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>.
-                                            
-                                            OPTIONAL { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern. }
-                                            OPTIONAL { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty. }
-                                            OPTIONAL { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI. }
+                                      {{#ifCond bindings.0.c2.value "==" 0}}
+                                        {
+                                          ?config rdf:type Platform:resource_configuration;
+                                            <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>.
+                                          
+                                          OPTIONAL { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern. }
+                                          OPTIONAL { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty. }
+                                          OPTIONAL { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI. }
                                         }
                                       {{/ifCond}}
-                                      }'
+                                    {{/ifCond}}
+                                    }'
                 >
                   <template id='template'>
                     {{#ifCond bindings.length "==" "0"}}

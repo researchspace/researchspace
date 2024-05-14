@@ -16,6 +16,7 @@
                         entity_3d_model="http://www.researchspace.org/pattern/system/entity/subject_of_3Dmodel"
                         entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
                         entity_represents_range="http://www.researchspace.org/pattern/system/entity/represents_range"
+                        entity_data_folder="http://www.researchspace.org/pattern/system/entity/data_folder_link"
 
                         entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
                         entity_description="http://www.researchspace.org/pattern/system/entity/description"
@@ -66,10 +67,9 @@
       <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
     {{/if}}
     
-    <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
-      <rs-tab event-key="detail" title="Details">
-
-        <div class="form-2column-container">
+    <mp-splitpane id='{{viewId}}-entity-resource-sidebar' min-size=63 default-size=400 snap-threshold=200 default-open=true always-render=true primary='second' class="entity-resource-sidebar">
+      <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
+        <rs-tab event-key="detail" title="Details">
           <div>
             {{#if apiResourceLabel}}
               <div class="focused-input-container">
@@ -188,539 +188,430 @@
               <semantic-form-text-input for="place_geo_coordinates" label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input>
             {{/if}}
           </div>
+        </rs-tab>
 
-          <div class="form-media-column">
-            {{#if apiResourceosmGeoCoordinates}}
-              <div style='height: 330px; width: 100%; margin: 43px 0 0;'>
-                <semantic-map query='SELECT ?wkt WHERE { BIND("{{apiResourceosmGeoCoordinates}}" AS ?wkt) }'
-                              tuple-template='{{#if apiResourceName}}<b style="color:#525156; padding-bottom:5px;">{{apiResourceName}}</b>{{/if}}
-                                              {{#if apiResourceURI}}
-                                                <div>
-                                                  <a style="color:#396EFE;"
-                                                      target="_blank" 
-                                                      href="{{apiResourceURI}}"
-                                                      title="{{apiResourceURI}}">
-                                                    Open in wikidata
-                                                  </a>
-                                                </div>
-                                              {{/if}}'>
-                </semantic-map>
-              </div>
-            {{/if}}
-            
-            {{#if apiResourceURI}}
-              <div style="padding-top: 5px;">
-                <span>Imported from: </span>
-                <a class="text-link-action" target="_blank" href="{{apiResourceURI}}" title="{{apiResourceURI}}">{{apiResourceURI}}</a>
-              </div>
-            {{else}}
-              {{#if node}}
-                <semantic-query query='SELECT ?place ?placeName ?osmURI WHERE {
-                                        BIND(<{{node}}> AS ?place)
+        <rs-tab event-key="component" title="Components">
+          {{#if scheme}}
+            <semantic-form-tree-picker-input  for="place_falls_within_place" 
+                                              label="Falls within place" 
+                                              placeholder="Select location that fully contains the place" 
+                                              close-dropdown-on-selection='true'
+                                              default-values='[{{#if broader}}"{{broader}}"{{/if}}]' 
 
-                                        ?place crm:P129i_is_subject_of ?entityFormRecord .
-                                        # ?entityFormRecord a crmdig:D1_Digital_Object .
-                                        ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
-                                        ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
-                                        ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+                                              tree-patterns='{"scheme": "{{scheme}}",
+                                                              "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
+                                                              "relationPattern": "?item crm:P89_falls_within ?parent",
+                                                              "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
+                                                                              ?appellation a crm:E41_Appellation . 
+                                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                              ?appellation crm:P190_has_symbolic_content ?label ." }'
 
-                                        ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
-                                        # ?importFromExternalSource a crmdig:D12_Data_Transfer_Event .
-                                        ?importFromExternalSource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source> .
+                                              nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" apiResourceURI=false 
+                                                                        apiResourceName=false apiResourceLabel=false apiResourceDescription=false apiResourceosmGeoCoordinates=false}}{{{{/raw}}}}'
 
-                                        ?importFromExternalSource crmdig:L14_transferred ?osmURI .
-        
-                                        # ?osmURI a crmdig:D1_Digital_Object .
-                                        ?osmURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                                              query-item-label='SELECT ?label WHERE {
+                                                                  ?item crm:P1_is_identified_by ?appellation . 
+                                                                  ?appellation a crm:E41_Appellation . 
+                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                  ?appellation crm:P190_has_symbolic_content ?label .
+                                                                }'
+                                              >
+            </semantic-form-tree-picker-input>
 
-                                        ?place crm:P1_is_identified_by ?appellation . 
-                                        # ?appellation a crm:E41_Appellation . 
-                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                        ?appellation crm:P190_has_symbolic_content ?placeName .
-                                      }'
-                              template='{{> template}}'
-                >
-                      
-                  <template id='template'>
-                    <div>
-                      <div style='height: 330px; width: 100%; margin: 43px 0 0;'>
-                        <semantic-map query='SELECT ?wkt WHERE { 
-                                                <{{bindings.0.place.value}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                                                # ?osm_geoCoordinates a crm:E94_Space_Primitive .
-                                                ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
-                                                ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
-                                              }'
-                                      tuple-template='<b style="color:#525156; padding-bottom:5px;">{{bindings.0.placeName.value}}</b>
-                                                      <div>
-                                                        <a style="color:#396EFE;"
-                                                            target="_blank" 
-                                                            href="{{bindings.0.osmURI.value}}"
-                                                            title="{{bindings.0.osmURI.value}}">
-                                                          Open in wikidata
-                                                        </a>
-                                                      </div>'>
-                        </semantic-map>
-                      </div>
-                      <div style="padding-top: 5px;">
-                        <span>Imported from: </span>
-                        <a class="text-link-action" target="_blank" href="{{bindings.0.osmURI.value}}" title="{{bindings.0.osmURI.value}}">{{bindings.0.osmURI.value}}</a>
-                      </div>
-                    </div>
-                  </template>
-                </semantic-query>
-              {{/if}}
-            {{/if}}
+            <semantic-form-tree-picker-input  for="place_contains_place" 
+                                              label="Contains place" 
+                                              placeholder="Select location that falls wholly within the place"
+                                              close-dropdown-on-selection='true'
+                                              tree-patterns='{"scheme": "{{scheme}}",
+                                                              "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
+                                                              "relationPattern": "?item crm:P89_falls_within ?parent",
+                                                              "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
+                                                                              ?appellation a crm:E41_Appellation . 
+                                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                              ?appellation crm:P190_has_symbolic_content ?label ." }'
 
-            <div class="dragAndDrop-input-container">
-              <semantic-form-drag-and-drop-input for='entity_image_main_representation' label="Main image" 
-                                                  placeholder-item-template="<div class='placeholder-item'>
-                                                                                  <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                                                                                  <div>Drag main image from 
-                                                                                      <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' 
-                                                                                      class='text-link-action' urlqueryparam-view='system-assets'>Image Library</semantic-link>
-                                                                                      or click to upload</div>
-                                                                              </div>"
-                                                  nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
-              </semantic-form-drag-and-drop-input>
-            </div>
-
-            <div class="dragAndDrop-input-container">
-              <semantic-form-drag-and-drop-input  for='entity_image' label="More images" 
-                                                  placeholder-item-template="<div class='placeholder-item'>
-                                                                                  <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                                                                                  <div>Drag images from 
-                                                                                      <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' 
-                                                                                      class='text-link-action' urlqueryparam-view='system-assets'>Image Library</semantic-link>
-                                                                                      or click to upload</div>
-                                                                              </div>"
-                                                  nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
-              </semantic-form-drag-and-drop-input>
-            </div>
-          </div>
-        </div>
-      </rs-tab>
-
-      <rs-tab event-key="component" title="Components">
-        {{#if scheme}}
-          <semantic-form-tree-picker-input  for="place_falls_within_place" 
-                                            label="Falls within place" 
-                                            placeholder="Select location that fully contains the place" 
-                                            close-dropdown-on-selection='true'
-                                            default-values='[{{#if broader}}"{{broader}}"{{/if}}]' 
-
-                                            tree-patterns='{"scheme": "{{scheme}}",
-                                                            "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
-                                                            "relationPattern": "?item crm:P89_falls_within ?parent",
-                                                            "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
-                                                                            ?appellation a crm:E41_Appellation . 
-                                                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                            ?appellation crm:P190_has_symbolic_content ?label ." }'
-
-                                            nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" apiResourceURI=false 
+                                              nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" apiResourceURI=false 
                                                                       apiResourceName=false apiResourceLabel=false apiResourceDescription=false apiResourceosmGeoCoordinates=false}}{{{{/raw}}}}'
 
-                                            query-item-label='SELECT ?label WHERE {
-                                                                ?item crm:P1_is_identified_by ?appellation . 
-                                                                ?appellation a crm:E41_Appellation . 
-                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                ?appellation crm:P190_has_symbolic_content ?label .
-                                                              }'
-                                            >
-          </semantic-form-tree-picker-input>
+                                              query-item-label='SELECT ?label WHERE {
+                                                                  ?item crm:P1_is_identified_by ?appellation . 
+                                                                  ?appellation a crm:E41_Appellation . 
+                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                  ?appellation crm:P190_has_symbolic_content ?label .
+                                                                }'
+                                              >
+            </semantic-form-tree-picker-input>
+          {{else}}
+            <div class="hierarchyView-form-container">
+              <mp-event-target-template-render id='{{viewId}}-place-componentsView' template='{{> placeComponents}}'>
+                <template id='placeComponents'>
+                  <div class="page__section-container formHierarchyView-container">
+                    <div class="form-header-withButtons">
+                      <h4>Components</h4>
+                      <div class="btn-form-actions"> 
+                        <mp-event-trigger id='{{viewId}}-place-componentsView-refresh-trigger' 
+                                          type='Component.TemplateUpdate' 
+                                          targets='["{{viewId}}-place-componentsView"]'
+                                          >
+                          <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
+                            <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
+                              Refresh
+                          </button>
+                        </mp-event-trigger>
+                      </div>
+                    </div>
+                    <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
+                        {{#if node}}
+                          {{#bind place=node }}
+                            <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
+                                                    BIND(<{{node}}> as ?place)
+                                                    
+                                                    { ?place crm:P89i_contains ?node . }
+                                                    UNION
+                                                    { ?place crm:P89_falls_within ?parent . }
+                                                    
+                                                    ?node crm:P89_falls_within ?parent .
+                                                    FILTER(ISIRI(?node))
+                                                }
+                                                ORDER BY (?node)' 
 
-          <semantic-form-tree-picker-input  for="place_contains_place" 
-                                            label="Contains place" 
-                                            placeholder="Select location that falls wholly within the place"
-                                            close-dropdown-on-selection='true'
-                                            tree-patterns='{"scheme": "{{scheme}}",
-                                                            "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
-                                                            "relationPattern": "?item crm:P89_falls_within ?parent",
-                                                            "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
-                                                                            ?appellation a crm:E41_Appellation . 
-                                                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                            ?appellation crm:P190_has_symbolic_content ?label ." }'
-
-                                            nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" apiResourceURI=false 
-                                                                    apiResourceName=false apiResourceLabel=false apiResourceDescription=false apiResourceosmGeoCoordinates=false}}{{{{/raw}}}}'
-
-                                            query-item-label='SELECT ?label WHERE {
-                                                                ?item crm:P1_is_identified_by ?appellation . 
-                                                                ?appellation a crm:E41_Appellation . 
-                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                ?appellation crm:P190_has_symbolic_content ?label .
-                                                              }'
-                                            >
-          </semantic-form-tree-picker-input>
-        {{else}}
-          <div class="hierarchyView-form-container">
-            <mp-event-target-template-render id='{{viewId}}-place-componentsView' template='{{> placeComponents}}'>
-              <template id='placeComponents'>
-                <div class="page__section-container formHierarchyView-container">
-                  <div class="form-header-withButtons">
-                    <h4>Components</h4>
-                    <div class="btn-form-actions"> 
-                      <mp-event-trigger id='{{viewId}}-place-componentsView-refresh-trigger' 
-                                        type='Component.TemplateUpdate' 
-                                        targets='["{{viewId}}-place-componentsView"]'
-                                        >
-                        <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
-                          <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
-                            Refresh
-                        </button>
-                      </mp-event-trigger>
+                                            tuple-template='{{> nodeTemplate}}'>
+                                            
+                                <template id='nodeTemplate'>
+                                    <semantic-query query='SELECT ?node ?nodeLabel WHERE {
+                                                            BIND (<{{node.value}}> as ?node)
+                                                            ?node crm:P1_is_identified_by ?appellation . 
+                                                            ?appellation a crm:E41_Appellation . 
+                                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                            ?appellation crm:P190_has_symbolic_content ?nodeLabel .  
+                                                          }'
+                                                    template='{{> template}}'>
+                                        
+                                        <template id='template'>
+                                            <div>
+                                                {{#ifCond bindings.0.node.value "===" place}}
+                                                    <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                {{else}}
+                                                    <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                    urlqueryparam-view='entity-editor' 
+                                                                    urlqueryparam-resource-iri='{{node.value}}'
+                                                                    >
+                                                        <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                    </semantic-link>
+                                                {{/ifCond}}
+                                            </div>
+                                        </template>
+                                    </semantic-query>
+                                </template>  
+                            </semantic-tree>
+                          {{/bind}}
+                        {{/if}}
                     </div>
                   </div>
-                  <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
-                      {{#if node}}
-                        {{#bind place=node }}
-                          <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
-                                                  BIND(<{{node}}> as ?place)
-                                                  
-                                                  { ?place crm:P89i_contains ?node . }
-                                                  UNION
-                                                  { ?place crm:P89_falls_within ?parent . }
-                                                  
-                                                  ?node crm:P89_falls_within ?parent .
-                                                  FILTER(ISIRI(?node))
-                                              }
-                                              ORDER BY (?node)' 
+                </template>
+              </mp-event-target-template-render>
 
-                                          tuple-template='{{> nodeTemplate}}'>
-                                          
-                              <template id='nodeTemplate'>
-                                  <semantic-query query='SELECT ?node ?nodeLabel WHERE {
-                                                          BIND (<{{node.value}}> as ?node)
-                                                          ?node crm:P1_is_identified_by ?appellation . 
-                                                          ?appellation a crm:E41_Appellation . 
-                                                          ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                          ?appellation crm:P190_has_symbolic_content ?nodeLabel .  
-                                                        }'
-                                                  template='{{> template}}'>
-                                      
-                                      <template id='template'>
-                                          <div>
-                                              {{#ifCond bindings.0.node.value "===" place}}
-                                                  <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                              {{else}}
-                                                  <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                  urlqueryparam-view='entity-editor' 
-                                                                  urlqueryparam-resource-iri='{{node.value}}'
-                                                                  >
-                                                      <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                  </semantic-link>
-                                              {{/ifCond}}
-                                          </div>
-                                      </template>
-                                  </semantic-query>
-                              </template>  
-                          </semantic-tree>
-                        {{/bind}}
-                      {{/if}}
-                  </div>
-                </div>
-              </template>
-            </mp-event-target-template-render>
+              <div class="page__section-container formHierarchyInputs-container">
 
-            <div class="page__section-container formHierarchyInputs-container">
+                <semantic-form-tree-picker-input  for="place_falls_within_place" 
+                                                  label="Falls within place" 
+                                                  placeholder="Select location that fully contains the place" 
+                                                  close-dropdown-on-selection='true'
+                                                  tree-patterns='{"scheme": "crm:E53_Place",
+                                                                  "schemePattern": "?item a crm:E53_Place",
+                                                                  "relationPattern": "?item crm:P89_falls_within ?parent",
+                                                                  "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
+                                                                                  ?appellation a crm:E41_Appellation . 
+                                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                                  ?appellation crm:P190_has_symbolic_content ?label ." }'
 
-              <semantic-form-tree-picker-input  for="place_falls_within_place" 
-                                                label="Falls within place" 
-                                                placeholder="Select location that fully contains the place" 
-                                                close-dropdown-on-selection='true'
-                                                tree-patterns='{"scheme": "crm:E53_Place",
-                                                                "schemePattern": "?item a crm:E53_Place",
-                                                                "relationPattern": "?item crm:P89_falls_within ?parent",
-                                                                "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
-                                                                                ?appellation a crm:E41_Appellation . 
-                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                                ?appellation crm:P190_has_symbolic_content ?label ." }'
+                                                  nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" apiResourceURI=false 
+                                                                                        apiResourceName=false apiResourceLabel=false apiResourceDescription=false apiResourceosmGeoCoordinates=false}}{{{{/raw}}}}'
 
-                                                nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" apiResourceURI=false 
-                                                                                      apiResourceName=false apiResourceLabel=false apiResourceDescription=false apiResourceosmGeoCoordinates=false}}{{{{/raw}}}}'
-
-                                                query-item-label='SELECT ?label WHERE {
-                                                                    ?item crm:P1_is_identified_by ?appellation . 
-                                                                    ?appellation a crm:E41_Appellation . 
-                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                    ?appellation crm:P190_has_symbolic_content ?label .
-                                                                  }'
-                                                >
-              </semantic-form-tree-picker-input>
-
-              <semantic-form-tree-picker-input  for="place_contains_place" 
-                                                label="Contains place" 
-                                                placeholder="Select location that falls wholly within the place"
-                                                close-dropdown-on-selection='true'
-                                                tree-patterns='{"scheme": "crm:E53_Place",
-                                                                "schemePattern": "?item a crm:E53_Place",
-                                                                "relationPattern": "?item crm:P89_falls_within ?parent",
-                                                                "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
-                                                                                ?appellation a crm:E41_Appellation . 
-                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                                ?appellation crm:P190_has_symbolic_content ?label ." }'
-
-                                                nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" apiResourceURI=false 
-                                                                          apiResourceName=false apiResourceLabel=false apiResourceDescription=false apiResourceosmGeoCoordinates=false}}{{{{/raw}}}}'
-            
-                                                query-item-label='SELECT ?label WHERE {
-                                                                    ?item crm:P1_is_identified_by ?appellation . 
-                                                                    ?appellation a crm:E41_Appellation . 
-                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                    ?appellation crm:P190_has_symbolic_content ?label .
-                                                                  }'
-                                                >
-              </semantic-form-tree-picker-input>
-            </div>
-          </div>
-        {{/if}}
-      </rs-tab>
-
-      <rs-tab event-key="actor" title="Actors">
-
-        <semantic-form-autocomplete-input for='place_residence_of_actor' 
-                                          label="Residence of" 
-                                          placeholder="Select actor that reside in the place" 
-                                          nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'> 
-        </semantic-form-autocomplete-input> 
-
-      </rs-tab>
-      
-      <rs-tab event-key="event" title="Events">
-
-        <semantic-form-autocomplete-input for='place_witnessed_period' 
-                                          label="Witnessed event"
-                                          placeholder="Select the period/event that happened at the place" 
-                                          nested-form-templates='[[> Platform:NestedFormTemplates_periods]]'>  
-        </semantic-form-autocomplete-input>
-
-        <semantic-form-autocomplete-input for='place_origin_of_move' 
-                                          label="Origin of move"
-                                          placeholder="Select move/movement that moved from the place" 
-                                          nested-form-templates='[ 
-                                              {
-                                                  "label": "Move",
-                                                  "nestedForm": "{{{{raw}}}}
-                                                                  {{> \"http://www.researchspace.org/resource/system/forms/Move\" nested=true editable=true mode=\"new\"}}
-                                                              {{{{/raw}}}}"
-                                              }
-                                          ]'>  
-        </semantic-form-autocomplete-input>
-
-        <semantic-form-autocomplete-input for='place_destination_of_move' 
-                                          label="Destination of move"
-                                          placeholder="Select move/movement that moved to the place" 
-                                          nested-form-templates='[ 
-                                              {
-                                                  "label": "Move",
-                                                  "nestedForm": "{{{{raw}}}}
-                                                                  {{> \"http://www.researchspace.org/resource/system/forms/Move\" nested=true editable=true mode=\"new\"}}
-                                                              {{{{/raw}}}}"
-                                              }
-                                          ]'>  
-        </semantic-form-autocomplete-input>
-
-        <semantic-form-autocomplete-input   for='entity_influenced_activity' 
-                                            label="Influenced"
-                                            placeholder="Select activity influenced by the place" 
-                                            nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
-        </semantic-form-autocomplete-input>
-
-        <semantic-form-autocomplete-input   for='entity_motivated_activity' 
-                                            label="Motivated"
-                                            placeholder="Select activity motivated by the place" 
-                                            nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
-        </semantic-form-autocomplete-input>
-
-        <semantic-form-autocomplete-input for='entity_attributed_by_attribute_assignment' 
-                                          label="Attributed by"
-                                          placeholder="Select what assigned attribute to the place" 
-                                          nested-form-templates='[ 
-                                              {
-                                                  "label": "Attribute assignment",
-                                                  "nestedForm": "{{{{raw}}}}
-                                                                  {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                              {{{{/raw}}}}"
-                                              }
-                                          ]'>  
-        </semantic-form-autocomplete-input>
-
-        <semantic-form-autocomplete-input for='entity_assigned_by_attribute_assignment' 
-                                          label="Assigned by"
-                                          placeholder="Select what assigned the place" 
-                                          nested-form-templates='[ 
-                                              {
-                                                  "label": "Attribute assignment",
-                                                  "nestedForm": "{{{{raw}}}}
-                                                                  {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                              {{{{/raw}}}}"
-                                              }
-                                          ]'>  
-        </semantic-form-autocomplete-input>
-
-        <semantic-form-autocomplete-input for='entity_measurement' 
-                                          label="Measured by"
-                                          placeholder="Select measurement" 
-                                          nested-form-templates='[ 
-                                              {
-                                                  "label": "Measurement",
-                                                  "nestedForm": "{{{{raw}}}}
-                                                                  {{> \"http://www.researchspace.org/resource/system/forms/Measurement\" nested=true editable=true mode=\"new\"}}
-                                                              {{{{/raw}}}}"
-                                              }
-                                          ]'>  
-        </semantic-form-autocomplete-input>
-
-      </rs-tab>
-
-      <rs-tab event-key="thing" title="Things">
-
-        <semantic-form-autocomplete-input for='place_current_permanent_location_of' 
-                                          label="Current permanent location of" 
-                                          placeholder="Select object" 
-                                          nested-form-templates='[[> Platform:NestedFormTemplates_physicalObjects]]'>
-        </semantic-form-autocomplete-input> 
-
-        <semantic-form-autocomplete-input for='place_currently_holds' 
-                                          label="Currently holds" 
-                                          placeholder="Select object" 
-                                          nested-form-templates='[[> Platform:NestedFormTemplates_physicalObjects]]'>
-        </semantic-form-autocomplete-input> 
-
-        <semantic-form-autocomplete-input for='place_former_location_of' 
-                                          label="Former or current location of" 
-                                          placeholder="Select thing" 
-                                          nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'>
-        </semantic-form-autocomplete-input> 
-
-        <semantic-form-autocomplete-input for='place_located_on_or_within' 
-                                          label="Located on or within" 
-                                          placeholder="Select thing" 
-                                          nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'>
-        </semantic-form-autocomplete-input> 
-
-        <semantic-form-autocomplete-input for='place_occupied_by' 
-                                          label="Occupied by" 
-                                          placeholder="Select thing" 
-                                          nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'>
-        </semantic-form-autocomplete-input> 
-
-        <semantic-form-autocomplete-input for='place_is_at_rest_relative_to' 
-                                          label="At rest relative to" 
-                                          placeholder="Select thing" 
-                                          nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'>
-        </semantic-form-autocomplete-input> 
-
-        <div class="inline-composite-container">
-          <semantic-form-composite-input  for="entity_depicts_range" 
-                                          label="Depicted by" 
-                                          new-subject-template="/PC62_depicts/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
-                                          fields='[[fieldDefinitions
-                                                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                              
-                                                    depicts_thing_domain="http://www.researchspace.org/pattern/system/depicts/domain"
-                                                    mode_of_depiction="http://www.researchspace.org/pattern/system/depicts/mode_of_depiction"
-                                                  ]]'>
-
-          <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC62_depicts'> </semantic-form-hidden-input>
-
-          <div class="form-inline-inputs">
-            <div style="flex: 1;">
-              <semantic-form-autocomplete-input for='depicts_thing_domain' 
-                                                render-header="false"
-                                                placeholder="Select what depicts the place"
-                                                nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'>
-              </semantic-form-autocomplete-input>
-            </div>
-            <div style="flex: 1;">
-              <semantic-form-tree-picker-input  for="mode_of_depiction" 
-                                                render-header="false"
-                                                placeholder="Select mode of depiction"
-                                                close-dropdown-on-selection='true'
-                                                tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/mode_of_depiction>", 
-                                                                "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/mode_of_depiction>",
-                                                                "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
-
-                                                scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                            "view": "vocabulary-content",
-                                                                            "scheme": "http://www.researchspace.org/resource/vocab/mode_of_depiction",
-                                                                            "tooltip": "Open list of mode of depictions"
-                                                                          }'
-                                                
-                                                nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                      scheme="http://www.researchspace.org/resource/vocab/mode_of_depiction"
-                                                                                      entityType="mode of depiction" }}{{{{/raw}}}}'
-
-                                                query-item-label='SELECT ?label WHERE {
-                                                                    ?item skos:prefLabel ?label .
-                                                                }'>
+                                                  query-item-label='SELECT ?label WHERE {
+                                                                      ?item crm:P1_is_identified_by ?appellation . 
+                                                                      ?appellation a crm:E41_Appellation . 
+                                                                      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                      ?appellation crm:P190_has_symbolic_content ?label .
+                                                                    }'
+                                                  >
                 </semantic-form-tree-picker-input>
-            </div>
-          </div>
-          </semantic-form-composite-input>
-      </div>
 
-        <semantic-form-autocomplete-input for='entity_subject_of' 
-                                    label="Subject of"
-                                    placeholder="Select what is about the place" 
-                                    nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
-        </semantic-form-autocomplete-input>
+                <semantic-form-tree-picker-input  for="place_contains_place" 
+                                                  label="Contains place" 
+                                                  placeholder="Select location that falls wholly within the place"
+                                                  close-dropdown-on-selection='true'
+                                                  tree-patterns='{"scheme": "crm:E53_Place",
+                                                                  "schemePattern": "?item a crm:E53_Place",
+                                                                  "relationPattern": "?item crm:P89_falls_within ?parent",
+                                                                  "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
+                                                                                  ?appellation a crm:E41_Appellation . 
+                                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                                  ?appellation crm:P190_has_symbolic_content ?label ." }'
 
-        <div class="inline-composite-container">
-          <semantic-form-composite-input  for="entity_refers_to_range" 
-                                          label="Referred to by"
-                                          new-subject-template="/PC67_refers_to/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
-                                          fields='[[fieldDefinitions
-                                                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                              
-                                                    refers_to_propObj_domain="http://www.researchspace.org/pattern/system/refers_to/domain"
-                                                    type_of_reference="http://www.researchspace.org/pattern/system/refers_to/type_of_reference"
-                                                  ]]'>
-
-          <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC67_refers_to'> </semantic-form-hidden-input>
-
-          <div class="form-inline-inputs">
-            <div style="flex: 1;">
-              <semantic-form-autocomplete-input for='refers_to_propObj_domain' 
-                                                render-header="false"
-                                                placeholder="Select what refers to the place" 
-                                                nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'>
-              </semantic-form-autocomplete-input>
-            </div>
-            <div style="flex: 1;">
-              <semantic-form-tree-picker-input  for="type_of_reference" 
-                                                render-header="false"
-                                                placeholder="Select type of reference"
-                                                close-dropdown-on-selection='true'
-                                                tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/type_of_reference>", 
-                                                                "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/type_of_reference>",
-                                                                "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
-
-                                                scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                            "view": "vocabulary-content",
-                                                                            "scheme": "http://www.researchspace.org/resource/vocab/type_of_reference",
-                                                                            "tooltip": "Open list of type of references"
-                                                                          }'
-                                                
-                                                nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                      scheme="http://www.researchspace.org/resource/vocab/type_of_reference"
-                                                                                      entityType="type of reference" }}{{{{/raw}}}}'
-
-                                                query-item-label='SELECT ?label WHERE {
-                                                                    ?item skos:prefLabel ?label .
-                                                                }'>
+                                                  nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" apiResourceURI=false 
+                                                                            apiResourceName=false apiResourceLabel=false apiResourceDescription=false apiResourceosmGeoCoordinates=false}}{{{{/raw}}}}'
+              
+                                                  query-item-label='SELECT ?label WHERE {
+                                                                      ?item crm:P1_is_identified_by ?appellation . 
+                                                                      ?appellation a crm:E41_Appellation . 
+                                                                      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                      ?appellation crm:P190_has_symbolic_content ?label .
+                                                                    }'
+                                                  >
                 </semantic-form-tree-picker-input>
+              </div>
             </div>
-          </div>
-          </semantic-form-composite-input>
-      </div>
+          {{/if}}
+        </rs-tab>
 
-      </rs-tab>
+        <rs-tab event-key="actor" title="Actors">
 
-      [[> rsp:FormMetadataTab]]
+          <semantic-form-autocomplete-input for='place_residence_of_actor' 
+                                            label="Residence of" 
+                                            placeholder="Select actor that reside in the place" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'> 
+          </semantic-form-autocomplete-input> 
 
-      [[> rsp:FormAssetTab]]
+        </rs-tab>
+        
+        <rs-tab event-key="event" title="Events">
 
-    </rs-tabs>
+          <semantic-form-autocomplete-input for='place_witnessed_period' 
+                                            label="Witnessed event"
+                                            placeholder="Select the period/event that happened at the place" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_periods]]'>  
+          </semantic-form-autocomplete-input>
+
+          <semantic-form-autocomplete-input for='place_origin_of_move' 
+                                            label="Origin of move"
+                                            placeholder="Select move/movement that moved from the place" 
+                                            nested-form-templates='[ 
+                                                {
+                                                    "label": "Move",
+                                                    "nestedForm": "{{{{raw}}}}
+                                                                    {{> \"http://www.researchspace.org/resource/system/forms/Move\" nested=true editable=true mode=\"new\"}}
+                                                                {{{{/raw}}}}"
+                                                }
+                                            ]'>  
+          </semantic-form-autocomplete-input>
+
+          <semantic-form-autocomplete-input for='place_destination_of_move' 
+                                            label="Destination of move"
+                                            placeholder="Select move/movement that moved to the place" 
+                                            nested-form-templates='[ 
+                                                {
+                                                    "label": "Move",
+                                                    "nestedForm": "{{{{raw}}}}
+                                                                    {{> \"http://www.researchspace.org/resource/system/forms/Move\" nested=true editable=true mode=\"new\"}}
+                                                                {{{{/raw}}}}"
+                                                }
+                                            ]'>  
+          </semantic-form-autocomplete-input>
+
+          <semantic-form-autocomplete-input   for='entity_influenced_activity' 
+                                              label="Influenced"
+                                              placeholder="Select activity influenced by the place" 
+                                              nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
+          </semantic-form-autocomplete-input>
+
+          <semantic-form-autocomplete-input   for='entity_motivated_activity' 
+                                              label="Motivated"
+                                              placeholder="Select activity motivated by the place" 
+                                              nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
+          </semantic-form-autocomplete-input>
+
+          <semantic-form-autocomplete-input for='entity_attributed_by_attribute_assignment' 
+                                            label="Attributed by"
+                                            placeholder="Select what assigned attribute to the place" 
+                                            nested-form-templates='[ 
+                                                {
+                                                    "label": "Attribute assignment",
+                                                    "nestedForm": "{{{{raw}}}}
+                                                                    {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
+                                                                {{{{/raw}}}}"
+                                                }
+                                            ]'>  
+          </semantic-form-autocomplete-input>
+
+          <semantic-form-autocomplete-input for='entity_assigned_by_attribute_assignment' 
+                                            label="Assigned by"
+                                            placeholder="Select what assigned the place" 
+                                            nested-form-templates='[ 
+                                                {
+                                                    "label": "Attribute assignment",
+                                                    "nestedForm": "{{{{raw}}}}
+                                                                    {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
+                                                                {{{{/raw}}}}"
+                                                }
+                                            ]'>  
+          </semantic-form-autocomplete-input>
+
+          <semantic-form-autocomplete-input for='entity_measurement' 
+                                            label="Measured by"
+                                            placeholder="Select measurement" 
+                                            nested-form-templates='[ 
+                                                {
+                                                    "label": "Measurement",
+                                                    "nestedForm": "{{{{raw}}}}
+                                                                    {{> \"http://www.researchspace.org/resource/system/forms/Measurement\" nested=true editable=true mode=\"new\"}}
+                                                                {{{{/raw}}}}"
+                                                }
+                                            ]'>  
+          </semantic-form-autocomplete-input>
+
+        </rs-tab>
+
+        <rs-tab event-key="thing" title="Things">
+
+          <semantic-form-autocomplete-input for='place_current_permanent_location_of' 
+                                            label="Current permanent location of" 
+                                            placeholder="Select object" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_physicalObjects]]'>
+          </semantic-form-autocomplete-input> 
+
+          <semantic-form-autocomplete-input for='place_currently_holds' 
+                                            label="Currently holds" 
+                                            placeholder="Select object" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_physicalObjects]]'>
+          </semantic-form-autocomplete-input> 
+
+          <semantic-form-autocomplete-input for='place_former_location_of' 
+                                            label="Former or current location of" 
+                                            placeholder="Select thing" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'>
+          </semantic-form-autocomplete-input> 
+
+          <semantic-form-autocomplete-input for='place_located_on_or_within' 
+                                            label="Located on or within" 
+                                            placeholder="Select thing" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'>
+          </semantic-form-autocomplete-input> 
+
+          <semantic-form-autocomplete-input for='place_occupied_by' 
+                                            label="Occupied by" 
+                                            placeholder="Select thing" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'>
+          </semantic-form-autocomplete-input> 
+
+          <semantic-form-autocomplete-input for='place_is_at_rest_relative_to' 
+                                            label="At rest relative to" 
+                                            placeholder="Select thing" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'>
+          </semantic-form-autocomplete-input> 
+
+          <div class="inline-composite-container">
+            <semantic-form-composite-input  for="entity_depicts_range" 
+                                            label="Depicted by" 
+                                            new-subject-template="/PC62_depicts/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                            fields='[[fieldDefinitions
+                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                
+                                                      depicts_thing_domain="http://www.researchspace.org/pattern/system/depicts/domain"
+                                                      mode_of_depiction="http://www.researchspace.org/pattern/system/depicts/mode_of_depiction"
+                                                    ]]'>
+
+            <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC62_depicts'> </semantic-form-hidden-input>
+
+            <div class="form-inline-inputs">
+              <div style="flex: 1;">
+                <semantic-form-autocomplete-input for='depicts_thing_domain' 
+                                                  render-header="false"
+                                                  placeholder="Select what depicts the place"
+                                                  nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'>
+                </semantic-form-autocomplete-input>
+              </div>
+              <div style="flex: 1;">
+                <semantic-form-tree-picker-input  for="mode_of_depiction" 
+                                                  render-header="false"
+                                                  placeholder="Select mode of depiction"
+                                                  close-dropdown-on-selection='true'
+                                                  tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/mode_of_depiction>", 
+                                                                  "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/mode_of_depiction>",
+                                                                  "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+
+                                                  scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                              "view": "vocabulary-content",
+                                                                              "scheme": "http://www.researchspace.org/resource/vocab/mode_of_depiction",
+                                                                              "tooltip": "Open list of mode of depictions"
+                                                                            }'
+                                                  
+                                                  nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                        scheme="http://www.researchspace.org/resource/vocab/mode_of_depiction"
+                                                                                        entityType="mode of depiction" }}{{{{/raw}}}}'
+
+                                                  query-item-label='SELECT ?label WHERE {
+                                                                      ?item skos:prefLabel ?label .
+                                                                  }'>
+                  </semantic-form-tree-picker-input>
+              </div>
+            </div>
+            </semantic-form-composite-input>
+        </div>
+
+          <semantic-form-autocomplete-input for='entity_subject_of' 
+                                      label="Subject of"
+                                      placeholder="Select what is about the place" 
+                                      nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
+          </semantic-form-autocomplete-input>
+
+          <div class="inline-composite-container">
+            <semantic-form-composite-input  for="entity_refers_to_range" 
+                                            label="Referred to by"
+                                            new-subject-template="/PC67_refers_to/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                            fields='[[fieldDefinitions
+                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                
+                                                      refers_to_propObj_domain="http://www.researchspace.org/pattern/system/refers_to/domain"
+                                                      type_of_reference="http://www.researchspace.org/pattern/system/refers_to/type_of_reference"
+                                                    ]]'>
+
+            <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC67_refers_to'> </semantic-form-hidden-input>
+
+            <div class="form-inline-inputs">
+              <div style="flex: 1;">
+                <semantic-form-autocomplete-input for='refers_to_propObj_domain' 
+                                                  render-header="false"
+                                                  placeholder="Select what refers to the place" 
+                                                  nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'>
+                </semantic-form-autocomplete-input>
+              </div>
+              <div style="flex: 1;">
+                <semantic-form-tree-picker-input  for="type_of_reference" 
+                                                  render-header="false"
+                                                  placeholder="Select type of reference"
+                                                  close-dropdown-on-selection='true'
+                                                  tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/type_of_reference>", 
+                                                                  "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/type_of_reference>",
+                                                                  "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+
+                                                  scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                              "view": "vocabulary-content",
+                                                                              "scheme": "http://www.researchspace.org/resource/vocab/type_of_reference",
+                                                                              "tooltip": "Open list of type of references"
+                                                                            }'
+                                                  
+                                                  nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                        scheme="http://www.researchspace.org/resource/vocab/type_of_reference"
+                                                                                        entityType="type of reference" }}{{{{/raw}}}}'
+
+                                                  query-item-label='SELECT ?label WHERE {
+                                                                      ?item skos:prefLabel ?label .
+                                                                  }'>
+                  </semantic-form-tree-picker-input>
+              </div>
+            </div>
+            </semantic-form-composite-input>
+        </div>
+
+        </rs-tab>
+
+        [[> rsp:FormMetadataTab]]
+
+      </rs-tabs>
+
+      [[> rsp:FormAssetSidebar map=true]]
+    </mp-splitpane>
   
   </div>
   

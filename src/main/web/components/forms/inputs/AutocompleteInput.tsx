@@ -272,6 +272,7 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
           <ResourceLinkContainer 
             uri="http://www.researchspace.org/resource/ThinkingFrames" 
             urlqueryparam-view="entity-editor"
+            urlqueryparam-open-as-drag-and-drop="true"
             urlqueryparam-resource={(this.props.value.value as Rdf.Iri).value}
           >
             <Button className={`${CLASS_NAME}__open-in-new-tab`} title='Open in new tab'>

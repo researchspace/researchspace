@@ -334,90 +334,102 @@
 
                 [[#if map]]
                     <bs-tab-pane event-key="{{viewId}}-resourceForm-map" class="form-tabs-subtabs-content">
-                        <div class="form-tabs-subtabs-content--title">
-                            <h4>Map</h4>
-                        </div>
-
-                        {{#if apiResourceosmGeoCoordinates}}
-                            <div style='height: 350px; width: 100%; margin: 43px 0 0;'>
-                                <semantic-map query='SELECT ?wkt WHERE { BIND("{{apiResourceosmGeoCoordinates}}" AS ?wkt) }'
-                                                tuple-template='{{#if apiResourceName}}<b style="color:#525156; padding-bottom:5px;">{{apiResourceName}}</b>{{/if}}
-                                                                {{#if apiResourceURI}}
-                                                                <div>
-                                                                    <a style="color:#396EFE;"
-                                                                        target="_blank" 
-                                                                        href="{{apiResourceURI}}"
-                                                                        title="{{apiResourceURI}}">
-                                                                    Open in wikidata
-                                                                    </a>
-                                                                </div>
-                                                                {{/if}}'>
-                                </semantic-map>
-                            </div>
-                        {{/if}}
-                        
-                        {{#if apiResourceURI}}
-                            <div style="padding-top: 5px;">
-                                <span>Imported from: </span>
-                                <a class="text-link-action" target="_blank" href="{{apiResourceURI}}" title="{{apiResourceURI}}">{{apiResourceURI}}</a>
-                            </div>
-                        {{else}}
-                            {{#if node}}
-                                <semantic-query query='SELECT ?place ?placeName ?osmURI WHERE {
-                                                        BIND(<{{node}}> AS ?place)
-                
-                                                        ?place crm:P129i_is_subject_of ?entityFormRecord .
-                                                        # ?entityFormRecord a crmdig:D1_Digital_Object .
-                                                        ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
-                                                        ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
-                                                        ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
-                
-                                                        ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
-                                                        # ?importFromExternalSource a crmdig:D12_Data_Transfer_Event .
-                                                        ?importFromExternalSource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source> .
-                
-                                                        ?importFromExternalSource crmdig:L14_transferred ?osmURI .
-                        
-                                                        # ?osmURI a crmdig:D1_Digital_Object .
-                                                        ?osmURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
-                
-                                                        ?place crm:P1_is_identified_by ?appellation . 
-                                                        # ?appellation a crm:E41_Appellation . 
-                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                        ?appellation crm:P190_has_symbolic_content ?placeName .
-                                                        }'
-                                                template='{{> template}}'
-                                >
-                                        
-                                    <template id='template'>
-                                        <div>
-                                            <div style='height: 350px; width: 100%; margin: 43px 0 0;'>
-                                                <semantic-map query='SELECT ?wkt WHERE { 
-                                                                        <{{bindings.0.place.value}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                                                                        # ?osm_geoCoordinates a crm:E94_Space_Primitive .
-                                                                        ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
-                                                                        ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
-                                                                        }'
-                                                                tuple-template='<b style="color:#525156; padding-bottom:5px;">{{bindings.0.placeName.value}}</b>
-                                                                                <div>
-                                                                                <a style="color:#396EFE;"
-                                                                                    target="_blank" 
-                                                                                    href="{{bindings.0.osmURI.value}}"
-                                                                                    title="{{bindings.0.osmURI.value}}">
-                                                                                    Open in wikidata
-                                                                                </a>
-                                                                                </div>'>
-                                                </semantic-map>
-                                            </div>
-                                            <div style="padding-top: 5px;">
-                                                <span>Imported from: </span>
-                                                <a class="text-link-action" target="_blank" href="{{bindings.0.osmURI.value}}" title="{{bindings.0.osmURI.value}}">{{bindings.0.osmURI.value}}</a>
+                        {{#if node}}
+                            <semantic-query query='SELECT ?place ?placeName ?osmURI WHERE {
+                                                    BIND(<{{node}}> AS ?place)
+            
+                                                    ?place crm:P129i_is_subject_of ?entityFormRecord .
+                                                    # ?entityFormRecord a crmdig:D1_Digital_Object .
+                                                    ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                                    ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
+                                                    ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+            
+                                                    ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
+                                                    # ?importFromExternalSource a crmdig:D12_Data_Transfer_Event .
+                                                    ?importFromExternalSource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source> .
+            
+                                                    ?importFromExternalSource crmdig:L14_transferred ?osmURI .
+                    
+                                                    # ?osmURI a crmdig:D1_Digital_Object .
+                                                    ?osmURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+            
+                                                    ?place crm:P1_is_identified_by ?appellation . 
+                                                    # ?appellation a crm:E41_Appellation . 
+                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                    ?appellation crm:P190_has_symbolic_content ?placeName .
+                                                    }'
+                                            template='{{> template}}'
+                            >
+                                    
+                                <template id='template'>
+                                    <div>
+                                        <div class="form-tabs-subtabs-content--title">
+                                            <h4>Map</h4>
+                                            <div style="display: flex;align-items: center;gap: 20px;">
+                                                <div class="form-tabs-subtabs-content--title-actions">
+                                                    <button class="btn btn-icon" title="preview">
+                                                        <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
-                                    </template>
-                                </semantic-query>
+                                        <div style='height: 350px; width: 100%; margin: 10px 0 0;'>
+                                            <semantic-map query='SELECT ?wkt WHERE { 
+                                                                    <{{bindings.0.place.value}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
+                                                                    # ?osm_geoCoordinates a crm:E94_Space_Primitive .
+                                                                    ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
+                                                                    ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
+                                                                    }'
+                                                            tuple-template='<b style="color:#525156; padding-bottom:5px;">{{bindings.0.placeName.value}}</b>
+                                                                            <div>
+                                                                            <a style="color:#396EFE;"
+                                                                                target="_blank" 
+                                                                                href="{{bindings.0.osmURI.value}}"
+                                                                                title="{{bindings.0.osmURI.value}}">
+                                                                                Open in wikidata
+                                                                            </a>
+                                                                            </div>'>
+                                            </semantic-map>
+                                        </div>
+                                        <div style="padding-top: 5px;">
+                                            <span>Imported from: </span>
+                                            <a class="text-link-action" target="_blank" href="{{bindings.0.osmURI.value}}" title="{{bindings.0.osmURI.value}}">{{bindings.0.osmURI.value}}</a>
+                                        </div>
+                                    </div>
+                                </template>
+                            </semantic-query>
+                        {{else}}
+                            <div class="form-tabs-subtabs-content--title">
+                                <h4>Map</h4>
+                            </div>
+                            {{#if apiResourceosmGeoCoordinates}}
+                                <div style='height: 350px; width: 100%; margin: 10px 0 0;'>
+                                    <semantic-map query='SELECT ?wkt WHERE { BIND("{{apiResourceosmGeoCoordinates}}" AS ?wkt) }'
+                                                    tuple-template='{{#if apiResourceName}}<b style="color:#525156; padding-bottom:5px;">{{apiResourceName}}</b>{{/if}}
+                                                                    {{#if apiResourceURI}}
+                                                                    <div>
+                                                                        <a style="color:#396EFE;"
+                                                                            target="_blank" 
+                                                                            href="{{apiResourceURI}}"
+                                                                            title="{{apiResourceURI}}">
+                                                                        Open in wikidata
+                                                                        </a>
+                                                                    </div>
+                                                                    {{/if}}'>
+                                    </semantic-map>
+                                </div>
+                            {{/if}}
+                            
+                            {{#if apiResourceURI}}
+                                <div style="padding-top: 5px;">
+                                    <span>Imported from: </span>
+                                    <a class="text-link-action" target="_blank" href="{{apiResourceURI}}" title="{{apiResourceURI}}">{{apiResourceURI}}</a>
+                                </div>
                             {{/if}}
                         {{/if}}
+                        
+
+
                     </bs-tab-pane>
                 [[/if]]
 
@@ -539,7 +551,7 @@
                                 </div>
                                 <bs-tab-content>
                                     <bs-tab-pane event-key="thumbnailView">
-                                        <div class="tab-pane-content" style="padding-top: 0;">
+                                        <div class="tab-pane-content">
                                             <div class="dragAndDrop-input-container">
                                                 <semantic-form-drag-and-drop-input  for='person_signature' label="Signature" render-header=false
                                                                                     placeholder-item-template="<div class='placeholder-item'>
@@ -560,7 +572,7 @@
                                     </bs-tab-pane>
         
                                     <bs-tab-pane event-key="listView">
-                                        <div class="tab-pane-content" style="padding-top: 0;">
+                                        <div class="tab-pane-content">
                                     
                                             <semantic-form-autocomplete-input   for='person_signature' 
                                                                                 label="Signature"

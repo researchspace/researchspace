@@ -6,34 +6,45 @@
     <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/entity>;
     <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
     <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-9e01112b7920425dab8182ac1a8a5c56-76s8cn;
     <http://www.w3.org/2000/01/rdf-schema#label> "File identifier Min0";
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-a9d562049e694db4a7caa5c4b498f8b6-u7m9g7m;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-a9d562049e694db4a7caa5c4b498f8b6-tm1m1e;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-a9d562049e694db4a7caa5c4b498f8b6-uvi1a;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-9e01112b7920425dab8182ac1a8a5c56-vsx03;
     <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-9e01112b7920425dab8182ac1a8a5c56-krtxgm;
     <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
     <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-05-09T11:15:43.527+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-05-15T17:23:33.021+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
   
-  _:genid-a9d562049e694db4a7caa5c4b498f8b6-tm1m1e a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-  $subject crm:P1_is_identified_by $value . 
-} WHERE {}""" .
+  _:genid-9e01112b7920425dab8182ac1a8a5c56-krtxgm a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+  $subject crmdig:L60i_is_documented_by ?digitizationProcess .
+  ?digitizationProcess a crmdig:D2_Digitization_Process .    
+  ?digitizationProcess crmdig:L11_had_output $value . 
+} WHERE { 
+  $subject crmdig:L60i_is_documented_by ?digitizationProcess .
+  ?digitizationProcess a crmdig:D2_Digitization_Process .    
+  ?digitizationProcess crmdig:L11_had_output $value . 
+      
+  ?value a rs:EX_File .
+}""" .
   
-  _:genid-a9d562049e694db4a7caa5c4b498f8b6-uvi1a a <http://spinrdf.org/sp#Query>;
+  _:genid-9e01112b7920425dab8182ac1a8a5c56-76s8cn a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
-  $subject crm:P1_is_identified_by ?value . 
+  $subject crmdig:L60i_is_documented_by ?digitizationProcess .
+  ?digitizationProcess a crmdig:D2_Digitization_Process .    
+  ?digitizationProcess crmdig:L11_had_output $value . 
+      
   ?value a rs:EX_File .
   ?value rs:PX_has_file_name ?label .
 }""" .
   
-  _:genid-a9d562049e694db4a7caa5c4b498f8b6-u7m9g7m a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE { 
-  $subject crm:P1_is_identified_by $value . 
-} WHERE { 
-  $subject crm:P1_is_identified_by $value .
-  ?value a rs:EX_File .
-  ?value rs:PX_has_file_name ?label .
+  _:genid-9e01112b7920425dab8182ac1a8a5c56-vsx03 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crmdig:L60i_is_documented_by ?digitizationProcess .
+  ?digitizationProcess a crmdig:D2_Digitization_Process .    
+  ?digitizationProcess crmdig:L11_had_output $value . 
+} WHERE {
+	BIND(URI(CONCAT(str($subject),\"/digitization_process\")) as ?digitizationProcess)
 }""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>

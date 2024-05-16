@@ -341,7 +341,9 @@
                                                   BIND(<{{iri}}> as ?item) .
                                                   ?item a ?itemClass . 
                                                   FILTER(?itemClass in (crm:E31_Document, crm:E32_Authority_Document, frbroo:F21_Recording_Work))
-                                                  ?item crm:P1_is_identified_by ?file .
+                                                  ?item crmdig:L60i_is_documented_by ?digitizationProcess .
+                                                  ?digitizationProcess a crmdig:D2_Digitization_Process .    
+                                                  ?digitizationProcess crmdig:L11_had_output ?file .
                                                   OPTIONAL {
                                                     ?file crm:P2_has_type ?fileType .
                                                   }
@@ -379,7 +381,9 @@
                             <semantic-query query='SELECT ?item ?file ?fileName ?mediaType WHERE {
                                                   BIND(<{{iri}}> as ?item) .
                                                   ?item a rs:EX_Digital_Image .
-                                                  ?item crm:P1_is_identified_by ?file .
+                                                  ?item crmdig:L60i_is_documented_by ?digitizationProcess .
+                                                  ?digitizationProcess a crmdig:D2_Digitization_Process .    
+                                                  ?digitizationProcess crmdig:L11_had_output ?file .
                                                   ?file rs:PX_has_file_name ?fileName .
                                                   ?file rs:PX_has_media_type ?mediaType .
                                                 }'

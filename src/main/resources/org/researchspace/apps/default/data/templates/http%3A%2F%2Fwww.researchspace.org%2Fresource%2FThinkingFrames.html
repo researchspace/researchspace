@@ -56,8 +56,7 @@
       "iconName": "search",
       "checkQuery": "ASK { ?value a rs:Semantic_Search . }",
       "template": "{{> simpleSearchTemplate}}",
-      "resourceNotRequired": true,
-      "type": "hidden"
+      "resourceNotRequired": true
     },
 
     {
@@ -66,9 +65,10 @@
       "iconName": "search",
       "checkQuery": "ASK { ?value a rs:Semantic_Search . }",
       "template": "{{> entitySearchTemplate}}",
-      "resourceNotRequired": true,
+      "resourceNotRequired": false,
       "type": "hidden"
     },
+
 
     {
     	"id": "resource",
@@ -207,7 +207,7 @@
       "type": "authoring"
     },
 
-[[!--     {
+[[!--  {
     	"id": "featureSimilarityKm",
       "label": "Exploring and comparing (visual) features",
       "template": "{{> featureSimilarityKm }}",
@@ -258,15 +258,15 @@
 
     [[#if (hasPermission "forms:ldp:*")]]
     linked-views='[{
-      "id": "image-graph-authoring",
-      "label": "Image graph authoring",
-      "description": "Drag and drop an entity here to combine image annotations with knowledge map authoring",
-      "dropAreaDescription": "Drag and drop an entity here to combine image annotations with data authoring through the knowledge map system",
-      "iconName": "wallpaper",
-      "viewIds": ["knowledge-map", "iiif"],
-      "resourceNotRequired": true,
-      "type": "authoring"
-    }
+        "id": "image-graph-authoring",
+        "label": "Image graph authoring",
+        "description": "Drag and drop an entity here to combine image annotations with knowledge map authoring",
+        "dropAreaDescription": "Drag and drop an entity here to combine image annotations with data authoring through the knowledge map system",
+        "iconName": "wallpaper",
+        "viewIds": ["knowledge-map", "iiif"],
+        "resourceNotRequired": true,
+        "type": "authoring"
+      }
     ]'
     [[/if]]
 
@@ -280,7 +280,21 @@
 
     <template id='finder'>[[> rsp:Finder]]</template>
 
-    <template id='details'>
+    <template id='finderSearchTemplate'>
+      <div class='rs-search-container'>
+        <mp-page-loader urlqueryparam-frame=true iri='http://www.researchspace.org/resource/FinderSearchContent'>
+        </mp-page-loader>
+    	</div>
+    </template>
+
+  <template id='simpleSearchTemplate'>
+      <div class='rs-search-container'>
+        <mp-page-loader urlqueryparam-frame=true iri='http://www.researchspace.org/resource/SearchContent'>
+        </mp-page-loader>
+    	</div>
+    </template>
+
+    [[!-- <template id='details'>
         <mp-event-target-template-render fixed-key='details-view' reparentable='true' id='details-view' template='{{> template}}'>
             <template id='template'>
                 {{#if iri}}
@@ -294,7 +308,7 @@
                 {{/if}}
             </template>
         </mp-event-target-template-render>
-    </template>
+    </template> --]]
 
     <template id='resourceTemplate'>
       <div style='flex: 1 1 0px; overflow: auto;'>
@@ -303,17 +317,11 @@
     	</div>
     </template>
 
-    <template id='simpleSearchTemplate'>
-      <div class='rs-search-container'>
-        <mp-page-loader urlqueryparam-frame=true iri='http://www.researchspace.org/resource/SearchContent'>
-        </mp-page-loader>
-    	</div>
-    </template>
-
-   <template id='entitySearchTemplate'>
+    <template id='entitySearchTemplate'>
       <div class='rs-search-container' style='flex: 1 1 0px; overflow: auto; padding: 20px;'>
-         [[> rsp:EntitySearchContent config='{{iri}}']]
-    	</div> 
+      [[!--  <div>{{data.iri}}</div>--]]
+         [[> rsp:EntitySearchContent config='{{data.iri}}']] 
+    	</div>  
     </template>
 
     <template id='resourceConfiguration'>

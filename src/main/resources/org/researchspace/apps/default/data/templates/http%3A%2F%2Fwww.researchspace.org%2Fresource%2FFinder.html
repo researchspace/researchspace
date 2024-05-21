@@ -42,10 +42,12 @@
                             no-result-template='{{> noResults}}'>
                             
               <template id='nodeTemplate'>
-                <mp-event-trigger id='event-trigger' 
-                                  type='Component.TemplateUpdate' 
-                                  targets='["entity-viewes"]'
-                                  data='{"navigationEntry": "{{node.value}}"}'>
+                <mp-event-trigger id='{{frameId}}-open-resource-search-page--trigger' 
+                                  type='Dashboard.AddFrame' 
+                                  targets='["thinking-frames"]'
+                                  data='{ "viewId": "entity-search",
+                                          "iri": "{{node.value}}"
+                                        }'>
 
                   {{#ifCond node.value "==" finderItem }}
                     <div class="Tree--itemLink active" style="{{#if finderPreview}}{{else}}cursor:pointer;{{/if}}">

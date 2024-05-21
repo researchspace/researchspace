@@ -126,6 +126,7 @@
                                                   ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .
                                                 }
                                                 FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>)
+                                                FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation>)
                                                 FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>)
                                                 FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>)
                                                 FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>)
@@ -390,7 +391,7 @@
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>,
 
-                                                  #following resources are removed as listed in System resources
+                                                  #following resources are removed as listed in System resources or not for data entry,but only for resource edit
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Document>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Image>,
@@ -440,11 +441,7 @@
                                                   (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document>)
                                                   (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Document>)
                                                   (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Image>)
-                                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation>)
                                                   (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Publication>)
-                                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>)
-                                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>)
-                                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>)
                                                   (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Audio>)
                                                   (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Video>)
                                                   (<http://www.researchspace.org/resource/system/resource_configurations_container/data/3d_model>)
@@ -494,21 +491,69 @@
 
         <mp-anonymous-hidden>
           <li>
-            <mp-overlay-dialog title="Create a new reseach project" type="modal" class="modal-xlSize">
-              <mp-overlay-dialog-trigger>
-                <button class="btn btn-action btn-textAndIcon" >
-                  <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
-                  <span>New Project</span>
-                </button>
-              </mp-overlay-dialog-trigger>
-              <mp-overlay-dialog-content>
-                <div>PROJECT FORM</div>
-              </mp-overlay-dialog-content>
-            </mp-overlay-dialog>
+            <mp-event-trigger id='openProjectForm-in-new-frame-trigger' 
+                              type='Dashboard.AddFrame'
+                              data='{"viewId":"entity-editor", 
+                                    "entityTypeConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Project", 
+                                    "editable": true,
+                                    "resourceEditorLabel": "New project",
+                                    "mode":"new"}' 
+                              targets='["thinking-frames"]'>
+
+              <button class="btn btn-action btn-textAndIcon" >
+                <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                <span>New Project</span>
+              </button>
+            </mp-event-trigger>
+            
           </li>
         </mp-anonymous-hidden>
 
-        <bs-nav-dropdown title="Testing1">
+        <bs-nav-dropdown title="Testing">
+
+          <bs-menu-item>
+            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                urlqueryparam-view='entity-editor' 
+                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map'
+                urlqueryparam-mode='new'
+              >
+            knowledge map
+            </semantic-link>
+          </bs-menu-item>
+
+          <bs-menu-item>
+            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                urlqueryparam-view='entity-editor' 
+                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative'
+                urlqueryparam-mode='new'
+              >
+            semantic narrative
+            </semantic-link>
+          </bs-menu-item>
+
+          <bs-menu-item>
+            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                urlqueryparam-view='entity-editor' 
+                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation'
+                urlqueryparam-mode='new'
+              >
+            image annotation
+            </semantic-link>
+          </bs-menu-item>
+
+          <bs-menu-item>
+            <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                            urlqueryparam-view='entity-editor' 
+                            urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Set'
+                            urlqueryparam-mode='new'
+              >
+            Set
+            </semantic-link>
+          </bs-menu-item>
+
+        </bs-nav-dropdown>
+
+   {{!--     <bs-nav-dropdown title="Testing1">
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
@@ -1150,29 +1195,7 @@
           
         </bs-nav-dropdown>
 
-        <bs-nav-dropdown title="Testing4">
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
-                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map'
-                urlqueryparam-mode='new'
-              >
-            knowledge map
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
-                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative'
-                urlqueryparam-mode='new'
-              >
-            semantic narrative
-            </semantic-link>
-          </bs-menu-item>
-
-        </bs-nav-dropdown>
+  --}}
       </ul>
 
       <ul class="nav navbar-nav navbar-right">

@@ -540,8 +540,30 @@
   
         <div class="form-section-content page__section-container">
           <semantic-form-checklist-input for='resource_search_view_type' label="Search view" row="true" default-value="http://www.researchspace.org/resource/system/vocab/search_view_type/list"></semantic-form-checklist-input>
+            
+          <semantic-form-tree-picker-input  for="resource_search_facet_kpCategory" 
+                                            label="Search filters - Knowledge pattern category"
+                                            placeholder="Enter IRI of the category assigned to the knowledge patterns to be used as search filters"
+                                            close-dropdown-on-selection='false'
+                                            tree-patterns='{"scheme": "http://www.researchspace.org/resource/system/FieldCategories", 
+                                                            "schemePattern": "?item skos:inScheme <http://www.researchspace.org/resource/system/FieldCategories>",
+                                                            "relationPattern": "?item skos:broader ?parent"}'
 
-          <semantic-form-text-input for="resource_search_facet_kpCategory" placeholder="Enter IRI of the category assigned to the knowledge patterns to be used as search filters" label="Knowledge pattern category"></semantic-form-text-input>
+                                            scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                        "view": "vocabulary-content",
+                                                                        "scheme": "http://www.researchspace.org/resource/system/FieldCategories",
+                                                                        "tooltip": "Open list of knowledge pattern categories"
+                                                                      }'
+                                            
+                                            nested-form-template='{{{{raw}}}}{{> forms:KPCategory nested=true editable=true mode="new"
+                                                                                  scheme="http://www.researchspace.org/resource/system/FieldCategories"
+                                                                                  entityType="knowledge pattern category" }}{{{{/raw}}}}'
+
+                                            query-item-label='SELECT ?label WHERE {
+                                                                ?item skos:prefLabel ?label .
+                                                              }'
+                                          
+          ></semantic-form-tree-picker-input>
 
         </div>
 

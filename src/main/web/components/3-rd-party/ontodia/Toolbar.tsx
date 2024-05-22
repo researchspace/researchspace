@@ -277,12 +277,12 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
                 <Icon iconType='round' iconName='download'/>
               </Dropdown.Toggle>
               <Dropdown.Menu>
-                <MenuItem href="#" title="Export map as PNG" onClick={this.onExportPng}>
-                  <Icon iconType='round' iconName='image' className='icon-left' />
+                <MenuItem href="#" onClick={this.onExportPng}>
+                  <Icon iconType='round' iconName='download' className='icon-left' />
                   Export as PNG
                 </MenuItem>
-                <MenuItem href="#" title="Export map as SVG" onClick={this.onExportSvg}>
-                  <Icon iconType='round' iconName='image' className='icon-left' />
+                <MenuItem href="#" onClick={this.onExportSvg}>
+                  <Icon iconType='round' iconName='download' className='icon-left' />
                   Export as SVG
                 </MenuItem>
               </Dropdown.Menu>

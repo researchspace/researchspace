@@ -1,0 +1,38 @@
+<semantic-query query='SELECT ?resourceConfig ?viewId ?resourceLabel ?resourceOntologyClass ?resourceType ?resourceFormIRI ?resourceRestrictionPattern ?resourceLabelPattern WHERE {    
+                            BIND(<[[config]]> as ?resourceConfig) .
+                            BIND("{{dashboardId}}" as ?viewId)
+
+                            ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceLabel .
+                            ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
+                            
+                            OPTIONAL {
+                              ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceType .
+                            }
+
+                            OPTIONAL {
+                              ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
+                            }
+
+                            OPTIONAL {
+                              ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern .
+                            }
+
+                            OPTIONAL {
+                              ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_label_sparql_pattern> ?resourceLabelPattern .
+                            }
+
+                          } LIMIT 1'>
+
+    <template id='template'>
+      <mp-page-loader iri="http://www.researchspace.org/resource/ResourceSearchTemplate"
+                      urlqueryparam-viewid="{{bindings.0.viewId.value}}"
+                      urlqueryparam-resourcelabel="{{bindings.0.resourceLabel.value}}"
+                      urlqueryparam-resourceontologyclass="<{{bindings.0.resourceOntologyClass.value}}>"
+                      urlqueryparam-resourcetype='{{#if bindings.0.resourceType.value}}<{{bindings.0.resourceType.value}}>{{/if}}' 
+                      urlqueryparam-resourceform="{{#if bindings.0.resourceFormIRI.value}}{{bindings.0.resourceFormIRI.value}}{{/if}}"
+                      urlqueryparam-resourcerestrictionpattern='{{#if bindings.0.resourceRestrictionPattern.value}}{{bindings.0.resourceRestrictionPattern.value}}{{/if}}'
+                      urlqueryparam-resourcelabelpattern='{{#if bindings.0.resourceLabelPattern.value}}{{bindings.0.resourceLabelPattern.value}}{{/if}}'
+      ></mp-page-loader>
+    </template>
+</semantic-query>
+

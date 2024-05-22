@@ -1,14 +1,13 @@
-
 <http://www.researchspace.org/pattern/system/exemplifies/domain/context> {
   <http://www.researchspace.org/pattern/system/exemplifies/domain> a <http://www.researchspace.org/resource/system/fields/Field>,
       <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E89_Propositional_Object>;
-    <http://www.w3.org/2000/01/rdf-schema#label> "http://www.researchspace.org/pattern/system/exemplifies/domain";
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Exemplifies - entity domain";
     <http://www.researchspace.org/resource/system/fields/selectPattern> _:t8100;
     <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
     <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:t8102;
     <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/PC67_refers_to>;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/PC137_exemplifies>;
     <http://www.researchspace.org/resource/system/fields/deletePattern> _:t8099;
     <http://www.researchspace.org/resource/system/fields/insertPattern> _:t8101;
     <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:t8098;
@@ -21,12 +20,19 @@
   	$subject crm:P01_has_domain $value .
       
     ?value a ?ontologyClass .
-    ?ontologyClass rdfs:subClassOf* crm:E89_Propositional_Object . 
+    ?ontologyClass rdfs:subClassOf* crm:E1_CRM_Entity .
     { 
       ?value crm:P1_is_identified_by ?appellation .
       ?appellation a crm:E41_Appellation .
       ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
       ?appellation crm:P190_has_symbolic_content ?label .
+    } UNION {
+      ?value crm:P170i_time_is_defined_by ?timePrimitive .
+      ?timePrimitive a crm:E61_Time_Primitive .
+      ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
+      ?timePrimitive crm:P190_has_symbolic_content ?label .
+    } UNION {
+      ?value skos:prefLabel ?label .
     } UNION {
       ?value crm:P190_has_symbolic_content ?label .
     }
@@ -34,13 +40,20 @@
   
   _:t8102 a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
-  ?value a ?ontologyClass .
-  ?ontologyClass rdfs:subClassOf* crm:E89_Propositional_Object . 
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E1_CRM_Entity .
     { 
       ?value crm:P1_is_identified_by ?appellation .
       ?appellation a crm:E41_Appellation .
       ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
       ?appellation crm:P190_has_symbolic_content ?label .
+    } UNION {
+      ?value crm:P170i_time_is_defined_by ?timePrimitive .
+      ?timePrimitive a crm:E61_Time_Primitive .
+      ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
+      ?timePrimitive crm:P190_has_symbolic_content ?label .
+    } UNION {
+      ?value skos:prefLabel ?label .
     } UNION {
       ?value crm:P190_has_symbolic_content ?label .
     }
@@ -48,16 +61,23 @@
   
   _:t8098 a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
-  ?value a ?ontologyClass .
-  ?ontologyClass rdfs:subClassOf* crm:E89_Propositional_Object . 
-  { 
-    ?value crm:P1_is_identified_by ?appellation .
-    ?appellation a crm:E41_Appellation .
-    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-    ?appellation crm:P190_has_symbolic_content ?label .
-  } UNION {
-    ?value crm:P190_has_symbolic_content ?label .
-  }
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E1_CRM_Entity .
+    { 
+      ?value crm:P1_is_identified_by ?appellation .
+      ?appellation a crm:E41_Appellation .
+      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+      ?appellation crm:P190_has_symbolic_content ?label .
+    } UNION {
+      ?value crm:P170i_time_is_defined_by ?timePrimitive .
+      ?timePrimitive a crm:E61_Time_Primitive .
+      ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
+      ?timePrimitive crm:P190_has_symbolic_content ?label .
+    } UNION {
+      ?value skos:prefLabel ?label .
+    } UNION {
+      ?value crm:P190_has_symbolic_content ?label .
+    }
   FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ASC(?label) 
   LIMIT 10 """ .
@@ -71,12 +91,19 @@
     $value crm:P01i_is_domain_of $subject . 
       
     ?value a ?ontologyClass .
-    ?ontologyClass rdfs:subClassOf* crm:E89_Propositional_Object . 
+    ?ontologyClass rdfs:subClassOf* crm:E1_CRM_Entity .
     { 
       ?value crm:P1_is_identified_by ?appellation .
       ?appellation a crm:E41_Appellation .
       ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
       ?appellation crm:P190_has_symbolic_content ?label .
+    } UNION {
+      ?value crm:P170i_time_is_defined_by ?timePrimitive .
+      ?timePrimitive a crm:E61_Time_Primitive .
+      ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
+      ?timePrimitive crm:P190_has_symbolic_content ?label .
+    } UNION {
+      ?value skos:prefLabel ?label .
     } UNION {
       ?value crm:P190_has_symbolic_content ?label .
     }

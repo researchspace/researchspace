@@ -45,7 +45,7 @@ const SPARQL_QUERY = SparqlUtil.Sparql`
  * 
  */
 export function getResourceConfigurationEditForm(iri:Rdf.Iri, context: any): Promise<SparqlClient.Binding> {
-  return new Promise((resolve) => {
+  return new Promise((resolve) => { 
     if(iri) {
       const query = SparqlClient.setBindings(SPARQL_QUERY, { __resourceIri__: iri});
       SparqlClient.select(query, {context: context.semanticContext})
@@ -63,12 +63,12 @@ export function getResourceConfigurationEditForm(iri:Rdf.Iri, context: any): Pro
               
               if (countConfigWithP2Type == 1) {
                 filteredResults.push(configBindingsWithType); 
-                resolve(this.findResourceConfigurationEditForm(filteredResults, iri, context));
+                resolve(findResourceConfigurationEditForm(filteredResults, iri, context));
 
               }
               if (countConfigWithP2Type == 0 && countConfigWithoutP2Type == 1) {
                     filteredResults.push(configBindingsWithoutType);
-                    resolve(this.findResourceConfigurationEditForm(filteredResults, iri, context));
+                    resolve(findResourceConfigurationEditForm(filteredResults, iri, context));
                 }
               //else not editable entity
               resolve(undefined);             
@@ -98,7 +98,7 @@ export function buildResourceFormIriQuery(queryResultBindings: SparqlClient.Bind
 
 export function findResourceConfigurationEditForm(queryResultBindings: SparqlClient.Bindings, iri: Rdf.Iri, context: any): Promise<SparqlClient.Binding> {
   return new Promise((resolve) => {
-    const RESOURCE_FORM_IRI_QUERY = this.buildResourceFormIriQuery(queryResultBindings, iri)
+    const RESOURCE_FORM_IRI_QUERY = buildResourceFormIriQuery(queryResultBindings, iri);
     SparqlClient.select(RESOURCE_FORM_IRI_QUERY, {context: context.semanticContext})
     .onValue((fr) => {
         resolve(fr.results.bindings[0]);    

@@ -27,6 +27,9 @@
                   resource_broader_property="http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property"
                   resource_order_sparql_pattern="http://www.researchspace.org/pattern/system/resource_configuration/resource_order_sparql_pattern"
 
+                  resource_search_view_type="http://www.researchspace.org/pattern/system/resource_configuration/resource_search_view_type"
+                  resource_search_facet_kpCategory="http://www.researchspace.org/pattern/system/resource_configuration/resource_search_facet_kpCategory"
+
                   resource_in_finder="http://www.researchspace.org/pattern/system/resource_configuration/resource_in_finder"
                   resource_has_navigation_menu="http://www.researchspace.org/pattern/system/resource_configuration/resource_has_navigation_menu"
                   has_facet_kp="http://www.researchspace.org/pattern/system/resource_configuration/has_facet_kp"
@@ -269,7 +272,7 @@
 
           <div class="page__section-container" style="padding-top: 10px; margin-bottom: 0; margin-top: 10px; display: flex; flex-direction: column;">
             <div class="form-header-withButtons" style="height: 41px;">
-              <h4 style="margin: 0; align-self: end;">Card preview</h4>
+              <h4>Card preview</h4>
             </div>
             <div style="flex: 1;">
               card
@@ -315,7 +318,7 @@
 
       </rs-tab>
 
-      <rs-tab event-key="context" title="Context Page" class="tab_overflow_hidden" disabled="{{#if node}}false{{else}}true{{/if}}">
+      <rs-tab event-key="context" title="Resource context page" class="tab_overflow_hidden" disabled="{{#if node}}false{{else}}true{{/if}}">
         <div class="form-section-header">
           <div>Enter the context page configurations for: Navigation menu, Views and Filters.</div>
         </div>
@@ -386,7 +389,7 @@
         </div>
       </rs-tab>
 
-      <rs-tab event-key="vocabulary" title="Vocabulary / Authority" tab-class-name="tab-right" disabled="{{#if node}}false{{else}}true{{/if}}">
+      <rs-tab event-key="vocabulary" title="Resource vocabulary / authority" disabled="{{#if node}}false{{else}}true{{/if}}">
         <div class="form-section-header">
           [[!--  <h4>Resource - Vocabulary / Authority configuration</h4> --]]
           <div>Define if the resource can be used as vocabulary / authority type, 
@@ -461,7 +464,7 @@
                           >
                 <div class="page__section-container" style="padding-top: 10px; margin-bottom: 0;"> 
                   <div class="form-header-withButtons">
-                    <h4 style="margin: 0; align-self: end;">Resource in vocabulary / authority - configuration</h4>
+                    <h4>Resource in vocabulary / authority - configuration</h4>
                     <div class="btn-form-actions"> 
                       <button name="reset" class="btn btn-sm btn-default">Reset</button>
                       <button name="submit" class="btn btn-sm btn-action">Save configuration</button>
@@ -531,9 +534,43 @@
       </rs-tab> 
       
       <rs-tab event-key="search" title="Search" tab-class-name="tab-right" disabled="{{#if node}}false{{else}}true{{/if}}">
+        <div class="form-section-header">
+          <div>Customise the resource search page defining: search view types, category of the knowledge patterns used to display filters.</div>
+        </div>
+  
+        <div class="form-section-content page__section-container">
+          <semantic-form-checklist-input for='resource_search_view_type' label="Search view" row="true" default-value="http://www.researchspace.org/resource/system/vocab/search_view_type/list"></semantic-form-checklist-input>
+            
+          <semantic-form-tree-picker-input  for="resource_search_facet_kpCategory" 
+                                            label="Search filters - Knowledge pattern category"
+                                            placeholder="Enter IRI of the category assigned to the knowledge patterns to be used as search filters"
+                                            close-dropdown-on-selection='false'
+                                            tree-patterns='{"scheme": "http://www.researchspace.org/resource/system/FieldCategories", 
+                                                            "schemePattern": "?item skos:inScheme <http://www.researchspace.org/resource/system/FieldCategories>",
+                                                            "relationPattern": "?item skos:broader ?parent"}'
+
+                                            scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                        "view": "vocabulary-content",
+                                                                        "scheme": "http://www.researchspace.org/resource/system/FieldCategories",
+                                                                        "tooltip": "Open list of knowledge pattern categories"
+                                                                      }'
+                                            
+                                            nested-form-template='{{{{raw}}}}{{> forms:KPCategory nested=true editable=true mode="new"
+                                                                                  scheme="http://www.researchspace.org/resource/system/FieldCategories"
+                                                                                  entityType="knowledge pattern category" }}{{{{/raw}}}}'
+
+                                            query-item-label='SELECT ?label WHERE {
+                                                                ?item skos:prefLabel ?label .
+                                                              }'
+                                          
+          ></semantic-form-tree-picker-input>
+
+        </div>
+
+
       </rs-tab>
 
-      <rs-tab event-key="finder" title="Finder" tab-class-name="tab-right" disabled="{{#if node}}false{{else}}true{{/if}}">
+      <rs-tab event-key="finder" title="Finder" disabled="{{#if node}}false{{else}}true{{/if}}">
 
         <div class="form-section-header">
           [[!--  <h4>Resource - Display in Finder</h4> --]]
@@ -592,8 +629,8 @@
             <template id='finderPreview'>
               <div class="page__section-container" style="padding-top: 10px; margin-bottom: 0; margin-top: 10px; display: flex; flex-direction: column;">
                 <div class="form-header-withButtons">
-                  <h4 style="margin: 0; align-self: end;">Finder preview</h4>
-                  <div class="btn-form-actions"> 
+                  <h4>Finder preview</h4>
+                [[!--  <div class="btn-form-actions"> 
                     <mp-event-trigger id='{{viewId}}-finderPreview-refresh-trigger' 
                                       type='Component.TemplateUpdate' 
                                       targets='["{{viewId}}-resourceFinder-finderPreviewContainer"]'
@@ -603,7 +640,7 @@
                           Refresh
                       </button>
                     </mp-event-trigger>
-                  </div>
+                  </div> --]]
                 </div>
                 <div style="flex: 1;">
                   {{> rsp:Finder finderPreview=true finderItem=node }}

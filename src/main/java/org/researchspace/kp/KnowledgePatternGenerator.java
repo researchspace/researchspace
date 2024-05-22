@@ -1,9 +1,11 @@
 package org.researchspace.kp;
 
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.stream.Stream;
 import java.util.concurrent.ExecutionException;
 
 import javax.inject.Inject;
@@ -77,9 +79,16 @@ public class KnowledgePatternGenerator {
         try(conn) {
             // Our expectation is that ontology is fully stored in the
             // named graph where it is defined as an ontology
-            Resource[] graphs =
+            Resource[] owlGraphs =
                 Iterations.asList(conn.getStatements(ontoIri, RDF.TYPE, OWL.ONTOLOGY))
                 .stream().map(s -> s.getContext()).distinct().toArray(Resource[] ::new);
+
+            Resource[] rdfsGraphs = Iterations.asList(conn.getStatements(ontoIri, RDF.TYPE, RDFS.CLASS))
+                .stream().map(s -> s.getContext()).distinct().toArray(Resource[] ::new);
+
+            Resource[] graphs = Stream.concat(Arrays.stream(owlGraphs), Arrays.stream(rdfsGraphs))
+                                 .toArray(Resource[]::new);
+
             logger.trace("Ontology is found in the following graphs: {}", (Object[])graphs);
 
             Model ontology =
@@ -105,6 +114,12 @@ public class KnowledgePatternGenerator {
             logger.trace("Generating KPs for {} datatype properties", datatypeProperties.size());
             datatypeProperties.forEach(op -> saveKp(generateDpKp(ontology, ontoIri, (IRI)op)));
             numberOfKPsGenerated += datatypeProperties.size();
+
+            Set<Resource> rdfProperties =
+                ontology.filter(null, RDF.TYPE, RDF.PROPERTY).subjects();
+            logger.trace("Generating KPs for {} datatype properties", rdfProperties.size());
+            rdfProperties.forEach(op -> saveKp(generateOpKp(ontology, ontoIri, (IRI)op)));
+            numberOfKPsGenerated += rdfProperties.size();
 /* 
             Set<Resource> annotationProperties =
                 ontology.filter(null, RDF.TYPE, OWL.ANNOTATIONPROPERTY).subjects();

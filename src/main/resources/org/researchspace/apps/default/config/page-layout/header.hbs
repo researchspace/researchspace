@@ -126,6 +126,7 @@
                                                   ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .
                                                 }
                                                 FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>)
+                                                FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation>)
                                                 FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>)
                                                 FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>)
                                                 FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>)
@@ -134,12 +135,12 @@
                                               } ORDER BY ASC(?resourceName)'
 
                                         tuple-template='\{{> newResourceCard}}',
-                                        options='{"showFilter":true, "resultsPerPage":50}'
+                                        options='{"showFilter":true, "resultsPerPage":100}'
                       >
                         <template id='newResourceCard'>
                           <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
                                             type='Dashboard.AddFrame'
-                                            data='{"viewId":"entity-editor", 
+                                            data='{"viewId":"resource-editor", 
                                                   "entityTypeConfig": "\{{resourceConfig.value}}", 
                                                   "editable": true,
                                                   "resourceEditorLabel": "New \{{resourceName.value}}",
@@ -191,7 +192,7 @@
                         <template id='newResourceCard'>
                           <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
                                             type='Dashboard.AddFrame'
-                                            data='{"viewId":"entity-editor", 
+                                            data='{"viewId":"resource-editor", 
                                                   "entityTypeConfig": "\{{resourceConfig.value}}", 
                                                   "editable": true,
                                                   "resourceEditorLabel": "New \{{resourceName.value}}",
@@ -246,7 +247,7 @@
                         <template id='newResourceCard'>
                           <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
                                             type='Dashboard.AddFrame'
-                                            data='{"viewId":"entity-editor", 
+                                            data='{"viewId":"resource-editor", 
                                                   "entityTypeConfig": "\{{resourceConfig.value}}", 
                                                   "editable": true,
                                                   "resourceEditorLabel": "New \{{resourceName.value}}",
@@ -298,7 +299,7 @@
                         <template id='newResourceCard'>
                           <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
                                             type='Dashboard.AddFrame'
-                                            data='{"viewId":"entity-editor", 
+                                            data='{"viewId":"resource-editor", 
                                                   "entityTypeConfig": "\{{resourceConfig.value}}", 
                                                   "editable": true,
                                                   "resourceEditorLabel": "New \{{resourceName.value}}",
@@ -349,7 +350,7 @@
                         <template id='newResourceCard'>
                           <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
                                             type='Dashboard.AddFrame'
-                                            data='{"viewId":"entity-editor", 
+                                            data='{"viewId":"resource-editor", 
                                                   "entityTypeConfig": "\{{resourceConfig.value}}", 
                                                   "editable": true,
                                                   "resourceEditorLabel": "New \{{resourceName.value}}",
@@ -390,11 +391,12 @@
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>,
 
-                                                  #following resources are removed as listed in System resources
+                                                  #following resources are removed as listed in System resources or not for data entry,but only for resource edit
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Document>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Image>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Audio>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Video>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/3d_model>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Publication>)
@@ -410,7 +412,7 @@
                         <template id='newResourceCard'>
                           <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
                                             type='Dashboard.AddFrame'
-                                            data='{"viewId":"entity-editor", 
+                                            data='{"viewId":"resource-editor", 
                                                   "entityTypeConfig": "\{{resourceConfig.value}}", 
                                                   "editable": true,
                                                   "resourceEditorLabel": "New \{{resourceName.value}}",
@@ -439,11 +441,8 @@
                                                   (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document>)
                                                   (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Document>)
                                                   (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Image>)
-                                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation>)
                                                   (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Publication>)
-                                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>)
-                                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>)
-                                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>)
+                                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Audio>)
                                                   (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Video>)
                                                   (<http://www.researchspace.org/resource/system/resource_configurations_container/data/3d_model>)
                                                 }
@@ -461,7 +460,7 @@
                         <template id='newResourceCard'>
                           <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
                                             type='Dashboard.AddFrame'
-                                            data='{"viewId":"entity-editor", 
+                                            data='{"viewId":"resource-editor", 
                                                   "entityTypeConfig": "\{{resourceConfig.value}}", 
                                                   "editable": true,
                                                   "resourceEditorLabel": "New \{{resourceName.value}}",
@@ -492,25 +491,73 @@
 
         <mp-anonymous-hidden>
           <li>
-            <mp-overlay-dialog title="Create a new reseach project" type="modal" class="modal-xlSize">
-              <mp-overlay-dialog-trigger>
-                <button class="btn btn-action btn-textAndIcon" >
-                  <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
-                  <span>New Project</span>
-                </button>
-              </mp-overlay-dialog-trigger>
-              <mp-overlay-dialog-content>
-                <div>PROJECT FORM</div>
-              </mp-overlay-dialog-content>
-            </mp-overlay-dialog>
+            <mp-event-trigger id='openProjectForm-in-new-frame-trigger' 
+                              type='Dashboard.AddFrame'
+                              data='{"viewId":"resource-editor", 
+                                    "entityTypeConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Project", 
+                                    "editable": true,
+                                    "resourceEditorLabel": "New project",
+                                    "mode":"new"}' 
+                              targets='["thinking-frames"]'>
+
+              <button class="btn btn-action btn-textAndIcon" >
+                <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                <span>New Project</span>
+              </button>
+            </mp-event-trigger>
+            
           </li>
         </mp-anonymous-hidden>
 
-        <bs-nav-dropdown title="Testing1">
+        <bs-nav-dropdown title="Testing">
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+                urlqueryparam-view='resource-editor' 
+                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map'
+                urlqueryparam-mode='new'
+              >
+            knowledge map
+            </semantic-link>
+          </bs-menu-item>
+
+          <bs-menu-item>
+            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                urlqueryparam-view='resource-editor' 
+                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative'
+                urlqueryparam-mode='new'
+              >
+            semantic narrative
+            </semantic-link>
+          </bs-menu-item>
+
+          <bs-menu-item>
+            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                urlqueryparam-view='resource-editor' 
+                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation'
+                urlqueryparam-mode='new'
+              >
+            image annotation
+            </semantic-link>
+          </bs-menu-item>
+
+          <bs-menu-item>
+            <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                            urlqueryparam-view='resource-editor' 
+                            urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Set'
+                            urlqueryparam-mode='new'
+              >
+            Set
+            </semantic-link>
+          </bs-menu-item>
+
+        </bs-nav-dropdown>
+
+   {{!--     <bs-nav-dropdown title="Testing1">
+
+          <bs-menu-item>
+            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Entity'
               urlqueryparam-mode='new'
             >
@@ -520,7 +567,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Timespan'
               urlqueryparam-mode='new'
             >
@@ -530,7 +577,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Persistent_item'
               urlqueryparam-mode='new'
             >
@@ -540,7 +587,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
+                urlqueryparam-view='resource-editor' 
                 urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Place'
                 urlqueryparam-mode='new'
               >
@@ -550,7 +597,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
+                urlqueryparam-view='resource-editor' 
                 urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Dimension'
                 urlqueryparam-mode='new'
               >
@@ -560,7 +607,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Period'
               urlqueryparam-mode='new'
             >
@@ -570,7 +617,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Condition_state'
               urlqueryparam-mode='new'
             >
@@ -584,7 +631,7 @@
           
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Event'
               urlqueryparam-mode='new'
             >
@@ -594,7 +641,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Activity'
               urlqueryparam-mode='new'
             >
@@ -604,7 +651,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Beginning_of_existence'
               urlqueryparam-mode='new'
             >
@@ -614,7 +661,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/End_of_existence'
               urlqueryparam-mode='new'
             >
@@ -624,7 +671,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Acquisition'
               urlqueryparam-mode='new'
             >
@@ -634,7 +681,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Attribute_assignment'
               urlqueryparam-mode='new'
             >
@@ -644,7 +691,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Creation'
               urlqueryparam-mode='new'
             >
@@ -654,7 +701,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
+                urlqueryparam-view='resource-editor' 
                 urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Exhibition'
                 urlqueryparam-mode='new'
               >
@@ -664,7 +711,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Formation'
               urlqueryparam-mode='new'
             >
@@ -675,7 +722,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Joining'
               urlqueryparam-mode='new'
             >
@@ -685,7 +732,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Leaving'
               urlqueryparam-mode='new'
             >
@@ -695,7 +742,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Modification'
               urlqueryparam-mode='new'
             >
@@ -705,7 +752,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Move'
               urlqueryparam-mode='new'
             >
@@ -715,7 +762,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Project'
               urlqueryparam-mode='new'
             >
@@ -725,7 +772,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Transfer_of_custody'
               urlqueryparam-mode='new'
             >
@@ -735,7 +782,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Curation_activity'
               urlqueryparam-mode='new'
             >
@@ -745,7 +792,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Production'
               urlqueryparam-mode='new'
             >
@@ -755,7 +802,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Part_addition'
               urlqueryparam-mode='new'
             >
@@ -765,7 +812,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Part_removal'
               urlqueryparam-mode='new'
             >
@@ -779,7 +826,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Birth'
               urlqueryparam-mode='new'
             >
@@ -789,7 +836,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Transformation'
               urlqueryparam-mode='new'
             >
@@ -799,7 +846,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Death'
               urlqueryparam-mode='new'
             >
@@ -809,7 +856,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Destruction'
               urlqueryparam-mode='new'
             >
@@ -819,7 +866,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Dissolution'
               urlqueryparam-mode='new'
             >
@@ -829,7 +876,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Condition_assessment'
               urlqueryparam-mode='new'
             >
@@ -839,7 +886,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Identifier_assignment'
               urlqueryparam-mode='new'
             >
@@ -849,7 +896,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Measurement'
               urlqueryparam-mode='new'
             >
@@ -859,7 +906,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Type_assignment'
               urlqueryparam-mode='new'
             >
@@ -869,7 +916,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Type_creation'
               urlqueryparam-mode='new'
             >
@@ -883,7 +930,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor'
               urlqueryparam-mode='new'
             >
@@ -893,7 +940,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Group'
               urlqueryparam-mode='new'
             >
@@ -903,7 +950,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Person'
               urlqueryparam-mode='new'
             >
@@ -913,7 +960,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
+                urlqueryparam-view='resource-editor' 
                 urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Organisation'
                 urlqueryparam-mode='new'
               >
@@ -923,7 +970,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
+                urlqueryparam-view='resource-editor' 
                 urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
                 urlqueryparam-mode='new'
               >
@@ -937,7 +984,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Physical_thing'
               urlqueryparam-mode='new'
             >
@@ -947,7 +994,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Physical_object'
               urlqueryparam-mode='new'
             >
@@ -957,7 +1004,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Physical_man-made_thing'
               urlqueryparam-mode='new'
             >
@@ -967,7 +1014,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Physical_feature'
               urlqueryparam-mode='new'
             >
@@ -977,7 +1024,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Biological_object'
               urlqueryparam-mode='new'
             >
@@ -987,7 +1034,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Man-made_object'
               urlqueryparam-mode='new'
             >
@@ -997,7 +1044,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Curated_collection'
               urlqueryparam-mode='new'
             >
@@ -1008,7 +1055,7 @@
           
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Series'
               urlqueryparam-mode='new'
             >
@@ -1018,7 +1065,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Site'
               urlqueryparam-mode='new'
             >
@@ -1028,7 +1075,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Man-made_feature'
               urlqueryparam-mode='new'
             >
@@ -1038,7 +1085,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Right'
               urlqueryparam-mode='new'
             >
@@ -1048,7 +1095,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Publication'
               urlqueryparam-mode='new'
             >
@@ -1058,7 +1105,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
+                urlqueryparam-view='resource-editor' 
                 urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Identifier'
                 urlqueryparam-mode='new'
               >
@@ -1068,7 +1115,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Research_question'
               urlqueryparam-mode='new'
             >
@@ -1078,7 +1125,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
+                urlqueryparam-view='resource-editor' 
                 urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Document'
                 urlqueryparam-mode='new'
               >
@@ -1088,7 +1135,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
+                urlqueryparam-view='resource-editor' 
                 urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image'
                 urlqueryparam-mode='new'
               >
@@ -1098,7 +1145,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
+                urlqueryparam-view='resource-editor' 
                 urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation'
                 urlqueryparam-mode='new'
               >
@@ -1108,7 +1155,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
+              urlqueryparam-view='resource-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Material'
               urlqueryparam-mode='new'
             >
@@ -1118,7 +1165,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
+                urlqueryparam-view='resource-editor' 
                 urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Term'
                 urlqueryparam-mode='new'
               >
@@ -1128,7 +1175,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
+                urlqueryparam-view='resource-editor' 
                 urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Title'
                 urlqueryparam-mode='new'
               >
@@ -1138,7 +1185,7 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
+                urlqueryparam-view='resource-editor' 
                 urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Type'
                 urlqueryparam-mode='new'
               >
@@ -1148,29 +1195,7 @@
           
         </bs-nav-dropdown>
 
-        <bs-nav-dropdown title="Testing4">
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
-                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map'
-                urlqueryparam-mode='new'
-              >
-            knowledge map
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
-                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative'
-                urlqueryparam-mode='new'
-              >
-            semantic narrative
-            </semantic-link>
-          </bs-menu-item>
-
-        </bs-nav-dropdown>
+  --}}
       </ul>
 
       <ul class="nav navbar-nav navbar-right">
@@ -1203,7 +1228,7 @@
 
      {{!--    <li>
           <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                         urlqueryparam-view='entity-editor'> 
+                         urlqueryparam-view='resource-editor'> 
             <div class="nav-iconAndLabel"> 
                 <rs-icon icon-type="round" icon-name="edit_note"></rs-icon>
                 <div>Entities</div>
@@ -1294,7 +1319,7 @@
                           \{{#if bindings.0.actor.value}}
                             <mp-event-trigger id='openEditUserForm-frame-trigger' 
                                               type='Dashboard.AddFrame'
-                                              data='{"viewId":"entity-editor", 
+                                              data='{"viewId":"resource-editor", 
                                                     "entityTypeConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/User", 
                                                     "resourceIri":"{{bindings.0.actor.value}}",
                                                     "editable": true,
@@ -1306,7 +1331,7 @@
                           \{{else}}
                             <mp-event-trigger id='openNewUserForm-frame-trigger' 
                                               type='Dashboard.AddFrame'
-                                              data='{"viewId":"entity-editor", 
+                                              data='{"viewId":"resource-editor", 
                                                     "entityTypeConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/User", 
                                                     "editable": true,
                                                     "resourceEditorLabel": "New user",

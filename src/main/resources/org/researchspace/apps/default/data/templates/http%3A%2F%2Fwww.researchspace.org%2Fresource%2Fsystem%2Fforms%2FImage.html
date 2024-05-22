@@ -8,7 +8,7 @@
                             inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
                             entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
                             
-                            image_id="http://www.researchspace.org/pattern/system/image/identifier"
+                            entity_file_identifier="http://www.researchspace.org/pattern/system/entity/file_identifier"
                             entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
                             man-made_thing_title="http://www.researchspace.org/pattern/system/man-made_thing/PC102_has_title"
                             image_type="http://www.researchspace.org/pattern/system/image/type"
@@ -293,7 +293,7 @@
                                                             <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
                                                         {{else}}
                                                             <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                            urlqueryparam-view='entity-editor' 
+                                                                            urlqueryparam-view='resource-editor' 
                                                                             urlqueryparam-resource-iri='{{node.value}}'
                                                                             >
                                                                 <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
@@ -429,7 +429,7 @@
                                                         <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
                                                     {{else}}
                                                         <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                        urlqueryparam-view='entity-editor' 
+                                                                        urlqueryparam-view='resource-editor' 
                                                                         urlqueryparam-resource-iri='{{node.value}}'
                                                                         >
                                                             <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
@@ -1003,9 +1003,56 @@
         </rs-tabs>
 
         [[#*inline "imageUploadSection"]]
+
+
             <div class="FileUploader-container page__section-container formFileUpload-container">
-                <semantic-form-file-input   for='image_id' 
+                {{#if node}}
+                    <div style="display: flex; align-items: baseline; justify-content: space-between">
+                        <div class="customFormHeader">Image file <span class="semantic-form-input-decorator__label-required" title="Required field"></span></div>
+                        <div style="display: flex; align-items: center; column-gap: 3px; margin-right: -3px;">
+                            <button class="btn btn-icon" title="preview">
+                                <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
+                            </button>
+                
+                            <mp-event-trigger id='{{viewId}}-image-annotation-add-frame-trigger' 
+                                                type='Dashboard.AddFrame' 
+                                                data='{"resourceIri": "{{node}}", 
+                                                        "viewId": "object-image-observation", 
+                                                        "objectIri": "{{node}}",
+                                                        "frameId": "{{viewId}}"}' 
+                                                targets='["thinking-frames"]'>
+                                <button class="btn btn-icon" title="View/Annotations">
+                                    <rs-icon icon-type="round" icon-name="photo_size_select_large"></rs-icon>
+                                </button>
+                            </mp-event-trigger>
+
+                            <semantic-query query='SELECT ?file ?fileName ?mediaType WHERE {
+                                                  BIND(<{{node}}> as ?image) .
+                                                  ?image crmdig:L60i_is_documented_by ?digitizationProcess .
+                                                  ?digitizationProcess a crmdig:D2_Digitization_Process .    
+                                                  ?digitizationProcess crmdig:L11_had_output ?file .
+                                                  ?file rs:PX_has_file_name ?fileName .
+                                                  ?file rs:PX_has_media_type ?mediaType .
+                                                }'
+                                          template='{{> template}}'
+                            >
+                                <template id='template'>
+                                  <mp-file-download  download-url="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}">
+                                    <button class="btn btn-icon" title="Download">
+                                        <rs-icon icon-type="round" icon-name="download"></rs-icon>
+                                    </button>
+                                  </mp-file-download>
+                                  <hr>
+                              </template>
+                            </semantic-query>
+                        </div>
+                    </div>
+                {{else}}
+                    <div class="customFormHeader">Image file <span class="semantic-form-input-decorator__label-required" title="Required field"></span></div>
+                {{/if}}
+                <semantic-form-file-input   for='entity_file_identifier' 
                                             label='Image file'
+                                            render-header="false"
                                             from-url-or-drop='true'
                                             accept-pattern='image/*' 
                                             storage='images'
@@ -1024,7 +1071,8 @@
                 >
                 <div className='placeholder-item'>
                     <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                    <div>Drag image or click to upload</div>
+                    <p>Drag image or click to upload</p>
+                    <div>Supported format: .jpeg .jpg .tiff .bmp .png .svg+xml</div>
                 </div>
                 </semantic-form-file-input>
             </div>

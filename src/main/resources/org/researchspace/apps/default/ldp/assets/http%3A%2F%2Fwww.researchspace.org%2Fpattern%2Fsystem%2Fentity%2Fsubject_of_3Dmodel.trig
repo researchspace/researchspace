@@ -1,0 +1,78 @@
+
+<http://www.researchspace.org/pattern/system/entity/subject_of_3Dmodel/context> {
+  _:genid-83d8ba9004494d0ca9389242b3a949bb-u5s3s8 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+    $subject crm:P129i_is_subject_of $value . 
+    $value crm:P129_is_about $subject .
+} WHERE {}""" .
+  
+  <http://www.researchspace.org/pattern/system/entity/subject_of_3Dmodel> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/entity>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "3D model";
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-83d8ba9004494d0ca9389242b3a949bb-p9fvhe;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-83d8ba9004494d0ca9389242b3a949bb-a425bs;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-83d8ba9004494d0ca9389242b3a949bb-m0yjm7;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://iflastandards.info/ns/fr/frbr/frbroo/F26_Recording>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-83d8ba9004494d0ca9389242b3a949bb-y95o8t;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-83d8ba9004494d0ca9389242b3a949bb-u5s3s8;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-05-14T16:08:16.902+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-83d8ba9004494d0ca9389242b3a949bb-a425bs a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+    $subject crm:P129i_is_subject_of $value . 
+    $value crm:P129_is_about $subject .
+} WHERE {
+    $subject crm:P129i_is_subject_of $value . 
+    $value crm:P129_is_about $subject .
+
+    ?value a frbroo:F26_Recording .
+	?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_3D_model> .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-83d8ba9004494d0ca9389242b3a949bb-m0yjm7 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+    ?value a frbroo:F26_Recording .
+	?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_3D_model> .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-83d8ba9004494d0ca9389242b3a949bb-p9fvhe a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+	$subject crm:P129i_is_subject_of $value . 
+  
+    ?value a frbroo:F26_Recording .
+	?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_3D_model> .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-83d8ba9004494d0ca9389242b3a949bb-y95o8t a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    ?value a frbroo:F26_Recording .
+	?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_3D_model> .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/entity/subject_of_3Dmodel> .
+}

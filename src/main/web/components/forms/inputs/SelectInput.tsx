@@ -371,7 +371,8 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
         {showLinkResourceButton && !FieldValue.isEmpty(this.props.value) && 
             <ResourceLinkContainer 
               uri="http://www.researchspace.org/resource/ThinkingFrames" 
-              urlqueryparam-view="entity-editor"
+              urlqueryparam-view="resource-editor"
+              urlqueryparam-open-as-drag-and-drop="true"
               urlqueryparam-resource={(this.props.value.value as Rdf.Iri).value}
             >
               <Button className={`${SELECT_TEXT_CLASS}__open-in-new-tab`} title='Open in new tab'>

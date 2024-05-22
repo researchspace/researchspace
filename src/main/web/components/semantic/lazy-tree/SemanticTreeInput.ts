@@ -554,7 +554,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
               onClick: () => {
                 if (openResourceOnClick) {
                   const URI = new Rdf.Iri('http://www.researchspace.org/resource/ThinkingFrames')
-                  navigateToResource(URI, {resource: item.iri.value, view: 'entity-editor', openAsDragAndDrop : true}, this.context.semanticContext.repository ?? undefined);
+                  navigateToResource(URI, {resource: item.iri.value, view: 'resource-editor', openAsDragAndDrop : true}, this.context.semanticContext.repository ?? undefined);
                 }
                 onSelectionClick ? () => onSelectionClick(selection, item) : undefined
               },

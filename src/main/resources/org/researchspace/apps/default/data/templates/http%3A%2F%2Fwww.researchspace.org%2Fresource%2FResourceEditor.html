@@ -1,5 +1,5 @@
 {{#bind viewId=dashboardId}}
-  <mp-event-target-template-render id='{{viewId}}-entity-editor-frame' template='{{> template}}'>
+  <mp-event-target-template-render id='{{viewId}}-resource-editor-frame' template='{{> template}}'>
     <template id='template'>
       {{#if iri}}
         <semantic-query query="SELECT (COUNT(?config1) as ?c1) (COUNT(?config2) as ?c2) { {
@@ -144,7 +144,7 @@
                           {{/ifCond}}
 
                           {{#ifCond bindings.length ">" "1"}}
-                            <two-side-panel id='entity-editor-config-list-{{iri}}'>
+                            <two-side-panel id='resource-editor-config-list-{{iri}}'>
                               <template id='front'>
                                 <p>There is more than one form that can be applicable to the given entity, please choose the one to use for editing:</p>
                                 <ul>
@@ -153,7 +153,7 @@
                                     {{resourceName.value}} Form 
                                     <mp-event-trigger id='form-event-trigger--{{../iri}}' 
                                                       type='TwoSidePanel.ShowBack' 
-                                                      targets='["entity-editor-config-list-{{../iri}}"]'
+                                                      targets='["resource-editor-config-list-{{../iri}}"]'
                                                       data='{ 
                                                               "node":"{{../iri}}",
                                                               "resourceFormIRI": "{{resourceFormIRI.value}}"

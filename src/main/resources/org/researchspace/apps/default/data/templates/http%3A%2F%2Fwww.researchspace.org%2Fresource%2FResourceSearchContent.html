@@ -1,4 +1,5 @@
-<semantic-query query='SELECT ?resourceConfig ?viewId ?resourceLabel ?resourceOntologyClass ?resourceType ?resourceFormIRI ?resourceRestrictionPattern ?resourceLabelPattern WHERE {    
+<semantic-query query='SELECT ?resourceConfig ?viewId ?resourceLabel ?resourceOntologyClass ?resourceType ?resourceFormIRI ?resourceRestrictionPattern ?resourceLabelPattern (GROUP_CONCAT(?strResourceSearchKPCategory;SEPARATOR=" ") AS ?searchKPCategories)
+                       WHERE {    
                             BIND(<[[config]]> as ?resourceConfig) .
                             BIND("{{dashboardId}}" as ?viewId)
 
@@ -21,7 +22,12 @@
                               ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_label_sparql_pattern> ?resourceLabelPattern .
                             }
 
-                          } LIMIT 1'>
+                            OPTIONAL {
+                              ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_facet_kpCategory> ?resourceSearchKPCategory .
+                              BIND(CONCAT("<",STR(?resourceSearchKPCategory),">") as ?strResourceSearchKPCategory)
+                            }
+
+                          } GROUP BY ?resourceConfig ?viewId ?resourceLabel ?resourceOntologyClass ?resourceType ?resourceFormIRI ?resourceRestrictionPattern ?resourceLabelPattern'>
 
     <template id='template'>
       <mp-page-loader iri="http://www.researchspace.org/resource/ResourceSearchTemplate"
@@ -32,6 +38,7 @@
                       urlqueryparam-resourceform="{{#if bindings.0.resourceFormIRI.value}}{{bindings.0.resourceFormIRI.value}}{{/if}}"
                       urlqueryparam-resourcerestrictionpattern='{{#if bindings.0.resourceRestrictionPattern.value}}{{bindings.0.resourceRestrictionPattern.value}}{{/if}}'
                       urlqueryparam-resourcelabelpattern='{{#if bindings.0.resourceLabelPattern.value}}{{bindings.0.resourceLabelPattern.value}}{{/if}}'
+                      urlqueryparam-searchkpcategories='{{#if bindings.0.searchKPCategories.value}}{{bindings.0.searchKPCategories.value}}{{/if}}'
       ></mp-page-loader>
     </template>
 </semantic-query>

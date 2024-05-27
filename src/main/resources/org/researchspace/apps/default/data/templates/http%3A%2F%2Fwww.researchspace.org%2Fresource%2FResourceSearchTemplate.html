@@ -2,21 +2,31 @@
 [[!-- <semantic-search 
 config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> . ?field <http://www.researchspace.org/resource/system/fields/domain> ?domain . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . ?field <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/image> . }" domain=(urlParam "resourceontologyclass" escape=false))]]'> --]]
 [[!-- Uncomment line below if you want to see all available facets --]]
-[[!--     <semantic-search domain='(urlParam "resourceontologyclass" escape=false)'
-        config='[[searchConfigForFieldsFromQuery "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> . ?field <http://www.researchspace.org/resource/system/fields/domain> <http://www.researchspace.org/ontology/EX_Digital_Image> . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . ?field  <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/image> . OPTIONAL {?field <http://www.researchspace.org/resource/system/fields/order> ?fieldsOrder } } ORDER BY ASC(xsd:integer(?fieldsOrder))"]]'>
-
+[[!--     <semantic-search domain='(urlParam "resourceontologyclass" escape=false)' config='[[searchConfigForFieldsFromQuery "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> . ?field <http://www.researchspace.org/resource/system/fields/domain> <http://www.researchspace.org/ontology/EX_Digital_Image> . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . ?field  <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/image> . OPTIONAL {?field <http://www.researchspace.org/resource/system/fields/order> ?fieldsOrder } } ORDER BY ASC(xsd:integer(?fieldsOrder))"]]'>
 --]]
 
+   
+[[!-- OPTIONAL {?field <http://www.researchspace.org/resource/system/fields/category> ?category . VALUES ?category {(urlParam "searchkpcategories")} } --]]
 <mp-event-target-template-render id="[[urlParam 'viewid' escape=false]]-resourceSearch-frame" template='{{> template}}'>
   <template id='template'>
-    <semantic-search config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> .  ?field <http://www.researchspace.org/resource/system/fields/domain> ?domain . ?field <http://www.researchspace.org/resource/system/fields/range> ?range .}" domain=(urlParam "resourceontologyclass" escape=false))]]'> 
-      
-      <div class="semantic-search-header">
+
+[[!-- [[urlParam 'searchkpcategories']] --]]
+  
+[[!--
+
+[[#if (urlParam "searchkpcategories")]]
+<semantic-search config='[[searchConfigForFieldsFromQuery "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> .  ?field <http://www.researchspace.org/resource/system/fields/domain> ?domain . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . ?field <http://www.researchspace.org/resource/system/fields/category> ?category . VALUES ?category { ?values } }" values=(urlParam "searchkpcategories") domain=(urlParam "resourceontologyclass" escape=false)]]'>      
+    [[else]]
+--]]
+    <semantic-search config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> .  ?field <http://www.researchspace.org/resource/system/fields/domain> ?domain . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . }" domain=(urlParam "resourceontologyclass" escape=false))]]'>      
+
+    <div class="semantic-search-header">
 
         <div class="semantic-search-header-content">
           <h3 class="semantic-search-header-title">[[urlParam "resourcelabel" escape=false]]</h3>
         
           <div class="semantic-search-header-actions">
+            
             [[#if (urlParam "resourceform")]]
               <mp-overlay-dialog id="[[urlParam 'viewid' escape=false]]-newResource-modal" title="New [[urlParam 'resourcelabel' escape=false]]" type="lightbox">
                 <mp-overlay-dialog-trigger>
@@ -390,7 +400,7 @@ config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?fie
 
           
       </div>
-
     </semantic-search> 
+
   </template>
 </mp-event-target-template-render>

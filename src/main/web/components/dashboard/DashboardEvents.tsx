@@ -40,7 +40,7 @@ export const AddFrameEvent = 'Dashboard.AddFrame';
 export type AddFrameEventData = {
   resourceIri?: string;
   viewId?: string;
-  resourceEditorLabel?: string;
+  customLabel?: string;
 };
 
 const event: EventMaker<DashboardEvents> = EventMaker;

@@ -245,22 +245,30 @@ export class DashboardComponent extends Component<Props, State> {
         )
         .observe({
           value: ({ data }) => {
-            const {viewId, resourceIri, resourceEditorLabel} = data as AddFrameEventData
-            if(resourceIri) {
+            const {viewId, resourceIri, customLabel} = data as AddFrameEventData
+            console.log(data);
+            console.log(viewId);
+            
+            console.log(resourceIri);
+            if (customLabel) { 
+              this.onAddNewItemHandler(data, customLabel)
+            }
+            else if(resourceIri) {
               this.subscription = LabelsService.getLabel(Rdf.iri(resourceIri)).observe({
                 value: (label) => {
+                  
                   this.onAddNewItemHandler(data, label)
                 },
                 error: (error) => {
                   console.log('LABEL NOT FOUND ',error)
                   this.onAddNewItemHandler(data)
                 },
-              })
-            } else if (resourceEditorLabel) { 
-              this.onAddNewItemHandler(data, resourceEditorLabel)
-            } else {
-              const view = viewId ? this.props.views.find(({ id }) => id === viewId) : undefined;
-              this.onAddNewItemHandler(data, view?.label)
+              })           
+            } else {             
+                const view = viewId ? this.props.views.find(({ id }) => id === viewId) : undefined;
+                console.log(view?.label);
+                this.onAddNewItemHandler(data, view?.label)
+                           
             }
           },
         });

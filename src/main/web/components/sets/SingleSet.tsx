@@ -155,7 +155,7 @@ export class SingleSet extends Component<Props, ViewState> {
         query={this.props.acceptResourceQuery}
         onDrop={(iri) => {
           const targetSet = ViewState.displayedSetIri(this.state);
-          this.model.onDropItemToSet(iri, targetSet);
+          this.model.onDropItemToSet(iri, targetSet,this.props.id);
         }}
         dropMessage={<span>Drop items here to add to set "{<ResourceLabel iri={this.props.openedSet} />}"</span>}
       >

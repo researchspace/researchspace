@@ -158,7 +158,7 @@ export class SetManagement extends Component<Props, ViewState> {
         shouldReactToDrag={() => !this.state.draggingItem}
         query={this.props.acceptResourceQuery}
         onDrop={(iri) => {
-          this.model.onDropItemToSet(iri, displayedSetIri);
+          this.model.onDropItemToSet(iri, displayedSetIri,this.props.id);
         }}
         dropMessage={
           displayedSetIri ? (

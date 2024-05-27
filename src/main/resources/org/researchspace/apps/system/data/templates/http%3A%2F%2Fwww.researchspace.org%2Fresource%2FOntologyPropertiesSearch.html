@@ -124,7 +124,7 @@
                                                         "maxOccurs": "1",
                                                         "treePatterns": {
                                                                           "type": "simple",
-                                                                          "schemePattern":  "?ontologyclass a owl:Class . ",
+                                                                          "schemePattern":  "?ontologyclass a ?class . VALUES ?class {owl:Class rdfs:Class} ",
                                                                           "relationPattern": "?item rdfs:subClassOf ?parent",
                                                                           "labelPattern": "?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label .
                                                                                           FILTER (lang(?label) = \"en\")"
@@ -168,7 +168,8 @@
                                                                   close-dropdown-on-selection='true'
                                                                   tree-patterns='{
                                                                     "rootsQuery":"SELECT DISTINCT ?item ?label ?hasChildren WHERE {
-                                                                                    ?item rdf:type owl:Class.
+                                                                                    ?item rdf:type ?class . 
+                                                                                    VALUES ?class {owl:Class rdfs:Class} 
                                                                                     BIND(REPLACE(STR(?item), \"(.*)/.*$\", \"$1\") AS ?prefix)
                                                                                     BIND(IF(CONTAINS(STR(?item), \"skos\"), CONCAT(?prefix, \"/core\"), CONCAT(STR(?prefix), \"/\")) AS ?ontologyString)
                                                                                     BIND(URI(?ontologyString) as ?ontology)
@@ -194,7 +195,8 @@
 
                                                                     "childrenQuery":"SELECT DISTINCT ?item ?label ?hasChildren WHERE {
                                                                                       ?item rdfs:subClassOf ?parent.
-                                                                                      ?item rdf:type owl:Class.
+                                                                                      ?item rdf:type ?class . 
+                                                                                      VALUES ?class {owl:Class rdfs:Class} 
                                                                                       BIND(REPLACE(STR(?item), \"(.*)/.*$\", \"$1\") AS ?prefix)
                                                                                       BIND(IF(CONTAINS(STR(?item), \"skos\"), CONCAT(?prefix, \"/core\"), CONCAT(STR(?prefix), \"/\")) AS ?ontologyString)
                                                                                       BIND(URI(?ontologyString) as ?ontology)
@@ -222,12 +224,14 @@
                                                                                     }",
 
                                                                     "searchQuery":"SELECT DISTINCT ?item ?label ?score ?hasChildren WHERE {
-                                                                                    ?item rdf:type owl:Class.
+                                                                                    ?item rdf:type ?class . 
+                                                                                    VALUES ?class {owl:Class rdfs:Class} 
                                                                                     BIND(REPLACE(STR(?item), \"(.*)/.*$\", \"$1\") AS ?prefix)
                                                                                     BIND(IF(CONTAINS(STR(?item), \"skos\"), CONCAT(?prefix, \"/core\"), CONCAT(STR(?prefix), \"/\")) AS ?ontologyString)
                                                                                     BIND(URI(?ontologyString) as ?ontology)
                                                                                     FILTER(?ontology IN ({{selectedOntology}}))                                        
                                                                                     ?item ((crm:P1_is_identified_by/rdfs:label)|rso:displayLabel|rdfs:label|skos:prefLabel) ?label.
+                                                                                    FILTER((LANG(?label)) = \"en\")
                                                                                     ?label bds:search ?__token__;
                                                                                       bds:minRelevance \"0.3\";
                                                                                       bds:relevance ?score;

@@ -4,8 +4,8 @@ uses client-side templates:
 --]]
 
 <[[#if standalone]]ontodia[[else]]rs-ontodia-panel[[/if]] id='{{ontodiaVariable}}-ontodia' metadata='
-<> a <http://www.ics.forth.gr/isl/CRMdig/D1_Digital_Object> ; 
-       <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://www.researchspace.org/ontology/Knowledge_Map> .
+<> a  <http://iflastandards.info/ns/fr/frbr/frbroo/F2_Expression> ;
+       <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map> .
   '
   image-iris='["http://www.researchspace.org/ontology/PX_has_main_representation"]'
   save-diagram-label="Save Map" settings=nostats post-saving=none add-to-default-set=true
@@ -77,26 +77,34 @@ uses client-side templates:
                                 "type": "sparql",
                                 "targetInsertGraphIri": "http://www.researchspace.org/resource/g/data"
                             }'
->
-
-    <rs-ontodia-metadata-from-fields
+> 
+  
+  <rs-ontodia-metadata-from-fields 
       fields-query='PREFIX field: <http://www.researchspace.org/resource/system/fields/>
-        SELECT DISTINCT ?field WHERE { { ?field a <http://www.researchspace.org/resource/system/fields/Field> . ?field  <http://www.researchspace.org/resource/system/fields/category> ?category . 
-          FILTER (?category in (<http://www.researchspace.org/vocab/pattern_category/object>,<http://www.researchspace.org/category/generic/summary>))}
-          UNION {
-            VALUES (?value){(<http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation>)
+                    SELECT DISTINCT ?field WHERE { 
+                    #{
+                   #   ?field a <http://www.researchspace.org/resource/system/fields/Field> . 
+                    #  ?field  <http://www.researchspace.org/resource/system/fields/ontology> ?ontology .
+                    #} UNION
+                    { 
+                      ?field a <http://www.researchspace.org/resource/system/fields/Field> . 
+                      ?field  <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/image_annotation> . 
+                      }  
+										UNION {
+            					VALUES (?value){(<http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation>)
                             (<http://www.researchspace.org/pattern/system/entity/primary_appellation>)
-                      (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>)
-                      (<http://www.researchspace.org/pattern/system/entity/main_image>)
-                                      
-                    }
-            BIND(?value as ?field)
-          } 
-        }
-    '>
-  </rs-ontodia-metadata-from-fields>
-  [[#> ontodia-entity-metadata ]][[/ontodia-entity-metadata]]
-      
+                      			(<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>)
+                      			(<http://www.researchspace.org/pattern/system/entity/main_image>)  
+                            (<http://www.ics.forth.gr/isl/CRMdig/L49_is_primary_area_of>)
+                            (<http://www.researchspace.org/pattern/system/image_annotation/boundingBox>)
+                            (<http://www.w3.org/1999/02/22-rdf-syntax-ns#value>)
+                            (<http://www.researchspace.org/pattern/system/image_annotation/viewport>)
+                            (<http://www.researchspace.org/pattern/system/image_annotation/area_of_image>)}                                                   
+											
+            					BIND(?value as ?field)
+          					} }'>
+  </rs-ontodia-metadata-from-fields> 
+   [[#> ontodia-entity-metadata ]][[/ontodia-entity-metadata]]  
     <ontodia-field-input-override for-field="label">
         <semantic-form-text-input></semantic-form-text-input>
       </ontodia-field-input-override>

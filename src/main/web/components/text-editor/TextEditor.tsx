@@ -140,24 +140,25 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
       PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
       PREFIX crmdig: <http://www.ics.forth.gr/isl/CRMdig/>
       PREFIX rs: <http://www.researchspace.org/ontology/>
+      PREFIX frbroo: <http://iflastandards.info/ns/fr/frbr/frbroo/>
 
       CONSTRUCT {
         ?__resourceIri__ a crm:E33_Linguistic_Object,
-                crmdig:D1_Digital_Object.
-
-        ?__resourceIri__ mp:fileName ?__fileName__.
-        ?__resourceIri__ mp:mediaType "text/html".
+                frbroo:F2_Expression.
         ?__resourceIri__ crm:P190_has_symbolic_content ?__label__ .
         ?__resourceIri__ crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative> .
-      } WHERE {}
+      } WHERE {
+      }
     `,
     generateIriQuery: `
-      SELECT ?resourceIri WHERE {
+      SELECT ?resourceIri ?digitizationProcess ?file WHERE {
         BIND(URI(CONCAT(STR(?__contextUri__), "/", ?__fileName__)) as ?resourceIri)
+        BIND(URI(CONCAT(STR(?__contextUri__), "/", ?__fileName__,"/digitization_process")) as ?digitizationProcess)
+        BIND(URI(CONCAT(STR(?__contextUri__), "/", ?__fileName__,"/file")) as ?file) 
+
       }
     `
   };
-
   state: TextEditorState = {
     value: Slate.Value.fromJS({
       document: {
@@ -549,48 +550,27 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
     const parsedResouercQuery =
       SparqlUtil.parseQuery(
         this.addRefersToStatementsToConstructQuery()
-      );
-    
+      ); 
+    let contextUri = "http://www.researchspace.org/instances/narratives";
+    let filename = contextUri+"/"+file.name;
+    let digitization_process = contextUri+"/"+file.name+"/digitization_process";
+    let html_file = contextUri+"/"+file.name+"/file";
     const resourceQuery =
       SparqlUtil.serializeQuery(
         SparqlClient.setBindings(
-          parsedResouercQuery, { '__label__': Rdf.literal(title) }
+          parsedResouercQuery, { '__label__': Rdf.literal(title),
+                                 '__digitizationProcess__':Rdf.iri(digitization_process),
+                                 '__file__':Rdf.iri(html_file) }
         )
       );
-
-/*
-    this.cancellation
-      .map(getSetServiceForUser(this.getContext()).flatMap((service) => service.addToExistingSet(targetSet, item)))
-      .observe({
-        value: () => {
-          // This is ugly hack to fully reload all sets if we add something to the
-          // Uncategorized set, we need this to fetch Knowledg Maps when they are added
-          // to the clipboard
-          if (targetSet.equals(this.getState().defaultSet)) {
-            this.loadSets({keepItems: false});
-          } else {
-            this.trigger(SetManagementEvents.ItemAdded);
-            this.loadSetItems(targetSet, {forceReload: true});
-          }
-        },
-        error: (error) => {
-          addNotification(
-            {
-              level: 'error',
-              message: 'Error adding item to set',
-            },
-            error
-          );
-        },
-      });
-*/
+    console.log(resourceQuery);
     this.cancellation.map(
       this.getFileManager().uploadFileAsResource({
         file,
         storage: this.props.storage,
         generateIriQuery: this.props.generateIriQuery,
         resourceQuery: resourceQuery,
-        contextUri: 'http://www.researchspace.org/instances/narratives',
+        contextUri: contextUri,
         fileNameHack: true
       })
     ).observe({
@@ -601,5 +581,12 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
     });
   }
 }
-
+/*
+ ?__resourceIri__ crmdig:L60i_is_documented_in ?digitizationProcess .
+        ?__resourceIri__/digitization_process> a crmdig:D2_Digitization_Process .
+        ?__resourceIri__/digitization_process> crmdig:L11_had_output ?__file__ .
+        ?__resourceIri__/file> a rs:EX_File .
+        ?__resourceIri__/file> mp:fileName ?__fileName__.
+        ?__resourceIri__/file> mp:mediaType "text/html".
+   */
 export default TextEditor;

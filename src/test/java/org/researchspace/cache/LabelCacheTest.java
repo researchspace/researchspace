@@ -51,8 +51,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.researchspace.cache.LabelCache;
-import org.researchspace.cache.ResourcePropertyCache;
 import org.researchspace.config.NamespaceRegistry;
 import org.researchspace.config.PropertyPattern;
 import org.researchspace.config.UnknownConfigurationException;
@@ -511,10 +509,9 @@ public class LabelCacheTest extends AbstractRepositoryBackedIntegrationTest {
         final String query = ResourcePropertyCache.constructPropertyQuery(iris, preferredLabels);
 
         final String expectedQuery = "SELECT ?subject ?p0 ?p1 WHERE {"
-                + "{{?subject <http://www.w3.org/2000/01/rdf-schema#label> ?p0 .}"
-                + "  VALUES (?subject) { (<http://my.custom.namespace/s1>)(<http://my.custom.namespace/s2>) } } "
-                + "UNION" + "{{?subject <http://www.w3.org/2004/02/skos/core#altLabel> ?p1.}"
-                + "  VALUES (?subject) { (<http://my.custom.namespace/s1>)(<http://my.custom.namespace/s2>) } } " + "}";
+                + "{{?subject <http://www.w3.org/2000/01/rdf-schema#label> ?p0 .}}" + "UNION"
+                + "{{?subject <http://www.w3.org/2004/02/skos/core#altLabel> ?p1.}}"
+                + "VALUES (?subject) { (<http://my.custom.namespace/s1>)(<http://my.custom.namespace/s2>) }" + "}";
 
         Assert.assertEquals(expectedQuery.replace(" ", ""), query.replaceAll("[\t\n ]", ""));
     }

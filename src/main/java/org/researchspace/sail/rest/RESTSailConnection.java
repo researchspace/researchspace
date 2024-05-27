@@ -281,22 +281,10 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
                 targetResource = targetResource.queryParam(entry.getKey(), entry.getValue());
             }
 
-            // Add additional HTTP headers if found
-            MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
-            Map<String, String> httpHeaders = this.getSail().getConfig().getHttpHeaders();
-            if (httpHeaders.size() > 0) {
-                logger.trace("Found {} custom HTTP headers.", httpHeaders.size());
+            targetResource = auth(targetResource);
 
-                for (Map.Entry<String, String> header : httpHeaders.entrySet()) {
-                    headers.add(header.getKey(), header.getValue());
-                }
-            }
-
-            // Create async response
-            Future<Response> response = targetResource.request(getSail().getConfig().getMediaType()).headers(headers)
-                    .async().get();
-
-            return response.get();
+            Invocation.Builder request = targetResource.request();
+            return this.addHTTPHeaders(request).get();
         } catch (Exception e) {
             throw new SailException(e);
         }

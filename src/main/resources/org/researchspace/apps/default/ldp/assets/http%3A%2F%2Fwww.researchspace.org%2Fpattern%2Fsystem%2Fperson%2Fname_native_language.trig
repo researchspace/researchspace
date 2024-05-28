@@ -2,19 +2,19 @@
 <http://www.researchspace.org/pattern/system/person/name_native_language/context> {
   <http://www.researchspace.org/pattern/system/person/name_native_language> a <http://www.researchspace.org/resource/system/fields/Field>,
       <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-6f2596f124894088a18ec405fe79c454-bb9zkd;
     <http://www.w3.org/2000/01/rdf-schema#label> "Name in native language";
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-6ce631cf061148e8b508e19649570007-09rnc7;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#langString>;
     <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
     <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E21_Person>;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-6f2596f124894088a18ec405fe79c454-fnnwfe;
     <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/person>;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-6f2596f124894088a18ec405fe79c454-qlcq5f;
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#langString>;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-6ce631cf061148e8b508e19649570007-9z1kjo;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-6ce631cf061148e8b508e19649570007-hw2rv;
     <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-01-16T16:26:52.500Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-05-03T18:51:52.045+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
   
-  _:genid-6f2596f124894088a18ec405fe79c454-bb9zkd a <http://spinrdf.org/sp#Query>;
+  _:genid-6ce631cf061148e8b508e19649570007-9z1kjo a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
    	$subject crm:P1_is_identified_by $appellation .
    	$appellation a crm:E41_Appellation .
@@ -22,7 +22,17 @@
   	$appellation crm:P190_has_symbolic_content $value .  
 }""" .
   
-  _:genid-6f2596f124894088a18ec405fe79c454-qlcq5f a <http://spinrdf.org/sp#Query>;
+  _:genid-6ce631cf061148e8b508e19649570007-09rnc7 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+   	$subject crm:P1_is_identified_by $appellation .
+   	$appellation a crm:E41_Appellation .
+   	$appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/person_name_native_language> .
+  	$appellation crm:P190_has_symbolic_content $value .  
+} WHERE {
+  BIND(URI(CONCAT(STR($subject),\"/person_name_native_language/\", STRUUID())) as ?appellation)
+}""" .
+  
+  _:genid-6ce631cf061148e8b508e19649570007-hw2rv a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """DELETE {  
    	$subject crm:P1_is_identified_by $appellation .
    	$appellation a crm:E41_Appellation .
@@ -33,17 +43,6 @@
    	$appellation a crm:E41_Appellation .
    	$appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/person_name_native_language> .
   	$appellation crm:P190_has_symbolic_content $value .     
-}""" .
-  
-  _:genid-6f2596f124894088a18ec405fe79c454-fnnwfe a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-   	$subject crm:P1_is_identified_by $appellation .
-   	$appellation a crm:E41_Appellation .
-   	$appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/person_name_native_language> .
-  	$appellation crm:P190_has_symbolic_content $value .  
-       }
-      where {
-  BIND(URI(concat(str($subject), \"/person_name_native_language\") ) as $appellation)
 }""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>

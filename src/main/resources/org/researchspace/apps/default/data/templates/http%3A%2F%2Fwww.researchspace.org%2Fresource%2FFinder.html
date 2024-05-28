@@ -42,19 +42,23 @@
                             no-result-template='{{> noResults}}'>
                             
               <template id='nodeTemplate'>
-                <mp-event-trigger id='event-trigger' 
-                                  type='Component.TemplateUpdate' 
-                                  targets='["entity-viewes"]'
-                                  data='{"navigationEntry": "{{node.value}}"}'>
+                <mp-event-trigger id='{{frameId}}-open-resource-search-page--trigger' 
+                                  type='Dashboard.AddFrame' 
+                                  targets='["thinking-frames"]'
+                                  data='{ "viewId": "resource-search",
+                                          "iri":"{{node.value}}",
+                                          "resourceIri": "{{node.value}}",
+                                          "customLabel":"Search {{nodeLabel.value}}"
+                                        }'>
 
                   {{#ifCond node.value "==" finderItem }}
                     <div class="Tree--itemLink active" style="{{#if finderPreview}}{{else}}cursor:pointer;{{/if}}">
-                      {{#if icon.value}}<rs-icon icon-type="outlined" icon-name="{{icon.value}}"></rs-icon>{{/if}}
+                      {{#if icon.value}}<rs-icon icon-type="outlined" icon-name="{{icon.value}}" symbol=true></rs-icon>{{/if}}
                       <div>{{nodeLabel.value}}</div> 
                     </div>
                   {{else}}
                     <div class="Tree--itemLink" style="{{#if finderPreview}}{{else}}cursor:pointer;{{/if}}">
-                      {{#if icon.value}}<rs-icon icon-type="outlined" icon-name="{{icon.value}}"></rs-icon>{{/if}}
+                      {{#if icon.value}}<rs-icon icon-type="outlined" icon-name="{{icon.value}}" symbol=true></rs-icon>{{/if}}
                       <div>{{nodeLabel.value}}</div> 
                     </div>
                   {{/ifCond}}
@@ -80,14 +84,16 @@
             </button>
           </semantic-link>
 
-          <semantic-link uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                        urlqueryparam-view='resource-configuration'>
-            <button class="btn btn-default btn-textAndIcon" style="justify-content: space-between;">
-              
-              <div>Resource configuration</div>
-              <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
-            </button>
-          </semantic-link>
+          [[#if (hasPermission "sparql:update")]]
+            <semantic-link uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                          urlqueryparam-view='resource-configuration'>
+              <button class="btn btn-default btn-textAndIcon" style="justify-content: space-between;">
+                
+                <div>Resource configuration</div>
+                <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
+              </button>
+            </semantic-link>
+          [[/if]]
         </div>
       {{/if}}
 

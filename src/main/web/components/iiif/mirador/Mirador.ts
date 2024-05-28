@@ -27,7 +27,7 @@ import { trigger, BuiltInEvents } from 'platform/api/events';
 import { AdapterAnnotationEndpoint } from './MiradorAnnotationEndpoint';
 import { researchspaceAnnotationBodyEditor } from './AnnotationBodyEditor';
 
-import 'cache-loader!script-loader!../../../lib/mirador/mirador.js';
+import 'script-loader!../../../lib/mirador/mirador.js';
 import '../../../lib/mirador/css/mirador.scss';
 
 interface EmitterMixin extends Mirador.EventEmitter {

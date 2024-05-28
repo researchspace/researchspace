@@ -56,36 +56,36 @@
             </semantic-link-container>
           </div>
 				 [[#if (hasPermission "forms:ldp:*")]]
-          <mp-overlay-dialog id="uploadOntology-dialog"
-                              title="Upload ontology" 
-                              type="modal" 
-                              bs-size="large">
-            <mp-overlay-dialog-trigger>
-              <button class="btn btn-action btn-textAndIcon">
-                <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                Upload Ontology
-              </button>
-            </mp-overlay-dialog-trigger>
-            <mp-overlay-dialog-content>
-              <div>
-                <mp-rdf-upload  accept='[".trig"]'                                           
-                                keep-source-graphs='true' 
-                                ontology='true'
-                                allow-load-by-url='false' 
-                                show-advanced-options='false' 
-                                drop-area-template='{{> template}}'>
+            <mp-overlay-dialog id="uploadOntology-dialog"
+                                title="Upload ontology" 
+                                type="modal" 
+                                bs-size="large">
+              <mp-overlay-dialog-trigger>
+                <button class="btn btn-action btn-textAndIcon">
+                  <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                  Upload Ontology
+                </button>
+              </mp-overlay-dialog-trigger>
+              <mp-overlay-dialog-content>
+                <div>
+                  <mp-rdf-upload  accept='[".trig"]'                                           
+                                  keep-source-graphs='true' 
+                                  ontology='true'
+                                  allow-load-by-url='false' 
+                                  show-advanced-options='false' 
+                                  drop-area-template='{{> template}}'>
 
-                  <template id='template'>
-                    <div class='RdfUpload__rdf-dropzone-content'>
-                      <br/><br/><br/>
-                      [[#> customOntologyUploadDropzoneMessage]][[/customOntologyUploadDropzoneMessage]]
-                      <br/><br/>
-                    </div>
-                  </template>
-                </mp-rdf-upload>
-              </div>
-            </mp-overlay-dialog-content>
-          </mp-overlay-dialog>
+                    <template id='template'>
+                      <div class='RdfUpload__rdf-dropzone-content'>
+                        <br/><br/><br/>
+                        [[#> customOntologyUploadDropzoneMessage]][[/customOntologyUploadDropzoneMessage]]
+                        <br/><br/>
+                      </div>
+                    </template>
+                  </mp-rdf-upload>
+                </div>
+              </mp-overlay-dialog-content>
+            </mp-overlay-dialog>
 					[[/if]]
           <mp-event-proxy id='uploadOntology-closeModal-proxy' 
                           on-event-type='RdfUpload.Success'
@@ -231,7 +231,7 @@
 
                                                         GRAPH ?ontologyContext {
                                                           ?prop rdf:type ?owlType.
-                                                          FILTER(?owlType IN(owl:DatatypeProperty, owl:ObjectProperty))
+                                                          FILTER(?owlType IN(owl:DatatypeProperty, owl:ObjectProperty, rdf:Property))
                                                           FILTER(CONTAINS(STR(?prop), REPLACE(STR(?ontologyContext), "/context", "")))
                                                         }
                                                       }
@@ -239,8 +239,7 @@
                                                       {
                                                         BIND(<{{subject.value}}> AS ?ontology)
                                                         ?kp <http://www.researchspace.org/resource/system/fields/ontology> ?ontology;
-                                                          rdf:type ?owlType.
-                                                        FILTER(?owlType IN(owl:DatatypeProperty, owl:ObjectProperty))
+                                                          rdf:type <http://www.researchspace.org/resource/system/fields/Field> .
                                                       }
                                                     }
                                                 }
@@ -252,8 +251,7 @@
                                       <div class="alert alert-info" style="margin: 0;padding: 15px; font-size: 14px;">
                                         <semantic-query query='SELECT (count(?kp) as ?count) WHERE {
                                                                 ?kp <http://www.researchspace.org/resource/system/fields/ontology> <{{subject.value}}> .
-                                                                ?kp a ?owlType .
-                                                                FILTER (?owlType IN (owl:DatatypeProperty,owl:ObjectProperty))
+                                                                ?kp a <http://www.researchspace.org/resource/system/fields/Field> .
                                                                 
                                                               }'
                                                         template='{{> template}}'
@@ -292,9 +290,10 @@
 
                               <div class="page__section-container-whiteBg" 
                               style="margin: 0; border-left: none; min-width: fit-content; display: flex;flex-direction: column; gap: 7px;">
-                                [[> count label='Classes' pattern='?item a owl:Class']]
+                                [[> count label='Classes' pattern='?item a ?classType . VALUES ?classType {owl:Class rdfs:Class}']]
                                 [[> count label='Object Properties' pattern='?item a owl:ObjectProperty']]
                                 [[> count label='Datatype Properties' pattern='?item a owl:DatatypeProperty']]
+                                [[> count label='RDF Properties' pattern='?item a rdf:Property']]
                                 [[> count label='SubClassOf Axioms' pattern='?item rdfs:subClassOf ?class']]
                                 [[> count label='SubPropertyOf Axioms' pattern='?item rdfs:subPropertyOf ?class']]
                               </div>
@@ -309,10 +308,10 @@
                               </semantic-link>
                               
                               <div class="btn-inline-container">
-                                <mp-graph-store-action  title='Download in Turtle Format' 
+                                <mp-graph-store-action  title='Download in Trig Format' 
                                                         action='GET'
                                                         graphuri='{{graph.value}}' 
-                                                        file-ending='ttl'>
+                                                        file-ending='trig'>
                                   <button class="btn btn-default btn-textAndIcon" title="Download">
                                     <rs-icon icon-type="round" icon-name="download" title='Download'></rs-icon>Download
                                   </button> 
@@ -345,8 +344,8 @@
                                       </p>
                                       <semantic-query query='SELECT (count(?kp) as ?count) WHERE {
                                                                 ?kp <http://www.researchspace.org/resource/system/fields/ontology> <{{subject.value}}> .
-                                                                ?kp a ?owlType .
-                                                                FILTER (?owlType IN (owl:DatatypeProperty,owl:ObjectProperty))
+                                                                ?kp a <http://www.researchspace.org/resource/system/fields/Field> .
+                                                                
                                                               }'
                                                         template='{{> template}}'
                                         >

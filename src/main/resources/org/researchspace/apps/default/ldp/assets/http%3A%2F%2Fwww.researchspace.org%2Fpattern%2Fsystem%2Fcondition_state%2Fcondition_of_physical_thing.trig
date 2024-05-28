@@ -1,4 +1,3 @@
-
 <http://www.researchspace.org/pattern/system/condition_state/condition_of_physical_thing/context> {
   <http://www.researchspace.org/pattern/system/condition_state/condition_of_physical_thing>
     a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
@@ -22,19 +21,11 @@
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
     ?value a ?ontologyClass .
     ?ontologyClass rdfs:subClassOf* crm:E18_Physical_Thing .
-  	{ 
-      ?value crm:P1_is_identified_by ?appellation .
-      ?appellation a crm:E41_Appellation .
-      ?appellation crm:P2_has_type ?type . 
-      ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/appellation> . 
-      ?appellation crm:P190_has_symbolic_content ?label .
-	} UNION {
-      ?value crm:P102_has_title ?title . 
-      ?title a crm:E35_Title . 
-      ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
-      ?title crm:P190_has_symbolic_content ?label .
-	}
-} ORDER BY ASC(?label)""" .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
   
   _:genid-b1fe43a4b8a34d38924ada57f6fb0e3c-b93x4n a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """INSERT { 
@@ -43,23 +34,15 @@
 } WHERE {}""" .
   
   _:genid-b1fe43a4b8a34d38924ada57f6fb0e3c-62bzkc a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
   	$subject crm:P44i_is_condition_of $value . 
 
     ?value a ?ontologyClass .
     ?ontologyClass rdfs:subClassOf* crm:E18_Physical_Thing .
-  	{ 
-      ?value crm:P1_is_identified_by ?appellation .
-      ?appellation a crm:E41_Appellation .
-      ?appellation crm:P2_has_type ?type . 
-      ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/appellation> . 
-      ?appellation crm:P190_has_symbolic_content ?label .
-	} UNION {
-      ?value crm:P102_has_title ?title . 
-      ?title a crm:E35_Title . 
-      ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
-      ?title crm:P190_has_symbolic_content ?label .
-	}
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
   
   _:genid-b1fe43a4b8a34d38924ada57f6fb0e3c-osefl a <http://spinrdf.org/sp#Query>;
@@ -72,37 +55,21 @@
       
     ?value a ?ontologyClass .
     ?ontologyClass rdfs:subClassOf* crm:E18_Physical_Thing .
-  	{ 
-      ?value crm:P1_is_identified_by ?appellation .
-      ?appellation a crm:E41_Appellation .
-      ?appellation crm:P2_has_type ?type . 
-      ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/appellation> . 
-      ?appellation crm:P190_has_symbolic_content ?label .
-	} UNION {
-      ?value crm:P102_has_title ?title . 
-      ?title a crm:E35_Title . 
-      ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
-      ?title crm:P190_has_symbolic_content ?label .
-	}
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
   
   _:genid-b1fe43a4b8a34d38924ada57f6fb0e3c-5unrjn a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
     ?value a ?ontologyClass .
     ?ontologyClass rdfs:subClassOf* crm:E18_Physical_Thing .
-  	{ 
-      ?value crm:P1_is_identified_by ?appellation .
-      ?appellation a crm:E41_Appellation .
-      ?appellation crm:P2_has_type ?type . 
-      ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/appellation> . 
-      ?appellation crm:P190_has_symbolic_content ?label .
-	} UNION {
-      ?value crm:P102_has_title ?title . 
-      ?title a crm:E35_Title . 
-      ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
-      ?title crm:P190_has_symbolic_content ?label .
-	}
-  FILTER REGEX(STR(?label), \"?token\")
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ASC(?label)
   LIMIT 10""" .
   

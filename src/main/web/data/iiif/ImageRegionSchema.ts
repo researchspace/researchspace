@@ -34,10 +34,10 @@ export const ImageRegionLabel = Forms.normalizeFieldDefinition({
   id: 'label',
   xsdDatatype: vocabularies.xsd._string,
   insertPattern: `INSERT {
-    $subject <http://www.researchspace.org/ontology/displayLabel> $value .
+    $subject <http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> $value .
   } WHERE {}`,
   selectPattern: `SELECT ?value WHERE {
-    $subject <http://www.researchspace.org/ontology/displayLabel> ?value .
+    $subject <http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?value .
   }`,
 });
 

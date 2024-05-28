@@ -333,13 +333,13 @@ export class ViewModel {
     this.setState({ openedSet: setIri, search: {}, itemsOrdering: undefined });
   }
 
-  onDropItemToSet(item: Rdf.Iri, targetSet: Rdf.Iri) {
+  onDropItemToSet(item: Rdf.Iri, targetSet: Rdf.Iri,sourceSetManager:string) {console.log(sourceSetManager);
     this.cancellation
-      .map(getSetServiceForUser(this.getContext()).flatMap((service) => service.addToExistingSet(targetSet, item)))
+      .map(getSetServiceForUser(this.getContext()).flatMap((service) => service.addToExistingSet(targetSet, item, this.props.id)))
       .observe({
         value: () => {
           // This is ugly hack to fully reload all sets if we add something to the
-          // Uncategorized set, we need this to fetch Knowledg Maps when they are added
+          // Uncategorized set, we need this to fetch Knowledge Maps when they are added
           // to the clipboard
           if (targetSet.equals(this.getState().defaultSet)) {
             this.loadSets({keepItems: false});
@@ -516,10 +516,9 @@ export class ViewModel {
       });
   }
 
-  removeSetFromView(set: Rdf.Iri) {
-    const visibleInViewForTemplateWithId = maybe.Just(this.props.id);    
+  removeSetFromView(set: Rdf.Iri) {  
     this.cancellation
-      .map(getSetServiceForUser(this.getContext()).flatMap((service) => service.updateSet(set, visibleInViewForTemplateWithId.get())))
+      .map(getSetServiceForUser(this.getContext()).flatMap((service) => service.removeSetVisibleTriples(set, this.props.id)))
       .observe({
         value: () => {
           this.setState({ openedSet: undefined });

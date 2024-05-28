@@ -250,42 +250,48 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
             </OverlayTrigger>
 
             {this.props.onClearAll ? (
-              <OverlayTrigger
+              <OverlayTrigger trigger={['hover']}
+                              placement="bottom"
+                              overlay={<Popover id="tooltip">Clear all</Popover>}
+              >
+                <Button onClick={this.props.onClearAll} bsStyle='' className="btn-icon btn-textAndIcon">
+                  <Icon iconType='round' iconName='delete'/>
+                </Button>
+              </OverlayTrigger>
+            ) : null}
+
+            <OverlayTrigger
               trigger={['hover']}
               placement="bottom"
-              overlay={<Popover id="tooltip">Clear All</Popover>}
-              >
-              <Button onClick={this.props.onClearAll} bsStyle='' className="btn-icon btn-textAndIcon">
-                <Icon iconType='round' iconName='delete'/>
+              overlay={<Popover id="tooltip">Print knowledge map</Popover>}
+              
+            >
+              <Button bsStyle='' className="btn-icon btn-textAndIcon" onClick={this.props.onPrint} style={{ marginLeft: '30px' }} >
+                <Icon iconType='round' iconName='print'/>
               </Button>
             </OverlayTrigger>
-            ) : null}
-      
+
+            <Dropdown id="export-diagram-button">
+
+              <Dropdown.Toggle bsStyle='' className="btn-textAndIcon btn-icon" style={{marginRight: 20}}>
+                <Icon iconType='round' iconName='download'/>
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                <MenuItem href="#" onClick={this.onExportPng}>
+                  <Icon iconType='round' iconName='download' className='icon-left' />
+                  Export as PNG
+                </MenuItem>
+                <MenuItem href="#" onClick={this.onExportSvg}>
+                  <Icon iconType='round' iconName='download' className='icon-left' />
+                  Export as SVG
+                </MenuItem>
+              </Dropdown.Menu>
+            </Dropdown>
         </ButtonGroup>
 
         </div>
 
         <div className={styles.buttonsContainer}>
-         <Button bsStyle='' className="btn-icon btn-textAndIcon" onClick={this.props.onPrint}>
-            <Icon iconType='round' iconName='print'/>
-          </Button>
-
-          <Dropdown id="export-diagram-button">
-
-            <Dropdown.Toggle bsStyle='' className="btn-textAndIcon btn-icon" style={{marginRight: 20}}>
-              <Icon iconType='round' iconName='download'/>
-            </Dropdown.Toggle>
-            <Dropdown.Menu>
-              <MenuItem href="#" title="Export map as PNG" onClick={this.onExportPng}>
-                <Icon iconType='round' iconName='image' className='icon-left' />
-                Export as PNG
-              </MenuItem>
-              <MenuItem href="#" title="Export map as SVG" onClick={this.onExportSvg}>
-                <Icon iconType='round' iconName='image' className='icon-left' />
-                Export as SVG
-              </MenuItem>
-            </Dropdown.Menu>
-          </Dropdown>
 
           <HasPermission permission={Permissions.toLdp('container', VocabPlatform.OntodiaDiagramContainer, 'create', 'any')}
           >

@@ -3,6 +3,24 @@
   .SemanticTreeInput--tree {
     height: 300px;
   }
+
+  ol.page-breadcrumb.ontology-class-breadcrumb,
+  ol.page-breadcrumb.field-page-breadcrumb {
+    display: none;
+  }
+
+  .page.ontology-class-page,
+  .page.field-page {
+    padding-top: 0;
+  }
+
+  .page.field-page .btn-inline-container {
+    display: none;
+  }
+
+  .modal-body {
+    padding: 0;
+  }
   
 </style>
 
@@ -106,7 +124,7 @@
                                                         "maxOccurs": "1",
                                                         "treePatterns": {
                                                                           "type": "simple",
-                                                                          "schemePattern":  "?ontologyclass a owl:Class . ",
+                                                                          "schemePattern":  "?ontologyclass a ?class . VALUES ?class {owl:Class rdfs:Class} ",
                                                                           "relationPattern": "?item rdfs:subClassOf ?parent",
                                                                           "labelPattern": "?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label .
                                                                                           FILTER (lang(?label) = \"en\")"
@@ -150,7 +168,8 @@
                                                                   close-dropdown-on-selection='true'
                                                                   tree-patterns='{
                                                                     "rootsQuery":"SELECT DISTINCT ?item ?label ?hasChildren WHERE {
-                                                                                    ?item rdf:type owl:Class.
+                                                                                    ?item rdf:type ?class . 
+                                                                                    VALUES ?class {owl:Class rdfs:Class} 
                                                                                     BIND(REPLACE(STR(?item), \"(.*)/.*$\", \"$1\") AS ?prefix)
                                                                                     BIND(IF(CONTAINS(STR(?item), \"skos\"), CONCAT(?prefix, \"/core\"), CONCAT(STR(?prefix), \"/\")) AS ?ontologyString)
                                                                                     BIND(URI(?ontologyString) as ?ontology)
@@ -176,7 +195,8 @@
 
                                                                     "childrenQuery":"SELECT DISTINCT ?item ?label ?hasChildren WHERE {
                                                                                       ?item rdfs:subClassOf ?parent.
-                                                                                      ?item rdf:type owl:Class.
+                                                                                      ?item rdf:type ?class . 
+                                                                                      VALUES ?class {owl:Class rdfs:Class} 
                                                                                       BIND(REPLACE(STR(?item), \"(.*)/.*$\", \"$1\") AS ?prefix)
                                                                                       BIND(IF(CONTAINS(STR(?item), \"skos\"), CONCAT(?prefix, \"/core\"), CONCAT(STR(?prefix), \"/\")) AS ?ontologyString)
                                                                                       BIND(URI(?ontologyString) as ?ontology)
@@ -204,12 +224,14 @@
                                                                                     }",
 
                                                                     "searchQuery":"SELECT DISTINCT ?item ?label ?score ?hasChildren WHERE {
-                                                                                    ?item rdf:type owl:Class.
+                                                                                    ?item rdf:type ?class . 
+                                                                                    VALUES ?class {owl:Class rdfs:Class} 
                                                                                     BIND(REPLACE(STR(?item), \"(.*)/.*$\", \"$1\") AS ?prefix)
                                                                                     BIND(IF(CONTAINS(STR(?item), \"skos\"), CONCAT(?prefix, \"/core\"), CONCAT(STR(?prefix), \"/\")) AS ?ontologyString)
                                                                                     BIND(URI(?ontologyString) as ?ontology)
                                                                                     FILTER(?ontology IN ({{selectedOntology}}))                                        
                                                                                     ?item ((crm:P1_is_identified_by/rdfs:label)|rso:displayLabel|rdfs:label|skos:prefLabel) ?label.
+                                                                                    FILTER((LANG(?label)) = \"en\")
                                                                                     ?label bds:search ?__token__;
                                                                                       bds:minRelevance \"0.3\";
                                                                                       bds:relevance ?score;
@@ -252,7 +274,7 @@
                                 <semantic-search-result>
                                   <div class="ontology-property-table">
                                     <semantic-table id='ontology-property-table' 
-                                                    query="SELECT DISTINCT ?property ?propertyLabel ?propertyOntologyURI ?rangeOntologyURI ?description ?propertyFromClass 
+                                                    query="SELECT DISTINCT ?property ?range ?propertyLabel ?propertyOntologyURI ?rangeOntologyURI ?description ?propertyFromClass 
                                                            WHERE {
                                                             BIND(?subject as ?property) 
   
@@ -321,7 +343,7 @@
                                                   no-result-template='{{> noResults}}'
                                                   column-configuration='[
                                                                           {"displayName": "Property URI", "variableName": "propertyOntologyURI", "cellTemplate": "{{> propertyURI}}" },
-                                                                          {"displayName": "Range class", "variableName": "rangeOntologyURI"},
+                                                                          {"displayName": "Range class",  "cellTemplate": "{{> rangeClass}}"},
                                                                           {"displayName": "Description/Examples", "variableName": "description", "cellTemplate": "{{> description}}"},
                                                                           {"displayName": "Property inherited from class", "variableName": "propertyFromClass"}
                                                                           
@@ -333,9 +355,29 @@
                                       </template>
   
                                       <template id="propertyURI">
-                                        <semantic-link iri="{{property.value}}" target="_blank">
-                                          <div>{{propertyOntologyURI.value}}</div>
-                                        </semantic-link>
+                                        <mp-overlay-dialog  id='ontology-property-dialog' 
+                                                            title="Property '{{propertyOntologyURI.value}}' " 
+                                                            type="lightbox">
+                                          <mp-overlay-dialog-trigger>
+                                            <div class="text-link">{{propertyOntologyURI.value}}</div>
+                                          </mp-overlay-dialog-trigger>
+                                          <mp-overlay-dialog-content>
+                                            <mp-page-loader iri="{{property.value}}" context="{{property.value}}"></mp-page-loader>
+                                          </mp-overlay-dialog-content>
+                                        </mp-overlay-dialog>
+                                      </template>
+
+                                      <template id="rangeClass">
+                                        <mp-overlay-dialog  id='ontology-rangeClass-dialog' 
+                                                            title="Class '{{rangeOntologyURI.value}}' " 
+                                                            type="lightbox">
+                                          <mp-overlay-dialog-trigger>
+                                            <div class="text-link">{{rangeOntologyURI.value}}</div>
+                                          </mp-overlay-dialog-trigger>
+                                          <mp-overlay-dialog-content>
+                                            <mp-page-loader iri="{{range.value}}" context="{{range.value}}"></mp-page-loader>
+                                          </mp-overlay-dialog-content>
+                                        </mp-overlay-dialog>
                                       </template>
   
                                       <template id="description">

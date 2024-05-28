@@ -4,10 +4,10 @@
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
   	?value a crm:E52_Time-Span .
 	?value crm:P170i_time_is_defined_by ?timePrimitive .
-  	?timePrimitive a crm:E61_Time_Primitive .
-  	?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/time_appellation> .
-  	?timePrimitive crm:P190_has_symbolic_content ?label .
-  FILTER REGEX(STR(?label), \"?token\")
+  ?timePrimitive a crm:E61_Time_Primitive .
+  ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
+  ?timePrimitive crm:P190_has_symbolic_content ?label .
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ASC(?label) 
   LIMIT 10""" .
   
@@ -33,7 +33,7 @@
   	?value a crm:E52_Time-Span .
 	?value crm:P170i_time_is_defined_by ?timePrimitive .
   	?timePrimitive a crm:E61_Time_Primitive .
-  	?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/time_appellation> .
+  	?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
   	?timePrimitive crm:P190_has_symbolic_content ?label .
 } ORDER BY ?label""" .
   
@@ -47,18 +47,18 @@
 	?value a crm:E52_Time-Span .
 	?value crm:P170i_time_is_defined_by ?timePrimitive .
   	?timePrimitive a crm:E61_Time_Primitive .
-  	?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/time_appellation> .
+  	?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
   	?timePrimitive crm:P190_has_symbolic_content ?label .
 }""" .
   
   _:genid-8e23632ea28c45e295e776da88ee2557-jc4kgq a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
   	$subject crm:P191i_was_duration_of $value .
       
 	?value a crm:E52_Time-Span .
 	?value crm:P170i_time_is_defined_by ?timePrimitive .
   	?timePrimitive a crm:E61_Time_Primitive .
-  	?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/time_appellation> .
+  	?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
   	?timePrimitive crm:P190_has_symbolic_content ?label .
 }""" .
   

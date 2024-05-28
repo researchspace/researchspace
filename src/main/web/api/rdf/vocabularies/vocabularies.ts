@@ -22,7 +22,7 @@ export { default as rdf } from './rdf';
 export { default as xsd } from './xsd';
 export { default as dc } from './dc';
 export { default as dct } from './dct';
-
+export { default as crm } from './crm';
 export { default as sp } from './sp';
 export { default as spl } from './spl';
 export { default as spin } from './spin';

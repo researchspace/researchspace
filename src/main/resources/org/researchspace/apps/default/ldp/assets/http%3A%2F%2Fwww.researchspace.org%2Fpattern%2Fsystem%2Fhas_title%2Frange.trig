@@ -1,0 +1,61 @@
+
+<http://www.researchspace.org/pattern/system/has_title/range/context> {
+  _:genid-3a7ca6ddf1f046dead9e5090921b3107-6mjntv a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  $subject crm:P02_has_range ?value .
+      
+  ?value a crm:E35_Title .
+  ?value crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  <http://www.researchspace.org/pattern/system/has_title/range> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Has title - range";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E35_Title>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-3a7ca6ddf1f046dead9e5090921b3107-djuvx;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-3a7ca6ddf1f046dead9e5090921b3107-muqhnl;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-3a7ca6ddf1f046dead9e5090921b3107-9x06i;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-3a7ca6ddf1f046dead9e5090921b3107-n2y51c;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/PC102_has_title>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-3a7ca6ddf1f046dead9e5090921b3107-6mjntv;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-17T12:44:08.009+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-3a7ca6ddf1f046dead9e5090921b3107-n2y51c a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  ?value a crm:E35_Title .
+  ?value crm:P190_has_symbolic_content ?label .
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label) 
+  LIMIT 10 """ .
+  
+  _:genid-3a7ca6ddf1f046dead9e5090921b3107-muqhnl a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+  $subject crm:P02_has_range $value .
+  $value crm:P02i_is_range_of $subject .
+} WHERE {
+   $subject crm:P02_has_range $value .
+   $value crm:P02i_is_range_of $subject .
+      
+  ?value a crm:E35_Title .
+  ?value crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-3a7ca6ddf1f046dead9e5090921b3107-djuvx a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a crm:E35_Title .
+  ?value crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-3a7ca6ddf1f046dead9e5090921b3107-9x06i a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P02_has_range $value .
+  $value crm:P02i_is_range_of $subject .
+} WHERE {}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/has_title/range> .
+}

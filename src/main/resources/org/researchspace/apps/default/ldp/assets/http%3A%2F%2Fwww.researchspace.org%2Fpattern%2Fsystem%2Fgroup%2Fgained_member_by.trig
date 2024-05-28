@@ -1,0 +1,74 @@
+
+<http://www.researchspace.org/pattern/system/group/gained_member_by/context> {
+  <http://www.researchspace.org/pattern/system/group/gained_member_by> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-126dee9049e345b4a71b981c0190c3d7-l1dka9;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Gained member by";
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-126dee9049e345b4a71b981c0190c3d7-sdyk0de;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-126dee9049e345b4a71b981c0190c3d7-dgch8o;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E74_Group>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E85_Joining>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-126dee9049e345b4a71b981c0190c3d7-wkrwcb;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-126dee9049e345b4a71b981c0190c3d7-0t7iug;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/group>;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-10T18:12:03.751+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-126dee9049e345b4a71b981c0190c3d7-l1dka9 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  ?value a crm:E85_Joining .
+  ?value crm:P1_is_identified_by ?appellation . 
+  ?appellation a crm:E41_Appellation . 
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-126dee9049e345b4a71b981c0190c3d7-dgch8o a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  ?value a crm:E85_Joining .
+  ?value crm:P1_is_identified_by ?appellation . 
+  ?appellation a crm:E41_Appellation . 
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-126dee9049e345b4a71b981c0190c3d7-wkrwcb a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+  $subject crm:P144i_gained_member_by $value . 
+  $value crm:P144_joined_with $subject .
+}  WHERE {
+  $subject crm:P144i_gained_member_by $value . 
+  $value crm:P144_joined_with $subject .
+      
+  ?value a crm:E85_Joining .
+  ?value crm:P1_is_identified_by ?appellation . 
+  ?appellation a crm:E41_Appellation . 
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-126dee9049e345b4a71b981c0190c3d7-sdyk0de a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  $subject crm:P144i_gained_member_by $value . 
+
+  ?value a crm:E85_Joining .
+  ?value crm:P1_is_identified_by ?appellation . 
+  ?appellation a crm:E41_Appellation . 
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-126dee9049e345b4a71b981c0190c3d7-0t7iug a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P144i_gained_member_by $value . 
+  $value crm:P144_joined_with $subject .
+} WHERE {}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/group/gained_member_by> .
+}

@@ -116,7 +116,7 @@ function createRootsQuery({ relation, scheme, orderBy, label }: TreePatterns) {
       OPTIONAL {
         FILTER(?__orderBy__)
       }
-    } ORDER BY ?order ?label
+    } ORDER BY ?order ASC(LCASE(STR(?label)))
   `);
   const childRelation = bindTreePatterns(relation, { itemVar: 'child', parentVar: 'item' });
   new PatternBinder('__childRelation__', childRelation).sparqlQuery(query);
@@ -138,7 +138,7 @@ function createChildrenQuery({ relation, scheme, orderBy, label }: TreePatterns)
       OPTIONAL {
         FILTER(?__orderBy__)
       }
-    } ORDER BY ?order ?label
+    } ORDER BY ?order ASC(LCASE(STR(?label)))
   `);
   const childRelation = bindTreePatterns(relation, { itemVar: 'child', parentVar: 'item' });
   new PatternBinder('__childRelation__', childRelation).sparqlQuery(query);

@@ -22,11 +22,11 @@
     {{#if props.[http://www.researchspace.org/ontology/PX_has_video]}}
       <iframe src='{{props.[http://www.researchspace.org/ontology/PX_has_video].values.0.value}}' frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     
-      {{else if props.[http://www.ics.forth.gr/isl/CRMdig/L49_is_primary_area_of]}}
+      {{else if props.[http://www.researchspace.org/pattern/system/image_annotation/area_of_image]}}
         <rs-iiif-image-thumbnail height='480' width='640' style='height: 100%; width: 100%;'
-          image-or-region='{{props.[http://www.ics.forth.gr/isl/CRMdig/L49_is_primary_area_of].values.0.value}}' 
-          bbox='{{props.[http://www.researchspace.org/ontology/boundingBox].values.0.value}}'
-          viewport='{{props.[http://www.researchspace.org/ontology/viewport].values.0.value}}'
+          image-or-region='{{props.[http://www.researchspace.org/pattern/system/image_annotation/area_of_image].values.0.value}}' 
+          bbox='{{props.[http://www.researchspace.org/pattern/system/image_annotation/boundingBox].values.0.value}}'
+          viewport='{{props.[http://www.researchspace.org/pattern/system/image_annotation/viewport].values.0.value}}'
           svg='{{props.[http://www.w3.org/1999/02/22-rdf-syntax-ns#value].values.0.value}}'
 
           [[> rsp:IIIFConfig]]
@@ -122,7 +122,7 @@
 
         <div class="rs-default-card__hover-icon">
           <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                   urlqueryparam-view='entity-editor'
+                                   urlqueryparam-view='resource-editor'
                                    urlqueryparam-resource='{{iri}}'>
               <button type="button" class="rs-button" title="Author Resource in Form">
                 <rs-icon icon-type="round" icon-name="edit_note"></rs-icon>
@@ -251,7 +251,7 @@
                   [[!-- is shown only when we are not in the frames view, hidden by css --]]
                   <div class="rs-default-card__hover-icon rs-default-card-action__image-navigate">
                     <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                            urlqueryparam-view='objectImageObservation' 
+                                            urlqueryparam-view='object-image-observation' 
                                             urlqueryparam-resource='{{iri}}'>
                       <button type="button" class="rs-button" title="Annotate Images">
                         <rs-icon icon-type="round" icon-name="photo_size_select_large"></rs-icon>
@@ -263,7 +263,7 @@
                   <div class="rs-default-card__hover-icon rs-default-card-action__image-add-frame">
                     <mp-event-trigger id='set-action__km-add-frame' 
                                       type='Dashboard.AddFrame' 
-                                      data='{"resourceIri": "{{iri}}", "viewId": "objectImageObservation", "objectIri": "{{iri}}"}' 
+                                      data='{"resourceIri": "{{iri}}", "viewId": "object-image-observation", "objectIri": "{{iri}}"}' 
                                       targets='["thinking-frames"]'>
                       <button type="button" class="rs-button" title="Annotate Images">
                         <rs-icon icon-type="round" icon-name="photo_size_select_large"></rs-icon>

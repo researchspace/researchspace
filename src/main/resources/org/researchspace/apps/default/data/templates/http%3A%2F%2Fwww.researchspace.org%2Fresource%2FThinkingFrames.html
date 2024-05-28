@@ -51,23 +51,20 @@
     views='[
 
     {
+    	"id": "resource-search",
+      "label": "Resource search",
+      "iconName": "search",
+      "template": "{{> resourceSearch}}"
+    },
+
+    {
     	"id": "simple-search",
       "label": "Search",
       "iconName": "search",
       "checkQuery": "ASK { ?value a rs:Semantic_Search . }",
-      "template": "{{> simpleSearchTemplate}}",
+      "template": "{{> simpleSearch}}",
       "resourceNotRequired": true,
-      "type": "search"
-    },
-
-    {
-    	"id": "entity-search",
-      "label": "Entity search",
-      "iconName": "search",
-      "checkQuery": "ASK { ?value a rs:Semantic_Search . }",
-      "template": "{{> entitySearchTemplate}}",
-      "resourceNotRequired": true,
-      "type": "search-by-entity-type"
+      "type": "hidden"
     },
 
     {
@@ -78,6 +75,16 @@
       "iconName": "insert_drive_file",
       "template": "{{> resourceTemplate}}",
       "type": "view"
+    },
+
+    {
+    	"id": "resource-editor",
+      "label": "Resource editor",
+      "description": "Creare and author an entity through custom forms",
+      "iconName": "edit_note",
+      "template": "{{> resourceEditor}}",
+      "resourceNotRequired": true,
+      "type": "hidden"
     },
 
     {
@@ -104,24 +111,13 @@
       "type": "view"
     },
 
-   {
-    	"id": "entity-editor",
-      "label": "Resource editor",
-      "description": "Creare and author an entity through custom forms",
-      "iconName": "edit_note",
-      "template": "{{> resourceEditor}}",
-      "resourceNotRequired": true,
-      "type": "authoring"
-    },
-   
-
     {
     	"id": "vocabulary",
       "label": "Vocabularies / Authorities",
       "description": "Create, view and edit vocabulary / authority list of terms",
       "template": "{{> vocabulary}}",
       "resourceNotRequired": true,
-      "type": "authoring"
+      "type": "hidden"
     }, 
 
     {
@@ -130,7 +126,7 @@
       "description": "Create, view and edit system vocabulary / authority list of terms",
       "template": "{{> systemVocabulary}}",
       "resourceNotRequired": true,
-      "type": "authoring"
+      "type": "hidden"
     }, 
 
     {
@@ -138,7 +134,7 @@
       "label": "Vocabulary / Authority content",
       "iconClass": "iconmoon iconmoon-books",
       "template": "{{> vocabularyContent}}",
-       "type": "authoring-content"
+       "type": "hidden"
     },
 
     {
@@ -147,7 +143,7 @@
       "template": "{{> resourceConfiguration}}",
       "iconName": "settings",
       "resourceNotRequired": true,
-      "type": "configuration"
+      "type": "hidden"
     },
 
     {
@@ -167,7 +163,7 @@
       "label": "Semantic narrative",
       "description": "Compose and share your research through an evolving narrative",
       "iconName": "description",
-      "template": "{{> semanticNarrativeTemplate}}",
+      "template": "{{> semanticNarrative}}",
       "itemBodyTemplate": "{{> itemBodyTemplate}}",
       "resourceNotRequired": true,
       "frameVariable": "narrativeVariable",
@@ -176,12 +172,12 @@
     },
 
     {
-    	"id": "objectImageObservation",
+    	"id": "object-image-observation",
       "label": "Image annotations",
       "description": "Drag and drop an object here to combine image annotations with form authoring",
       "dropAreaDescription": "Drag and drop any entity of type MAN-MADE OBJECT here to combine image annotations with data authoring through forms",
       "iconName": "photo_size_select_large",
-      "template": "{{> objectImageObservationTemplate}}",
+      "template": "{{> objectImageObservation}}",
       "checkQuery": "
         PREFIX ontodia: <http://ontodia.org/schema/v1#>
         PREFIX ldp: <http://www.w3.org/ns/ldp#>
@@ -206,8 +202,8 @@
       "type": "authoring"
     },
 
-[[!--     {
-    	"id": "featureSimilarityKm",
+[[!--  {
+    	"id": "feature-similarity-km",
       "label": "Exploring and comparing (visual) features",
       "template": "{{> featureSimilarityKm }}",
       "itemBodyTemplate": "{{> itemBodyTemplate}}",
@@ -220,7 +216,7 @@
       "label": "Semantic narratives",
       "template": "{{> systemNarrativesTemplate}}",
       "resourceNotRequired": true,
-      "type": "view-system"
+      "type": "view"
     },
     
     {
@@ -228,7 +224,7 @@
       "label": "Knowledge maps",
       "template": "{{> systemKnowledgeMapsTemplate}}",
       "resourceNotRequired": true,
-      "type": "view-system"
+      "type": "view"
     },
     
     {
@@ -236,7 +232,7 @@
       "label": "Assets",
       "template": "{{> systemDigitalAssetsTemplate}}",
       "resourceNotRequired": true,
-      "type": "view-system"
+      "type": "view"
     },
     
     {
@@ -244,37 +240,33 @@
       "label": "Dashboard",
       "template": "{{> systemActivityTemplate}}",
       "resourceNotRequired": true,
-      "type": "view-system"
+      "type": "view"
     },
 
     {
-    	"id": "mapEntitySearch",
+    	"id": "map-resource-search",
       "label": "Objects referred by place",
-      "template": "{{> mapEntitySearch}}",
-      "type": "referred"
+      "template": "{{> mapResourceSearch}}",
+      "type": "view"
     }
     ]'
 
     [[#if (hasPermission "forms:ldp:*")]]
     linked-views='[{
-      "id": "image-graph-authoring",
-      "label": "Image graph authoring",
-      "description": "Drag and drop an entity here to combine image annotations with knowledge map authoring",
-      "dropAreaDescription": "Drag and drop an entity here to combine image annotations with data authoring through the knowledge map system",
-      "iconName": "wallpaper",
-      "viewIds": ["knowledge-map", "iiif"],
-      "resourceNotRequired": true,
-      "type": "authoring"
-    }
+        "id": "image-graph-authoring",
+        "label": "Image graph authoring",
+        "description": "Drag and drop an entity here to combine image annotations with knowledge map authoring",
+        "dropAreaDescription": "Drag and drop an entity here to combine image annotations with data authoring through the knowledge map system",
+        "iconName": "wallpaper",
+        "viewIds": ["knowledge-map", "iiif"],
+        "resourceNotRequired": true,
+        "type": "authoring"
+      }
     ]'
     [[/if]]
 
     left-panels='[{"label": "Finder", "template": "{{> finder}}", "class": "search"}]'
     right-panels='[{"label": "Clipboard", "template": "{{> clipboard}}", "class": "clipboard"}]'
-
-  [[!--  
-    right-panels='[{"label": "Details", "template": "{{> details}}"}]'
-  --]]
     >
 
     <template id='clipboard'>
@@ -283,7 +275,20 @@
 
     <template id='finder'>[[> rsp:Finder]]</template>
 
-    <template id='details'>
+    <template id='resourceSearch'>
+      <div class='page__grid-container search-page-container'>
+         [[> rsp:ResourceSearchContent config='{{data.iri}}']] 
+    	</div>  
+    </template>
+
+    <template id='simpleSearch'>
+      <div class='page__grid-container search-page-container'>
+        <mp-page-loader urlqueryparam-frame=true iri='http://www.researchspace.org/resource/SearchContent'>
+        </mp-page-loader>
+    	</div>
+    </template>
+
+    [[!-- <template id='details'>
         <mp-event-target-template-render fixed-key='details-view' reparentable='true' id='details-view' template='{{> template}}'>
             <template id='template'>
                 {{#if iri}}
@@ -297,26 +302,13 @@
                 {{/if}}
             </template>
         </mp-event-target-template-render>
-    </template>
+    </template> --]]
 
     <template id='resourceTemplate'>
       <div style='flex: 1 1 0px; overflow: auto;'>
         <mp-page-loader urlqueryparam-frame=true iri='{{iri}}' context='{{iri}}'>
         </mp-page-loader>
     	</div>
-    </template>
-
-    <template id='simpleSearchTemplate'>
-      <div class='rs-search-container'>
-        <mp-page-loader urlqueryparam-frame=true iri='http://www.researchspace.org/resource/SearchContent'>
-        </mp-page-loader>
-    	</div>
-    </template>
-
-   <template id='entitySearchTemplate'>
-      <div class='rs-search-container' style='flex: 1 1 0px; overflow: auto; padding: 20px;'>
-         [[> rsp:EntitySearchContent config='{{iri}}']]
-    	</div> 
     </template>
 
     <template id='resourceConfiguration'>
@@ -363,7 +355,7 @@
       [[> rsp:ThinkingFramesIIIFTemplate]]
     </template>
 
-    <template id='objectImageObservationTemplate'>
+    <template id='objectImageObservation'>
       [[> rsp:ThinkingFramesObjectThroughImageObservation]]
     </template>
 
@@ -371,7 +363,7 @@
       [[> rsp:ThinkingFramesFeatureSimilarityKm]]
     </template>
 
-    <template id='semanticNarrativeTemplate'>
+    <template id='semanticNarrative'>
       [[> rsp:ThinkingFramesSemanticNarrativeTemplate]]
     </template>
 
@@ -488,7 +480,7 @@
                           <div>
                             {{#if bindings.0.place.value}}
                               <mp-event-trigger id='set-action__reading-add-add-frame' type='Dashboard.AddFrame' 
-                                  data='{"resourceIri": "{{bindings.0.place.value}}", "viewId": "mapEntitySearch"}' 
+                                  data='{"resourceIri": "{{bindings.0.place.value}}", "viewId": "map-resource-search"}' 
                                   targets='["thinking-frames"]'>
                                 <a class="text-underline">
                                     Explore {{bindings.0.count.value}} related entities
@@ -506,8 +498,8 @@
     	</div>
     </template>
 
-    <template id='mapEntitySearch'>
-      [[> rsp:MapEntitySearch]]
+    <template id='mapResourceSearch'>
+      [[> rsp:MapResourceSearch]]
     </template>
     
   </rs-dashboard>

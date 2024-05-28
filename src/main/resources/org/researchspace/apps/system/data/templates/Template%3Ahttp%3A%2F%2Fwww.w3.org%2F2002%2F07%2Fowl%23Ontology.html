@@ -34,7 +34,7 @@
                     <mp-graph-store-action  title='Download in Turtle Format' 
                                             action='GET'
                                             graphuri='{{bindings.0.graph.value}}' 
-                                            file-ending='ttl'>
+                                            file-ending='trig'>
                       <button class="btn btn-default btn-textAndIcon" title="Download">
                         <rs-icon icon-type="round" icon-name="download" title='Download'></rs-icon>Download
                       </button> 
@@ -67,8 +67,7 @@
                           </p>
                           <semantic-query query='SELECT (count(?kp) as ?count) WHERE {
                                                     ?kp <http://www.researchspace.org/resource/system/fields/ontology> <{{bindings.0.subject.value}}> .
-                                                    ?kp a ?owlType .
-                                                    FILTER (?owlType IN (owl:DatatypeProperty,owl:ObjectProperty))
+                                                    ?kp a <http://www.researchspace.org/resource/system/fields/Field> .                                                 
                                                   }'
                                             template='{{> template}}'
                             >
@@ -116,7 +115,7 @@
             <bs-row>
               <bs-col sm=8> 
                 <semantic-table query="SELECT DISTINCT ?Class WHERE { 
-                                          GRAPH ?g { ?Class rdf:type owl:Class . ?? rdf:type owl:Ontology  } FILTER( !isBlank(?Class))
+                                          GRAPH ?g { ?Class rdf:type ?classType . VALUES ?classType {owl:Class rdfs:Class}  ?? rdf:type owl:Ontology  } FILTER( !isBlank(?Class))
                                         } ORDER BY ?Class"
                                 options='{"showTableHeading": false, "filterPlaceholderText":"Filter Classes"}'
                                 no-result-template='<i>No Classes.</i>'
@@ -126,7 +125,7 @@
                 <semantic-tree 
                           query="
                               SELECT DISTINCT ?node ?parent WHERE {
-                                GRAPH ?g { ?? a owl:Ontology . { ?node a owl:Class } UNION { ?x rdfs:subClassOf ?node } }
+                                GRAPH ?g { ?? a owl:Ontology . { ?node a ?classType . VALUES ?classType {owl:Class rdfs:Class}} UNION { ?x rdfs:subClassOf ?node } }
                                 OPTIONAL { ?node rdfs:subClassOf ?parent. FILTER(ISIRI(?parent)) }
                                 FILTER(ISIRI(?node))
                               }
@@ -154,21 +153,29 @@
                             options='{"showTableHeading": false, "filterPlaceholderText":"Filter Datatype Properties"}'
                             no-result-template='<i>No Datatype Properties.</i>'>
             </semantic-table>
+          </bs-tab>   
+          <bs-tab event-key="4" title="RDF Properties" style="padding-top: 20px;">
+            <semantic-table query="SELECT distinct ?rdfProperty WHERE { 
+                                      GRAPH ?g { ?rdfProperty rdf:type rdf:Property . ?? rdf:type owl:Ontology } 
+                                  } order by ?rdfProperty"
+                            options='{"showTableHeading": false, "filterPlaceholderText":"Filter RDF Properties"}'
+                            no-result-template='<i>No RDF Properties.</i>'>
+            </semantic-table>
           </bs-tab>    
-          <bs-tab event-key="4" title="Individuals" style="padding-top: 20px;">
+          <bs-tab event-key="5" title="Individuals" style="padding-top: 20px;">
             <semantic-table query='SELECT ?Individual ?Class WHERE { 
-                                    GRAPH ?g { ?Individual rdf:type ?Class . ?Class rdf:type owl:Class . ?? rdf:type owl:Ontology } 
+                                    ?Individual rdf:type ?Class . ?Class rdf:type ?classType . VALUES ?classType {owl:Class rdfs:Class} ?? rdf:type owl:Ontology 
                                     FILTER( !isBlank(?Individual))
                                   } LIMIT 500'
                             options='{"filterPlaceholderText":"Filter Individuals"}'
                             no-result-template='<i>No Individuals.</i>'>
             </semantic-table>
           </bs-tab>
-          <bs-tab event-key="5" title="Diagrams" style="padding-top: 20px;">
+          <bs-tab event-key="6" title="Diagrams" style="padding-top: 20px;">
             [[!-- [[> http://www.researchspace.org/resource/assets/OntodiaDiagrams]] --]]
             <mp-page-loader iri='http://www.researchspace.org/resource/assets/OntodiaDiagramsTable' urlqueryparam-ontology-iri='[[this]]'></mp-page-loader>    
           </bs-tab>
-          <bs-tab event-key="6" title="VOWL" style="padding-top: 20px;">
+          <bs-tab event-key="7" title="VOWL" style="padding-top: 20px;">
             [[!-- [[> http://www.researchspace.org/resource/OntologyTemplateVowl]] --]]
             <mp-page-loader iri="http://www.researchspace.org/resource/OntologyTemplateVowl"></mp-page-loader>    
           </bs-tab>

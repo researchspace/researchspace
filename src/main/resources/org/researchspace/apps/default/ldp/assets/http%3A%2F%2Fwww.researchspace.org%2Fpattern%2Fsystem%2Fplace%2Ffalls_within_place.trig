@@ -1,5 +1,5 @@
-
 <http://www.researchspace.org/pattern/system/place/falls_within_place/context> {
+
   <http://www.researchspace.org/pattern/system/place/falls_within_place> a <http://www.researchspace.org/resource/system/fields/Field>,
       <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
     <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-d4e23a7000794beabb6780056d98ef0d-b48yo;
@@ -20,20 +20,22 @@
   _:genid-d4e23a7000794beabb6780056d98ef0d-b48yo a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
   ?value a crm:E53_Place .
-  ?value crm:P1_is_identified_by ?appellation . 
-  ?appellation a crm:E41_Appellation . 
-  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/place_name> . 
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+   
   ?appellation crm:P190_has_symbolic_content ?label .
-} ORDER BY ASC(?label)""" .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
   
   _:genid-d4e23a7000794beabb6780056d98ef0d-o3ifu9 a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
   ?value a crm:E53_Place .
-  ?value crm:P1_is_identified_by ?appellation . 
-  ?appellation a crm:E41_Appellation . 
-  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/place_name> . 
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+   
   ?appellation crm:P190_has_symbolic_content ?label .
-  FILTER REGEX(STR(?label), \"?token\")
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ASC(?label)
   LIMIT 10""" .
   
@@ -48,9 +50,10 @@
   $subject crm:P89_falls_within $value .
       
   ?value a crm:E53_Place .
-  ?value crm:P1_is_identified_by ?appellation . 
-  ?appellation a crm:E41_Appellation . 
-  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/place_name> . 
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+   
   ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
   
@@ -59,13 +62,14 @@
   $subject crm:P89_falls_within $value . 
   $value crm:P89i_contains $subject .  
 } WHERE { 
-  $subject crm:P89_falls_within $value . 
-      
+  $subject crm:P89_falls_within $value .    
   $value crm:P89i_contains $subject . 
+  
   ?value a crm:E53_Place .
-  ?value crm:P1_is_identified_by ?appellation . 
-  ?appellation a crm:E41_Appellation . 
-  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/place_name> . 
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+   
   ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
   

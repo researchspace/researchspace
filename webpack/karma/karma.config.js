@@ -31,12 +31,13 @@ module.exports = function (defaults) {
     delete webpackConfig.optimization.splitChunks;
     delete webpackConfig.entry;
     delete webpackConfig.devtool;
+    webpackConfig.output.path = path.resolve(defaults.ROOT_DIR, 'build/webpack-build');
 
     // add alias for test directory from metaphacts-platform web project
     webpackConfig.resolve.alias['platform-tests'] = defaults.TEST;
 
     return {
-        frameworks: ['mocha', 'chai', 'chai-as-promised'],
+        frameworks: ['mocha', 'chai', 'chai-as-promised', 'webpack'],
         plugins: [
             'karma-mocha',
             'karma-mocha-reporter',
@@ -52,10 +53,8 @@ module.exports = function (defaults) {
             '**/*.test.ts': ['webpack']
         },
         webpack: webpackConfig,
-        webpackMiddleware: {
-            noInfo: true,
-            stats: 'minimal'
-        },
+        // use for debugging in the real browser
+        //browsers: ['Chromium'],
         browsers: ['ChromiumHeadlessNoSandbox'],
         customLaunchers: {
           ChromiumHeadlessNoSandbox: {

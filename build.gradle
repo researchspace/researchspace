@@ -24,7 +24,7 @@ plugins {
     id 'java-library'
 
     // To run app in the development mode with jetty container
-    id 'org.gretty' version '3.0.6'
+    id 'org.gretty' version '3.1.3'
 
     // To run webpack-dev-server in the background
     id 'com.github.psxpaul.execfork' version '0.1.13'
@@ -149,11 +149,10 @@ gretty {
     // don't restart jetty when templates in the resource folder are changed
     fastReload = "${projectDir.getAbsolutePath()}/src/main/resources/org/researchspace/apps".toString()
 
-    // no need to write logs into file in development mode
-    fileLogEnabled = false
-
     // use custom jetty-env.xml to disable websocket support
     contextConfigFile = "${projectDir}/jetty-env.xml"
+
+    recompileOnSourceChange = false
 
     if (project.gradle.startParameter.taskNames.contains('buildZip')) {
         jvmArgs = defaultJvmArgs + [

@@ -320,28 +320,18 @@ fieldset[disabled] .form-control {
       background-color: $color-lighter-hover;
       border-color: $color-border-darker;
     }
-
-    .composite-input {
-
-      & > .semantic-form-input-decorator--with-header {
-        .semantic-form-input-decorator__header {
-        //  margin-top: 5px;
-        }
-      }
-    }
     
   }
 
   &_no-header {
 
     padding: 0px;
-   // border: none;
 
-    .semantic-form-input-decorator--with-header:first-of-type {
+/*     .semantic-form-input-decorator--with-header:first-of-type {
       .semantic-form-input-decorator__header {
-        margin: 20px 0 5px 0px;
+        margin: 20px 0 8px 0px;
       }
-    }
+    } */
   }
 
   &__group-instance > &__remove-value {
@@ -582,7 +572,7 @@ fieldset[disabled] .form-control {
 
   &__header {
 
-    margin: 20px 0 5px 0px;
+    margin: 20px 0 8px 0px;
     display: flex;
     align-items: center;
 
@@ -592,8 +582,8 @@ fieldset[disabled] .form-control {
 
    font-weight: 600;
    font-size: $font-size-body;
-   display: inline-block;
-   text-transform: lowercase;
+ //  display: inline-block;
+ //  text-transform: lowercase;
 
    &::first-letter {
 
@@ -824,6 +814,10 @@ fieldset[disabled] .form-control {
     display: inline-flex;
     flex-direction: row-reverse;
     margin-right: 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
   }
 
   &__input {
@@ -843,7 +837,8 @@ fieldset[disabled] .form-control {
     height: 20px;
     width: 20px;
     margin-right: 10px;
-    background-color: $color-light;
+    background-color: $color-white;
+    border: 1px solid $color-border;
   }
   &__radio {
     border-radius: 50%;
@@ -860,8 +855,8 @@ fieldset[disabled] .form-control {
   &__input:checked ~ &__checkbox::after {
     content: '';
     position: absolute;
-    top: 6px;
-    left: 6px;
+    top: 5px;
+    left: 5px;
     width: 8px;
     height: 8px;
     background: white;
@@ -1128,6 +1123,15 @@ fieldset[disabled] .form-control {
   }
 }
 
+.form-2column-flex {
+
+  display: flex; 
+  align-items:stretch; 
+  column-gap:40px; 
+  flex-flow: wrap-reverse;
+  min-height: 100%;
+}
+
 .form-2column-container {
 
   display: grid;
@@ -1156,11 +1160,55 @@ fieldset[disabled] .form-control {
   }
 }
 
+.formFileUpload-container {
+  margin-top: 20px;
+  margin-bottom: 0; 
+  padding-top: 0; 
+  width: 400px;
+
+  .FileManager--selectorContainer {
+    border: 1px solid $input-border-color;
+    border-radius: $border-radius;
+    background-color: $input-color-bg;
+  }
+
+  .FileManager--FileManager .FileManager--alertComponent {
+    margin-bottom: 5px;
+  }
+
+  .FileManager--FileVisualizer .FileManager--uploadedImageDepiction img {
+    max-width: 280px;
+  }
+
+/*   .formFileUpload-min0 {
+    .FileManager--FileVisualizer .FileManager--uploadedImageDepiction img {
+      max-width: 240px;
+    }
+  } */
+}
+
 .form-tabs {
   height: 100%;
+  width: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+
+  & > ul{
+    display: flex;
+    align-items: center;
+    overflow-y: hidden;
+    overflow-x: auto;
+    padding-bottom: 1px;
+
+    & > li > a {
+      text-wrap: nowrap;
+    }
+
+    .tab-right {
+      margin-left: auto;
+    }
+  }
 
   .tab-content {
 
@@ -1172,7 +1220,7 @@ fieldset[disabled] .form-control {
   .tab-pane {
     height: 100%;
     overflow-y: auto;
-    padding: 0 15px 0 0;
+    padding: 0 20px 0 0;
 
     &.tab_overflow_hidden,
     &.object-tab-pane {
@@ -1316,17 +1364,39 @@ fieldset[disabled] .form-control {
   }
 }
 
+.formResourceAsset-tabs {
+  height: 100%;
+  margin-top: 1px; 
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+
+  .page__section-container.tab-content {
+
+    overflow: hidden;
+    flex: 1;
+    margin: 5px 0 0;
+    padding: 12px 20px;
+  }
+
+  .tab-pane-content {
+
+    padding: 15px 0;
+
+    .semantic-form-input-decorator__header {
+      margin-top: 15px;
+  }
+  }
+}
+
 .form-tabs-subtabs-content,
 .tab-pane.form-tabs-subtabs-content {
 
- // display: flex;
- // flex-direction: column;
   height: 100%;
   flex: 1;
  // overflow: hidden;
 
- // border-left: 1px solid $color-border;
-  padding: 0 5px;
+  padding: 0;
 
   .objects-table-container {
     overflow: auto;
@@ -1336,19 +1406,17 @@ fieldset[disabled] .form-control {
   .form-tabs-subtabs-content--title {
 
     display: flex;
-    align-items: end;
+    align-items: center;
     justify-content: space-between;
     border-bottom: 1px solid $color-border;
     position: relative;
-    padding: 8px 20px 6px 20px;
+    padding: 0 0 6px 3px;
 
     h4, ul {
       margin: 0;
     }
 
     .form-tabs-subtabs-content--title-actions {
-      position: absolute; 
-      right: 110px; 
       display: flex;
       gap:3px;
 
@@ -1462,6 +1530,7 @@ fieldset[disabled] .form-control {
   .DragAndDropInput--itemArea {
 
     min-height: -webkit-fill-available;
+    min-height: 80px;
     border-style: dashed;
     border-width: 2px;
     border-color: $color-border;
@@ -1510,7 +1579,11 @@ fieldset[disabled] .form-control {
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid $color-border;
-  padding-bottom: 9px;
+  height: 40px;
+
+  ul {
+    margin: 0;
+  }
 }
 
 .resource-editView-form-container .semantic-form-container-OverflowAuto,
@@ -1535,6 +1608,13 @@ fieldset[disabled] .form-control {
     grid-template-columns: 100%;
     gap: 10px;
   }
+}
+
+.formWholePageSection-container {
+
+  height: 100%;
+  overflow: hidden;
+  padding-top: 15px;
 }
 
 .resource-finder-form-container {
@@ -1650,6 +1730,20 @@ fieldset[disabled] .form-control {
 
 .form-assetView-tabs {
 
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .tab-content {
+    overflow-y: auto;
+    padding-right: 5px;
+    flex: 1;
+  }
+}
+
+.form-assetView-tabs,
+.page__section-container {
+
   .btn.btn-icon {
     padding: 4px;
    // background-color: $color-lighter;
@@ -1667,5 +1761,50 @@ fieldset[disabled] .form-control {
     padding: 0;
   }
 
+}
+
+.entity-resource-sidebar {
+
+  position: relative;
+
+  .Resizer {
+    margin-top: 46.5px;
+  }
+
+  .Pane.Pane2 {
+
+    height: calc(100% - 46.5px);
+    margin-top: 46.5px;
+    margin-left: -6px;
+    background-color: $pageSection-bg;
+    border-top: 1px solid $color-border;
+
+    .split-pane__sidebar {
+
+      .btn-toggle-on {
+        padding-top: 20px;
+        
+        i {
+          font-size: 23px;
+        }
+      }
+
+      .btn-toggle-off {
+
+        padding-top: 20px;
+        padding-bottom: 0;
+        gap: 5px;
+        
+        i {
+          font-size: 21px;
+        }
+      }
+
+      .split-pane__sidebar-open {
+
+        padding-bottom: 0;
+      }
+    }
+  }
 }
 

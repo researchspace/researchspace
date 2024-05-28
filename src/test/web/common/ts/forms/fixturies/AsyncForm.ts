@@ -39,7 +39,7 @@ export class AsyncForm {
   model: CompositeValue;
   dataState: DataState;
 
-  private scheduledUpdate: NodeJS.Immediate | null = null;
+  private scheduledUpdate: NodeJS.Timeout | null = null;
   private runOnceOnUpdate: Array<() => void> = [];
 
   constructor(readonly fields: ReadonlyArray<FieldDefinitionProp>, readonly children: ReactNode) {}
@@ -47,9 +47,9 @@ export class AsyncForm {
   private onChanged = (model: CompositeValue) => {
     this.model = model;
     if (this.scheduledUpdate !== null) {
-      clearImmediate(this.scheduledUpdate);
+      clearTimeout(this.scheduledUpdate);
     }
-    this.scheduledUpdate = setImmediate(this.updateProps);
+    this.scheduledUpdate = setTimeout(this.updateProps, 0);
   };
 
   private updateProps = () => {

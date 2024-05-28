@@ -22,9 +22,9 @@
     ?value a crm:E3_Condition_State .
     ?value crm:P1_is_identified_by ?appellation .
     ?appellation a crm:E41_Appellation .
-    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/condition_state_title> . 
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
     ?appellation crm:P190_has_symbolic_content ?label .
-} ORDER BY ASC(?label)""" .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
   
   _:genid-da3a6590530d435ebae0cdf486a6c8d6-r9lpz a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """INSERT { 
@@ -43,18 +43,18 @@
     ?value a crm:E3_Condition_State .
     ?value crm:P1_is_identified_by ?appellation .
     ?appellation a crm:E41_Appellation .
-    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/condition_state_title> . 
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
     ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
   
   _:genid-da3a6590530d435ebae0cdf486a6c8d6-ddulmf a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
   	$subject crm:P5_consists_of $value . 
 
     ?value a crm:E3_Condition_State .
     ?value crm:P1_is_identified_by ?appellation .
     ?appellation a crm:E41_Appellation .
-    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/condition_state_title> . 
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
     ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
   
@@ -63,9 +63,9 @@
     ?value a crm:E3_Condition_State .
     ?value crm:P1_is_identified_by ?appellation .
     ?appellation a crm:E41_Appellation .
-    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/condition_state_title> . 
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
     ?appellation crm:P190_has_symbolic_content ?label .
-  FILTER REGEX(STR(?label), \"?token\")
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ASC(?label)
   LIMIT 10""" .
   

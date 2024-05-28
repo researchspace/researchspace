@@ -21,9 +21,10 @@
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
     $subject crm:P151_was_formed_from $value .
       
+    ?value a crm:E74_Group .
     ?value crm:P1_is_identified_by $appellation .
    	$appellation a crm:E41_Appellation .
-   	$appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/group_appellation> .
+   	$appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
   	$appellation crm:P190_has_symbolic_content ?label .
 }""" .
   
@@ -35,19 +36,21 @@
     $subject crm:P151_was_formed_from $value .
     $value crm:P151i_participated_in $subject .
       
+    ?value a crm:E74_Group .
     ?value crm:P1_is_identified_by $appellation .
    	$appellation a crm:E41_Appellation .
-   	$appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/group_appellation> .
+   	$appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
   	$appellation crm:P190_has_symbolic_content ?label .
 }""" .
   
   _:genid-2203ae0542614e29b145e865531871dc-kzvxx9 a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+    ?value a crm:E74_Group .
     ?value crm:P1_is_identified_by $appellation .
    	$appellation a crm:E41_Appellation .
-   	$appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/group_appellation> .
+   	$appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
   	$appellation crm:P190_has_symbolic_content ?label .
-} ORDER BY ASC(?label)""" .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
   
   _:genid-2203ae0542614e29b145e865531871dc-rdjco a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """INSERT { 
@@ -57,11 +60,12 @@
   
   _:genid-2203ae0542614e29b145e865531871dc-n7nrml a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+    ?value a crm:E74_Group .
     ?value crm:P1_is_identified_by $appellation .
    	$appellation a crm:E41_Appellation .
-   	$appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/group_appellation> .
+   	$appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
   	$appellation crm:P190_has_symbolic_content ?label .
-  FILTER REGEX(STR(?label), \"?token\")
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ASC(?label)
   LIMIT 10""" .
   

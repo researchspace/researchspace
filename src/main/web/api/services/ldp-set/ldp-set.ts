@@ -29,6 +29,8 @@ import { LdpService, LdpServiceContext } from '../ldp';
 import { Util as SecurityUtil, UserI } from '../security';
 import { SetManagementEvents } from './SetManagementEvents';
 import { validateAsk } from 'platform/components/forms/field-editor/Validation';
+import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
+import { ResourceLinkComponent } from 'platform/api/navigation/components';
 
 const { rdf, rdfs, VocabPlatform, ldp, xsd } = vocabularies;
 
@@ -54,9 +56,24 @@ export class SetService extends LdpService {
     return this.addResource(set, slug);
   }
 
-  addToExistingSet(setIri: Rdf.Iri, itemIris: Rdf.Iri): Kefir.Property<HolderWithItem> {
+  addToExistingSet(setIri: Rdf.Iri, itemIri: Rdf.Iri,setPropId?:string): Kefir.Property<HolderWithItem> {
     const existingSet = new LdpService(setIri.value, this.context);
-    return addSetItem(existingSet, itemIris);
+    
+    executeAskIsSetQuery(itemIri)
+      .onValue(answer => {
+        if (answer) 
+          this.addSetVisibleTriples(itemIri,setPropId);     
+      });
+    return addSetItem(existingSet, itemIri, null, setPropId);    
+  }
+
+  createSetAndAddItemsToView(name: string, listOfItemIris: Immutable.List<Rdf.Iri>, visibleInViewForTemplateWithId=maybe.Nothing<string>()): Kefir.Property<any[]> {
+    return this.createSet(name,null,visibleInViewForTemplateWithId)
+      .flatMap((setLocation: Rdf.Iri) => {
+        const newSet = new LdpService(setLocation.value, this.context);
+        return Kefir.zip(listOfItemIris.map((iri, index) => addSetItem(newSet, iri, index)).toJS());
+      })
+      .toProperty();
   }
 
   createSetAndAddItems(name: string, listOfItemIris: Immutable.List<Rdf.Iri>): Kefir.Property<any[]> {
@@ -68,25 +85,37 @@ export class SetService extends LdpService {
       .toProperty();
   }
 
-  filterSetTriples(setIri: Rdf.Iri, visibleInViewForTemplateWithId: string):Kefir.Property<Rdf.Graph> {
-    const set = new LdpService(setIri.value, this.context);
-    return set.get(setIri)
-              .map((graph) => {return graph.triples.filter((t) => !t.o.equals(Rdf.literal(visibleInViewForTemplateWithId))).toArray(); })
-              .map(a => {return Rdf.graph(a);})
-              .onValue(g => g);
+  removeSetVisibleTriples(
+    setIri: Rdf.Iri,
+    visibleInViewForTemplateWithId: string    
+  ): Kefir.Property<void> { 
+    return SparqlClient
+      .executeSparqlUpdate(
+          "delete { "+
+          setIri + " " + 
+          Rdf.iri("http://www.researchspace.org/pattern/system/resource_configuration/set_visible_in_group_with_id") + " " +
+          Rdf.literal(visibleInViewForTemplateWithId)+" } where {"+
+          setIri + " " + 
+          Rdf.iri("http://www.researchspace.org/pattern/system/resource_configuration/set_visible_in_group_with_id") + " " +
+          Rdf.literal(visibleInViewForTemplateWithId)+
+          " }")
+      .onValue(() => {});
   }
-
-  updateSet(
+ 
+  addSetVisibleTriples(
     setIri: Rdf.Iri,
     visibleInViewForTemplateWithId: string   
-  ): Kefir.Property<void> {
-    const set = new LdpService(setIri.value, this.context);
-    return this.filterSetTriples(setIri, visibleInViewForTemplateWithId)
-      .flatMap((graph) => set.update(setIri,graph))
-      .map(() => {})
-      .toProperty();   
+  ) {
+    let setIriGraph = setIri.toString().replace(">","/context>");
+    SparqlClient
+      .executeSparqlUpdate(
+          "INSERT DATA { graph <http://www.researchspace.org/sets/views_visibility> "+ " { "+
+          setIri + " " + 
+          Rdf.iri("http://www.researchspace.org/pattern/system/resource_configuration/set_visible_in_group_with_id") + " " +
+          Rdf.literal(visibleInViewForTemplateWithId)+".} }")
+        .onValue(() => {});
   }
-  
+
   reorderItems(setIri: Rdf.Iri, holders: Immutable.List<HolderWithItem>): Kefir.Property<void> {
     const set = new LdpService(setIri.value, this.context);
     return Kefir.zip(
@@ -103,27 +132,37 @@ export class SetService extends LdpService {
   }
 }
 
-function addSetItem(set: LdpService, item: Rdf.Iri, index?: number): Kefir.Property<HolderWithItem> {
-  return createItemHolderGraph(Rdf.iri(''), item, index)
+function addSetItem(set: LdpService, item: Rdf.Iri, index?: number, setPropId?: string): Kefir.Property<HolderWithItem> {
+  return createItemHolderGraph(Rdf.iri(''), item, index, setPropId)
     .flatMap((graph) => set.addResource(graph))
     .map((holder) => ({ holder, item }))
     .toProperty();
 }
 
-function createItemHolderGraph(holderIri: Rdf.Iri, itemIri: Rdf.Iri, index?: number): Kefir.Property<Rdf.Graph> {
-  return getLabel(itemIri).map((label) => {
-    const triples: Rdf.Triple[] = [
-      Rdf.triple(holderIri, VocabPlatform.setItem, itemIri),
-      Rdf.triple(holderIri, Rdf.iri("http://www.cidoc-crm.org/cidoc-crm/P67_refers_to"), itemIri),
-      Rdf.triple(holderIri, Rdf.iri("http://www.cidoc-crm.org/cidoc-crm/P2_has_type"), VocabPlatform.SetItem),
-      Rdf.triple(holderIri, rdf.type, Rdf.iri("http://www.ics.forth.gr/isl/CRMdig/D1_Digital_Object")),
-    ];
-    triples.push(Rdf.triple(holderIri, rdfs.label, Rdf.literal(label)));
-    if (typeof index === 'number') {
-      triples.push(Rdf.triple(holderIri, VocabPlatform.setItemIndex, Rdf.literal(index.toString(), xsd.integer)));
-    }
-    return Rdf.graph(triples);
-  });
+let IS_SET_QUERY = SparqlUtil.Sparql`ASK { ?subject <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> ?type . VALUES ?type {<http://www.researchspace.org/resource/system/vocab/resource_type/set> <http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map>} }`;
+function  executeAskIsSetQuery(setIri: Rdf.Iri): Kefir.Property<boolean> {console.log(SparqlClient.setBindings(IS_SET_QUERY, { subject: setIri }));
+    return SparqlClient.ask(
+          SparqlClient.setBindings(IS_SET_QUERY, { subject: setIri }),
+                                   {context: {repository:"default"} });
+}
+
+function createItemHolderGraph(holderIri: Rdf.Iri, itemIri: Rdf.Iri, index?: number,setPropId?: string): Kefir.Property<Rdf.Graph> { 
+  return getLabel(itemIri)
+    .map((label) => {
+        let triples: Rdf.Triple[] = [
+              Rdf.triple(holderIri, VocabPlatform.setItem, itemIri),
+              Rdf.triple(holderIri, Rdf.iri("http://www.cidoc-crm.org/cidoc-crm/P67_refers_to"), itemIri),
+              Rdf.triple(holderIri, Rdf.iri("http://www.cidoc-crm.org/cidoc-crm/P2_has_type"), VocabPlatform.SetItem),
+              Rdf.triple(holderIri, rdf.type, Rdf.iri("http://www.ics.forth.gr/isl/CRMdig/D1_Digital_Object")),
+            ];
+        if (typeof index === 'number') {
+          triples.push(Rdf.triple(holderIri, VocabPlatform.setItemIndex, Rdf.literal(index.toString(), xsd.integer)));
+        }   
+
+        triples.push(Rdf.triple(holderIri, rdfs.label, Rdf.literal(label)));
+        console.log(triples);
+        return Rdf.graph(triples);
+  });          
 }
 
 interface HolderWithItem {

@@ -3,44 +3,57 @@
   <http://www.researchspace.org/pattern/system/physical_thing/material> a <http://www.researchspace.org/resource/system/fields/Field>,
       <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
     <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E18_Physical_Thing>;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-1cb919557c2c4604908951647b0231b9-l2n1zx;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/object>;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-1cb919557c2c4604908951647b0231b9-0xi8;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-1cb919557c2c4604908951647b0231b9-c96low;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-7f3b326bc44c452bbec7b66908d56809-htcay;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-7f3b326bc44c452bbec7b66908d56809-db9iqb;
     <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
     <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
     <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-1cb919557c2c4604908951647b0231b9-t2s9zl;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-7f3b326bc44c452bbec7b66908d56809-kxp7dh;
     <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E57_Material>;
     <http://www.w3.org/2000/01/rdf-schema#label> "Material";
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-7f3b326bc44c452bbec7b66908d56809-lzi724h;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-7f3b326bc44c452bbec7b66908d56809-g0iowg;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/physical_thing>;
     <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-02-22T15:59:25.885Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-17T16:36:11.278+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
   
-  _:genid-1cb919557c2c4604908951647b0231b9-c96low a <http://spinrdf.org/sp#Query>;
+  _:genid-7f3b326bc44c452bbec7b66908d56809-kxp7dh a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+    $value a crm:E57_Material .
+    $value skos:prefLabel ?label .
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-7f3b326bc44c452bbec7b66908d56809-db9iqb a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+    $value a crm:E57_Material .
+    $value skos:prefLabel ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-7f3b326bc44c452bbec7b66908d56809-g0iowg a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
 	$subject crm:P45_consists_of $value . 
     $value a crm:E57_Material .
     $value skos:prefLabel ?label .
 }""" .
   
-  _:genid-1cb919557c2c4604908951647b0231b9-t2s9zl a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
-    $value a crm:E57_Material .
-    $value skos:prefLabel ?label .
-}""" .
-  
-  _:genid-1cb919557c2c4604908951647b0231b9-0xi8 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-	$subject crm:P45_consists_of $value . 
-} WHERE {}""" .
-  
-  _:genid-1cb919557c2c4604908951647b0231b9-l2n1zx a <http://spinrdf.org/sp#Query>;
+  _:genid-7f3b326bc44c452bbec7b66908d56809-lzi724h a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """DELETE {
   	$subject crm:P45_consists_of $value . 
+    $value crm:P45i_is_incorporated_in $subject .
 } WHERE {
 	$subject crm:P45_consists_of $value . 
+    $value crm:P45i_is_incorporated_in $subject .
     $value a crm:E57_Material .
+    $value skos:prefLabel ?label .
 }""" .
+  
+  _:genid-7f3b326bc44c452bbec7b66908d56809-htcay a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+	$subject crm:P45_consists_of $value .
+    $value crm:P45i_is_incorporated_in $subject .
+} WHERE {}""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
       <http://www.researchspace.org/pattern/system/physical_thing/material> .

@@ -4,8 +4,8 @@ uses client-side templates:
 --]]
 
 <[[#if standalone]]ontodia[[else]]rs-ontodia-panel[[/if]] id='{{ontodiaVariable}}-ontodia' metadata='
-<> a <http://www.ics.forth.gr/isl/CRMdig/D1_Digital_Object> ; 
-       <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://www.researchspace.org/ontology/Knowledge_Map> .
+<> a  <http://iflastandards.info/ns/fr/frbr/frbroo/F2_Expression> ;
+       <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map> .
   '
   image-iris='["http://www.researchspace.org/ontology/PX_has_main_representation"]'
   save-diagram-label="Save Map" settings=nostats post-saving=none add-to-default-set=true
@@ -60,7 +60,7 @@ uses client-side templates:
     "
   }'>
 
-<ontodia-field-configuration 
+	<ontodia-field-configuration 
                             [[#if (hasPermission "forms:ldp:*")]]
                               authoring-mode=true
                             [[else]]
@@ -68,73 +68,56 @@ uses client-side templates:
                             [[/if]]
                             
                             type-iri='http://www.w3.org/1999/02/22-rdf-syntax-ns#type'
-                            default-label-iri='http://www.w3.org/2000/01/rdf-schema#label'
-                            default-image-iri='http://www.researchspace.org/ontology/PX_has_main_representation'
+                            default-label-iri='http://www.researchspace.org/pattern/system/entity/primary_appellation'
+                            default-image-iri='http://www.researchspace.org/pattern/system/entity/main_image'
                             default-subject-template='/{{{{raw}}}}{{FIELD_VALUE_LOCAL_NAME http://www.w3.org/1999/02/22-rdf-syntax-ns#type}}{{{{/raw}}}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
                             force-datatype-fields='["http://www.researchspace.org/ontology/PX_has_video"]'
->
-
-    [[!-- <http://www.researchspace.org/category/generic/summary> --]]
-
-    <rs-ontodia-metadata-from-fields
+                            
+                            persistence='{
+                                "type": "sparql",
+                                "targetInsertGraphIri": "http://www.researchspace.org/resource/g/data"
+                            }'
+> 
+  
+  <rs-ontodia-metadata-from-fields 
       fields-query='PREFIX field: <http://www.researchspace.org/resource/system/fields/>
-        SELECT DISTINCT ?field WHERE { { ?field a <http://www.researchspace.org/resource/system/fields/Field> . ?field  <http://www.researchspace.org/resource/system/fields/category> ?category . 
-          FILTER (?category in (<http://www.researchspace.org/vocab/pattern_category/object>,<http://www.researchspace.org/category/generic/summary>))}
-          UNION {
-            VALUES (?value){(<http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation>)
-                            (<http://www.w3.org/2000/01/rdf-schema#label>)
-                      (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>)
-                      (<http://www.researchspace.org/ontology/PX_has_main_representation>)
-                    }
-            BIND(?value as ?field)
-          } 
-        }
-    '>
-  </rs-ontodia-metadata-from-fields>
-    
-    <ontodia-field-input-override for-field="http://www.researchspace.org/ontology/PX_has_main_representation">
-      <semantic-form-autocomplete-input for='http://www.researchspace.org/ontology/PX_has_main_representation'>
-          <semantic-form new-subject-template='/EX_Digital_Image/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
-                        fields='[[fieldDefinitions
-                          label="http://www.w3.org/2000/01/rdf-schema#label"
-                          P3_has_note="http://www.cidoc-crm.org/cidoc-crm/P3_has_note"
-                          P1_is_identified_by="http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by"
-                          type="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                        ]]'
-                        >
-                          <semantic-form-hidden-input for='type'
-                            default-values='["http://www.researchspace.org/ontology/EX_Digital_Image"]'
-                          > </semantic-form-hidden-input>
-
-                          <semantic-form-file-input for='P1_is_identified_by'
-                                                    accept-pattern='image/*'
-                                                    storage='images'
-                                                    temp-storage='tmp'
-                                                    placeholder='Please drag&drop your image here'
-                                                    from-url-or-drop='true'
-                                                    name-predicate-iri='http://www.researchspace.org/ontology/PX_has_file_name'
-                                                    media-type-predicate-iri='http://www.researchspace.org/ontology/PX_has_media_type'
-                                                    resource-query='
-                                                        PREFIX rs: <http://www.researchspace.org/ontology/>
-                                                        CONSTRUCT {
-                                                        ?__resourceIri__ a rs:EX_File.
-                                                        ?__resourceIri__ rs:PX_has_file_name ?__fileName__.
-                                                        ?__resourceIri__ rs:PX_has_media_type ?__mediaType__.
-                                                        } WHERE {}
-                                                        '
-                                                    generate-iri-query='
-                                                        SELECT ?resourceIri {
-                                                        BIND(IRI(CONCAT(STR(Default:), "EX_File/", ?__fileName__)) AS ?resourceIri) .
-                                                        }
-                                                        '
-                          ></semantic-form-file-input>
-                          <semantic-form-text-input for='label'></semantic-form-text-input>
-                          <semantic-form-text-input for='P3_has_note' multiline=true></semantic-form-text-input>
-
-                          <button name="submit" class="btn btn-sm btn-action pull-right">Save</button>
-                          <button name="reset" class="btn btn-sm btn-default pull-right">Reset</button>
-                          <div style="clear: both;"></div>
-          </semantic-form>
+                    SELECT DISTINCT ?field WHERE { 
+                    #{
+                   #   ?field a <http://www.researchspace.org/resource/system/fields/Field> . 
+                    #  ?field  <http://www.researchspace.org/resource/system/fields/ontology> ?ontology .
+                    #} UNION
+                    { 
+                      ?field a <http://www.researchspace.org/resource/system/fields/Field> . 
+                      ?field  <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/image_annotation> . 
+                      }  
+										UNION {
+            					VALUES (?value){(<http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation>)
+                            (<http://www.researchspace.org/pattern/system/entity/primary_appellation>)
+                      			(<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>)
+                      			(<http://www.researchspace.org/pattern/system/entity/main_image>)  
+                            (<http://www.ics.forth.gr/isl/CRMdig/L49_is_primary_area_of>)
+                            (<http://www.researchspace.org/pattern/system/image_annotation/boundingBox>)
+                            (<http://www.w3.org/1999/02/22-rdf-syntax-ns#value>)
+                            (<http://www.researchspace.org/pattern/system/image_annotation/viewport>)
+                            (<http://www.researchspace.org/pattern/system/image_annotation/area_of_image>)}                                                   
+											
+            					BIND(?value as ?field)
+          					} }'>
+  </rs-ontodia-metadata-from-fields> 
+   [[#> ontodia-entity-metadata ]][[/ontodia-entity-metadata]]  
+    <ontodia-field-input-override for-field="label">
+        <semantic-form-text-input></semantic-form-text-input>
+      </ontodia-field-input-override>
+    <ontodia-field-input-override for-field="http://www.researchspace.org/pattern/system/entity/main_image">
+    <semantic-form-autocomplete-input for='http://www.researchspace.org/pattern/system/entity/main_image' 
+      nested-form-templates='[ 
+                                                {
+                                                  "label": "Image",
+                                                  "nestedForm": "{{{{raw}}}}
+                                                                    {{> \"http://www.researchspace.org/resource/system/forms/Image\" nested=true editable=true mode=\"new\"}}
+                                                                {{{{/raw}}}}"
+                                                }
+                                              ]'>
       </semantic-form-autocomplete-input>
     </ontodia-field-input-override>
 

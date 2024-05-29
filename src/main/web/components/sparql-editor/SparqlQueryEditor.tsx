@@ -279,6 +279,7 @@ export class SparqlQueryEditor extends Component<SparqlQueryEditorProps, State> 
     const { context } = this.getQueryContext();
     const hideDialog = () => getOverlaySystem().hide(dialogRef);
     const props = {
+      title: 'Execute update',
       message: `Do you want to execute the UPDATE operations on the "${context.repository}" repository?`,
       onHide: () => {
         hideDialog();

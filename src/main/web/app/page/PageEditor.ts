@@ -300,6 +300,7 @@ class PageEditorComponent extends Component<PageEditorProps, PageEditorState> {
     const dialogRef = 'deletion-confirmation';
     const onHide = () => getOverlaySystem().hide(dialogRef);
     const props = {
+      title: 'Delete template',
       message: 'Do you really want to delete this template?',
       onHide,
       onConfirm: (confirm) => {

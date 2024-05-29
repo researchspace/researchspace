@@ -373,19 +373,17 @@ not used:
                                                             <p>Are you sure you want to delete the image region '<strong><mp-label iri='{{region.value}}'></mp-label></strong>' ?</p>
                                                           </div>
                                                           <div class="form-btn-group">
-                                                            <div style="display: flex; justify-content: flex-end; width: 100%;">
-                                                              <mp-event-trigger id='cancel-feature-removal' type='OverlayDialog.Close' targets='["region-remove-confirmation-dialog--{{region.value}}"]'>
-                                                                <button class="btn btn-default">Cancel</button>
-                                                              </mp-event-trigger>
-                                                              <mp-event-trigger id='remove-region-event-trigger--{{region.value}}' type='IIIFViewer.RemoveRegion' targets='["image-editor"]'
-                                                                                data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
-                                                                <button class="btn btn-default">Delete Region</button>
-                                                              </mp-event-trigger>
+                                                            <mp-event-trigger id='cancel-feature-removal' type='OverlayDialog.Close' targets='["region-remove-confirmation-dialog--{{region.value}}"]'>
+                                                              <button class="btn btn-default">Cancel</button>
+                                                            </mp-event-trigger>
+                                                            <mp-event-trigger id='remove-region-event-trigger--{{region.value}}' type='IIIFViewer.RemoveRegion' targets='["image-editor"]'
+                                                                              data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
+                                                              <button class="btn btn-default">Delete Region</button>
+                                                            </mp-event-trigger>
 
-                                                              <mp-event-proxy id='close-region-removal-dialog--{{feature.value}}' on-event-source='remove-region-event-trigger--{{region.value}}'
-                                                                              proxy-event-type='OverlayDialog.Close' targets='["region-remove-confirmation-dialog--{{region.value}}"]'
-                                                              ></mp-event-proxy>
-                                                            </div>
+                                                            <mp-event-proxy id='close-region-removal-dialog--{{feature.value}}' on-event-source='remove-region-event-trigger--{{region.value}}'
+                                                                            proxy-event-type='OverlayDialog.Close' targets='["region-remove-confirmation-dialog--{{region.value}}"]'
+                                                            ></mp-event-proxy>
                                                           </div>
                                                         </div>
                                                       </mp-overlay-dialog-content>
@@ -641,26 +639,24 @@ not used:
                                             <semantic-form-drag-and-drop-input  for="P138i_has_representation_latehokusai_representation" default-value='{{regionIri}}' force-defaults=true readonly=true></semantic-form-drag-and-drop-input>
                                           </div>
                                           <div class="form-btn-group">
-                                            <div style="display: flex; justify-content: flex-end; width: 100%;">
-                                              <mp-event-target-template-render id='save-state' template='{{> template}}'>
-                                                <template id='template'>
-                                                  {{#if saved}}
-                                                  <div class='save-message fade-out_disappear'>
-                                                    The region has been updated successfully!
-                                                  </div>
-                                                  {{/if}}
-                                                </template>
-                                              </mp-event-target-template-render>
-                                              <mp-event-trigger id='cancel-region-association' type='Component.TemplateUpdate' data='{"useExisting": true}' targets='["new-region-wizard-area"]'>
-                                                <button name="cancel" class='btn btn-default'>Cancel</button>
-                                              </mp-event-trigger> 
-                                              
-                                             <button name="submit" class="btn btn-primary">Confirm</button>
+                                            <mp-event-target-template-render id='save-state' template='{{> template}}'>
+                                              <template id='template'>
+                                                {{#if saved}}
+                                                <div class='save-message fade-out_disappear'>
+                                                  The region has been updated successfully!
+                                                </div>
+                                                {{/if}}
+                                              </template>
+                                            </mp-event-target-template-render>
+                                            <mp-event-trigger id='cancel-region-association' type='Component.TemplateUpdate' data='{"useExisting": true}' targets='["new-region-wizard-area"]'>
+                                              <button name="cancel" class='btn btn-default'>Cancel</button>
+                                            </mp-event-trigger> 
+                                            
+                                            <button name="submit" class="btn btn-primary">Confirm</button>
 
-                                              <mp-event-proxy id='finish-confirmation-dialog' on-event-source='feature-creation-form'
-                                                              proxy-event-type='TwoSidePanel.ShowFront' proxy-targets='["objects-panel"]' data='{}'
-                                              ></mp-event-proxy>
-                                            </div>
+                                            <mp-event-proxy id='finish-confirmation-dialog' on-event-source='feature-creation-form'
+                                                            proxy-event-type='TwoSidePanel.ShowFront' proxy-targets='["objects-panel"]' data='{}'
+                                            ></mp-event-proxy>
                                           </div>
                                         </semantic-form>
                                       

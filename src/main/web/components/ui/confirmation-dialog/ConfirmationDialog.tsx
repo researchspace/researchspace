@@ -20,6 +20,7 @@ import * as React from 'react';
 import { Modal, Button, ButtonGroup } from 'react-bootstrap';
 
 export interface Props {
+  title?: string;
   message: string;
   onHide: () => void;
   onConfirm: (confirm: boolean) => void;
@@ -27,14 +28,15 @@ export interface Props {
 
 export class ConfirmationDialog extends React.Component<Props, {}> {
   render() {
-    const { message, onHide, onConfirm } = this.props;
+    const { title, message, onHide, onConfirm } = this.props;
     return (
       <Modal onHide={onHide} show={true}>
+        <Modal.Header>
+          <Modal.Title>{title}</Modal.Title>
+        </Modal.Header>
         <Modal.Body>
-          <Modal.Title>{message}</Modal.Title>
-        </Modal.Body>
-        <Modal.Footer className='confirmation-dialog-footer'>
-          <div className='confirmation-dialog-footer-btns'>
+          <p>{message}</p>
+          <div className='form-btn-group'>
             <Button bsStyle="default" onClick={(e) => onConfirm(false)}>
               Cancel
             </Button>
@@ -42,7 +44,7 @@ export class ConfirmationDialog extends React.Component<Props, {}> {
               Confirm
             </Button>
           </div>
-        </Modal.Footer>
+        </Modal.Body>
       </Modal>
     );
   }

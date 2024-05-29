@@ -151,13 +151,11 @@
                   </ul>
                   
                   <div class="form-btn-group">
-                    <div style="display: flex; justify-content: flex-end; width: 100%;">
-                      <mp-event-trigger id='{{viewId}}-close-form-debug-dialog' 
-                                        type='OverlayDialog.Close' 
-                                        targets='["{{viewId}}-form-debug-info-dialog"]'>
-                        <button class="btn btn-default">Close</button>
-                      </mp-event-trigger>
-                    </div>
+                    <mp-event-trigger id='{{viewId}}-close-form-debug-dialog' 
+                                      type='OverlayDialog.Close' 
+                                      targets='["{{viewId}}-form-debug-info-dialog"]'>
+                      <button class="btn btn-default">Close</button>
+                    </mp-event-trigger>
                   </div>
 
                 </div>
@@ -230,63 +228,61 @@
           </semantic-query>
         </div>
         <div class="form-btn-group">
-          <div style="display: flex; justify-content: flex-end; width: 100%;">
-            <mp-event-trigger id='{{viewId}}-cancel-feature-removal' 
-                              type='OverlayDialog.Close' 
-                              targets='["{{viewId}}-item-remove-confirmation-dialog"]'>
-              <button class="btn btn-default">Cancel</button>
-            </mp-event-trigger>
-            [[#if assetForm]]
-              <semantic-query query='SELECT ?node ?file ?viewId WHERE { 
-                                      BIND("{{viewId}}" as ?viewId) . 
-                                      BIND(<{{node}}> AS ?node) . 
-                                      <{{node}}> crmdig:L60i_is_documented_by/crmdig:L11_had_output ?file . 
-                                    } LIMIT 1' 
-                              template='{{> deleteFileTemplate}}'>
+          <mp-event-trigger id='{{viewId}}-cancel-feature-removal' 
+                            type='OverlayDialog.Close' 
+                            targets='["{{viewId}}-item-remove-confirmation-dialog"]'>
+            <button class="btn btn-default">Cancel</button>
+          </mp-event-trigger>
+          [[#if assetForm]]
+            <semantic-query query='SELECT ?node ?file ?viewId WHERE { 
+                                    BIND("{{viewId}}" as ?viewId) . 
+                                    BIND(<{{node}}> AS ?node) . 
+                                    <{{node}}> crmdig:L60i_is_documented_by/crmdig:L11_had_output ?file . 
+                                  } LIMIT 1' 
+                            template='{{> deleteFileTemplate}}'>
+              
+              <template id='deleteFileTemplate'>
+                <semantic-context repository='assets'>
+                  <rs-file-remove id='{{bindings.0.viewId.value}}-file-removal-{{bindings.0.node.value}}' 
+                                  iri='{{bindings.0.file.value}}' 
+                                  storage='[[assetStorage]]'
+                                  name-predicate-iri='http://www.researchspace.org/ontology/PX_has_file_name'
+                                  media-type-predicate-iri='http://www.researchspace.org/ontology/PX_has_media_type'
+                  >
+                    <button class="btn btn-action">Delete</button>
+                  </rs-file-remove>
+                </semantic-context>
                 
-                <template id='deleteFileTemplate'>
-                  <semantic-context repository='assets'>
-                    <rs-file-remove id='{{bindings.0.viewId.value}}-file-removal-{{bindings.0.node.value}}' 
-                                    iri='{{bindings.0.file.value}}' 
-                                    storage='[[assetStorage]]'
-                                    name-predicate-iri='http://www.researchspace.org/ontology/PX_has_file_name'
-                                    media-type-predicate-iri='http://www.researchspace.org/ontology/PX_has_media_type'
-                    >
-                      <button class="btn btn-action">Delete</button>
-                    </rs-file-remove>
-                  </semantic-context>
-                  
-                  <mp-event-proxy id='{{bindings.0.viewId.value}}-entity-removal' 
-                                  on-event-source='{{bindings.0.viewId.value}}-file-removal-{{bindings.0.node.value}}' 
-                                  on-event-type='File.Removed'
-                                  proxy-event-type='Form.RemoveResource' 
-                                  data='{"iri": "{{bindings.0.node.value}}"}' 
-                                  proxy-targets='["{{bindings.0.viewId.value}}-vocab-form"]'
-                  ></mp-event-proxy>
-                </template>
-              </semantic-query>
-            [[else]]
-              <mp-event-trigger id='{{viewId}}-confirm-entity-removal' 
-                                type='Form.RemoveResource' 
-                                data='{"iri": "{{node}}"}' 
-                                targets='["{{viewId}}-vocab-form"]'>
-                <button class="btn btn-action">Delete</button>
-              </mp-event-trigger>  
-            [[/if]]
-            <mp-event-proxy id='{{viewId}}-update-form' 
-                            on-event-source='{{viewId}}-vocab-form' 
-                            on-event-type='Form.ResourceRemoved'
-                            proxy-event-type='Component.TemplateUpdate'
-                            proxy-targets='["{{viewId}}-term-forms", "{{viewId}}-resource-config-term-forms"]'
-            ></mp-event-proxy>
-            <mp-event-proxy id='{{viewId}}-close-form-removal-dialog' 
-                            on-event-source='{{viewId}}-vocab-form' 
-                            on-event-type='Form.ResourceRemoved'
-                            proxy-event-type='OverlayDialog.Close' 
-                            data='{}'
-                            proxy-targets='["{{viewId}}-item-remove-confirmation-dialog"]'
-            ></mp-event-proxy>
-          </div>
+                <mp-event-proxy id='{{bindings.0.viewId.value}}-entity-removal' 
+                                on-event-source='{{bindings.0.viewId.value}}-file-removal-{{bindings.0.node.value}}' 
+                                on-event-type='File.Removed'
+                                proxy-event-type='Form.RemoveResource' 
+                                data='{"iri": "{{bindings.0.node.value}}"}' 
+                                proxy-targets='["{{bindings.0.viewId.value}}-vocab-form"]'
+                ></mp-event-proxy>
+              </template>
+            </semantic-query>
+          [[else]]
+            <mp-event-trigger id='{{viewId}}-confirm-entity-removal' 
+                              type='Form.RemoveResource' 
+                              data='{"iri": "{{node}}"}' 
+                              targets='["{{viewId}}-vocab-form"]'>
+              <button class="btn btn-action">Delete</button>
+            </mp-event-trigger>  
+          [[/if]]
+          <mp-event-proxy id='{{viewId}}-update-form' 
+                          on-event-source='{{viewId}}-vocab-form' 
+                          on-event-type='Form.ResourceRemoved'
+                          proxy-event-type='Component.TemplateUpdate'
+                          proxy-targets='["{{viewId}}-term-forms", "{{viewId}}-resource-config-term-forms"]'
+          ></mp-event-proxy>
+          <mp-event-proxy id='{{viewId}}-close-form-removal-dialog' 
+                          on-event-source='{{viewId}}-vocab-form' 
+                          on-event-type='Form.ResourceRemoved'
+                          proxy-event-type='OverlayDialog.Close' 
+                          data='{}'
+                          proxy-targets='["{{viewId}}-item-remove-confirmation-dialog"]'
+          ></mp-event-proxy>
         </div>
       </div>
     </mp-overlay-dialog-content>

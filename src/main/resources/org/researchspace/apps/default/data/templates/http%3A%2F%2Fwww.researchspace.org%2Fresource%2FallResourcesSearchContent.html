@@ -1,0 +1,54 @@
+<div style="padding: 25px 30px 0;">
+  <semantic-tree-input  id='{{viewId}}-resource-selection'
+                        close-dropdown-on-selection='true'
+                        open-dropdown-on-focus='true'
+                        multiple-selection='false'
+                        placeholder="Select resource to search"
+
+                        roots-query='SELECT DISTINCT ?item ?label ?hasChildren WHERE {
+                                    {  
+                                      ?item a Platform:resource_configuration . 
+                                      ?item <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label .
+                                      FILTER(?item != <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>)
+                                    }
+                                      BIND(false AS ?hasChildren) .
+                                    } ORDER BY ASC(?label)'
+                        
+                        children-query='SELECT ?item ?label ?hasChildren WHERE {}'
+                        
+                        parents-query='SELECT ?item ?parent ?parentLabel WHERE {}'
+                        
+                        search-query='SELECT DISTINCT ?item ?label ?score ?hasChildren WHERE {
+                                        ?item a Platform:resource_configuration . 
+                                        ?item <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label .
+                                      
+                                        FILTER(?item != <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>)
+                                      
+                                        ?label bds:search ?__token__;
+                                        bds:minRelevance "0.3";
+                                        bds:relevance ?score;
+                                        bds:matchAllTerms "true".
+                                        BIND(false AS ?hasChildren) .
+                                      } ORDER BY DESC (?score) (?item)'
+                    >
+  </semantic-tree-input>
+</div>
+
+<mp-event-proxy id='{{viewId}}-on-resource-selection-proxy' 
+                on-event-source='{{viewId}}-resource-selection'
+                on-event-types='["SemanticTreeInput.ItemSelectionChanged"]'
+                proxy-event-type='Component.TemplateUpdate' 
+                proxy-targets='["{{viewId}}-search-resource-render-area"]'>
+</mp-event-proxy>
+
+<mp-event-target-template-render id='{{viewId}}-search-resource-render-area' template='{{> template}}'>
+  <template id='template'>
+    {{#if iri}}
+      {{#bind selectedResource=iri}}
+        <div class='page__grid-container search-page-container'>
+          [[> rsp:ResourceSearchContent config='{{iri}}']] 
+        </div>
+      {{/bind}}
+    {{/if}}
+  </template>
+</mp-event-target-template-render>

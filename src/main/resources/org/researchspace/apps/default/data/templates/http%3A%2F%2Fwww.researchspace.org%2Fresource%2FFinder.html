@@ -42,7 +42,7 @@
                             no-result-template='{{> noResults}}'>
                             
               <template id='nodeTemplate'>
-                <mp-event-trigger id='{{frameId}}-open-resource-search-page--trigger' 
+                <mp-event-trigger id='finder-open-resource-search-page--trigger' 
                                   type='Dashboard.AddFrame' 
                                   targets='["thinking-frames"]'
                                   data='{ "viewId": "resource-search",
@@ -75,7 +75,22 @@
       {{#if finderPreview}}
       {{else}}
         <div class="finder-section-settings-container">
-           <semantic-link uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+          <mp-event-trigger id='{{frameId}}-open-allResources-search-page--trigger' 
+                            type='Dashboard.AddFrame' 
+                            targets='["thinking-frames"]'
+                            data='{ "viewId": "all-resources-search",
+                                    "customLabel":"Search all resources"
+                                  }'>
+
+            <button class="btn btn-default btn-textAndIcon" style="justify-content: space-between;">
+
+              <div>Search all resources</div>
+              <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
+            </button>
+          </mp-event-trigger>    
+          
+          
+          <semantic-link uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
                         urlqueryparam-view='resource-configuration'>
             <button class="btn btn-default btn-textAndIcon" style="justify-content: space-between;">
               

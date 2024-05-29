@@ -375,7 +375,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
               urlqueryparam-open-as-drag-and-drop="true"
               urlqueryparam-resource={(this.props.value.value as Rdf.Iri).value}
             >
-              <Button className={`${SELECT_TEXT_CLASS}__open-in-new-tab`} title='Open in new tab'>
+              <Button className={`${SELECT_TEXT_CLASS}__open-in-new-tab`} title='Open in new draggable tab'>
                 <Icon iconType='round' iconName='open_in_new' />
               </Button>
           </ResourceLinkContainer>

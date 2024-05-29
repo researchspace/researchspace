@@ -284,7 +284,7 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
         >
           {(this.props.children as JSX.Element | JSX.Element[]) || (
             <div className='placeholder-item'>
-              <Icon iconType='round' iconName='file_upload' />
+              <Icon iconType='round' iconName='file_upload' className='upload_icon'/>
               <div>{placeholder}</div>
             </div>
           )}

@@ -37,7 +37,7 @@ import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.parser.ParsedQuery;
 import org.eclipse.rdf4j.query.parser.QueryParserUtil;
-import org.eclipse.rdf4j.rio.ntriples.NTriplesUtil;
+import org.eclipse.rdf4j.rio.helpers.NTriplesUtil;
 import org.researchspace.api.dto.querytemplate.QueryArgument;
 import org.researchspace.api.dto.querytemplate.QueryTemplate;
 import org.researchspace.api.dto.querytemplate.UpdateQueryTemplate;

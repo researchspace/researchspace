@@ -9,14 +9,11 @@ config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?fie
 [[!-- OPTIONAL {?field <http://www.researchspace.org/resource/system/fields/category> ?category . VALUES ?category {(urlParam "searchkpcategories")} } --]]
 <mp-event-target-template-render id="[[urlParam 'viewid' escape=false]]-resourceSearch-frame" template='{{> template}}'>
   <template id='template'>
-[[!--
-[[#if (urlParam "searchkpcategory")]]
-<semantic-search config='[[searchConfigForFieldsFromQuery "SELECT DISTINCT ?field WHERE { BIND(<[[urlParam "searchkpcategory" escape=false]]> as ?category) ?field a <http://www.researchspace.org/resource/system/fields/Field> .  ?field <http://www.researchspace.org/resource/system/fields/domain> ?domain . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . ?field <http://www.researchspace.org/resource/system/fields/category> ?category .}" domain=(urlParam "resourceontologyclass" escape=false)]]'>      
-    [[else]]
+    [[#if (urlParam "searchkpcategory")]]
+      <semantic-search config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> . ?field <http://www.researchspace.org/resource/system/fields/domain> ?domain . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . ?field <http://www.researchspace.org/resource/system/fields/category> ?category . }" domain=(urlParam "resourceontologyclass" escape=false) category=(urlParam "searchkpcategory" escape=false))]]'>
+    [[else]]    
+        <semantic-search config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> .  ?field <http://www.researchspace.org/resource/system/fields/domain> ?domain . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . }" domain=(urlParam "resourceontologyclass" escape=false) category=(urlParam "searchkpcategory" escape=false))]]'>      
     [[/if]]
-    --]]
-    <semantic-search config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> .  ?field <http://www.researchspace.org/resource/system/fields/domain> ?domain . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . }" domain=(urlParam "resourceontologyclass" escape=false))]]'>      
-
       <div class="semantic-search-header">
 
         <div class="semantic-search-header-content">

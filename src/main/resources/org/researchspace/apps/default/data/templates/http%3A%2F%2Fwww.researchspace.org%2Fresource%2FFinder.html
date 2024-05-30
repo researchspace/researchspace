@@ -42,27 +42,27 @@
                             no-result-template='{{> noResults}}'>
                             
               <template id='nodeTemplate'>
-                <mp-event-trigger id='finder-open-resource-search-page--trigger' 
-                                  type='Dashboard.AddFrame' 
-                                  targets='["thinking-frames"]'
-                                  data='{ "viewId": "resource-search",
-                                          "iri":"{{node.value}}",
-                                          "resourceIri": "{{node.value}}",
-                                          "customLabel":"Search {{nodeLabel.value}}"
-                                        }'>
+                {{#if finderPreview}}
+                  <div class="Tree--itemLink {{#ifCond node.value '==' finderItem }}active{{/ifCond}}" style="cursor:default;">
+                    {{#if icon.value}}<rs-icon icon-type="outlined" icon-name="{{icon.value}}" symbol=true></rs-icon>{{/if}}
+                    <div>{{nodeLabel.value}}</div> 
+                  </div>
+                {{else}}
+                  <mp-event-trigger id='finder-open-resource-search-page--trigger' 
+                                    type='Dashboard.AddFrame' 
+                                    targets='["thinking-frames"]'
+                                    data='{ "viewId": "resource-search",
+                                            "iri":"{{node.value}}",
+                                            "resourceIri": "{{node.value}}",
+                                            "customLabel":"Search {{nodeLabel.value}}"
+                                          }'>
+                    <div class="Tree--itemLink">
+                      {{#if icon.value}}<rs-icon icon-type="outlined" icon-name="{{icon.value}}" symbol=true></rs-icon>{{/if}}
+                      <div>{{nodeLabel.value}}</div> 
+                    </div>
+                  </mp-event-trigger>
+                {{/if}}
 
-                  {{#ifCond node.value "==" finderItem }}
-                    <div class="Tree--itemLink active" style="{{#if finderPreview}}{{else}}cursor:pointer;{{/if}}">
-                      {{#if icon.value}}<rs-icon icon-type="outlined" icon-name="{{icon.value}}" symbol=true></rs-icon>{{/if}}
-                      <div>{{nodeLabel.value}}</div> 
-                    </div>
-                  {{else}}
-                    <div class="Tree--itemLink" style="{{#if finderPreview}}{{else}}cursor:pointer;{{/if}}">
-                      {{#if icon.value}}<rs-icon icon-type="outlined" icon-name="{{icon.value}}" symbol=true></rs-icon>{{/if}}
-                      <div>{{nodeLabel.value}}</div> 
-                    </div>
-                  {{/ifCond}}
-              </mp-event-trigger>
               </template>  
 
               <template id='noResults'>

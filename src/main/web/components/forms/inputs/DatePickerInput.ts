@@ -92,9 +92,13 @@ export class DatePickerInput extends AtomicValueInput<DatePickerInputProps, {}> 
         const [dayDMY, monthDMY, yearDMY] = value.split('/');
         convertedValue = `${yearDMY}-${monthDMY}-${dayDMY}`;
         break;
+      case 'DD-MM-YYYY':
+        const [dayDM, monthDM, yearDM] = value.split('-');
+        convertedValue = `${yearDM}-${monthDM}-${dayDM}`;
+        break;
       default:
         return FieldValue.empty;
-    }
+    }    
 
     const momentValue = moment(convertedValue, OUTPUT_UTC_DATE_FORMAT);
 

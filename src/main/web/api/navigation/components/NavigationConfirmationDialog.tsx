@@ -38,9 +38,7 @@ export class NavigationConfirmationDialog extends React.Component<Props, {}> {
         </Modal.Header>
         <Modal.Body>
           <p>{message}</p>
-        </Modal.Body>
-        <Modal.Footer>
-          <div>
+          <div className='form-btn-group'>
             <Button bsStyle="default" onClick={(e) => onConfirm(false)}>
               Stay
             </Button>
@@ -48,7 +46,7 @@ export class NavigationConfirmationDialog extends React.Component<Props, {}> {
               Leave
             </Button>
           </div>
-        </Modal.Footer>
+        </Modal.Body>
       </Modal>
     );
     return dialog;

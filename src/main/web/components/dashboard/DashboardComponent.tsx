@@ -246,10 +246,7 @@ export class DashboardComponent extends Component<Props, State> {
         .observe({
           value: ({ data }) => {
             const {viewId, resourceIri, customLabel} = data as AddFrameEventData
-            console.log(data);
-            console.log(viewId);
             
-            console.log(resourceIri);
             if (customLabel) { 
               this.onAddNewItemHandler(data, customLabel)
             }
@@ -266,7 +263,6 @@ export class DashboardComponent extends Component<Props, State> {
               })           
             } else {             
                 const view = viewId ? this.props.views.find(({ id }) => id === viewId) : undefined;
-                console.log(view?.label);
                 this.onAddNewItemHandler(data, view?.label)
                            
             }
@@ -507,7 +503,8 @@ export class DashboardComponent extends Component<Props, State> {
       getOverlaySystem().show(
         dialogRef,
         <ConfirmationDialog
-          message={'Frame has unsaved changes. Are you sure you want to delete it?'}
+          title={'Close tab'}
+          message={'There are unsaved changes. Are you sure you want to close the tab?'}
           onHide={onHide}
           onConfirm={(confirm) => {
             onHide();

@@ -103,6 +103,7 @@ function showRestartConfirmationDialog(execute: (b: boolean) => void) {
   getOverlaySystem().show(
     dialogRef,
     <ConfirmationDialog
+      title={'System restart'}
       message={'Are you sure you want to restart the system?'}
       onHide={onHide}
       onConfirm={(confirm) => {

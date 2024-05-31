@@ -298,7 +298,7 @@ export class DirectFileUploader extends Component<DirectFileUploaderProps, Direc
               {fileNotSelected ? (
                 <div className=''> {this.props.children || (
                     <div className='placeholder-item'>
-                      <Icon iconType='round' iconName='file_upload' />
+                      <Icon iconType='round' iconName='file_upload' className='upload_icon'/>
                       <div>{this.props.placeholder || 'Drag file or click to upload'}</div>
                     </div>
                   )}

@@ -307,6 +307,7 @@ export class RepositoryConfigEditor extends Component<Props, State> {
     const dialogRef = 'delete-repository-confirmation';
     const hideDialog = () => getOverlaySystem().hide(dialogRef);
     const props = {
+      title: 'Delete repository',
       message: `Do you want to delete the "${id}" repository?`,
       onHide: () => {
         hideDialog();

@@ -5,402 +5,485 @@ config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?fie
 [[!--     <semantic-search domain='(urlParam "resourceontologyclass" escape=false)' config='[[searchConfigForFieldsFromQuery "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> . ?field <http://www.researchspace.org/resource/system/fields/domain> <http://www.researchspace.org/ontology/EX_Digital_Image> . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . ?field  <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/image> . OPTIONAL {?field <http://www.researchspace.org/resource/system/fields/order> ?fieldsOrder } } ORDER BY ASC(xsd:integer(?fieldsOrder))"]]'>
 --]]
 
-   
-[[!-- OPTIONAL {?field <http://www.researchspace.org/resource/system/fields/category> ?category . VALUES ?category {(urlParam "searchkpcategories")} } --]]
 <mp-event-target-template-render id="[[urlParam 'viewid' escape=false]]-resourceSearch-frame" template='{{> template}}'>
   <template id='template'>
+    [[#if (urlParam "searchkpcategory")]]
+      <semantic-search config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> . ?field <http://www.researchspace.org/resource/system/fields/domain> ?domain . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . ?field <http://www.researchspace.org/resource/system/fields/category> ?category . }" domain=(urlParam "resourceontologyclass" escape=false) category=(urlParam "searchkpcategory" escape=false))]]'>
+    [[else]]    
+      <semantic-search config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> .  ?field <http://www.researchspace.org/resource/system/fields/domain> ?domain . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . }" domain=(urlParam "resourceontologyclass" escape=false) category=(urlParam "searchkpcategory" escape=false))]]'>      
+    [[/if]]
+        <mp-splitpane id='{{viewId}}-search-filters-sidebar' min-size=63 default-size=340 snap-threshold=200 default-open=true always-render=true primary='second' class="search-filters-sidebar">
+          <div class="semantic-search-content">
 
-[[!-- [[urlParam 'searchkpcategories']] --]]
-  
-[[!--
+            <div class="semantic-search-header">
+              <h3 class="semantic-search-header-title">[[urlParam "resourcelabel" escape=false]]</h3>
 
-[[#if (urlParam "searchkpcategories")]]
-<semantic-search config='[[searchConfigForFieldsFromQuery "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> .  ?field <http://www.researchspace.org/resource/system/fields/domain> ?domain . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . ?field <http://www.researchspace.org/resource/system/fields/category> ?category . VALUES ?category { ?values } }" values=(urlParam "searchkpcategories") domain=(urlParam "resourceontologyclass" escape=false)]]'>      
-    [[else]]
---]]
-    <semantic-search config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> .  ?field <http://www.researchspace.org/resource/system/fields/domain> ?domain . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . }" domain=(urlParam "resourceontologyclass" escape=false))]]'>      
+              <div class="semantic-search-header-actions">
 
-    <div class="semantic-search-header">
+                [[!-- New button --]]
+                <semantic-switch query='SELECT ?resourceConfig {
+                                          BIND(<[[urlParam "resourceconfig" escape=false]]> as ?resourceConfig)
+                                        }'>
 
-        <div class="semantic-search-header-content">
-          <h3 class="semantic-search-header-title">[[urlParam "resourcelabel" escape=false]]</h3>
-        
-          <div class="semantic-search-header-actions">
-            
-            [[#if (urlParam "resourceform")]]
-              <mp-overlay-dialog id="[[urlParam 'viewid' escape=false]]-newResource-modal" title="New [[urlParam 'resourcelabel' escape=false]]" type="lightbox">
-                <mp-overlay-dialog-trigger>
-                  <button id="create-new-btn" class="btn btn-action btn-textAndIcon">
-                    <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
-                    <span>New [[urlParam "resourcelabel" escape=false]]</span>
+                  <template id='http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative'>
+                    <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                            urlqueryparam-view='semantic-narrative'>
+                      <button id="create-new-btn" class="btn btn-action btn-textAndIcon">
+                        <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                        <span>New [[urlParam "resourcelabel" escape=false]]</span>
+                      </button>                 
+                    </semantic-link-container>
+                  </template>
+
+                  <template id='http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map'>
+                    <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                            urlqueryparam-view='knowledge-map'>
+                      <button id="create-new-btn" class="btn btn-action btn-textAndIcon">
+                        <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                        <span>New [[urlParam "resourcelabel" escape=false]]</span>
+                      </button>                 
+                    </semantic-link-container>
+                  </template>
+
+                  <template id='http://www.researchspace.org/resource/system/resource_configurations_container/data/Set'>
+                    <div></div>
+                  </template>
+
+                  <template id='http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item'>
+                    <div></div>
+                  </template>
+
+                  <template id='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'>
+                    <div></div>
+                  </template>
+
+                  <template id='default'>
+                    [[#if (urlParam "resourceform")]]
+                      <mp-overlay-dialog id="[[urlParam 'viewid' escape=false]]-newResource-modal" title="New [[urlParam 'resourcelabel' escape=false]]" type="lightbox">
+                        <mp-overlay-dialog-trigger>
+                          <button id="create-new-btn" class="btn btn-action btn-textAndIcon">
+                            <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                            <span>New [[urlParam "resourcelabel" escape=false]]</span>
+                          </button>
+                        </mp-overlay-dialog-trigger>
+                        <mp-overlay-dialog-content>
+                          <div>
+                            <inline-template  template-iri="[[urlParam 'resourceform' escape=false]]"
+                                              options='{
+                                                        "mode": "new",
+                                                        "editable": true,
+                                                        "viewId": "[[urlParam "viewid" escape=false]]"
+                                                      }'>
+                            </inline-template>
+                          </div>
+                        </mp-overlay-dialog-content>
+                      </mp-overlay-dialog>
+                    [[else]]
+                    [[/if]]
+                  </template>
+
+                </semantic-switch>
+
+                [[!-- Refresh button --]]
+                <mp-event-trigger id="[[urlParam 'viewid' escape=false]]-search-refresh-trigger" 
+                                      type='Component.TemplateUpdate' 
+                                      targets='["[[urlParam "viewid" escape=false]]-resourceSearch-frame"]'
+                                      >
+                  <button class="btn btn-default btn-textAndIcon">
+                    <rs-icon icon-type="round" icon-name="refresh" class="icon-left"></rs-icon>
+                    Refresh
                   </button>
-                </mp-overlay-dialog-trigger>
-                <mp-overlay-dialog-content>
-                  <div>
-                    <inline-template  template-iri="[[urlParam 'resourceform' escape=false]]"
-                                      options='{
-                                                "mode": "new",
-                                                "editable": true,
-                                                "viewId": "[[urlParam "viewid" escape=false]]"
-                                              }'>
-                    </inline-template>
-                  </div>
-                </mp-overlay-dialog-content>
-              </mp-overlay-dialog>
-            [[/if]]
+                </mp-event-trigger>
 
-            [[#if (hasPermission "forms:ldp:*")]]
-              <mp-selection-action-choice id='Action' title='With selected' class-name="btn btn-default" selection='item-selection-aggregator'>
-                <mp-create-set-action></mp-create-set-action>
-              </mp-selection-action-choice>
-            [[/if]]
+                [[!-- More actions button --]]
+                <bs-dropdown id="[[urlParam 'viewid' escape=false]]-search-actions-dropdown" pull-right=true class="dropdown-no-caret">
+                  <bs-dropdown-toggle>
+                    <rs-icon icon-type="round" icon-name="more_vert"></rs-icon>
+                  </bs-dropdown-toggle>
+                  <bs-dropdown-menu>
 
-            <mp-anonymous-hidden>
-              <bs-dropdown id="[[urlParam 'viewid' escape=false]]-search-save">
+                    [[#if (hasPermission "forms:ldp:*")]]
+                      <bs-menu-item>
+                        <mp-selection-action-choice id='Action' title='With selected' selection='item-selection-aggregator'>
+                          <mp-create-set-action></mp-create-set-action>
+                        </mp-selection-action-choice>
+                      </bs-menu-item>
+                    [[/if]]
 
-                <bs-dropdown-toggle>
-                  Save
-                </bs-dropdown-toggle>
-      
-                <bs-dropdown-menu>
-                  <semantic-search-action-save-search-result id='save-search-result-action' add-to-default-set=true>
-                    <bs-menu-item>
-                      <rs-icon icon-type="round" icon-name="save" class="icon-left"></rs-icon>
-                      <span>Save search in clipboard</span>
-                    </bs-menu-item>
-                  </semantic-search-action-save-search-result>
+                    {{#ifCond "[[urlParam "resourceconfig" escape=false]]" "==" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image"}}
+                      <bs-menu-item>
+                        <mp-selection-action-choice id='Action' title='With selected ...' selection='images-selection-aggregator'>
+                          <rs-iiif-side-by-side-action [[> rsp:IIIFConfig]]></rs-iiif-side-by-side-action>
+                        </mp-selection-action-choice>
+                      </bs-menu-item>
+
+                      <bs-menu-item>
+                        <mp-selection-action-choice id='Action' title='With selected ...' selection='images-selection-aggregator'>
+                          <rs-iiif-overlay-action [[> rsp:IIIFConfig]]></rs-iiif-overlay-action>
+                        </mp-selection-action-choice>
+                      </bs-menu-item>
+                      [[#if (hasPermission "forms:ldp:*")]]
+                      [[else]]
+                        <hr>
+                      [[/if]]
+                    {{/ifCond}}
+
+                    [[#if (hasPermission "forms:ldp:*")]]
+                      <hr>
+                    [[/if]]
+
+                    <mp-anonymous-hidden>
+                      <semantic-search-action-save-search-result id='save-search-result-action' add-to-default-set=true>
+                        <bs-menu-item>
+                          <rs-icon icon-type="round" icon-name="save" class="icon-left"></rs-icon>
+                          <span>Save search in clipboard</span>
+                        </bs-menu-item>
+                      </semantic-search-action-save-search-result>
+                    </mp-anonymous-hidden>
+
+                    <mp-anonymous-hidden>
+                      <semantic-search-action-save-set-result id='save-set-result-action'>
+                        <bs-menu-item>
+                          <rs-icon icon-type="round" icon-name="save" class="icon-left"></rs-icon>
+                          <span>Save results as set</span>
+                        </bs-menu-item>  
+                      </semantic-search-action-save-set-result>
+                    </mp-anonymous-hidden>
+
+                    <mp-anonymous-hidden><hr></mp-anonymous-hidden>
                     
-                  <semantic-search-action-save-set-result id='save-set-result-action'>
-                    <bs-menu-item>
-                      <rs-icon icon-type="round" icon-name="save" class="icon-left"></rs-icon>
-                      <span>Save results as set</span>
-                    </bs-menu-item>  
-                  </semantic-search-action-save-set-result>
-                </bs-dropdown-menu>
+                    <semantic-search-result>
+                      <mp-sparql-download id='csv-result' 
+                                          query="SELECT ?subject WHERE { }"
+                                          header="text/csv"
+                                          filename="[[urlParam 'resourcelabel' escape=false]]-csv-result.csv">
+                        <bs-menu-item>
+                          <rs-icon icon-type="round" icon-name="file_download" class="icon-left"></rs-icon>
+                          <span>Export as CSV</span>
+                        </bs-menu-item>
+                      </mp-sparql-download>
+                    </semantic-search-result>
+                      
+                    <semantic-search-result>
+                      <mp-sparql-download id='json-result' 
+                                          query="SELECT ?subject WHERE { }"
+                                          header="application/sparql-results+json"
+                                          filename="[[urlParam 'resourcelabel' escape=false]]-json-result.json"
+                      >
+                        <bs-menu-item>
+                          <rs-icon icon-type="round" icon-name="file_download" class="icon-left"></rs-icon>
+                          <span>Export as JSON</span>
+                        </bs-menu-item>
+                      </mp-sparql-download>
+                    </semantic-search-result>
+                    
+                  </bs-dropdown-menu>
+                </bs-dropdown>
 
-              </bs-dropdown>
-            </mp-anonymous-hidden>
-      
-            <bs-dropdown id="[[urlParam 'viewid' escape=false]]-search-export">
+              </div>
+            </div>
 
-              <bs-dropdown-toggle>
-                Export
-              </bs-dropdown-toggle>
+            <div class="search-results-area">
+              <bs-tab-container id="search-results" default-active-key="grid">
+                <div>
+                  <div class="search-results-header">
 
-              <bs-dropdown-menu>
-                <semantic-search-result>
-                  <mp-sparql-download id='csv-result' 
-                                      query="SELECT ?subject WHERE { }"
-                                      header="text/csv"
-                                      filename="[[urlParam 'resourcelabel' escape=false]]-csv-result.csv">
-                    <bs-menu-item>
-                      <rs-icon icon-type="round" icon-name="file_download" class="icon-left"></rs-icon>
-                      <span>Export as CSV</span>
-                    </bs-menu-item>
-                  </mp-sparql-download>
-                </semantic-search-result>
-                  
-                <semantic-search-result>
-                  <mp-sparql-download id='json-result' 
-                                      query="SELECT ?subject WHERE { }"
-                                      header="application/sparql-results+json"
-                                      filename="[[urlParam 'resourcelabel' escape=false]]-json-result.json"
-                  >
-                    <bs-menu-item>
-                      <rs-icon icon-type="round" icon-name="file_download" class="icon-left"></rs-icon>
-                      <span>Export as JSON</span>
-                    </bs-menu-item>
-                  </mp-sparql-download>
-                </semantic-search-result>
+                    <semantic-search-result id='semantic-search-result'>
+                      <mp-sparql-result-counts  id='semantic-search-result-count' 
+                                                query="SELECT DISTINCT ?subject {}"
+                                                template='{{> template}}'
+                      >
+                        <template id='template'>
+                          <div class="num-results">
+                              Found 
+                              <span class="num-results-color">{{#if hasLimit}}{{totalNumberOfResults}}{{else}}{{numberOfResults}}{{/if}}</span> 
+                              results
+                          </div>
+                        </template>
+                      </mp-sparql-result-counts>
+                    </semantic-search-result>
 
-              </bs-dropdown-menu>
-            </bs-dropdown>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                      <div>View as</div>
+                      <bs-nav bs-style="tabs">
+                        <bs-nav-item event-key="grid">
+                          <rs-icon icon-type="round" icon-name="view_module"></rs-icon>
+                        </bs-nav-item>
+                        <bs-nav-item event-key="table">
+                          <rs-icon icon-type="round" icon-name="view_list"></rs-icon>
+                        </bs-nav-item>
+                        <bs-nav-item event-key="chart">
+                          <rs-icon icon-type="round" icon-name="bar_chart"></rs-icon>
+                        </bs-nav-item>
+                        <bs-nav-item event-key="timeline">
+                          <rs-icon icon-type="round" icon-name="schedule"></rs-icon>
+                        </bs-nav-item>
+                      </bs-nav>
+                    </div>
+                  </div>
+
+                  <div class="page__section-container">
+                    <div class="semantic-search-header-keyword">
+                      <semantic-search-query-keyword  domain='[[urlParam "resourceontologyclass" escape=false]]'
+                                                      query='SELECT ?subject WHERE { 
+                                                              ?subject a [[urlParam "resourceontologyclass" escape=false]] .
+                                                              
+                                                              [[#if (urlParam "resourcetype")]] 
+                                                                ?subject crm:P2_has_type [[urlParam "resourcetype" escape=false]] .
+                                                              [[/if]]
+                                                            
+                                                              BIND(?subject as ?item) .
+            
+                                                              [[#if (urlParam "resourcerestrictionpattern")]] 
+                                                                [[urlParam "resourcerestrictionpattern" escape=false]] 
+                                                              [[/if]]     
+            
+                                                              [[#if (urlParam "resourcelabelpattern")]]
+                                                                [[urlParam "resourcelabelpattern" escape=false]]
+                                                              [[else]]
+                                                                ?subject rdfs:label ?label .
+                                                              [[/if]]
+            
+                                                              SERVICE <http://www.bigdata.com/rdf/search#search> {
+                                                                ?label bds:search ?__token__ ;
+                                                                bds:minRelevance "0.3" ;
+                                                                bds:matchAllTerms "true"  .
+                                                              }
+                                                            }'
+            
+                                                        default-query='SELECT ?subject WHERE { 
+                                                                        ?subject a [[urlParam "resourceontologyclass" escape=false]] .
+                                                                        
+                                                                        [[#if (urlParam "resourcetype")]] 
+                                                                          ?subject crm:P2_has_type [[urlParam "resourcetype" escape=false]] .
+                                                                        [[/if]]
+            
+                                                                        BIND(?subject as ?item) .
+            
+                                                                        [[#if (urlParam "resourcerestrictionpattern")]] 
+                                                                          [[urlParam "resourcerestrictionpattern" escape=false]] 
+                                                                        [[/if]]
+            
+                                                                        [[#if (urlParam "resourcelabelpattern")]]
+                                                                          [[urlParam "resourcelabelpattern" escape=false]]
+                                                                        [[else]]
+                                                                          ?subject rdfs:label ?label .
+                                                                        [[/if]]
+                                                                      }'
+                                                        debounce=500
+                      ></semantic-search-query-keyword>
+                    </div>
+
+                    <semantic-search-facet-breadcrumbs></semantic-search-facet-breadcrumbs>
+
+                    <semantic-search-result-holder>
+                      <bs-tab-content animation="true">
+                        <bs-tab-pane event-key="grid">
+                          <semantic-search-result>
+                            <semantic-table id='semantic-search-result-grid'
+                                            query='SELECT DISTINCT ?subject ?iri WHERE {
+                                                        BIND(?subject as ?iri) .
+                                                    } ORDER BY ?subject'
+                                            tuple-template='{{> gridItem }}',
+                                            options='{"showFilter":false, "resultsPerPage":12}'
+                            >
+                              <template id='gridItem'>
+                                <div class='card-select-container'> 
+                                  [[#if (hasPermission "forms:ldp:*")]]
+                                    <div class='card-select-input'>
+                                      <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
+                                    </div>
+                                  [[/if]]
+                                  <mp-draggable iri='{{iri.value}}'>
+                                    <div class="rs-card-container">
+                                      {{#bind iri=iri.value}}
+                                        {{> rsp:itemCardTemplate}}
+                                      {{/bind}}
+                                    </div>
+                                  </mp-draggable>
+                                </div>
+                              </template>
+                            </semantic-table>
+                          </semantic-search-result>
+                        </bs-tab-pane>
+
+                        <bs-tab-pane event-key="table">
+                          <semantic-search-result> 
+                            <semantic-table id='semantic-search-result-table'
+                                            query='SELECT DISTINCT ?subject ?iri ?typeLabel WHERE {
+                                                    BIND(?subject as ?iri) .
+                                                    ?subject a ?type .
+                                                    ?type rdfs:label ?typeLabel .
+                                                    FILTER (lang(?typeLabel) = "en")
+                                                  } ORDER BY ?subject'
+
+                                            options='{"showFilter":false, "resultsPerPage":10}' 
+                                            column-configuration='[
+                                                                    {"variableName": "typeLabel", "displayName": "Type", "cellTemplate": "{{> type}}" },
+                                                                    {"variableName": "subject", "displayName": "Label", "cellTemplate": "{{> label}}" }
+                                                                  ]'   
+                            >
+
+                              <template id='type'>
+                                <div class="search-result-table__type" style="display: flex; align-items: center;">
+                                  <rs-icon icon-type="round" icon-name="drag_indicator" style="margin-right: 8px;"></rs-icon>
+                                  <mp-draggable iri='{{iri.value}}'>
+                                    <div class="search-result-table__type-value">{{typeLabel.value}}</div>
+                                  </mp-draggable>
+                                </div>
+                                
+                              </template>
+
+                              <template id='label'>
+                                <mp-draggable iri='{{iri.value}}'>
+                                  <div><mp-label iri='{{iri.value}}'></mp-label></div>
+                                </mp-draggable>
+                              </template>
+
+                            </semantic-table>
+                          </semantic-search-result>
+                        </bs-tab-pane>
+
+                        <bs-tab-pane event-key="chart">
+                          <semantic-search-result-context ranges='["http://www.w3.org/2004/02/skos/core#Concept", "http://www.cidoc-crm.org/cidoc-crm/E53_Place"]'>
+                            <semantic-search-result id='semantic-search-result-chart'>
+                              <mp-component-toolbar>
+                                  <mp-component-toolbar-actions>
+                                    <semantic-chart-type-selector id='search-result-chart-type-selector' default="bar" types='["line", "bar", "radar", "pie", "donut"]'></semantic-chart-type-selector>
+                                      <mp-component-toolbar-action-download></mp-component-toolbar-action-download>
+                                      <mp-component-toolbar-action-save id='persit-component-action' add-to-default-set=true></mp-component-toolbar-action-save>
+                                  </mp-component-toolbar-actions>
+                                  <mp-component-toolbar-component>
+                                    <semantic-chart
+                                        id='search-result-chart'
+                                        query='
+                                          SELECT ?__value__ (COUNT(DISTINCT ?subject) as ?count) WHERE {
+                                            OPTIONAL { FILTER(?__contextRelationPattern__) }
+                                            BIND(IF(BOUND(?__value__), ?__value__, "Unknown") as ?__value__)
+                                          } GROUP BY ?__value__ ORDER BY DESC(?count)
+                                        '
+                                        sets='[{
+                                          "category": "__value__",
+                                          "value": "count"
+                                        }]'>
+                                    </semantic-chart>
+                                  </mp-component-toolbar-component>
+                              </mp-component-toolbar>
+                            </semantic-search-result>
+                          </semantic-search-result-context>
+                        </bs-tab-pane>
+
+                        <bs-tab-pane event-key="timeline">
+                          <div>
+                            <semantic-search-result>
+                              <mp-sparql-result-counts id='timeline-search-result-count' query="SELECT DISTINCT ?subject {} LIMIT 100"
+                                                          template='{{> template}}'
+                              >
+                                  <template id='template'>
+                                    {{#if hasLimit}}
+                                      <bs-alert bs-style="warning" class="search-results__alert">
+                                        <rs-icon icon-type="round" icon-name="report_problem"></rs-icon>
+                                        <span class="num-results">There were {{totalNumberOfResults}} results. Only 100 can be visualised on the timeline at once!</span>
+                                      </bs-alert>
+                                    {{/if}}
+                                  </template>
+                              </mp-sparql-result-counts>
+                            </semantic-search-result>
+
+                            <semantic-search-result-context ranges='["http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span"]'>
+                              <semantic-search-result  id='semantic-search-result-timeline'>
+                                  <mp-component-toolbar>
+                                    <mp-component-toolbar-actions>
+                                        <mp-component-toolbar-action-save id='persit-component-action' add-to-default-set=true></mp-component-toolbar-action-save>
+                                    </mp-component-toolbar-actions>
+
+                                    <mp-component-toolbar-component>
+                                        <semantic-timeline  id='search-result-timeline'
+                                                            query='PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+                                                                    SELECT DISTINCT ?start ?end ?iri WHERE {
+                                                                    FILTER(?__contextRelationPattern__).
+                                                                    ?__value__ crm:P82a_begin_of_the_begin ?start ;
+                                                                            crm:P82b_end_of_the_end ?end .
+                                                                    
+                                                                    BIND(?subject as ?iri) .
+                                                                    }
+                                                                    ORDER BY ?subject
+                                                                    LIMIT 100'
+                                                            tuple-template='{{> timelineItem}}'
+                                                            tuple-template-height=50>
+
+                                          <template id='timelineItem'>
+                                              <mp-popover>
+                                                <mp-popover-trigger placement="top" trigger='["hover"]' root-close='false'>
+                                                    <div data-flex-layout='column top-left'>
+                                                    <p>{{start.value}} - {{end.value}}</p>
+                                                    <semantic-link uri='{{iri.value}}'></semantic-link>
+                                                    </div>
+                                                </mp-popover-trigger>
+                                                <mp-popover-content>{{> rsp:itemCardTemplate}}</mp-popover-content>
+                                              </mp-popover>
+                                          </template>
+                                        </semantic-timeline>
+                                    </mp-component-toolbar-component>
+                                  </mp-component-toolbar>
+                              </semantic-search-result>
+                            </semantic-search-result-context>
+
+                          </div>
+                        </bs-tab-pane>
+
+                      </bs-tab-content>
+                    </semantic-search-result-holder>
+                  </div>
+                </div>
+              </bs-tab-container>
+            </div>
+          </div>
+
+          <div class="split-pane__sidebar split-pane__rightsidebar">
+
+            <mp-splitpane-toggle-on>
+              <button class="btn-toggle-on" title="Filter by">
+                  <div class="btn-toggle-on-content">
+                      <div style="display: flex; align-items: center; gap: 10px;">
+                          <rs-icon icon-type="outlined" icon-name="filter_alt"></rs-icon>
+                      </div>
+                  </div>
+              </button>
+            </mp-splitpane-toggle-on>
+
+            <mp-splitpane-toggle-off>
+              <div class="split-pane__sidebar-header" style="position: relative;">
+                  <button class="btn-toggle-off">
+                      <div style="display: flex; align-items: center; gap: 10px;">
+                          <div class="customFormHeader" style="margin-top: 0;">Filter by</div>
+                      </div> 
+                      <rs-icon icon-type="round" icon-name="keyboard_double_arrow_right" 
+                              style="font-size: 20px;">
+                      </rs-icon>
+                  </button>
+              </div>
+            </mp-splitpane-toggle-off>
+
+            <mp-splitpane-sidebar-open style="flex: 1; overflow: hidden;">
+              <div class="split-pane__sidebar-open">
+                <semantic-search-facet  id='semantic-search-facet'
+                                      value-categories='{
+                                        "<http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span>": {
+                                            "kind": "date-range",
+                                            "valuesQuery": "SELECT ?dateBeginValue ?dateEndValue WHERE {
+                                                              FILTER(?__facetRelationPattern__).
+                                                              ?__value__ crm:P82a_begin_of_the_begin ?dateBeginValue ;
+                                                                    crm:P82b_end_of_the_end     ?dateEndValue .
+                                                            } ORDER BY ?dateBeginValue"
+                                        }
+                                      }'>
+                </semantic-search-facet>
+              </div>
+            </mp-splitpane-sidebar-open>
 
           </div>
-        </div>
-
-        <div class="semantic-search-header-keyword">
-          <semantic-search-query-keyword  domain='[[urlParam "resourceontologyclass" escape=false]]'
-                                          query='SELECT ?subject WHERE { 
-                                                  ?subject a [[urlParam "resourceontologyclass" escape=false]] .
-                                                  
-                                                  [[#if (urlParam "resourcetype")]] 
-                                                    ?subject crm:P2_has_type [[urlParam "resourcetype" escape=false]] .
-                                                  [[/if]]
-                                                
-                                                  BIND(?subject as ?item) .
-
-                                                  [[#if (urlParam "resourcerestrictionpattern")]] 
-                                                    [[urlParam "resourcerestrictionpattern" escape=false]] 
-                                                  [[/if]]     
-
-                                                  [[#if (urlParam "resourcelabelpattern")]]
-                                                    [[urlParam "resourcelabelpattern" escape=false]]
-                                                  [[else]]
-                                                    ?subject rdfs:label ?label .
-                                                  [[/if]]
-
-                                                  SERVICE <http://www.bigdata.com/rdf/search#search> {
-                                                    ?label bds:search ?__token__ ;
-                                                    bds:minRelevance "0.3" ;
-                                                    bds:matchAllTerms "true"  .
-                                                  }
-                                                }'
-
-                                            default-query='SELECT ?subject WHERE { 
-                                                            ?subject a [[urlParam "resourceontologyclass" escape=false]] .
-                                                            
-                                                            [[#if (urlParam "resourcetype")]] 
-                                                              ?subject crm:P2_has_type [[urlParam "resourcetype" escape=false]] .
-                                                            [[/if]]
-
-                                                            BIND(?subject as ?item) .
-
-                                                            [[#if (urlParam "resourcerestrictionpattern")]] 
-                                                              [[urlParam "resourcerestrictionpattern" escape=false]] 
-                                                            [[/if]]
-
-                                                            [[#if (urlParam "resourcelabelpattern")]]
-                                                              [[urlParam "resourcelabelpattern" escape=false]]
-                                                            [[else]]
-                                                              ?subject rdfs:label ?label .
-                                                            [[/if]]
-                                                          }'
-                                            debounce=500
-          ></semantic-search-query-keyword>
-        </div>
-
-      </div>
-
-      <div class='search-results-area'>
-        
-        <semantic-search-result-holder>
-          <bs-tab-container id="search-results" default-active-key="grid" >
-            <div>
-              <div class="search-results-header">
-
-                <bs-nav bs-style="tabs">
-                  <bs-nav-item event-key="grid">
-                    <mp-popover>
-                      <mp-popover-trigger placement="bottom" trigger='["click","hover","focus"]'> 
-                        <rs-icon icon-type="round" icon-name="view_module"></rs-icon>
-                      </mp-popover-trigger>
-                      <mp-popover-content>
-                        grid
-                      </mp-popover-content>
-                    </mp-popover>
-                    
-                  </bs-nav-item>
-                  <bs-nav-item event-key="table">
-                    <rs-icon icon-type="round" icon-name="view_list"></rs-icon>
-                  </bs-nav-item>
-                  <bs-nav-item event-key="chart">
-                    <rs-icon icon-type="round" icon-name="bar_chart"></rs-icon>
-                  </bs-nav-item>
-                  <bs-nav-item event-key="timeline">
-                    <rs-icon icon-type="round" icon-name="schedule"></rs-icon>
-                  </bs-nav-item>
-                </bs-nav>
-
-                <semantic-search-result id='semantic-search-result'>
-                  <mp-sparql-result-counts id='semantic-search-result-count' query="SELECT DISTINCT ?subject {}"
-                                          template='{{> template}}'
-                  >
-                    <template id='template'>
-                      <div class="num-results">
-                          Found 
-                          <span class="num-results-color">{{#if hasLimit}}{{totalNumberOfResults}}{{else}}{{numberOfResults}}{{/if}}</span> 
-                          results
-                      </div>
-                    </template>
-                  </mp-sparql-result-counts>
-                </semantic-search-result>
-                
-              </div>
-
-              <semantic-search-facet-breadcrumbs></semantic-search-facet-breadcrumbs>
-              
-              <bs-tab-content animation="true">
-                <bs-tab-pane event-key="grid">
-                  <semantic-search-result>
-                    <semantic-table
-                    id='semantic-search-result-grid'
-                    query='
-                    SELECT DISTINCT ?subject ?iri WHERE {
-                        BIND(?subject as ?iri) .
-                    } ORDER BY ?subject
-                    '
-                    tuple-template='{{> gridItem }}',
-                    options='{"showFilter":false, "resultsPerPage":12}'
-                  >
-                  <template id='gridItem'>
-                    <div class='card-select-container'> 
-                      [[#if (hasPermission "forms:ldp:*")]]
-                      <div class='card-select-input'>
-                        <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
-                      </div>
-                    [[/if]]
-                      <mp-draggable iri='{{iri.value}}'>
-                        <div class="rs-card-container">
-                        {{#bind iri=iri.value}}
-                          {{> rsp:itemCardTemplate}}
-                        {{/bind}}
-                        </div>
-                      </mp-draggable>
-                    </div>
-                  </template>
-                  </semantic-table>
-                  </semantic-search-result>
-                </bs-tab-pane>
-                <bs-tab-pane event-key="table">
-                  <semantic-search-result> 
-                    <semantic-table id='semantic-search-result-table'
-                                    query='SELECT DISTINCT ?subject ?iri ?typeLabel WHERE {
-                                            BIND(?subject as ?iri) .
-                                            ?subject a ?type .
-                                            ?type rdfs:label ?typeLabel .
-                                            FILTER (lang(?typeLabel) = "en")
-                                          } ORDER BY ?subject'
-
-                                    options='{"showFilter":false, "resultsPerPage":10}' 
-                                    column-configuration='[
-                                          {"variableName": "typeLabel", "displayName": "Type", "cellTemplate": "{{> type}}" },
-                                          {"variableName": "subject", "displayName": "Label", "cellTemplate": "{{> label}}" }
-                                          ]'   
-                    >
-
-                      <template id='type'>
-                        <div class="search-result-table__type" style="display: flex; align-items: center;">
-                          <rs-icon icon-type="round" icon-name="drag_indicator" style="margin-right: 8px;"></rs-icon>
-                          <mp-draggable iri='{{iri.value}}'>
-                            <div class="search-result-table__type-value">{{typeLabel.value}}</div>
-                          </mp-draggable>
-                        </div>
-                        
-                      </template>
-
-                      <template id='label'>
-                        <mp-draggable iri='{{iri.value}}'>
-                          <div><mp-label iri='{{iri.value}}'></mp-label></div>
-                        </mp-draggable>
-                      </template>
-
-                    </semantic-table>
-                  </semantic-search-result>
-                </bs-tab-pane>
-                <bs-tab-pane event-key="chart">
-                  <semantic-search-result-context ranges='["http://www.w3.org/2004/02/skos/core#Concept", "http://www.cidoc-crm.org/cidoc-crm/E53_Place"]'>
-                    <semantic-search-result id='semantic-search-result-chart'>
-                    <mp-component-toolbar>
-                        <mp-component-toolbar-actions>
-                          <semantic-chart-type-selector id='search-result-chart-type-selector' default="bar" types='["line", "bar", "radar", "pie", "donut"]'></semantic-chart-type-selector>
-                            <mp-component-toolbar-action-download></mp-component-toolbar-action-download>
-                            <mp-component-toolbar-action-save id='persit-component-action' add-to-default-set=true></mp-component-toolbar-action-save>
-                        </mp-component-toolbar-actions>
-                        <mp-component-toolbar-component>
-                        <semantic-chart
-                            id='search-result-chart'
-                            query='
-                              SELECT ?__value__ (COUNT(DISTINCT ?subject) as ?count) WHERE {
-                                OPTIONAL { FILTER(?__contextRelationPattern__) }
-                                BIND(IF(BOUND(?__value__), ?__value__, "Unknown") as ?__value__)
-                              } GROUP BY ?__value__ ORDER BY DESC(?count)
-                            '
-                            sets='[{
-                              "category": "__value__",
-                              "value": "count"
-                            }]'>
-                        </semantic-chart>
-                        </mp-component-toolbar-component>
-                    </mp-component-toolbar>
-                    </semantic-search-result>
-                  </semantic-search-result-context>
-                </bs-tab-pane>
-                <bs-tab-pane event-key="timeline">
-                  <div>
-                    <semantic-search-result>
-                    <mp-sparql-result-counts id='timeline-search-result-count' query="SELECT DISTINCT ?subject {} LIMIT 100"
-                                                template='{{> template}}'
-                    >
-                        <template id='template'>
-                        {{#if hasLimit}}
-                        <bs-alert bs-style="warning" class="search-results__alert">
-                            <rs-icon icon-type="round" icon-name="report_problem"></rs-icon>
-                            <span class="num-results">
-                            There were {{totalNumberOfResults}} results. Only 100 can be visualised on the timeline at once!
-                        </span>
-                        </bs-alert>
-                        {{/if}}
-                        </template>
-                    </mp-sparql-result-counts>
-                    </semantic-search-result>
-
-                    <semantic-search-result-context ranges='["http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span"]'>
-                    <semantic-search-result  id='semantic-search-result-timeline'>
-                        <mp-component-toolbar>
-                        <mp-component-toolbar-actions>
-                            <mp-component-toolbar-action-save id='persit-component-action' add-to-default-set=true></mp-component-toolbar-action-save>
-                        </mp-component-toolbar-actions>
-                        <mp-component-toolbar-component>
-                            <semantic-timeline
-                            id='search-result-timeline'
-                            query='PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-                                    SELECT DISTINCT ?start ?end ?iri WHERE {
-                                    FILTER(?__contextRelationPattern__).
-                                    ?__value__ crm:P82a_begin_of_the_begin ?start ;
-                                            crm:P82b_end_of_the_end ?end .
-                                    
-                                    BIND(?subject as ?iri) .
-                                    }
-                                    ORDER BY ?subject
-                                    LIMIT 100
-                            '
-                            tuple-template='{{> timelineItem}}'
-                            tuple-template-height=50>
-                            <template id='timelineItem'>
-                                <mp-popover>
-                                <mp-popover-trigger placement="top" trigger='["hover"]' root-close='false'>
-                                    <div data-flex-layout='column top-left'>
-                                    <p>{{start.value}} - {{end.value}}</p>
-                                    <semantic-link uri='{{iri.value}}'></semantic-link>
-                                    </div>
-                                </mp-popover-trigger>
-                                <mp-popover-content>{{> rsp:itemCardTemplate}}</mp-popover-content>
-                                </mp-popover>
-                            </template>
-                            </semantic-timeline>
-                        </mp-component-toolbar-component>
-                        </mp-component-toolbar>
-                    </semantic-search-result>
-                    </semantic-search-result-context>
-                </div>
-                </bs-tab-pane>
-              </bs-tab-content>
-            </div>
-          </bs-tab-container>
-        </semantic-search-result-holder>
-
-        <div>
-          <div>Filter by</div>
-          <semantic-search-facet  id='semantic-search-facet'
-          value-categories='{
-            "<http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span>": {
-                "kind": "date-range",
-                "valuesQuery": "
-                    SELECT ?dateBeginValue ?dateEndValue WHERE {
-                      FILTER(?__facetRelationPattern__).
-                      ?__value__ crm:P82a_begin_of_the_begin ?dateBeginValue ;
-                            crm:P82b_end_of_the_end     ?dateEndValue .
-                    } ORDER BY ?dateBeginValue
-                "
-            }
-          }'
-></semantic-search-facet>
-        </div>
-
-          
-      </div>
-    </semantic-search> 
-
+        </mp-splitpane>
+      </semantic-search> 
   </template>
 </mp-event-target-template-render>

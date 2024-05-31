@@ -298,6 +298,7 @@ export class PageManager extends Component<{}, PageAdminState> {
     const dialogRef = 'deletion-confirmation';
     const onHide = () => getOverlaySystem().hide(dialogRef);
     const props = {
+      title: 'Delete template',
       message: 'Do you want to delete the selected templates?',
       onHide,
       onConfirm: (confirm) => {

@@ -167,11 +167,12 @@
                       
                       <semantic-table id='field-results' 
                                       number-of-displayed-rows=10 
-                                      query='SELECT DISTINCT ?subject (SAMPLE(?g) as ?graph) (SAMPLE(?v) as ?version) (SAMPLE(?d) AS ?description) WHERE {
+                                      query='SELECT DISTINCT ?subject (SAMPLE(?g) as ?graph) (SAMPLE(?l) as ?name) (SAMPLE(?v) as ?version) (SAMPLE(?d) AS ?description) WHERE {
                                               FILTER(isIRI(?subject)) .
                                               GRAPH ?g {
                                                 ?subject a owl:Ontology .
                                               }
+                                              OPTIONAL {?subject rdfs:label ?l}
                                               OPTIONAL { ?subject owl:versionInfo ?v } 
                                               OPTIONAL { ?subject rdfs:comment ?d }
                                             } GROUP BY ?subject ORDER BY ASC(?subject) LIMIT 100' 
@@ -194,9 +195,11 @@
                               <div class="page__section-container-whiteBg" style="flex: 1; margin: 0; display: flex; flex-direction: column;">
                                 <div style="flex: 1;">
                                   <h3>
-                                    <semantic-link iri='{{subject.value}}' class="text-underline"></semantic-link>
+                                    <semantic-link iri='{{subject.value}}' class="text-underline">{{name.value}}</semantic-link>
+																		                                 
                                   </h3>
                                   <p style='font-size:11px;'>{{subject.value}}</p>
+                                  
                                   {{#if description}}
                                     <p>
                                       <mp-text-truncate lines=4 truncate='...'
@@ -356,24 +359,20 @@
                                               </template>
                                         </semantic-query>
                                       <div class="form-btn-group">
-                                        <div style="display: flex; justify-content: flex-end; width: 100%;">
-                                          <mp-event-trigger id='removeOntology-cancel-dialog-trigger' 
-                                                            type='OverlayDialog.Close' 
-                                                            targets='["removeOntology-confirmation-dialog"]'>
-                                            <button class="btn btn-default">Cancel</button>
-                                          </mp-event-trigger>
+                                        <mp-event-trigger id='removeOntology-cancel-dialog-trigger' 
+                                                          type='OverlayDialog.Close' 
+                                                          targets='["removeOntology-confirmation-dialog"]'>
+                                          <button class="btn btn-default">Cancel</button>
+                                        </mp-event-trigger>
 
-                                          
-                                            <mp-event-trigger id='removeOntology-removeKps-dialog-trigger' 
-                                                            type='Component.TemplateUpdate' 
-                                                            targets='[""]'>
-                                              <mp-ldp-remove-from-container-action ontology=true iri="{{subject.value}}" 
-                                                                  container=" http://www.researchspace.org/resource/system/ontologyContainer">
-                                                <button class="btn btn-action">Delete ontology</button> 
-                                              </mp-ldp-remove-from-container-action> 
-                                          </mp-event-trigger>
-
-                                        </div>
+                                        <mp-event-trigger id='removeOntology-removeKps-dialog-trigger' 
+                                                          type='Component.TemplateUpdate' 
+                                                          targets='[""]'>
+                                            <mp-ldp-remove-from-container-action ontology=true iri="{{subject.value}}" 
+                                                                container=" http://www.researchspace.org/resource/system/ontologyContainer">
+                                              <button class="btn btn-action">Delete ontology</button> 
+                                            </mp-ldp-remove-from-container-action> 
+                                        </mp-event-trigger>
                                       </div>
                                     </div>
                                   </mp-overlay-dialog-content>
@@ -412,7 +411,7 @@
 
 [[#*inline "customOntologyUploadDropzoneMessage"]]
       <div class='placeholder-item'>
-        <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+        <rs-icon icon-type='round' icon-name='file_upload' class='upload_icon'></rs-icon>
         <div> 
           <p>Drag ontologies as *.trig or click to upload</p>
           <div class="documentation-section documentation-section-withIcon" style="margin: 20px 0;">

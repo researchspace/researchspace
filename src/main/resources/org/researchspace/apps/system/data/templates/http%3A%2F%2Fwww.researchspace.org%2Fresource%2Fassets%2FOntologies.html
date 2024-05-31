@@ -167,11 +167,12 @@
                       
                       <semantic-table id='field-results' 
                                       number-of-displayed-rows=10 
-                                      query='SELECT DISTINCT ?subject (SAMPLE(?g) as ?graph) (SAMPLE(?v) as ?version) (SAMPLE(?d) AS ?description) WHERE {
+                                      query='SELECT DISTINCT ?subject (SAMPLE(?g) as ?graph) (SAMPLE(?l) as ?name) (SAMPLE(?v) as ?version) (SAMPLE(?d) AS ?description) WHERE {
                                               FILTER(isIRI(?subject)) .
                                               GRAPH ?g {
                                                 ?subject a owl:Ontology .
                                               }
+                                              OPTIONAL {?subject rdfs:label ?l}
                                               OPTIONAL { ?subject owl:versionInfo ?v } 
                                               OPTIONAL { ?subject rdfs:comment ?d }
                                             } GROUP BY ?subject ORDER BY ASC(?subject) LIMIT 100' 
@@ -194,9 +195,11 @@
                               <div class="page__section-container-whiteBg" style="flex: 1; margin: 0; display: flex; flex-direction: column;">
                                 <div style="flex: 1;">
                                   <h3>
-                                    <semantic-link iri='{{subject.value}}' class="text-underline"></semantic-link>
+                                    <semantic-link iri='{{subject.value}}' class="text-underline">{{name.value}}</semantic-link>
+																		                                 
                                   </h3>
                                   <p style='font-size:11px;'>{{subject.value}}</p>
+                                  
                                   {{#if description}}
                                     <p>
                                       <mp-text-truncate lines=4 truncate='...'

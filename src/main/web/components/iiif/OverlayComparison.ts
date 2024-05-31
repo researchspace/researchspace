@@ -65,7 +65,7 @@ interface LoadedState {
  * @example
  * <div style='width: 50%; height: 600px;'>
  *   <rs-iiif-overlay
- *     compared-images='["http://example.com/bar/image1", "http://example.com/bar/image2"]'
+ *     selection='["http://example.com/bar/image1", "http://example.com/bar/image2"]'
  *     image-id-pattern='BIND(REPLACE(?imageIRI, "^http://example.com/(.*)$", "$1") as ?imageID)'
  *     iiif-server-url='<iiif-server>'>
  *   </rs-iiif-overlay>
@@ -81,9 +81,9 @@ export class OverlayComparison extends KefirComponentBase<Props, State, LoadedSt
     repositories: ['default'],
   };
 
-  loadState(props: Props) {
+  loadState(props: Props) { 
     const tasks = props.selection
-      .map((iri) => (typeof iri === 'string' ? Rdf.iri(iri) : iri))
+      .map((iri) => (typeof iri === 'string' ? Rdf.iri(iri) : iri ))
       .map((iri) => queryIIIFImageOrRegion(iri, props.imageIdPattern, props.repositories));
     return Kefir.zip(tasks).map((metadata) => ({
       metadata: Immutable.List(metadata),

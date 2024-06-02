@@ -431,7 +431,13 @@
                 {{/if}}
               </div>
     
-              {{#if (not (eq mode "deleted"))}}
+              {{#if (not (eq mode "deleted"))}} 
+                <mp-event-proxy id='{{viewId}}-tab-refresh-on-created' 
+                                on-event-source='{{viewId}}-vocab-form' 
+                                on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
+                                proxy-event-type='Dashboard.ResourceChanged' 
+                                proxy-targets='["{{viewId}}"]'                                                          
+                ></mp-event-proxy> 
                 <mp-event-proxy id='{{viewId}}-tree-refresh-on-created' 
                                 on-event-source='{{viewId}}-vocab-form' 
                                 on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
@@ -439,7 +445,9 @@
                                 proxy-targets='["{{viewId}}-mytree", "{{viewId}}-term-forms"]'
                                 additional-data='{"mode": "edit"}'
                 ></mp-event-proxy>
-      
+              
+                     
+
                 {{#if iri}}
                   <semantic-query query="SELECT ?label WHERE {
                                           BIND(<{{iri}}> as ?item) .

@@ -25,11 +25,12 @@ import { Rdf } from 'platform/api/rdf';
 import { TemplateItem } from 'platform/components/ui/template';
 import { DropArea } from 'platform/components/dnd/DropArea';
 import { Cancellation } from 'platform/api/async';
-import { listen } from 'platform/api/events';
 import PageLoaderComponent from 'platform/components/ui/page-loader';
 
 import * as styles from './Dashboard.scss';
 import * as DashboardEvents from './DashboardEvents';
+import { listen } from 'platform/api/events';
+
 import Icon from '../ui/icon/Icon';
 
 const DEFAULT_VARIABLE = 'dashboardId';
@@ -243,12 +244,13 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
       .observe({
         value: ({ data }) => {
           if (onResourceChange) {
+            if (!data.resourceIri && data["iri"])
+              data.resourceIri = data["iri"];
             onResourceChange(data.resourceIri, data.data);
           }
         },
       });
     this.onFocus();
-
   }
 
   private onFocus = () => {

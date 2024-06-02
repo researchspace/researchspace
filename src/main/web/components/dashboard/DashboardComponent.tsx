@@ -29,7 +29,7 @@ import { getOverlaySystem } from 'platform/components/ui/overlay';
 import { ConfirmationDialog } from 'platform/components/ui/confirmation-dialog';
 
 import { DashboardItem, DashboardViewConfig } from './DashboardItem';
-
+import { DashboardEvents } from './DashboardEvents';
 import * as styles from './Dashboard.scss';
 import { Cancellation } from 'platform/api/async';
 import { listen, trigger } from 'platform/api/events';
@@ -40,6 +40,8 @@ const DEFAULT_ITEM_LABEL_TEMPLATE = `<mp-label iri='{{iri}}'></mp-label>`;
 import * as LabelsService from 'platform/api/services/resource-label';
 import * as Kefir from 'kefir';
 import Icon from '../ui/icon/Icon';
+
+import { BuiltInEvents,  registerEventSource, unregisterEventSource } from 'platform/api/events';
 
 export interface Item {
   readonly id: string;
@@ -621,6 +623,9 @@ export class DashboardComponent extends Component<Props, State> {
   }
 
   private onResourceChange(itemId: string, resourceIri: string, data?: { [key: string]: string }) {
+    LabelsService.getLabel(Rdf.iri(resourceIri)).onValue((label) => {
+      this.state.layout.doAction(FlexLayout.Actions.renameTab(itemId, label));
+    });
     this.setState(
       (prevState): State => {
         const newItems = prevState.items.map((item) => {

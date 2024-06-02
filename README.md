@@ -36,7 +36,16 @@ Kartography will respond to new pull requests within 7 working days.
 </ul>
 
 
-<p>--------------------------------------------------------------------------------------------------------------------------------------------------------------------</p>
+<p>--------------------------------------------------------------------------------------------------------------------------</p>
+
+<p>Kartography are currently using rs-new-design branch as a basis fpor the next version of ResearchSpace in order to support a comprehensive user interface and consolidate work. </p>   
+
+
+
+<p>--------------------------------------------------------------------------------------------------------------------------</p>
+
+
+
 <h2>The ResearchSpace System</h2>
 <div style="float:left;">
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=MaAv0SE7wis

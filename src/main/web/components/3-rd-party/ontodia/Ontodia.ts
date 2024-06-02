@@ -997,6 +997,11 @@ export class Ontodia extends Component<OntodiaProps, State> {
                 data: { resourceIri: this.state.diagramIri },
               });
               trigger({
+                eventType: "Dashboard.ResourceChanged",
+                source: this.props.id,
+                data: { resourceIri: this.state.diagramIri },
+              });
+              trigger({
                 eventType: OntodiaEvents.DiagramIsDirty,
                 source: this.props.id,
                 data: { hasChanges: false },

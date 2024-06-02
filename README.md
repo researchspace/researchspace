@@ -30,7 +30,7 @@
 <p>Kartography will provide an incubator repository with relaxed rules for component development allowing development off the main branch but which can be used in ResearchSpace instances (like plugins) and which may or may not be submitted as a pull request for the main branch at a future date. This will allow rapid innovation but also allow components to develop to a good quality without impeding their use in the ResearchSpace instances. 
 Kartography will respond to new pull requests within 7 working days.
   
-<p>For specific questions related to github please schedule an appointment using https://calendar.app.google/ytoocWhkbVKE9Teq7</p>
+<p>If you would like to discuss something in person please schedule an appointment using https://calendar.app.google/ytoocWhkbVKE9Teq7</p>
 <p>Community developers should test new code before submitting a pull request.</p>
 <p>When submitting a pull request they will provide enough information to allow Kartography to apply the objectives above. </p>
 </ul>

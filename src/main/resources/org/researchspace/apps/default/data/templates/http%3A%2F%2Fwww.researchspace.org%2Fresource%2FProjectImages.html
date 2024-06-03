@@ -98,29 +98,27 @@
             <div>
               
               <semantic-search-query-keyword 
-                  query='
-                    SELECT ?subject WHERE { 
-                      ?subject a rs:EX_Digital_Image .
-                      ?subject rdfs:label ?label .
-                      ?label bds:search ?__token__ ;
-                                  bds:minRelevance "0.3" ;
-                                  bds:matchAllTerms "true"  .
-                    }
-                  '
-                  default-query='
-                    SELECT ?subject WHERE {
-                      ?subject a rs:EX_Digital_Image .
-                    }
-                  '
+                  query='SELECT ?subject WHERE { 
+                          ?subject a rs:EX_Digital_Image .
+                          ?subject rdfs:label ?label .
+                          ?label bds:search ?__token__ ;
+                                      bds:minRelevance "0.3" ;
+                                      bds:matchAllTerms "true"  .
+                        }'
+                  default-query='SELECT ?subject WHERE {
+                                  ?subject a rs:EX_Digital_Image .
+                                }'
                   debounce=500
                 ></semantic-search-query-keyword>
-                <mp-selection-action-choice id='Action' title='With selected ...' selection='images-selection-aggregator'>
+
+                <mp-selection-action-choice id='action' selection='images-selection-aggregator'>
                   <rs-iiif-overlay-action [[> rsp:IIIFConfig]]></rs-iiif-overlay-action>
                   <rs-iiif-side-by-side-action [[> rsp:IIIFConfig]]></rs-iiif-side-by-side-action>
                    [[#if (hasPermission "forms:ldp:*")]]
                   <mp-create-set-action></mp-create-set-action>
                   [[/if]]
                 </mp-selection-action-choice>
+
             </div>
             
             <div data-flex-layout="row stretch-stretch" class='search-results-area'>

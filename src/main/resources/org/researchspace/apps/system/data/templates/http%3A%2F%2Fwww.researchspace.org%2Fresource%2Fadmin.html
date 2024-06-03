@@ -55,8 +55,6 @@
 [[!-- END OF KP GENERATOR --]]
 
 
-
-
 <ol class="page-breadcrumb">
   <li>
     <mp-link title="Home" url="/">Home</mp-link>
@@ -117,20 +115,17 @@
 
         <bs-row>
           <bs-col xs="12"><h2 class="admin-title">Knowledge Modelling</h2></bs-col>
-          [[#if (hasPermission
-          "api:ldp:container:<http://www.researchspace.org/resource/system/fieldDefinitionContainer>:read:any")]]
-          <bs-col xs="6" md="3"
-            >[[>Admin:IconPanelInclude title="Knowledge Patterns Catalog" materialIcon="list"
-            pageLink="http://www.researchspace.org/resource/system/fieldDefinitionContainer"]]
-          </bs-col>
+          [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/fieldDefinitionContainer>:read:any")]]
+            <bs-col xs="6" md="3"
+              >[[>Admin:IconPanelInclude title="Knowledge Patterns Catalog" materialIcon="list"
+              pageLink="http://www.researchspace.org/resource/system/fieldDefinitionContainer"]]
+            </bs-col>
           [[/if]]
           <bs-col xs="6" md="3"
-            >[[>Admin:IconPanelInclude title="Ontologies" materialIcon="schema"
-            pageLink="http://www.researchspace.org/resource/assets/Ontologies"]]
+            >[[>Admin:IconPanelInclude title="Ontologies" materialIcon="schema" pageLink="http://www.researchspace.org/resource/assets/Ontologies"]]
           </bs-col>
           <bs-col xs="6" md="3"
-            >[[>Admin:IconPanelInclude title="RDF Namespace Prefixes" materialIcon="integration_instructions" pageLink=(resolvePrefix
-            "Admin:Namespaces")]]
+            >[[>Admin:IconPanelInclude title="RDF Namespace Prefixes" materialIcon="integration_instructions" pageLink=(resolvePrefix "Admin:Namespaces")]]
           </bs-col>
           [[!-- TODO rename sparql endpoint and make it a proper link --]]
           <bs-col xs="6" md="3">
@@ -151,23 +146,22 @@
         <bs-row>
           <bs-col xs="12"><h2 class="admin-title">System Resources</h2></bs-col>
           <bs-col xs="6" md="3">
-            
-          <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                   urlqueryparam-view='system-vocabulary'>
-                  <div class="text-center panel panel-default admin-icon-panel">
-                    <div class="panel-body">
-                      <rs-icon icon-type="round" icon-name="description"></rs-icon>
-                    </div>
-                    <div class="panel-footer text-truncate" style="position: relative">
-                      <a>Vocabularies / Authorities</a>
-                    </div>
-                  </div>
-            </semantic-link-container>
-            
+            [[#if (hasPermission "sparql:update")]]
+              <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                      urlqueryparam-view='system-vocabulary'>
+                      <div class="text-center panel panel-default admin-icon-panel">
+                        <div class="panel-body">
+                          <rs-icon icon-type="round" icon-name="description"></rs-icon>
+                        </div>
+                        <div class="panel-footer text-truncate" style="position: relative">
+                          <a>Vocabularies / Authorities</a>
+                        </div>
+                      </div>
+                </semantic-link-container>
+            [[/if]]
           </bs-col>
           <bs-col xs="6" md="3"
-            >[[>Admin:IconPanelInclude title="Template & Application Pages" materialIcon="description"
-            pageLink=(resolvePrefix "Admin:Templates")]]
+            >[[>Admin:IconPanelInclude title="Template & Application Pages" materialIcon="description" pageLink=(resolvePrefix "Admin:Templates")]]
           </bs-col>
           <bs-col xs=6 md=3>[[>Admin:IconPanelInclude title="Apps & Storages" materialIcon="storage" pageLink=(resolvePrefix "Admin:Apps")]]
           </bs-col>

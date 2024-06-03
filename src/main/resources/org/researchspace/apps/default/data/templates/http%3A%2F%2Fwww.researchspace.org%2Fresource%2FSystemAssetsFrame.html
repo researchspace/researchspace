@@ -32,54 +32,51 @@
     <mp-splitpane-sidebar-open style="flex: 1; overflow: hidden;">
       <div class="split-pane__sidebar-open asset-uploads">
         [[#if (hasPermission "forms:ldp:*")]]
-            <semantic-query
-                            query='
-                              SELECT ?title ?formIRI WHERE {
-                                VALUES (?config ?order) {
-                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Image> 1)
-                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Document> 2)
-                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Audio> 3)
-                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Video> 4)
-                                }
-                                ?config a <http://www.researchspace.org/resource/system/resource_configuration> ;
-																	<http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?title ;
-                                  <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?formIRI .
-                              } ORDER BY ?order
-                            '
-                            template='{{> assets-upload}}'
-            >
-              <template id='assets-upload'>
-                <mp-event-target-template-render id='asset-upload-form-area' template='{{> assetUploadForm}}'>
-                  <template id='assetUploadForm'>
-                    <bs-dropdown-button bs-style="default"
-                                        title="{{#if assetTypeIndex}}{{#with (lookup bindings assetTypeIndex)}}{{title.value}}{{/with}}{{else}}{{bindings.0.title.value}}{{/if}}"
-                                        id="upload-type-selection"
-                    >
-                      {{#each bindings}}
-                        <mp-event-trigger id='upload-pdf' 
-                                          type='Component.TemplateUpdate' 
-                                          data='{"assetTypeIndex": "{{@index}}"}' 
-                                          targets='["asset-upload-form-area"]'>
-                          <bs-menu-item event-key="{{title.value}}" active='{{#if ../assetTypeIndex}}{{#ifCond ../assetTypeIndex "==" @index}}true{{else}}false{{/ifCond}}{{else}}{{#ifCond @index "==" "0"}}true{{else}}false{{/ifCond}}{{/if}}'>{{title.value}}</bs-menu-item>
-                        </mp-event-trigger> 
-                      {{/each}}
-                    </bs-dropdown-button>
-                    
-                    <div class="asset-upload-form">
-                      <semantic-context repository='assets'>
-                        <inline-template template-iri='{{#if assetTypeIndex}}{{#with (lookup bindings assetTypeIndex)}}{{formIRI.value}}{{/with}}{{else}}{{bindings.0.formIRI.value}}{{/if}}' 
-                                         options='{
-                                                  "editable": true,
-                                                  "mode": "new",
-                                                  "viewId": "assets"
-                                                  }'>
-                        </inline-template>
-                      </semantic-context>
-                    </div>
-                  </template>
-                </mp-event-target-template-render>
-              </template>
-            </semantic-query>
+          <semantic-query query='SELECT ?title ?formIRI WHERE {
+                                  VALUES (?config ?order) {
+                                    (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Image> 1)
+                                    (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Document> 2)
+                                    (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Audio> 3)
+                                    (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Video> 4)
+                                  }
+                                  ?config a <http://www.researchspace.org/resource/system/resource_configuration> ;
+                                    <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?title ;
+                                    <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?formIRI .
+                                } ORDER BY ?order'
+                              template='{{> assets-upload}}'
+          >
+            <template id='assets-upload'>
+              <mp-event-target-template-render id='asset-upload-form-area' template='{{> assetUploadForm}}'>
+                <template id='assetUploadForm'>
+                  <bs-dropdown-button bs-style="default"
+                                      title="{{#if assetTypeIndex}}{{#with (lookup bindings assetTypeIndex)}}{{title.value}}{{/with}}{{else}}{{bindings.0.title.value}}{{/if}}"
+                                      id="upload-type-selection"
+                  >
+                    {{#each bindings}}
+                      <mp-event-trigger id='upload-pdf' 
+                                        type='Component.TemplateUpdate' 
+                                        data='{"assetTypeIndex": "{{@index}}"}' 
+                                        targets='["asset-upload-form-area"]'>
+                        <bs-menu-item event-key="{{title.value}}" active='{{#if ../assetTypeIndex}}{{#ifCond ../assetTypeIndex "==" @index}}true{{else}}false{{/ifCond}}{{else}}{{#ifCond @index "==" "0"}}true{{else}}false{{/ifCond}}{{/if}}'>{{title.value}}</bs-menu-item>
+                      </mp-event-trigger> 
+                    {{/each}}
+                  </bs-dropdown-button>
+                  
+                  <div class="asset-upload-form">
+                    <semantic-context repository='assets'>
+                      <inline-template template-iri='{{#if assetTypeIndex}}{{#with (lookup bindings assetTypeIndex)}}{{formIRI.value}}{{/with}}{{else}}{{bindings.0.formIRI.value}}{{/if}}' 
+                                        options='{
+                                                "editable": true,
+                                                "mode": "new",
+                                                "viewId": "assets"
+                                                }'>
+                      </inline-template>
+                    </semantic-context>
+                  </div>
+                </template>
+              </mp-event-target-template-render>
+            </template>
+          </semantic-query>
         [[/if]]
 
       </div>

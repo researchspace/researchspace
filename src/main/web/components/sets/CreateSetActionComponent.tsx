@@ -33,8 +33,8 @@ type Props = MenuProps & AllTitleProps & { id: string };
 
 export default class CreateSetActionComponent extends Component<Props, void> {
   static defaultProps = {
-    menuTitle: 'Create new set',
-    title: 'Create new set',
+    menuTitle: 'New set with selection',
+    title: 'New set with selection',
   };
 
   render() {

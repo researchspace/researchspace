@@ -22,12 +22,12 @@
 
 import * as React from 'react';
 import { Component, Children, ReactNode, cloneElement, ReactElement, SyntheticEvent } from 'react';
-import { DropdownButton } from 'react-bootstrap';
 import * as _ from 'lodash';
 import { Event, listen } from 'platform/api/events';
 import { Cancellation } from 'platform/api/async';
 import { SelectionEvents } from 'platform/components/ui/selection';
 import { SelectionGroupContext, SelectionGroupContextTypes } from './SelectionGroupComponent';
+import classnames = require('classnames');
 
 interface Props {
   /**
@@ -58,8 +58,6 @@ interface Props {
 
 interface State {
   values?: { [tag: string]: boolean };
-
-  open?: boolean;
 }
 
 export class SelectionActionChoiceComponent extends Component<Props, State> {
@@ -72,7 +70,6 @@ export class SelectionActionChoiceComponent extends Component<Props, State> {
     super(props, context);
     this.state = {
       values: {},
-      open: false,
     };
   }
 
@@ -111,29 +108,20 @@ export class SelectionActionChoiceComponent extends Component<Props, State> {
       .filter((pair) => pair[1])
       .map(([key, value]) => key);
     const { style, className, title, children } = this.props;
+    const isDisabled = _.isEmpty(this.state.values) || _.every(this.state.values, (val) => val === false)
+
     return (
-      <DropdownButton
+      <div
         id={this.props.id}
-        disabled={_.isEmpty(this.state.values) || _.every(this.state.values, (val) => val === false)}
-        open={this.state.open}
-        onToggle={this.onDropdownToggle}
         style={style}
         title={title}
-        className={className}
+        className={classnames(isDisabled ? 'disabled': '', className)}
       >
         {Children.map(children, (child: ReactElement<any>) =>
-          cloneElement(child, { selection, closeMenu: this.closeMenu })
+          cloneElement(child, { selection })
         )}
-      </DropdownButton>
+      </div>
     );
-  };
-
-  private closeMenu = () => {
-    this.setState({ open: false });
-  };
-
-  private onDropdownToggle = (isOpen: boolean) => {
-    this.setState({ open: isOpen });
   };
 }
 export default SelectionActionChoiceComponent;

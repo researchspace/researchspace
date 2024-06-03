@@ -38,7 +38,7 @@ export const SelectionGroupContextTypes = {
  * @example
  * <mp-selection-group>
  *     <div>
- *        <mp-selection-action-choice id='Action' title='With selected ...' selection='example'>
+ *        <mp-selection-action-choice id='Action' selection='example'>
  *            [[!-- Actions --]]
  *        </mp-selection-action-choice>
  *

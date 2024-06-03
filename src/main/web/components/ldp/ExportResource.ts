@@ -78,6 +78,9 @@ export class ExportResourceComponent extends Component<Props, {}> {
 
   private onClick = () => {
     const selection = isIriProps(this.props) ? [this.props.iri] : this.props.selection;
+    if (selection.length === 0) {
+      return
+    }
     const exportURL = this.getLDPService().getExportURL(selection);
     const { repository } = this.context.semanticContext;
     this.cancellation.map(getLabels(selection.map(Rdf.iri), { context: { repository } })).observe({

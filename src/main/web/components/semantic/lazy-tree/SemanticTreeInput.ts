@@ -502,9 +502,12 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
   }
 
   private renderTextField() {
+    const selection = this.state.confirmedSelection;
+    const selectedItems = TreeSelection.leafs(selection).sortBy((item) => item.label.value);
+    const textFieldClassNames = classnames(styles.textInput, selectedItems.size === 0 ? 'selection-empty' : 'selection-full')
     const textFieldProps: ClearableInputProps & ReactProps<ClearableInput> = {
       ref: (input) => (this.textInput = input),
-      className: styles.textInput,
+      className: textFieldClassNames,
       inputClassName: styles.input,
       value: this.state.searchText || '',
       placeholder: this.props.placeholder,
@@ -536,8 +539,6 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
       },
     };
 
-    const selection = this.state.confirmedSelection;
-    const selectedItems = TreeSelection.leafs(selection).sortBy((item) => item.label.value);
     const openResourceOnClick = this.props.openResourceOnClick ?? true
 
     const { onSelectionClick } = this.props;

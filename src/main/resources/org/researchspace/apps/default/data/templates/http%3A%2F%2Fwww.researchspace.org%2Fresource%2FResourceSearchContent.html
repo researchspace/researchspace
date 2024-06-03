@@ -1,6 +1,7 @@
-<semantic-query query='SELECT ?resourceConfig ?viewId ?resourceLabel ?resourceOntologyClass ?resourceType ?resourceFormIRI ?resourceRestrictionPattern ?resourceLabelPattern ?resourceSearchKPCategory
+<semantic-query query='SELECT ?resourceConfig ?searchAllPage ?viewId ?resourceLabel ?resourceOntologyClass ?resourceType ?resourceFormIRI ?resourceRestrictionPattern ?resourceLabelPattern ?resourceSearchKPCategory
                        WHERE {    
                             BIND(<[[config]]> as ?resourceConfig) .
+                            [[#if selectedResource]]BIND("true" as ?searchAllPage)[[else]]BIND("false" as ?searchAllPage)[[/if]] .
                             BIND("{{dashboardId}}" as ?viewId)
 
                             ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceLabel .
@@ -31,6 +32,7 @@
       <mp-page-loader iri="http://www.researchspace.org/resource/ResourceSearchTemplate"
                       urlqueryparam-viewid="{{bindings.0.viewId.value}}"
                       urlqueryparam-resourceconfig="{{bindings.0.resourceConfig.value}}"
+                      urlqueryparam-searchall="{{bindings.0.searchAllPage.value}}"
                       urlqueryparam-resourcelabel="{{bindings.0.resourceLabel.value}}"
                       urlqueryparam-resourceontologyclass="<{{bindings.0.resourceOntologyClass.value}}>"
                       urlqueryparam-resourcetype='{{#if bindings.0.resourceType.value}}<{{bindings.0.resourceType.value}}>{{/if}}' 

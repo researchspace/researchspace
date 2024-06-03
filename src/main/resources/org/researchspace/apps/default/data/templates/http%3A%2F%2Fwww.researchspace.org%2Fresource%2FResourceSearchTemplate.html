@@ -16,8 +16,11 @@ config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?fie
           <div class="semantic-search-content">
 
             <div class="semantic-search-header">
-              <h3 class="semantic-search-header-title">[[urlParam "resourcelabel" escape=false]]</h3>
-
+              {{#ifCond "[[urlParam "searchall" escape=false]]" "==" "true"}}
+                <div></div>
+              {{else}}
+                <h3 class="semantic-search-header-title">[[urlParam "resourcelabel" escape=false]]</h3>
+              {{/ifCond}}
               <div class="semantic-search-header-actions">
 
                 [[!-- New button --]]
@@ -102,31 +105,40 @@ config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?fie
                   </bs-dropdown-toggle>
                   <bs-dropdown-menu>
 
+                    {{#ifCond "[[urlParam "resourceconfig" escape=false]]" "==" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image"}}
+                      <bs-menu-item class-name="dropdown-item-action-selection-container">
+                        <mp-selection-action-choice id='[[urlParam "viewid" escape=false]]-side-by-side-action' selection='images-selection-aggregator' class-name="selection-action-choice">
+                          <rs-icon icon-type="rounded" icon-name="splitscreen_vertical_add" class="icon-left" symbol=true></rs-icon>
+                          <rs-iiif-side-by-side-action [[> rsp:IIIFConfig]]></rs-iiif-side-by-side-action>
+                        </mp-selection-action-choice>
+                      </bs-menu-item>
+
+                      <bs-menu-item class-name="dropdown-item-action-selection-container">
+                        <mp-selection-action-choice id='[[urlParam "viewid" escape=false]]-overlay-action' selection='images-selection-aggregator' class-name="selection-action-choice">
+                          <rs-icon icon-type="round" icon-name="layers" class="icon-left"></rs-icon>
+                          <rs-iiif-overlay-action [[> rsp:IIIFConfig]]></rs-iiif-overlay-action>
+                        </mp-selection-action-choice>
+                      </bs-menu-item>
+                      <hr>
+                    {{/ifCond}}
+
                     [[#if (hasPermission "forms:ldp:*")]]
-                      <bs-menu-item>
-                        <mp-selection-action-choice id='Action' title='With selected' selection='item-selection-aggregator'>
+                      <bs-menu-item class-name="dropdown-item-action-selection-container">
+                        <mp-selection-action-choice id='[[urlParam "viewid" escape=false]]-create-set-action' selection='item-selection-aggregator' class-name="selection-action-choice">
+                          <rs-icon icon-type="round" icon-name="create_new_folder" class="icon-left"></rs-icon>
                           <mp-create-set-action></mp-create-set-action>
                         </mp-selection-action-choice>
                       </bs-menu-item>
                     [[/if]]
 
-                    {{#ifCond "[[urlParam "resourceconfig" escape=false]]" "==" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image"}}
-                      <bs-menu-item>
-                        <mp-selection-action-choice id='Action' title='With selected ...' selection='images-selection-aggregator'>
-                          <rs-iiif-side-by-side-action [[> rsp:IIIFConfig]]></rs-iiif-side-by-side-action>
-                        </mp-selection-action-choice>
-                      </bs-menu-item>
-
-                      <bs-menu-item>
-                        <mp-selection-action-choice id='Action' title='With selected ...' selection='images-selection-aggregator'>
-                          <rs-iiif-overlay-action [[> rsp:IIIFConfig]]></rs-iiif-overlay-action>
-                        </mp-selection-action-choice>
-                      </bs-menu-item>
-                      [[#if (hasPermission "forms:ldp:*")]]
-                      [[else]]
-                        <hr>
-                      [[/if]]
-                    {{/ifCond}}
+                    <mp-anonymous-hidden>
+                      <semantic-search-action-save-set-result id='create-set-result-action'>
+                        <bs-menu-item>
+                          <rs-icon icon-type="round" icon-name="create_new_folder" class="icon-left"></rs-icon>
+                          <span>New set with results</span>
+                        </bs-menu-item>  
+                      </semantic-search-action-save-set-result>
+                    </mp-anonymous-hidden>
 
                     [[#if (hasPermission "forms:ldp:*")]]
                       <hr>
@@ -139,15 +151,6 @@ config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?fie
                           <span>Save search in clipboard</span>
                         </bs-menu-item>
                       </semantic-search-action-save-search-result>
-                    </mp-anonymous-hidden>
-
-                    <mp-anonymous-hidden>
-                      <semantic-search-action-save-set-result id='save-set-result-action'>
-                        <bs-menu-item>
-                          <rs-icon icon-type="round" icon-name="save" class="icon-left"></rs-icon>
-                          <span>Save results as set</span>
-                        </bs-menu-item>  
-                      </semantic-search-action-save-set-result>
                     </mp-anonymous-hidden>
 
                     <mp-anonymous-hidden><hr></mp-anonymous-hidden>
@@ -468,16 +471,18 @@ config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?fie
             <mp-splitpane-sidebar-open style="flex: 1; overflow: hidden;">
               <div class="split-pane__sidebar-open">
                 <semantic-search-facet  id='semantic-search-facet'
-                                      value-categories='{
-                                        "<http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span>": {
-                                            "kind": "date-range",
-                                            "valuesQuery": "SELECT ?dateBeginValue ?dateEndValue WHERE {
-                                                              FILTER(?__facetRelationPattern__).
-                                                              ?__value__ crm:P82a_begin_of_the_begin ?dateBeginValue ;
-                                                                    crm:P82b_end_of_the_end     ?dateEndValue .
-                                                            } ORDER BY ?dateBeginValue"
-                                        }
-                                      }'>
+                                        open-by-default=true 
+                                        hide-toggle-button=true
+                                        value-categories='{ "<http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span>": 
+                                                              {
+                                                                "kind": "date-range",
+                                                                "valuesQuery": "SELECT ?dateBeginValue ?dateEndValue WHERE {
+                                                                                  FILTER(?__facetRelationPattern__).
+                                                                                  ?__value__ crm:P82a_begin_of_the_begin ?dateBeginValue ;
+                                                                                        crm:P82b_end_of_the_end     ?dateEndValue .
+                                                                                } ORDER BY ?dateBeginValue"
+                                                              }
+                                                           }'>
                 </semantic-search-facet>
               </div>
             </mp-splitpane-sidebar-open>

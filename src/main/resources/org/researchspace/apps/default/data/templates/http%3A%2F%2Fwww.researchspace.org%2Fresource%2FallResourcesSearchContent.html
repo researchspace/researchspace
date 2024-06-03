@@ -1,9 +1,11 @@
-<div style="padding: 25px 30px 0;">
+<div class="search-all-tree-input-container">
+  <div>Search for: </div>
   <semantic-tree-input  id='{{viewId}}-resource-selection'
+                        class-name="header-tree-input"
                         close-dropdown-on-selection='true'
                         open-dropdown-on-focus='true'
                         multiple-selection='false'
-                        placeholder="Select resource to search"
+                        placeholder="Select resource"
 
                         roots-query='SELECT DISTINCT ?item ?label ?hasChildren WHERE {
                                     {  
@@ -46,7 +48,7 @@
     {{#if iri}}
       {{#bind selectedResource=iri}}
         <div class='page__grid-container search-page-container'>
-          [[> rsp:ResourceSearchContent config='{{iri}}']] 
+          [[> rsp:ResourceSearchContent config='{{selectedResource}}' selectedResource='{{selectedResource}}']] 
         </div>
       {{/bind}}
     {{/if}}

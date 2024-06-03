@@ -15,20 +15,7 @@
     <img src="https://badges.gitter.im/Join Chat.svg" height="30px" alt="Gitter"></a>
 </p>
 
-<h2>Github Repository</h2>
-
-<p>The key objective of repository are the following; </p>
-<ul>
-<p><b>Quality:</b>  ensuring that the code contributed to the project meets quality standards, aligns with project goals, and doesn't introduce bugs or regressions.</p>
-
-<p><b>Consistency:</b>  ensure that contributions adhere to the project's coding standards and best practices.</p>
-
-<p><b>Direction:</b> providing a holistic view of the system and identifying inappropriate changes for the systems overall direction and roadmap.</p>
-
-<p><b>Community Interaction:</b> reviewing pull requests provides an opportunity for maintainers to engage with contributors, provide feedback, and foster a collaborative environment.</p>
-
-<p>Kartography will provide an incubator repository with relaxed rules for component development allowing development off the main branch but which can be used in ResearchSpace instances (like plugins) and which may or may not be submitted as a pull request for the main branch at a future date. This will allow rapid innovation but also allow components to develop to a good quality without impeding their use in the ResearchSpace instances. 
-Kartography will respond to new pull requests within 7 working days.
+<h2>Github Repository</h2>.
   
 <p>If you would like to discuss something in person please schedule an appointment using https://calendar.app.google/ytoocWhkbVKE9Teq7</p>
 <p>Community developers should test new code before submitting a pull request.</p>

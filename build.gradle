@@ -197,27 +197,27 @@ gretty {
 
 // install npm dependencies in development mode
 task npmInstall(type: Exec) {
-    executable 'npm'
+    executable 'npm.cmd'
     args 'i', '--no-audit', '--no-fund', '--loglevel=error'
 }
 
 // we want to get clean node_modules when we are building on CI or production version locally
 // see https://docs.npmjs.com/cli/ci
 task npmInstallCi(type: Exec) {
-    executable 'npm'
+    executable 'npm.cmd'
     args 'ci', '--no-audit', '--no-fund', '--loglevel=error'
 }
 
 // execute webpack in production mode with minifications, etc
 task runProdWebpack(type: Exec) {
-    executable 'npm'
+    executable 'npm.cmd'
     args 'run', 'prod'
 }
 tasks.runProdWebpack.dependsOn npmInstallCi
 
 // task to execute webpack in watch mode, see ./webpack/package.json
 task startWebpack(type: com.github.psxpaul.task.ExecFork) {
-    executable = 'npm'
+    executable = 'npm.cmd'
     args = [ 'run', 'dev' ]
     timeout = 1200
 
@@ -260,7 +260,7 @@ project.afterEvaluate {
 // execute frontend tests
 task testKarma(type: Exec) {
     workingDir "$projectDir/webpack"
-    executable 'npm'
+    executable 'npm.cmd'
     args 'run', 'test-ci'
 }
 tasks.testKarma.dependsOn npmInstall

@@ -19,6 +19,7 @@
 
 import { Props, createElement } from 'react';
 import * as D from 'react-dom-factories';
+import * as classNames from 'classnames';
 import * as PropTypes from 'prop-types';
 import * as _ from 'lodash';
 import * as Either from 'data.either';
@@ -83,6 +84,8 @@ interface BaseConfig extends ControlledProps {
    * SPARQL Select query.
    */
   query: string;
+
+  className?: string;
 
   /**
    * Number of rows to show on the one page
@@ -215,7 +218,9 @@ export class SemanticTable extends Component<SemanticTableProps, TableState> {
       return createElement(ErrorNotification, { errorMessage: this.state.error });
     } else {
       return D.div(
-        { className: 'semantic-table-holder' },
+        { 
+          className: classNames(this.props.className, 'semantic-table-holder')
+         },
         this.state.isLoading
           ? createElement(Spinner)
           : this.state.data && !SparqlUtil.isSelectResultEmpty(this.state.data)

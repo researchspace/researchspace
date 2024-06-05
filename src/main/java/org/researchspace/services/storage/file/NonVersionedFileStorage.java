@@ -32,6 +32,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -40,29 +41,50 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.IRI;
 import org.researchspace.services.storage.StorageUtils;
 import org.researchspace.services.storage.api.*;
+import org.researchspace.services.storage.api.PathMapping;
 
 import com.google.common.collect.ImmutableList;
 
 public class NonVersionedFileStorage implements ObjectStorage {
-    public final static String STORAGE_TYPE = "nonVersionedFile";
+    public static final String STORAGE_TYPE = "nonVersionedFile";
     private static final String FIXED_REVISION = "";
-    
+
     private static final Logger logger = LogManager.getLogger(NonVersionedFileStorage.class);
 
     private final PathMapping paths;
     private final Config config;
 
     public NonVersionedFileStorage(PathMapping paths, Config config) {
-        this.paths = paths;
+
         this.config = config;
+        this.paths = paths;
     }
 
     public static final class Config extends StorageConfig {
         private Path root;
+        private String pathMapping;
+        private IRI pathMappingBaseIri;
 
         public Config() {
+        }
+
+        public String getPathMapping() {
+            return pathMapping;
+        }
+
+        public void setPathMapping(String pathMapping) {
+            this.pathMapping = pathMapping;
+        }
+
+        public IRI getPathMappingBaseIri() {
+            return pathMappingBaseIri;
+        }
+
+        public void setPathMappingBaseIri(IRI pathMappingBaseIri) {
+            this.pathMappingBaseIri = pathMappingBaseIri;
         }
 
         public Config(Path root) {

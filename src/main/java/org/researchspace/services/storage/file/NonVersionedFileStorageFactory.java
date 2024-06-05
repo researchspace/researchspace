@@ -20,6 +20,8 @@
 package org.researchspace.services.storage.file;
 
 import org.apache.commons.configuration2.Configuration;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.researchspace.services.storage.api.*;
 
 import java.nio.file.Path;

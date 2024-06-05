@@ -29,6 +29,7 @@
 
                   resource_search_view_type="http://www.researchspace.org/pattern/system/resource_configuration/resource_search_view_type"
                   resource_search_facet_kpCategory="http://www.researchspace.org/pattern/system/resource_configuration/resource_search_facet_kpCategory"
+                  resource_search_listView_column="http://www.researchspace.org/pattern/system/resource_configuration/resource_search_listView_column"
 
                   resource_in_finder="http://www.researchspace.org/pattern/system/resource_configuration/resource_in_finder"
                   resource_has_navigation_menu="http://www.researchspace.org/pattern/system/resource_configuration/resource_has_navigation_menu"
@@ -535,7 +536,7 @@
       
       <rs-tab event-key="search" title="Search" tab-class-name="tab-right" disabled="{{#if node}}false{{else}}true{{/if}}">
         <div class="form-section-header">
-          <div>Customise the resource search page defining: search view types, category of the knowledge patterns used to display filters.</div>
+          <div>Resource search page: define search view types and category of the knowledge pattern used to display filters.</div>
         </div>
   
         <div class="form-section-content page__section-container">
@@ -565,6 +566,54 @@
                                           
           ></semantic-form-tree-picker-input>
 
+        </div>
+
+        <div class="form-section-header">
+          <div>List view: customise title and content of the columns on display (max 4).</div>
+        </div>
+
+        <div class="form-section-content page__section-container">
+          <semantic-form-composite-input  for="resource_search_listView_column"
+                                          label="List view column (max 4)"  
+                                          new-subject-template="/resource_search_listView_column/{{{{raw}}}}{{columnOrder}}{{{{/raw}}}}" 
+                                          fields='[[fieldDefinitions
+                                                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+                                                    columnOrder="http://www.researchspace.org/pattern/system/resource_search_listView_column/order"
+                                                    columnTitle="http://www.researchspace.org/pattern/system/resource_search_listView_column/title"
+                                                    columnContentType="http://www.researchspace.org/pattern/system/resource_search_listView_column/content_type"
+                                                    columnContentSparqlPattern="http://www.researchspace.org/pattern/system/resource_search_listView_column/content_sparql_pattern"
+                                                  ]]'
+                                          >
+                                  
+            <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity"></semantic-form-hidden-input>
+
+            <div class="form-inline-inputs">
+              <div style="width: 200px;">
+                <semantic-form-select-input for='columnOrder' 
+                                            label="Column position" 
+                                            placeholder="Enter column position"
+                                            show-link-resource-button="false" > 
+                </semantic-form-select-input>
+              </div>
+              <div style="flex: 1;">
+                <semantic-form-text-input for="columnTitle" label="Column title" placeholder="Enter column title"></semantic-form-text-input>              
+              </div>
+            </div>
+
+            <div class="form-inline-inputs" style="margin-top: 15px;">
+              <div style="width: 200px;">
+                <semantic-form-select-input for='columnContentType' 
+                                            label="Column content type" 
+                                            placeholder="Enter column content type"
+                                            show-link-resource-button="false"> 
+                </semantic-form-select-input>
+              </div>
+              <div style="flex: 1;">
+                <semantic-form-text-input for="columnContentSparqlPattern" label="Column content (SPARQL pattern)" placeholder="Enter SPARQL pattern for column content"></semantic-form-text-input>
+              </div>
+            </div>
+
+          </semantic-form-composite-input>
         </div>
 
 

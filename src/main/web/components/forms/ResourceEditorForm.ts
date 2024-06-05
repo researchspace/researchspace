@@ -31,7 +31,7 @@ import { addNotification } from 'platform/components/ui/notification';
 import { addToDefaultSet } from 'platform/api/services/ldp-set';
 import { BrowserPersistence, isValidChild, componentHasType, universalChildren } from 'platform/components/utils';
 import { ErrorNotification } from 'platform/components/ui/notification';
-import { listen } from 'platform/api/events';
+import { listen, trigger } from 'platform/api/events';
 
 import { FieldDefinitionProp } from './FieldDefinition';
 import { DataState, FieldValue, FieldError, CompositeValue } from './FieldValues';
@@ -158,6 +158,17 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
           }
         }
       });
+
+      this.cancellation.map(
+        listen({
+          target: this.props.id,
+          eventType: FormEvents.FormSave,
+        })
+      ).observe({
+        value: () => {
+          this.onSave();
+        }
+      });
     }
   }
 
@@ -281,6 +292,11 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
               disabled: !this.canSubmit(),
               onClick: this.onRemove,
             });
+          case 'dry-run':
+            return cloneElement(element, {
+              disabled: !this.canSubmit(),
+              onClick: this.onDryRun,
+            });
           case 'load-state': {
             let input: HTMLInputElement;
             const setInput = (value: HTMLInputElement) => (input = value);
@@ -346,7 +362,10 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
   private onSubmit = (e: MouseEvent<HTMLElement>) => {
     e.preventDefault();
     e.stopPropagation();
+    this.onSave();
+  };
 
+  private onSave = () => {
     const validatedModel = this.form.validate(this.state.model);
     if (readyToSubmit(validatedModel, FieldError.isPreventSubmit)) {
       this.setState((state) => ({ model: validatedModel, submitting: true }));
@@ -389,7 +408,7 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
     } else {
       this.setState((state) => ({ model: validatedModel, submitting: false }));
     }
-  };
+  }
 
   private onRemove = () => {
     const itemToRemove = this.initialState.model.subject;
@@ -407,6 +426,23 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
         error: () => {}
       })
     ;
+  }
+
+  private onDryRun = () => {
+    const initialModel = this.initialState.model;
+    this.form
+      .finalize(this.state.model)
+      .flatMap(
+        (finalModel) => (this.persistence as SparqlPersistence).dryPersist(initialModel, finalModel)
+      ).onValue(
+        res => trigger({
+          source: this.props.id,
+          eventType: FormEvents.FormDryRunResults,
+          data: {
+            dryRunResults: res,
+          },
+        })
+      );
   }
 
   private onSaveData = () => {
@@ -533,7 +569,7 @@ function getSubject(props: ResourceEditorFormProps): Rdf.Iri {
   return subjectIri || Rdf.iri('');
 }
 
-function getInvalidFields(fields: ReadonlyArray<FieldDefinitionProp>) {
+function getInvalidFields(fields: ReadonlyArray<FieldDefinitionProp>) { 
   return fields.filter((field) => !field.insertPattern || !field.deletePattern);
 }
 

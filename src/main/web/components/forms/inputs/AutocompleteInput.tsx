@@ -18,6 +18,7 @@
  */
 import * as React from 'react';
 import { Button } from 'react-bootstrap';
+import * as _ from 'lodash';
 
 import { Rdf } from 'platform/api/rdf';
 import { AutoCompletionInput } from 'platform/components/ui/inputs';
@@ -34,6 +35,8 @@ import { ValidationMessages } from './Decorations';
 export interface AutocompleteInputProps extends AtomicValueInputProps {
   template?: string;
   placeholder?: string;
+  nestedFormTemplate?: string;
+  minimumInput?: number;
 }
 
 interface SelectValue {
@@ -42,7 +45,8 @@ interface SelectValue {
 }
 
 interface State {
-  readonly nestedFormOpen?: boolean;
+  nestedForm?: React.ReactElement<any>;
+  nestedFormOpen?: boolean;
 }
 
 const CLASS_NAME = 'autocomplete-text-field';
@@ -51,6 +55,7 @@ const DEFAULT_TEMPLATE = `<span title="{{label.value}}">{{label.value}}</span>`;
 
 export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, State> {
   private tupleTemplate: string = null;
+  private htmlElement = React.createRef<HTMLDivElement>();
 
   constructor(props: AutocompleteInputProps, context: any) {
     super(props, context);
@@ -62,23 +67,32 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
     return this.props.template ? this.props.template.replace(/\\/g, '') : DEFAULT_TEMPLATE;
   }
 
+  componentDidMount() {
+    tryExtractNestedForm(this.props.children, this.context, this.props.nestedFormTemplate)
+      .then(nestedForm => {
+        if (nestedForm != undefined) {
+          this.setState({nestedForm});
+        }
+      });
+  }
+
   render() {
-    const nestedForm = tryExtractNestedForm(this.props.children);
-    const showCreateNewButton = Boolean(nestedForm);
+    const showCreateNewButton = !_.isEmpty(this.state.nestedForm);
     return (
-      <div className={CLASS_NAME}>
+      <div className={CLASS_NAME} ref={this.htmlElement}>
         {this.renderSelect(showCreateNewButton)}
         <ValidationMessages errors={FieldValue.getErrors(this.props.value)} />
         {this.state.nestedFormOpen ? (
           <NestedModalForm
             subject={
-              FieldValue.isEmpty(this.props.value) ? null : this.props.value.value as Rdf.Iri
+            FieldValue.isEmpty(this.props.value) ? null : this.props.value.value as Rdf.Iri
             }
             definition={this.props.definition}
             onSubmit={this.onNestedFormSubmit}
             onCancel={() => this.setState({ nestedFormOpen: false })}
+            parent={this.htmlElement}
           >
-            {nestedForm}
+            {this.state.nestedForm}
           </NestedModalForm>
         ) : null}
       </div>
@@ -132,11 +146,11 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
             // however, what will be passed in is a SelectValue
             onSelected: this.onChange as (val: any) => void,
           }}
-          minimumInput={MINIMUM_LIMIT}
+          minimumInput={this.props.minimumInput || MINIMUM_LIMIT}
         />
         {showCreateNewButton ? (
-          <Button className={`${CLASS_NAME}__create-button`} bsStyle="default" onClick={this.toggleNestedForm}>
-            {value === undefined ? <span className="fa fa-plus" /> : null}
+          <Button className={`${CLASS_NAME}__create-button`} onClick={this.toggleNestedForm}>
+            {value === undefined ? <span className="fa fa-plus btn-icon-left" /> : null}
             {value === undefined ? <span> Create new</span> : <span>Edit</span>}
           </Button>
         ) : null}

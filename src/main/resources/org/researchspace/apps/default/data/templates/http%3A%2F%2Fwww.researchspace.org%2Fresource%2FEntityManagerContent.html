@@ -1,0 +1,90 @@
+<div class="page__grid-container">
+  <div class="page__content-container rs-vocabulary-scheme-content">
+    <div class="page__main-title-row">
+      <h1 class="rs-main-title">Entity Editor</h1>
+      <div style="display: flex; align-items: center;">
+
+        <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                urlqueryparam-view='authority-entity-configuration'> 
+                <button class="btn btn-grey" title='Entity settings'>
+                  <i class="fa fa-cog btn-icon-left"></i>
+                  <span>Settings</span>
+                </button>
+        </semantic-link>
+        [[!--<mp-overlay-dialog title="Entity editor" type="modal" class="modal-xlSize">
+          <mp-overlay-dialog-trigger>
+            <i class="iconmoon iconmoon-info"></i>
+          </mp-overlay-dialog-trigger>
+          <mp-overlay-dialog-content>
+            <div>documentation</div>
+          </mp-overlay-dialog-content>
+        </mp-overlay-dialog> --]]
+      </div>
+    </div>
+
+        <semantic-search>
+          
+          <semantic-search-query-keyword query='
+                      PREFIX bds: <http://www.bigdata.com/rdf/search#>
+                      SELECT ?scheme WHERE {
+                        ?scheme crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/authority_manager_config_types> .
+                        ?scheme <http://www.researchspace.org/resource/system/authority_manager/item_label> ?schemeLabel .
+                        ?schemeLabel bds:search ?__token__ .
+                        FILTER NOT EXISTS {
+                          ?scheme <http://www.researchspace.org/resource/system/authority_manager/membership_property> ?membershipProperty .
+                        }
+                      }
+                  '
+                  default-query='
+                      PREFIX bds: <http://www.bigdata.com/rdf/search#>
+                      SELECT ?scheme WHERE {
+                        ?scheme crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/authority_manager_config_types> .
+                        ?scheme <http://www.researchspace.org/resource/system/authority_manager/item_label> ?schemeLabel .
+                        FILTER NOT EXISTS {
+                          ?scheme <http://www.researchspace.org/resource/system/authority_manager/membership_property> ?membershipProperty .
+                        }
+                      }
+                  '
+          ></semantic-search-query-keyword>
+
+          <div style="margin-top: 20px;">
+            <semantic-search-result-holder>
+                <semantic-search-result>
+                    <semantic-table id='scheme-table'
+                            query='SELECT DISTINCT ?scheme ?schemeLabel ?isManaged WHERE {} ORDER BY ASC(STR(LCASE(?schemeLabel)))'
+                            number-of-displayed-rows=15
+                            options='{"showTableHeading": false, "showFilter": false}'
+                            no-result-template='{{> noScheme}}'
+                            column-configuration='[
+                                { "variableName": "scheme", "cellTemplate": "{{> schemeRow}}" }
+                            ]'>
+                        <template id="noScheme">
+                            <div style="padding: 12px 8px">
+                                No entity configuration available
+                            </div>
+                        </template>
+
+                        <template id='schemeRow'>
+                            <div class="scheme-table-row">
+                                {{#if frameId}}
+                                  <mp-event-trigger id='{{frameId}}-entity-type-edit-trigger--{{scheme.value}}' type='Component.TemplateUpdate'
+                                                    data='{"data": { "entityTypeConfig": "{{scheme.value}}"}}' targets='["{{frameId}}-entity-editor-frame"]'>
+                                    <a class='schema-label' title="Edit {{schemeLabel.value}}">{{schemeLabel.value}}</a>
+                                  </mp-event-trigger>
+                                {{else}}
+                                  <semantic-link iri="{{scheme.value}}" class="schema-label">{{schemeLabel.value}}</semantic-link>
+                                  <div class="btn-grey-container">
+                                    <semantic-link-container uri='{{scheme.value}}' class="schema-label">
+                                                    <button class="btn-grey">Show Entities</button>
+                                    </semantic-link-container>
+                                  </div>
+                                {{/if}}
+                            </div>
+                        </template>
+                    </semantic-table>
+                </semantic-search-result>
+            </semantic-search-result-holder>
+          </div>
+      </semantic-search>
+  </div>  
+</div>

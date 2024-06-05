@@ -1,0 +1,74 @@
+<div class="page__grid-container">
+  <div class='page__content-container'>
+    <div class="page__main-title-row">
+      <h1 class="rs-main-title">Knowledge Maps</h1>
+      <div class="page__main-top-actions">
+        [[#if (hasPermission "forms:ldp:*")]]
+          <mp-resource-link-container 
+                                      uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                      urlqueryparam-view='knowledge-map'
+                                      urlqueryparam-previous-page='[[this]]'
+                                      urlqueryparam-previous-page-title='Project - Knowledge Maps'
+                                      >
+            <button class="btn btn-grey" title="New knowledge map">
+              <i class="fa fa-plus btn-icon-left"></i>
+              <span>New knowledge map</span>
+            </button>
+          </mp-resource-link-container>
+        [[/if]]
+      </div>
+    </div>
+    <div style="margin-top:10px">
+      <semantic-table query='
+                            SELECT ?diagram ?label ?author ?modified WHERE {
+                                  ?diagram a <http://ontodia.org/schema/v1#Diagram> ;
+                                    rdfs:label ?label;
+                                   <http://www.w3.org/ns/prov#generatedAtTime> ?modified .
+  
+                                 [[#if (hasPermission "forms:ldp:*")]]
+                                   ?diagram <http://www.w3.org/ns/prov#wasAttributedTo> ?author .
+                                 [[else]]
+                                   ?diagram <http://www.w3.org/ns/prov#wasAttributedTo> ?author .
+                                   FILTER(?author = <http://www.researchspace.org/resource/system/anonymousUser> )
+                                 [[/if]]
+                             }
+                         '
+                         column-configuration='[
+                              {"variableName":"diagram", "displayName":"Knowledge Map", "cellTemplate":"{{> view}}"},
+                              {"variableName":"author", "displayName":"Author", "cellTemplate":"{{> author}}"},
+                              {"variableName":"modified", "displayName":"Last Update", "cellTemplate": "{{> modifiedAt}}" }
+                              [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/ontodiaDiagramContainer>:delete:any")]]
+                                ,{"displayName":"Actions", "cellTemplate": "{{> actions}}"}
+                              [[/if]]
+                         ]'
+         >
+            <template id='view'>
+              <div style="display: flex; align-items: center;">
+                <i class="rs-icon rs-icon-drag_points" style="margin-right: 12px;"></i>
+                <mp-event-trigger id='set-action__reading-add-add-frame' type='Dashboard.AddFrame' 
+                    data='{"resourceIri": "{{diagram.value}}", "viewId": "knowledge-map"}' 
+                    targets='["thinking-frames"]'>
+                   <div style="display: flex; align-items: center;">
+                      <span>{{label.value}}</span>
+                   </div>
+              </mp-event-trigger>
+              </div>
+            </template>
+            <template id='author'>
+              <div><i class="fa fa-user" style="margin-right: 10px"></i>
+                 <mp-label iri="{{author.value}}"></mp-label>
+              </div>
+            </template>
+            <template id='modifiedAt'>
+              {{dateTimeFormat modified.value "LLL"}}
+            </template>
+            <template id='actions'>
+              <mp-ldp-remove-from-container-action iri="{{diagram.value}}" 
+                                data-container="http://www.researchspace.org/resource/system/ontodiaDiagramContainer">
+                                <button class="btn-grey">Delete</button>
+              </mp-ldp-remove-from-container-action>
+            </template>
+      </semantic-table>
+    </div>
+  </div>
+</div>

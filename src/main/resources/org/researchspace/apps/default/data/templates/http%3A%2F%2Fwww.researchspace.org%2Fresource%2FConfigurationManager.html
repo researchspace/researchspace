@@ -1,0 +1,76 @@
+[[!--
+uses client-side template:
+[[> rsp:HierarchyManagerTemplate]]
+--]]
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Administration" iri='[[resolvePrefix "rsp:admin"]]'>Administration</semantic-link>
+  </li>
+  <li class="active">
+    Authority and entity configuration
+  </li>
+</ol>
+
+<div class="page">
+[[#>rsp:ClipboardSidebar]]
+[[#>rsp:DetailsSidebar]]
+
+[[#> rsp:HierarchyManagerTemplate title="Authority and entity configuration" addTitle='configuration']]
+    [[#*inline "addNewStructureForm"]][[/inline]]
+    [[#*inline "exceptionsStructureList"]][[/inline]]
+    [[#*inline "customUploadNewStructureMessage"]]
+       <p>Please drag&amp;drop your *.trig or *.nq RDF file(s) with ResearchSpace configurations data.</p>
+    [[/inline]]
+    [[#*inline "searchResults"]]
+          <div class="rs-vocabulary-scheme-row">
+              <h1 class="rs-vocabulary-scheme-title">Configurations</h1>
+          </div>
+                  <semantic-table id='scheme-table'
+                          query='
+                            SELECT DISTINCT ?scheme ?schemeLabel WHERE {
+                              VALUES(?scheme) {
+                                (<http://www.researchspace.org/resource/system/vocab/authority_manager_config_types>)
+                                (<http://www.researchspace.org/resource/system/FieldCategories>)
+                              }
+                              ?scheme rdfs:label|skos:prefLabel ?schemeLabel .
+                            } ORDER BY ASC(STR(LCASE(?schemeLabel)))'
+                          number-of-displayed-rows=15
+                          options='{"showTableHeading": false, "showFilter": false}'
+                          no-result-template='{{> noScheme}}'
+                          column-configuration='[
+                              { "variableName": "scheme", "cellTemplate": "{{> schemeRow}}" }
+                          ]'>
+                      <template id="noScheme">
+                          <div style="padding: 12px 8px">
+                              No configurations available
+                          </div>
+                      </template>
+
+                      <template id='schemeRow'>
+                          <div class="scheme-table-row">
+                              <semantic-link iri="{{scheme.value}}" class="schema-label">{{schemeLabel.value}}</semantic-link>
+                              <div class="btn-grey-container">
+                              <semantic-link-container uri='{{scheme.value}}' class="schema-label">
+                                              <button class="btn-grey">Edit</button>
+                              </semantic-link-container>
+                              <button class="btn-grey">
+                                  <mp-graph-store-action title="Export" action="GET" graphuri="{{scheme.value}}" file-ending="trig">Export</mp-graph-store-action>
+                              </button>
+                              <button class="btn-grey">
+                                  <mp-graph-store-action title="Delete" action="DELETE" graphuri="{{scheme.value}}">Delete</mp-graph-store-action>
+                              </button>
+                              </div>
+                          </div>
+                      </template>
+                  </semantic-table>
+    [[/inline]]
+
+[[/rsp:HierarchyManagerTemplate]]
+
+[[/rsp:DetailsSidebar]]
+[[/rsp:ClipboardSidebar]]
+
+</div>

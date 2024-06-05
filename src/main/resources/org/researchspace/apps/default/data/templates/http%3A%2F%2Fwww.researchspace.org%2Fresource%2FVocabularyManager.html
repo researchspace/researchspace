@@ -2,13 +2,15 @@
 uses client-side template:
 [[> rsp:HierarchyManagerTemplate]]
 --]]
-
 <ol class="page-breadcrumb">
   <li>
     <mp-link title="Home" url="/">Home</mp-link>
   </li>
+  <li>
+    <semantic-link title="Administration" iri='[[resolvePrefix "rsp:admin"]]'>Administration</semantic-link>
+  </li>
   <li class="active">
-    Authority Manager 
+    Authority manager 
   </li>
 </ol>
 
@@ -25,7 +27,7 @@ uses client-side template:
   type and relations between entities are based on cidoc-crm entities and their corresponding properties; 
 
 --]]
-[[#> rsp:HierarchyManagerTemplate title="Authority"]]
+[[#> rsp:HierarchyManagerTemplate title="Authority Manager" addTitle='Authority']]
     [[#*inline "addNewStructureForm"]]
              <semantic-search id="scheme-iri-selector">
                 <semantic-search-form-query 
@@ -48,9 +50,9 @@ uses client-side template:
                                                  }"
                                                 }
                                             ]'>
-                  <semantic-form-text-input for="label" placeholder="enter new scheme label"></semantic-form-text-input>            
-                  <semantic-form-checklist-input for='entitytype' type="radio" class='class name' class-item-name='item class name'></semantic-form-checklist-input>
-                  <button type='button' name='submit' className='btn btn-primary' style="margin-top: 0;">Create Scheme</button>
+                  <semantic-form-text-input for="label" placeholder="enter new authority label"></semantic-form-text-input>            
+                  <semantic-form-checklist-input for='entitytype' type="checkbox" class='class name' class-item-name='item class name'></semantic-form-checklist-input>
+                  <button type='button' name='submit' className='btn btn-primary' style="margin-top: 0;">Create Authority</button>
                 </semantic-search-form-query>
                 <semantic-search-result-holder>
                   <semantic-search-result>
@@ -73,9 +75,9 @@ uses client-side template:
                 <template id='template'>
                   <div class="confirm-message">
                     {{#if bindings.0.exists}}
-                      <div>Scheme with label &nbsp;<b>{{bindings.0.schemeLabel.value}}{{bindings.0.entityType.value}} </b>&nbsp; and IRI &nbsp;<b>{{bindings.0.scheme.value}}</b> <br> already exists!</div> 
+                      <div>Authority with label &nbsp;<b>{{bindings.0.schemeLabel.value}}{{bindings.0.entityType.value}} </b>&nbsp; and IRI &nbsp;<b>{{bindings.0.scheme.value}}</b> <br> already exists!</div> 
                     {{else}}
-                      <div>Are you sure you want to create new scheme with IRI: <b>{{bindings.0.scheme.value}}</b> ?</div>                       
+                      <div>Are you sure you want to create new authority with IRI: <b>{{bindings.0.scheme.value}}</b> ?</div>                       
                       <semantic-form id='new-scheme-form' 
                                     persistence='{"type": "sparql", "targetGraphIri": "{{bindings.0.scheme.value}}"}'
                                     new-subject-template='{{bindings.0.scheme.value}}'
@@ -94,7 +96,9 @@ uses client-side template:
                         <semantic-form-hidden-input for="rdfsLabel" default-value='{{bindings.0.schemeLabel.value}}'></semantic-form-hidden-input>                       
                         <semantic-form-errors></semantic-form-errors>
                         <!-- save and reset button for form -->
-                        <button name="cancel" class="btn btn-danger" style="margin-right: 5px;">Cancel</button>
+                        <mp-event-trigger id='cancel-new-authority-trigger' type='OverlayDialog.Close' targets='["new-hierarchy-dialog"]'>
+                          <button name="cancel" class="btn btn-default" style="margin-right: 5px;">Cancel</button>
+                        </mp-event-trigger>
                         <button name="submit" class="btn btn-success">Confirm</button>
                       </semantic-form>
                     {{/if}}
@@ -124,6 +128,9 @@ uses client-side template:
                               ?scheme a crm:E32_Authority_Document .
                             }
                           }
+                          MINUS {
+                            ?scheme crm:P2_has_type <http://www.researchspace.org/resource/system/System_Resource>
+                          }
                           FILTER(?schemeGraph != ?scheme) .
                         }
                         ' 
@@ -144,56 +151,59 @@ uses client-side template:
     [[/inline]]
     [[#*inline "searchResults"]]
       <semantic-search>
-          <div class="rs-vocabulary-scheme-row">
-              <h1 class="rs-vocabulary-scheme-title">Scheme</h1>
-              <div>
-                  <semantic-search-query-keyword query='
-                              PREFIX bds: <http://www.bigdata.com/rdf/search#>
-                              SELECT ?scheme ?schemeLabel ?isManaged WHERE {
-                                {
-                                  GRAPH ?scheme {
-                                    ?scheme a skos:ConceptScheme ;
-                                            skos:prefLabel ?schemeLabel .
-                                    ?schemeLabel bds:search ?__token__ .
-                                  }
-                                }
-                                UNION {
-                                  GRAPH ?scheme {
-                                    ?scheme rdf:type crm:E32_Authority_Document ;
-                                            rdfs:label ?schemeLabel .
-                                    ?schemeLabel bds:search ?__token__ .
-                                  }
-                                }
-                                
-                                OPTIONAL {
-                                  ?scheme crm:P67_refers_to ?managedConfig .
-                                }
-                                BIND(BOUND(?managedConfig) as ?isManaged) .
+          <div>
+              <semantic-search-query-keyword query='
+                          PREFIX bds: <http://www.bigdata.com/rdf/search#>
+                          SELECT ?scheme ?schemeLabel ?isManaged WHERE {
+                            {
+                              GRAPH ?scheme {
+                                ?scheme a skos:ConceptScheme ;
+                                        skos:prefLabel ?schemeLabel .
+                                ?schemeLabel bds:search ?__token__ .
                               }
-                          '
-                          default-query='
-                              SELECT DISTINCT ?scheme ?schemeLabel ?isManaged WHERE {
-                                      {
-                                          GRAPH ?scheme {
-                                              ?scheme rdf:type skos:ConceptScheme;
-                                                      skos:prefLabel ?schemeLabel.
-                                              BIND(skos:ConceptScheme AS ?schemeType)
-                                          }
+                            }
+                            UNION {
+                              GRAPH ?scheme {
+                                ?scheme rdf:type crm:E32_Authority_Document ;
+                                        rdfs:label ?schemeLabel .
+                                ?schemeLabel bds:search ?__token__ .
+                              }
+                            }
+                            
+                            OPTIONAL {
+                              ?scheme crm:P67_refers_to ?managedConfig .
+                            }
+                            MINUS {
+                              ?scheme crm:P2_has_type <http://www.researchspace.org/resource/system/System_Resource>
+                            }
+                            BIND(BOUND(?managedConfig) as ?isManaged) .
+                          }
+                      '
+                      default-query='
+                          SELECT DISTINCT ?scheme ?schemeLabel ?isManaged WHERE {
+                                  {
+                                      GRAPH ?scheme {
+                                          ?scheme rdf:type skos:ConceptScheme;
+                                                  skos:prefLabel ?schemeLabel.
+                                          BIND(skos:ConceptScheme AS ?schemeType)
                                       }
-                                      UNION
-                                      {
-                                          GRAPH ?scheme {
-                                              ?scheme rdf:type crm:E32_Authority_Document;
-                                                      rdfs:label ?schemeLabel.
+                                  }
+                                  UNION
+                                  {
+                                      GRAPH ?scheme {
+                                          ?scheme rdf:type crm:E32_Authority_Document;
+                                                  rdfs:label ?schemeLabel.
 
-                                              BIND(crm:E32_Authority_Document AS ?schemeType)
-                                          }
+                                          BIND(crm:E32_Authority_Document AS ?schemeType)
                                       }
-                                BIND(BOUND(?managedConfig) as ?isManaged) 
-                              }
-                          '
-                  ></semantic-search-query-keyword>
-              </div>
+                                  }
+                            MINUS {
+                              ?scheme crm:P2_has_type <http://www.researchspace.org/resource/system/System_Resource>
+                            }
+                            BIND(BOUND(?managedConfig) as ?isManaged) 
+                          }
+                      '
+              ></semantic-search-query-keyword>
           </div>
 
           <semantic-search-result-holder>
@@ -208,20 +218,20 @@ uses client-side template:
                           ]'>
                       <template id="noScheme">
                           <div style="padding: 12px 8px">
-                              No vocabulary available
+                              No authority available
                           </div>
                       </template>
 
                       <template id='schemeRow'>
                           <div class="scheme-table-row">
                               <semantic-link iri="{{scheme.value}}" class="schema-label">{{schemeLabel.value}}</semantic-link>
-                              <div class="btn-table-container">
+                              <div class="btn-grey-container">
                               <semantic-link-container uri='{{scheme.value}}' class="schema-label">
-                                              <button class="btn-table">Show Terms</button>
+                                              <button class="btn-grey">Show Terms</button>
                                               </semantic-link-container>
                               <mp-overlay-dialog title="Edit {{schemeLabel.value}}" type="modal" bs-size="large">
                                   <mp-overlay-dialog-trigger>
-                                  <button class="btn-table">Edit</button>
+                                  <button class="btn-grey">Edit</button>
                                   </mp-overlay-dialog-trigger>
                                   <mp-overlay-dialog-content>
                                     {{#ifCond isManaged.value "===" "true"}}
@@ -268,16 +278,16 @@ uses client-side template:
                                           <semantic-form-checklist-input for='refersto' type="radio" class='class name' class-item-name='item class name'></semantic-form-checklist-input>
                                           
                                           <semantic-form-errors></semantic-form-errors>
-                                          <button name="submit" class="btn btn-success" style="margin-right: 5px;">Confirm</button>
-                                          <button name="cancel" class="btn btn-danger">Cancel</button>
+                                          <button name="submit" class="btn btn-primary" style="margin-right: 5px;">Confirm</button>
+                                          <button name="cancel" class="btn btn-default">Cancel</button>
                                         </semantic-form>
                                     {{/ifCond}}
                                   </mp-overlay-dialog-content>
                               </mp-overlay-dialog>
-                              <button class="btn-table">
+                              <button class="btn-grey">
                                   <mp-graph-store-action title="Export" action="GET" graphuri="{{scheme.value}}" file-ending="trig">Export</mp-graph-store-action>
                               </button>
-                              <button class="btn-table btn-table-delete">
+                              <button class="btn-grey">
                                   <mp-graph-store-action title="Delete" action="DELETE" graphuri="{{scheme.value}}">Delete</mp-graph-store-action>
                               </button>
                               </div>

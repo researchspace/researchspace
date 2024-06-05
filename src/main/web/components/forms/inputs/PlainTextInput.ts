@@ -200,7 +200,7 @@ export class PlainTextInput extends AtomicValueInput<PlainTextInputProps, State>
             this.setState(this.reformatText(this.props));
           },
           title: rdfNode ? rdfNode.toString() : undefined,
-          readOnly: !this.canEdit,
+          readOnly: !this.canEdit(),
         })
       );
     }

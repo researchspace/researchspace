@@ -15,20 +15,42 @@
     <img src="https://badges.gitter.im/Join Chat.svg" height="30px" alt="Gitter"></a>
 </p>
 
-- - -
+<h2>Github Repository</h2>
 
+  
+<p>If you would like to discuss something in person please schedule an appointment using https://calendar.app.google/ytoocWhkbVKE9Teq7</p>
+<p>Community developers should test new code before submitting a pull request.</p>
+<p>When submitting a pull request they will provide enough information to allow Kartography to apply the objectives above. </p>
+</ul>
+
+
+<p>--------------------------------------------------------------------------------------------------------------------------</p>
+
+<p>Kartography are currently using rs-new-design branch as a basis for the next version of ResearchSpace in order to support a comprehensive user interface and consolidate work. </p>   
+
+
+
+<p>--------------------------------------------------------------------------------------------------------------------------</p>
+
+
+
+<h2>The ResearchSpace System</h2>
+<div style="float:left;">
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=MaAv0SE7wis
+" target="_blank"><img src="https://i.ytimg.com/vi/MaAv0SE7wis/maxresdefault.jpg" 
+alt="ResearchSpace Overview" width="640" border="1" /></a></div>
 [ResearchSpace](https://www.researchspace.org/) is a new type of contextualising knowledge system. It promotes collaborative interdisciplinary research allowing people to grow knowledge that relates to and reveals different aspects of society.
 
 It challenges the instrumental nature of technology and allows subject experts to become authors of meaningful forms of structured data, combined with visual and textual narrative.
 
 The ResearchSpace system has been designed to allow researchers to connect qualitative and quantitative research, to transition from information systems that solely capture and index ‘essential’ reference material, to ones that address the complexity and richness of the research itself and provide a natural ‘relational’ method that traverses space and time, supporting different levels of complexity, variety of vantage point, and the represention of arguments and meta-commentary in a collaborative environment.
 
-<a href="http://www.youtube.com/watch?feature=player_embedded&v=MaAv0SE7wis
-" target="_blank"><img src="https://i.ytimg.com/vi/MaAv0SE7wis/maxresdefault.jpg" 
-alt="ResearchSpace Overview" width="640" border="1" /></a>
+
 
 # Knowledge Base 
-**To Be Added**
+see <a href="https://documentation.researchspace.org/resource/rsp:Start"> ResearchSpace Documentation Site</a>
+also see <a href="https://kartography.org">Kartography CIC</a>
+
 
 # Demo 
 Changing the methods of research in the humanities requires innovation in how we combine the qualitative with the quantitative through collaborative research, expressive structured data, and a human-centered and participatory approach to the ‘knowledge graph’.
@@ -199,9 +221,20 @@ You should see console output similar to:
 21:24:49 INFO  digilib runs at:
 21:24:49 INFO    http://localhost:10214/digilib
 ```
+*********************************************************************************************************************************************
+**********************************************************************************************************************************************
+**THIS IS REALLY IMPORTANT - THESE COMPONENTS ARE IMPORTANT **
+**THIS IS REALLY IMPORTANT - THESE COMPONENTS ARE IMPORTANT **
+**THIS IS REALLY IMPORTANT - THESE COMPONENTS ARE IMPORTANT **
+**THIS IS REALLY IMPORTANT - THESE COMPONENTS ARE IMPORTANT **
+
 
 On the first run you need to import set of default ontologies and knowledge patterns for CIDOC-CRM, see [instance configuration repository](https://github.com/researchspace/researchspace-instance-configurations)
 
+You need to go to settings, LDP , An then ontology container and import 
+
+******************************************************************************************************************************************
+********************************************************************************************************************************************
 ### Run ResearchSpace with your own triplestore and IIIF server
 
 Adjust `sparqlEndpoint`, `iiifScaler` and `imageStorageRoot` properties in the `gradle.properties`.
@@ -307,6 +340,8 @@ When developing frontend code in the Visual Studio Code we recommend setting Typ
 ### Java
 
 Generated eclipse project has predefined code formatter that is automatically enabled. Please always reformat your java code with eclipse before submiting PR. 
+
+For Visual Studio Code users, follow this [guide](https://github.com/redhat-developer/vscode-java/wiki/Formatter-settings) to setup the formatter.
 
 ### Typescript & SCSS
 

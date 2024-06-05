@@ -12,25 +12,37 @@ Incoming Parameters:
   title -- can be set to "Vocabulary/Project/Bibliography/etc."
 --]]
 
+{{#bind viewId=dashboardId}}
   <div class="page__grid-container">
     
     <div class="page__content-container rs-vocabulary-scheme-content">
 
       <div class="page__main-title-row">
-        <h1 class="rs-main-title">[[title]] Manager</h1>
-        <div>
-          <mp-overlay-dialog title="Add [[title]]" type="modal" bs-size="large">
+        <h1 class="rs-main-title">[[title]]</h1>
+        <div class='page__main-top-actions'>
+
+          <mp-overlay-dialog id='{{viewId}}-new-hierarchy-dialog' title="New [[addTitle]]" type="modal" bs-size="large">
             <mp-overlay-dialog-trigger>
-              <span class="fa fa-plus-circle" title="Add [[title]]"></span>
+              <button class="btn btn-grey" title="New [[addTitle]]">
+                <i class="fa fa-plus btn-icon-left"></i>
+                <span>New [[addTitle]]</span>
+              </button>
             </mp-overlay-dialog-trigger>
             <mp-overlay-dialog-content style="padding: 20px 40px 40px;">
-              [[!-- The code for this inline template is defined in the application page using the rsp:HierarchyManagerTemplate --]]
-              [[#> addNewStructureForm]] [[/addNewStructureForm]]
+              {{#bind viewId=viewId}}
+                [[!-- The code for this inline template is defined in the application page using the rsp:HierarchyManagerTemplate --]]
+                [[#> addNewStructureForm]] [[/addNewStructureForm]]
+              {{/bind}}
             </mp-overlay-dialog-content>
           </mp-overlay-dialog>
-          <mp-overlay-dialog title="Add [[title]]" type="modal" bs-size="large">
+
+          <mp-overlay-dialog id='{{viewId}}-import-authority-dialog'
+          title="Import [[addTitle]]" type="modal" bs-size="large">
             <mp-overlay-dialog-trigger>
-            	<span class="fa fa-download" title="Import [[title]]"></span>
+              <button class="btn btn-grey" title="Import [[addTitle]]">
+                <i class="fa fa-upload btn-icon-left"></i>
+                <span>Import</span>
+              </button>
             </mp-overlay-dialog-trigger>
             <mp-overlay-dialog-content>
               <mp-rdf-upload accept='[".trig", ".nq"]' keep-source-graphs='true' allow-load-by-url='false' show-advanced-options='false' drop-area-template='{{> template}}'>
@@ -50,7 +62,32 @@ Incoming Parameters:
               </mp-rdf-upload>
             </mp-overlay-dialog-content>
           </mp-overlay-dialog>
-          <mp-overlay-dialog title="[[title]] Manager" type="modal" class="modal-xlSize">
+
+          <mp-event-proxy id='{{viewId}}-authority-import-closeModal-proxy' 
+                          on-event-type='RdfUpload.Success'
+                          proxy-event-type='OverlayDialog.Close' 
+                          proxy-targets='["{{viewId}}-import-authority-dialog"]'
+          ></mp-event-proxy>
+
+          <mp-event-proxy id='{{viewId}}-authority-uploadSuccess-refreshTable-proxy' 
+                          on-event-type='RdfUpload.Success'
+                          proxy-event-type='Component.TemplateUpdate' 
+                          proxy-targets='["{{viewId}}-authority-table"]'>
+          ></mp-event-proxy>
+
+          <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                urlqueryparam-view='authority-entity-configuration'> 
+              <button class="btn btn-grey" title='[[addTitle]] settings'>
+                <i class="fa fa-cog btn-icon-left"></i>
+                <span>Settings</span>
+              </button>
+          </semantic-link>
+    			[[!--
+          <semantic-link-container uri='http://www.researchspace.org/resource/system/vocab/authority_manager_config_types'>
+            <span><i class="fa fa-cog"></i></span>
+          </semantic-link-container>
+ 					
+          <mp-overlay-dialog title="[[addTitle]] info" type="modal" class="modal-xlSize">
             <mp-overlay-dialog-trigger>
               <i class="iconmoon iconmoon-info"></i>
             </mp-overlay-dialog-trigger>
@@ -58,11 +95,37 @@ Incoming Parameters:
              <div>documentation</div>
             </mp-overlay-dialog-content>
           </mp-overlay-dialog>
+          --]]
         </div>
       </div>
       
       [[#> exceptionsStructureList]] [[/exceptionsStructureList]]
-      
-      [[#> searchResults]][[/searchResults]]
+
+      <mp-event-proxy id='{{viewId}}-authority-graphActionSuccess-refreshTable-proxy' 
+                      on-event-type='GraphAction.Success'
+                      proxy-event-type='Component.TemplateUpdate'
+                      proxy-targets='["{{viewId}}-authority-table"]'
+      ></mp-event-proxy>
+
+     <mp-event-proxy id='{{viewId}}-newSchemeCreated-refreshTable-proxy'
+                      on-event-source='{{viewId}}-new-scheme-form'
+                      on-event-type='Form.ResourceCreated'
+                      proxy-event-type='Component.TemplateUpdate' 
+                      proxy-targets='["{{viewId}}-authority-table"]'>
+      </mp-event-proxy> 
+
+      <mp-event-proxy id='{{viewId}}-newSchemeCreated-closeModal-proxy' 
+                      on-event-source='{{viewId}}-new-scheme-form'
+                      on-event-type='Form.ResourceCreated'
+                      proxy-event-type='OverlayDialog.Close' 
+                      proxy-targets='["{{viewId}}-new-hierarchy-dialog"]'
+      ></mp-event-proxy>
+
+      <mp-event-target-template-render id='{{viewId}}-authority-table' template='{{> template}}'>
+        <template id='template'>
+          [[#> searchResults]][[/searchResults]]
+        </template>
+      </mp-event-target-template-render>
     </div>  
   </div>
+{{/bind}}

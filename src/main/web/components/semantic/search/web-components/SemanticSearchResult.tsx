@@ -83,6 +83,7 @@ class SemanticSearchResultInner extends React.Component<InnerProps, State> {
       !_.isEqual(nextContext.resultQuery.getOrElse(null), context.resultQuery.getOrElse(null)) ||
       !_.isEqual(nextContext.bindings, context.bindings) ||
       !_.isEqual(this.state, nextState) ||
+      !_.isEqual(nextContext.visualizationContext.getOrElse(null), context.visualizationContext.getOrElse(null)) ||
       !nextContext.availableDomains.isEqual(context.availableDomains)
     ) {
       return true;

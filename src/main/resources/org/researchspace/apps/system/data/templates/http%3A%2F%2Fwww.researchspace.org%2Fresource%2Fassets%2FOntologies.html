@@ -75,20 +75,25 @@
                         {"iri": "<http://www.w3.org/2002/07/owl#imports>", "label": "imports", "hasDomain": "<http://www.w3.org/2002/07/owl#Ontology>", "hasRange": "<http://www.w3.org/2002/07/owl#Ontology>"}
                                                      ]
                     }'>
+
+          <div style="margin-bottom: 20px;">
           <semantic-search-query-keyword domain='<http://www.w3.org/2002/07/owl#Ontology>'
             placeholder='Filter your ontologies by name' escape-lucene-syntax=false min-search-term-length=2 query='
-                           SELECT ?subject {
-                             ?subject a owl:Ontology .
-                             OPTIONAL {
-                               ?subject rdfs:label ?label .
-                             }
-                             FILTER regex(COALESCE(?label, STR(?subject)), ?__token__, "i") .
-                           }
-                         ' default-query='
-                           SELECT ?subject {
-                             ?subject a owl:Ontology .
-                           }
-                         '></semantic-search-query-keyword>
+                            SELECT ?subject {
+                              ?subject a owl:Ontology .
+                              OPTIONAL {
+                                ?subject rdfs:label ?label .
+                              }
+                              FILTER regex(COALESCE(?label, STR(?subject)), ?__token__, "i") .
+                            }
+                          ' default-query='
+                            SELECT ?subject {
+                              ?subject a owl:Ontology .
+                            }
+                          '>
+          </semantic-search-query-keyword>
+          </div>
+          
           <div data-flex-layout="row stretch-stretch">
             <div data-flex-self="size-1of3" style="flex: 0 0 20px;">
               <semantic-search-facet></semantic-search-facet>
@@ -111,8 +116,8 @@
                         <mp-panel-body>
                           <div class='row' data-flex-layout="row center-spread">
                             <div class='col-sm-5'>
-                              <p style='font-size:18px; text-decoration: underline;'>
-                                <semantic-link iri='{{subject.value}}'></semantic-link>
+                              <p style='font-size:18px;'>
+                                <semantic-link iri='{{subject.value}}' class="text-underline"></semantic-link>
                               </p>
                               <p style='font-size:10px;'>{{subject.value}}</p>
                               {{#if description}}
@@ -183,8 +188,6 @@
             </semantic-search-result-holder>
           </div>
         </semantic-search>
-
-        
       </bs-col>
     </bs-row> <!--  close row -->
   </div>

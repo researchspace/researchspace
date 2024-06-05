@@ -35,14 +35,17 @@ import org.researchspace.repository.MpRepositoryVocabulary;
  * Holds one generic parameter: service URL.
  * 
  * @author Andriy Nikolov <an@metaphacts.com>
+ * 
+ * Update for generic purpose
+ * 
+ * @modifier Janmaruko Hōrensō <@gspinaci>
+ * 
  *
  */
 public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImplConfig {
 
     private String url;
     private IRI serviceID;
-    private Integer requestRateLimit;
-    private String userAgent;
 
     // password and username that are already resolved through SecretResolver
     private String username;
@@ -51,11 +54,11 @@ public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImpl
     private String unResolvedUsername;
     private String unResolvedPassword;
 
-    public AbstractServiceWrappingSailConfig() {
+    protected AbstractServiceWrappingSailConfig() {
 
     }
 
-    public AbstractServiceWrappingSailConfig(String type) {
+    protected AbstractServiceWrappingSailConfig(String type) {
         super(type);
     }
 
@@ -63,7 +66,7 @@ public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImpl
     public void validate() throws SailConfigException {
         super.validate();
         if (StringUtils.isEmpty(url)) {
-            throw new SailConfigException("REST service URL is not provided");
+            throw new SailConfigException("SAIL service URL is not provided");
         }
     }
 
@@ -77,14 +80,6 @@ public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImpl
 
         if (getServiceID() != null) {
             model.add(implNode, MpRepositoryVocabulary.IMPLEMENTS_SERVICE, getServiceID());
-        }
-
-        if (getRequestRateLimit() != null) {
-            model.add(implNode, MpRepositoryVocabulary.REQUEST_RATE_LIMIT, vf.createLiteral(getRequestRateLimit()));
-        }
-
-        if (getUserAgent() != null) {
-            model.add(implNode, MpRepositoryVocabulary.USER_AGENT, vf.createLiteral(getUserAgent()));
         }
 
         if (getUnResolvedUsername() != null) {
@@ -102,10 +97,6 @@ public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImpl
         super.parse(model, implNode);
         Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.SERVICE_URL, null))
                 .ifPresent(lit -> setUrl(lit.stringValue()));
-        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.REQUEST_RATE_LIMIT, null))
-                .ifPresent(lit -> setRequestRateLimit(lit.intValue()));
-        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.USER_AGENT, null))
-                .ifPresent(lit -> setUserAgent(lit.stringValue()));
         Models.objectIRI(model.filter(implNode, MpRepositoryVocabulary.IMPLEMENTS_SERVICE, null))
                 .ifPresent(iri -> setServiceID(iri));
         Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.USERNAME, null))
@@ -129,22 +120,6 @@ public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImpl
 
     protected void setServiceID(IRI serviceID) {
         this.serviceID = serviceID;
-    }
-
-    public Integer getRequestRateLimit() {
-        return requestRateLimit;
-    }
-
-    protected void setRequestRateLimit(int requestRateLimit) {
-        this.requestRateLimit = requestRateLimit;
-    }
-
-    public String getUserAgent() {
-        return userAgent;
-    }
-
-    protected void setUserAgent(String userAgent) {
-        this.userAgent = userAgent;
     }
 
     public String getUsername() {

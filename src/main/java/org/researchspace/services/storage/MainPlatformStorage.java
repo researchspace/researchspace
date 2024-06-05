@@ -40,6 +40,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.researchspace.config.Configuration;
 import org.researchspace.plugin.PlatformPlugin;
 import org.researchspace.plugin.PlatformPluginManager;
+import org.researchspace.security.SecurityService;
 import org.researchspace.services.storage.api.ObjectKind;
 import org.researchspace.services.storage.api.ObjectMetadata;
 import org.researchspace.services.storage.api.ObjectRecord;
@@ -141,8 +142,7 @@ public class MainPlatformStorage implements PlatformStorage {
 
     @Override
     public ObjectMetadata getDefaultMetadata() {
-        String author = StorageUtils.currentUsername().orElse(null);
-        return new ObjectMetadata(author, null);
+        return new ObjectMetadata(SecurityService.getUserName(), null);
     }
 
     private void createFileStorageWithFallbacks(String baseStorageId, Path root, boolean mutable) {

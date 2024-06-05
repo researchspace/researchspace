@@ -133,9 +133,9 @@ not used:
 [[!-- INCLUDES --]]
 [[#*inline "newFeatureForm"]]
   [[#if createFromRegion]]
-    <h2>Creating New Feature represented by the region: &nbsp;<strong><semantic-link iri='{{regionIri}}'></semantic-link></strong></h2>
+    <h2>Creating New Feature represented by the region: &nbsp;<strong><semantic-link iri='{{regionIri}}' class="text-underline"></semantic-link></strong></h2>
   [[else]]
-    <h2>Creating New Feature for: &nbsp;<strong><semantic-link iri='{{objectIri}}'></semantic-link></strong></h2>
+    <h2>Creating New Feature for: &nbsp;<strong><semantic-link iri='{{objectIri}}' class="text-underline"></semantic-link></strong></h2>
   [[/if]]
 
   <mp-event-target-template-render id='feature-form-area' template='{{> form}}'>
@@ -241,7 +241,7 @@ not used:
                             <h1 class="rs-main-title">Observations on</h1>
                             <mp-overlay-dialog title="Object Observations" type="modal" class="modal-documentation">
                               <mp-overlay-dialog-trigger>
-                                <i class="iconmoon iconmoon-info"></i>
+                                <i class="iconmoon iconmoon-info" style='font-size: 24px;'></i>
                               </mp-overlay-dialog-trigger>
                               <mp-overlay-dialog-content>
                                 [[> rsp:ImageAnnotationObservationDocumentation]]
@@ -276,7 +276,7 @@ not used:
                                   <mp-collapsible-div expanded='true'>
                                       <mp-collapsible-div-trigger>
                                           <div class="imageAnnotationWorkspace__observationArea_resourceTitleRow">
-                                            <h1 class="text-truncate"><strong><semantic-link iri='{{objectIri}}'></semantic-link></strong></h1>
+                                            <div class="entityLabel text-underline"><semantic-link iri='{{objectIri}}'></semantic-link></div>
                                             <div style="display: flex; align-items: flex-start;">
                                               
                                               [[!-- 
@@ -286,11 +286,8 @@ not used:
                                                             type='IIIFViewer.AddImagesForObject' 
                                                             targets='["image-editor"]'
                                                             data='{ "objectIri": "{{objectIri}}" }'>
-                                                [[!-- <button class="btn btn-primary btn-icon">
-                                                  <i class="rs-icon rs-icon-image" title="View resource images"></i>
-                                                </button> --]]
-                                                <button class="btn btn-primary btn-icon image-active">
-                                                  <i class="rs-icon rs-icon-image" title="Resource images displayed in the viewer"></i>
+                                                <button class="btn btn-default" style="margin-right: 5px">
+                                                  <i class="rs-icon rs-icon-image" style='font-size: 15px;' title="View resource images in the viewer"></i>
                                                 </button> 
                                               </mp-event-trigger>
                                               
@@ -327,7 +324,7 @@ not used:
                                         >
                                           <template id='regionsWithoutFeature'>
                                             <div class="imageAnnotationWorkspace__items page__whiteSection-container">
-                                              <h2>Image Regions without Associated Features</h2>
+                                              <h2>Image Regions (without associated Features)</h2>
                                               <div class="imageAnnotationWorkspace__item_container">
                                                 
           [[!--
@@ -338,7 +335,7 @@ not used:
                                                                   data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}' on='["hover"]'
                                                 >
                                                 <div class="imageAnnotationWorkspace__item">
-                                                  <semantic-link iri='{{region.value}}' class="text-truncate region-label"></semantic-link>
+                                                  <semantic-link iri='{{region.value}}' class="region-label text-underline"></semantic-link>
                                                   <div style="display: flex; align-items: center;">
                                                     
                                                     [[!--
@@ -348,7 +345,9 @@ not used:
                                                                       type='TwoSidePanel.ShowBack' 
                                                                       targets='["objects-panel"]'
                                                                       data='{ "regionIri": "{{region.value}}", "regionLabel": "{{regionLabel.value}}", "objectIri": "{{../objectIri}}" }'>
-                                                      <button class="btn-grey">Add associated feature</button>
+                                                      <button class="btn-grey">
+                                                        <i class="fa fa-plus" style="font-size: 14px; padding-right:7px"></i>
+                                                         feature</button>
                                                     </mp-event-trigger>
 
                                                     [[!--
@@ -364,7 +363,7 @@ not used:
                                                       --]]
                                                     <mp-overlay-dialog id='region-remove-confirmation-dialog--{{region.value}}' title="Remove image region" type="modal">
                                                       <mp-overlay-dialog-trigger>
-                                                        <button class="btn-grey btn-icon delete"><i class="iconmoon iconmoon-bin" title="Delete region"></i></button>
+                                                        <button class="btn-grey btn-icon"><i class="iconmoon iconmoon-bin" title="Delete region"></i></button>
                                                       </mp-overlay-dialog-trigger>
                                                       <mp-overlay-dialog-content>
                                                         <div>
@@ -378,7 +377,7 @@ not used:
                                                               </mp-event-trigger>
                                                               <mp-event-trigger id='remove-region-event-trigger--{{region.value}}' type='IIIFViewer.RemoveRegion' targets='["image-editor"]'
                                                                                 data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
-                                                                <button class="btn btn-danger">Delete Region</button>
+                                                                <button class="btn btn-default">Delete Region</button>
                                                               </mp-event-trigger>
 
                                                               <mp-event-proxy id='close-region-removal-dialog--{{feature.value}}' on-event-source='remove-region-event-trigger--{{region.value}}'
@@ -430,7 +429,7 @@ not used:
                                                 >
 
                                                   <div class="imageAnnotationWorkspace__item">
-                                                    <semantic-link iri='{{feature.value}}' class="text-truncate feature-label"></semantic-link>
+                                                    <semantic-link iri='{{feature.value}}' class="feature-label text-underline"></semantic-link>
                                                     {{#if user}}
                                                     <div class="user-info">
                                                       <div class="text-truncate">
@@ -453,9 +452,18 @@ not used:
                                                                         data='{"iri": "{{feature.value}}"}' targets='["details-view", "open-details-sidebar"]'
                                                       >
                                                         <button class="btn-grey btn-icon">
-                                                          <i class="rs-icon rs-icon-sidebar_right" title="Explore Feature details"></i>
+                                                          <i class="iconmoon iconmoon-info" title="Explore Feature details"></i>
                                                         </button>
                                                       </mp-event-trigger>
+
+                                                      <mp-event-trigger id='set-action__km-add-frame' type='Dashboard.AddFrame' 
+                                                                        data='{"resourceIri": "{{feature.value}}", "viewId": "featureSimilarityKm"}'
+                                                                        targets='["thinking-frames"]'>
+                                                          <button class="btn-grey btn-icon">
+                                                              <i class="rs-icon rs-icon-diagram" title="Show Connection Network"></i>
+                                                          </button>
+                                                      </mp-event-trigger>
+
                                                         {{#if region}}
                                                           <mp-event-trigger id='focus-event-trigger' type='IIIFViewer.ZoomToRegion' targets='["image-editor"]'
                                                                             data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
@@ -487,7 +495,7 @@ not used:
                                                                         data='{ "feature": "{{feature.value}}", "featureType": "{{featureType.value}}", "objectIri": "{{../objectIri}}" }'
                                                                         targets='["remove-feature-dialog"]'
                                                                         >
-                                                        <button class="btn-grey btn-icon delete"><i class="iconmoon iconmoon-bin" title="Delete Feature"></i></button>
+                                                        <button class="btn-grey btn-icon"><i class="iconmoon iconmoon-bin" title="Delete Feature"></i></button>
 
                                                       </mp-event-trigger>
                                                     </div>
@@ -522,13 +530,23 @@ not used:
                     </mp-event-trigger>
 
                     <div class="imageAnnotationWorkspace__form-titleRow">
-                      <h1 class="text-truncate">Observation on <strong><semantic-link iri='{{objectIri}}'></semantic-link></strong></h1>
-                      <button class="btn btn-primary btn-icon"><i class="rs-icon rs-icon-image" title="Focus on resource images"></i></button>
+                      <h1>Observation on <strong><semantic-link iri='{{objectIri}}' class="text-underline"></semantic-link></strong></h1>
+
+                      [[!-- Event trigger that opens new slot in the IIIF Viewer with the images of the current object --]]
+                      <mp-event-trigger id='image-view-trigger' 
+                                    type='IIIFViewer.AddImagesForObject' 
+                                    targets='["image-editor"]'
+                                    data='{ "objectIri": "{{objectIri}}" }'>
+                        <button class="btn btn-default">
+                          <i class="rs-icon rs-icon-image" style='font-size: 15px;' title="View resource images in the viewer"></i>
+                        </button> 
+                      </mp-event-trigger>
+
                     </div>
                                   
                     {{#if feature}}                    
                       <div class="imageAnnotationWorkspace__form-container page__whiteSection-container">
-                        <h2>Editing feature: &nbsp;<strong><semantic-link iri='{{feature}}'></semantic-link></strong></h2>
+                        <h2>Editing feature: &nbsp;<strong><semantic-link iri='{{feature}}' class="text-underline"></semantic-link></strong></h2>
                         <div class="imageAnnotationWorkspace__form-edit-featureType">
                           <span class="semantic-form-input-decorator__label" style="margin-right: 10px;">Kind:</span>
                           <span class='btn-grey btn-selected'>{{featureType}}</span>
@@ -568,11 +586,11 @@ not used:
                                         >
                                           <template id='existingFeatureSelection'>
                                             <div class="existing-feature-container">
-                                              <h2>Select existing feature represented by the region: &nbsp;<strong><semantic-link iri='{{regionIri}}'></semantic-link></strong></h2>
+                                              <h2>Select existing feature represented by the region: &nbsp;<strong><semantic-link iri='{{regionIri}}' class="text-underline"></semantic-link></strong></h2>
                                               <div class="existing-feature-scrollable-area">
                                                 {{#each bindings}}
                                                 <div class="existing-feature-item">
-                                                  <semantic-link iri='{{feature.value}}' class="text-truncate existing-feature-label"></semantic-link> 
+                                                  <semantic-link iri='{{feature.value}}' class="existing-feature-label text-underline"></semantic-link> 
                                                
                                                     <mp-event-trigger id='use-existing-feature'
                                                                       type='Component.TemplateUpdate' 
@@ -593,7 +611,7 @@ not used:
                                     {{else if confirmExisting}}
                                       
                                         <h2>
-                                          Associating image region with the feature: &nbsp;<strong><semantic-link iri='{{feature}}'></semantic-link></strong> of the object: <strong><semantic-link iri='{{objectIri}}'></semantic-link></strong>
+                                          Associating image region with the feature: &nbsp;<strong><semantic-link iri='{{feature}}' class="text-underline"></semantic-link></strong> of the object: <strong><semantic-link iri='{{objectIri}}' class="text-underline"></semantic-link></strong>
                                         </h2>
                                         <div class="imageAnnotationWorkspace__form-edit-featureType">
                                           <span class="semantic-form-input-decorator__label" style="margin-right: 10px;">Kind:</span>
@@ -631,11 +649,11 @@ not used:
                                                 <button name="cancel" class='btn btn-default'>Cancel</button>
                                               </mp-event-trigger> 
                                               
-                                             <button name="submit" class="btn btn-success">Confirm</button>
+                                             <button name="submit" class="btn btn-primary">Confirm</button>
 
                                               <mp-event-proxy id='finish-confirmation-dialog' on-event-source='feature-creation-form'
                                                               proxy-event-type='TwoSidePanel.ShowFront' proxy-targets='["objects-panel"]' data='{}'
-                                              ></mp-event-proxy>                                              
+                                              ></mp-event-proxy>
                                             </div>
                                           </div>
                                         </semantic-form>
@@ -643,8 +661,8 @@ not used:
                                     {{else if createNew}}
                                       [[> newFeatureForm createFromRegion=true]]
                                     {{else}}
-                                    <h2>Adding Feature represented by the region: &nbsp;<strong><semantic-link iri='{{regionIri}}'></semantic-link></strong></h2>
-                                    <div class="feature-form-type-selection-container feature-add-type">
+                                    <h2>Adding Feature represented by the region: &nbsp;<strong><semantic-link iri='{{regionIri}}' class="text-underline"></semantic-link></strong></h2>
+                                    <div class="feature-add-type">
                                       <p>Do you want to create a new feature or use the image region as a representation of an existing feature?</p>
                                       <div class="feature-form-type-selection">
                                         <mp-event-trigger id='use-existing-feature' type='Component.TemplateUpdate' data='{"createNew": true}' targets='["new-region-wizard-area"]'>

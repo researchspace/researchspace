@@ -19,7 +19,7 @@
 
 import * as Kefir from 'kefir';
 
-import { Component } from 'platform/api/components';
+import { Component, ComponentProps } from 'platform/api/components';
 import { Rdf, vocabularies, XsdDataTypeValidation } from 'platform/api/rdf';
 
 import { FieldDefinition } from '../FieldDefinition';
@@ -36,7 +36,7 @@ import {
 
 import { InputKind } from './InputCommpons';
 
-export interface SingleValueInputProps {
+export interface SingleValueInputProps extends ComponentProps {
   /** Key to associate with FieldDefinition by name */
   for?: string;
   handler?: SingleValueHandler;
@@ -46,6 +46,7 @@ export interface SingleValueInputProps {
   updateValue?: (reducer: (value: FieldValue) => FieldValue) => void;
   /** @see MultipleValuesProps.renderHeader */
   renderHeader?: boolean;
+  readonly?: boolean;
 }
 
 export interface SingleValueHandler {
@@ -75,8 +76,8 @@ export abstract class SingleValueInput<P extends SingleValueInputProps, S> exten
   }
 
   protected canEdit() {
-    const dataState = this.props.dataState;
-    return dataState === DataState.Ready || dataState === DataState.Verifying;
+    const {dataState, readonly} = this.props;
+    return readonly !== true && (dataState === DataState.Ready || dataState === DataState.Verifying);
   }
 
   static readonly defaultHandler: SingleValueHandler = {

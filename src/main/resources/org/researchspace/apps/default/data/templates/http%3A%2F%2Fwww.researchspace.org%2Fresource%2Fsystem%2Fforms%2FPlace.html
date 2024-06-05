@@ -1,0 +1,154 @@
+<two-side-panel id='{{viewId}}-new-place-holder' front='{{> front}}' back='{{> back}}'>
+  <template id='back'>
+
+
+<p>Search for place on OpenStreetMap.</p>
+<div style='flex: 1; overflow: hidden;' class='form-search-area'>
+  <style>
+    .form-search-area {
+      flex: 1;
+      overflow: hidden;
+    }
+    .form-search-area > div {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+    }
+    
+    .form-search-area > div > .form-group { 
+      height: initial;
+    }
+    
+    .form-search-area .rs-result-holder {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-right: 20px;
+      position: relative;
+    }
+  </style>
+  <semantic-search>
+     <semantic-search-query-keyword 
+        domain='<http://www.cidoc-crm.org/cidoc-crm/E53_Place>'
+        tokenize-lucene-query=false
+        escape-lucene-syntax=false
+        debounce=1000
+        query='
+          PREFIX osm: <http://www.researchspace.org/resource/system/services/osm/>
+          SELECT ?subject WHERE { 
+            ?subject osm:q ?__token__ .
+            ?subject osm:display_name ?label.
+            ?subject osm:geotext ?geoText.
+            ?subject osm:wikidata ?wikidataId.
+          }
+        '
+        debounce=500
+      ></semantic-search-query-keyword>
+      <div class='rs-result-holder'>
+         <semantic-search-result-holder>
+            <semantic-search-result> 
+              <semantic-context repository='osm-nominatim-search'>
+                <semantic-table id='semantic-search-result-table'
+                                query='SELECT DISTINCT ?subject ?label ?wikidataId ?geoText WHERE {
+                                        BIND(?subject as ?iri) .
+                                      } ORDER BY ?subject'
+
+                                options='{"showFilter":false, "resultsPerPage":10}' 
+                                column-configuration='[
+                                     {"displayName": "Label", "cellTemplate": "{{> label}}" },
+                                     {"displayName": "Description (from Wikidata)", "cellTemplate": "{{> wikidata}}"},
+                                     {"displayName": "Place", "cellTemplate": "{{> place}}" },
+                                     {"displayName": "Actions", "cellTemplate": "{{> actions}}" }
+
+                                      ]'   
+                >
+
+                  <template id='place'>
+                    <div style='height: 300px; width: 600px;'>
+                      <semantic-context repository='default'>
+                        <semantic-map query='SELECT ?wkt WHERE { BIND("{{geoText.value}}" AS ?wkt) } '>
+
+                        </semantic-map>
+                      </semantic-context>
+                    </div>
+                  </template>
+
+                  <template id='label'>
+                    <div>{{label.value}}</div>
+                  </template>
+                  
+                  <template id='wikidata'>
+                    <div>
+                      {{#if wikidataId.value}}
+                      <semantic-context repository='default'>
+                        <semantic-query
+                                        query='
+                                          PREFIX wikibase: <http://wikiba.se/ontology#>
+                                          PREFIX bd: <http://www.bigdata.com/rdf#>
+                                          PREFIX mwapi: <https://www.mediawiki.org/ontology#API/>
+                                          PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+                                          PREFIX wd: <http://www.wikidata.org/entity/>
+                                          PREFIX schema: <http://schema.org/>
+
+                                          SELECT ?description WHERE { 
+                                            SERVICE <https://query.wikidata.org/sparql> {  
+                                              BIND(IRI(CONCAT(STR(wd:), "{{wikidataId.value}}")) AS ?item) .
+                                              SERVICE wikibase:label { 
+                                                bd:serviceParam wikibase:language "en". 
+                                                ?item rdfs:label ?label .
+                                                ?item schema:description ?description .
+                                              }
+                                            }
+                                          }
+
+                                '
+                                        >
+                        </semantic-query>
+                        </semantic-context>
+                      {{/if}}
+                      </div>
+                  </template>
+                  
+                  <template id='actions'>
+                    <mp-overlay-dialog id='save-place' title="Save {{label.value}}" type="modal" bs-size="large">
+                    <mp-overlay-dialog-trigger>
+                      <button name="delete" class="btn btn-primary">Save</button>
+                    </mp-overlay-dialog-trigger>
+                    <mp-overlay-dialog-content>
+                      <div>
+                        {{> forms:PlaceForm nested=nested scheme=scheme  mode=mode broader=broader geotext=geoText.value modal=true label=label.value }}
+                      </div>
+                    </mp-overlay-dialog-content>
+        </mp-overlay-dialog>
+                  </template>
+
+                </semantic-table>
+              </semantic-context>
+            </semantic-search-result>
+  </semantic-search-result-holder>
+    </div>
+    </semantic-search>
+</div>
+  
+    
+
+  </template>
+  <template id="front">
+    {{#if node}}
+    {{else}}
+      {{#if nested}}
+      {{else}}
+        <mp-event-trigger id='{{viewId}}-search-osm-api-trigger' 
+                          type='TwoSidePanel.ShowBack' 
+                          targets='["{{viewId}}-new-place-holder"]'
+        >
+          <button class="btn btn-primary" 
+                  style="margin: 15px 0px; font-size: 15px; padding: 10px;">Search Open Street Map
+          </button>
+        </mp-event-trigger>
+      {{/if}}
+    {{/if}}
+    {{> forms:PlaceForm nested=nested scheme=scheme  mode=mode broader=broader}}
+  </template>
+</two-side-panel>

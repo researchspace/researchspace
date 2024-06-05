@@ -759,6 +759,13 @@ export interface SemanticFacetConfig {
    * @default false
    */
   listenToContextSwitch?: boolean;
+
+  /**
+   * Hide toggle button to show/hide filters
+   *
+   * @default false
+   */
+  hideToggleButton?: boolean;
 }
 
 /**

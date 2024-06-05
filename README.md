@@ -15,23 +15,25 @@
     <img src="https://badges.gitter.im/Join Chat.svg" height="30px" alt="Gitter"></a>
 </p>
 
-<h2>Kartography Work Plan for ResearchSpace</h2>
- <div style="float:left;"><img width=30% align="left" src='https://kartography.org/images/flowing%20into%20pot.png' alt='ResearchSpace'/></div>
- <p>Information about the current development of ResearchSpace by Kartography CIC is available on the <a href="https://kartography.org/current_work.html">Kartography Web Site</a>.
- </p>
- <p>Note that archives of previous ResearchSpace specifications are available on the Kartography site (https://kartography.org/papers.html) </p>
- 
- <p> Modified: Nov 2023 </p>
-<p>--------------------------------------------------------------------------------------------------------------------------------------------------------------------</p>
-<h2>Pull Requests</h2>
-<div style="float:left;"><img width=30% align="left" src='https://kartography.org/images/exchanginginformation.png' alt='ResearchSpace'/></div>
-<p>We welcome push requests but would ask that they come with documentation to help the community understand changes.</p>
-<p>Please provide documentation with the git reference to info@kartography.org. Documentation should have a title, reason for the change, description of the changes, and details of the testing</p>
-<p> These summary requirements will be formalised in short course with an online form.</p>
-<p>Thanks for your understanding</p>
+<h2>Github Repository</h2>
 
- <p> Modified: Nov 2023 </p>
-<p>--------------------------------------------------------------------------------------------------------------------------------------------------------------------</p>
+  
+<p>If you would like to discuss something in person please schedule an appointment using https://calendar.app.google/ytoocWhkbVKE9Teq7</p>
+<p>Community developers should test new code before submitting a pull request.</p>
+<p>When submitting a pull request they will provide enough information to allow Kartography to apply the objectives above. </p>
+</ul>
+
+
+<p>--------------------------------------------------------------------------------------------------------------------------</p>
+
+<p>Kartography are currently using rs-new-design branch as a basis for the next version of ResearchSpace in order to support a comprehensive user interface and consolidate work. </p>   
+
+
+
+<p>--------------------------------------------------------------------------------------------------------------------------</p>
+
+
+
 <h2>The ResearchSpace System</h2>
 <div style="float:left;">
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=MaAv0SE7wis

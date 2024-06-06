@@ -415,7 +415,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
     }
     this.setState({ nestedFormOpen: false});
     this.setAndValidate(value);
-    this.initValueSet()
+    this.initValueSet();
   };
 
   private createDefaultPlaceholder(definition: FieldDefinition): string {

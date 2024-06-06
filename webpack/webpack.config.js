@@ -272,7 +272,7 @@ module.exports = function(isProd) {
             // these node.js dependencies are not used in the browser, but required by some libraries that we are using, 
             fallback: { 
                 'stream': false, 'buffer': false, 
-                'punycode': false, 'http': false, 'https': false, 'url': false, 'path': false,
+                'http': false, 'https': false, 'url': false, 'path': false,
                 'crypto': false, 'os': false, 'assert': false, 'fs': false, 
                 'net': false, 'tls': false, 'zlib': false,
             }
@@ -330,7 +330,12 @@ module.exports = function(isProd) {
                 ignoreOrder: true,
                 filename: isProd ? '[name]-[contenthash].css' : '[name].css',
                 chunkFilename: isProd ? '[name]-[contenthash].css' : '[name].css',
-            })
+            }),
+            new webpack.NormalModuleReplacementPlugin(
+                /^punycode$/,
+                path.join(ROOT_DIR, 'webpack/punycode-module.js')
+            )
+
         ]
     };
 

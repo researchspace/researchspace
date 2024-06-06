@@ -27,23 +27,41 @@
                                     }'>
 
               <template id='http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative'>
-                <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames" 
-                                        urlqueryparam-view='semantic-narrative'>
-                  <button id="create-new-btn" class="btn btn-action btn-textAndIcon">
-                    <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
-                    <span>New [[urlParam "resourcelabel" escape=false]]</span>
-                  </button>                 
-                </semantic-link-container>
+                <div class="btn-newDraggableTab-container" style="margin-right: 20px;">
+                  <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                          urlqueryparam-view='semantic-narrative'>
+                    <button id="create-new-btn" class="btn btn-action btn-textAndIcon">
+                      <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                      <span>New [[urlParam "resourcelabel" escape=false]]</span>
+                    </button>                 
+                  </semantic-link-container>
+                  <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                            urlqueryparam-view="semantic-narrative"
+                                            urlqueryparam-open-as-drag-and-drop='true'>
+                    <button class="btn btn-action btn-textAndIcon btn-newDraggableTab" title='Open in new draggable tab'>
+                      <rs-icon icon-type="round" icon-name="open_in_new"></rs-icon>
+                    </button>
+                  </semantic-link-container>
+                </div>  
               </template>
 
               <template id='http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map'>
-                <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames" 
-                                        urlqueryparam-view='knowledge-map'>
-                  <button id="create-new-btn" class="btn btn-action btn-textAndIcon">
-                    <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
-                    <span>New [[urlParam "resourcelabel" escape=false]]</span>
-                  </button>                 
-                </semantic-link-container>
+                <div class="btn-newDraggableTab-container" style="margin-right: 20px;">
+                  <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                          urlqueryparam-view='knowledge-map'>
+                    <button id="create-new-btn" class="btn btn-action btn-textAndIcon">
+                      <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                      <span>New [[urlParam "resourcelabel" escape=false]]</span>
+                    </button>                 
+                  </semantic-link-container>
+                  <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                            urlqueryparam-view="knowledge-map"
+                                            urlqueryparam-open-as-drag-and-drop='true'>
+                    <button class="btn btn-action btn-textAndIcon btn-newDraggableTab" title='Open in new draggable tab'>
+                      <rs-icon icon-type="round" icon-name="open_in_new"></rs-icon>
+                    </button>
+                  </semantic-link-container>
+                </div>  
               </template>
 
               <template id='http://www.researchspace.org/resource/system/resource_configurations_container/data/Set'>
@@ -62,10 +80,22 @@
                 [[#if (urlParam "resourceform")]]
                   <mp-overlay-dialog id="[[urlParam 'viewid' escape=false]]-newResource-modal" title="New [[urlParam 'resourcelabel' escape=false]]" type="lightbox">
                     <mp-overlay-dialog-trigger>
-                      <button id="create-new-btn" class="btn btn-action btn-textAndIcon">
-                        <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
-                        <span>New [[urlParam "resourcelabel" escape=false]]</span>
-                      </button>
+                      <div class="btn-newDraggableTab-container" style="margin-right: 20px;">
+                        <button id="create-new-btn" class="btn btn-action btn-textAndIcon">
+                          <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                          <span>New [[urlParam "resourcelabel" escape=false]]</span>
+                        </button>
+                        <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                  urlqueryparam-view="resource-editor"
+                                                  urlqueryparam-entity-type-config='[[urlParam "resourceconfig" escape=false]]'
+                                                  urlqueryparam-mode='new'
+                                                  urlqueryparam-open-as-drag-and-drop='true'>
+                          <button class="btn btn-action btn-textAndIcon btn-newDraggableTab" title='Open in new draggable tab'>
+                            <rs-icon icon-type="round" icon-name="open_in_new"></rs-icon>
+                          </button>
+                        </semantic-link-container>
+                      </div>
+
                     </mp-overlay-dialog-trigger>
                     <mp-overlay-dialog-content>
                       <div>
@@ -420,61 +450,490 @@
                         </semantic-search-result>
                       </semantic-search-result-context>
                     {{else}}
-                    [[!-- list view --]]
-                      <semantic-search-result> 
-                        <semantic-table id='semantic-search-result-list'
-                                        class-name="semantic-search-result-list table-fixed-header table-scrollable-content"
-                                        query='SELECT DISTINCT ?subject ?iri ?typeLabel WHERE {
-                                                BIND(?subject as ?iri) .
-                                                ?subject a ?type .
-                                                ?type rdfs:label ?typeLabel .
-                                                FILTER (lang(?typeLabel) = "en")
-                                              } ORDER BY ?subject'
+                      [[!-- list view --]]
+                      <semantic-query query=' SELECT DISTINCT ?resourceConfig ?resourceLabel ?viewid 
+                                                              ?columnTitle1 ?columnTitle2 ?columnTitle3 ?columnTitle4
+                                                              ?columnContentType1 ?columnContentType2 ?columnContentType3 ?columnContentType4
+                                                              ?columnContentSparqlPattern1 ?columnContentSparqlPattern2 ?columnContentSparqlPattern3 ?columnContentSparqlPattern4 
+                                              WHERE {
+                                                BIND(<[[urlParam "resourceconfig" escape=false]]> as ?resourceConfig)
+                                                BIND("[[urlParam "resourcelabel" escape=false]]" as ?resourceLabel)
+                                                BIND("[[urlParam "viewid" escape=false]]" as ?viewid)
+                                                ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_listView_column> ?customListViewColumn .
 
-                                        options='{"showFilter":false, 
-                                                  "resultsPerPage":150,
-                                                  "useFixedHeader":true
-                                                }' 
-                                        column-configuration='[
-                                                                {"variableName": "", "displayName": "", "cellTemplate": "{{> selectionCheckbox}}" },
-                                                                {"variableName": "typeLabel", "displayName": "Type", "cellTemplate": "{{> type}}" },
-                                                                {"variableName": "subject", "displayName": "Label", "cellTemplate": "{{> label}}" }
-                                                              ]'   
-                        >
+                                                OPTIONAL {
+                                                  ?customListViewColumn <http://www.researchspace.org/pattern/system/resource_search_listView_column/order> 1 .
+                                                  ?customListViewColumn <http://www.researchspace.org/pattern/system/resource_search_listView_column/title> ?columnTitle1 .
+                                                  ?customListViewColumn <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_type> ?columnContentType1 .
+                                                  ?customListViewColumn <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_sparql_pattern> ?columnContentSparqlPattern1 .
+                                                }
 
-                          <template id='selectionCheckbox'>
-                            [[#if (hasPermission "forms:ldp:*")]]
-                              <div class='card-select-input'>
-                                <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
-                              </div>
-                            [[/if]]
-                          </template>
-                          <template id='type'>
-                            <div class="search-result-table__type" style="display: flex; align-items: center;">
-                              <rs-icon icon-type="round" icon-name="drag_indicator" style="margin-right: 8px;"></rs-icon>
-                              <mp-draggable iri='{{iri.value}}'>
-                                <div class="search-result-table__type-value">{{typeLabel.value}}</div>
-                              </mp-draggable>
-                            </div>
-                            
-                          </template>
+                                                OPTIONAL {
+                                                  ?customListViewColumn <http://www.researchspace.org/pattern/system/resource_search_listView_column/order> 2 .
+                                                  ?customListViewColumn <http://www.researchspace.org/pattern/system/resource_search_listView_column/title> ?columnTitle2 .
+                                                  ?customListViewColumn <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_type> ?columnContentType2 .
+                                                  ?customListViewColumn <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_sparql_pattern> ?columnContentSparqlPattern2 .
+                                                }
 
-                          <template id='label'>
-                            <mp-draggable iri='{{iri.value}}'>
-                              <div><mp-label iri='{{iri.value}}'></mp-label></div>
-                            </mp-draggable>
-                          </template>
+                                                OPTIONAL {
+                                                  ?customListViewColumn <http://www.researchspace.org/pattern/system/resource_search_listView_column/order> 3 .
+                                                  ?customListViewColumn <http://www.researchspace.org/pattern/system/resource_search_listView_column/title> ?columnTitle3 .
+                                                  ?customListViewColumn <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_type> ?columnContentType3 .
+                                                  ?customListViewColumn <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_sparql_pattern> ?columnContentSparqlPattern3 .
+                                                }
 
-                        </semantic-table>
-                        [[> numberOfResults]]
-                      </semantic-search-result>
+                                                OPTIONAL {
+                                                  ?customListViewColumn <http://www.researchspace.org/pattern/system/resource_search_listView_column/order> 4 .
+                                                  ?customListViewColumn <http://www.researchspace.org/pattern/system/resource_search_listView_column/title> ?columnTitle4 .
+                                                  ?customListViewColumn <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_type> ?columnContentType4 .
+                                                  ?customListViewColumn <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_sparql_pattern> ?columnContentSparqlPattern4 .
+                                                }
+                                              } LIMIT 1'
+
+                                      template='{{> custom-list-view}}'
+                                      no-result-template='{{> default-list-view}}'>
+                      
+                        <template id='custom-list-view'>
+                          <semantic-search-result> 
+                            <semantic-table id='semantic-search-result-list'
+                                            class-name="semantic-search-result-list table-fixed-header table-scrollable-content"
+
+                                            query='SELECT DISTINCT ?subject ?iri ?description WHERE {
+                                                    BIND(?subject as ?iri) .
+                                                    ?subject a ?type .
+                                                    ?type rdfs:label ?typeLabel .
+                                                    FILTER (lang(?typeLabel) = "en")
+
+                                                    OPTIONAL {
+                                                      ?subject crm:P67i_is_referred_to_by ?information_object  .
+                                                      ?information_object a crm:E73_Information_Object .
+                                                      ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
+                                                      ?information_object crm:P190_has_symbolic_content ?description . 
+                                                    }
+                                                  } ORDER BY ?subject'
+    
+                                            options='{"showFilter":false, 
+                                                      "resultsPerPage":40,
+                                                      "useFixedHeader":true
+                                                     }' 
+
+                                            column-configuration='[
+                                                                    {"variableName": "subject", "displayName": "", "cellTemplate": "{{> selectionCheckbox}}" },
+                                                                    {"variableName": "subject", "displayName": "{{#if bindings.0.columnTitle1.value}}{{bindings.0.columnTitle1.value}}{{else}}{{bindings.0.resourceLabel.value}} details{{/if}}", "cellTemplate": "{{> column1}}" },
+                                                                    {"variableName": "", "displayName": "{{#if bindings.0.columnTitle2.value}}{{bindings.0.columnTitle2.value}}{{else}}Description{{/if}}", "cellTemplate": "{{> column2}}" },
+                                                                    {"variableName": "", "displayName": "{{#if bindings.0.columnTitle3.value}}{{bindings.0.columnTitle3.value}}{{else}}{{/if}}", "cellTemplate": "{{> column3}}" },
+                                                                    {"variableName": "", "displayName": "{{#if bindings.0.columnTitle4.value}}{{bindings.0.columnTitle4.value}}{{else}}{{/if}}", "cellTemplate": "{{> column4}}" },
+                                                                    {"variableName": "", "displayName": "more", "cellTemplate": "{{> actions}}" }
+                                                                  ]'   
+                            >
+    
+                              <template id='selectionCheckbox'>
+                                [[#if (hasPermission "forms:ldp:*")]]
+                                  <div class=''>
+                                    <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
+                                  </div>
+                                [[/if]]
+                              </template>
+    
+                              <template id='column1'>
+                                <div>
+                                  <div>image</div>
+
+                                  {{#if bindings.0.columnContentSparqlPattern1.value}}
+                                    <semantic-query query='SELECT ?item ?label ?itemIri WHERE {
+                                                            BIND(<{{iri.value}}> AS ?item)
+                                                            {{bindings.0.columnContentSparqlPattern1.value}}
+                                                          }'
+                                                    template='{{> customColumnContent}}'
+                                                    no-result-template='{{> noResults}}'
+                                    >
+
+                                      <template id='customColumnContent'>
+                                        <div>
+                                          {{#if (eq columnContentType1.value "icon actor")}}
+                                          <mp-popover>
+                                            <mp-popover-trigger placement="bottom" trigger='["click","hover","focus"]'> 
+                                              <rs-icon icon-type="round" icon-name="people_alt" class="researcher-icon"></rs-icon>
+                                            </mp-popover-trigger>
+                                            <mp-popover-content>
+                                              {{#each bindings}}
+                                                <div>{{label.value}}</div>
+                                              {{/each}}
+                                            </mp-popover-content>
+                                          </mp-popover>
+                                          {{else}}
+                                            {{#each bindings}}
+                                              {{#if (eq columnContentType1.value "date")}}
+                                                <span>{{dateTimeFormat label.value "DD/MM/YYYY"}}</span>
+                                                <span>{{#if @last}}{{else}}, {{/if}}</span>
+                                              {{else if (eq columnContentType1.value "link")}}
+                                                <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                          urlqueryparam-view="resource-editor"
+                                                                          urlqueryparam-resource-iri='{{item.value}}'
+                                                                          urlqueryparam-open-as-drag-and-drop='true'>
+                                                  <span class="text-link">{{label.value}}</span>
+                                                </semantic-link-container>
+                                                <span>{{#if @last}}{{else}}, {{/if}}</span>
+                                              {{else if (eq columnContentType1.value "tag")}}
+                                                <span class="badge badge--secondary">{{label.value}}</span>
+                                              {{else}}
+                                                <span style="{{#if (eq columnContentType1.value 'bold text')}}font-weight: 600;{{/if}}">{{label.value}}</span>
+                                                <span>{{#if @last}}{{else}}, {{/if}}</span>
+                                              {{/if}}
+                                            {{/each}}
+                                          {{/if}}
+                                        </div>
+                                      </template>
+
+                                      <template id="noResults">
+                                        <div>
+                                          <semantic-link  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                          urlqueryparam-view="resource-editor"
+                                                          urlqueryparam-resource-iri='{{iri.value}}'
+                                                          style="font-weight: 600;">
+                                            <mp-label iri='{{iri.value}}' class="text-link"></mp-label>
+                                          </semantic-link>
+                                          <div>{{bindings.0.resourceLabel.value}}</div>
+                                        </div>
+                                      </template>
+                                    </semantic-query>
+                                  {{else}}
+                                    <div>
+                                      <semantic-link  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                      urlqueryparam-view="resource-editor"
+                                                      urlqueryparam-resource-iri='{{iri.value}}'
+                                                      style="font-weight: 600;">
+                                        <mp-label iri='{{iri.value}}' class="text-link"></mp-label>
+                                      </semantic-link>
+                                      <div>{{bindings.0.resourceLabel.value}}</div>
+                                    </div>
+                                  {{/if}}
+                                </div>
+                              </template>
+
+                              <template id='column2'>
+                                {{#if bindings.0.columnContentSparqlPattern2.value}}
+                                  <semantic-query query='SELECT ?item ?label ?itemIri WHERE {
+                                                            BIND(<{{iri.value}}> AS ?item)
+                                                            {{bindings.0.columnContentSparqlPattern2.value}}
+                                                          }'
+                                                    template='{{> customColumnContent}}'
+                                                    no-result-template='{{> noResults}}'
+                                    >
+
+                                      <template id='customColumnContent'>
+                                        <div>
+                                          {{#if (eq columnContentType2.value "icon actor")}}
+                                          <mp-popover>
+                                            <mp-popover-trigger placement="bottom" trigger='["click","hover","focus"]'> 
+                                              <rs-icon icon-type="round" icon-name="people_alt" class="researcher-icon"></rs-icon>
+                                            </mp-popover-trigger>
+                                            <mp-popover-content>
+                                              {{#each bindings}}
+                                                <div>{{label.value}}</div>
+                                              {{/each}}
+                                            </mp-popover-content>
+                                          </mp-popover>
+                                          {{else}}
+                                            {{#each bindings}}
+                                              {{#if (eq columnContentType2.value "date")}}
+                                                <span>{{dateTimeFormat label.value "DD/MM/YYYY"}}</span>
+                                                <span>{{#if @last}}{{else}}, {{/if}}</span>
+                                              {{else if (eq columnContentType2.value "link")}}
+                                                <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                          urlqueryparam-view="resource-editor"
+                                                                          urlqueryparam-resource-iri='{{item.value}}'
+                                                                          urlqueryparam-open-as-drag-and-drop='true'>
+                                                  <span class="text-link">{{label.value}}</span>
+                                                </semantic-link-container>
+                                                <span>{{#if @last}}{{else}}, {{/if}}</span>
+                                              {{else if (eq columnContentType2.value "tag")}}
+                                                <span class="badge badge--secondary">{{label.value}}</span>
+                                              {{else}}
+                                                <span style="{{#if (eq columnContentType2.value 'bold text')}}font-weight: 600;{{/if}}">{{label.value}}</span>
+                                                <span>{{#if @last}}{{else}}, {{/if}}</span>
+                                              {{/if}}
+                                            {{/each}}
+                                          {{/if}}
+                                        </div>
+                                      </template>
+
+                                      <template id="noResults">
+                                        <mp-text-truncate lines=3 expand='<div class="text-link">Expand</div>' collapse='<div class="text-link">Collapse</div>'>
+                                          {{description.value}}
+                                        </mp-text-truncate>
+                                      </template>
+                                  </semantic-query>
+                                {{else}}
+                                  <mp-text-truncate lines=3 expand='<div class="text-link">Expand</div>' collapse='<div class="text-link">Collapse</div>'>
+                                    {{description.value}}
+                                  </mp-text-truncate>
+                                {{/if}}
+                              </template>
+
+                              <template id='column3'>
+                                {{#if bindings.0.columnContentSparqlPattern3.value}}
+                                  <semantic-query query='SELECT ?item ?label ?itemIri WHERE {
+                                                            BIND(<{{iri.value}}> AS ?item)
+                                                            {{bindings.0.columnContentSparqlPattern3.value}}
+                                                          }'
+                                                    template='{{> customColumnContent}}'
+                                    >
+
+                                      <template id='customColumnContent'>
+                                        <div>
+                                          {{#if (eq columnContentType3.value "icon actor")}}
+                                          <mp-popover>
+                                            <mp-popover-trigger placement="bottom" trigger='["click","hover","focus"]'> 
+                                              <rs-icon icon-type="round" icon-name="people_alt" class="researcher-icon"></rs-icon>
+                                            </mp-popover-trigger>
+                                            <mp-popover-content>
+                                              {{#each bindings}}
+                                                <div>{{label.value}}</div>
+                                              {{/each}}
+                                            </mp-popover-content>
+                                          </mp-popover>
+                                          {{else}}
+                                            {{#each bindings}}
+                                              {{#if (eq columnContentType3.value "date")}}
+                                                <span>{{dateTimeFormat label.value "DD/MM/YYYY"}}</span>
+                                                <span>{{#if @last}}{{else}}, {{/if}}</span>
+                                              {{else if (eq columnContentType3.value "link")}}
+                                                <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                          urlqueryparam-view="resource-editor"
+                                                                          urlqueryparam-resource-iri='{{item.value}}'
+                                                                          urlqueryparam-open-as-drag-and-drop='true'>
+                                                  <span class="text-link">{{label.value}}</span>
+                                                </semantic-link-container>
+                                                <span>{{#if @last}}{{else}}, {{/if}}</span>
+                                              {{else if (eq columnContentType3.value "tag")}}
+                                                <span class="badge badge--secondary">{{label.value}}</span>
+                                              {{else}}
+                                                <span style="{{#if (eq columnContentType3.value 'bold text')}}font-weight: 600;{{/if}}">{{label.value}}</span>
+                                                <span>{{#if @last}}{{else}}, {{/if}}</span>
+                                              {{/if}}
+                                            {{/each}}
+                                          {{/if}}
+                                        </div>
+                                      </template>
+                                  </semantic-query>
+                                {{/if}}
+                              </template>    
+
+                              <template id='column4'>
+                                {{#if bindings.0.columnContentSparqlPattern4.value}}
+                                  <semantic-query query='SELECT ?item ?label ?itemIri WHERE {
+                                                            BIND(<{{iri.value}}> AS ?item)
+                                                            {{bindings.0.columnContentSparqlPattern4.value}}
+                                                          }'
+                                                    template='{{> customColumnContent}}'
+                                    >
+
+                                      <template id='customColumnContent'>
+                                        <div>
+                                          {{#if (eq columnContentType4.value "icon actor")}}
+                                          <mp-popover>
+                                            <mp-popover-trigger placement="bottom" trigger='["click","hover","focus"]'> 
+                                              <rs-icon icon-type="round" icon-name="people_alt" class="researcher-icon"></rs-icon>
+                                            </mp-popover-trigger>
+                                            <mp-popover-content>
+                                              {{#each bindings}}
+                                                <div>{{label.value}}</div>
+                                              {{/each}}
+                                            </mp-popover-content>
+                                          </mp-popover>
+                                          {{else}}
+                                            {{#each bindings}}
+                                              {{#if (eq columnContentType4.value "date")}}
+                                                <span>{{dateTimeFormat label.value "DD/MM/YYYY"}}</span>
+                                                <span>{{#if @last}}{{else}}, {{/if}}</span>
+                                              {{else if (eq columnContentType4.value "link")}}
+                                                <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                          urlqueryparam-view="resource-editor"
+                                                                          urlqueryparam-resource-iri='{{item.value}}'
+                                                                          urlqueryparam-open-as-drag-and-drop='true'>
+                                                  <span class="text-link">{{label.value}}</span>
+                                                </semantic-link-container>
+                                                <span>{{#if @last}}{{else}}, {{/if}}</span>
+                                              {{else if (eq columnContentType4.value "tag")}}
+                                                <span class="badge badge--secondary">{{label.value}}</span>
+                                              {{else}}
+                                                <span style="{{#if (eq columnContentType4.value 'bold text')}}font-weight: 600;{{/if}}">{{label.value}}</span>
+                                                <span>{{#if @last}}{{else}}, {{/if}}</span>
+                                              {{/if}}
+                                            {{/each}}
+                                          {{/if}}
+                                        </div>
+                                      </template>
+                                  </semantic-query>
+                                {{/if}}
+                              </template>
+
+                              <template id='actions'>
+                                
+                              </template>  
+
+                            </semantic-table>
+                            [[> numberOfResults]]
+                          </semantic-search-result>
+                        </template>
+
+                        <template id='default-list-view'>
+                          <semantic-search-result> 
+                            <semantic-table id='semantic-search-result-list'
+                                            class-name="semantic-search-result-list table-fixed-header table-scrollable-content"
+                                            query='SELECT DISTINCT ?subject ?iri ?description WHERE {
+                                                    BIND(?subject as ?iri) .
+                                                    ?subject a ?type .
+                                                    ?type rdfs:label ?typeLabel .
+                                                    FILTER (lang(?typeLabel) = "en")
+
+                                                    OPTIONAL {
+                                                      ?subject crm:P67i_is_referred_to_by ?information_object  .
+                                                      ?information_object a crm:E73_Information_Object .
+                                                      ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
+                                                       ?information_object crm:P190_has_symbolic_content ?description . 
+                                                    }
+                                                  } ORDER BY ?subject'
+    
+                                            options='{"showFilter":false, 
+                                                      "resultsPerPage":100,
+                                                      "useFixedHeader":true
+                                                    }' 
+                                            column-configuration='[
+                                                                    {"variableName": "subject", "displayName": "", "cellTemplate": "{{> selectionCheckbox}}" },
+                                                                    {"variableName": "subject", "displayName": "{{bindings.0.resourceLabel.value}} details", "cellTemplate": "{{> column1}}" },
+                                                                    {"variableName": "description", "displayName": "Description", "cellTemplate": "{{> column2}}" },
+                                                                    {"variableName": "", "displayName": "more", "cellTemplate": "{{> actions}}" }
+                                                                  ]'   
+                            >
+    
+                              <template id='selectionCheckbox'>
+                                [[#if (hasPermission "forms:ldp:*")]]
+                                  <div class=''>
+                                    <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
+                                  </div>
+                                [[/if]]
+                              </template>
+    
+                              <template id='column1'>
+                                <div>
+                                  <div>image</div>
+                                  <div>
+                                    <semantic-link  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                    urlqueryparam-view="resource-editor"
+                                                    urlqueryparam-resource-iri='{{iri.value}}'
+                                                    style="font-weight: 600;">
+                                      <mp-label iri='{{iri.value}}' class="text-link"></mp-label>
+                                    </semantic-link>
+                                    <div>{{bindings.0.resourceLabel.value}}</div>
+                                  </div>
+                                </div>
+                              </template>
+
+                              <template id='column2'>
+                                <mp-text-truncate lines=3 expand='<div class="text-link">Expand</div>' collapse='<div class="text-link">Collapse</div>'>
+                                  {{description.value}}
+                                </mp-text-truncate>
+                              </template>
+
+                              <template id='actions'>
+                                <div>
+                                  <bs-dropdown id="[[urlParam 'viewid' escape=false]]-{{iri.value}}-item-actions-dropdown" pull-right=true class="dropdown-no-caret">
+                                    <bs-dropdown-toggle>
+                                      <rs-icon icon-type="round" icon-name="more_horiz"></rs-icon>
+                                    </bs-dropdown-toggle>
+                                    <bs-dropdown-menu>
+
+                                      {{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}
+
+                                      {{/if}}
+
+
+                                      <bs-menu-item>
+                                        <rs-icon icon-type="round" icon-name="fullscreen" class="icon-left"></rs-icon>
+                                        <span>Preview</span>
+                                      </bs-menu-item>
+                                      <hr>
+
+                                      <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                urlqueryparam-view="resource-editor"
+                                                                urlqueryparam-resource-iri='{{iri.value}}'>
+                                        <bs-menu-item>
+                                          <rs-icon icon-type="round" icon-name="edit_note" class="icon-left"></rs-icon>
+                                          <span>Edit</span>
+                                        </bs-menu-item>
+                                      </semantic-link-container>
+
+                                      <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                urlqueryparam-view="resource-editor"
+                                                                urlqueryparam-resource-iri='{{iri.value}}'
+                                                                urlqueryparam-open-as-drag-and-drop='true'>
+                                        <bs-menu-item>
+                                          <rs-icon icon-type="round" icon-name="open_in_new" class="icon-left"></rs-icon>
+                                          <span>Edit in draggable tab</span>
+                                        </bs-menu-item>
+                                      </semantic-link-container>
+                                      <hr>
+
+                                      <bs-menu-item>
+                                        <rs-icon icon-type="round" icon-name="image_search" class="icon-left"></rs-icon>
+                                        <span>Images preview</span>
+                                      </bs-menu-item>
+                                      <bs-menu-item>
+                                        <rs-icon icon-type="round" icon-name="photo_size_select_large" class="icon-left"></rs-icon>
+                                        <span>Images annotation</span>
+                                      </bs-menu-item>
+                                      <hr>
+
+                                      <semantic-link-container  uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                                                urlqueryparam-view='knowledge-map' 
+                                                                urlqueryparam-resource='{{iri.value}}'>
+                                          <bs-menu-item>
+                                            <rs-icon icon-type="round" icon-name="account_tree" class="icon-left"></rs-icon>
+                                            <span>Open in Knowledge map</span>
+                                          </bs-menu-item>
+                                      </semantic-link-container>
+                                      <hr>
+
+                                      <bs-menu-item>
+                                        <rs-icon icon-type="round" icon-name="inventory" class="icon-left"></rs-icon>
+                                        <span>Copy to clipboard</span>
+                                      </bs-menu-item>
+
+                                      <mp-copy-to-clipboard text='{{iri.value}}' message='IRI has been copied'>
+                                        <bs-menu-item>
+                                          <rs-icon icon-type="round" icon-name="content_copy" class="icon-left"></rs-icon>
+                                          <span>Copy IRI</span>
+                                        </bs-menu-item>
+                                      </mp-copy-to-clipboard>
+
+                                      <bs-menu-item>
+                                        <rs-icon icon-type="round" icon-name="delete" class="icon-left"></rs-icon>
+                                        <span>Delete</span>
+                                      </bs-menu-item>
+
+
+
+
+                      
+                      
+                                      
+                                    </bs-dropdown-menu>
+                                  </bs-dropdown>
+                                </div>
+                              </template>
+    
+                            </semantic-table>
+                            [[> numberOfResults]]
+                          </semantic-search-result>
+                        </template>
+
+                      </semantic-query>
                     {{/if}}
                   </semantic-search-result-holder>
               </template>
             </mp-event-target-template-render>
-
-
-
           </div>
 
           <div class="split-pane__sidebar split-pane__rightsidebar">

@@ -127,6 +127,7 @@
 
   .search-results-area {
 
+    position: relative;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -157,6 +158,15 @@
             overflow: hidden;
             height: 100%;
 
+            .griddle-body {
+
+              & > div {
+
+                overflow: hidden;
+                height: 100%;
+              }
+            }
+
             & > div {
 
               overflow: hidden;
@@ -170,9 +180,57 @@
               flex: 1;
               align-items: flex-start;
             }
+
+            .griddle-footer {
+
+              & .pagination {
+
+                padding: 10px;
+                background: $color-light;
+                margin-top: 10px;
+                border-radius: $border-radius;
+                height: 40px;
+
+                position: relative;
+                z-index: 1;
+
+                & > li > a {
+                  background-color: $color-light;
+  
+                  &:hover,
+                  &:focus {
+                    background-color: $pageSection-bg;
+                  }
+                }
+
+                & > .active > a,
+                & > .active > a:hover,
+                & > .active > a:focus,
+                & > .active > span,
+                & > .active > span:hover,
+                & > .active > span:focus {
+                    background-color: $color-secondary;
+                }
+
+              }
+            }
           }
         }
       }
+    }
+
+    .semantic-search-num-results {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      width: min-content;
+      z-index: 1;
+      
+      padding: 10px;
+      background: $color-light;
+      margin-top: 10px;
+      border-radius: $border-radius;
+      height: 40px;
     }
 
     .tab-pane {
@@ -185,9 +243,6 @@
       overflow: hidden;
 
     }
-
-
-  
   }
 
   .semantic-facet-holder {
@@ -348,13 +403,22 @@
   gap: 5px;
 }
 
-.num-results-color {
-  font-weight: bold;
-  font-size: 16px;
-  padding-left: 3px;
-  padding-right: 3px;
-  color: $color-info;
+.num-results {
+
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  color: $color-secondary;
+  font-size: $font-size-small;
+
+  .num-results-color {
+    font-weight: bold;
+    font-size: 15px;
+    color: $color-action;
+  }
 }
+
+
 
 .search-filters-sidebar {
 
@@ -407,7 +471,14 @@
   margin-bottom: 15px;
 }
 
-/* Search table results */
+/* Search table/list results */
+.semantic-search-result-list {
+
+  .table {
+    margin: 0;
+  }
+}
+
 #search-results-pane-table {
 
   .table > tbody tr.standard-row:hover {
@@ -417,6 +488,27 @@
 
   .table > tbody > tr > td {
     cursor: grab;
+  }
+}
+
+/* Chart results */
+#search-results-pane-chart {
+
+  padding-top: 2em;
+
+  #mp-semantic-chart-tooltip .popover-content {
+    
+    .list-unstyled {
+      margin-bottom: 0;
+    }
+  }
+}
+
+/* Timeline results */
+#search-results-pane-timeline {
+
+  .ComponentToolbar--actions {
+    justify-content: flex-end;
   }
 }
 
@@ -568,28 +660,6 @@
     }
   }
 }
-
-/* Chart results */
-#search-results-pane-chart {
-
-  padding-top: 2em;
-
-  #mp-semantic-chart-tooltip .popover-content {
-    
-    .list-unstyled {
-      margin-bottom: 0;
-    }
-  }
-}
-
-/* Timeline results */
-#search-results-pane-timeline {
-
-  .ComponentToolbar--actions {
-    justify-content: flex-end;
-  }
-}
-
 
 #semantic-search-tabs-pane-structured-search {
 

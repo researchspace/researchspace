@@ -286,11 +286,11 @@ module.exports = function(isProd) {
             'cheerio': 'window',
             'react/addons': true,
             'react/lib/ExecutionEnvironment': true,
-            'react/lib/ReactContext': true
+            'react/lib/ReactContext': true,            
         },
         plugins: [
             //new WriteFilePlugin(),
-            // Copy Cesium Assets, Widgets, Workers, and ThirdParty to a static directory
+            // Copy Cesium Assets, Widget, Workers, and ThirdParty to a static directory
             new CopyPlugin(
                 [
                     { from: path.join(cesiumSource, 'Workers'), to: 'Workers' },

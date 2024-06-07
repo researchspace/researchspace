@@ -19,6 +19,9 @@
 
 package org.researchspace.sail.rest;
 
+import java.io.InputStream;
+import java.sql.ResultSet;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -216,4 +219,10 @@ public abstract class AbstractServiceWrappingSailConnection<C extends AbstractSe
 
     protected abstract ServiceParametersHolder extractInputsAndOutputs(List<StatementPattern> stmtPatterns)
             throws SailException;
+
+    protected abstract Collection<BindingSet> convertResult2BindingSets(InputStream result,
+            ServiceParametersHolder parametersHolder) throws SailException;
+
+    protected abstract Collection<BindingSet> convertResult2BindingSets(ResultSet result,
+            ServiceParametersHolder parametersHolder) throws SailException;
 }

@@ -71,7 +71,7 @@ import { TemplateItem } from 'platform/components/ui/template';
 import * as cesium from 'cesium';
 (<any>window).Cesium = cesium;
 (<any>window).CESIUM_BASE_URL = '/assets/no_auth/';
-import OLCesium from 'olcs/OLCesium';
+import OLCesium from 'ol-cesium';
 
 import * as Popup from 'ol-popup';
 
@@ -84,12 +84,11 @@ import {
   SemanticMapRequestControlsRegistration
 } from './SemanticMapEvents';
 import { Dictionary } from 'platform/api/sparql/SparqlClient';
-import { QueryConstantParameter } from '../search/web-components/QueryConstant';
+import QueryConstantParameter from '../search/web-components/QueryConstant';
 import { Cancellation } from 'platform/api/async';
 import { listen, Event } from 'platform/api/events';
 import { WindowScroller } from 'react-virtualized';
 import { zoomByDelta } from 'ol/interaction/Interaction';
-import TilesLayer from './TilesLayer';
 import {
   SemanticMapControlsOverlayOpacity,
   SemanticMapControlsOverlaySwipe,
@@ -145,7 +144,7 @@ interface Marker {
   description?: string;
 }
 
-export interface SemanticMapConfig {
+export interface SemanticMapAdvancedConfig {
   /**
    * SPARQL Select query. Query should project `lat` and `lng`, with the WKT point.
    * Or `wkt` letiable with WKT point literal.
@@ -215,12 +214,12 @@ export interface SemanticMapConfig {
    */
   yearFiltering?: boolean;
   /**
-   *  Lists the possible levels of features in the map (Eg. terrain, buildings, waterways, etc.)
+   *  Lists the possible levels of features (geometries) in the map (Eg. terrain, buildings, waterways, etc.)
    */
   vectorLevels?: []
 }
 
-export type SemanticMapProps = SemanticMapConfig & Props<any>;
+export type SemanticMapAdvancedProps = SemanticMapAdvancedConfig & Props<any>;
 
 interface MapState {
   tupleTemplate?: Data.Maybe<HandlebarsTemplateDelegate>;
@@ -243,7 +242,7 @@ interface MapState {
 
 const MAP_REF = 'researchspace-map-widget';
 
-export class SemanticMap extends Component<SemanticMapProps, MapState> {
+export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, MapState> {
   private layers: { [id: string]: VectorLayer<any> };
   private map: Map;
   private cancelation = new Cancellation();
@@ -252,16 +251,16 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   registrationIntervalId: number | null = null;
 
   private source: VectorSource;
-  private vector: VectorLayer;
+  private vector: VectorLayer<any>;
   private modify: Modify;
 
   private draw: Interaction;
   private snap: Interaction;
-  private defaultFeaturesColor = "rgba(200,80,20,0.7)";
+  private defaultFeaturesColor = "rgba(200,80,20,0.3)";
 
   private ol3d: OLCesium;
 
-  constructor(props: SemanticMapProps, context: ComponentContext) {
+  constructor(props: SemanticMapAdvancedProps, context: ComponentContext) {
     super(props, context);
     this.state = {
       tupleTemplate: maybe.Nothing<HandlebarsTemplateDelegate>(),
@@ -440,7 +439,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   }
   
 
-  public componentWillReceiveProps(props: SemanticMapProps, context: ComponentContext) {
+  public componentWillReceiveProps(props: SemanticMapAdvancedProps, context: ComponentContext) {
     if (props.query !== this.props.query) {
       this.addMarkersFromQuery(props, context);
     }
@@ -515,6 +514,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       if (feature) {
         console.log("Clicked feature.")
         console.log(feature)
+        // TODO: if this does not have a subject, it raises an error. FIX
         this.setState({ selectedFeatures: Array.from(this.state.selectedFeatures).concat([feature.values_.subject.value]) }, () => {
           // console.log(this.state.selectedFeatures)
         })
@@ -524,7 +524,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
         const popupContent = features.map((feature) => {
           const props = feature.getProperties();
-          return `<div>${SemanticMap.createPopupContent(props, this.state.tupleTemplate)}</div>`;
+          return `<div>${SemanticMapAdvanced.createPopupContent(props, this.state.tupleTemplate)}</div>`;
         });
 
         // info += "<p>" + props.locationtext + "</p>";
@@ -558,7 +558,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
   startRegistrationProcess() {
     this.registrationIntervalId = setInterval(() => {
-      console.log(this.props.id, "triggering loop for registration...")
+      // console.log(this.props.id, "triggering loop for registration...")
       trigger({
         eventType: SemanticMapRequestControlsRegistration,
         data: this.props.id,
@@ -765,7 +765,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           color = group_color;
         } else {
           let color_rgba = group_color.rgb;
-          let rgba_string = 'rgba(' + color_rgba.r + ', ' + color_rgba.g + ', ' + color_rgba.b + ', ' + '0.7' + ')';
+          let rgba_string = 'rgba(' + color_rgba.r + ', ' + color_rgba.g + ', ' + color_rgba.b + ', ' + '0.3' + ')';
           color = rgba_string
         }
       }
@@ -927,6 +927,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   };
 
   private createLayer = (features: Feature[], type: string): VectorLayer<any> => {
+    console.log("Create Layer")
     const source = new Vector({ features });
     if (type === 'Point') {
       const clusterSource = new Cluster({ source, distance: 40 });
@@ -986,6 +987,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         tilesLayers.push(tileslayer);
       }
     });
+    console.log("Map ", this.props.id, " loaded tileslayers from template: ", tilesLayers);
     return tilesLayers;
   }
 
@@ -1032,18 +1034,18 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
               },
             }).extend([new AnnotateControl()]),
             // TODO: If we want to allow templating to disable interactions with map, we could read a prop and enable this: 
-            //interactions: interaction.defaults({ mouseWheelZoom: false }),
+            // interactions: interaction.defaults({ mouseWheelZoom: false }),
             interactions: interactionDefaults({}),
-
+          
             //TODO: Extent property management
             layers: Object.values(this.state.mapLayers),
             target: node,
             view: new View({
               center: this.transformToMercator(parseFloat(center.lng), parseFloat(center.lat)),
               zoom: 3,
-              //extent: props.mapOptions.extent,
+              ...(this.getInputExtent() ? { extent: this.getInputExtent() } : {}),
             }),
-          });
+          });          
           console.log("Map ", this.props.id, " setting layers", layers, " and map ", map)
           this.layers = layers;
           this.map = map;
@@ -1115,7 +1117,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     trigger({ eventType: SemanticMapBoundingBoxChanged, source: this.props.id, data: boundingBox });
   }
 
-  addMarkersFromQuery = (props: SemanticMapProps, context: ComponentContext) => {
+  addMarkersFromQuery = (props: SemanticMapAdvancedProps, context: ComponentContext) => {
     const { query } = props;
 
     if (query) {
@@ -1273,7 +1275,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         const template = this.state.tupleTemplate;
 
         _.forEach(features, (f) => {
-          const html = SemanticMap.createPopupContent(f.getProperties(), template);
+          const html = SemanticMapAdvanced.createPopupContent(f.getProperties(), template);
           const doc = new DOMParser().parseFromString(html, 'text/html');
           d.appendChild(doc.body.firstChild);
         });
@@ -1281,7 +1283,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     }
   };
 
-  private compileTemplatesInConfig = (config: SemanticMapConfig): void => {
+  private compileTemplatesInConfig = (config: SemanticMapAdvancedConfig): void => {
     const defaultTemplate = `
         <semantic-link class="map-resource-link" data-uri="{{link.value}}">
         </semantic-link>
@@ -1306,7 +1308,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       });
   };
 
-  private handleDeprecatedLayout(props: SemanticMapConfig): string {
+  private handleDeprecatedLayout(props: SemanticMapAdvancedConfig): string {
     if (_.has(props, 'layout')) {
       console.warn('layout property in semantic-map is deprecated, please use flat properties instead');
       return props['layout']['tupleTemplate'];
@@ -1362,7 +1364,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   *
   */
     // It updates only the last layer, assuming it contains the features
-    const layer = this.map.getLayers().getArray().slice(-1).pop() as VectorLayer;
+    const layer = this.map.getLayers().getArray().slice(-1).pop() as VectorLayer<any>;
 
     event.data['features'].forEach((feature) => {
       const i = this.getIndexBySubject(feature.subject, layer.getSource().getFeatures());
@@ -1403,6 +1405,12 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     return this.props.mapOptions === undefined || this.props.mapOptions.crs === undefined
       ? 'EPSG:3857'
       : this.props.mapOptions.crs;
+  }
+
+  private getInputExtent() {
+    return this.props.mapOptions === undefined || this.props.mapOptions.extent === undefined
+    ? false
+    : this.props.mapOptions.extent;
   }
 
   private getIndexBySubject(subject: string, features: any) {
@@ -1462,13 +1470,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   private toggle3d = (event: Event<any>) => {
     this.ol3d.setEnabled(!this.ol3d.getEnabled())
     const scene = this.ol3d.getCesiumScene();
-    const tileset = new cesium.Cesium3DTileset({
-      url: cesium.IonResource.fromAssetId(2095739, {
-        accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlZmFiZDhiMy1lMTcwLTQ0ZDgtYWIwYi01N2E5NDdiMzA2NTIiLCJpZCI6MTU3MDgyLCJpYXQiOjE2OTk5NjAwNjh9.A4eJW5Xcv9TuDN3S9jNbaoCCo04Big1S_GViFvwiA2I"
-      }
-      )
-    });
-    scene.primitives.add(tileset);
   }
 
   private setOverlaySwipe = (event: Event<any>) => {
@@ -1728,9 +1729,9 @@ function getFeatureStyle(geometry: Geometry, color: string | undefined) {
         width: 2,
       }),
     }),
-    fill: new Fill({ color: color || 'rgba(255, 255, 255, 0.8)' }),
+    fill: new Fill({ color: color || 'rgba(255, 255, 255, 0.5)' }),
     stroke: new Stroke({
-      color: color || 'rgba(202, 255, 36, .5)',
+      color: color || 'rgba(202, 255, 36, .3)',
       width: 1.25,
     }),
   });
@@ -1762,4 +1763,4 @@ function getPopupCoordinate(geometry: Geometry, coordinate: [number, number]) {
   return geometry.getClosestPoint(coordinate);
 }
 
-export default SemanticMap;
+export default SemanticMapAdvanced;

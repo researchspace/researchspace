@@ -1,12 +1,11 @@
 /**
  * ResearchSpace
- * Copyright (C) 2021, © Trustees of the British Museum
+ * Copyright (C) 2024, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
-
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -31,24 +30,24 @@ import org.eclipse.rdf4j.sail.config.SailImplConfig;
 
 public class SQLSailFactory implements SailFactory {
 
-    public static final String SAIL_TYPE = "researchspace:SQLSail";
+  public static final String SAIL_TYPE = "researchspace:SQLSail";
 
-    @Override
-    public String getSailType() {
-        return SAIL_TYPE;
-    }
+  @Override
+  public String getSailType() {
+    return SAIL_TYPE;
+  }
 
-    @Override
-    public SailImplConfig getConfig() {
-        return new SQLSailConfig();
-    }
+  @Override
+  public SailImplConfig getConfig() {
+    return new SQLSailConfig();
+  }
 
-    @Override
-    public Sail getSail(SailImplConfig originalConfig) throws SailConfigException {
-        if (!(originalConfig instanceof SQLSailConfig)) {
-            throw new SailConfigException("Wrong config type: " + originalConfig.getClass().getCanonicalName() + ". ");
-        }
-        return new SQLSail((SQLSailConfig) originalConfig);
+  @Override
+  public Sail getSail(SailImplConfig originalConfig) throws SailConfigException {
+    if (!(originalConfig instanceof SQLSailConfig)) {
+      throw new SailConfigException("Wrong config type: " + originalConfig.getClass().getCanonicalName() + ". ");
     }
+    return new SQLSail((SQLSailConfig) originalConfig);
+  }
 
 }

@@ -19,6 +19,7 @@
 import * as React from 'react';
 import { Button } from 'react-bootstrap';
 import * as Immutable from 'immutable';
+import * as D from 'react-dom-factories';
 
 import { Rdf } from 'platform/api/rdf';
 
@@ -43,7 +44,15 @@ import {
 } from './MultipleValuesInput';
 import { NestedModalForm, tryExtractNestedForm } from './NestedModalForm';
 import { createDropAskQueryForField } from '../ValidationHelpers';
+import { ResourceLinkComponent, ResourceLinkContainer } from 'platform/api/navigation/components';
+import { Overlay, Tooltip, OverlayTrigger } from 'react-bootstrap';
 
+interface schemePageButtonConfigProps {
+  iri: string;
+  view: string;
+  scheme: string;
+  tooltip?: string;
+}
 export interface TreePickerInputProps extends MultipleValuesProps {
   placeholder?: string;
 
@@ -75,18 +84,10 @@ export interface TreePickerInputProps extends MultipleValuesProps {
    */
   nestedFormTemplate?: string;
 
-  /**
-   * Custom button template
-   * 
-   */
-  customButton?: CustomButton;
+  allowForceSuggestion?: boolean;
 
+  schemePageButtonConfig?: schemePageButtonConfigProps;
 
-  /**
-   * 
-   * If present, this query is fired and requires ?item_label
-   * This will be the label viewed when the element is selected.
-   */
   queryItemLabel?: string;
 }
 
@@ -134,7 +135,7 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
   }
 
   componentDidMount() {
-    tryExtractNestedForm(this.props.children, this.appliedTemplateScope, this.props.nestedFormTemplate)
+    tryExtractNestedForm(this.props.children, this.context, this.props.nestedFormTemplate)
       .then(nestedForm => {
         if (nestedForm != undefined) {
           this.setState({nestedForm});
@@ -183,6 +184,7 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
             {this.state.nestedForm}
           </NestedModalForm>
         ) : null}
+        {this.props.schemePageButtonConfig && this.renderSchemePage()}
       </div>
     );
   }
@@ -194,7 +196,7 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
   };
 
   private renderTreePicker() {
-    const { openDropdownOnFocus, closeDropdownOnSelection, definition, customButton, queryItemLabel } = this.props;
+    const { openDropdownOnFocus, closeDropdownOnSelection, definition, queryItemLabel } = this.props;
     const { treeVersionKey, treeQueries, treeSelection } = this.state;
     const { rootsQuery, childrenQuery, parentsQuery, searchQuery } = treeQueries;
 
@@ -202,6 +204,11 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
       typeof this.props.placeholder === 'string'
         ? this.props.placeholder
         : createDefaultPlaceholder(definition);
+
+    const allowForceSuggestion =
+      typeof this.props.allowForceSuggestion === 'boolean'
+        ? this.props.allowForceSuggestion
+        : false;
 
     return (
       <SemanticTreeInput
@@ -222,6 +229,7 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
         childrenQuery={childrenQuery}
         parentsQuery={parentsQuery}
         searchQuery={searchQuery}
+        allowForceSuggestion={allowForceSuggestion}
         initialSelection={treeSelection}
         multipleSelection={true}
         openDropdownOnFocus={openDropdownOnFocus}
@@ -238,7 +246,6 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
             () => this.onTreeSelectionChanged(selectionLeafs)
           );
         }}
-        customButton={customButton}
         queryItemLabel={queryItemLabel}
       />
     );
@@ -265,7 +272,7 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
     return (
       <Button className={`${CLASS_NAME}__create-button`} onClick={this.toggleNestedForm}>
         <span className="fa fa-plus btn-icon-left" />
-        <span>Create new</span>
+        <span>New</span>
       </Button>
     );
   }
@@ -277,6 +284,30 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
   static makeHandler(props: MultipleValuesHandlerProps<TreePickerInputProps>) {
     return new CardinalityCheckingHandler(props);
   }
+
+  private renderSchemePage = () => {
+    const { iri, view, scheme, tooltip} = this.props.schemePageButtonConfig
+
+    const overlay = <Tooltip id="SemanticTreeInput__tooltip">{tooltip ? tooltip : 'Open list of terms'}</Tooltip>;
+    
+    return (
+      <OverlayTrigger placement='bottom' overlay={overlay} key='scheme-button-tooltip'>
+        <div>
+            <ResourceLinkContainer 
+              uri={iri} 
+              urlqueryparam-view={view}
+              urlqueryparam-resource={scheme}
+            >
+            <Button className={`${CLASS_NAME}__create-button`} style={{height: '100%'}}>
+              <span className='fa fa-book'></span>
+            </Button>
+          </ResourceLinkContainer>
+          <span style={{visibility: 'hidden'}}></span>
+        </div>
+    </OverlayTrigger>
+    )
+  }
+
 }
 
 function toSetOfIris(values: Immutable.List<FieldValue>) {
@@ -290,6 +321,7 @@ function createDefaultPlaceholder(definition: FieldDefinition): string {
   const entityLabel = (getPreferredLabel(definition.label) || 'entity').toLocaleLowerCase();
   return `Search or browse for values of ${entityLabel} here...`;
 }
+
 
 MultipleValuesInput.assertStatic(TreePickerInput);
 

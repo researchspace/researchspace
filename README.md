@@ -13,20 +13,40 @@
     <img src="https://badges.gitter.im/Join Chat.svg" height="30px" alt="Gitter"></a>
 </p>
 
-- - -
+<h2>Kartography Work Plan for ResearchSpace</h2>
+ <div style="float:left;"><img width=30% align="left" src='https://kartography.org/images/flowing%20into%20pot.png' alt='ResearchSpace'/></div>
+ <p>Information about the current development of ResearchSpace by Kartography CIC is available on the <a href="https://kartography.org/current_work.html">Kartography Web Site</a>.
+ </p>
+ <p>Note that archives of previous ResearchSpace specifications are available on the Kartography site (https://kartography.org/papers.html) </p>
+ 
+ <p> Modified: Nov 2023 </p>
+<p>--------------------------------------------------------------------------------------------------------------------------------------------------------------------</p>
+<h2>Pull Requests</h2>
+<div style="float:left;"><img width=30% align="left" src='https://kartography.org/images/exchanginginformation.png' alt='ResearchSpace'/></div>
+<p>We welcome push requests but would ask that they come with documentation to help the community understand changes.</p>
+<p>Please provide documentation with the git reference to info@kartography.org. Documentation should have a title, reason for the change, description of the changes, and details of the testing</p>
+<p> These summary requirements will be formalised in short course with an online form.</p>
+<p>Thanks for your understanding</p>
 
+ <p> Modified: Nov 2023 </p>
+<p>--------------------------------------------------------------------------------------------------------------------------------------------------------------------</p>
+<h2>The ResearchSpace System</h2>
+<div style="float:left;">
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=MaAv0SE7wis
+" target="_blank"><img src="https://i.ytimg.com/vi/MaAv0SE7wis/maxresdefault.jpg" 
+alt="ResearchSpace Overview" width="640" border="1" /></a></div>
 [ResearchSpace](https://www.researchspace.org/) is a new type of contextualising knowledge system. It promotes collaborative interdisciplinary research allowing people to grow knowledge that relates to and reveals different aspects of society.
 
 It challenges the instrumental nature of technology and allows subject experts to become authors of meaningful forms of structured data, combined with visual and textual narrative.
 
 The ResearchSpace system has been designed to allow researchers to connect qualitative and quantitative research, to transition from information systems that solely capture and index ‘essential’ reference material, to ones that address the complexity and richness of the research itself and provide a natural ‘relational’ method that traverses space and time, supporting different levels of complexity, variety of vantage point, and the represention of arguments and meta-commentary in a collaborative environment.
 
-<a href="http://www.youtube.com/watch?feature=player_embedded&v=MaAv0SE7wis
-" target="_blank"><img src="https://i.ytimg.com/vi/MaAv0SE7wis/maxresdefault.jpg" 
-alt="ResearchSpace Overview" width="640" border="1" /></a>
+
 
 # Knowledge Base 
-**To Be Added**
+see <a href="https://documentation.researchspace.org/resource/rsp:Start"> ResearchSpace Documentation Site</a>
+also see <a href="https://kartography.org">Kartography CIC</a>
+
 
 # Demo 
 Changing the methods of research in the humanities requires innovation in how we combine the qualitative with the quantitative through collaborative research, expressive structured data, and a human-centered and participatory approach to the ‘knowledge graph’.

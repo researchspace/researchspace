@@ -35,6 +35,8 @@ import { AddFrameEvent, AddFrameEventData } from './DashboardEvents';
 import { Rdf } from 'platform/api/rdf';
 
 const DEFAULT_ITEM_LABEL_TEMPLATE = `<mp-label iri='{{iri}}'></mp-label>`;
+import * as LabelsService from 'platform/api/services/resource-label';
+import * as Kefir from 'kefir';
 
 export interface Item {
   readonly id: string;
@@ -45,13 +47,9 @@ export interface Item {
   readonly isExpanded?: boolean;
   readonly linkedBy?: string;
   readonly data?: { [key: string]: any };
+  readonly label?: string;
 }
 
-let itemCount = 0;
-export function emptyItem() {
-  itemCount = itemCount + 1;
-  return { id: uniqueId('frame'), index: itemCount };
-}
 
 export interface DashboardLinkedViewConfig {
   /**
@@ -125,8 +123,10 @@ export interface Props {
     data: {};
   };
 
-  leftPanels?: {template: string, label: string}[];
-  rightPanels?: {template: string, label: string}[];
+  leftPanels?: {template: string, label: string, class?: string}[];
+  rightPanels?: {template: string, label: string, class?: string}[];
+
+  homePageIri?: string;
 }
 
 export interface State {
@@ -143,13 +143,38 @@ export class DashboardComponent extends Component<Props, State> {
 
   private readonly cancellation = new Cancellation();
   private layoutRef = React.createRef<Layout>();
+  private subscription: Kefir.Subscription;
+  private itemLabelCount = 0;
+
+  private frameLabel = (label?: string) => {
+    this.itemLabelCount = this.itemLabelCount + 1;
+    const displayLabel = label ?? 'New Tab'
+    return { 
+      // id: uniqueId(displayLabel.replace(/\s/g, '')),
+      id: uniqueId('frame'),
+      index: this.itemLabelCount, 
+      label: displayLabel
+    }
+  }
+
+  private onAddNewItemHandler = (data: AddFrameEventData, label?: string) => {
+    this.onAddNewItem({
+      ...this.frameLabel(label),
+      ...(data as AddFrameEventData),
+      data,
+    });
+  }
 
   constructor(props: Props, context: any) {
     super(props, context);
     this.state = {
       items: [],
       layout: FlexLayout.Model.fromJson({
-        global: {},
+        global: { 
+          "borderBarSize": 33,
+          "tabSetTabStripHeight": 36,
+          "splitterSize": 6 ,
+        },
         borders: [
           {
             type: 'border',
@@ -161,7 +186,13 @@ export class DashboardComponent extends Component<Props, State> {
 	          "type": "border",
 	 	      "location": "right",
 			      "children": []
-		      }
+		      },
+
+          {
+            "type": "border",
+            "location":"bottom",
+            "children": []
+          }
         ],
 	      layout:{
 		      "type": "row",
@@ -177,7 +208,7 @@ export class DashboardComponent extends Component<Props, State> {
 						       "type": "tab",
 						       "name": "Frame",
 						       "component": "item",
-                 *   "config": emptyItem()
+                 *   "config": frameLabel()
  				           } */
 				      ]
 			      }
@@ -197,17 +228,30 @@ export class DashboardComponent extends Component<Props, State> {
         )
         .observe({
           value: ({ data }) => {
-            this.onAddNewItem({
-              ...emptyItem(),
-              ...(data as AddFrameEventData),
-              data,
-            });
+            const {viewId, resourceIri, entityEditorLabel} = data as AddFrameEventData
+
+            if(resourceIri) {
+              this.subscription = LabelsService.getLabel(Rdf.iri(resourceIri)).observe({
+                value: (label) => {
+                  this.onAddNewItemHandler(data, label)
+                },
+                error: (error) => {
+                  console.log('LABEL NOT FOUND ',error)
+                  this.onAddNewItemHandler(data)
+                },
+              })
+            } else if (entityEditorLabel) { 
+              this.onAddNewItemHandler(data, entityEditorLabel)
+            } else {
+              const view = viewId ? this.props.views.find(({ id }) => id === viewId) : undefined;
+              this.onAddNewItemHandler(data, view?.label)
+            }
           },
         });
 
     if (this.props.initialView) {
       const item = {
-        ...emptyItem(),
+        ...this.frameLabel(),
         resourceIri: this.props.initialView.resource,
         viewId: this.props.initialView.view,
         data: this.props.initialView.data,
@@ -226,7 +270,7 @@ export class DashboardComponent extends Component<Props, State> {
               .getBorders()
               .find(b => b.getLocation() === DockLocation.LEFT)
               .getId(),
-          {'type': 'tab', 'name': panelConfig.label, 'component': "leftItem", 'config': i, 'enableClose': false }
+          {'type': 'tab', 'name': panelConfig.label, 'component': "leftItem", 'config': i, 'enableClose': false, 'className': panelConfig.class }
         )
       );
     }
@@ -239,7 +283,7 @@ export class DashboardComponent extends Component<Props, State> {
               .getBorders()
               .find(b => b.getLocation() === DockLocation.RIGHT)
               .getId(),
-          {'type': 'tab', 'name': panelConfig.label, 'component': "rightItem", 'config': i,  'enableClose': false }
+              {'type': 'tab', 'name': panelConfig.label, 'component': "rightItem", 'config': i,  'enableClose': false, 'className': panelConfig.class }
         )
       );
     }
@@ -301,9 +345,10 @@ export class DashboardComponent extends Component<Props, State> {
   componentWillUnmount() {
     setFrameNavigation(false);
     this.cancellation.cancelAll();
+    this.subscription.unsubscribe();
   }
 
-  private onAddNewItem = (item: Item = emptyItem()) => {
+  private onAddNewItem = (item: Item = this.frameLabel()) => {
     const viewConfig = this.props.views.find(({id}) => id === item.viewId);
     if (viewConfig?.unique && this.state.items.find(i => i.viewId === item.viewId)) {
       return;
@@ -316,7 +361,7 @@ export class DashboardComponent extends Component<Props, State> {
         },
         () => {
           this.layoutRef.current.addTabToActiveTabSet(
-            {'type': 'tab', 'name': item.id, 'component': "item", 'config': item.id }
+            {'type': 'tab', 'name': item.label, 'component': "item", 'config': item.id, 'className': viewConfig?.iconClass || 'empty-frame-button', 'icon': 'add'}
           );
           this.onSelectView({
             itemId: item.id,
@@ -401,7 +446,7 @@ export class DashboardComponent extends Component<Props, State> {
 
         // make sure that we always have at least one frame
         if (isEmpty(newItems)) {
-          newItems = [emptyItem()];
+          newItems = [this.frameLabel()];
         }
         return { items: newItems };
       }
@@ -455,7 +500,7 @@ export class DashboardComponent extends Component<Props, State> {
           if (linkedView) {
             const index = newItems.findIndex(({ id }) => id === itemId);
             const items = linkedView.viewIds.map((id) => ({
-              ...emptyItem(),
+              ...this.frameLabel(),
               viewId: id,
               resourceIri: resourceIri,
               linkedBy: itemId,
@@ -499,7 +544,7 @@ export class DashboardComponent extends Component<Props, State> {
   }
 
   private renderView(item: Item) {
-    const { views, linkedViews } = this.props;
+    const { views, linkedViews, homePageIri } = this.props;
     const allViews: Array<DashboardViewConfig> = [...views];
     linkedViews.forEach((linkedView) => {
       allViews.push({
@@ -524,12 +569,12 @@ export class DashboardComponent extends Component<Props, State> {
       });
     }
     return (
-      <div key={item.id} className={styles.viewContainer}>
+       <div key={item.id} className={styles.viewContainer}>
         <DashboardItem
           id={item.id}
           views={allViews}
           viewId={item.viewId}
-          gridView
+          homePageIri={homePageIri}
           resourceIri={item.resourceIri}
           data={item.data}
           linkedFrames={linkedFrames}
@@ -565,14 +610,14 @@ export class DashboardComponent extends Component<Props, State> {
     }
   }
 
-  private onRenderTabSet = (node: TabSetNode, renderValues: {buttons: React.ReactNode[]}) => {
-    renderValues.buttons.push(
-      <button
+  private onRenderTabSet = (node: TabSetNode, renderValues: {stickyButtons: React.ReactNode[]}) => {
+    renderValues.stickyButtons.push(
+      <button className='flexlayout__tab_toolbar_sticky_button'
         onMouseDown={event=> event.stopPropagation()}
         onClick={(event) => {
           this.onAddNewItem();
         }}>
-        Add
+        <i className="fa fa-plus" />
       </button>
     );
   }
@@ -584,6 +629,14 @@ export class DashboardComponent extends Component<Props, State> {
         model={this.state.layout}
         factory={this.factory}
         onRenderTabSet={this.onRenderTabSet}
+        icons={
+          {
+            'close': <i className="fa fa-times"></i>,
+            'maximize': <i className="fa fa-expand"></i>,
+            'restore': <i className="fa  fa-compress"></i>,
+            'more': <i className="fa fa-caret-down"></i>,
+          }
+        }
       />
     );
   }

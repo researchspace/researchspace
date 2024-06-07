@@ -79,7 +79,7 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
     private static final Logger logger = LogManager.getLogger(RESTSailConnection.class);
     protected static final ValueFactory VF = SimpleValueFactory.getInstance();
 
-    private Client client;
+    protected Client client;
     private Configuration jsonPathConfig;
 
     public RESTSailConnection(RESTSail sailBase) {

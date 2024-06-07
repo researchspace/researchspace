@@ -78,6 +78,10 @@ public class TemplateContext {
         return Optional.ofNullable(preferredLanguage);
     }
 
+    public String getLang() {
+        return preferredLanguage;
+    }
+
     public Map<String, Value> getParams() {
         return this.params;
     }

@@ -51,6 +51,9 @@ import { ResourceLinkComponent } from 'platform/api/navigation/components';
 const ITEM_INPUT_VARIABLE = 'query_item_iri';
 const ITEM_OUTPUT_VARIABLE = 'item_label';
 
+const ITEM_INPUT_VARIABLE = 'item';
+const ITEM_OUTPUT_VARIABLE = 'label';
+
 export interface ComplexTreePatterns {
   /*
    *  Need to be specified if component should emit events.
@@ -86,7 +89,7 @@ export interface SemanticTreeInputProps extends ComplexTreePatterns {
    * This component is an uncontrolled component, but this property can be used to specify
    * array of nodes that should be initially selected.
    */
-  initialSelection?: ReadonlyArray<Rdf.Iri>;
+  initialSelection?: ReadonlyArray<Rdf.Iri | String>;
 
   /** Allows to drop entity if it satisfies ASK-query */
   droppable?: {
@@ -119,15 +122,10 @@ export interface SemanticTreeInputProps extends ComplexTreePatterns {
    */
   closeDropdownOnSelection?: boolean;
 
-  /**
-   * Creates a custom button with a Semantic-link with the following parameters
-   */
-  customButton?: CustomButton;
-
-  /**
+    /**
    * query to retrieve the item label that will be visualized
    */
-  queryItemLabel?: string;
+    queryItemLabel?: string;
 }
 
 const ITEMS_LIMIT = 200;
@@ -257,10 +255,14 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
 
   componentDidMount() {
     const { initialSelection } = this.props;
+    let selection: ReadonlyArray<Rdf.Iri>;
     if (initialSelection && initialSelection.length !== 0) {
-      this.setInitialSelection(initialSelection).onValue(() => {
-        this.updateTextField();
-      });
+      if (typeof initialSelection[0] == 'string') {
+        selection = (initialSelection as ReadonlyArray<string>).map(s => Rdf.iri(s));
+      } else {
+        selection = initialSelection as ReadonlyArray<Rdf.Iri>;
+      }
+      this.setInitialSelection(selection).onValue(() => {this.onSelectionChanged});
     }
   }
 
@@ -369,23 +371,21 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
   }
 
   /**
-   * If the attribute query_item_label is specified, and contains ?query_item_iri,
+   * If the attribute query_item_label is specified, and contains ?item,
    * For each of the selected items the query will be fired and
    * and the label will be updated
    */
-  private updateTextField() {
+  private updateLabelField(selection: TreeSelection<Node>) {
     const { queryItemLabel } = this.props;
     if (queryItemLabel) {
-      const selection = this.state.confirmedSelection;
       const selectedItems = TreeSelection.leafs(selection);
-
       if (queryItemLabel.indexOf(ITEM_INPUT_VARIABLE) > 0) {
         selectedItems.map((selectedItem) => {
+
           SparqlClient.select(queryItemLabel.replace(`?${ITEM_INPUT_VARIABLE}`, `<${selectedItem.iri.value}>`)).onValue(
             (result) => {
               const label = Rdf.literal(result.results.bindings[0][ITEM_OUTPUT_VARIABLE].value);
               const node = TreeSelection.nodesFromKey(selection, selectedItem.iri.value).first();
-
               selection.updateNode(selection.getKeyPath(node), (singleNode) => {
                 singleNode.label = label;
                 this.setState({ confirmedSelection: selection });
@@ -395,8 +395,6 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
           );
         });
       }
-
-      // TODO: Raise exception here
     }
   }
 
@@ -405,10 +403,14 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
   }
 
   private onSelectionChanged = (selection: TreeSelection<Node>) => {
+    
+    this.updateLabelField(selection)
+
     if (this.props.onSelectionChanged) {
       this.props.onSelectionChanged(selection);
       this.updateTextField();
     }
+
 
     /**
      * selection always has one empty root node, so if selection is 1 then in reality there is nothing selected.
@@ -421,7 +423,10 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
         data: { iri },
       });
     }
-  };
+
+    
+
+  }
 
   private renderTextField() {
     const textFieldProps: ClearableInputProps & ReactProps<ClearableInput> = {
@@ -619,7 +624,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
           },
         },
         D.span({
-          className: 'fa fa-sitemap fa-lg',
+          className: 'fa fa-angle-down',
           ['aria-hidden' as any]: true,
         })
       )

@@ -60,6 +60,7 @@ import com.google.common.collect.Maps;
  */
 public abstract class AbstractServiceWrappingSailConnection<C extends AbstractServiceWrappingSailConfig>
         extends AbstractSailConnection {
+
     /**
      * A class holding the mappings for the API inputs (parameter name->value as
      * string) and outputs (IRI->variable name)

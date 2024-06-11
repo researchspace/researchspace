@@ -65,7 +65,7 @@ public class MpJDBCDriverManager {
     public Connection getConnection(String url, java.util.Properties info) throws SQLException {
 
         if (url == null) {
-          throw new SQLException("The url cannot be null", "08001");
+            throw new SQLException("The url cannot be null", "08001");
         }
 
         logger.trace("getConnection: {}", url);
@@ -74,29 +74,29 @@ public class MpJDBCDriverManager {
         SQLException originalReason = null;
 
         try {
-          return DriverManager.getConnection(url, info);
+            return DriverManager.getConnection(url, info);
         } catch (SQLException e) {
-          originalReason = e;
+            originalReason = e;
         }
 
         for (Driver driver : registeredDrivers) {
-          try {
-            Connection con = driver.connect(url, info);
-            if (con != null) {
-              logger.trace("getConnection: returning {}", driver.getClass().getName());
-              return (con);
+            try {
+                Connection con = driver.connect(url, info);
+                if (con != null) {
+                    logger.trace("getConnection: returning {}", driver.getClass().getName());
+                    return (con);
+                }
+            } catch (SQLException ex) {
+                if (reason == null) {
+                    reason = ex;
+                }
             }
-          } catch (SQLException ex) {
-            if (reason == null) {
-              reason = ex;
-            }
-          }
         }
 
         // if we got here nobody could connect.
         if (reason != null) {
-          logger.trace("getConnection: failed {}", reason);
-          throw reason;
+            logger.trace("getConnection: failed {}", reason);
+            throw reason;
         }
 
         logger.warn("getConnection: no suitable driver found for {}", url);

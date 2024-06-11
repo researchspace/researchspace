@@ -5,7 +5,7 @@
 import { listen, Event } from 'platform/api/events';
 import {
   SemanticMapSendSelectedFeatures,
-} from '../../../components/semantic/map/SemanticMapEvents';
+} from '../../../components/semantic/map-advanced/SemanticMapEvents';
  import { FieldValue, FieldError } from '../FieldValues';
  import { ValidationMessages } from './Decorations';
  import { AtomicValueInput, AtomicValueInputProps } from './SingleValueInput';

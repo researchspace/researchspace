@@ -27,15 +27,14 @@ import org.researchspace.sail.rest.AbstractServiceWrappingSailConfig;
 
 public class SQLSailConfig extends AbstractServiceWrappingSailConfig {
 
-  protected MpJDBCDriverManager driverManager; 
+    protected MpJDBCDriverManager driverManager;
 
+    public MpJDBCDriverManager getDriverManager() {
+        return driverManager;
+    }
 
-  public MpJDBCDriverManager getDriverManager() {
-    return driverManager;
-  }
-
-  public void setDriverManager(MpJDBCDriverManager driverManager) {
-    this.driverManager = driverManager;
-  }
+    public void setDriverManager(MpJDBCDriverManager driverManager) {
+        this.driverManager = driverManager;
+    }
 
 }

@@ -30,24 +30,24 @@ import org.eclipse.rdf4j.sail.config.SailImplConfig;
 
 public class SQLSailFactory implements SailFactory {
 
-  public static final String SAIL_TYPE = "researchspace:SQLSail";
+    public static final String SAIL_TYPE = "researchspace:SQLSail";
 
-  @Override
-  public String getSailType() {
-    return SAIL_TYPE;
-  }
-
-  @Override
-  public SailImplConfig getConfig() {
-    return new SQLSailConfig();
-  }
-
-  @Override
-  public Sail getSail(SailImplConfig originalConfig) throws SailConfigException {
-    if (!(originalConfig instanceof SQLSailConfig)) {
-      throw new SailConfigException("Wrong config type: " + originalConfig.getClass().getCanonicalName() + ". ");
+    @Override
+    public String getSailType() {
+        return SAIL_TYPE;
     }
-    return new SQLSail((SQLSailConfig) originalConfig);
-  }
+
+    @Override
+    public SailImplConfig getConfig() {
+        return new SQLSailConfig();
+    }
+
+    @Override
+    public Sail getSail(SailImplConfig originalConfig) throws SailConfigException {
+        if (!(originalConfig instanceof SQLSailConfig)) {
+            throw new SailConfigException("Wrong config type: " + originalConfig.getClass().getCanonicalName() + ". ");
+        }
+        return new SQLSail((SQLSailConfig) originalConfig);
+    }
 
 }

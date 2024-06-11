@@ -1043,7 +1043,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
             view: new View({
               center: this.transformToMercator(parseFloat(center.lng), parseFloat(center.lat)),
               zoom: 3,
-              ...(this.getInputExtent() ? { extent: this.getInputExtent() } : {}),
+              extent: this.getInputExtent(),
             }),
           });          
           console.log("Map ", this.props.id, " setting layers", layers, " and map ", map)
@@ -1408,9 +1408,16 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   }
 
   private getInputExtent() {
-    return this.props.mapOptions === undefined || this.props.mapOptions.extent === undefined
-    ? false
-    : this.props.mapOptions.extent;
+    if (this.props.mapOptions === undefined || this.props.mapOptions.extent === undefined) {
+        return createEmpty();
+    }
+    else {
+        this.props.mapOptions.extent;
+    }
+  }
+
+  private GetExtent() {
+    return this.props.mapOptions.extent
   }
 
   private getIndexBySubject(subject: string, features: any) {

@@ -46,10 +46,6 @@ import { LazyTreeSelector, LazyTreeSelectorProps } from './LazyTreeSelector';
 import { ItemSelectionChanged } from './SemanticTreeInputEvents';
 
 import * as styles from './SemanticTreeInput.scss';
-import { ResourceLinkComponent } from 'platform/api/navigation/components';
-
-const ITEM_INPUT_VARIABLE = 'query_item_iri';
-const ITEM_OUTPUT_VARIABLE = 'item_label';
 
 const ITEM_INPUT_VARIABLE = 'item';
 const ITEM_OUTPUT_VARIABLE = 'label';
@@ -161,13 +157,6 @@ interface SearchResult {
   error?: any;
   matchedCount?: number;
   matchLimit?: number;
-}
-
-export interface CustomButton {
-  iri: string;
-  view?: string;
-  resource?: string;
-  mode?: string;
 }
 
 /**
@@ -310,11 +299,13 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
         }));
         return this.restoreTreeFromLeafNodes(bindings);
       })
-      .map((forest) => {
-        const confirmedSelection = forest as TreeSelection<Node>;
-        this.setState({ confirmedSelection });
-        return confirmedSelection;
-      });
+      .map(
+        (forest) => {
+          const confirmedSelection = forest as TreeSelection<Node>;
+          this.setState({ confirmedSelection });
+          return confirmedSelection;
+        }
+      );
   };
 
   componentWillUnmount() {
@@ -328,27 +319,14 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
         createElement(ErrorNotification, { errorMessage: this.state.loadError })
       );
     } else {
-      let result;
-      if (this.props.customButton) {
-        result = D.div(
-          {
-            ref: (holder) => (this.overlayHolder = holder),
-            className: classnames(styles.holder, this.props.className),
-          },
-          D.div({ className: styles.inputAndButtons }, this.renderTextField(), this.renderOpenNewFrameButton()),
-          this.renderOverlay()
-        );
-      } else {
-        result = D.div(
-          {
-            ref: (holder) => (this.overlayHolder = holder),
-            className: classnames(styles.holder, this.props.className),
-          },
-          D.div({ className: styles.inputAndButtons }, this.renderTextField(), this.renderBrowseButton()),
-          this.renderOverlay()
-        );
-      }
-
+      const result = D.div(
+        {
+          ref: (holder) => (this.overlayHolder = holder),
+          className: classnames(styles.holder, this.props.className),
+        },
+        D.div({ className: styles.inputAndButtons }, this.renderTextField(), this.renderBrowseButton()),
+        this.renderOverlay()
+      );
       if (this.props.droppable) {
         return createElement(
           Droppable,
@@ -408,19 +386,16 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
 
     if (this.props.onSelectionChanged) {
       this.props.onSelectionChanged(selection);
-      this.updateTextField();
     }
 
 
     /**
      * selection always has one empty root node, so if selection is 1 then in reality there is nothing selected.
      */
-    if (this.props.id && selection.nodes.size <= 2) {
+    if (this.props.id && selection.nodes.size <=2 ) {
       const iri = selection.nodes.size == 1 ? undefined : selection.nodes.last().first().iri.value;
       trigger({
-        eventType: ItemSelectionChanged,
-        source: this.props.id,
-        data: { iri },
+        eventType: ItemSelectionChanged, source: this.props.id, data: {iri}
       });
     }
 
@@ -471,8 +446,8 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
       ClearableInput,
       textFieldProps,
       selectedItems
-        .map((item) => {
-          return createElement(
+        .map((item) =>
+          createElement(
             RemovableBadge,
             {
               key: item.iri.value,
@@ -482,13 +457,13 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
                 const previous = this.state.confirmedSelection;
                 const newSelection = TreeSelection.unselect(previous, previous.keyOf(item));
                 this.setState({ confirmedSelection: newSelection }, () => {
-                  this.onSelectionChanged(newSelection);
+                  this.onSelectionChanged(newSelection)
                 });
               },
             },
             item.label.value
-          );
-        })
+          )
+        )
         .toArray()
     );
   }
@@ -543,51 +518,6 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
           matchLimit: parametrized.limit,
         }))
       );
-  }
-
-  renderOpenNewFrameButton() {
-    return createElement(
-      OverlayTrigger,
-      {
-        placement: 'bottom',
-        overlay: createElement(
-          Tooltip,
-          {
-            id: 'SemanticTreeInput__tooltip',
-          },
-          'Select containing archival unit'
-        ),
-      },
-      createElement(
-        ResourceLinkComponent,
-        {
-          className: styles.browseButton,
-          active: this.state.mode.type === 'full',
-          iri: this.props.customButton.iri,
-          'urlqueryparam-view': this.props.customButton.view ? this.props.customButton.view : '',
-          'urlqueryparam-resource': this.props.customButton.resource ? this.props.customButton.resource : '',
-          'urlqueryparam-mode': this.props.customButton.mode ? this.props.customButton.mode : '',
-          onClick: () => {
-            const modeType = this.state.mode.type;
-            if (modeType === 'collapsed' || modeType === 'search') {
-              this.search.cancelAll();
-              this.setState({
-                searchText: undefined,
-                searching: false,
-                searchResult: undefined,
-                mode: { type: 'full', selection: this.state.confirmedSelection },
-              });
-            } else if (modeType === 'full') {
-              this.closeDropdown({ saveSelection: false });
-            }
-          },
-        },
-        D.span({
-          className: 'fa fa-plus fa-lg',
-          ['aria-hidden' as any]: true,
-        })
-      )
-    );
   }
 
   renderBrowseButton() {
@@ -787,7 +717,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
           },
           () => {
             if (this.props.closeDropdownOnSelection) {
-              this.closeDropdown({ saveSelection: true });
+              this.closeDropdown({saveSelection: true});
             }
           }
         );

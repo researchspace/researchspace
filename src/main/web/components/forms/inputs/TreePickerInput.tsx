@@ -31,7 +31,6 @@ import {
   ComplexTreePatterns,
   createDefaultTreeQueries,
   LightwightTreePatterns,
-  CustomButton,
 } from 'platform/components/semantic/lazy-tree';
 
 import { FieldDefinition, getPreferredLabel, TreeQueriesConfig, SimpleTreeConfig } from '../FieldDefinition';

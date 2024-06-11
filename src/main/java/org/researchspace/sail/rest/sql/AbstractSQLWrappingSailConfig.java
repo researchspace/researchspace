@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 package org.researchspace.sail.rest.sql;
 
 import org.researchspace.sail.rest.AbstractServiceWrappingSailConfig;
@@ -28,6 +27,5 @@ import org.researchspace.sail.rest.AbstractServiceWrappingSailConfig;
  */
 
 public class AbstractSQLWrappingSailConfig extends AbstractServiceWrappingSailConfig {
-    
-    
+
 }

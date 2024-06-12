@@ -166,6 +166,20 @@
           </semantic-if>
         {{/if}}
 
+        {{#if (hasKey allTypes "http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity")}}
+        <semantic-if query='ASK { <{{iri}}> ?p ?value . }'>
+            <template id='then'>
+              <div class="rs-default-card__hover-icon">
+                <semantic-link-container uri='{{iri}}'>
+                    <button type="button" class="rs-button" title="Explore Deets">
+                        <i class="iconmoon iconmoon-location"></i>
+                    </button>
+                </semantic-link-container>
+              </div>
+            </template>
+          </semantic-if>
+        {{/if}}
+
         {{#if (hasKey allTypes "http://www.researchspace.org/ontology/EX_Digital_Image_Region")}}
           [[!-- don't show resource media icon for image regions --]]
         {{else}}
@@ -193,6 +207,32 @@
                     </mp-page-loader>
                   </mp-overlay-dialog-content>
               </mp-overlay-dialog>
+
+         <!-- 
+              <mp-overlay-dialog title="Resource Media" type="modal" class="modal-xlSize">
+                <mp-overlay-dialog-trigger>
+                    <div class="rs-default-card__hover-icon">
+                        <button type="button" class="rs-button" title="Explore Media">
+                          <i class="rs-icon rs-icon-media"></i>
+                        </button>
+                    </div>
+                </mp-overlay-dialog-trigger>
+                <mp-overlay-dialog-content>
+                  <mp-page-loader urlqueryparam-frame=true iri='http://www.researchspace.org/resource/ItemCardMedia' context='{{iri}}'>
+                  </mp-page-loader>
+                </mp-overlay-dialog-content>
+            </mp-overlay-dialog>
+
+              <div class="rs-default-card__hover-icon rs-default-card-action__km-add-frame">
+                <mp-event-trigger id='set-action__km-add-frame' type='Dashboard.AddFrame' 
+                                  data='{"resourceIri": "{{iri}}", "viewId": "knowledge-map"}' 
+                                  targets='["thinking-frames"]'>
+                    <button type="button" class="rs-button" title="Explore Knowledge Map">
+                      <i class="rs-icon rs-icon-diagram"></i>
+                    </button>
+                </mp-event-trigger>
+               </div>
+              -->
             </template>
           </semantic-if>
         {{/if}}

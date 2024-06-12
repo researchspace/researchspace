@@ -1,0 +1,73 @@
+
+    {{#if noData}}
+    <div class="table-responsive rs-table">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th scope="col" style="width: 30%">Field</th>
+            <th scope="col">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>No data available</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    {{else}}
+      <div class="table-responsive rs-table">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th scope="col" style="width: 30%">Field</th>
+              <th scope="col">Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each bindings}}
+            {{#ifCond field.value "!=="  "Literature"}}
+              <semantic-query  query='SELECT distinct ?val WHERE{ <{{cur_resource.value}}> <http://www.cidoc-crm.org/cidoc-crm/P3_has_note> ?o . ?o <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.cidoc-crm.org/cidoc-crm/E41_Appellation> . ?o <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> "{{field.value}}" . ?o <http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?val} order by ?val'  
+                              template='{{> tuple2Template bindings_2=bindings}}'
+                              >
+            {{else}}
+              <semantic-query  query='SELECT distinct ?val ?link WHERE{ <{{cur_resource.value}}> <http://www.cidoc-crm.org/cidoc-crm/P3_has_note> ?o . ?o <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.cidoc-crm.org/cidoc-crm/E41_Appellation> . ?o <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> "{{field.value}}" . ?o <http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?val . ?o <http://www.cidoc-crm.org/cidoc-crm/P70i_is_documented_in> ?link} order by ?val'  
+                template='{{> tuple2Template bindings_2=bindings}}'
+                >
+            {{/ifCond}}
+                	<template id='tuple2Template'>
+                    <tr class="rs-page-resource__field">
+                      <td class="rs-page-resource__field-label-holder">
+                        <span class="rs-page-resource__field-label">
+                          {{field.value}}
+                        </span>
+                      </td>
+                      <td>
+                        {{#ifCond field.value "==="  "Literature"}}
+                          {{#each bindings_2}}  
+                            <span class="rs-page-resource__field-label">
+                                  <a href="{{{link.value}}}">{{val.value}}</a>
+                            </span>
+                            <br/>
+                          {{/each}}
+                        {{else}}
+                          {{#each bindings_2}}  
+                            <span class="rs-page-resource__field-label">
+                                  {{val.value}}
+                            </span>
+                            <br/>
+                          {{/each}}
+                        {{/ifCond}}
+                      </td>
+                    </tr>
+                </template>
+            	</semantic-query>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+   {{/if}}
+
+
+

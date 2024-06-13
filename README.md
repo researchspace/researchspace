@@ -169,12 +169,20 @@ On Windows the use of [Chocolatey](https://chocolatey.org/) is highly recommende
 
 **Java 11**
 
+deprecated:
 `brew tap AdoptOpenJDK/openjdk`
 `brew cask install adoptopenjdk11`
+
+Adopt has been move to Adoptium, with Temurin. Find the correct pkg version [here](https://adoptium.net/download/)
 
 **Node.js**
 
 `brew install node@12`
+
+or 
+
+use NVM [link here](https://github.com/nvm-sh/nvm?tab=readme-ov-file#installing-and-updating)
+
 
 ### Prerequisites Installation on *Windows 10*
 See [installation instruction](https://chocolatey.org/docs/installation) for [Chocolatey](https://chocolatey.org).

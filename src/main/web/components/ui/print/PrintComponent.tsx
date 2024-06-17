@@ -190,14 +190,12 @@ export class PrintComponent extends Component<Props, State> {
       } else {
           if (id !== null)
             groups[id] = ({ id, sections: [section] });
-          else  
-            groups.push({ id, sections: [section] });
       }
     });
 
     return groups.map((group) => {
       const first = group.sections[0];
-
+      
       if (group.sections.length === 1) {
         return first;
       }
@@ -261,7 +259,7 @@ export class PrintComponent extends Component<Props, State> {
   };
 
   private handleCheck = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
-    const sections = this.state.sections.filter(Boolean);
+    const sections = this.state.sections;
     const updatedSection: Section = {
       ...sections[index],
       isSelected: e.target.checked,

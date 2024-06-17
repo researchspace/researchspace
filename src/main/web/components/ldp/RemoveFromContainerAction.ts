@@ -69,13 +69,16 @@ class RemoveFromContainerComponent extends Component<Props, {}> {
 
   private deleteOntologyAndKPs(){
     //first delete KPs
+    const delimeter = !this.props.iri.endsWith("/")?"/":"";
+    const ontologyIriGraph = Rdf.iri(this.props.iri+delimeter+"context");
     const kpsSelectQuery = "prefix owl: <http://www.w3.org/2002/07/owl#> "+
+                           "prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> "+
                            "SELECT ?kp WHERE { "+
-                           "  ?kp <http://www.researchspace.org/resource/system/fields/ontology> "+Rdf.iri(this.props.iri) +"."+
-                           "  ?kp a ?owlType . "+
-                           "   FILTER (?owlType IN (owl:DatatypeProperty,owl:ObjectProperty,owl:AnnotationProperty)) "+
+                           "  ?kp a <http://www.researchspace.org/resource/system/fields/Field> . "+          
+                           "  graph " + ontologyIriGraph + " {" +
+                           "    ?kp a ?type . VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property} } "+                                         
                            "}";
-    
+
     SparqlClient.select(kpsSelectQuery).onValue(( results ) => {
       for (const binding of results.results.bindings) {
         const { kp } = binding;

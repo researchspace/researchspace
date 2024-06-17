@@ -31,6 +31,7 @@ import { SetManagementEvents } from './SetManagementEvents';
 import { validateAsk } from 'platform/components/forms/field-editor/Validation';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 import { ResourceLinkComponent } from 'platform/api/navigation/components';
+import { Component } from 'react';
 
 const { rdf, rdfs, VocabPlatform, ldp, xsd } = vocabularies;
 
@@ -140,7 +141,7 @@ function addSetItem(set: LdpService, item: Rdf.Iri, index?: number, setPropId?: 
 }
 
 let IS_SET_QUERY = SparqlUtil.Sparql`ASK { ?subject <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> ?type . VALUES ?type {<http://www.researchspace.org/resource/system/vocab/resource_type/set> <http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map>} }`;
-function  executeAskIsSetQuery(setIri: Rdf.Iri): Kefir.Property<boolean> {console.log(SparqlClient.setBindings(IS_SET_QUERY, { subject: setIri }));
+function  executeAskIsSetQuery(setIri: Rdf.Iri): Kefir.Property<boolean> {
     return SparqlClient.ask(
           SparqlClient.setBindings(IS_SET_QUERY, { subject: setIri }),
                                    {context: {repository:"default"} });
@@ -160,7 +161,6 @@ function createItemHolderGraph(holderIri: Rdf.Iri, itemIri: Rdf.Iri, index?: num
         }   
 
         triples.push(Rdf.triple(holderIri, rdfs.label, Rdf.literal(label)));
-        console.log(triples);
         return Rdf.graph(triples);
   });          
 }
@@ -171,14 +171,23 @@ interface HolderWithItem {
 }
 
 export function addToDefaultSet(resource: Rdf.Iri, sourceId: string): Kefir.Property<Rdf.Iri> {
+  /**
+   * This code assumes the Uncategorised set is viewed by default in the Clipboard i.e. 
+   * a <mp-set-management id=clipboard></mp-set-management>
+   * This function also triggers a refresh of the Clipboard section in the UI
+   */ 
+  const defaultSetManagerPropId = "clipboard";
   return Kefir.combine([getSetServiceForUser(), Kefir.fromPromise(getUserDefaultSetIri())])
-    .flatMap(([service, defaultSetIri]) =>
-      service.addToExistingSet(defaultSetIri, resource).map(() => {
+    .flatMap(([service, defaultSetIri]) => 
+      service.addToExistingSet(defaultSetIri, resource, defaultSetManagerPropId).map(() => { 
         trigger({ eventType: SetManagementEvents.ItemAdded, source: sourceId });
+        /* This is triggering a Clipboard refresh once a new Item is added */
+        trigger({ eventType: "Component.Refresh", source: sourceId, targets: [defaultSetManagerPropId] });     
         return resource;
       })
     )
-    .toProperty();
+    .toProperty()
+    .onError((e) => {console.error(e);});
 }
 
 export function getUserSetRootContainerIri(username?: string): Promise<Rdf.Iri> {
@@ -202,7 +211,7 @@ export function getUserSetRootContainerIri(username?: string): Promise<Rdf.Iri> 
 }
 
 export function getUserDefaultSetIri(username?: string): Promise<Rdf.Iri> {
-  return new Promise<Rdf.Iri>((resolve, reject) => {
+  return new Promise<Rdf.Iri>((resolve, reject) => { 
     request
       .get('/rest/sets/getUserDefaultSetIri')
       .query({ username })
@@ -264,11 +273,11 @@ class ContainerOfUserSetContainers extends LdpService {
 
 let setContainerOfCurrentUser: Kefir.Property<SetService> = undefined;
 
-export function getSetServiceForUser(context?: LdpServiceContext): Kefir.Property<SetService> {
-  if (setContainerOfCurrentUser) {
+export function getSetServiceForUser(context?: LdpServiceContext): Kefir.Property<SetService> { 
+  if (setContainerOfCurrentUser) { 
     return setContainerOfCurrentUser;
   }
-
+  
   const container = new ContainerOfUserSetContainers(context);
   setContainerOfCurrentUser = Kefir.fromPromise(getUserSetRootContainerIri())
     .flatMap<SetService>((setContainerIri) => container.getOrCreateSetContainer(setContainerIri))

@@ -31,6 +31,7 @@ import {
   assertFieldConfigurationItem,
   isObjectProperty,
 } from './FieldConfigurationCommon';
+import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 
 export interface OntodiaEntityMetadataProps {
   /**
@@ -43,6 +44,8 @@ export interface OntodiaEntityMetadataProps {
    * the order of the fields specified here.
    */
   fields: ReadonlyArray<string>;
+
+  enableDefaultFields?: boolean;
 
   /**
    * Field Iri for entity label override
@@ -95,6 +98,12 @@ export class OntodiaEntityMetadata extends React.Component<OntodiaEntityMetadata
     return null;
   }
 
+  static SPARQL_QUERY = SparqlUtil.Sparql`
+      SELECT ?field WHERE {
+        ?field <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.researchspace.org/resource/system/fields/Field>;
+        <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/knowledge_map> .
+      }`
+
   static getRequiredFields(props: OntodiaEntityMetadataProps, ct: CancellationToken): Promise<Rdf.Iri[]> {
     const fieldIris: Rdf.Iri[] = [];
     if (props.labelIri) {
@@ -108,7 +117,35 @@ export class OntodiaEntityMetadata extends React.Component<OntodiaEntityMetadata
         fieldIris.push(Rdf.iri(otherField));
       }
     }
-    return Promise.resolve(fieldIris);
+    return Promise.all([Promise.resolve(fieldIris),OntodiaEntityMetadata.getFieldsIrisForCategory()]).
+            then(results => {
+                return [].concat(results[0],results[1]);
+           });
+  }
+
+  static getFieldsIrisForCategory(): Promise<Rdf.Iri[]> {    
+    return new Promise((resolve) => {
+      SparqlClient.select(OntodiaEntityMetadata.SPARQL_QUERY)
+      .onValue((fr) => { 
+          let iris = [];
+          fr.results.bindings.map(binding => iris.push(binding.field));
+          resolve(iris);    
+      })
+      .onError((err) => console.error('Error during resource form query execution ',err))
+    });    
+  }
+
+  static getFieldsForCategory(): Promise<string[]> {    
+    return new Promise((resolve) => {
+      SparqlClient.select(OntodiaEntityMetadata.SPARQL_QUERY)
+      .onValue((fr) => { 
+          let iris = [];
+          fr.results.bindings.map(binding => iris.push(binding.field.value.toString()));
+          resolve(iris);    
+      })
+      .onError((err) => console.error('Error during resource form query execution ',err))
+      });
+    //return Promise.resolve(iris);
   }
 
   static async configure(props: OntodiaEntityMetadataProps, context: FieldConfigurationContext): Promise<void> {
@@ -128,59 +165,65 @@ function extractAuthoringMetadata(props: OntodiaEntityMetadataProps, context: Fi
     newSubjectTemplate = context.defaultSubjectTemplate,
   } = props;
 
-  if (typeof entityTypeIri !== 'string') {
-    throw new Error(`Missing 'entity-type-iri' property for <ontodia-entity-metadata>`);
+  Promise.all([Promise.resolve(fields), OntodiaEntityMetadata.getFieldsForCategory()])
+    .then(results => {
+        const extendedFields = [].concat(results[0],results[1]);
+
+        if (typeof entityTypeIri !== 'string') {
+          throw new Error(`Missing 'entity-type-iri' property for <ontodia-entity-metadata>`);
+        }
+        if (!fields) {
+          throw new Error(`Missing 'fields' property for <ontodia-entity-metadata>`);
+        }
+        if (typeof labelIri !== 'string') {
+          throw new Error(`Missing 'label-iri' property for <ontodia-entity-metadata>`);
+        }
+
+        const labelField = allFieldByIri.get(labelIri);
+        const typeField = allFieldByIri.get(typeIri);
+        const imageField = allFieldByIri.get(imageIri);
+
+        if (!typeField) {
+          throw new Error(`<ontodia-entity-metadata> for <${entityTypeIri}>: missing type field <${typeIri}>`);
+        }
+        if (!labelField) {
+          throw new Error(`<ontodia-entity-metadata> for <${entityTypeIri}>: missing label field <${labelIri}>`);
+        }
+
+        const mappedFields = extendedFields.map((fieldIri) => {
+          const field = allFieldByIri.get(fieldIri);
+          if (!field) {
+            throw new Error(`<ontodia-entity-metadata> for <${entityTypeIri}>: missing field <${labelIri}>`);
+          }
+          return field;
+        });
+
+        const headFields = [typeField, labelField];
+        if (imageField) {
+          headFields.push(imageField);
+        }
+
+        const entityFields = [...headFields, ...mappedFields];
+        const fieldByIri = Immutable.Map(entityFields.map((f) => [f.iri, f] as [string, FieldDefinition]));
+
+        const metadata: EntityMetadata = {
+          entityType: entityTypeIri as ElementTypeIri,
+          fields: entityFields,
+          fieldByIri,
+          datatypeFields: Immutable.Set<string>(datatypeFields.filter((fieldIri) => fieldByIri.has(fieldIri))),
+          typeField,
+          labelField,
+          imageField,
+          newSubjectTemplate,
+          formChildren: props.children,
+        };
+
+        validateFormFieldsDatatype(metadata.formChildren, metadata);
+
+        context.collectedMetadata.set(metadata.entityType, metadata);
+
+    });
   }
-  if (!fields) {
-    throw new Error(`Missing 'fields' property for <ontodia-entity-metadata>`);
-  }
-  if (typeof labelIri !== 'string') {
-    throw new Error(`Missing 'label-iri' property for <ontodia-entity-metadata>`);
-  }
-
-  const labelField = allFieldByIri.get(labelIri);
-  const typeField = allFieldByIri.get(typeIri);
-  const imageField = allFieldByIri.get(imageIri);
-
-  if (!typeField) {
-    throw new Error(`<ontodia-entity-metadata> for <${entityTypeIri}>: missing type field <${typeIri}>`);
-  }
-  if (!labelField) {
-    throw new Error(`<ontodia-entity-metadata> for <${entityTypeIri}>: missing label field <${labelIri}>`);
-  }
-
-  const mappedFields = fields.map((fieldIri) => {
-    const field = allFieldByIri.get(fieldIri);
-    if (!field) {
-      throw new Error(`<ontodia-entity-metadata> for <${entityTypeIri}>: missing field <${labelIri}>`);
-    }
-    return field;
-  });
-
-  const headFields = [typeField, labelField];
-  if (imageField) {
-    headFields.push(imageField);
-  }
-
-  const entityFields = [...headFields, ...mappedFields];
-  const fieldByIri = Immutable.Map(entityFields.map((f) => [f.iri, f] as [string, FieldDefinition]));
-
-  const metadata: EntityMetadata = {
-    entityType: entityTypeIri as ElementTypeIri,
-    fields: entityFields,
-    fieldByIri,
-    datatypeFields: Immutable.Set<string>(datatypeFields.filter((fieldIri) => fieldByIri.has(fieldIri))),
-    typeField,
-    labelField,
-    imageField,
-    newSubjectTemplate,
-    formChildren: props.children,
-  };
-
-  validateFormFieldsDatatype(metadata.formChildren, metadata);
-
-  context.collectedMetadata.set(metadata.entityType, metadata);
-}
 
 function validateFormFieldsDatatype(children: ReactNode | undefined, metadata: EntityMetadata) {
   if (!children) {

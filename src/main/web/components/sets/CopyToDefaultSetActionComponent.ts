@@ -21,14 +21,14 @@
  * @author Diana Tanase
  */
 
-import { cloneElement, Children, Component, MouseEvent } from 'react';
+import { cloneElement, Children, Component, MouseEvent, Props } from 'react';
 import { Rdf } from 'platform/api/rdf';
 import { addToDefaultSet } from 'platform/api/services/ldp-set';
 import { MenuProps } from 'platform/components/ui/selection/SelectionActionProps';
 import { AllTitleProps } from './TypedSelectionActionProps';
 import { trigger } from 'platform/api/events/EventsStore';
 
-type Props = MenuProps & AllTitleProps & { id: string };
+//type Props = MenuProps & AllTitleProps & { id: string };
 
 
 export interface CopyToDefaultConfig {
@@ -41,12 +41,13 @@ export interface CopyToDefaultConfig {
    */
   id: string;
 }
-export type CopyToDefaultProps = CopyToDefaultConfig & ReactProps<CopyToDefaultSetActionComponent>;
+export type CopyToDefaultProps = CopyToDefaultConfig & Props<CopyToDefaultSetActionComponent>;
 
 export class CopyToDefaultSetActionComponent extends Component<CopyToDefaultProps, {}> {
   constructor(props: CopyToDefaultProps, context: any) {
     super(props, context);
   }
+
   render() {
     const { resource,id } = this.props;
     const props = {
@@ -60,10 +61,6 @@ export class CopyToDefaultSetActionComponent extends Component<CopyToDefaultProp
     event.preventDefault();
     event.stopPropagation();
     
-    //const iri = Rdf.iri(this.props.uri);
-    //const repository = this.context.semanticContext ? this.context.semanticContext.repository : undefined;
-    //const params = NavigationUtils.extractParams(this.props);
-
     this.copyToDefaultSet(this.props.resource, this.props.id);
   };
   

@@ -8,7 +8,7 @@ uses client-side templates:
        <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map> .
   '
   image-iris='["http://www.researchspace.org/ontology/PX_has_main_representation"]'
-  save-diagram-label="Save Map" settings=nostats post-saving=none add-to-default-set=true
+  save-diagram-label="Save Map" settings=nostats post-saving=none add-to-default-set=false
   collapse-navigator=true
   request-links-on-init='{{#if miradorVariable}}true{{else}}{{#if diagram}}false{{else}}true{{/if}}{{/if}}'
   default-edge-style='{"editable": true}'
@@ -82,10 +82,11 @@ uses client-side templates:
   <rs-ontodia-metadata-from-fields 
       fields-query='PREFIX field: <http://www.researchspace.org/resource/system/fields/>
                     SELECT DISTINCT ?field WHERE { 
-                    #{
-                   #   ?field a <http://www.researchspace.org/resource/system/fields/Field> . 
-                    #  ?field  <http://www.researchspace.org/resource/system/fields/ontology> ?ontology .
-                    #} UNION
+                    {
+                      ?field a <http://www.researchspace.org/resource/system/fields/Field> . 
+                      ?field  a ?type . 
+                      VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}
+                    } UNION
                     { 
                       ?field a <http://www.researchspace.org/resource/system/fields/Field> . 
                       ?field  <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/image_annotation> . 

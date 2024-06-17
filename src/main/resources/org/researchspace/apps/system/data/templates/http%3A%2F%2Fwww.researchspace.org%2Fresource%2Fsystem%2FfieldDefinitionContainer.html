@@ -65,7 +65,7 @@
                                     </button>
                                 </semantic-link> 
                                 [[> http://www.researchspace.org/resource/assets/LdpContainerAction container='http://www.researchspace.org/resource/system/fieldDefinitionContainer' 
-                                parentContainer='http://www.researchspace.org/resource/system/rootContainer' isFieldDefinitionContainer=true]]
+                                parentContainer='http://www.researchspace.org/resource/system/rootContainer' isFieldDefinitionContainer=true ]]
                             </div>
                             
                             <semantic-context repository='assets'>
@@ -75,14 +75,15 @@
                                                             "categories": [
                                                                 {"iri": "<http://www.researchspace.org/resource/system/fields/Field>", "label": "Field"},
                                                                 {"iri": "<http://www.w3.org/2000/01/rdf-schema#Class>", "label": "Type"},
-                                                                {"iri": "<http://www.w3.org/2004/02/skos/core#Concept>", "label": "Concept"}
+                                                                {"iri": "<http://www.w3.org/2004/02/skos/core#Concept>", "label": "Concept"},
+                                                                {"iri": "<http://www.w3.org/2002/07/owl#Ontology>", "label": "Ontology"}
                                                             ],
-                                                            "relations": [
+                                                            "relations":[
                                                                 {
                                                                     "iri": "<http://www.researchspace.org/resource/system/fields/ontology>", 
                                                                     "label": "ontology", 
                                                                     "hasDomain": "<http://www.researchspace.org/resource/system/fields/Field>", 
-                                                                    "hasRange": "<http://www.w3.org/2000/01/rdf-schema#Class>"
+   								                                    "hasRange": "<http://www.w3.org/2002/07/owl#Ontology>"
                                                                 },
                                                                 {
                                                                     "iri": "<http://www.researchspace.org/resource/system/fields/category>", 
@@ -113,9 +114,28 @@
                                                                     "label": "datatype", 
                                                                     "hasDomain": "<http://www.researchspace.org/resource/system/fields/Field>", 
                                                                     "hasRange": "<http://www.w3.org/2000/01/rdf-schema#Class>"
-                                                                }                               
-                                                            ]
-                                                            }'>
+                                                                }  
+                                                             ]
+                                                            }'
+                                                            
+                                    relations='{
+                                        "<http://www.researchspace.org/resource/system/fields/ontology>": [{
+                                            "kind": "resource",
+                                            "label": "ontology", 
+                                            "queryPattern": "{
+                                                $subject a <http://www.researchspace.org/resource/system/fields/Field> .
+                                                graph ?g { 
+                                                    $subject a ?type . 
+                                                    VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}
+                                                
+                                                ?__value__  a owl:Ontology .
+                                                ?__value__ rdfs:label ?__label__ .
+                                                }
+                                            }",
+                                            "hasDomain": "<http://www.researchspace.org/resource/system/fields/Field>", 
+                                            "hasRange": "<http://www.w3.org/2002/07/owl#Ontology>"
+                                            }]
+                                    }'>
 
                                     <semantic-search-query-constant
                                         domain='<http://www.researchspace.org/resource/system/fields/Field>'

@@ -39,6 +39,9 @@
     </bs-row> <!--  close row -->
   </div>
   
+   
+  
+  
   <div class="container-fluid">
     <bs-row class="row-center">
       
@@ -53,8 +56,10 @@
       
     
       <div style="display: flex; justify-content: space-between; align-items: baseline; gap:20px;">
-        <h1>Query Template Catalog</h1>
-        [[#if (hasPermission "api:ldp:container:http://www.researchspace.org/resource/system/querytemplatecontainer:create:any")]]         
+        [[!-- <h1>Query Template Catalog</h1> --]]
+        [[#if (hasPermission "api:ldp:container:http://www.researchspace.org/resource/system/querytemplatecontainer:create:any")]]  
+        
+        <div style="display:flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
         <mp-overlay-dialog title="Create Query template" type="modal" bs-size="large">
           <mp-overlay-dialog-trigger>
             <button class="btn btn-action btn-textAndIcon">
@@ -70,7 +75,12 @@
               </div>
           </mp-overlay-dialog-content>
         </mp-overlay-dialog>
-      [[/if]]
+        
+         [[!-- Import query templates and Download Container section --]]
+        [[> http://www.researchspace.org/resource/assets/LdpContainerAction container='http://www.researchspace.org/resource/system/queryTemplateContainer' 
+                                parentContainer='http://www.researchspace.org/resource/system/rootContainer' isQueryTemplateContainer=true]]
+        </div>
+        [[/if]]
       </div>
 
       <hr style="margin-top:0px;" />

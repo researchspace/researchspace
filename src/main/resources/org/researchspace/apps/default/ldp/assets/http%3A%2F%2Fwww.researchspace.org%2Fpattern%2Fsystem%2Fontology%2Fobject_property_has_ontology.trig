@@ -23,8 +23,13 @@
     <http://www.w3.org/ns/prov#generatedAtTime> "2024-03-04T14:38:06.974Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
   
   _:genid-b87db8fc23b6466b992b41cd0e3c8d82-8rs054 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
-  $subject <http://www.researchspace.org/resource/system/fields/ontology> ?value.
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+        graph ?g { 
+          $subject a ?type . 
+          VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}
+          ?value a owl:Ontology .
+          ?value rdfs:label ?label .
+        }
   }""" .
   
   _:genid-b87db8fc23b6466b992b41cd0e3c8d82-xmmfs a <http://spinrdf.org/sp#Query>;

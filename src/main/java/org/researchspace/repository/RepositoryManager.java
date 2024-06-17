@@ -94,6 +94,7 @@ public class RepositoryManager implements RepositoryManagerInterface {
 
     public static final String DEFAULT_REPOSITORY_ID = "default";
     public static final String ASSET_REPOSITORY_ID = "assets";
+    public static final String ONTOLOGIES_REPOSITORY_ID = "ontologies";
     public static final String TEST_REPOSITORY_ID = "tests";
 
     private final MpSharedHttpClientSessionManager client;

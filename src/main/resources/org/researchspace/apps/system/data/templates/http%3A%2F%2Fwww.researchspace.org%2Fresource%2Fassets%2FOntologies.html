@@ -223,14 +223,14 @@
                                     </template>
                                   </semantic-query>
                                 </div>
-
+																<semantic-context repository="ontologies">
                                 <semantic-if query='ASK where { 
                                                     {
                                                       SELECT ((COUNT(?prop)) - (COUNT(?kp)) AS ?diff) WHERE {
                                                       {
                                                         BIND(<{{subject.value}}> AS ?ontology)
-                                                      BIND(IF(STRENDS(STR(?ontology), "/"), STR(?ontology), CONCAT(STR(?ontology), "/")) AS ?ontologyURI)
-                                                      BIND(IRI(CONCAT(STR(?ontologyURI), "context")) AS ?ontologyContext)
+                                                        BIND(IF(STRENDS(STR(?ontology), "/"), STR(?ontology), CONCAT(STR(?ontology), "/")) AS ?ontologyURI)
+                                                        BIND(IRI(CONCAT(STR(?ontologyURI), "context")) AS ?ontologyContext)
 
                                                         GRAPH ?ontologyContext {
                                                           ?prop rdf:type ?owlType.
@@ -241,8 +241,13 @@
                                                       UNION
                                                       {
                                                         BIND(<{{subject.value}}> AS ?ontology)
-                                                        ?kp <http://www.researchspace.org/resource/system/fields/ontology> ?ontology;
-                                                          rdf:type <http://www.researchspace.org/resource/system/fields/Field> .
+                                                        BIND(IF(STRENDS(STR(?ontology), "/"), STR(?ontology), CONCAT(STR(?ontology), "/")) AS ?ontologyURI)
+                                                        BIND(IRI(CONCAT(STR(?ontologyURI), "context")) AS ?ontologyContext)
+                                                        ?kp rdf:type <http://www.researchspace.org/resource/system/fields/Field> .
+                                                        graph ?ontologyContext { 
+                                                            ?kp a ?type . 
+                                                            VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}
+                                                        }                                                        
                                                       }
                                                     }
                                                 }
@@ -252,10 +257,17 @@
 
                                     <template id='else'>
                                       <div class="alert alert-info" style="margin: 0;padding: 15px; font-size: 14px;">
+                                        <semantic-context repository="ontologies">
                                         <semantic-query query='SELECT (count(?kp) as ?count) WHERE {
-                                                                ?kp <http://www.researchspace.org/resource/system/fields/ontology> <{{subject.value}}> .
                                                                 ?kp a <http://www.researchspace.org/resource/system/fields/Field> .
-                                                                
+                                                                BIND(<{{subject.value}}> AS ?ontology)
+                                                                BIND(IF(STRENDS(STR(?ontology), "/"), STR(?ontology), CONCAT(STR(?ontology), "/")) AS ?ontologyURI)
+                                                                BIND(IRI(CONCAT(STR(?ontologyURI), "context")) AS ?ontologyContext)
+                                                                ?kp rdf:type <http://www.researchspace.org/resource/system/fields/Field> .
+                                                                graph ?ontologyContext { 
+                                                                    ?kp a ?type . 
+                                                                    VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}
+                                                                } 
                                                               }'
                                                         template='{{> template}}'
                                         >
@@ -269,6 +281,7 @@
                                                 </div>
                                               </template>
                                         </semantic-query>
+                                          </semantic-context>
                                       </div>
                                     </template>
 
@@ -289,6 +302,7 @@
                                       </mp-json-renderer>                                     
                                     </template>
                                 </semantic-if>
+                                  </semantic-context>
                               </div>
 
                               <div class="page__section-container-whiteBg" 
@@ -346,9 +360,14 @@
                                         <b><semantic-link iri='{{subject.value}}' class="text-underline;"></semantic-link></b>?
                                       </p>
                                       <semantic-query query='SELECT (count(?kp) as ?count) WHERE {
-                                                                ?kp <http://www.researchspace.org/resource/system/fields/ontology> <{{subject.value}}> .
-                                                                ?kp a <http://www.researchspace.org/resource/system/fields/Field> .
-                                                                
+                                                                BIND(<{{subject.value}}> AS ?ontology)
+                                                                BIND(IF(STRENDS(STR(?ontology), "/"), STR(?ontology), CONCAT(STR(?ontology), "/")) AS ?ontologyURI)
+                                                                BIND(IRI(CONCAT(STR(?ontologyURI), "context")) AS ?ontologyContext)
+                                                                ?kp rdf:type <http://www.researchspace.org/resource/system/fields/Field> .
+                                                                graph ?ontologyContext { 
+                                                                    ?kp a ?type . 
+                                                                    VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}
+                                                                }                                                                
                                                               }'
                                                         template='{{> template}}'
                                         >

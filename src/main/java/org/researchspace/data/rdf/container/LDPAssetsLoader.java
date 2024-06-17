@@ -180,19 +180,18 @@ public class LDPAssetsLoader {
                                 "}" +
                              "}" +
                              "UNION { " +
-                             "  ?kp <http://www.researchspace.org/resource/system/fields/ontology> ?ontology ." +
+                             "  ?kp a <http://www.researchspace.org/resource/system/fields/Field> ." +
                              "  ?kp a ?owlType ." +
-                             "  FILTER (?owlType IN (owl:DatatypeProperty,owl:ObjectProperty))" +
+                             "  VALUES ?owlType {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}" +
                             "}" +
                           "}" + 
                           "group by ?ontology";
- 
-       
+     
         Repository defaultRepository = repositoryManager.getDefault();
          
         // connection and to run the sparql query
         logger.trace(checkIfKPsExistForPreloadedOntologies);
-         try (RepositoryConnection con = defaultRepository.getConnection()) {
+        try (RepositoryConnection con = defaultRepository.getConnection()) {
             try (TupleQueryResult tqr = con.prepareTupleQuery(checkIfKPsExistForPreloadedOntologies).evaluate()) {
                 while (tqr.hasNext()) {
                     BindingSet bs = tqr.next();

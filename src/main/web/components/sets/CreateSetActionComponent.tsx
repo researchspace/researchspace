@@ -38,11 +38,12 @@ export default class CreateSetActionComponent extends Component<Props, void> {
   };
 
   render() {
-    const { selection, closeMenu, menuTitle, title } = this.props;
+    const { selection, closeMenu, menuTitle, title, icon } = this.props;
     return (
       <TypedSelectionActionComponent
         menuTitle={menuTitle}
         title={title}
+        icon={icon}
         isDisabled={(s) => s.length === 0}
         renderRawDialog={(s) => (
           <SaveSetDialog

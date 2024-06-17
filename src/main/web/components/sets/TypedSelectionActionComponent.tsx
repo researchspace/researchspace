@@ -107,6 +107,7 @@ export class TypedSelectionActionComponent extends Component<Props, State> {
     return (
       <SelectionActionComponent
         disabled={disabled}
+        icon={this.props.icon}
         selection={this.props.selection}
         closeMenu={this.props.closeMenu}
         onAction={this.onAction}

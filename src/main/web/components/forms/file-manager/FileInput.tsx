@@ -315,13 +315,13 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
   renderInputSelector = () => {
     return (
       <div className={styles.selectorContainer}>
-        <Radio name='inputSelector' inline
+        <Radio inline
           checked={!this.state.selectUrl}
           onClick={ () => this.setState({selectUrl: false}) }
         >
           File upload
         </Radio>{' '}
-        <Radio name='inputSelector' inline
+        <Radio inline
           checked={this.state.selectUrl}
           onClick={ () => this.setState({selectUrl: true}) }
         >

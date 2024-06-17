@@ -41,7 +41,7 @@ export class SelectionActionComponent extends Component<Props, {}> {
 
   private onSelect = () => {
     this.props.onAction(this.props.selection);
-    this.props.closeMenu();
+    this.props.closeMenu;
   };
 }
 

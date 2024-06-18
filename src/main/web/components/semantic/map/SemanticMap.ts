@@ -118,7 +118,7 @@ interface MapState {
 const MAP_REF = 'researchspace-map-widget';
 
 export class SemanticMap extends Component<SemanticMapProps, MapState> {
-  private layers: { [id: string]: VectorLayer };
+  private layers: { [id: string]: VectorLayer<any> };
   private map: Map;
 
   constructor(props: SemanticMapProps, context: ComponentContext) {
@@ -269,7 +269,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     return geometries;
   };
 
-  private createLayer = (features: Feature[], type: string): VectorLayer => {
+  private createLayer = (features: Feature[], type: string): VectorLayer<any> => {
     const source = new Vector({ features });
     if (type === 'Point') {
       const clusterSource = new Cluster({ source, distance: 40 });

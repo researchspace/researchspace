@@ -1,0 +1,126 @@
+
+
+<div class="modal-image-container">
+
+  <div class="modal-iiif-container">
+    <semantic-if query='ASK { 
+                          {
+                            <{{resource}}> a ?type .
+                            FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+                            BIND(<{{resource}}> as ?image)
+                          } UNION {
+                            <{{resource}}> (crm:P138i_has_representation|rs:PX_has_main_representation) ?image .
+                            ?image a ?type .
+                            FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+                          }
+                        }'
+
+                  then='{{> imageViewer}}'
+                  else='{{> noImage}}'>
+
+      <template id='imageViewer'>
+        <rs-iiif-viewer-panel id='mirador'
+                              iris='[ "{{resource}}" ]'
+                              query="SELECT DISTINCT ?image WHERE {
+                                      {
+                                        <{{resource}}> a ?type .
+                                        FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+                                        BIND(<{{resource}}> as ?image)
+                                      } UNION {
+                                        <{{resource}}> (crm:P138i_has_representation|rs:PX_has_main_representation) ?image .
+                                        ?image a ?type .
+                                        FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+                                      }
+                                    }"     
+                              [[> rsp:IIIFConfig]]>
+        </rs-iiif-viewer-panel>
+      </template>
+
+      <template id='noImage'>
+        <div></div>
+      </template>
+
+    </semantic-if>
+
+  </div>
+
+</div>
+
+
+<div class="modal-resource-details">
+
+    <h3><mp-label iri='{{resource}}' class="text-link"></mp-label></h3>
+
+    {{#if resourceDescription}}<div>{{resourceDescription}}</div>{{/if}}
+
+    <semantic-link-container uri='[[resolvePrefix "rsp:ExhibitionKM_View"]]' title="Edit" target="_blank">
+      <button class="btn btn-primary">
+        Edit
+        <i class="fa fa-angle-right"></i>
+      </button>
+    </semantic-link-container>
+
+</div>
+
+[[!--
+<semantic-carousel query='SELECT DISTINCT ?imgURL ?isMainRep
+                          WHERE {
+                            {
+                              <[[this]]> a ?type ;
+                              FILTER(?type != rs:EX_Digital_Image) .
+                              ?representationProp rdfs:subPropertyOf* crm:P138i_has_representation .
+                              <[[this]]> ?representationProp ?representation .
+
+                              OPTIONAL {
+                                <[[this]]> ?representationProp ?representation .
+                                ?representation a rs:EX_Digital_Image ;
+                                                crmdig:L60i_is_documented_by/crmdig:L11_had_output/rs:PX_has_file_name ?fileName.
+                                BIND(CONCAT("/proxy/iiif-server/iiif/2/", ?fileName, "/full/!640,480/0/default.jpg") AS ?uploadIiifUrl)
+                              }
+                          
+                              OPTIONAL {
+                                <[[this]]> ?representationProp ?representation .
+                                ?representation a rs:EX_Digital_Image .
+                                BIND(REPLACE(STR(?representation), "^.*/(.*)$", "$1") as ?imageID) .
+                                BIND(?imageID as ?imgIiifId)
+                                BIND(CONCAT("/proxy/iiif-server/iiif/2/", ?imageID, "/full/!640,480/0/default.jpg") AS ?iiifUrl)
+                              }
+                              
+                              BIND(COALESCE(?uploadIiifUrl, ?iiifUrl, ?representation) AS ?imgURL)
+                              BIND(IF(?representationProp = rs:PX_has_main_represenation, true, false) AS ?isMainRep)
+                            } UNION {
+                              <[[this]]> a rs:EX_Digital_Image ;
+                              OPTIONAL {
+                                <[[this]]> a rs:EX_Digital_Image ;
+                                crmdig:L60i_is_documented_by/crmdig:L11_had_output/rs:PX_has_file_name ?fileName. 
+                                BIND(CONCAT("/proxy/iiif-server/iiif/2/", ?fileName, "/full/!640,480/0/default.jpg") AS ?uploadIiifUrl)
+                              }
+                                  
+                              OPTIONAL {
+                                <[[this]]> a rs:EX_Digital_Image ;
+                                BIND(REPLACE(STR(<[[this]]>), "^.*/(.*)$", "$1") as ?imageID) .
+                                BIND(CONCAT("/proxy/iiif-server/iiif/2/", ?imageID, "/full/!640,480/0/default.jpg") AS ?iiifUrl)
+                              }
+                              BIND(COALESCE(?uploadIiifUrl, ?iiifUrl, <[[this]]>) AS ?imgURL)
+                              BIND(true AS ?isMainRep)
+                            }  
+                          } ORDER BY ?imgURL'
+
+                  options='{"fade": true, "lazyLoad": true }'
+                  tuple-template='{{> imageCarousel}}'
+                  no-result-template='{{> noImages}}'
+>
+
+      <template id="imageCarousel">
+          <img style='object-fit: contain;' src='{{imgURL.value}}' 
+                    width="480" height="300"
+          >
+      </template>
+      
+      <template id="noImages">
+          <div class="no-media">
+          No images available
+          </div>
+      </template>
+</semantic-carousel>
+--]]

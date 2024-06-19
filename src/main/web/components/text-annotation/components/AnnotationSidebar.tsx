@@ -35,6 +35,7 @@ import {
 } from '../model/ComponentModel';
 
 import * as styles from './AnnotationSidebar.scss';
+import { getIIIFServerUrl } from 'platform/data/iiif/ImageAPI';
 
 export interface AnnotationSidebarProps {
   className?: string;
@@ -79,35 +80,65 @@ export class AnnotationSidebar extends Component<AnnotationSidebarProps, State> 
     const { className, annotationTypes, annotations, focusedAnnotation, highlightedAnnotations } = this.props;
     const { selectedTab } = this.state;
 
-    return (
-      <div className={classnames(styles.component, className)}>
-        <Tabs id="rs-text-annotation-types">
-          <Tab eventKey="images" title="Images">
-            <div className="image-container">
-              <ImageThumbnail 
-                imageOrRegion={this.props.imageIri}
-                imageIdPattern={this.props.imageIdPattern}
-                iiifServerUrl={this.props.iiifServerUrl}
-              />
-              <a className="rs--image-click" target="_blank" href={this.props.imageIri}>
-                <span>◱</span>
-              </a>
+    if(this.props.iiifServerUrl === undefined) {
+        return (
+            <div className={classnames(styles.component, className)}>
+                <Tabs id="rs-text-annotation-types">
+                <Tab eventKey="images" title="Images">
+                    <div className="image-container">
+                        <a className="rs--image-click" target="_blank" href={this.props.imageIri}>
+                            <img src={this.props.imageIri} />
+                        </a>
+                    </div>
+                </Tab>
+                <Tab eventKey="notes" title='Notes'>
+                    <div className={styles.annotationList} ref={this.onAnnotationListMount}>
+                    {annotations.map((anno) => {
+                        return this.renderAnnotation(anno, {
+                        hidden: !shouldRenderInTab(anno, selectedTab),
+                        focused: Schema.sameIri(anno.iri, focusedAnnotation),
+                        highlighted: highlightedAnnotations.size === 0 || highlightedAnnotations.has(anno.iri.value),
+                        });
+                    })}
+                    </div>
+                </Tab>
+                </Tabs>
             </div>
-          </Tab>
-          <Tab eventKey="notes" title='Notes'>
-            <div className={styles.annotationList} ref={this.onAnnotationListMount}>
-              {annotations.map((anno) => {
-                return this.renderAnnotation(anno, {
-                  hidden: !shouldRenderInTab(anno, selectedTab),
-                  focused: Schema.sameIri(anno.iri, focusedAnnotation),
-                  highlighted: highlightedAnnotations.size === 0 || highlightedAnnotations.has(anno.iri.value),
-                });
-              })}
+        );
+
+    }
+    else {
+
+        return (
+            <div className={classnames(styles.component, className)}>
+              <Tabs id="rs-text-annotation-types">
+                <Tab eventKey="images" title="Images">
+                  <div className="image-container">
+                    <ImageThumbnail 
+                      imageOrRegion={this.props.imageIri}
+                      imageIdPattern={this.props.imageIdPattern}
+                      iiifServerUrl={this.props.iiifServerUrl}
+                    />
+                    <a className="rs--image-click" target="_blank" href={this.props.imageIri}>
+                      <span>◱</span>
+                    </a>
+                  </div>
+                </Tab>
+                <Tab eventKey="notes" title='Notes'>
+                  <div className={styles.annotationList} ref={this.onAnnotationListMount}>
+                    {annotations.map((anno) => {
+                      return this.renderAnnotation(anno, {
+                        hidden: !shouldRenderInTab(anno, selectedTab),
+                        focused: Schema.sameIri(anno.iri, focusedAnnotation),
+                        highlighted: highlightedAnnotations.size === 0 || highlightedAnnotations.has(anno.iri.value),
+                      });
+                    })}
+                  </div>
+                </Tab>
+              </Tabs>
             </div>
-          </Tab>
-        </Tabs>
-      </div>
-    );
+          );
+    }
   }
 
   private onAnnotationListMount = (annotationList: HTMLElement | null) => {

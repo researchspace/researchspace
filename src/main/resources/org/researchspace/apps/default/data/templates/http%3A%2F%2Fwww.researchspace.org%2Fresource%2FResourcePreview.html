@@ -1,4 +1,15 @@
+<style>
 
+  .mirador-main-menu-bar,
+  .mirador-osd-annotation-controls  {
+    display: none !important;
+  }
+
+  .mirador .researchspace-mirador.mirador-container .mirador-viewer {
+    top: 0;
+  }
+      
+</style>
 
 <div class="modal-image-container">
 
@@ -46,21 +57,46 @@
 
 </div>
 
+{{#if resourceDetailSection}}
+  <div class="modal-resource-details">
 
-<div class="modal-resource-details">
+      <h3 style="margin-top: 0; margin-bottom: 5px; text-transform: capitalize;">
+        <mp-label iri='{{resource}}'></mp-label>
+      </h3>
 
-    <h3><mp-label iri='{{resource}}' class="text-link"></mp-label></h3>
+      {{#if resourceConfigLabel}}
+        <p class="color-secondary-light">{{resourceConfigLabel}}</p>
+      {{/if}}
 
-    {{#if resourceDescription}}<div>{{resourceDescription}}</div>{{/if}}
+      {{#if resourceDescription}}
+        <p>{{resourceDescription}}</p>
+      {{/if}}
 
-    <semantic-link-container uri='[[resolvePrefix "rsp:ExhibitionKM_View"]]' title="Edit" target="_blank">
-      <button class="btn btn-primary">
-        Edit
-        <i class="fa fa-angle-right"></i>
-      </button>
-    </semantic-link-container>
+      {{#if resourceConfig}}
+        <mp-event-proxy id='{{resource}}-closeDialog-proxy'
+                        on-event-source='{{resource}}-edit-btn-trigger'
+                        on-event-type='Dashboard.AddFrame'
+                        proxy-event-type='OverlayDialog.Close' 
+                        proxy-targets='["{{modalId}}"]'
+        ></mp-event-proxy>
 
-</div>
+        <mp-event-trigger id='{{resource}}-edit-btn-trigger' 
+                          type='Dashboard.AddFrame'
+                          data='{ "viewId":"resource-editor", 
+                                  "resourceIri":"{{resource}}",
+                                  "entityTypeConfig": "{{resourceConfig}}", 
+                                  "editable": true,
+                                  "mode":"edit"}' 
+                          targets='["thinking-frames"]'>
+          <button class="btn btn-primary btn-textAndIcon">
+            <span>Edit</span>
+            <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
+          </button>
+        </mp-event-trigger>
+      {{/if}}
+
+  </div>
+{{/if}}
 
 [[!--
 <semantic-carousel query='SELECT DISTINCT ?imgURL ?isMainRep

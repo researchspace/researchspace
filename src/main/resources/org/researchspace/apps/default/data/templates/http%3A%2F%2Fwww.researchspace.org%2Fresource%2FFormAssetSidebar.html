@@ -231,9 +231,24 @@
 
                                             <template id='then'>
                                                 <div class="form-tabs-subtabs-content--title-actions">
-                                                    <button class="btn btn-icon" title="preview">
-                                                        <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
-                                                    </button>
+                                                    <mp-overlay-dialog  id="[[urlParam 'viewid' escape=false]]-resource-preview-dialog"  
+                                                                        type="modal" 
+                                                                        class="modal-xlSize preview_modal"
+                                                                        title="Image preview">
+                                                    <mp-overlay-dialog-trigger>
+                                                        <button class="btn btn-icon" title="Image preview">
+                                                            <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
+                                                        </button>
+                                                    </mp-overlay-dialog-trigger>
+
+                                                    <mp-overlay-dialog-content>
+                                                        <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
+                                                                        options='{  "resource": "{{node}}",
+                                                                                    "resourceDetailSection": false
+                                                                                    }' >
+                                                        </inline-template> 
+                                                    </mp-overlay-dialog-content>
+                                                    </mp-overlay-dialog>
                     
                                                     <mp-event-trigger id='{{viewId}}-image-annotation-add-frame-trigger' 
                                                                         type='Dashboard.AddFrame' 
@@ -242,7 +257,7 @@
                                                                                 "objectIri": "{{node}}",
                                                                                 "frameId": "{{viewId}}"}' 
                                                                         targets='["thinking-frames"]'>
-                                                        <button class="btn btn-icon" title="View/Annotations">
+                                                        <button class="btn btn-icon" title="Image view/annotations">
                                                             <rs-icon icon-type="round" icon-name="photo_size_select_large"></rs-icon>
                                                         </button>
                                                     </mp-event-trigger>
@@ -546,7 +561,8 @@
                                     <h4>Signature</h4>
                                     <div style="display: flex;align-items: center;gap: 20px;">
                                         {{#if node}}
-                                            <semantic-if    query='ASK { <{{node}}> crm:P14i_performed ?creation .
+                                            <semantic-query  query='SELECT ?signature WHERE {
+                                                                        <{{node}}> crm:P14i_performed ?creation .
                                                                         ?creation crm:P94_has_created ?signature .
                                                                         ?signature a crm:E26_Physical_Feature .
                                                                     
@@ -558,13 +574,30 @@
                                                                         ?signatureImage a rs:EX_Digital_Image .
                                                                         ?signatureImage crm:P138_represents ?signature . 
                                                                     }'
-                                                            then='{{> then}}'>
 
-                                                <template id='then'>
+                                                            template='{{> signatureImage}}'>
+
+                                                <template id='signatureImage'>
                                                     <div class="form-tabs-subtabs-content--title-actions">
-                                                        <button class="btn btn-icon" title="preview">
-                                                            <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
-                                                        </button>
+                                                        <mp-overlay-dialog  id="[[urlParam 'viewid' escape=false]]-resource-preview-dialog"  
+                                                                            type="modal" 
+                                                                            class="modal-xlSize preview_modal"
+                                                                            title="Image preview">
+                                                            <mp-overlay-dialog-trigger>
+                                                                <button class="btn btn-icon" title="Image preview">
+                                                                    <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
+                                                                </button>
+                                                            </mp-overlay-dialog-trigger>
+
+                                                            <mp-overlay-dialog-content>
+                                                                <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
+                                                                                options='{  "resource": "{{bindings.0.signature.value}}",
+                                                                                            "resourceDetailSection": false
+                                                                                            }' >
+                                                                </inline-template> 
+                                                            </mp-overlay-dialog-content>
+                                                        </mp-overlay-dialog>
+                                                       
 
                                                         <mp-event-trigger id='{{viewId}}-image-annotation-add-frame-trigger' 
                                                                         type='Dashboard.AddFrame' 
@@ -573,13 +606,13 @@
                                                                                 "objectIri": "{{node}}",
                                                                                 "frameId": "{{viewId}}"}' 
                                                                         targets='["thinking-frames"]'>
-                                                        <button class="btn btn-icon" title="View/Annotations">
+                                                        <button class="btn btn-icon" title="Image view/annotations">
                                                             <rs-icon icon-type="round" icon-name="photo_size_select_large"></rs-icon>
                                                         </button>
                                                     </mp-event-trigger>
                                                     </div>
                                                 </template>
-                                            </semantic-if>
+                                            </semantic-query>
                                         {{/if}}
                                     
                                         <bs-nav bs-style="icon-tabs">

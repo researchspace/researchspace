@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ReactElement, createElement, ReactNode, Children, Props as ReactProps, cloneElement } from 'react';
+import { ReactElement, createElement, ReactNode, Children, Props as ReactProps } from 'react';
 import * as D from 'react-dom-factories';
 import { findDOMNode } from 'react-dom';
 import * as Kefir from 'kefir';

@@ -47,6 +47,7 @@ import { ItemSelectionChanged } from './SemanticTreeInputEvents';
 import { navigateToResource } from 'platform/api/navigation';
 
 import * as styles from './SemanticTreeInput.scss';
+import {SelectLabel, SelectLabelProps} from "platform/components/ui/inputs/SelectLabel";
 
 const ITEM_INPUT_VARIABLE = 'item';
 const ITEM_OUTPUT_VARIABLE = 'label';
@@ -267,15 +268,15 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
 
       if (queryItemLabel && queryItemLabel.indexOf(ITEM_INPUT_VARIABLE) > 0) {
         selection.map((selectedItem) => {
-          
+
           SparqlClient.select(queryItemLabel.replace(`?${ITEM_INPUT_VARIABLE}`, `<${selectedItem.value}>`)).onValue(
             (result) => {
               const prev = this.state.labelToDisplay
               this.setState(
                 {
-                  labelToDisplay: 
+                  labelToDisplay:
                   [
-                    ...prev, 
+                    ...prev,
                     {
                       key: selectedItem.value,
                       value: result.results.bindings[0][ITEM_OUTPUT_VARIABLE].value
@@ -291,7 +292,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
     }
 }
 
-  // initialize the initial selection item labels 
+  // initialize the initial selection item labels
   // before component is rendered
   componentWillMount() {
     this.initLabelInitialSelection()
@@ -300,7 +301,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
   componentDidMount() {
     const { initialSelection } = this.props;
     let selection: ReadonlyArray<Rdf.Iri>;
-    if (initialSelection && initialSelection.length !== 0) { 
+    if (initialSelection && initialSelection.length !== 0) {
       if (typeof initialSelection[0] == 'string') {
         selection = (initialSelection as ReadonlyArray<string>).map(s => Rdf.iri(s));
       } else {
@@ -475,76 +476,69 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
     /**
      * selection always has one empty root node, so if selection is 1 then in reality there is nothing selected.
      */
-    
+
     let iris  = Object.keys(selection.nodes.toJS())
                       .filter(item => item !== "SparqlNode:root")
                       .map(item => Rdf.iri(item));
-         
+
     if (this.props.id && selection.nodes.size <=2 ) {
       const iri = selection.nodes.size == 1 ? undefined : selection.nodes.last().first().iri.value;
       trigger({
         eventType: ItemSelectionChanged, source: this.props.id, data: {iri,iris}
       });
-    } else if (this.props.id && selection.nodes.size > 2) { 
+    } else if (this.props.id && selection.nodes.size > 2) {
         trigger({
           eventType: ItemSelectionChanged, source: this.props.id, data: {"iris": iris}
         });
-    } 
+    }
 
   }
 
   private getLabelNoteToDisplay(selectedNode: SelectionNode<Node>) {
     // search if the selected node has an entry in labelToDisplay mapping
     const mappedLabels = this.state.labelToDisplay?.filter((b:any) => b.key === selectedNode.iri.value)
-    // if it does, return the mapped label value 
+    // if it does, return the mapped label value
     // otherwise the selectedNode already has a label value
     return mappedLabels[0]?.value ?? selectedNode.label.value
+  }
+
+  private toggleDropdown() {
+    const modeType = this.state.mode.type;
+    if (modeType === 'collapsed' || modeType === 'search') {
+      this.search.cancelAll();
+      this.setState({
+        searchText: undefined,
+        searching: false,
+        searchResult: undefined,
+        mode: { type: 'full', selection: this.state.confirmedSelection },
+      });
+    } else if (modeType === 'full') {
+      this.closeDropdown({ saveSelection: false });
+    }
   }
 
   private renderTextField() {
     const selection = this.state.confirmedSelection;
     const selectedItems = TreeSelection.leafs(selection).sortBy((item) => item.label.value);
     const textFieldClassNames = classnames(styles.textInput, selectedItems.size === 0 ? 'selection-empty' : 'selection-full')
-    const textFieldProps: ClearableInputProps & ReactProps<ClearableInput> = {
-      ref: (input) => (this.textInput = input),
+
+    const selectLabelProps: SelectLabelProps =  {
       className: textFieldClassNames,
-      inputClassName: styles.input,
-      value: this.state.searchText || '',
-      placeholder: this.props.placeholder,
-      onFocus: () =>
-        this.setState({
-          searchInputFocused: true,
-          mode:
-            this.state.mode.type === 'collapsed' && this.props.openDropdownOnFocus
-              ? { type: 'full', selection: this.state.confirmedSelection }
-              : this.state.mode,
-        }),
-      onBlur: () => {
-        this.setState({ searchInputFocused: false });
-        if (!this.state.searchText && !this.props.openDropdownOnFocus) {
-          this.closeDropdown({ saveSelection: false });
-        }
+      defaultTitle: this.props.placeholder,
+      style: {
+        cursor: 'pointer'
       },
-      onChange: (e) => this.searchFor(e.currentTarget.value, false),
-      onKeyDown: (e) => {
-        if (e.keyCode === 13 && this.state.searchInputFocused) {
-          // enter
-          this.searchFor(this.state.searchText, true);
-        }
-      },
-      onClear: () => {
-        if (this.state.searchInputFocused || this.state.searchText) {
-          this.closeDropdown({ saveSelection: false });
-        }
-      },
-    };
+      onClickHandler: () => {
+        this.toggleDropdown()
+      }
+    }
 
     const openResourceOnClick = this.props.openResourceOnClick ?? true
 
     const { onSelectionClick } = this.props;
     return createElement(
-      ClearableInput,
-      textFieldProps,
+      SelectLabel,
+      selectLabelProps,
       selectedItems
         .map((item) =>
           createElement(
@@ -645,27 +639,16 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
           className: styles.browseButton,
           active: this.state.mode.type === 'full',
           onClick: () => {
-            const modeType = this.state.mode.type;
-            if (modeType === 'collapsed' || modeType === 'search') {
-              this.search.cancelAll();
-              this.setState({
-                searchText: undefined,
-                searching: false,
-                searchResult: undefined,
-                mode: { type: 'full', selection: this.state.confirmedSelection },
-              });
-            } else if (modeType === 'full') {
-              this.closeDropdown({ saveSelection: false });
-            }
+            this.toggleDropdown()
           },
         },
- 
+
 /*           D.span({}, 'Filter'), */
           D.span({
             className: 'material-icons-round',
             ['aria-hidden' as any]: true,
           }, 'expand_more')
-        
+
       )
     );
   }
@@ -707,7 +690,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
         {},
         mode.type === 'collapsed'
           ? D.div({})
-          : D.div({ className: styles.dropdown }, this.renderDropdownContent(mode), this.renderDropdownFooter(mode))
+          : D.div({ className: styles.dropdown }, this.renderSearchInput(), this.renderDropdownContent(mode), this.renderDropdownFooter(mode))
       )
     );
   }
@@ -763,11 +746,14 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
         return D.span({ className: styles.searchMessage }, `No results found.`);
       }
     }
-
-    return D.div({ className: styles.tree }, this.renderTree(mode), limitMessage);
+    return D.div({className: 'xxx'}, D.div({ className: styles.tree }, this.renderTree(mode), limitMessage))
+    // return D.div({ className: styles.tree }, this.renderTree(mode), limitMessage);
   }
 
   private renderDropdownFooter(mode: ExpandedMode) {
+    if (!this.props.multipleSelection) {
+      return null
+    }
     const enableSelectionSave = mode.selection !== this.state.confirmedSelection;
 
     return D.div(
@@ -791,6 +777,50 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
         },
         'Done'
       )
+    );
+  }
+
+  private renderSearchInput() {
+    const selection = this.state.confirmedSelection;
+    const selectedItems = TreeSelection.leafs(selection).sortBy((item) => item.label.value);
+    const textFieldClassNames = classnames(styles.textInput, selectedItems.size === 0 ? 'selection-empty' : 'selection-full')
+    const textFieldProps: ClearableInputProps & ReactProps<ClearableInput> = {
+      ref: (input) => (this.textInput = input),
+      className: textFieldClassNames,
+      inputClassName: styles.input,
+      value: this.state.searchText || '',
+      placeholder: this.props.placeholder,
+      onFocus: () =>
+        this.setState({
+          searchInputFocused: true,
+          mode:
+            this.state.mode.type === 'collapsed' && this.props.openDropdownOnFocus
+              ? { type: 'full', selection: this.state.confirmedSelection }
+              : this.state.mode,
+        }),
+      onBlur: () => {
+        this.setState({ searchInputFocused: false });
+        if (!this.state.searchText && !this.props.openDropdownOnFocus) {
+          this.closeDropdown({ saveSelection: false });
+        }
+      },
+      onChange: (e) => this.searchFor(e.currentTarget.value, false),
+      onKeyDown: (e) => {
+        if (e.keyCode === 13 && this.state.searchInputFocused) {
+          // enter
+          this.searchFor(this.state.searchText, true);
+        }
+      },
+      onClear: () => {
+        if (this.state.searchInputFocused || this.state.searchText) {
+          this.closeDropdown({ saveSelection: false });
+        }
+      },
+    };
+
+    return createElement(
+      ClearableInput,
+      textFieldProps
     );
   }
 

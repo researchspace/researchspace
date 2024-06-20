@@ -231,8 +231,8 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
                 namePredicateIri={this.props.namePredicateIri}
                 mediaTypePredicateIri={this.props.mediaTypePredicateIri}
               ></FileVisualizer>
-              <button className={`btn btn-default`} style={{ minHeight: '38px' }}>
-                  <Icon iconType='round' iconName='delete' onClick={this.removeFile} />
+              <button className={`btn btn-default btn-textAndIcon`} style={{ minHeight: '38px' }}>
+                  <Icon iconType='rounded' iconName='delete' symbol={true} onClick={this.removeFile} />
                 </button>
             </div>
           ) : (

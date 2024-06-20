@@ -11,6 +11,78 @@
       
 </style>
 
+<semantic-query query='SELECT ?image ?video ?map WHERE {
+                        OPTIONAL {
+                          {
+                            <{{resource}}> a ?type .
+                            FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+                            BIND(<{{resource}}> as ?image)
+                          } UNION {
+                            <{{resource}}> (crm:P138i_has_representation|rs:PX_has_main_representation) ?image .
+                            ?image a ?type .
+                            FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+                          }
+                        }
+                        OPTIONAL {
+                          {
+                            <{{resource}}> a frbroo:F26_Recording .
+                            <{{resource}}> crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_video> .
+                            <{{resource}}> crm:P129i_is_subject_of ?digital_object .
+                            ?digital_object a crmdig:D1_Digital_Object .
+                            ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                            ?digital_object crm:P190_has_symbolic_content ?video .
+                          } UNION {
+                            <{{resource}}> crm:P129i_is_subject_of ?videoURI . 
+                            ?videoURI a frbroo:F26_Recording .
+                            ?videoURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_video> .
+                            ?videoURI crm:P129i_is_subject_of ?digital_object .
+                            ?digital_object a crmdig:D1_Digital_Object .
+                            ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                            ?digital_object crm:P190_has_symbolic_content ?video .
+                          }
+                        }
+                        OPTIONAL {
+                          <{{resource}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
+                          ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
+                          ?osm_geoCoordinates crm:P190_has_symbolic_content ?map .
+                        }
+                      } LIMIT 1'
+                
+              template='{{> template}}'
+>        
+
+    <template id='template'>
+      <div>
+        {{#if bindings.0.image.value}}
+          {{#if (or bindings.0.video.value bindings.0.map.value)}}
+          <mp-event-trigger id='{{resource}}-imageView-trigger' 
+                            type='Component.TemplateUpdate' 
+                            data='{"viewTypeIndex": "{{@index}}",
+                                  "searchViewType": "{{searchViewType.value}}"}' 
+                            targets='["{{../bindings.0.viewid.value}}-search-view-dropdown-area",
+                                      "{{../bindings.0.viewid.value}}-search-result-views"
+                                    ]'>
+            <bs-menu-item event-key="{{searchViewLabel.value}}" 
+                          active='{{#if ../viewTypeIndex}}{{#ifCond ../viewTypeIndex "==" @index}}true{{else}}false{{/ifCond}}{{else}}{{#ifCond searchViewType.value "==" "http://www.researchspace.org/resource/system/vocab/search_view_type/list"}}true{{else}}false{{/ifCond}}{{/if}}'>
+              {{searchViewLabel.value}}
+            </bs-menu-item>
+          </mp-event-trigger> 
+          {{/if}}
+        {{/if}}
+
+        {{#if bindings.0.video.value}}
+          {{#if (or bindings.0.image.value bindings.0.map.value)}}
+          {{/if}}
+        {{/if}}
+
+        {{#if bindings.0.map.value}}
+          {{#if (or bindings.0.image.value bindings.0.video.value)}}
+          {{/if}}
+        {{/if}}
+      </div>
+    </template>
+</semantic-query>
+
 <div class="modal-image-container">
 
   <div class="modal-iiif-container">
@@ -48,11 +120,26 @@
       </template>
 
       <template id='noImage'>
-        <div></div>
+        <semantic-if    query='ASK { <{{resource}}> crm:P129i_is_subject_of ?video . 
+                                    ?video a frbroo:F26_Recording .
+                                    ?video crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_video> .
+                                    ?video crm:P1_is_identified_by ?appellation .
+                                    ?appellation a crm:E41_Appellation .
+                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                    ?appellation crm:P190_has_symbolic_content ?label .
+                                }'
+                        then='{{> videos}}'
+                        else='{{> noVideos}}'>
+
+            <template id='videos'>
+            </template>
+            <template id='noVideos'>
+
+            </template>
+        </semantic-if>
       </template>
 
     </semantic-if>
-
   </div>
 
 </div>
@@ -74,25 +161,56 @@
 
       {{#if resourceConfig}}
         <mp-event-proxy id='{{resource}}-closeDialog-proxy'
-                        on-event-source='{{resource}}-edit-btn-trigger'
+                        on-event-sources='["{{resource}}-edit-btn-trigger", "{{resource}}-open-narrative-trigger", "{{resource}}-open-km-trigger"]'
                         on-event-type='Dashboard.AddFrame'
                         proxy-event-type='OverlayDialog.Close' 
                         proxy-targets='["{{modalId}}"]'
         ></mp-event-proxy>
 
-        <mp-event-trigger id='{{resource}}-edit-btn-trigger' 
-                          type='Dashboard.AddFrame'
-                          data='{ "viewId":"resource-editor", 
-                                  "resourceIri":"{{resource}}",
-                                  "entityTypeConfig": "{{resourceConfig}}", 
-                                  "editable": true,
-                                  "mode":"edit"}' 
-                          targets='["thinking-frames"]'>
-          <button class="btn btn-primary btn-textAndIcon">
-            <span>Edit</span>
-            <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
-          </button>
-        </mp-event-trigger>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          
+          {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative") }}
+            <mp-event-trigger id='{{resource}}-open-narrative-trigger' 
+                              type='Dashboard.AddFrame'
+                              data='{ "viewId":"semantic-narrative", 
+                                      "resourceIri":"{{resource}}"
+                                    }' 
+                              targets='["thinking-frames"]'>
+              <button class="btn btn-primary btn-textAndIcon">
+                <span>Open narrative</span>
+                <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
+              </button>
+            </mp-event-trigger>
+          {{/if}}
+
+          {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map") }}
+            <mp-event-trigger id='{{resource}}-open-km-trigger' 
+                              type='Dashboard.AddFrame'
+                              data='{ "viewId":"knowledge-map", 
+                                      "resourceIri":"{{resource}}"
+                                    }' 
+                              targets='["thinking-frames"]'>
+              <button class="btn btn-primary btn-textAndIcon">
+                <span>Open knowledge map</span>
+                <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
+              </button>
+            </mp-event-trigger>
+          {{/if}}
+
+          <mp-event-trigger id='{{resource}}-edit-btn-trigger' 
+                            type='Dashboard.AddFrame'
+                            data='{ "viewId":"resource-editor", 
+                                    "resourceIri":"{{resource}}",
+                                    "entityTypeConfig": "{{resourceConfig}}", 
+                                    "editable": true,
+                                    "mode":"edit"}' 
+                            targets='["thinking-frames"]'>
+            <button class="btn btn-primary btn-textAndIcon">
+              <span>Edit</span>
+              <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
+            </button>
+          </mp-event-trigger>
+        </div>
       {{/if}}
 
   </div>

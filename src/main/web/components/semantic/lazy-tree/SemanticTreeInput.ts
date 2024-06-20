@@ -746,8 +746,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
         return D.span({ className: styles.searchMessage }, `No results found.`);
       }
     }
-    return D.div({className: 'xxx'}, D.div({ className: styles.tree }, this.renderTree(mode), limitMessage))
-    // return D.div({ className: styles.tree }, this.renderTree(mode), limitMessage);
+    return D.div({ className: styles.tree }, this.renderTree(mode), limitMessage);
   }
 
   private renderDropdownFooter(mode: ExpandedMode) {

@@ -543,13 +543,13 @@
     
                               <template id='column1'>
                                 <div>
-                                  <div style="display: flex; align-items: center; gap: 10px;">
+                                  <div style="display: flex; align-items: center; gap: 15px;">
                          
                                     <mp-overlay-dialog  id="[[urlParam 'viewid' escape=false]]-resource-preview-dialog"  
                                                         type="modal" 
                                                         bs-size="large">
                                       <mp-overlay-dialog-trigger>
-                                        <div>
+                                        <div class="table-image-container">
                                           {{#if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation")}}
                                             <rs-iiif-image-thumbnail  height='40' width='45' style='height: 100%; width: 100%;'
                                                                       image-or-region='{{iri.value}}'      
@@ -559,10 +559,24 @@
                                           {{else}}
                                             <mp-resource-thumbnail iri='{{iri.value}}' class='table-thumbnail-container'>
                                                 <mp-resource-thumbnail-fallback>
-                                                  <rs-icon icon-type="rounded" icon-name="image" symbol=true title="No image available" class='table-thumbnail-fallback-icon'></rs-icon>
+                                                  <semantic-query query='SELECT DISTINCT ?resourceIcon WHERE {
+                                                                          <{{bindings.0.resourceConfig.value}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .
+                                                                        } LIMIT 1'
+                                                                  template='{{> resourceIcon}}'
+                                                                  no-result-template='{{> noResults}}'>
+                                                                  
+                                                      <template id='resourceIcon'>
+                                                        <rs-icon icon-type="rounded" icon-name="{{bindings.0.resourceIcon.value}}" symbol=true class='table-thumbnail-fallback-icon'></rs-icon>
+                                                      </template>
+
+                                                      <template id="noResults">
+                                                        <rs-icon icon-type="rounded" icon-name="image" symbol=true class='table-thumbnail-fallback-icon'></rs-icon>
+                                                      </template>
+                                                  </semantic-query>
+                                                  
                                                 </mp-resource-thumbnail-fallback>
                                             </mp-resource-thumbnail>
-                                          {{/if}}              
+                                          {{/if}}          
                                         </div>          
                                       </mp-overlay-dialog-trigger>
                                       <mp-overlay-dialog-content>
@@ -859,14 +873,14 @@
     
                               <template id='column1'>
                                 <div>
-                                  <div style="display: flex; align-items: center; gap: 10px;">                                 
+                                  <div style="display: flex; align-items: center; gap: 15px;">                                 
 
                                     <mp-overlay-dialog  id="[[urlParam 'viewid' escape=false]]-resource-preview-dialog"  
                                                         type="modal" 
                                                         class="modal-xlSize preview_modal"
                                                         title="Preview">
                                       <mp-overlay-dialog-trigger>
-                                        <div>
+                                        <div class="table-image-container">
                                           {{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation")}}
                                             <rs-iiif-image-thumbnail  height='40' width='45' style='height: 100%; width: 100%;'
                                                                       image-or-region='{{iri.value}}'      
@@ -876,7 +890,21 @@
                                           {{else}}
                                             <mp-resource-thumbnail iri='{{iri.value}}' class='table-thumbnail-container'>
                                                 <mp-resource-thumbnail-fallback>
-                                                  <rs-icon icon-type="rounded" icon-name="image" symbol=true title="No image available" class='table-thumbnail-fallback-icon'></rs-icon>
+                                                  <semantic-query query='SELECT DISTINCT ?resourceIcon WHERE {
+                                                                          <{{resourceConfig.value}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .
+                                                                        } LIMIT 1'
+                                                                  template='{{> resourceIcon}}'
+                                                                  no-result-template='{{> noResults}}'>
+
+                                                      <template id='resourceIcon'>
+                                                        <rs-icon icon-type="rounded" icon-name="{{bindings.0.resourceIcon.value}}" symbol=true class='table-thumbnail-fallback-icon'></rs-icon>
+                                                      </template>
+
+                                                      <template id="noResults">
+                                                        <rs-icon icon-type="rounded" icon-name="image" symbol=true class='table-thumbnail-fallback-icon'></rs-icon>
+                                                      </template>
+                                                  </semantic-query>
+                                                  
                                                 </mp-resource-thumbnail-fallback>
                                             </mp-resource-thumbnail>
                                           {{/if}}              

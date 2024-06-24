@@ -19,7 +19,5 @@
 
 import * as Rdf from './Rdf';
 
-module Rdfs {
-  type Property = Rdf.PointedGraph;
-  type Class = Rdf.PointedGraph;
-}
+export type Property = Rdf.PointedGraph;
+export type Class = Rdf.PointedGraph;

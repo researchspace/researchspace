@@ -18,7 +18,6 @@
  */
 
 import { initModuleRegistry } from '../bootstrap';
-initModuleRegistry();
 
 import * as Kefir from 'kefir';
 import * as ReactDOM from 'react-dom';
@@ -97,7 +96,10 @@ function initPlatform(baseUrl?: string) {
       } catch (e) {
         return Kefir.constantError<any>(e);
       }
-      return Kefir.constant(url);
+
+      return Kefir.fromPromise(
+        initModuleRegistry(rawConfig.global.isDevelopmentMode.value)
+      )
     })
     .onValue(() => {
       console.log('ResearchSpace platform has been initialized successfully!');

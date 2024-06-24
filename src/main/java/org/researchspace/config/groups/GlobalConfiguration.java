@@ -102,4 +102,9 @@ public class GlobalConfiguration extends ConfigurationGroupBase {
     public Integer getLoadDefaultConfig() {
         return getInteger("loadDefaultConfig",-1);
     }
+
+    @ConfigurationParameter
+    public Boolean getIsDevelopmentMode() {
+        return Configuration.isDevelopmentMode();
+    }
 }

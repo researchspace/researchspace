@@ -174,6 +174,7 @@ export interface UIConfig {
 export interface GlobalConfig {
   readonly homePage?: StringValue;
   readonly dashboard?: StringValue;
+  readonly isDevelopmentMode?: BooleanValue;
 }
 
 export interface StringValue {

@@ -275,12 +275,13 @@ export class ImportResourceComponent extends Component<Props, State> {
           </ModalBody>
           <ModalFooter>
           <Button bsStyle="default"
-              onClick={() => this.setState({ serverDialog: undefined, selectedContainer: undefined, wait: false })}
+                  onClick={() => this.setState({ serverDialog: undefined, selectedContainer: undefined, wait: false })}
             >
               Cancel
             </Button>
             <Button
-              bsStyle="action"
+              bsStyle="default"
+              className="btn-action"
               disabled={!canProceed}
               onClick={() => {
                 this.importFromDelayedId(delayedImportRequestId, proceedIntoContainer);

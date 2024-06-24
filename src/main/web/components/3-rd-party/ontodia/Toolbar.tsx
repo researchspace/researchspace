@@ -83,12 +83,12 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
         >
           <Button disabled={!canPersistChanges}
                   onClick={onPersistChanges} 
-                  className="btn btn-action"
-                  bsStyle=''
+                  className="btn-action btn-split"
+                  bsStyle='default'
           >
             {persistChangesLabel}
           </Button>
-          <Dropdown.Toggle bsStyle='' className="btn btn-action" />
+          <Dropdown.Toggle bsStyle='default' className="btn-action" />
           <Dropdown.Menu >
             <MenuItem href="#" onClick={onPersistChangesAndSaveDiagram}>
               {persistChangesLabel} &amp; {saveDiagramLabel}
@@ -100,7 +100,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
     if (onSaveDiagram && canSaveDiagram) {
       return (
         <Dropdown id="save-diagram-button">
-          <Dropdown.Toggle bsStyle='' className="btn btn-action">
+          <Dropdown.Toggle bsStyle='default' className="btn-action">
             {saveDiagramLabel}
           </Dropdown.Toggle>
           <Dropdown.Menu>
@@ -135,12 +135,12 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
       >
         <Button disabled={!canPersistChanges || !canSaveData}
                 onClick={onPersistChanges} 
-                className="btn btn-action"
-                bsStyle=''
+                className="btn-action btn-split"
+                bsStyle='default'
         >
           {persistChangesLabel}
         </Button>
-        <Dropdown.Toggle bsStyle='' className="btn btn-action" />
+        <Dropdown.Toggle bsStyle='default' className="btn-action" />
         <Dropdown.Menu >
           <MenuItem href="#" onClick={onPersistChangesAndSaveDiagram}>
             <Icon iconType='round' iconName='save' className='icon-left' />
@@ -163,10 +163,11 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
 
     return (
       <SplitButton title={saveDiagramLabel} 
-                    id="save-diagram-button" 
+                    id="save-diagram-button-split" 
                     disabled={!canSaveMap}
                     onClick={onSaveDiagram}
-                    bsStyle='action btn-split'>
+                    bsStyle='default'
+                    className='btn-action btn-split'>
         <MenuItem href="#" onClick={onSaveDiagramAs}>
           <Icon iconType='round' iconName='save' className='icon-left' />
           {saveDiagramLabel} as...
@@ -175,7 +176,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
 
 /*       <Dropdown id="save-diagram-button" 
                 disabled={!canSaveMap}>
-        <Dropdown.Toggle bsStyle='' className="btn btn-action">
+        <Dropdown.Toggle bsStyle='default' className="btn-action">
           {saveDiagramLabel}
         </Dropdown.Toggle>
         <Dropdown.Menu>
@@ -221,11 +222,11 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
 
         <ButtonGroup className={styles.groupButtons}>
 
-            <Button bsStyle='' className="btn-icon btn-textAndIcon" onClick={this.props.onZoomIn}>
+            <Button bsStyle='default' className="btn-icon" onClick={this.props.onZoomIn}>
               <Icon iconType='round' iconName='add_circle_outline'/>
             </Button>
 
-            <Button bsStyle='' className="btn-icon btn-textAndIcon" onClick={this.props.onZoomOut}>
+            <Button bsStyle='default' className="btn-icon" onClick={this.props.onZoomOut}>
               <Icon iconType='round' iconName='remove_circle_outline'/>
             </Button>
 
@@ -234,7 +235,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
               placement="bottom"
               overlay={<Popover id="tooltip">Fit to screen</Popover>}
             >
-              <Button bsStyle='' className="btn-icon btn-textAndIcon" onClick={this.props.onZoomToFit}>
+              <Button bsStyle='default' className="btn-icon" onClick={this.props.onZoomToFit}>
                 <Icon iconType='round' iconName='zoom_out_map'/>
               </Button>
             </OverlayTrigger>
@@ -244,7 +245,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
               placement="bottom"
               overlay={<Popover id="tooltip">Force layout</Popover>}
             >
-              <Button bsStyle='' className="btn-icon btn-textAndIcon" onClick={this.props.onForceLayout}>
+              <Button bsStyle='default' className="btn-icon" onClick={this.props.onForceLayout}>
                 <Icon iconType='round' iconName='auto_awesome_mosaic'/>
               </Button>
             </OverlayTrigger>
@@ -254,8 +255,8 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
                               placement="bottom"
                               overlay={<Popover id="tooltip">Clear all</Popover>}
               >
-                <Button onClick={this.props.onClearAll} bsStyle='' className="btn-icon btn-textAndIcon">
-                  <Icon iconType='round' iconName='delete'/>
+                <Button onClick={this.props.onClearAll} bsStyle='default' className="btn-icon">
+                  <Icon iconType='round' iconName='layers_clear'/>
                 </Button>
               </OverlayTrigger>
             ) : null}
@@ -266,14 +267,14 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
               overlay={<Popover id="tooltip">Print knowledge map</Popover>}
               
             >
-              <Button bsStyle='' className="btn-icon btn-textAndIcon" onClick={this.props.onPrint} style={{ marginLeft: '30px' }} >
+              <Button bsStyle='default' className="btn-icon" onClick={this.props.onPrint} style={{ marginLeft: '30px' }} >
                 <Icon iconType='round' iconName='print'/>
               </Button>
             </OverlayTrigger>
 
             <Dropdown id="export-diagram-button">
 
-              <Dropdown.Toggle bsStyle='' className="btn-textAndIcon btn-icon" style={{marginRight: 20}}>
+              <Dropdown.Toggle bsStyle='default' className="btn-textAndIcon btn-icon" style={{marginRight: 20}}>
                 <Icon iconType='round' iconName='download'/>
               </Dropdown.Toggle>
               <Dropdown.Menu>

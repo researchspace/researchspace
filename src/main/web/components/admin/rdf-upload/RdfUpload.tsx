@@ -336,7 +336,8 @@ export class RdfUpload extends Component<Props, State> {
                     }
                     />
                     <Button
-                      bsStyle="action"
+                      bsStyle="default"
+                      className="btn-action"
                       disabled={!this.state.remoteFileUrl || isInProcess}
                       onClick={this.onClickLoadByUrl}
                     >

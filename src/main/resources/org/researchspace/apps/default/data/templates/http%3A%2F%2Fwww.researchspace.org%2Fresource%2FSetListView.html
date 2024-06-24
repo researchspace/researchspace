@@ -50,33 +50,39 @@
         <div></div>
       </bs-dropdown-toggle>
       <bs-dropdown-menu>
-          <!-- <bs-menu-item>
+          <!-- 
             <mp-event-trigger id='details-view-trigger' type='Component.TemplateUpdate'
                               data='{"iri": "{{iri.value}}"}' targets='["details-view"]'>
+                <bs-menu-item>
                   <div event-key=details style="display: flex; align-items: center;">
                     <rs-icon icon-type="round" icon-name="info" class="icon-left"></rs-icon>
                     <span>Details</span>
                   </div>
+                  </bs-menu-item>
             </mp-event-trigger>
-          </bs-menu-item> -->
-          <bs-menu-item>
-            <semantic-link-container uri="{{iri.value}}">
+           -->
+          
+          <semantic-link-container uri="{{iri.value}}">
+            <bs-menu-item>
               <div event-key=resource style="display: flex; align-items: center;">
                 <rs-icon icon-type="round" icon-name="description" class="icon-left"></rs-icon>
                 <span>Resource</span>
               </div>
-            </semantic-link-container>
-          </bs-menu-item>
+            </bs-menu-item>
+          </semantic-link-container>
           [[!-- is shown only when we are not in the frames view, hidden by css --]]
-          <bs-menu-item class="rs-default-card-action__km-navigate">
-            <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                urlqueryparam-view='knowledge-map' urlqueryparam-resource='{{iri.value}}'>
-                <div event-key=km style="display: flex; align-items: center;">
-                  <rs-icon icon-type="round" icon-name="account_tree" class="icon-left"></rs-icon>
-                  <span>Knowledge Map</span>
-                </div>
-            </semantic-link-container>
-          </bs-menu-item>
+          
+          <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                  urlqueryparam-view='knowledge-map' 
+                                  urlqueryparam-resource='{{iri.value}}'>
+            <bs-menu-item class="rs-default-card-action__km-navigate">
+              <div event-key=km style="display: flex; align-items: center;">
+                <rs-icon icon-type="round" icon-name="account_tree" class="icon-left"></rs-icon>
+                <span>Knowledge Map</span>
+              </div>
+            </bs-menu-item>
+          </semantic-link-container>
+          
           [[!-- is shown only when we are in the frames view, hidden by css --]]
           <bs-menu-item class="rs-default-card-action__km-add-frame">
             <mp-event-trigger id='set-action__km-add-frame' type='Dashboard.AddFrame' 
@@ -88,20 +94,22 @@
               </div>
             </mp-event-trigger>
           </bs-menu-item>
-          <bs-menu-item>
-            <mp-overlay-dialog title="Resource Media" type="modal" class="modal-xlSize">
-              <mp-overlay-dialog-trigger>
+          
+          <mp-overlay-dialog title="Resource Media" type="modal" class="modal-xlSize">
+            <mp-overlay-dialog-trigger>
+              <bs-menu-item>
                 <div event-key=media style="display: flex; align-items: center;">
                   <rs-icon icon-type="round" icon-name="photo_library" class="icon-left"></rs-icon>
                   Resource Media
                 </div>
-              </mp-overlay-dialog-trigger>
-              <mp-overlay-dialog-content>
-                <mp-page-loader urlqueryparam-frame=true iri='http://www.researchspace.org/resource/ItemCardMedia' context='{{iri.value}}'>
-                </mp-page-loader>
-              </mp-overlay-dialog-content>
-            </mp-overlay-dialog>
-          </bs-menu-item>
+              </bs-menu-item>
+            </mp-overlay-dialog-trigger>
+            <mp-overlay-dialog-content>
+              <mp-page-loader urlqueryparam-frame=true iri='http://www.researchspace.org/resource/ItemCardMedia' context='{{iri.value}}'>
+              </mp-page-loader>
+            </mp-overlay-dialog-content>
+          </mp-overlay-dialog>
+         
           {{#if isSetItem}}
           <bs-menu-item>
             <mp-anonymous-hidden>

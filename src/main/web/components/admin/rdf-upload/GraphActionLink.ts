@@ -112,7 +112,7 @@ export class GraphActionLink extends Component<Props, State> {
             ButtonToolbar(
               { className: 'modal-btn-group' },
               Button({ bsStyle: 'default', onClick: onHide }, 'Cancel'),
-              Button({ bsStyle: 'action', onClick: onSubmit }, 'Delete graph')
+              Button({ bsStyle: 'default', className:'btn-action', onClick: onSubmit }, 'Delete graph')
             )
           ),
         })
@@ -147,7 +147,7 @@ export class GraphActionLink extends Component<Props, State> {
                   ButtonToolbar(
                     { style: { display: 'flex', paddingTop: '10px', justifyContent: 'end' } },
                     Button({ bsStyle: 'default', onClick: onHide }, 'Cancel'),
-                    Button({ bsStyle: 'action', onClick: onSubmit }, 'Delete')
+                    Button({ bsStyle: 'default', className:'btn-action', onClick: onSubmit }, 'Delete')
                   )
                 ),
               })

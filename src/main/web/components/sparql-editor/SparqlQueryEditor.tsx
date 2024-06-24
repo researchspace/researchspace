@@ -117,7 +117,8 @@ export class SparqlQueryEditor extends Component<SparqlQueryEditorProps, State> 
               </Button>
             </HasPermission>
             <Button
-              bsStyle="action"
+              bsStyle="default"
+              className='btn-action'
               disabled={this.state.isExecuting}
               onClick={() => this.executeQuery(this.state.query)}
             >

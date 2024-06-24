@@ -304,8 +304,10 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
         <div className={styles.urlInputHolder}>
           <FormControl inputRef={ref => { this.urlInputRef = ref; }}
             type='text' placeholder='Enter file URL' />
-          <Button bsStyle='action' type='submit'
-            onClick={this.fetchFileFromUrl}
+          <Button bsStyle='default' 
+                  className='btn-action'
+                  type='submit'
+                  onClick={this.fetchFileFromUrl}
           >Fetch</Button>
         </div>
       </React.Fragment>

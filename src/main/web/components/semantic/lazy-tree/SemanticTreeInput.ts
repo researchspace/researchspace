@@ -784,8 +784,8 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
       createElement(
         Button,
         {
-          className: styles.dropdownButton,
-          bsStyle: 'action',
+          className: `${styles.dropdownButton} btn-action`,
+          bsStyle: 'default',
           disabled: !enableSelectionSave,
           onClick: () => this.closeDropdown({ saveSelection: true }),
         },

@@ -82,7 +82,8 @@ export class QueryTemplateArgumentsComponent extends Component<Props, State> {
 
         Button(
           {
-            bsStyle: 'action',
+            bsStyle: 'default',
+            className: 'btn-action',
             onClick: () => {
               getOverlaySystem().hide(title);
 

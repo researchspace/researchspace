@@ -209,7 +209,8 @@ class FieldEditorComponent extends Component<Props, State> {
       { style: { display: 'flex', alignItems: 'center', justifyContent:'end', gap:'5px', margin: '5px 0' } },
       btn(
         {
-          bsStyle:'action',
+          bsStyle:'default',
+          className:'btn-action',
           disabled: !this.state.isValid,
           onClick: () => this.onSaveOrUpdate()
         },
@@ -217,7 +218,8 @@ class FieldEditorComponent extends Component<Props, State> {
       ),
       btn(
         {
-          bsStyle:'action',
+          bsStyle:'default',
+          className:'btn-action',
           disabled: !this.state.isValid,
           onClick: () => this.onSaveOrUpdate(this.props.navigateTo)
         },

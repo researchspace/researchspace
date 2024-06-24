@@ -92,7 +92,6 @@ export function buildResourceFormIriQuery(queryResultBindings: SparqlClient.Bind
         } `
       )
     })
-    console.log(`SELECT ?resourceFormIri ?scheme WHERE { ${UNION_QUERY.join('UNION')} }`);
     return `SELECT ?resourceFormIri ?scheme WHERE { ${UNION_QUERY.join('UNION')} } LIMIT 1 `
 }
 

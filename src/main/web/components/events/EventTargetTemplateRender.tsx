@@ -29,7 +29,7 @@ export interface EventTargetTemplateRenderConfig {
    */
   id: string;
   /**
-   * <semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> that will be rendered with data passed as context variables.
+   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> that will be rendered with data passed as context variables.
    */
   template: string;
 }

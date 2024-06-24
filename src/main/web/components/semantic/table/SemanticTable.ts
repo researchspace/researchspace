@@ -95,7 +95,7 @@ interface BaseConfig extends ControlledProps {
   numberOfDisplayedRows?: number;
 
   /**
-   * <semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is applied when the query returns no results
+   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is applied when the query returns no results
    */
   noResultTemplate?: string;
 
@@ -151,7 +151,7 @@ interface ColumnConfig extends BaseConfig {
  */
 interface RowConfig extends BaseConfig {
   /**
-   * <semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> for the whole table row. Can be used to have visualizations different from the standard, e.g grid of thumbnails.
+   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> for the whole table row. Can be used to have visualizations different from the standard, e.g grid of thumbnails.
    * The template has access to all projection variables for a single result tuple.
    *
    * In addition to data from the sparql results cell template has access to current row index with "__semanticTableIndex" property and total table size with "__semanticTableSize" property.

@@ -71,7 +71,7 @@ export interface SemanticSimpleSearchConfig extends SemanticSimpleSearchBaseConf
   resourceBindingName?: string;
 
   /**
-   * <semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> for suggestion item.
+   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> for suggestion item.
    */
   template?: string;
 }

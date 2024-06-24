@@ -18,6 +18,7 @@
  */
 
 import { createFactory, createElement, MouseEvent, FormEvent, ChangeEvent } from 'react';
+import * as React from 'react';
 import * as D from 'react-dom-factories';
 
 import * as bem from 'bem-cn';
@@ -61,7 +62,6 @@ import { FieldEditorLabel } from './FieldEditorLabel';
 import './field-editor.scss';
 import Icon from 'platform/components/ui/icon/Icon';
 import  ResourceLinkComponent, {ResourceLinkProps }  from 'platform/api/navigation/components/ResourceLinkComponent';
-import React = require('react');
 import {OverlayTrigger, Popover } from 'react-bootstrap';
 
 const btn = createFactory(ReactBootstrap.Button);

@@ -34,6 +34,7 @@ module.exports = function (config) {
     singleRun: true,
     reporters: ['junit'],
     files: [
+        defaults.TEST + '/index.test.ts',
         defaults.TEST + '/**/*.test.ts'
     ],
   }));

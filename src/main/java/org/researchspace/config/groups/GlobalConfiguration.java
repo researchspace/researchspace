@@ -23,6 +23,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.researchspace.config.Configuration;
 import org.researchspace.config.ConfigurationParameter;
 import org.researchspace.config.InvalidConfigurationException;
 import org.researchspace.repository.RepositoryManager;
@@ -79,4 +80,8 @@ public class GlobalConfiguration extends ConfigurationGroupBase {
         return getStringList("forceLDPLoadFromStorages");
     }
 
+    @ConfigurationParameter
+    public Boolean getIsDevelopmentMode() {
+        return Configuration.isDevelopmentMode();
+    }
 }

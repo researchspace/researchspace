@@ -27,7 +27,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.zip.ZipEntry;
@@ -60,16 +62,20 @@ import org.apache.shiro.authz.permission.WildcardPermission;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.researchspace.config.Configuration;
+import org.researchspace.data.json.JsonUtil;
 import org.researchspace.plugin.PlatformPluginManager;
 import org.researchspace.rest.feature.CacheControl.NoCache;
 import org.researchspace.security.Permissions.APP;
 import org.researchspace.security.Permissions.STORAGE;
+import org.researchspace.services.storage.api.ObjectKind;
 import org.researchspace.services.storage.api.ObjectRecord;
 import org.researchspace.services.storage.api.ObjectStorage;
 import org.researchspace.services.storage.api.PlatformStorage;
 import org.researchspace.services.storage.api.StorageException;
 import org.researchspace.services.storage.api.StoragePath;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 
 import ro.fortsoft.pf4j.PluginWrapper;
@@ -91,10 +97,11 @@ public class AppAdminEndpoint {
     private PlatformStorage storageManager;
 
     private class MetaObject {
-        public MetaObject(String id, String storageKind, Boolean mutableStorage) {
+        public MetaObject(String id, String storageKind, Boolean mutableStorage, List<String> components) {
             this.id = id;
             this.storageKind = storageKind;
             this.mutableStorage = mutableStorage;
+            this.components = components;
         }
 
         @SuppressWarnings("unused")
@@ -103,6 +110,8 @@ public class AppAdminEndpoint {
         public String storageKind;
         @SuppressWarnings("unused")
         public Boolean mutableStorage;
+        @SuppressWarnings("unused")
+        public List<String> components;
     }
 
     /**
@@ -196,8 +205,38 @@ public class AppAdminEndpoint {
     }
 
     private MetaObject getStorageMetaOject(String id) {
-        ObjectStorage s = storageManager.getStorage(id);
-        return new MetaObject(id, s.getClass().getCanonicalName(), s.isMutable());
+        try {
+            ObjectStorage s = storageManager.getStorage(id);
+
+            // get list of web components from components.json file
+
+            // TODO it doesn't make sense to re-read the file on every request, especially in production mode
+            // need to cache this information.
+            StoragePath objectPath = ObjectKind.ASSET.resolve("components.json");
+            List<String> webComponents = s.getObject(objectPath, null).map(object -> extractWebComponents(object))
+                    .orElse(Collections.emptyList());
+
+            return new MetaObject(id, s.getClass().getCanonicalName(), s.isMutable(), webComponents);
+        } catch (StorageException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private List<String> extractWebComponents(ObjectRecord object) {
+        try {
+            ObjectMapper mapper = JsonUtil.getDefaultObjectMapper();
+
+            JsonNode componentsObj = mapper.readTree(object.getLocation().readContent());
+            List<String> components = new ArrayList<>();
+            Iterator<String> fieldNames = componentsObj.fieldNames();
+            while (fieldNames.hasNext()) {
+                components.add(fieldNames.next());
+            }
+            return components;
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

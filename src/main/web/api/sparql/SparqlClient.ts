@@ -36,8 +36,8 @@ import { requestAsProperty } from 'platform/api/async';
  *
  * @see {@link @see http://www.w3.org/TR/sparql11-protocol/}
  */
-module SparqlClient {
-  /**
+
+/**
    * SPARQL protocol operations.
    *
    * @see {@link http://www.w3.org/TR/sparql11-protocol/#protocol}
@@ -384,6 +384,3 @@ module SparqlClient {
       return Rdf.literal(binding.value);
     }
   }
-}
-
-export = SparqlClient;

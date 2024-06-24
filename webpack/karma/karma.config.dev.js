@@ -33,6 +33,7 @@ module.exports = function (config) {
     // Fix for tests run twice
     // https://github.com/nikku/karma-browserify/issues/67#issuecomment-84281528
     files: [
+      defaults.TEST + '/index.test.ts',
       {
         pattern: defaults.TEST + '/**/*.test.ts',
         watched: false,

@@ -23,7 +23,6 @@ import { get } from 'platform/api/http';
 import { Rdf } from 'platform/api/rdf';
 import { constructUrlForResource } from 'platform/api/navigation';
 
-module URLMinifierService {
   const URL_MINIFIER_SERVICE_URL = '/rest/url-minify/getShort';
 
   export function getShortKey(url: string): Kefir.Property<string> {
@@ -39,8 +38,5 @@ module URLMinifierService {
   }
 
   export function makeShortURL(fullUrl: string): Kefir.Property<string> {
-    return URLMinifierService.getShortKey(fullUrl).map((key) => location.origin + '/l/' + key);
+    return getShortKey(fullUrl).map((key) => location.origin + '/l/' + key);
   }
-}
-
-export = URLMinifierService;

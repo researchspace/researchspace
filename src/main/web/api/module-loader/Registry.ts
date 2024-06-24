@@ -37,7 +37,7 @@ import { WrappingError } from 'platform/api/async';
 
 import { Reparentable } from 'platform/components/utils/Reparentable';
 
-import { hasComponent, loadComponent } from './ComponentsStore';
+import { hasComponent, loadComponent, initPlugins } from './ComponentsStore';
 import { safeReactCreateElement } from './ReactErrorCatcher';
 
 const processNodeDefinitions = new ProcessNodeDefinitions(React);
@@ -75,8 +75,8 @@ customElements.define = function (name: string, constructor: Function, options?:
  *  react:
  *    Tab({eventKey: '1', title: 'Tab 1'}, 'Some Content')
  */
-export function init() {
-  /**/
+export async function init(isDevelopmentMode: boolean) {
+  return initPlugins(isDevelopmentMode);
 }
 
 /**

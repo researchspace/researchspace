@@ -147,6 +147,8 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
                 frbroo:F2_Expression.
         ?__resourceIri__ crm:P190_has_symbolic_content ?__label__ .
         ?__resourceIri__ crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative> .
+        ?__resourceIri__ mp:fileName ?__fileName__.
+        ?__resourceIri__ mp:mediaType "text/html".
       } WHERE {
       }
     `,
@@ -483,7 +485,8 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
   }
 
   private fetchDocument(documentIri: Rdf.Iri): Kefir.Property<[string, string]> {
-    return this.getFileManager().getFileResource(documentIri)
+    return this.getFileManager()
+      .getFileResource(documentIri)
       .flatMap(resource => {
         const fileUrl = FileManager.getFileUrl(resource.fileName, this.props.storage);
         return requestAsProperty(
@@ -563,7 +566,7 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
                                  '__file__':Rdf.iri(html_file) }
         )
       );
-    console.log(resourceQuery);
+    
     this.cancellation.map(
       this.getFileManager().uploadFileAsResource({
         file,
@@ -577,7 +580,7 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
       value: resource => {
         this.setState({documentIri: resource.value, saving: false});
       },
-      error: error => { console.log('error'); console.log(error) },
+      error: error => { console.error(error) },
     });
   }
 }

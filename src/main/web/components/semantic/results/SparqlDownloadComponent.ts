@@ -106,7 +106,8 @@ class SparqlDownloadComponent extends Component<Props, {}> {
   };
 
   componentWillUnmount() {
-    this.subscription.unsubscribe();
+    if (this.subscription) 
+      this.subscription.unsubscribe();
   }
 
   public render() {

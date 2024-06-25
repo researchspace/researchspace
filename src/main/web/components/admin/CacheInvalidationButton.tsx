@@ -58,7 +58,7 @@ class InvalidateCacheButton extends Component<{}, State> {
   }
 
   public render() {
-    return D.div({}, [
+    return D.div({}, 
       D.div({className:'invalidate-cache-container'},
         Button(
           {
@@ -83,7 +83,7 @@ class InvalidateCacheButton extends Component<{}, State> {
       D.div({ style: { paddingTop: '10px' } },
         createElement(Alert, this.state.alert.map((config) => config).getOrElse({ alert: AlertType.NONE, message: '' })),
       )
-    ]);
+    );
   }
 
 /*   OverlayTrigger(

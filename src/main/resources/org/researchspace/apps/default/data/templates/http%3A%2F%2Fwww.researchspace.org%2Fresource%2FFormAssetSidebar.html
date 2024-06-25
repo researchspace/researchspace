@@ -231,23 +231,22 @@
 
                                             <template id='then'>
                                                 <div class="form-tabs-subtabs-content--title-actions">
-                                                    <mp-overlay-dialog  id="[[urlParam 'viewid' escape=false]]-resource-preview-dialog"  
+                                                    <mp-overlay-dialog  id="[[urlParam 'viewid' escape=false]]-resource-imagePreview-dialog"  
                                                                         type="modal" 
                                                                         class="modal-xlSize preview_modal"
                                                                         title="Image preview">
-                                                    <mp-overlay-dialog-trigger>
-                                                        <button class="btn btn-icon" title="Image preview">
-                                                            <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
-                                                        </button>
-                                                    </mp-overlay-dialog-trigger>
+                                                        <mp-overlay-dialog-trigger>
+                                                            <button class="btn btn-icon" title="Image preview">
+                                                                <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
+                                                            </button>
+                                                        </mp-overlay-dialog-trigger>
 
-                                                    <mp-overlay-dialog-content>
-                                                        <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
-                                                                        options='{  "resource": "{{node}}",
-                                                                                    "resourceDetailSection": false
-                                                                                    }' >
-                                                        </inline-template> 
-                                                    </mp-overlay-dialog-content>
+                                                        <mp-overlay-dialog-content>
+                                                            <inline-template template-iri='[[resolvePrefix "rsp:ResourceImagesPreview"]]' 
+                                                                            options='{  "resource": "{{node}}"
+                                                                                        }' >
+                                                            </inline-template> 
+                                                        </mp-overlay-dialog-content>
                                                     </mp-overlay-dialog>
                     
                                                     <mp-event-trigger id='{{viewId}}-image-annotation-add-frame-trigger' 
@@ -378,8 +377,9 @@
 
                 [[#if map]]
                     <bs-tab-pane event-key="{{viewId}}-resourceForm-map" class="form-tabs-subtabs-content">
+                        
                         {{#if node}}
-                            <semantic-query query='SELECT ?place ?placeName ?osmURI WHERE {
+                            <semantic-query query='SELECT DISTINCT ?place ?placeName ?osmURI WHERE {
                                                     BIND(<{{node}}> AS ?place)
             
                                                     ?place crm:P129i_is_subject_of ?entityFormRecord .
@@ -401,8 +401,9 @@
                                                     # ?appellation a crm:E41_Appellation . 
                                                     ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                                     ?appellation crm:P190_has_symbolic_content ?placeName .
-                                                    }'
+                                                    } LIMIT 1'
                                             template='{{> template}}'
+                                            no-result-template='{{> noResults}}'
                             >
                                     
                                 <template id='template'>
@@ -411,9 +412,25 @@
                                             <h4>Map</h4>
                                             <div style="display: flex;align-items: center;gap: 20px;">
                                                 <div class="form-tabs-subtabs-content--title-actions">
-                                                    <button class="btn btn-icon" title="preview">
-                                                        <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
-                                                    </button>
+                                                     <mp-overlay-dialog  id="[[urlParam 'viewid' escape=false]]-resource-mapPreview-dialog"  
+                                                                        type="modal" 
+                                                                        class="modal-xlSize preview_modal"
+                                                                        title="Map preview">
+                                                        <mp-overlay-dialog-trigger>
+                                                            <button class="btn btn-icon" title="Map preview">
+                                                                <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
+                                                            </button>
+                                                        </mp-overlay-dialog-trigger>
+
+                                                        <mp-overlay-dialog-content>
+                                                            <inline-template template-iri='[[resolvePrefix "rsp:ResourceMapPreview"]]' 
+                                                                            options='{  "resource": "{{node}}",
+                                                                                        "placeName": "{{bindings.0.placeName.value}}",
+                                                                                        "osmURI": "{{bindings.0.osmURI.value}}"
+                                                                                        }' >
+                                                            </inline-template> 
+                                                        </mp-overlay-dialog-content>
+                                                    </mp-overlay-dialog>
                                                 </div>
                                             </div>
                                         </div>
@@ -441,6 +458,13 @@
                                         </div>
                                     </div>
                                 </template>
+
+                                <template id="noResults">
+                                    <div class="form-tabs-subtabs-content--title">
+                                        <h4>Map</h4>
+                                    </div>
+                                    <div>Enter the geographic coordinates (OpenStreetMap) to display the place map.</div>
+                                </template>
                             </semantic-query>
                         {{else}}
                             <div class="form-tabs-subtabs-content--title">
@@ -462,6 +486,8 @@
                                                                     {{/if}}'>
                                     </semantic-map>
                                 </div>
+                            {{else}}
+                                <div>Enter Geographic coordinates (OpenStreetMap) to display the place map</div>
                             {{/if}}
                             
                             {{#if apiResourceURI}}
@@ -471,9 +497,6 @@
                                 </div>
                             {{/if}}
                         {{/if}}
-                        
-
-
                     </bs-tab-pane>
                 [[/if]]
 
@@ -579,7 +602,7 @@
 
                                                 <template id='signatureImage'>
                                                     <div class="form-tabs-subtabs-content--title-actions">
-                                                        <mp-overlay-dialog  id="[[urlParam 'viewid' escape=false]]-resource-preview-dialog"  
+                                                        <mp-overlay-dialog  id="[[urlParam 'viewid' escape=false]]-resource-signaturePreview-dialog"  
                                                                             type="modal" 
                                                                             class="modal-xlSize preview_modal"
                                                                             title="Image preview">
@@ -590,9 +613,8 @@
                                                             </mp-overlay-dialog-trigger>
 
                                                             <mp-overlay-dialog-content>
-                                                                <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
-                                                                                options='{  "resource": "{{bindings.0.signature.value}}",
-                                                                                            "resourceDetailSection": false
+                                                                <inline-template template-iri='[[resolvePrefix "rsp:ResourceImagesPreview"]]' 
+                                                                                options='{  "resource": "{{bindings.0.signature.value}}"
                                                                                             }' >
                                                                 </inline-template> 
                                                             </mp-overlay-dialog-content>
@@ -704,9 +726,23 @@
 
                                             <template id='then'>
                                                 <div class="form-tabs-subtabs-content--title-actions">
-                                                    <button class="btn btn-icon" title="preview">
-                                                        <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
-                                                    </button>
+                                                    <mp-overlay-dialog  id="[[urlParam 'viewid' escape=false]]-resource-videoPreview-dialog"  
+                                                                        type="modal" 
+                                                                        class="modal-xlSize preview_modal"
+                                                                        title="Video preview">
+                                                        <mp-overlay-dialog-trigger>
+                                                            <button class="btn btn-icon" title="Video preview">
+                                                                <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
+                                                            </button>
+                                                        </mp-overlay-dialog-trigger>
+
+                                                        <mp-overlay-dialog-content>
+                                                            <inline-template template-iri='[[resolvePrefix "rsp:ResourceVideosPreview"]]' 
+                                                                            options='{ "resource": "{{node}}"
+                                                                                     }' >
+                                                            </inline-template> 
+                                                        </mp-overlay-dialog-content>
+                                                    </mp-overlay-dialog>
                                                 </div>
                                             </template>
                                         </semantic-if>

@@ -188,7 +188,7 @@
                     <mp-event-target-template-render id="{{bindings.0.viewid.value}}-search-view-dropdown-area" template="{{> viewDropdown}}">
                       <template id='viewDropdown'>
                         <bs-dropdown id="{{bindings.0.viewid.value}}-view-type-selection"
-                                      bs-style="default textAndIcon"
+                                      bs-style="default"
                                       class="btn-textAndIcon"
                                       pull-right=true
                                       title="{{#if viewTypeIndex}}{{#with (lookup bindings viewTypeIndex)}}{{searchViewLabel.value}}{{/with}}{{else}}List{{/if}}"
@@ -321,7 +321,7 @@
           </div>
         </div>
 
-        <mp-splitpane id='[[urlParam "viewid" escape=false]]-search-filters-sidebar' min-size=43 default-size=230 snap-threshold=150 default-open=true always-render=true primary='second' class="search-filters-sidebar">
+        <mp-splitpane id='[[urlParam "viewid" escape=false]]-search-filters-sidebar' min-size=43 default-size=230 snap-threshold=150 default-open=false always-render=true primary='second' class="search-filters-sidebar">
 
           <div class="search-results-area page__section-container">
             <semantic-search-facet-breadcrumbs></semantic-search-facet-breadcrumbs>
@@ -695,9 +695,11 @@
                                       </template>
 
                                       <template id="noResults">
-                                        <mp-text-truncate lines=3 expand='<div class="text-link">Expand</div>' collapse='<div class="text-link">Collapse</div>'>
-                                         {{description.value}}
-                                        </mp-text-truncate>
+                                        {{#if description.value}}
+                                          <mp-text-truncate lines=1 expand='<div class="text-link">Expand</div>' collapse='<div class="text-link">Collapse</div>'>
+                                          {{description.value}}
+                                          </mp-text-truncate>
+                                        {{/if}}
                                       </template>
                                   </semantic-query>
                                 {{else}}
@@ -894,13 +896,17 @@
                                     </mp-overlay-dialog>
 
                                     <div>
-                                      {{#if (or (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map") (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative") )}}
-                                        <semantic-link uri="{{iri.value}}">
+                                      {{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map")}}
+                                        <mp-event-trigger id='{{iri.value}}-open-km-trigger' 
+                                                          type='Dashboard.AddFrame'
+                                                          data='{"viewId":"knowledge-map", 
+                                                                  "resourceIri": "{{iri.value}}"}' 
+                                                          targets='["thinking-frames"]'>
                                           <mp-label iri='{{iri.value}}' class="text-link"></mp-label>
-                                        </semantic-link> 
+                                        </mp-event-trigger>
                                       {{else}}
                                         <semantic-link  uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                        urlqueryparam-view="resource-editor"
+                                                        urlqueryparam-view='{{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}semantic-narrative{{else}}resource-editor{{/if}}'
                                                         urlqueryparam-resource='{{iri.value}}'>
                                           <mp-label iri='{{iri.value}}' class="text-link"></mp-label>
                                         </semantic-link>
@@ -914,7 +920,7 @@
 
                               <template id='column2'>
                                 {{#if description.value}}
-                                  <mp-text-truncate lines=3 expand='<div class="text-link">Expand</div>' collapse='<div class="text-link">Collapse</div>'>
+                                  <mp-text-truncate lines=1 expand='<div class="text-link">Expand</div>' collapse='<div class="text-link">Collapse</div>'>
                                     {{description.value}}
                                   </mp-text-truncate>
                                 {{/if}}
@@ -1007,7 +1013,7 @@
 
 [[#*inline "resultCardActions"]]
 <bs-dropdown id="[[urlParam 'viewid' escape=false]]-{{iri.value}}-item-actions-dropdown" pull-right=true class="dropdown-no-caret">
-  <bs-dropdown-toggle bs-style=''>
+  <bs-dropdown-toggle class="border-none no-active-bg">
     <rs-icon icon-type="round" icon-name="more_horiz"></rs-icon>
   </bs-dropdown-toggle>
   <bs-dropdown-menu>

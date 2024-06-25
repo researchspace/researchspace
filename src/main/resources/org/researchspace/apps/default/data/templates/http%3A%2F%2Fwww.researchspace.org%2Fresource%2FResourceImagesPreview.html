@@ -1,0 +1,34 @@
+<style>
+
+    .mirador-main-menu-bar,
+    .mirador-osd-annotation-controls  {
+      display: none !important;
+    }
+  
+    .mirador .researchspace-mirador.mirador-container .mirador-viewer {
+      top: 0;
+    }
+        
+</style>
+
+<rs-iiif-viewer-panel id='mirador'
+                    iris='[ "{{resource}}" ]'
+                    query="SELECT DISTINCT ?image WHERE {
+                            {
+                                <{{resource}}> a ?type .
+                                FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+                                BIND(<{{resource}}> as ?image)
+                            } UNION {
+                                <{{resource}}> (crm:P138i_has_representation|rs:PX_has_main_representation) ?image .
+                                ?image a ?type .
+                                FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+                            }
+                        }"     
+                    [[> rsp:IIIFConfig]]>
+</rs-iiif-viewer-panel>
+
+
+
+  
+
+  

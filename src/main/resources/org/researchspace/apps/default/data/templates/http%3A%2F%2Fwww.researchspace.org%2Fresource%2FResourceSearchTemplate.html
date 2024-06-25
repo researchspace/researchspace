@@ -12,8 +12,8 @@
       <div class="semantic-search-content">
 
         <div class="semantic-search-header-content">
-          
-          {{#ifCond "[[urlParam "searchall" escape=false]]" "==" "true"}}
+         
+          {{#ifCond "[[urlParam "searchall" escape=false]]" "==" true}}
             <div class="semantic-search-header-title"></div>
           {{else}}
             <h3 class="semantic-search-header-title">[[urlParam "resourcelabel" escape=false]]</h3>
@@ -164,11 +164,7 @@
                                                                   [[urlParam "resourcerestrictionpattern" escape=false]] 
                                                                 [[/if]]
     
-                                                                [[#if (urlParam "resourcelabelpattern")]]
-                                                                  [[urlParam "resourcelabelpattern" escape=false]]
-                                                                [[else]]
-                                                                  ?subject rdfs:label ?label .
-                                                                [[/if]]
+                                                                
                                                               }'
                                                 debounce=500
                                                 placeholder="Search [[urlParam 'resourcelabel' escape=false]]"
@@ -182,7 +178,7 @@
                                     ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_view_type> ?searchViewType.
                                     ?searchViewType crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/search_view_type> .
                                     ?searchViewType skos:prefLabel ?searchViewLabel .
-                                  }'
+                                  } '
 
                             template='{{> search-views}}'
             >
@@ -265,12 +261,8 @@
 
                 {{#ifCond "[[urlParam "resourceconfig" escape=false]]" "==" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set"}}
                 {{else}}
-                  [[#if (hasPermission "forms:ldp:*")]]
-                    <bs-menu-item class-name="dropdown-item-action-selection-container">
-                      <mp-selection-action-choice id='[[urlParam "viewid" escape=false]]-create-set-action' selection='item-selection-aggregator'>
-                        <mp-create-set-action icon="create_new_folder"></mp-create-set-action>
-                      </mp-selection-action-choice>
-                    </bs-menu-item>
+                  [[#if (hasPermission "forms:ldp:*")]]                  
+                      <mp-selection-action-choice id='[[urlParam "viewid" escape=false]]-create-set-action' selection='item-selection-aggregator'>                  
                   [[/if]]
 
                   <mp-anonymous-hidden>
@@ -347,7 +339,6 @@
                                                 } ORDER BY ?subject'
                                         tuple-template='{{> gridItem }}',
                                         options='{"showFilter":false, 
-                                                  "resultsPerPage":100
                                                 }'
                         >
                           <template id='gridItem'>
@@ -459,14 +450,14 @@
                       </semantic-search-result-context>
                     {{else}}
                       [[!-- list view --]]
-                      <semantic-query query=' SELECT DISTINCT ?resourceConfig
+                      <semantic-query query=' SELECT DISTINCT ?resourceConfig 
                                                               ?columnTitle1 ?columnTitle2 ?columnTitle3 ?columnTitle4
                                                               ?columnContentType1 ?columnContentType2 ?columnContentType3 ?columnContentType4
                                                               ?columnContentSparqlPattern1 ?columnContentSparqlPattern2 ?columnContentSparqlPattern3 ?columnContentSparqlPattern4 
                                               WHERE {
                                                 BIND(<[[urlParam "resourceconfig" escape=false]]> as ?resourceConfig)
+                                          
                                                 ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_listView_column> ?customListViewColumn .
-
                                                 OPTIONAL {
                                                   ?customListViewColumn <http://www.researchspace.org/pattern/system/resource_search_listView_column/order> "1" .
                                                   ?customListViewColumn <http://www.researchspace.org/pattern/system/resource_search_listView_column/title> ?columnTitle1 .
@@ -506,9 +497,9 @@
 
                                             query='SELECT DISTINCT ?subject ?iri ?description WHERE {
                                                     BIND(?subject as ?iri) .
-                                                    ?subject a ?type .
-                                                    ?type rdfs:label ?typeLabel .
-                                                    FILTER (lang(?typeLabel) = "en")
+                                                    #?subject a ?type .
+                                                    #?type rdfs:label ?typeLabel .
+                                                    #FILTER (lang(?typeLabel) = "en")
 
                                                     OPTIONAL {
                                                       ?subject crm:P67i_is_referred_to_by ?information_object  .
@@ -559,21 +550,12 @@
                                           {{else}}
                                             <mp-resource-thumbnail iri='{{iri.value}}' class='table-thumbnail-container'>
                                                 <mp-resource-thumbnail-fallback>
-                                                  <semantic-query query='SELECT DISTINCT ?resourceIcon WHERE {
-                                                                          <{{bindings.0.resourceConfig.value}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .
-                                                                        } LIMIT 1'
-                                                                  template='{{> resourceIcon}}'
-                                                                  no-result-template='{{> noResults}}'>
-                                                                  
-                                                      <template id='resourceIcon'>
-                                                        <rs-icon icon-type="rounded" icon-name="{{bindings.0.resourceIcon.value}}" symbol=true class='table-thumbnail-fallback-icon'></rs-icon>
-                                                      </template>
-
-                                                      <template id="noResults">
-                                                        <rs-icon icon-type="rounded" icon-name="image" symbol=true class='table-thumbnail-fallback-icon'></rs-icon>
-                                                      </template>
-                                                  </semantic-query>
-                                                  
+                                                [[#if (urlParam 'resourceicon' escape=false) ]]
+                                                  <rs-icon icon-type="rounded" icon-name="[[urlParam 'resourceicon' escape=false]]" symbol=true class='table-thumbnail-fallback-icon'></rs-icon>
+                                                [[else]]
+                                                  <rs-icon icon-type="rounded" icon-name="image" symbol=true class='table-thumbnail-fallback-icon'></rs-icon>
+                                                [[/if]] 
+                                                
                                                 </mp-resource-thumbnail-fallback>
                                             </mp-resource-thumbnail>
                                           {{/if}}          
@@ -839,10 +821,7 @@
                                             query='SELECT DISTINCT ?subject ?iri ?description ?resourceConfig WHERE {
                                                     BIND(?subject as ?iri) .
                                                     BIND(<[[urlParam "resourceconfig" escape=false]]> as ?resourceConfig) .
-                                                    ?subject a ?type .
-                                                    ?type rdfs:label ?typeLabel .
-                                                    FILTER (lang(?typeLabel) = "en")
-
+                                                    
                                                     OPTIONAL {
                                                       ?subject crm:P67i_is_referred_to_by ?information_object  .
                                                       ?information_object a crm:E73_Information_Object .
@@ -852,7 +831,7 @@
                                                   } ORDER BY ?subject'
     
                                             options='{"showFilter":false, 
-                                                      "resultsPerPage":100,
+                                                      "resultsPerPage":50,
                                                       "useFixedHeader":true
                                                     }' 
                                             column-configuration='[
@@ -867,6 +846,7 @@
                                 [[#if (hasPermission "forms:ldp:*")]]
                                   <div class=''>
                                     <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
+
                                   </div>
                                 [[/if]]
                               </template>
@@ -890,21 +870,11 @@
                                           {{else}}
                                             <mp-resource-thumbnail iri='{{iri.value}}' class='table-thumbnail-container'>
                                                 <mp-resource-thumbnail-fallback>
-                                                  <semantic-query query='SELECT DISTINCT ?resourceIcon WHERE {
-                                                                          <{{resourceConfig.value}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .
-                                                                        } LIMIT 1'
-                                                                  template='{{> resourceIcon}}'
-                                                                  no-result-template='{{> noResults}}'>
-
-                                                      <template id='resourceIcon'>
-                                                        <rs-icon icon-type="rounded" icon-name="{{bindings.0.resourceIcon.value}}" symbol=true class='table-thumbnail-fallback-icon'></rs-icon>
-                                                      </template>
-
-                                                      <template id="noResults">
-                                                        <rs-icon icon-type="rounded" icon-name="image" symbol=true class='table-thumbnail-fallback-icon'></rs-icon>
-                                                      </template>
-                                                  </semantic-query>
-                                                  
+                                                [[#if (urlParam 'resourceicon' escape=false) ]]
+                                                  <rs-icon icon-type="rounded" icon-name="[[urlParam 'resourceicon' escape=false]]" symbol=true class='table-thumbnail-fallback-icon'></rs-icon>
+                                                [[else]]
+                                                  <rs-icon icon-type="rounded" icon-name="image" symbol=true class='table-thumbnail-fallback-icon'></rs-icon>
+                                                [[/if]]
                                                 </mp-resource-thumbnail-fallback>
                                             </mp-resource-thumbnail>
                                           {{/if}}              

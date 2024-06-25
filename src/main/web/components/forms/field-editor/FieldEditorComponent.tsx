@@ -261,8 +261,7 @@ class FieldEditorComponent extends Component<Props, State> {
     };
     return D.div(
       {},
-      D.div(
-        {style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
+      D.div({style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
         D.div( {}, 
         this.isEditMode() ? 
           D.div ({ className: 'page__section-container__label-tab', style: {   } },'Knowledge pattern details') : 
@@ -273,14 +272,14 @@ class FieldEditorComponent extends Component<Props, State> {
       D.div({className: 'page__section-container'}, 
         row({
           label: 'Label *',
-          expanded: this.state.label.length > 0,
+          expanded: this.state.label.length>0,
           expandOnMount: true,
           onExpand: () => addLabel(),
           element: [
             this.state.label.map((label, index) => this.renderLabel(label, index, langOptions)),
             Boolean(lang) ? 
-            D.button ({className:'btn btn-secondary btn-textAndIcon', onClick: () => addLabel()},
-                D.i ({className: 'material-icons-round'}, 'add_box'),
+            D.button ({className:'btn btn-secondary btn-textAndIcon', key:'button_class', onClick: () => addLabel()},
+                D.i ({className: 'material-icons-round', key:'italics_icons'}, 'add_box'),
                 D.span ({}, 'Label')
               ) : null,
           ],
@@ -291,7 +290,7 @@ class FieldEditorComponent extends Component<Props, State> {
           expandOnMount: true,
           onExpand: () => this.updateValues({ id: empty }, Validation.validateIri),
           error: this.state.id.map((v) => v.error).getOrElse(undefined),
-          element: D.div({ className: 'inputAndButton-wrapper' }, [
+          element: D.div({ className: 'inputAndButton-wrapper' }, 
             input({
               className: block('iri-input').toString(),
               type: 'text',
@@ -316,11 +315,11 @@ class FieldEditorComponent extends Component<Props, State> {
                     }) 
                   )
             ),
-          ]),
+          ),
         }),
         row({
           label: 'Description',
-          expanded: true,
+          expanded: this.state.description.isJust,
           onExpand: () => this.updateValues({ description: empty }),
           onCollapse: () => this.updateValues({ description: nothing }),
           element: textarea({
@@ -691,8 +690,8 @@ class FieldEditorComponent extends Component<Props, State> {
           error ? D.div({ className: block('error').toString() }, error.message) : null,
         ]),
         showAddButton ? 
-        D.button ({className:'btn btn-secondary btn-textAndIcon', onClick: onAdd},
-              D.i ({className: 'material-icons-round'}, 'add_box'),
+        D.button ({className:'btn btn-secondary btn-textAndIcon', key:'multiple_values_button', onClick: onAdd},
+              D.i ({className: 'material-icons-round',key:'italics_multiple_values_button'}, 'add_box'),
               D.span ({}, addButtonLabel)
             ) : null,
       ],
@@ -723,7 +722,7 @@ class FieldEditorComponent extends Component<Props, State> {
 
   private updateState(update: Partial<State>) {
     const newState = { ...this.state, ...update };
-    const errors = Validation.collectStateErrors(newState);
+    const errors = Validation.collectStateErrors(newState); 
     this.setState({ ...update, isValid: errors.length === 0 });
   }
 

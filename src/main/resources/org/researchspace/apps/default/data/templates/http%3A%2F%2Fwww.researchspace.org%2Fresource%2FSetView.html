@@ -11,54 +11,60 @@
 
   <div class='set-management__item-actions' style='margin-left: auto;'>
 
-    <bs-dropdown-button pull-right=true bs-style='link' title=''
-                        id='set-actions-{{iri.value}}'>
+    <bs-dropdown  pull-right=true 
+                  class="dropdown-no-caret"
+                  id='set-actions-{{iri.value}}'>
 
-      
-    [[#if (hasPermission "forms:ldp:*")]]
-      <mp-set-management-action-rename-set>
-        <bs-menu-item event-key='rename'>
-          <rs-icon icon-type="rounded" icon-name="drive_file_rename_outline" class="icon-left" symbol="true"></rs-icon>
-            Rename
-          </bs-menu-item>
-      </mp-set-management-action-rename-set>
-      
-      <mp-set-management-action-remove-set show-confirmation="false" remove-from-view="true">
-        <bs-menu-item event-key='remove'>
-          <rs-icon icon-type="rounded" icon-name="disabled_by_default" class="icon-left" symbol="true"></rs-icon>
-          <span id="all">Remove from view</span>
-        </bs-menu-item>
-      </mp-set-management-action-remove-set>
-
-      <hr>
-    [[/if]]
-
-      <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames' 
-                                    urlqueryparam-view='knowledge-map' 
-                                    urlqueryparam-resource='{{iri.value}}'>
-          <bs-menu-item class='set-action__km-navigate' event-key=km>
-            <rs-icon icon-type="rounded" icon-name="hub" class="icon-left" symbol="true"></rs-icon>Open in Knowledge map</bs-menu-item>
-      </semantic-link-container>
-      
-      <mp-event-trigger id='set-action__km-add-frame' 
-                        type='Dashboard.AddFrame' 
-                        data='{"resourceIri": "{{iri.value}}", "viewId": "knowledge-map"}' 
-                        targets='["thinking-frames"]'>
-        <bs-menu-item class='set-action__km-add-frame' event-key=km-frame>
-          <rs-icon icon-type="rounded" icon-name="hub" class="icon-left" symbol="true"></rs-icon>Open in Knowledge map</bs-menu-item>
-      </mp-event-trigger>
-
+    <bs-dropdown-toggle class="button-clipboard-folder-actions no-active-bg">
+      <rs-icon icon-type="round" icon-name="more_vert"></rs-icon>
+    </bs-dropdown-toggle>
+     
+    <bs-dropdown-menu>
       [[#if (hasPermission "forms:ldp:*")]]
-
-        <hr>
-        <mp-set-management-action-remove-set>
+        <mp-set-management-action-rename-set>
+          <bs-menu-item event-key='rename'>
+            <rs-icon icon-type="rounded" icon-name="drive_file_rename_outline" class="icon-left" symbol="true"></rs-icon>
+              Rename
+            </bs-menu-item>
+        </mp-set-management-action-rename-set>
+        
+        <mp-set-management-action-remove-set show-confirmation="false" remove-from-view="true">
           <bs-menu-item event-key='remove'>
-            <rs-icon icon-type="rounded" icon-name="delete" class="icon-left" symbol="true"></rs-icon>
-            Delete
+            <rs-icon icon-type="rounded" icon-name="disabled_by_default" class="icon-left" symbol="true"></rs-icon>
+            <span id="all">Remove from clipboard</span>
           </bs-menu-item>
         </mp-set-management-action-remove-set>
+
+        <hr>
       [[/if]]
-    </bs-dropdown-button>
+
+        <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames' 
+                                      urlqueryparam-view='knowledge-map' 
+                                      urlqueryparam-resource='{{iri.value}}'>
+            <bs-menu-item class='set-action__km-navigate' event-key=km>
+              <rs-icon icon-type="rounded" icon-name="hub" class="icon-left" symbol="true"></rs-icon>Open in Knowledge map</bs-menu-item>
+        </semantic-link-container>
+        
+        <mp-event-trigger id='set-action__km-add-frame' 
+                          type='Dashboard.AddFrame' 
+                          data='{"resourceIri": "{{iri.value}}", "viewId": "knowledge-map"}' 
+                          targets='["thinking-frames"]'>
+          <bs-menu-item class='set-action__km-add-frame' event-key=km-frame>
+            <rs-icon icon-type="rounded" icon-name="hub" class="icon-left" symbol="true"></rs-icon>Open in Knowledge map</bs-menu-item>
+        </mp-event-trigger>
+
+        [[#if (hasPermission "forms:ldp:*")]]
+          <hr>
+          <mp-set-management-action-remove-set>
+            <bs-menu-item event-key='remove'>
+              <rs-icon icon-type="rounded" icon-name="delete" class="icon-left" symbol="true"></rs-icon>
+              Delete
+            </bs-menu-item>
+          </mp-set-management-action-remove-set>
+        [[/if]]
+      </bs-dropdown-menu>
+      
+    </bs-dropdown>
     
   </div>
 </div>

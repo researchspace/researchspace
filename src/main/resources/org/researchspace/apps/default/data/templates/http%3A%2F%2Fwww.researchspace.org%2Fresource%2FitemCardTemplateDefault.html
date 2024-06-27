@@ -22,28 +22,27 @@
     {{#if props.[http://www.researchspace.org/ontology/PX_has_video]}}
       <iframe src='{{props.[http://www.researchspace.org/ontology/PX_has_video].values.0.value}}' frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     
-      {{else if props.[http://www.researchspace.org/pattern/system/image_annotation/area_of_image]}}
-        <rs-iiif-image-thumbnail height='480' width='640' style='height: 100%; width: 100%;'
-          image-or-region='{{props.[http://www.researchspace.org/pattern/system/image_annotation/area_of_image].values.0.value}}' 
-          bbox='{{props.[http://www.researchspace.org/pattern/system/image_annotation/boundingBox].values.0.value}}'
-          viewport='{{props.[http://www.researchspace.org/pattern/system/image_annotation/viewport].values.0.value}}'
-          svg='{{props.[http://www.w3.org/1999/02/22-rdf-syntax-ns#value].values.0.value}}'
+    {{else if props.[http://www.researchspace.org/pattern/system/image_annotation/area_of_image]}}
+      <rs-iiif-image-thumbnail height='480' width='640' style='height: 100%; width: 100%;'
+        image-or-region='{{props.[http://www.researchspace.org/pattern/system/image_annotation/area_of_image].values.0.value}}' 
+        bbox='{{props.[http://www.researchspace.org/pattern/system/image_annotation/boundingBox].values.0.value}}'
+        viewport='{{props.[http://www.researchspace.org/pattern/system/image_annotation/viewport].values.0.value}}'
+        svg='{{props.[http://www.w3.org/1999/02/22-rdf-syntax-ns#value].values.0.value}}'
 
-          [[> rsp:IIIFConfig]]
-        >
-        </rs-iiif-image-thumbnail>
+        [[> rsp:IIIFConfig]]
+      >
+      </rs-iiif-image-thumbnail>
 
     {{else if imgUrl}}
-
-        <mp-resource-thumbnail fixed-key='image-{{imgUrl}}' iri='{{imgUrl}}' class='rs-default-card__img'>
-          <mp-resource-thumbnail-fallback>
-            <mp-resource-thumbnail iri='{{iri}}' class='rs-default-card__img'>
-                <mp-resource-thumbnail-fallback>
-                  <span class="rs-icon {{getValueByKey typeToImage allTypes 'rs-icon-entity_no-image'}} {{getValueByKey entityIconColor allTypes 'rs-icon-entity_no-image'}}"></span>
-                </mp-resource-thumbnail-fallback>
-            </mp-resource-thumbnail>
-          </mp-resource-thumbnail-fallback>
-        </mp-resource-thumbnail>
+      <mp-resource-thumbnail fixed-key='image-{{imgUrl}}' iri='{{imgUrl}}' class='rs-default-card__img'>
+        <mp-resource-thumbnail-fallback>
+          <mp-resource-thumbnail iri='{{iri}}' class='rs-default-card__img'>
+              <mp-resource-thumbnail-fallback>
+                <span class="rs-icon {{getValueByKey typeToImage allTypes 'rs-icon-entity_no-image'}} {{getValueByKey entityIconColor allTypes 'rs-icon-entity_no-image'}}"></span>
+              </mp-resource-thumbnail-fallback>
+          </mp-resource-thumbnail>
+        </mp-resource-thumbnail-fallback>
+      </mp-resource-thumbnail>
 
     {{else}}
 
@@ -55,14 +54,13 @@
         </rs-iiif-image-thumbnail>
 
       {{else if (hasKey allTypes "http://www.researchspace.org/ontology/EX_Digital_Image")}}
-            <mp-resource-thumbnail iri='{{iri}}' class='rs-default-card__img'>
-                <mp-resource-thumbnail-fallback>
-                  <span class="rs-icon {{getValueByKey typeToImage allTypes 'rs-icon-entity_no-image'}} {{getValueByKey entityIconColor allTypes 'rs-entity-icon-thing'}}"></span>
-                </mp-resource-thumbnail-fallback>
-            </mp-resource-thumbnail>
-
+        <mp-resource-thumbnail iri='{{iri}}' class='rs-default-card__img'>
+            <mp-resource-thumbnail-fallback>
+              <span class="rs-icon {{getValueByKey typeToImage allTypes 'rs-icon-entity_no-image'}} {{getValueByKey entityIconColor allTypes 'rs-entity-icon-thing'}}"></span>
+            </mp-resource-thumbnail-fallback>
+        </mp-resource-thumbnail>
       {{else}}
-      <span class="rs-icon {{getValueByKey typeToImage allTypes 'rs-icon-entity_no-image'}} {{getValueByKey entityIconColor allTypes 'rs-entity-icon-thing'}}"></span>
+        <span class="rs-icon {{getValueByKey typeToImage allTypes 'rs-icon-entity_no-image'}} {{getValueByKey entityIconColor allTypes 'rs-entity-icon-thing'}}"></span>
       {{/if}}
 
     {{/if}}

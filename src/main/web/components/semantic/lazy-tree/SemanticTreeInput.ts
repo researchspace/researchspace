@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ReactElement, createElement, ReactNode, Children, Props as ReactProps } from 'react';
+import {ReactElement, createElement, ReactNode, Children, Props as ReactProps } from 'react';
 import * as D from 'react-dom-factories';
 import { findDOMNode } from 'react-dom';
 import * as Kefir from 'kefir';
@@ -44,7 +44,7 @@ import { TreeNode, ForestChange, queryMoreChildren } from './NodeModel';
 import { Node, SparqlNodeModel, sealLazyExpanding } from './SparqlNodeModel';
 import { LazyTreeSelector, LazyTreeSelectorProps } from './LazyTreeSelector';
 import { ItemSelectionChanged } from './SemanticTreeInputEvents';
-import { navigateToResource } from 'platform/api/navigation';
+// import { navigateToResource } from 'platform/api/navigation';
 
 import * as styles from './SemanticTreeInput.scss';
 import {SelectLabel, SelectLabelProps} from "platform/components/ui/inputs/SelectLabel";
@@ -533,9 +533,9 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
       }
     }
 
-    const openResourceOnClick = this.props.openResourceOnClick ?? true
+    // const openResourceOnClick = this.props.openResourceOnClick ?? true
 
-    const { onSelectionClick } = this.props;
+    // const { onSelectionClick } = this.props;
     return createElement(
       SelectLabel,
       selectLabelProps,
@@ -547,13 +547,11 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
               key: item.iri.value,
               title: item.iri.value,
               onClick: () => {
-                if (openResourceOnClick) {
-                  const URI = new Rdf.Iri('http://www.researchspace.org/resource/ThinkingFrames')
-                  navigateToResource(URI, {resource: item.iri.value, view: 'resource-editor'}, this.context.semanticContext.repository ?? undefined);
-                } else {
-                  this.toggleDropdown()
-                }
-                onSelectionClick ? () => onSelectionClick(selection, item) : undefined
+                // if (openResourceOnClick) {
+                //   const URI = new Rdf.Iri('http://www.researchspace.org/resource/ThinkingFrames')
+                //   navigateToResource(URI, {resource: item.iri.value, view: 'resource-editor'}, this.context.semanticContext.repository ?? undefined);
+                // }
+                // onSelectionClick ? () => onSelectionClick(selection, item) : undefined
               },
               onRemove: () => {
                 const previous = this.state.confirmedSelection;
@@ -648,6 +646,10 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
 /*           D.span({}, 'Filter'), */
           D.span({
             className: 'material-icons-round',
+            style: {
+              transform: `${this.state.mode.type === 'full' ? 'rotate(180deg)' : 'rotate(0deg)'}`,
+              transition: 'all 0.25s'
+            },
             ['aria-hidden' as any]: true,
           }, 'expand_more')
 

@@ -1,5 +1,5 @@
-<div  class="resource-card"
-      style="{{#if autosize}}{{else}}width:{{#if width}}{{width}}{{else}}160{{/if}}px; height:{{#if height}}{{height}}{{else}}200{{/if}}px; margin:{{#if cardMargin}}{{cardMargin}}{{else}}0{{/if}}px;{{/if}}">
+<div  class="resource-card {{#if knowledgeMapCard}}resource-card__no-hover{{/if}}"
+      style="{{#if autosize}}{{else}}width:{{#if width}}{{width}}{{else}}155{{/if}}px; height:{{#if height}}{{height}}{{else}}200{{/if}}px; margin:{{#if cardMargin}}{{cardMargin}}{{else}}0{{/if}}px;{{/if}}">
       [[!-- when autosize is set we don't set any fixed height and width, used in semantic narratives where user can resize the card --]]
 
   <div class="resource-card__header-actions">
@@ -9,16 +9,49 @@
       {{/if}}
     [[/if]]
     <div class="resource-card__buttons-container">
+
+      {{#if knowledgeMapCard}}
+        <button type="button"  name='edit' class="rbtn btn-default resource-card__button" title="Edit">
+          <rs-icon icon-type="round" icon-name="edit"></rs-icon>
+        </button>
+      {{/if}}
+  
+      {{#if (or narrativeCard knowledgeMapCard)}}
+        <mp-draggable iri='{{iri}}'>
+          <button type="button" class="btn btn-default resource-card__button" title="Drag item {{#if knowledgeMapCard}}outside the map{{/if}}">
+            <rs-icon icon-type="rounded" icon-name="drag_pan" symbol="true"></rs-icon>
+          </button>
+        </mp-draggable>
+      {{/if}}
+
       {{> rsp:ResourceDropdownActions viewId=viewId
                                       iri=iri
                                       resourceConfig=resourceConfig
                                       resourceLabel=resourceLabel
                                       cardButton=true
       }}
+
+      {{#if clipboardCard}}
+        {{#if isSetItem}}
+          <mp-anonymous-hidden>
+            <mp-set-management-action-remove-set-item>
+              <button type="button" class="btn btn-default resource-card__button" title="Remove from clipboard">
+                <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
+              </button>
+            </mp-set-management-action-remove-set-item>
+          </mp-anonymous-hidden>
+        {{/if}}
+      {{else if cardInDragAndDropInput}}
+        <mp-event-trigger type='Form.DragAndDropInput.RemoveItem' targets='["{{inputId}}"]' data='{"iri": "{{iri}}"}'>
+          <button type="button" class="btn btn-default resource-card__button" title="Remove">
+            <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
+          </button>
+        </mp-event-trigger>
+      {{/if}}
     </div>
   </div>
 
-  <div class="resource-card__media-container">
+  <div class="resource-card__media-container" style="{{#if autosize}}height:auto{{/if}}">
 
     {{#switch resourceOntologyClass}}
 
@@ -84,9 +117,8 @@
     [[else]]
       <div class="resource-card__footer-type color-secondary-light text-font-size__xsmall">
         {{#if resourceLabel}}
-          {{resourceLabel}}
+          <span>{{resourceLabel}}</span>
         {{else}}
- 
           <semantic-query query='SELECT ?ontologyClassLabel WHERE {
                                     BIND(<{{iri}}> as ?resource)
                                     ?resource a ?ontologyClass .
@@ -97,7 +129,7 @@
                           template='{{> template}}'>
       
               <template id='template'>
-                {{bindings.0.ontologyClassLabel.value}}
+                <span>{{bindings.0.ontologyClassLabel.value}}</span>
               </template>
           </semantic-query>
         {{/if}}
@@ -126,13 +158,7 @@
         {{/if}}
       </div>
     [[/if]]
-  </div> 
-
-  [[!-- <div>{{resourceConfig}}</div>
-  <div>{{resourceIcon}}</div>
-  <div>{{resourceLabel}}</div>
-  <div>{{iri}}</div> --]]
-
+  </div>
 </div>
 
 [[#*inline "defaultCardIcon"]]

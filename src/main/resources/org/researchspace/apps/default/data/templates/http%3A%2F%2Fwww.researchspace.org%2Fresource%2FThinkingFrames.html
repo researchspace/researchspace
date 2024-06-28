@@ -4,8 +4,18 @@
     if node-templates is defined. This is a bug in ontodia. */
 
   .ontodia-overlayed-element  {
-    min-height: 234px;
-    min-width: 185px;
+    min-height: 200px;
+    min-width: 155px;
+  }
+
+  .ontodia-overlayed-element > div {
+    min-height: 200px;
+    min-width: 155px;
+  }
+
+  .ontodia-overlayed-element .resource-card {
+    min-height: 200px;
+    min-width: 155px;
   }
 
   .component-page-toolbar.btn-toolbar {
@@ -35,7 +45,7 @@
 
 <div class='page_100vh thinking-frames-page'>
   <rs-dashboard
-  [[!-- home-page-iri="http://www.researchspace.org/resource/Start" --]]
+    home-page-iri="http://www.researchspace.org/resource/Start"
 
     [[#if (urlParam "view")]]
       initial-view='{"view": "[[urlParam "view"]]", 
@@ -395,13 +405,17 @@
           {{#ifCond persisted "==" true}}
             <span class='set-management__set-item' style='padding: 10px'>
               {{#bind iri=iri.value}}
-              {{> rsp:itemCardTemplate width=135 height=175 footer-paddingY=7 footer-paddingX=8}}
+                {{> rsp:ResourceCard  iri=iri
+                                      viewId="setItem"
+                }}
               {{/bind}}
             </span>
             {{else}}
             <span class='set-management__set-item' style='opacity: 0.4; padding: 10px'>
               {{#bind iri=iri.value}}
-                {{> rsp:itemCardTemplate width=135 height=175 }}
+                {{> rsp:ResourceCard  iri=iri
+                                      viewId="setItem"
+                }}
               {{/bind}}          
             </span>
           {{/ifCond}}
@@ -418,93 +432,53 @@
       </style>
       
       <div style='flex: 1 1 0px; overflow: auto;'>
-        <semantic-map
-          tuple-template='{{>popover}}'
-          query='
-            SELECT DISTINCT ?wkt ?place ?color WHERE {
-              {
-               <{{iri}}> crm:P168_place_is_defined_by ?wkt .
-                BIND(<{{iri}}> AS ?place).
-                BIND(0 as ?order)
-              } UNION {
-                ?place crm:P89_falls_within* <{{iri}}> .
-                ?place crm:P168_place_is_defined_by ?wkt .
-                BIND(1 as ?order)
-              } UNION {
-                <{{iri}}> crm:P161i_is_spatial_projection_of/crm:P10i_contains/crm:P53i_is_former_or_current_location_of ?place .
-                ?place crm:P168_place_is_defined_by ?wkt .
-                BIND(true AS ?isBuilding)
-                BIND(2 as ?order)
-              }
-              BIND(IF(?isBuilding, "rgba(244, 224, 77, 0.7)", "rgba(56, 178, 194, 0.44)") AS ?color)
-            } ORDER BY ASC(?order)
-          '
-				>
+        <semantic-map tuple-template='{{>popover}}'
+                      query='SELECT DISTINCT ?wkt ?place ?color WHERE {
+                              {
+                              <{{iri}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
+                                ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
+                                ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
+                                BIND(<{{iri}}> AS ?place) .
+                                BIND(0 as ?order)
+                              } UNION {
+                                ?place crm:P89_falls_within* <{{iri}}> .
+                                ?place crm:P168_place_is_defined_by ?osm_geoCoordinates .
+                                ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
+                                ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
+                                BIND(1 as ?order)
+                              } UNION {
+                                <{{iri}}> crm:P161i_is_spatial_projection_of/crm:P10i_contains/crm:P53i_is_former_or_current_location_of ?place .
+                                ?place crm:P168_place_is_defined_by ?osm_geoCoordinates .
+                                ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
+                                ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
+                                BIND(true AS ?isBuilding)
+                                BIND(2 as ?order)
+                              }
+                              BIND(IF(?isBuilding, "rgba(244, 224, 77, 0.7)", "rgba(56, 178, 194, 0.44)") AS ?color)
+                            } ORDER BY ASC(?order)'>
 
-         <template id='popover'>
+            <template id='popover'>
+              <style>
+                .place-row {
+                  display: flex; 
+                  align-items: center;
+                  gap: 5px;
+                  flex-wrap: wrap;
+                  overflow: hidden;
+                }
+              </style>
 
-          <style>
-
-            .place-row {
-              display: flex; 
-              align-items: center;
-              justify-content:space-between;
-              flex-wrap: wrap;
-              overflow: hidden;
-              margin-bottom: 10px;
-            }
-
-            .text-underline {
-              text-decoration: underline;
-              cursor: pointer;
-            }
-
-          </style>
-
-            <div style="min-width:250px; font-size: 14.5px; overflow: hidden;">
-
-              <div class="place-row">
-                <div>Place: <semantic-link iri='{{place.value}}'></semantic-link></div>
-                <mp-event-trigger id='details-view-trigger' type='Component.TemplateUpdate'
-                                  data='{"iri": "{{place.value}}"}' targets='["details-view", "open-details-sidebar"]'>
-                  <div class="text-underline">details</div>
-                </mp-event-trigger>
+              <div style="min-width:250px; font-size: 13.5px; overflow: hidden;">
+                <div class="place-row">
+                  <div>Place:</div>
+                  <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                            urlqueryparam-view="resource-editor"
+                                            urlqueryparam-resource-iri='{{place.value}}'>
+                    <div><mp-label iri='{{place.value}}' style="text-decoration: underline; cursor: pointer; color:#396EFE;"></mp-label></div>
+                  </semantic-link-container>
+                </div>
               </div>
-
-              <semantic-query query='PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-                                      PREFIX rs: <http://www.researchspace.org/ontology/>
-                                      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-																			PREFIX crmsci: <http://www.cidoc-crm.org/cidoc-crm/CRMsci/>
-                                      SELECT ?place (count(?object) as ?count) WHERE {
-                                        BIND(<{{place.value}}> AS ?place)
-                                        ?object crmsci:O19i_was_object_found_by ?discovery.
-                                        ?discovery crmsci:O21_has_found_at ?place.
-                                        OPTIONAL {?object rs:PX_has_main_representation|crm:P138i_has_representation ?image.}
-                                        ?object rdfs:label ?objlabel.
-
-                                      } group by ?place'
-
-                                    template='{{> entitySearchforPlace}}'
-                >
-
-                        <template id="entitySearchforPlace">
-                          <div>
-                            {{#if bindings.0.place.value}}
-                              <mp-event-trigger id='set-action__reading-add-add-frame' type='Dashboard.AddFrame' 
-                                  data='{"resourceIri": "{{bindings.0.place.value}}", "viewId": "map-resource-search"}' 
-                                  targets='["thinking-frames"]'>
-                                <a class="text-underline">
-                                    Explore {{bindings.0.count.value}} related entities
-                                </a>
-                        		</mp-event-trigger>
-                            {{/if}}
-                          </div>
-                        </template>
-                </semantic-query>
-            </div>
-
-          </template>
-
+            </template>
         </semantic-map>
     	</div>
     </template>

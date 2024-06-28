@@ -120,17 +120,10 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
       </div>
     `,
     itemTemplate: `
-        {{#> rsp:itemCardTemplate width=125 height=165 cardMargin=4}}
-          {{#*inline "additionalActions"}}
-            <div class="rs-default-card__hover-icon">
-              <mp-event-trigger type='Form.DragAndDropInput.RemoveItem' targets='["{{inputId}}"]' data='{"iri": "{{iri}}"}'>
-                <button type="button" class="rs-button" title="Remove Value">
-                  <Icon iconType='round' iconName='cancel'/>
-                </button>
-              </mp-event-trigger>
-            </div>
-          {{/inline}}
-        {{/rsp:itemCardTemplate}}
+      {{> rsp:ResourceCard  iri=iri
+                            viewId="setItem"
+                            cardInDragAndDropInput=true
+      }}
     `
   }
 

@@ -1,0 +1,39 @@
+{{#if resourceConfig}}
+  {{> rsp:resourceCardTemplate}} 
+{{else}}
+  <semantic-query query='SELECT ?resourceOntologyClass ?resourceConfig ?resourceLabel ?resourceIcon WHERE {
+                          <{{iri}}> a ?resourceOntologyClass .
+                          ?resourceOntologyClass a owl:Class .
+
+                          OPTIONAL {
+                            ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
+                            ?resourceConfigWithP2 a <http://www.researchspace.org/resource/system/resource_configuration> .
+                            <{{iri}}> crm:P2_has_type ?resourceType . 
+                            ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceType .
+                            ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceLabel .
+                            OPTIONAL {?resourceConfigWithP2  <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .}
+                          }
+                          OPTIONAL {
+                            ?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
+                            ?resourceConfigWithoutP2 a <http://www.researchspace.org/resource/system/resource_configuration> .
+                            ?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceLabel .
+                            OPTIONAL{ ?resourceConfigWithoutP2  <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .}
+                          }
+
+                          BIND(COALESCE(?resourceConfigWithP2, ?resourceConfigWithP2, ?resourceConfigWithoutP2) AS ?resourceConfig)
+
+                      } LIMIT 1'
+      
+                template='{{> template}}'>
+
+    <template id='template'>
+      <div>
+        {{> rsp:resourceCardTemplate  resourceConfig=bindings.0.resourceConfig.value
+                                      resourceOntologyClass=bindings.0.resourceOntologyClass.value
+                                      resourceLabel=bindings.0.resourceLabel.value
+                                      resourceIcon=bindings.0.resourceIcon.value
+        }} 
+      </div>
+    </template>
+  </semantic-query>
+{{/if}}

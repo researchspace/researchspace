@@ -549,7 +549,9 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
               onClick: () => {
                 if (openResourceOnClick) {
                   const URI = new Rdf.Iri('http://www.researchspace.org/resource/ThinkingFrames')
-                  navigateToResource(URI, {resource: item.iri.value, view: 'resource-editor', openAsDragAndDrop : true}, this.context.semanticContext.repository ?? undefined);
+                  navigateToResource(URI, {resource: item.iri.value, view: 'resource-editor'}, this.context.semanticContext.repository ?? undefined);
+                } else {
+                  this.toggleDropdown()
                 }
                 onSelectionClick ? () => onSelectionClick(selection, item) : undefined
               },
@@ -750,9 +752,6 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
   }
 
   private renderDropdownFooter(mode: ExpandedMode) {
-    if (!this.props.multipleSelection) {
-      return null
-    }
     const enableSelectionSave = mode.selection !== this.state.confirmedSelection;
 
     return D.div(

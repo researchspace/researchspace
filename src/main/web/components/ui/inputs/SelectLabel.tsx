@@ -11,6 +11,22 @@ export interface SelectLabelProps extends InputHTMLAttributes<HTMLInputElement> 
 
 const CLASS_NAME = 'select-label';
 
+const ClickableArea = (props: React.HTMLProps<HTMLDivElement>) => {
+  const style = {
+    display: 'flex',
+    flex: 1,
+    alignItems: 'center',
+    height: '30px',
+    backgroundColor: 'pink'
+  }
+
+  return (
+    <div onClick={props.onClick} style={style}>
+      {props.children}
+    </div>
+  )
+}
+
 export class SelectLabel extends React.Component<SelectLabelProps> {
   static defaultProps: Partial<SelectLabelProps> = {
     defaultTitle: 'Select input',
@@ -31,10 +47,17 @@ export class SelectLabel extends React.Component<SelectLabelProps> {
     const hasNonEmptyAddon = Children.count(children) > 0;
 
     return (
-      <div className={groupClass} style={style} onClick={() => {
-        onClickHandler?.()
-      }}>
-        {hasNonEmptyAddon ? children : this.props.defaultTitle}
+      <div className={groupClass} style={style}>
+        {
+          hasNonEmptyAddon ? (
+            <>
+              {children}
+              <ClickableArea  onClick={() => {onClickHandler?.()} }/>
+            </>
+          ) : (
+            <ClickableArea  onClick={() => {onClickHandler?.()} }>{this.props.defaultTitle}</ClickableArea>
+          )
+        }
       </div>
     );
   }

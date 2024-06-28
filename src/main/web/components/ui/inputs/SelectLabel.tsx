@@ -16,8 +16,7 @@ const ClickableArea = (props: React.HTMLProps<HTMLDivElement>) => {
     display: 'flex',
     flex: 1,
     alignItems: 'center',
-    height: '30px',
-    backgroundColor: 'pink'
+    height: '30px'
   }
 
   return (

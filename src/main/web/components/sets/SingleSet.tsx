@@ -157,7 +157,7 @@ export class SingleSet extends Component<Props, ViewState> {
           const targetSet = ViewState.displayedSetIri(this.state);
           this.model.onDropItemToSet(iri, targetSet,this.props.id);
         }}
-        dropMessage={<span>Drop items here to add to set "{<ResourceLabel iri={this.props.openedSet} />}"</span>}
+        dropMessage={<span>Drop resource here to add to set "{<ResourceLabel iri={this.props.openedSet} />}"</span>}
       >
         {this.renderHeader()}
         {this.renderItems()}

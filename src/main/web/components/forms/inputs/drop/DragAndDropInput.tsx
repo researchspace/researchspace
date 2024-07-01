@@ -62,9 +62,9 @@ export interface DragAndDropInputProps extends MultipleValuesProps {
    *
    * @default
    * <div class='DragAndDropInput--placeholderContainer'>
-   *    Drop item here
+   *    Drop resource here
    *    {{#if canCreateNew}}
-   *      or click to create a new item
+   *      or click to create a new resource
    *    {{/if}}
    * </div>
    *
@@ -109,7 +109,7 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
   private cancelation = new Cancellation();
 
   static defaultProps: Partial<DragAndDropInputProps> = {
-    dropAreaTemplate: '<span>Drop item here to add it</span>',
+    dropAreaTemplate: '<span>Drop resource here</span>',
     placeholderItemTemplate: `
       <div class='DragAndDropInput--placeholderContainer'>
         <rs-icon icon-type="round" icon-name="upload_file"></rs-icon>

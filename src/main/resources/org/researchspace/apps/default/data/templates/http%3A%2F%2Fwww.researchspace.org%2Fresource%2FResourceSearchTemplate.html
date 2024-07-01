@@ -535,43 +535,46 @@
                               <template id='column1'>
                                 <div>
                                   <div style="display: flex; align-items: center; gap: 15px;">
-                         
-                                    <mp-overlay-dialog  id="[[urlParam 'viewid' escape=false]]-resource-preview-dialog"  
-                                                        type="modal" 
-                                                        bs-size="large">
-                                      <mp-overlay-dialog-trigger>
-                                        <div class="table-image-container">
-                                          {{#if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation")}}
-                                            <rs-iiif-image-thumbnail  height='40' width='45' style='height: 100%; width: 100%;'
-                                                                      image-or-region='{{iri.value}}'      
-                                                                      [[> rsp:IIIFConfig]]
-                                                                    >
-                                            </rs-iiif-image-thumbnail>
-                                          {{else}}
-                                            <mp-resource-thumbnail iri='{{iri.value}}' class='table-thumbnail-container'>
-                                                <mp-resource-thumbnail-fallback>
-                                                [[#if (urlParam 'resourceicon') ]]
-                                                  <rs-icon icon-type="rounded" icon-name="[[urlParam 'resourceicon' escape=true]]" symbol=true class='table-thumbnail-fallback-icon'></rs-icon>
-                                                [[else]]
-                                                  <rs-icon icon-type="rounded" icon-name="image" symbol=true class='table-thumbnail-fallback-icon'></rs-icon>
-                                                [[/if]] 
-                                                </mp-resource-thumbnail-fallback>
-                                            </mp-resource-thumbnail>
-                                          {{/if}}          
-                                        </div>          
-                                      </mp-overlay-dialog-trigger>
-                                      <mp-overlay-dialog-content>
-                                        <inline-template  template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
-                                                          options='{"resource": "{{iri.value}}", 
-                                                                    "resourceConfig": "{{bindings.0.resourceConfig.value}}", 
-                                                                    "resourceConfigLabel": "[[urlParam "resourcelabel" escape=false]]",
-                                                                    "resourceDescription": "{{description.value}}",
-                                                                    "modalId": "[[urlParam "viewid" escape=false]]-resource-preview-dialog",
-                                                                    "resourceDetailSection": true
-                                                                  }' >
-                                        </inline-template> 
-                                      </mp-overlay-dialog-content>
-                                    </mp-overlay-dialog>
+                                    <mp-draggable iri='{{iri.value}}'>
+                                      <mp-overlay-dialog  id="[[urlParam 'viewid' escape=false]]-resource-preview-dialog"  
+                                                          type="modal" 
+                                                          bs-size="large">
+                                        <mp-overlay-dialog-trigger>
+                                          <div class="table-image-container">
+                                            {{#if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation")}}
+                                              <rs-iiif-image-thumbnail  height='40' width='45' style='height: 100%; width: 100%;'
+                                                                        image-or-region='{{iri.value}}'      
+                                                                        [[> rsp:IIIFConfig]]
+                                                                      >
+                                              </rs-iiif-image-thumbnail>
+                                            {{else}}
+                                              <mp-resource-thumbnail iri='{{iri.value}}' class='table-thumbnail-container'>
+                                                  <mp-resource-thumbnail-fallback>
+                                                    <mp-draggable iri='{{iri.value}}'>
+                                                      [[#if (urlParam 'resourceicon') ]]
+                                                        <rs-icon icon-type="rounded" icon-name="[[urlParam 'resourceicon' escape=true]]" symbol=true class='table-thumbnail-fallback-icon'></rs-icon>
+                                                      [[else]]
+                                                        <rs-icon icon-type="rounded" icon-name="image" symbol=true class='table-thumbnail-fallback-icon'></rs-icon>
+                                                      [[/if]] 
+                                                    </mp-draggable>
+                                                  </mp-resource-thumbnail-fallback>
+                                              </mp-resource-thumbnail>
+                                            {{/if}}          
+                                          </div>          
+                                        </mp-overlay-dialog-trigger>
+                                        <mp-overlay-dialog-content>
+                                          <inline-template  template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
+                                                            options='{"resource": "{{iri.value}}", 
+                                                                      "resourceConfig": "{{bindings.0.resourceConfig.value}}", 
+                                                                      "resourceConfigLabel": "[[urlParam "resourcelabel" escape=false]]",
+                                                                      "resourceDescription": "{{description.value}}",
+                                                                      "modalId": "[[urlParam "viewid" escape=false]]-resource-preview-dialog",
+                                                                      "resourceDetailSection": true
+                                                                    }' >
+                                          </inline-template> 
+                                        </mp-overlay-dialog-content>
+                                      </mp-overlay-dialog>
+                                    </mp-draggable>
 
                                     {{#if bindings.0.columnContentSparqlPattern1.value}}
                                       <semantic-query query='SELECT ?item ?label ?itemIri WHERE {
@@ -621,24 +624,32 @@
 
                                         <template id="noResults">
                                           <div>
-                                            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                            urlqueryparam-view="resource-editor"
-                                                            urlqueryparam-resource-iri='{{iri.value}}'
-                                                            style="font-weight: 600;">
-                                              <mp-label iri='{{iri.value}}' class="text-link"></mp-label>
-                                            </semantic-link>
+                                            <mp-draggable iri='{{iri.value}}'>
+                                              <div>
+                                                <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                urlqueryparam-view="resource-editor"
+                                                                urlqueryparam-resource-iri='{{iri.value}}'
+                                                                style="font-weight: 600;">
+                                                  <mp-label iri='{{iri.value}}' class="text-link"></mp-label>
+                                                </semantic-link>
+                                              </div>
+                                            </mp-draggable>
                                             <div class="color-secondary-light text-font-size__xsmall">[[urlParam "resourcelabel" escape=false]]</div>
                                           </div>
                                         </template>
                                       </semantic-query>
                                     {{else}}
                                       <div>
-                                        <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                        urlqueryparam-view="resource-editor"
-                                                        urlqueryparam-resource-iri='{{iri.value}}'
-                                                        style="font-weight: 600;">
-                                          <mp-label iri='{{iri.value}}' class="text-link"></mp-label>
-                                        </semantic-link>
+                                        <mp-draggable iri='{{iri.value}}'>
+                                          <div>
+                                            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                            urlqueryparam-view="resource-editor"
+                                                            urlqueryparam-resource-iri='{{iri.value}}'
+                                                            style="font-weight: 600;">
+                                              <mp-label iri='{{iri.value}}' class="text-link"></mp-label>
+                                            </semantic-link>
+                                          </div>
+                                        </mp-draggable>
                                         <div class="color-secondary-light text-font-size__xsmall">[[urlParam "resourcelabel" escape=false]]</div>
                                       </div>
                                     {{/if}}
@@ -854,64 +865,71 @@
                               <template id='column1'>
                                 <div>
                                   <div style="display: flex; align-items: center; gap: 15px;">                                 
+                                    <mp-draggable iri='{{iri.value}}'>
+                                      <mp-overlay-dialog  id="[[urlParam 'viewid' escape=false]]-resource-preview-dialog"  
+                                                          type="modal" 
+                                                          class="modal-xlSize preview_modal"
+                                                          title="Preview">
+                                        <mp-overlay-dialog-trigger>
+                                          <div class="table-image-container">
+                                            {{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation")}}
+                                              <rs-iiif-image-thumbnail  height='40' width='45' style='height: 100%; width: 100%;'
+                                                                        image-or-region='{{iri.value}}'      
+                                                                        [[> rsp:IIIFConfig]]
+                                                                      >
+                                              </rs-iiif-image-thumbnail>
+                                            {{else}}
+                                              <mp-resource-thumbnail iri='{{iri.value}}' class='table-thumbnail-container'>
+                                                  <mp-resource-thumbnail-fallback>
+                                                    <mp-draggable iri='{{iri.value}}'>
+                                                      [[#if (urlParam 'resourceicon') ]]
+                                                        <rs-icon icon-type="rounded" icon-name="[[urlParam 'resourceicon']]" symbol=true class='table-thumbnail-fallback-icon'></rs-icon>
+                                                      [[else]]
+                                                        <rs-icon icon-type="rounded" icon-name="image" symbol=true class='table-thumbnail-fallback-icon'></rs-icon>
+                                                      [[/if]]
+                                                    </mp-draggable>
+                                                  </mp-resource-thumbnail-fallback>
+                                              </mp-resource-thumbnail>
+                                            {{/if}}         
+                                          </div>
+                                        </mp-overlay-dialog-trigger>
+                                        <mp-overlay-dialog-content>
+                                          <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
+                                                          options='{"resource": "{{iri.value}}", 
+                                                                      "resourceConfig": "{{resourceConfig.value}}", 
+                                                                      "resourceConfigLabel": "[[urlParam "resourcelabel" escape=false]]",
+                                                                      "resourceDescription": "{{description.value}}",
+                                                                      "modalId": "[[urlParam "viewid" escape=false]]-resource-preview-dialog",
+                                                                      "resourceDetailSection": true
+                                                                      }' >
+                                          </inline-template> 
+                                        </mp-overlay-dialog-content>
+                                      </mp-overlay-dialog>
+                                    </mp-draggable>
 
-                                    <mp-overlay-dialog  id="[[urlParam 'viewid' escape=false]]-resource-preview-dialog"  
-                                                        type="modal" 
-                                                        class="modal-xlSize preview_modal"
-                                                        title="Preview">
-                                      <mp-overlay-dialog-trigger>
-                                        <div class="table-image-container">
-                                          {{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation")}}
-                                            <rs-iiif-image-thumbnail  height='40' width='45' style='height: 100%; width: 100%;'
-                                                                      image-or-region='{{iri.value}}'      
-                                                                      [[> rsp:IIIFConfig]]
-                                                                    >
-                                            </rs-iiif-image-thumbnail>
+                                    <div>
+                                      <mp-draggable iri='{{iri.value}}'>
+                                        <div>
+                                          {{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map")}}
+                                            <mp-event-trigger id='{{iri.value}}-open-km-title-trigger' 
+                                                              type='Dashboard.AddFrame'
+                                                              data='{"viewId":"knowledge-map", 
+                                                                      "resourceIri": "{{iri.value}}"}' 
+                                                              targets='["thinking-frames"]'>
+                                              <div><mp-label iri='{{iri.value}}' class="text-link"></mp-label></div>
+                                            </mp-event-trigger>
                                           {{else}}
-                                            <mp-resource-thumbnail iri='{{iri.value}}' class='table-thumbnail-container'>
-                                                <mp-resource-thumbnail-fallback>
-                                                [[#if (urlParam 'resourceicon') ]]
-                                                  <rs-icon icon-type="rounded" icon-name="[[urlParam 'resourceicon']]" symbol=true class='table-thumbnail-fallback-icon'></rs-icon>
-                                                [[else]]
-                                                  <rs-icon icon-type="rounded" icon-name="image" symbol=true class='table-thumbnail-fallback-icon'></rs-icon>
-                                                [[/if]]
-                                                </mp-resource-thumbnail-fallback>
-                                            </mp-resource-thumbnail>
-                                          {{/if}}              
+                                            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                            urlqueryparam-view='{{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}semantic-narrative{{else}}resource-editor{{/if}}'
+                                                            urlqueryparam-resource='{{iri.value}}'>
+                                              <mp-label iri='{{iri.value}}' class="text-link"></mp-label>
+                                            </semantic-link>
+                                          {{/if}}
                                         </div>
-                                      </mp-overlay-dialog-trigger>
-                                      <mp-overlay-dialog-content>
-                                        <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
-                                                         options='{"resource": "{{iri.value}}", 
-                                                                    "resourceConfig": "{{resourceConfig.value}}", 
-                                                                    "resourceConfigLabel": "[[urlParam "resourcelabel" escape=false]]",
-                                                                    "resourceDescription": "{{description.value}}",
-                                                                    "modalId": "[[urlParam "viewid" escape=false]]-resource-preview-dialog",
-                                                                    "resourceDetailSection": true
-                                                                    }' >
-                                        </inline-template> 
-                                      </mp-overlay-dialog-content>
-                                    </mp-overlay-dialog>
+                                      </mp-draggable>
 
-                                      <div>
-                                        {{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map")}}
-                                          <mp-event-trigger id='{{iri.value}}-open-km-title-trigger' 
-                                                            type='Dashboard.AddFrame'
-                                                            data='{"viewId":"knowledge-map", 
-                                                                    "resourceIri": "{{iri.value}}"}' 
-                                                            targets='["thinking-frames"]'>
-                                            <div><mp-label iri='{{iri.value}}' class="text-link"></mp-label></div>
-                                          </mp-event-trigger>
-                                        {{else}}
-                                          <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                          urlqueryparam-view='{{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}semantic-narrative{{else}}resource-editor{{/if}}'
-                                                          urlqueryparam-resource='{{iri.value}}'>
-                                            <mp-label iri='{{iri.value}}' class="text-link"></mp-label>
-                                          </semantic-link>
-                                        {{/if}}
-
-                                        <div class="color-secondary-light text-font-size__xsmall">[[urlParam "resourcelabel" escape=false]]</div>
-                                      </div>
+                                      <div class="color-secondary-light text-font-size__xsmall">[[urlParam "resourcelabel" escape=false]]</div>
+                                    </div>
                              
                                   </div>
                                 </div>

@@ -62,9 +62,9 @@ export interface DragAndDropInputProps extends MultipleValuesProps {
    *
    * @default
    * <div class='DragAndDropInput--placeholderContainer'>
-   *    Drop item here
+   *    Drop resource here
    *    {{#if canCreateNew}}
-   *      or click to create a new item
+   *      or click to create a new resource
    *    {{/if}}
    * </div>
    *
@@ -109,7 +109,7 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
   private cancelation = new Cancellation();
 
   static defaultProps: Partial<DragAndDropInputProps> = {
-    dropAreaTemplate: '<span>Drop item here to add it</span>',
+    dropAreaTemplate: '<span>Drop resource here</span>',
     placeholderItemTemplate: `
       <div class='DragAndDropInput--placeholderContainer'>
         <rs-icon icon-type="round" icon-name="upload_file"></rs-icon>
@@ -120,17 +120,10 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
       </div>
     `,
     itemTemplate: `
-        {{#> rsp:itemCardTemplate width=125 height=165 cardMargin=4 footer-paddingY=7 footer-paddingX=8}}
-          {{#*inline "additionalActions"}}
-            <div class="rs-default-card__hover-icon">
-              <mp-event-trigger type='Form.DragAndDropInput.RemoveItem' targets='["{{inputId}}"]' data='{"iri": "{{iri}}"}'>
-                <button type="button" class="rs-button" title="Remove Value">
-                  <Icon iconType='round' iconName='cancel'/>
-                </button>
-              </mp-event-trigger>
-            </div>
-          {{/inline}}
-        {{/rsp:itemCardTemplate}}
+      {{> rsp:ResourceCard  iri=iri
+                            viewId="setItem"
+                            cardInDragAndDropInput=true
+      }}
     `
   }
 

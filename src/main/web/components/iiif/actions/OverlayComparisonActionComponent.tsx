@@ -34,12 +34,13 @@ export default class OverlayComparisonActionComponent extends Component<AllImage
     types: ['http://www.researchspace.org/ontology/EX_Digital_Image'],
   };
   render() {
-    const { iiifServerUrl, imageIdPattern, selection, closeMenu, menuTitle, title, types, repositories } = this.props;
+    const { iiifServerUrl, imageIdPattern, selection, closeMenu, menuTitle, title, types, repositories, icon } = this.props;
     return (
       <TypedSelectionActionComponent
         repositories={repositories}
         menuTitle={menuTitle}
         title={title}
+        icon={icon}
         isDisabled={(selection) => selection.length !== 2}
         renderDialog={(selection) => (
           <OverlayComparison

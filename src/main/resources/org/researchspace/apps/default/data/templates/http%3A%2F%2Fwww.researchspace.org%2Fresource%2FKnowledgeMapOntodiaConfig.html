@@ -145,46 +145,14 @@ uses client-side templates:
 
 <template id="default">
   [[!-- Don't add any other explicit style here, only width and height, style is overriden by the resizable component in the KM --]]
-  <div class="rs-KM-card-container" style="width: 180px; height:230px">
-        {{#> rsp:itemCardTemplate autosize=true cardMargin=0}}
-          {{#*inline "customFooter"}}
-            <span class="text-s">{{label}}</span>
-          {{/inline}}
-
-          {{#*inline "additionalActions"}}
-            <mp-draggable iri='{{iri}}'>
-              <div class="rs-default-card__hover-icon">
-                  <button type="button" class="rs-button" title="Drag and drop the Item">
-                    <i class="rs-icon rs-icon-drag_arrow"></i>
-                  </button>
-              </div>
-            </mp-draggable>
-
-            [[#if (hasPermission "forms:ldp:*")]]
-              <div class="rs-default-card__hover-icon">
-                <button type="button" name='edit' class="rs-button" title="Edit">
-                  <rs-icon icon-type="round" icon-name="edit"></rs-icon>
-                </button>
-              </div>
-              <div class="rs-default-card__hover-icon">
-                <button type="button" name='delete' class="rs-button" title="Delete">
-                  <rs-icon icon-type="round" icon-name="delete"></rs-icon>
-                </button>
-              </div>
-            [[/if]]
-          {{/inline}}
-        {{/rsp:itemCardTemplate}}
-      {{#if isExpanded }}
-        {{#if props.[http://www.cidoc-crm.org/cidoc-crm/P3_has_note]}}
-            <div class="rs-card-note-container">
-              <div>
-                <span>Note: </span>
-                <span>{{props.[http://www.cidoc-crm.org/cidoc-crm/P3_has_note].values.0.value}}</span>
-              </div>
-            </div>
-        {{/if}}
-      {{/if}}
+  <div style="width: 155px; height:200px">
+    {{> rsp:ResourceCard  iri=iri
+            viewId="knowledgeMap"
+            autosize=true
+            knowledgeMapCard=true
+    }}
   </div>
+  
 </template>
 
 </[[#if standalone]]ontodia[[else]]rs-ontodia-panel[[/if]]>

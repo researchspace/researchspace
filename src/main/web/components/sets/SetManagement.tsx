@@ -162,9 +162,11 @@ export class SetManagement extends Component<Props, ViewState> {
         }}
         dropMessage={
           displayedSetIri ? (
-            <span>Drop items here to add to set "{<ResourceLabel iri={displayedSetIri.value} />}"</span>
+            // <span>Drop items here to add to set "{<ResourceLabel iri={displayedSetIri.value} />}"</span>
+            <span>Drop resource here</span>
           ) : (
-            <span>Drop items here to add to the default set</span>
+           // <span>Drop items here to add to the default set</span>
+           <span>Drop resource here</span>
           )
         }
       >

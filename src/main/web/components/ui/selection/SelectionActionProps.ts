@@ -27,6 +27,8 @@ export interface MenuProps {
    * Function that closes the menu
    */
   closeMenu: () => void;
+
+  icon?: string;
 }
 
 /**

@@ -74,7 +74,7 @@ export class AppUpload extends Component<{}, State> {
   private appendUploadMessage(message: string, uploadError?: any) {
     const RestartButton = (
       <RestartWrapper>
-        <Button bsStyle="action">Restart now</Button>
+        <Button bsStyle="default" className="btn-action">Restart now</Button>
       </RestartWrapper>
     );
     this.setState(

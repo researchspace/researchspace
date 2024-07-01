@@ -104,12 +104,12 @@ interface ParamMap {
  *
  * @example
  * 	 // fetching label automatically
- *   <semantic-link uri="http://xmlns.com/foaf/0.1/Person">
+ *   <semantic-link iri="http://xmlns.com/foaf/0.1/Person">
  *   </semantic-link>
  *
  * @example
  * 	 //  fetching no label, will render plain link
- *   <semantic-link uri="http://xmlns.com/foaf/0.1/Person" getlabel=false>
+ *   <semantic-link iri="http://xmlns.com/foaf/0.1/Person" getlabel=false>
  *   </semantic-link>
  */
 export class ResourceLinkComponent extends Component<ResourceLinkProps, State> {

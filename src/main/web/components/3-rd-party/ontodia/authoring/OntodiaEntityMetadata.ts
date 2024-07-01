@@ -103,6 +103,7 @@ export class OntodiaEntityMetadata extends React.Component<OntodiaEntityMetadata
         ?field <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.researchspace.org/resource/system/fields/Field>;
         <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/knowledge_map> .
       }`
+  static knowledgeMapCategoryKPs = OntodiaEntityMetadata.getFieldsIrisForDefaultCategory();
 
   static getRequiredFields(props: OntodiaEntityMetadataProps, ct: CancellationToken): Promise<Rdf.Iri[]> {
     const fieldIris: Rdf.Iri[] = [];
@@ -117,13 +118,13 @@ export class OntodiaEntityMetadata extends React.Component<OntodiaEntityMetadata
         fieldIris.push(Rdf.iri(otherField));
       }
     }
-    return Promise.all([Promise.resolve(fieldIris),OntodiaEntityMetadata.getFieldsIrisForCategory()]).
+    return Promise.all([Promise.resolve(fieldIris),Promise.resolve(this.knowledgeMapCategoryKPs)]).
             then(results => {
                 return [].concat(results[0],results[1]);
            });
   }
 
-  static getFieldsIrisForCategory(): Promise<Rdf.Iri[]> {    
+  static getFieldsIrisForDefaultCategory(): Promise<Rdf.Iri[]> {    
     return new Promise((resolve) => {
       SparqlClient.select(OntodiaEntityMetadata.SPARQL_QUERY)
       .onValue((fr) => { 

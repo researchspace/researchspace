@@ -42,7 +42,7 @@ export class NavigationConfirmationDialog extends React.Component<Props, {}> {
             <Button bsStyle="default" onClick={(e) => onConfirm(false)}>
               Stay
             </Button>
-            <Button bsStyle="action" onClick={(e) => onConfirm(true)}>
+            <Button bsStyle="default" className='btn-action' onClick={(e) => onConfirm(true)}>
               Leave
             </Button>
           </div>

@@ -83,12 +83,12 @@ export interface SemanticMapConfig {
   query: string;
 
   /**
-   * <semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> for marker popup. By default shows `<semantic-link>` to the resource with a short textual description
+   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> for marker popup. By default shows `<semantic-link>` to the resource with a short textual description
    */
   tupleTemplate?: string;
 
   /**
-   * <semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is applied when query returns no results
+   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is applied when query returns no results
    */
   noResultTemplate?: string;
 
@@ -136,7 +136,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
     if (_.isUndefined(props.link) === false) {
       defaultContent += `
-          <semantic-link uri="${props.link}"></semantic-link>
+          <semantic-link iri="${props.link}"></semantic-link>
           <p>${props.description}</p>
       `;
     }

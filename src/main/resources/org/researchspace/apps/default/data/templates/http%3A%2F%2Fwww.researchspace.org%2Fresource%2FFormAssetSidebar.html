@@ -67,7 +67,7 @@
                         <div>
                             <div class="form-tabs-subtabs-content--title">
                                 <h4>Audio</h4>
-                                <bs-nav bs-style="icon-tabs">
+                                <bs-nav class="icon-tabs">
                                     <bs-nav-item event-key="thumbnailView" title="thumbnail view">
                                         <rs-icon icon-type="round" icon-name="view_module"></rs-icon>
                                     </bs-nav-item>
@@ -102,7 +102,7 @@
                                                                                                                                                 urlqueryparam-open-as-drag-and-drop='true'
                                                                                                                                                 urlqueryparam-custom-label='Search Audio'
                                                                                                                                             >
-                                                                                                                        <rs-icon icon-type='round' icon-name='open_in_new' style='padding:0 8px 0 5px;' title='Open Audio Library in new draggable tab'></rs-icon>
+                                                                                                                        <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding:0 8px 0 5px;' title='Open Audio Library in new draggable tab'></rs-icon>
                                                                                                                     </semantic-link-container>
                                                                                                                     <span>or click to upload</span>
                                                                                                                 </div>
@@ -142,7 +142,7 @@
                             <div class="form-tabs-subtabs-content--title">
                                 <h4>Documents</h4>
                                 <div>
-                                    <bs-nav bs-style="icon-tabs">
+                                    <bs-nav class="icon-tabs">
                                         <bs-nav-item event-key="thumbnailView" title="thumbnail view">
                                             <rs-icon icon-type="round" icon-name="view_module"></rs-icon>
                                         </bs-nav-item>
@@ -178,7 +178,7 @@
                                                                                                                                                 urlqueryparam-open-as-drag-and-drop='true'
                                                                                                                                                 urlqueryparam-custom-label='Search Document'
                                                                                                                                             >
-                                                                                                                        <rs-icon icon-type='round' icon-name='open_in_new' style='padding:0 8px 0 5px;' title='Open Document Library in new draggable tab'></rs-icon>
+                                                                                                                        <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding:0 8px 0 5px;' title='Open Document Library in new draggable tab'></rs-icon>
                                                                                                                     </semantic-link-container>
                                                                                                                     <span>or click to upload</span>
                                                                                                                 </div>
@@ -231,9 +231,23 @@
 
                                             <template id='then'>
                                                 <div class="form-tabs-subtabs-content--title-actions">
-                                                    <button class="btn btn-icon" title="preview">
-                                                        <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
-                                                    </button>
+                                                    <mp-overlay-dialog  id="[[urlParam 'viewid' escape=false]]-resource-imagePreview-dialog"  
+                                                                        type="modal" 
+                                                                        class="modal-xlSize preview_modal"
+                                                                        title="Image preview">
+                                                        <mp-overlay-dialog-trigger>
+                                                            <button class="btn btn-icon" title="Image preview">
+                                                                <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
+                                                            </button>
+                                                        </mp-overlay-dialog-trigger>
+
+                                                        <mp-overlay-dialog-content>
+                                                            <inline-template template-iri='[[resolvePrefix "rsp:ResourceImagesPreview"]]' 
+                                                                            options='{  "resource": "{{node}}"
+                                                                                        }' >
+                                                            </inline-template> 
+                                                        </mp-overlay-dialog-content>
+                                                    </mp-overlay-dialog>
                     
                                                     <mp-event-trigger id='{{viewId}}-image-annotation-add-frame-trigger' 
                                                                         type='Dashboard.AddFrame' 
@@ -242,7 +256,7 @@
                                                                                 "objectIri": "{{node}}",
                                                                                 "frameId": "{{viewId}}"}' 
                                                                         targets='["thinking-frames"]'>
-                                                        <button class="btn btn-icon" title="View/Annotations">
+                                                        <button class="btn btn-icon" title="Image view/annotations">
                                                             <rs-icon icon-type="round" icon-name="photo_size_select_large"></rs-icon>
                                                         </button>
                                                     </mp-event-trigger>
@@ -251,7 +265,7 @@
                                         </semantic-if>
                                     {{/if}}
                                 
-                                    <bs-nav bs-style="icon-tabs">
+                                    <bs-nav class="icon-tabs">
                                         <bs-nav-item event-key="thumbnailView" title="thumbnail view">
                                             <rs-icon icon-type="round" icon-name="view_module"></rs-icon>
                                         </bs-nav-item>
@@ -285,7 +299,7 @@
                                                                                                                                                 urlqueryparam-open-as-drag-and-drop='true'
                                                                                                                                                 urlqueryparam-custom-label='Search Image'
                                                                                                                                                 >
-                                                                                                                        <rs-icon icon-type='round' icon-name='open_in_new' style='padding:0 8px 0 5px;' title='Open Image Library in new draggable tab'></rs-icon>
+                                                                                                                        <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding:0 8px 0 5px;' title='Open Image Library in new draggable tab'></rs-icon>
                                                                                                                     </semantic-link-container>
                                                                                                                     <span>or click to upload</span>
                                                                                                                 </div>
@@ -315,7 +329,7 @@
                                                                                                                                                 urlqueryparam-open-as-drag-and-drop='true'
                                                                                                                                                 urlqueryparam-custom-label='Search Image'
                                                                                                                                                 >
-                                                                                                                        <rs-icon icon-type='round' icon-name='open_in_new' style='padding:0 8px 0 5px;' title='Open Image Library in new draggable tab'></rs-icon>
+                                                                                                                        <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding:0 8px 0 5px;' title='Open Image Library in new draggable tab'></rs-icon>
                                                                                                                     </semantic-link-container>
                                                                                                                     <span>or click to upload</span>
                                                                                                                 </div>
@@ -363,8 +377,9 @@
 
                 [[#if map]]
                     <bs-tab-pane event-key="{{viewId}}-resourceForm-map" class="form-tabs-subtabs-content">
+                        
                         {{#if node}}
-                            <semantic-query query='SELECT ?place ?placeName ?osmURI WHERE {
+                            <semantic-query query='SELECT DISTINCT ?place ?placeName ?osmURI WHERE {
                                                     BIND(<{{node}}> AS ?place)
             
                                                     ?place crm:P129i_is_subject_of ?entityFormRecord .
@@ -386,8 +401,9 @@
                                                     # ?appellation a crm:E41_Appellation . 
                                                     ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                                     ?appellation crm:P190_has_symbolic_content ?placeName .
-                                                    }'
+                                                    } LIMIT 1'
                                             template='{{> template}}'
+                                            no-result-template='{{> noResults}}'
                             >
                                     
                                 <template id='template'>
@@ -396,11 +412,37 @@
                                             <h4>Map</h4>
                                             <div style="display: flex;align-items: center;gap: 20px;">
                                                 <div class="form-tabs-subtabs-content--title-actions">
-                                                    <button class="btn btn-icon" title="preview">
-                                                        <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
-                                                    </button>
+                                                     <mp-overlay-dialog  id="[[urlParam 'viewid' escape=false]]-resource-mapPreview-dialog"  
+                                                                        type="modal" 
+                                                                        class="modal-xlSize preview_modal"
+                                                                        title="Map preview">
+                                                        <mp-overlay-dialog-trigger>
+                                                            <button class="btn btn-icon" title="Map preview">
+                                                                <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
+                                                            </button>
+                                                        </mp-overlay-dialog-trigger>
+
+                                                        <mp-overlay-dialog-content>
+                                                            <inline-template template-iri='[[resolvePrefix "rsp:ResourceMapPreview"]]' 
+                                                                            options='{  "resource": "{{node}}",
+                                                                                        "placeName": "{{bindings.0.placeName.value}}",
+                                                                                        "osmURI": "{{bindings.0.osmURI.value}}"
+                                                                                        }' >
+                                                            </inline-template> 
+                                                        </mp-overlay-dialog-content>
+                                                    </mp-overlay-dialog>
+
+                                                    <semantic-link-container    uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                                                                urlqueryparam-view='map' 
+                                                                                urlqueryparam-resource='{{node}}'>
+                                                        <button class="btn btn-icon" title="Open map">
+                                                            <rs-icon icon-type="round" icon-name="place"></rs-icon>
+                                                        </button>
+                                                    </semantic-link-container>
                                                 </div>
                                             </div>
+
+                                            
                                         </div>
                                         <div style='height: 350px; width: 100%; margin: 10px 0 0;'>
                                             <semantic-map query='SELECT ?wkt WHERE { 
@@ -426,6 +468,13 @@
                                         </div>
                                     </div>
                                 </template>
+
+                                <template id="noResults">
+                                    <div class="form-tabs-subtabs-content--title">
+                                        <h4>Map</h4>
+                                    </div>
+                                    <div class="page__section-container-whiteBg" style="margin-top: 10px; font-size: 12.5px;">Enter the geographic coordinates (OpenStreetMap) to display the place map.</div>
+                                </template>
                             </semantic-query>
                         {{else}}
                             <div class="form-tabs-subtabs-content--title">
@@ -447,6 +496,8 @@
                                                                     {{/if}}'>
                                     </semantic-map>
                                 </div>
+                            {{else}}
+                                <div>Enter Geographic coordinates (OpenStreetMap) to display the place map</div>
                             {{/if}}
                             
                             {{#if apiResourceURI}}
@@ -456,9 +507,6 @@
                                 </div>
                             {{/if}}
                         {{/if}}
-                        
-
-
                     </bs-tab-pane>
                 [[/if]]
 
@@ -468,7 +516,7 @@
                             <div class="form-tabs-subtabs-content--title">
                                 <h4>3D models</h4>
                                 <div style="display: flex;align-items: center;gap: 20px;">
-                                    <bs-nav bs-style="icon-tabs">
+                                    <bs-nav class="icon-tabs">
                                         <bs-nav-item event-key="thumbnailView" title="thumbnail view">
                                             <rs-icon icon-type="round" icon-name="view_module"></rs-icon>
                                         </bs-nav-item>
@@ -504,7 +552,7 @@
                                                                                                                                                 urlqueryparam-open-as-drag-and-drop='true'
                                                                                                                                                 urlqueryparam-custom-label='Search 3D model'
                                                                                                                                                 >
-                                                                                                                        <rs-icon icon-type='round' icon-name='open_in_new' style='padding:0 8px 0 5px;' title='Open 3D model Library in new draggable tab'></rs-icon>
+                                                                                                                        <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding:0 8px 0 5px;' title='Open 3D model Library in new draggable tab'></rs-icon>
                                                                                                                     </semantic-link-container>
                                                                                                                     <span>or click to upload</span>
                                                                                                                 </div>
@@ -546,7 +594,8 @@
                                     <h4>Signature</h4>
                                     <div style="display: flex;align-items: center;gap: 20px;">
                                         {{#if node}}
-                                            <semantic-if    query='ASK { <{{node}}> crm:P14i_performed ?creation .
+                                            <semantic-query  query='SELECT ?signature WHERE {
+                                                                        <{{node}}> crm:P14i_performed ?creation .
                                                                         ?creation crm:P94_has_created ?signature .
                                                                         ?signature a crm:E26_Physical_Feature .
                                                                     
@@ -558,13 +607,29 @@
                                                                         ?signatureImage a rs:EX_Digital_Image .
                                                                         ?signatureImage crm:P138_represents ?signature . 
                                                                     }'
-                                                            then='{{> then}}'>
 
-                                                <template id='then'>
+                                                            template='{{> signatureImage}}'>
+
+                                                <template id='signatureImage'>
                                                     <div class="form-tabs-subtabs-content--title-actions">
-                                                        <button class="btn btn-icon" title="preview">
-                                                            <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
-                                                        </button>
+                                                        <mp-overlay-dialog  id="[[urlParam 'viewid' escape=false]]-resource-signaturePreview-dialog"  
+                                                                            type="modal" 
+                                                                            class="modal-xlSize preview_modal"
+                                                                            title="Image preview">
+                                                            <mp-overlay-dialog-trigger>
+                                                                <button class="btn btn-icon" title="Image preview">
+                                                                    <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
+                                                                </button>
+                                                            </mp-overlay-dialog-trigger>
+
+                                                            <mp-overlay-dialog-content>
+                                                                <inline-template template-iri='[[resolvePrefix "rsp:ResourceImagesPreview"]]' 
+                                                                                options='{  "resource": "{{bindings.0.signature.value}}"
+                                                                                            }' >
+                                                                </inline-template> 
+                                                            </mp-overlay-dialog-content>
+                                                        </mp-overlay-dialog>
+                                                       
 
                                                         <mp-event-trigger id='{{viewId}}-image-annotation-add-frame-trigger' 
                                                                         type='Dashboard.AddFrame' 
@@ -573,16 +638,16 @@
                                                                                 "objectIri": "{{node}}",
                                                                                 "frameId": "{{viewId}}"}' 
                                                                         targets='["thinking-frames"]'>
-                                                        <button class="btn btn-icon" title="View/Annotations">
+                                                        <button class="btn btn-icon" title="Image view/annotations">
                                                             <rs-icon icon-type="round" icon-name="photo_size_select_large"></rs-icon>
                                                         </button>
                                                     </mp-event-trigger>
                                                     </div>
                                                 </template>
-                                            </semantic-if>
+                                            </semantic-query>
                                         {{/if}}
                                     
-                                        <bs-nav bs-style="icon-tabs">
+                                        <bs-nav class="icon-tabs">
                                             <bs-nav-item event-key="thumbnailView" title="thumbnail view">
                                                 <rs-icon icon-type="round" icon-name="view_module"></rs-icon>
                                             </bs-nav-item>
@@ -617,7 +682,7 @@
                                                                                                                                                 urlqueryparam-open-as-drag-and-drop='true'
                                                                                                                                                 urlqueryparam-custom-label='Search Image'
                                                                                                                                                 >
-                                                                                                                        <rs-icon icon-type='round' icon-name='open_in_new' style='padding:0 8px 0 5px;' title='Open Image Library in new draggable tab'></rs-icon>
+                                                                                                                        <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding:0 8px 0 5px;' title='Open Image Library in new draggable tab'></rs-icon>
                                                                                                                     </semantic-link-container>
                                                                                                                     <span>or click to upload</span>
                                                                                                                 </div>
@@ -671,15 +736,29 @@
 
                                             <template id='then'>
                                                 <div class="form-tabs-subtabs-content--title-actions">
-                                                    <button class="btn btn-icon" title="preview">
-                                                        <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
-                                                    </button>
+                                                    <mp-overlay-dialog  id="[[urlParam 'viewid' escape=false]]-resource-videoPreview-dialog"  
+                                                                        type="modal" 
+                                                                        class="modal-xlSize preview_modal"
+                                                                        title="Video preview">
+                                                        <mp-overlay-dialog-trigger>
+                                                            <button class="btn btn-icon" title="Video preview">
+                                                                <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
+                                                            </button>
+                                                        </mp-overlay-dialog-trigger>
+
+                                                        <mp-overlay-dialog-content>
+                                                            <inline-template template-iri='[[resolvePrefix "rsp:ResourceVideosPreview"]]' 
+                                                                            options='{ "resource": "{{node}}"
+                                                                                     }' >
+                                                            </inline-template> 
+                                                        </mp-overlay-dialog-content>
+                                                    </mp-overlay-dialog>
                                                 </div>
                                             </template>
                                         </semantic-if>
                                     {{/if}}
                             
-                                    <bs-nav bs-style="icon-tabs">
+                                    <bs-nav class="icon-tabs">
                                         <bs-nav-item event-key="thumbnailView" title="thumbnail view">
                                             <rs-icon icon-type="round" icon-name="view_module"></rs-icon>
                                         </bs-nav-item>
@@ -715,7 +794,7 @@
                                                                                                                                                 urlqueryparam-open-as-drag-and-drop='true'
                                                                                                                                                 urlqueryparam-custom-label='Search Video'
                                                                                                                                             >
-                                                                                                                        <rs-icon icon-type='round' icon-name='open_in_new' style='padding:0 8px 0 5px;' title='Open Video Library in new draggable tab'></rs-icon>
+                                                                                                                        <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding:0 8px 0 5px;' title='Open Video Library in new draggable tab'></rs-icon>
                                                                                                                     </semantic-link-container>
                                                                                                                     <span>or click to upload</span>
                                                                                                                 </div>
@@ -755,7 +834,7 @@
                             <div class="form-tabs-subtabs-content--title">
                                 <h4>Visual representations</h4>
                                 <div>
-                                    <bs-nav bs-style="icon-tabs">
+                                    <bs-nav class="icon-tabs">
                                         <bs-nav-item event-key="thumbnailView" title="thumbnail view">
                                             <rs-icon icon-type="round" icon-name="view_module"></rs-icon>
                                         </bs-nav-item>
@@ -849,7 +928,7 @@
                             <div class="form-tabs-subtabs-content--title">
                                 <h4>Web URL link</h4>
                                 <div>
-                                    <bs-nav bs-style="icon-tabs">
+                                    <bs-nav class="icon-tabs">
                                         <bs-nav-item event-key="listView" title="list view">
                                             <rs-icon icon-type="round" icon-name="view_list"></rs-icon>
                                         </bs-nav-item>

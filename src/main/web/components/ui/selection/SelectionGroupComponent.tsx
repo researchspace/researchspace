@@ -27,8 +27,8 @@ export interface SelectionGroupContext {
 }
 
 export const SelectionGroupContextTypes = {
-  getSelectionValue: PropTypes.any.isRequired,
-  onChange: PropTypes.any.isRequired,
+  getSelectionValue: PropTypes.any,
+  onChange: PropTypes.any,
 };
 
 /**

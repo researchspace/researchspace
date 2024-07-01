@@ -2,7 +2,7 @@
 
 > The ResearchSpace codebase has been developed for more than a decade. During this period practices and approaches to semantic modelling have changed, ontologies have evolved, and UI/UX have become more sophisticated. This release brings with it an exhaustive review of how to build on ResearchSpace as a platform and offers a more accessible starting point for users and developers with default templates and complex customisations that encourage good practices when creating a ResearchSpace-based projects.
 
-> The building blocks of the ResearchSpace platform are ontologies, knowledge patterns, and its templates that enable constructing interactive user interfaces with mechanisms for authoring, viewing and searching. [guide](./guide-release-notes.md).
+> The building blocks of the ResearchSpace platform are ontologies, knowledge patterns, and its templates that enable constructing interactive user interfaces with mechanisms for authoring, viewing and searching [ResearchSpace documentation](https://documentation.researchspace.org/resource/rsp:Start).
 
 ## {Release Notes Version - 4.0.0}
 ## {Release Date - 2024-09-01}
@@ -24,7 +24,7 @@
 
   {Feature description}
   
-- **Importing Resources using REST APIs (MET, V&A, TNA examples)**
+- **Importing Resources using REST APIs (OSM, MET, V&A, TNA examples)**
   ==Man-Made Object==
   ==Place==
 
@@ -60,6 +60,9 @@ Modified mapping for Audio/Video/3D from F21 to F26_Recording
 Modified crm:P1_is_identified_by/rs:PX_has_file_name for images/docs with new mapping crmdig:L60i_is_documented_by/crmdig:L11_had_output/rs:PX_has_file_name
 - Modified mapping for EX_File in Image, Doc, Video, Audio, 3D
 
+  [Media previous mapping](./images/release4/media_previous_mapping.png)
+
+  [Media new mapping](./images/release4/media_new_mapping.png)
 
 
 - **Semantic Components**

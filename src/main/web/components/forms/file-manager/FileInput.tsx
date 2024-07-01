@@ -231,8 +231,8 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
                 namePredicateIri={this.props.namePredicateIri}
                 mediaTypePredicateIri={this.props.mediaTypePredicateIri}
               ></FileVisualizer>
-              <button className={`btn btn-default`} style={{ minHeight: '38px' }}>
-                  <Icon iconType='round' iconName='delete' onClick={this.removeFile} />
+              <button className={`btn btn-default btn-textAndIcon`} style={{ minHeight: '38px' }}>
+                  <Icon iconType='rounded' iconName='delete' symbol={true} onClick={this.removeFile} />
                 </button>
             </div>
           ) : (
@@ -304,8 +304,10 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
         <div className={styles.urlInputHolder}>
           <FormControl inputRef={ref => { this.urlInputRef = ref; }}
             type='text' placeholder='Enter file URL' />
-          <Button bsStyle='action' type='submit'
-            onClick={this.fetchFileFromUrl}
+          <Button bsStyle='default' 
+                  className='btn-action'
+                  type='submit'
+                  onClick={this.fetchFileFromUrl}
           >Fetch</Button>
         </div>
       </React.Fragment>
@@ -315,13 +317,13 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
   renderInputSelector = () => {
     return (
       <div className={styles.selectorContainer}>
-        <Radio name='inputSelector' inline
+        <Radio inline
           checked={!this.state.selectUrl}
           onClick={ () => this.setState({selectUrl: false}) }
         >
           File upload
         </Radio>{' '}
-        <Radio name='inputSelector' inline
+        <Radio inline
           checked={this.state.selectUrl}
           onClick={ () => this.setState({selectUrl: true}) }
         >

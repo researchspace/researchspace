@@ -1,0 +1,262 @@
+<style>
+
+  .mirador-main-menu-bar,
+  .mirador-osd-annotation-controls  {
+    display: none !important;
+  }
+
+  .mirador .researchspace-mirador.mirador-container .mirador-viewer {
+    top: 0;
+  }
+      
+</style>
+
+<semantic-query query='SELECT ?image ?video ?map WHERE {
+                        OPTIONAL {
+                          {
+                            <{{resource}}> a ?type .
+                            FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+                            BIND(<{{resource}}> as ?image)
+                          } UNION {
+                            <{{resource}}> (crm:P138i_has_representation|rs:PX_has_main_representation) ?image .
+                            ?image a ?type .
+                            FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+                          }
+                        }
+                        OPTIONAL {
+                          {
+                            <{{resource}}> a frbroo:F26_Recording .
+                            <{{resource}}> crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_video> .
+                            <{{resource}}> crm:P129i_is_subject_of ?digital_object .
+                            ?digital_object a crmdig:D1_Digital_Object .
+                            ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                            ?digital_object crm:P190_has_symbolic_content ?video .
+                          } UNION {
+                            <{{resource}}> crm:P129i_is_subject_of ?videoURI . 
+                            ?videoURI a frbroo:F26_Recording .
+                            ?videoURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_video> .
+                            ?videoURI crm:P129i_is_subject_of ?digital_object .
+                            ?digital_object a crmdig:D1_Digital_Object .
+                            ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                            ?digital_object crm:P190_has_symbolic_content ?video .
+                          }
+                        }
+                        OPTIONAL {
+                          <{{resource}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
+                          ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
+                          ?osm_geoCoordinates crm:P190_has_symbolic_content ?map .
+                        }
+                      } LIMIT 1'
+                
+              template='{{> template}}'
+              no-result-template='{{> noResults}}'>        
+
+    <template id='template'>
+      <bs-tab-container id="resource-preview-media-tabs"  
+                        default-active-key="{{#if bindings.0.image.value}}image{{else}}{{#if bindings.0.video.value}}{{#if (not bindings.0.image.value)}}video{{/if}}{{/if}}{{#if bindings.0.map.value}}{{#if (not bindings.0.image.value)}}{{#if (not bindings.0.video.value)}}map{{/if}}{{/if}}{{/if}}{{/if}}" 
+                        class="preview-media-tabs">
+        <div>
+          <bs-nav bs-style="tabs">
+            {{#if bindings.0.image.value}}
+              {{#if (or bindings.0.video.value bindings.0.map.value)}}
+                <bs-nav-item event-key="image">Image</bs-nav-item>
+              {{/if}}
+            {{/if}}
+
+            {{#if bindings.0.video.value}}
+              {{#if (or bindings.0.image.value bindings.0.map.value)}}
+                <bs-nav-item event-key="video">Video</bs-nav-item>
+              {{/if}}
+            {{/if}}
+
+            {{#if bindings.0.map.value}}
+              {{#if (or bindings.0.image.value bindings.0.video.value)}}
+                <bs-nav-item event-key="map">Map</bs-nav-item>
+              {{/if}}
+            {{/if}}
+          </bs-nav>
+          <bs-tab-content animation="true" mount-on-enter="true">
+            <bs-tab-pane event-key="image">
+              {{#if bindings.0.image.value}}
+                <div class="modal-image-container">
+                  <div class="modal-iiif-container">
+                    <rs-iiif-viewer-panel id='mirador'
+                                          iris='[ "{{resource}}" ]'
+                                          query="SELECT DISTINCT ?image WHERE {
+                                                  {
+                                                    <{{resource}}> a ?type .
+                                                    FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+                                                    BIND(<{{resource}}> as ?image)
+                                                  } UNION {
+                                                    <{{resource}}> (crm:P138i_has_representation|rs:PX_has_main_representation) ?image .
+                                                    ?image a ?type .
+                                                    FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+                                                  }
+                                                }"     
+                                          [[> rsp:IIIFConfig]]>
+                    </rs-iiif-viewer-panel>
+                  </div>
+                  [[> resourceDetails]]
+                </div>
+              {{/if}}
+              </semantic-if>
+            </bs-tab-pane>
+      
+            <bs-tab-pane event-key="video"> 
+              {{#if bindings.0.video.value}}
+                <semantic-query query='SELECT DISTINCT ?video WHERE { 
+                                        {
+                                          <{{resource}}> crm:P129i_is_subject_of ?videoURI . 
+                                          ?videoURI a frbroo:F26_Recording .
+                                          ?videoURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_video> .
+                                          ?videoURI crm:P129i_is_subject_of ?digital_object .
+                                          ?digital_object a crmdig:D1_Digital_Object .
+                                          ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                                          ?digital_object crm:P190_has_symbolic_content ?video .
+                                        } UNION {
+                                          <{{resource}}> crm:P129i_is_subject_of ?digital_object.
+                                          ?digital_object rdf:type crmdig:D1_Digital_Object .
+                                          ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                                          ?digital_object crm:P190_has_symbolic_content ?video .
+                                        }
+                                      }'
+                                          
+                              template='{{> template}}'>
+            
+                  <template id='template'>
+                    {{#if bindings.1.video.value}}
+                      <div class="modal-video-container">
+                        <div class="modal-videos">
+                          {{#each bindings}}
+                            <div>
+                              <iframe src='{{video.value}}' 
+                                      frameborder="0" 
+                                      allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
+                                      width="358" height="230"
+                                      allowfullscreen>
+                              </iframe>
+                            </div>
+                          {{/each}}
+                        </div>
+                        [[> resourceDetails]]
+                      </div>
+                    {{else}}
+                      <div class="modal-video-container modal-single-video-container">
+                        <div class="modal-single-video">
+                          <iframe src='{{bindings.0.video.value}}' 
+                                  frameborder="0" 
+                                  allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
+                                  width="100%" height="100%"
+                                  allowfullscreen>
+                          </iframe>
+                        </div>
+                        [[> resourceDetails]]
+                      </div>
+                    {{/if}}
+                  </template>
+                </semantic-query>
+              {{/if}}
+            </bs-tab-pane>
+      
+            <bs-tab-pane event-key="map">
+              {{#if bindings.0.map.value}}
+                <div class="modal-map-container">
+                  <div class="modal-map">
+                    <semantic-map query='SELECT ?wkt WHERE { 
+                                            <{{resource}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
+                                            ?osm_geoCoordinates a crm:E94_Space_Primitive .
+                                            ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
+                                            ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
+                                            } LIMIT 1'
+                                    tuple-template='<b style="color:#525156; padding-bottom:5px;"><mp-label iri="{{resource}}"></mp-label></b>'>
+                    </semantic-map>
+                  </div>
+                  [[> resourceDetails]]
+                </div>
+              {{/if}}
+            </bs-tab-pane> 
+      
+          </bs-tab-content>
+        </div>
+      </bs-tab-container>
+    </template>
+    <template id='noResults'>
+      <div class="preview-media-noResults">
+        [[> resourceDetails]]
+      </div>
+    </template>
+</semantic-query>
+
+[[#*inline "resourceDetails"]]
+  {{#if resourceDetailSection}}
+    <div class="modal-resource-details">
+      <div>
+        <h3 style="margin-top: 0; margin-bottom: 5px; text-transform: capitalize;">
+          <mp-label iri='{{resource}}'></mp-label>
+        </h3>
+
+        {{#if resourceConfigLabel}}
+          <p class="color-secondary-light">{{resourceConfigLabel}}</p>
+        {{/if}}
+
+        {{#if resourceDescription}}
+          <p>{{resourceDescription}}</p>
+        {{/if}}
+
+        {{#if resourceConfig}}
+          <mp-event-proxy id='{{resource}}-closeDialog-proxy'
+                          on-event-sources='["{{resource}}-edit-btn-trigger", "{{resource}}-open-narrative-trigger", "{{resource}}-open-km-trigger"]'
+                          on-event-type='Dashboard.AddFrame'
+                          proxy-event-type='OverlayDialog.Close' 
+                          proxy-targets='["{{modalId}}"]'
+          ></mp-event-proxy>
+
+          <div style="display: flex; align-items: center; gap: 10px;">
+            
+            {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative") }}
+              <mp-event-trigger id='{{resource}}-open-narrative-trigger' 
+                                type='Dashboard.AddFrame'
+                                data='{ "viewId":"semantic-narrative", 
+                                        "resourceIri":"{{resource}}"
+                                      }' 
+                                targets='["thinking-frames"]'>
+                <button class="btn btn-primary btn-textAndIcon">
+                  <span>Open narrative</span>
+                  <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
+                </button>
+              </mp-event-trigger>
+            {{/if}}
+
+            {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map") }}
+              <mp-event-trigger id='{{resource}}-open-km-trigger' 
+                                type='Dashboard.AddFrame'
+                                data='{ "viewId":"knowledge-map", 
+                                        "resourceIri":"{{resource}}"
+                                      }' 
+                                targets='["thinking-frames"]'>
+                <button class="btn btn-primary btn-textAndIcon">
+                  <span>Open knowledge map</span>
+                  <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
+                </button>
+              </mp-event-trigger>
+            {{/if}}
+
+            <mp-event-trigger id='{{resource}}-edit-btn-trigger' 
+                              type='Dashboard.AddFrame'
+                              data='{ "viewId":"resource-editor", 
+                                      "resourceIri":"{{resource}}",
+                                      "entityTypeConfig": "{{resourceConfig}}", 
+                                      "editable": true,
+                                      "mode":"edit"}' 
+                              targets='["thinking-frames"]'>
+              <button class="btn btn-primary btn-textAndIcon">
+                <span>Edit</span>
+                <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
+              </button>
+            </mp-event-trigger>
+          </div>
+        {{/if}}
+      </div>
+    </div>
+  {{/if}}
+[[/inline ]]

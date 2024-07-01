@@ -1,6 +1,4 @@
-<semantic-form  id='{{#if formId}}{{formId}}{{else}}{{viewId}}-vocab-form{{/if}}' 
-                post-action="event"
-                subject='{{node}}'
+<semantic-form  [[> rsp:FormDefaults]] 
                 persistence='{"type": "sparql", "targetInsertGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/assets/images{{/if}}"}'
                 new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/image/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
                 fields='[[fieldDefinitions
@@ -1004,16 +1002,29 @@
 
         [[#*inline "imageUploadSection"]]
 
-
             <div class="FileUploader-container page__section-container formFileUpload-container">
                 {{#if node}}
                     <div style="display: flex; align-items: baseline; justify-content: space-between">
                         <div class="customFormHeader">Image file <span class="semantic-form-input-decorator__label-required" title="Required field"></span></div>
                         <div style="display: flex; align-items: center; column-gap: 3px; margin-right: -3px;">
-                            <button class="btn btn-icon" title="preview">
-                                <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
-                            </button>
-                
+                            <mp-overlay-dialog  id="[[urlParam 'viewid' escape=false]]-resource-preview-dialog"  
+                                                type="modal" 
+                                                class="modal-xlSize preview_modal"
+                                                title="Image preview">
+                            <mp-overlay-dialog-trigger>
+                                <button class="btn btn-icon" title="preview">
+                                    <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
+                                </button>
+                            </mp-overlay-dialog-trigger>
+
+                            <mp-overlay-dialog-content>
+                                <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
+                                                 options='{"resource": "{{node}}",
+                                                            "resourceDetailSection": false
+                                                          }' >
+                                </inline-template> 
+                            </mp-overlay-dialog-content>
+                            </mp-overlay-dialog>
                             <mp-event-trigger id='{{viewId}}-image-annotation-add-frame-trigger' 
                                                 type='Dashboard.AddFrame' 
                                                 data='{"resourceIri": "{{node}}", 

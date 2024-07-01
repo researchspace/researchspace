@@ -1,32 +1,34 @@
-<semantic-form id='{{#if formId}}{{formId}}{{else}}{{viewId}}-vocab-form{{/if}}' 
-                post-action="event"
-                subject='{{node}}'
-                persistence='{"type": "sparql", "targetInsertGraphIri":"{{node}}/context"}'
-
+<div>
+<semantic-form [[> rsp:FormDefaults]] 
+              [[!--  persistence='{"type": "ldp", "containerIri":"{{node}}"}' --]]
+                persistence='{"type":"sparql","targetInsertGraphIri":"{{node}}/extended_context"}'
                 fields='[[fieldDefinitions
                             classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                             entity_resource_type="http://www.researchspace.org/pattern/system/entity/resource_type"
                             
-                            set_title="http://www.researchspace.org/pattern/system/symbolic_object/has_symbolic_contentMin1Max1"
+                            set_title="http://www.w3.org/2000/01/rdf-schema#label"
                             set_description="http://www.researchspace.org/pattern/system/entity/description"
                   
+                            set_visibility="http://www.researchspace.org/pattern/system/set/visible_in_group_with_id"
                             image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
                             more_image="http://www.researchspace.org/pattern/system/entity/images"
                             
                           ]]'
               >
-              
+
     <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
-       [[!-- <semantic-form-hidden-input for='classtype' default-value='Digital_Object'> </semantic-form-hidden-input>
+       [[!-- <semantic-form-hidden-input for='classtype' default-value='http://www.ics.forth.gr/isl/CRMdig/D1_Digital_Object'> </semantic-form-hidden-input>
         <semantic-form-hidden-input for='entity_resource_type' default-value='http://www.researchspace.org/resource/system/vocab/resource_type/set'></semantic-form-hidden-input>
         --]]
+        <semantic-form-hidden-input for='set_visibility'></semantic-form-hidden-input>
+       
         <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
             <rs-tab event-key="detail" title="Details">
                 <div>
                 		[[!-- SETS ARE CONTAINERS EDITING THEIR LABEL REQUIRES IT IS DONE BY THE USER WHO CREATED THEM --]]
-                    <semantic-form-text-input readonly for="set_title" label="Set name" placeholder="Enter set name"> 
+                   [[!-- <semantic-form-text-input readonly for="set_title" label="Set name" placeholder="Enter set name"> 
                     </semantic-form-text-input>
-                            
+                    --]]        
                     
                     <semantic-form-text-input for="set_description" multiline=true label="Description/comment" 
                                                 placeholder="Enter set description"> 
@@ -44,9 +46,9 @@
                                                 ?set <http://www.w3.org/ns/prov#generatedAtTime> ?modifiedAtTime .
 
                                                 [[#if (hasPermission "forms:ldp:*")]]
-                                                    ?narrative <http://www.w3.org/ns/prov#wasAttributedTo> ?modifiedByUser .
+                                                    ?set <http://www.w3.org/ns/prov#wasAttributedTo> ?modifiedByUser .
                                                 [[else]]
-                                                    ?narrative <http://www.w3.org/ns/prov#wasAttributedTo> ?modifiedByUser .
+                                                    ?set <http://www.w3.org/ns/prov#wasAttributedTo> ?modifiedByUser .
                                                     FILTER(?modifiedByUser = <http://www.researchspace.org/resource/system/anonymousUser> )
                                                 [[/if]]
                                             }'
@@ -86,3 +88,140 @@
     [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}set{{/if}}']]
 
 </semantic-form>
+
+<mp-set-management  [[#if (hasPermission "forms:ldp:*")]] id="{{node}}"
+                          readonly='false'
+                        [[else]]
+                          readonly='true'
+                        [[/if]]
+                        id='set'
+                        reparentable='true'
+                        fixed-key='set'
+                        default-view-mode='grid'
+                        style='flex: auto; overflow-y: auto;'
+                        set-items-query='PREFIX ldp: <http://www.w3.org/ns/ldp#>
+      PREFIX prov: <http://www.w3.org/ns/prov#>
+      PREFIX platform: <http://www.researchspace.org/resource/system/>
+      PREFIX bds: <http://www.bigdata.com/rdf/search#>
+      PREFIX ontodia: <http://ontodia.org/schema/v1#>
+      SELECT distinct ?item ?itemHolder ?parent ?kind WHERE {
+        {
+          FILTER(!(?__isSearch__)) .
+          {
+            {
+            <{{node}}> ldp:contains ?itemHolder .
+            BIND(<{{node}}> as ?parent) .
+            OPTIONAL { ?itemHolder platform:setItem ?setItem }
+            BIND(COALESCE(?setItem, ?itemHolder) AS ?item) .
+          
+          } UNION {
+            <{{node}}> ontodia:layoutData/ontodia:hasElement ?itemHolder .
+            ?itemHolder ontodia:resource ?item .
+            BIND(<{{node}}> as ?parent) .
+          } 
+          }
+        } UNION {
+          FILTER(?__isSearch__) .
+          {
+            {
+              <{{node}}> ldp:contains ?__setToSearch__ .
+              ?__setToSearch__ ldp:contains ?itemHolder.
+              BIND(?__setToSearch__ as ?parent) .
+              ?itemHolder platform:setItem ?item .
+              FILTER(?__filterPatterns__)
+           } 
+          }
+        } 
+
+        OPTIONAL {
+          ?itemHolder platform:setItemIndex ?i .
+        }
+        OPTIONAL {
+          ?itemHolder prov:generatedAtTime ?modificationDate .
+        }
+        BIND(COALESCE(?i, 0) AS ?index) .
+        OPTIONAL {
+          ?item a ?type .
+          FILTER(?type IN (platform:Set, ontodia:Diagram))
+        }
+        OPTIONAL {
+          ?itemHolder a ?itemHolderType .
+          FILTER(?itemHolderType IN (ontodia:Element))
+        }
+        BIND(COALESCE(?type, ?itemHolderType, platform:SetItem) AS ?kind) .
+
+      } ORDER BY ?index DESC(?modificationDate)'
+    set-count-query='PREFIX ldp: <http://www.w3.org/ns/ldp#>
+      PREFIX platform: <http://www.researchspace.org/resource/system/>
+      PREFIX ontodia: <http://ontodia.org/schema/v1#>
+      SELECT ?set (COUNT(?item) as ?count) WHERE {
+          {
+            <{{node}}> ldp:contains ?set .
+            OPTIONAL { ?set ldp:contains ?item }
+          } UNION {
+            platform:ontodiaDiagramContainer ldp:contains ?set .
+            OPTIONAL { ?set ontodia:layoutData/ontodia:hasElement ?item }
+          }
+      } GROUP BY ?set'
+		item-config='{
+      "<http://www.researchspace.org/resource/system/Set>": {
+        "isSet": true,
+        "listTemplate": "{{> rsp:SetView}}",
+        "gridTemplate": "{{> rsp:SetView}}"
+      },
+      "<http://ontodia.org/schema/v1#Diagram>": {
+        "isSet": true,
+        "listTemplate": "{{> rsp:ClipboardKnowledgeMapView}}",
+        "gridTemplate": "{{> rsp:ClipboardKnowledgeMapView}}"
+      },
+      "<http://ontodia.org/schema/v1#Element>": {
+        "isSet": false,
+        "listTemplate": "{{> rsp:SetListView}}",
+        "gridTemplate": "{{> rsp:SetGridView}}"
+      },
+      "<http://www.researchspace.org/resource/system/SetItem>": {
+        "isSet": false,
+        "listTemplate": "{{> rsp:SetListView isSetItem=true}}",
+        "gridTemplate": "{{> rsp:SetGridView isSetItem=true [[#if check]]check=[[check]][[/if]]}}"
+      }
+    }'
+  filters='[{
+              "placeholder": "Filter by type",
+              "queryPattern": "{?item rdf:type/rdfs:subClassOf* ?__value__}",
+              "suggestionsQuery": "
+                PREFIX Platform: <http://www.researchspace.org/resource/system/>
+                PREFIX ldp: <http://www.w3.org/ns/ldp#>
+                PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                PREFIX ontodia: <http://ontodia.org/schema/v1#>
+                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                PREFIX prov: <http://www.w3.org/ns/prov#>
+
+                SELECT DISTINCT ?value ?label WHERE {
+                  {
+                    ?set a Platform:Set ;
+                       prov:wasAttributedTo ?__useruri__ ;
+                       ldp:contains/Platform:setItem/rdf:type ?class .
+                  } UNION {
+                    ?km a ontodia:Diagram ;
+                      prov:wasAttributedTo ?__useruri__ ;
+                      ontodia:layoutData/ontodia:hasElement/ontodia:resource/rdf:type ?class .
+                  }
+                  
+                  ?class rdfs:subClassOf* ?value .
+
+                  OPTIONAL {
+                    ?value rdfs:label ?engLabel .
+                    FILTER(LANG(?engLabel) = \"en\")
+                  }
+                  OPTIONAL {
+                    ?value rdfs:label ?noLangLabel .
+                    FILTER(LANG(?noLangLabel) = \"\")
+                  }
+                  BIND(COALESCE(?engLabel, ?noLangLabel, REPLACE(STR(?value), \"^.*/(.*)$\", \"$1\")) AS ?label) .
+                  FILTER REGEX(STR(?label), COALESCE(?__token__, \".*\"), \"i\")
+                } ORDER BY ?label
+              "
+  }]'
+    >
+    </mp-set-management>
+</div>

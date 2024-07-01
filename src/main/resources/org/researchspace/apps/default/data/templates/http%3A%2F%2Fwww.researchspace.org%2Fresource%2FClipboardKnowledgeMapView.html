@@ -1,6 +1,7 @@
+
 <div style='display: flex;'>
-  <div>
-    <rs-icon icon-type="round" icon-name="account_tree"></rs-icon>
+  <div style="margin-left: -27px; margin-right: 11px; background-color: #e5e5ed; padding-top: 4px;">
+    <rs-icon icon-type="rounded" icon-name="account_tree" symbol="true"></rs-icon>
   </div>
   
   <div style='overflow: hidden;'>
@@ -13,36 +14,54 @@
   </div>
   
   <div class='set-management__item-actions' style='margin-left: auto;'>
-    <bs-dropdown-button pull-right=true bs-style='link' title=''
-                        id='set-actions-{{iri.value}}'>
-      
-       [[!-- is shown only when we are not in the frames view, hidden by css --]]
-       <semantic-link-container 
-         uri="{{iri.value}}"
-         urlqueryparam-previous-page='http://www.researchspace.org/resource/ProjectKnowledgeMaps'
-         urlqueryparam-previous-page-title='Project - Knowledge Maps'
-         draggable=false
-       >
-         <bs-menu-item class='set-action__km-navigate' event-key='km-navigate'>
-           Open
-         </bs-menu-item>
-       </semantic-link-container>
-      
-       [[!-- is shown only when we are in the frames view, hidden by css --]]
-       <mp-event-trigger id='set-action__km-add-frame' type='Dashboard.AddFrame' 
-                         data='{"resourceIri": "{{iri.value}}", "viewId": "knowledge-map"}' 
-                         targets='["thinking-frames"]'>
-         <bs-menu-item class='set-action__km-add-frame' event-key='km-add-frame'>
-           Open
-         </bs-menu-item>
-       </mp-event-trigger>
-      
-      <mp-anonymous-hidden>
-        <mp-set-management-action-remove-set-item item='{{itemHolder.value}}'>
-          <bs-menu-item event-key=remove>Remove</bs-menu-item>
-        </mp-set-management-action-remove-set-item>
-      </mp-anonymous-hidden>
+    
+    <bs-dropdown  pull-right=true 
+                  class="dropdown-no-caret"
+                  id='set-actions-{{iri.value}}'>
 
-    </bs-dropdown-button>
+        <bs-dropdown-toggle class="button-clipboard-folder-actions no-active-bg">
+          <rs-icon icon-type="round" icon-name="more_vert"></rs-icon>
+        </bs-dropdown-toggle>
+
+        <bs-dropdown-menu>
+          <mp-event-trigger  id='{{iri.value}}-set-action__km-add-frame-trigger' 
+                              type='Dashboard.AddFrame' 
+                              data='{"resourceIri": "{{iri.value}}", 
+                                      "viewId": "knowledge-map"}' 
+                              targets='["thinking-frames"]'>
+            <bs-menu-item event-key='km-add-frame'>
+                <rs-icon icon-type="rounded" icon-name="account_tree" class="icon-left" symbol="true"></rs-icon>
+                <span>Open knowledge map</span>
+            </bs-menu-item>
+          </mp-event-trigger>
+
+          <mp-event-trigger id='{{iri.value}}-set-action__km-add-frame-newTab-trigger' 
+                                type='Dashboard.AddFrame'
+                                data='{ "viewId":"knowledge-map", 
+                                        "resourceIri": "{{iri.value}}",
+                                        "openAsDragAndDrop":true
+                                      }' 
+                                targets='["thinking-frames"]'>
+            <bs-menu-item event-key='km-add-new-tab-frame'>
+              <rs-icon icon-type="rounded" icon-name="tab_move" class="icon-left" symbol="true"></rs-icon>
+              <span>Open knowledge map in draggable tab</span>
+            </bs-menu-item>
+          </mp-event-trigger>
+
+          <mp-anonymous-hidden>
+            <hr>
+          </mp-anonymous-hidden>
+
+          <mp-anonymous-hidden>
+            <mp-set-management-action-remove-set-item item='{{itemHolder.value}}'>
+              <bs-menu-item event-key=remove>
+                <rs-icon icon-type="rounded" icon-name="disabled_by_default" class="icon-left" symbol="true"></rs-icon>
+                <span id="all">Remove from clipboard</span>
+              </bs-menu-item>
+            </mp-set-management-action-remove-set-item>
+          </mp-anonymous-hidden>
+        </bs-dropdown-menu>
+
+    </bs-dropdown>
   </div>
 </div>

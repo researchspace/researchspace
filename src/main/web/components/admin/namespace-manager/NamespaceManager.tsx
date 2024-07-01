@@ -209,8 +209,8 @@ export class NamespaceManager extends Component<{}, State> {
           <ButtonToolbar>
             <Button
               type="submit"
-              bsSize="small"
-              bsStyle="action"
+              bsStyle="default"
+              className="btn-action"
               onClick={this.onSetNamespace}
               disabled={!(this.state.selectedPrefix && this.state.selectedNamespace && this.state.selectedAppId)}
             >

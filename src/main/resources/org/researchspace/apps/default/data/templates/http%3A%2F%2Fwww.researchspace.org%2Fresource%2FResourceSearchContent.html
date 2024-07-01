@@ -1,4 +1,4 @@
-<semantic-query query='SELECT ?resourceConfig ?searchAllPage ?viewId ?resourceLabel ?resourceOntologyClass ?resourceType ?resourceFormIRI ?resourceRestrictionPattern ?resourceLabelPattern ?resourceSearchKPCategory
+<semantic-query query='SELECT ?resourceConfig ?searchAllPage ?viewId ?resourceLabel ?resourceOntologyClass ?resourceType ?resourceIcon ?resourceFormIRI ?resourceRestrictionPattern ?resourceLabelPattern ?resourceSearchKPCategory
                        WHERE {    
                             BIND(<[[config]]> as ?resourceConfig) .
                             [[#if selectedResource]]BIND("true" as ?searchAllPage)[[else]]BIND("false" as ?searchAllPage)[[/if]] .
@@ -26,6 +26,9 @@
                             OPTIONAL {
                               ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_facet_kpCategory> ?resourceSearchKPCategory .
                             }
+                            OPTIONAL {
+                              ?resourceConfig  <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .
+                            }
                           }'>
 
     <template id='template'>
@@ -40,6 +43,7 @@
                       urlqueryparam-resourcerestrictionpattern='{{#if bindings.0.resourceRestrictionPattern.value}}{{bindings.0.resourceRestrictionPattern.value}}{{/if}}'
                       urlqueryparam-resourcelabelpattern='{{#if bindings.0.resourceLabelPattern.value}}{{bindings.0.resourceLabelPattern.value}}{{/if}}'
                       urlqueryparam-searchkpcategory='{{#if bindings.0.resourceSearchKPCategory.value}}<{{bindings.0.resourceSearchKPCategory.value}}>{{/if}}'
+                      urlqueryparam-resourceicon='{{#if bindings.0.resourceIcon.value}}{{bindings.0.resourceIcon.value}}{{/if}}'
       ></mp-page-loader>
     </template>
 </semantic-query>

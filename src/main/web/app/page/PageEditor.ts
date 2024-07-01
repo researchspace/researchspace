@@ -249,7 +249,8 @@ class PageEditorComponent extends Component<PageEditorProps, PageEditorState> {
             
             Button(
               {
-                bsStyle: 'action',
+                bsStyle: 'default',
+                className: 'btn-action',
                 onClick: () => this.onSave({ action: ResourceLinkAction[ResourceLinkAction.edit] }),
                 disabled: this.state.saving,
               },
@@ -258,7 +259,8 @@ class PageEditorComponent extends Component<PageEditorProps, PageEditorState> {
 
             Button(
               {
-                bsStyle: 'action',
+                bsStyle: 'default',
+                className: 'btn-action',
                 onClick: () => this.onSave(),
                 disabled: this.state.saving,
               },

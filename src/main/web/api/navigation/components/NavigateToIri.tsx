@@ -61,7 +61,7 @@ export class NavigateToIRI extends React.Component<NavigateToIRIProps, State> {
               onChange={this.onValueChange}
             />
             <div>
-              <Button bsStyle="action" disabled={this.isExploreDisabled()} onClick={this.onClick}>
+              <Button bsStyle="default" className='btn-action' disabled={this.isExploreDisabled()} onClick={this.onClick}>
                 {this.props.buttonCaption}
               </Button>
             </div>

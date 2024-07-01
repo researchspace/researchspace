@@ -40,7 +40,7 @@ export class ConfirmationDialog extends React.Component<Props, {}> {
             <Button bsStyle="default" onClick={(e) => onConfirm(false)}>
               Cancel
             </Button>
-            <Button bsStyle="action" onClick={(e) => onConfirm(true)}>
+            <Button bsStyle="default" className='btn-action' onClick={(e) => onConfirm(true)}>
               Confirm
             </Button>
           </div>

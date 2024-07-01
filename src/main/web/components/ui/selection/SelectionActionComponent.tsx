@@ -24,6 +24,7 @@ import * as React from 'react';
 import { Component } from 'react';
 import { MenuItem } from 'react-bootstrap';
 import { MenuProps, ActionProps, TitleProps } from './SelectionActionProps';
+import Icon from 'platform/components/ui/icon/Icon';
 
 type Props = MenuProps & ActionProps & TitleProps;
 
@@ -33,7 +34,8 @@ type Props = MenuProps & ActionProps & TitleProps;
 export class SelectionActionComponent extends Component<Props, {}> {
   render() {
     return (
-      <MenuItem eventKey={1} onSelect={this.onSelect} disabled={this.props.disabled}>
+      <MenuItem eventKey={1} onSelect={this.onSelect} disabled={this.props.disabled} className='selection-action-choice'>
+        {this.props.icon && <Icon iconType='rounded' iconName={this.props.icon} className='icon-left' symbol={true} />}
         {this.props.title}
       </MenuItem>
     );

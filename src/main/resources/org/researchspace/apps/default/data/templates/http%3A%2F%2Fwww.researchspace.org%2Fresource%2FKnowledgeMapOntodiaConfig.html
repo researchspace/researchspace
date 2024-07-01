@@ -86,6 +86,7 @@ uses client-side templates:
                       ?field a <http://www.researchspace.org/resource/system/fields/Field> . 
                       ?field  a ?type . 
                       VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}
+                      FILTER (!CONTAINS(STR(?field),"http://www.researchspace.org/ontology/"))
                     } UNION
                     { 
                       ?field a <http://www.researchspace.org/resource/system/fields/Field> . 
@@ -103,10 +104,19 @@ uses client-side templates:
                             (<http://www.researchspace.org/pattern/system/image_annotation/area_of_image>)}                                                   
 											
             					BIND(?value as ?field)
-          					} }'>
+          					} 
+                    MINUS {
+                    	VALUES (?value) {
+                      (<http://www.ics.forth.gr/isl/CRMdig/L47_has_comment>)
+                      (<http://www.w3.org/2000/01/rdf-schema#label>)
+                      }
+                    }
+                   }'>
   </rs-ontodia-metadata-from-fields> 
    [[#> ontodia-entity-metadata ]][[/ontodia-entity-metadata]]  
-    <ontodia-field-input-override for-field="label">
+
+
+		<ontodia-field-input-override for-field="label">
         <semantic-form-text-input></semantic-form-text-input>
       </ontodia-field-input-override>
     <ontodia-field-input-override for-field="http://www.researchspace.org/pattern/system/entity/main_image">

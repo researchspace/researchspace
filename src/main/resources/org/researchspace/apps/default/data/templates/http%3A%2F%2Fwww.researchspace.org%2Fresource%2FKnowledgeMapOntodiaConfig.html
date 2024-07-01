@@ -155,14 +155,24 @@ uses client-side templates:
 
 <template id="default">
   [[!-- Don't add any other explicit style here, only width and height, style is overriden by the resizable component in the KM --]]
-  <div style="width: 155px; height:200px">
-    {{> rsp:ResourceCard  iri=iri
-            viewId="knowledgeMap"
-            autosize=true
-            knowledgeMapCard=true
-    }}
-  </div>
-  
+  {{#if isExpanded }}
+    <div style="width: 270px; height:60px">
+      {{> rsp:ResourceCard  iri=iri
+                            viewId="knowledgeMap"
+                            knowledgeMapCard=true
+                            hideMediaSection=true
+                            autosize=true
+      }}
+    </div>
+  {{else}}
+    <div style="width: 155px; height:200px">
+      {{> rsp:ResourceCard  iri=iri
+                            viewId="knowledgeMap"
+                            autosize=true
+                            knowledgeMapCard=true
+      }}
+    </div>
+  {{/if}}
 </template>
 
 </[[#if standalone]]ontodia[[else]]rs-ontodia-panel[[/if]]>

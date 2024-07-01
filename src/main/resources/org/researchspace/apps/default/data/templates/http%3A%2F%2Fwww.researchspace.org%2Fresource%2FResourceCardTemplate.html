@@ -2,54 +2,58 @@
       style="{{#if autosize}}{{else}}width:{{#if width}}{{width}}{{else}}155{{/if}}px; height:{{#if height}}{{height}}{{else}}200{{/if}}px; margin:{{#if cardMargin}}{{cardMargin}}{{else}}0{{/if}}px;{{/if}}">
       [[!-- when autosize is set we don't set any fixed height and width, used in semantic narratives where user can resize the card --]]
 
-  <div class="resource-card__header-actions">
-    [[#if (hasPermission "forms:ldp:*")]]
-      {{#if selectionToggle}}
-        <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri}}"></mp-selection-toggle>
-      {{/if}}
-    [[/if]]
-    <div class="resource-card__buttons-container">
-
-      {{#if knowledgeMapCard}}
-        <button type="button"  name='edit' class="rbtn btn-default resource-card__button" title="Edit">
-          <rs-icon icon-type="round" icon-name="edit"></rs-icon>
-        </button>
-      {{/if}}
-  
-      {{#if (or narrativeCard knowledgeMapCard)}}
-        <mp-draggable iri='{{iri}}'>
-          <button type="button" class="btn btn-default resource-card__button" title="Drag item {{#if knowledgeMapCard}}outside the map{{/if}}">
-            <rs-icon icon-type="rounded" icon-name="drag_pan" symbol="true"></rs-icon>
-          </button>
-        </mp-draggable>
-      {{/if}}
-
-      {{> rsp:ResourceDropdownActions viewId=viewId
-                                      iri=iri
-                                      resourceConfig=resourceConfig
-                                      resourceLabel=resourceLabel
-                                      cardButton=true
-      }}
-
-      {{#if clipboardCard}}
-        {{#if isSetItem}}
-          <mp-anonymous-hidden>
-            <mp-set-management-action-remove-set-item>
-              <button type="button" class="btn btn-default resource-card__button" title="Remove from clipboard">
-                <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
-              </button>
-            </mp-set-management-action-remove-set-item>
-          </mp-anonymous-hidden>
+  {{#if newKMCard}}
+  {{else}}
+    <div class="resource-card__header-actions">
+      [[#if (hasPermission "forms:ldp:*")]]
+        {{#if selectionToggle}}
+          <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri}}"></mp-selection-toggle>
         {{/if}}
-      {{else if cardInDragAndDropInput}}
-        <mp-event-trigger type='Form.DragAndDropInput.RemoveItem' targets='["{{inputId}}"]' data='{"iri": "{{iri}}"}'>
-          <button type="button" class="btn btn-default resource-card__button" title="Remove">
-            <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
-          </button>
-        </mp-event-trigger>
-      {{/if}}
+      [[/if]]
+      <div class="resource-card__buttons-container">
+
+        {{#if knowledgeMapCard}}
+        <div>
+          <button type="button"  name='edit' class="btn btn-default resource-card__button" title="Edit">
+            <rs-icon icon-type="round" icon-name="edit"></rs-icon>
+          </button></div>
+        {{/if}}
+    
+        {{#if (or narrativeCard knowledgeMapCard)}}
+          <mp-draggable iri='{{iri}}'>
+            <button type="button" class="btn btn-default resource-card__button" title="Drag item {{#if knowledgeMapCard}}outside the map{{/if}}">
+              <rs-icon icon-type="rounded" icon-name="drag_pan" symbol="true"></rs-icon>
+            </button>
+          </mp-draggable>
+        {{/if}}
+
+        {{> rsp:ResourceDropdownActions viewId=viewId
+                                        iri=iri
+                                        resourceConfig=resourceConfig
+                                        resourceLabel=resourceLabel
+                                        cardButton=true
+        }}
+
+        {{#if clipboardCard}}
+          {{#if isSetItem}}
+            <mp-anonymous-hidden>
+              <mp-set-management-action-remove-set-item>
+                <button type="button" class="btn btn-default resource-card__button" title="Remove from clipboard">
+                  <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
+                </button>
+              </mp-set-management-action-remove-set-item>
+            </mp-anonymous-hidden>
+          {{/if}}
+        {{else if cardInDragAndDropInput}}
+          <mp-event-trigger type='Form.DragAndDropInput.RemoveItem' targets='["{{inputId}}"]' data='{"iri": "{{iri}}"}'>
+            <button type="button" class="btn btn-default resource-card__button" title="Remove">
+              <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
+            </button>
+          </mp-event-trigger>
+        {{/if}}
+      </div>
     </div>
-  </div>
+  {{/if}}
 
   <div class="resource-card__media-container" style="{{#if autosize}}height:auto{{/if}}">
 
@@ -126,11 +130,22 @@
                                     ?ontologyClass rdfs:label ?ontologyClassLabel .
                                     FILTER(LANG(?ontologyClassLabel)="en")
                                   } LIMIT 1'
-                          template='{{> template}}'>
+                          template='{{> template}}'
+                          no-result-template='{{> noResults}}'>
       
               <template id='template'>
                 <span>{{bindings.0.ontologyClassLabel.value}}</span>
               </template>
+
+              <template id="noResults">
+                {{#if data.types}}
+                  [[!-- ontology class from KM props --]]
+                    <div>
+                      <mp-label iri='{{data.types}}'></mp-label>
+                    </div>
+                {{/if}}
+              </template>
+
           </semantic-query>
         {{/if}}
       </div>
@@ -149,7 +164,7 @@
             [[!-- Label from KM props --]]
             <span class="text-link">{{label}}</span>
           {{else}}
-            <semantic-link  uri='http://www.researchspace.org/resource/ThinkingFrames'
+            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
                             urlqueryparam-view='{{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}semantic-narrative{{else}}resource-editor{{/if}}'
                             urlqueryparam-resource='{{iri}}'>
               <mp-label iri='{{iri}}' class="text-link" highlight='{{highlight}}' highlight-props='{"style": {"color": "#dc8a4b"}}'></mp-label>

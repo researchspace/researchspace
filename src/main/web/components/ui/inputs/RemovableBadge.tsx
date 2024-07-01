@@ -47,7 +47,10 @@ export class RemovableBadge extends Component<RemovableBadgeProps, {}> {
           className: `${CLASS_NAME}__content`,
           type: 'button',
           disabled: this.props.disableClick,
-          onClick: this.props.onClick,
+          onClick: (e) =>{
+            e.stopPropagation()
+            this.props.onClick()
+          },
         },
         this.props.children
       ),

@@ -48,7 +48,7 @@ export class SetService extends LdpService {
     let visibilityResourceIri = "";
     if (visibleInViewForTemplateWithId.isJust) {
       setTriples.push(Rdf.triple(generatedIri, 
-                      Rdf.iri("http://www.researchspace.org/pattern/system/resource_configuration/set_visible_in_group_with_id"), 
+                      Rdf.iri("http://www.researchspace.org/pattern/system/set/visible_in_group_with_id"), 
                       Rdf.literal(visibleInViewForTemplateWithId.get())));
     }
     
@@ -94,10 +94,10 @@ export class SetService extends LdpService {
       .executeSparqlUpdate(
           "delete { "+
           setIri + " " + 
-          Rdf.iri("http://www.researchspace.org/pattern/system/resource_configuration/set_visible_in_group_with_id") + " " +
+          Rdf.iri("http://www.researchspace.org/pattern/system/set/visible_in_group_with_id") + " " +
           Rdf.literal(visibleInViewForTemplateWithId)+" } where {"+
           setIri + " " + 
-          Rdf.iri("http://www.researchspace.org/pattern/system/resource_configuration/set_visible_in_group_with_id") + " " +
+          Rdf.iri("http://www.researchspace.org/pattern/system/set/visible_in_group_with_id") + " " +
           Rdf.literal(visibleInViewForTemplateWithId)+
           " }")
       .onValue(() => {});
@@ -112,7 +112,7 @@ export class SetService extends LdpService {
       .executeSparqlUpdate(
           "INSERT DATA { graph <http://www.researchspace.org/sets/views_visibility> "+ " { "+
           setIri + " " + 
-          Rdf.iri("http://www.researchspace.org/pattern/system/resource_configuration/set_visible_in_group_with_id") + " " +
+          Rdf.iri("http://www.researchspace.org/pattern/system/set/visible_in_group_with_id") + " " +
           Rdf.literal(visibleInViewForTemplateWithId)+".} }")
         .onValue(() => {});
   }

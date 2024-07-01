@@ -211,13 +211,34 @@
         <span>Edit in draggable tab</span>
       </bs-menu-item>
     </semantic-link-container>
-    <hr>
 
     {{#if (not (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set"))}}
-      <bs-menu-item>
-        <rs-icon icon-type="rounded" icon-name="photo_size_select_large" class="icon-left" symbol="true"></rs-icon>
-        <span>Image view / annotations</span>
-      </bs-menu-item>
+    <hr>
+      <mp-event-trigger id='{{viewId}}-image-annotation-add-frame-trigger' 
+                        type='Dashboard.AddFrame' 
+                        data='{"resourceIri": "{{iri}}", 
+                                "viewId": "object-image-observation", 
+                                "objectIri": "{{iri}}",
+                                "frameId": "{{viewId}}"}' 
+                        targets='["thinking-frames"]'>
+          <bs-menu-item>
+            <rs-icon icon-type="rounded" icon-name="photo_size_select_large" class="icon-left" symbol="true"></rs-icon>
+            <span>Image view / annotations</span>
+          </bs-menu-item>
+      </mp-event-trigger>
+    {{/if}}
+
+    {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image")}}
+      <semantic-link-container  uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                urlqueryparam-view='image-graph-authoring' 
+                                urlqueryparam-resource='{{iri}}'>
+        <bs-menu-item>
+          <rs-icon icon-type="rounded" icon-name="wallpaper" class="icon-left" symbol="true"></rs-icon>
+          <span>Image graph authoring</span>
+        </bs-menu-item>
+      </semantic-link-container>
+      <hr>
+    {{else}}
       <hr>
     {{/if}}
 

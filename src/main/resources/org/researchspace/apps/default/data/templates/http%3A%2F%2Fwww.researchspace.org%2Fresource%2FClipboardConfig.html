@@ -12,9 +12,9 @@
             BIND(?__rootSet__ as ?parent) .
             OPTIONAL { ?itemHolder platform:setItem ?setItem }
             BIND(COALESCE(?setItem, ?itemHolder) AS ?item) .
-            FILTER ((EXISTS {?itemHolder <http://www.researchspace.org/pattern/system/resource_configuration/set_visible_in_group_with_id> "[[id]]".}) ||
+            FILTER ((EXISTS {?itemHolder <http://www.researchspace.org/pattern/system/set/visible_in_group_with_id> "[[id]]".}) ||
                     (EXISTS {?parent a platform:Set; rdfs:label "Uncategorized" .}) || 
-                    (EXISTS {?parent <http://www.researchspace.org/pattern/system/resource_configuration/set_visible_in_group_with_id> "[[id]]".}))
+                    (EXISTS {?parent <http://www.researchspace.org/pattern/system/set/visible_in_group_with_id> "[[id]]".}))
   
           } UNION {
             ?uncategorizedSet a platform:Set ;
@@ -24,7 +24,7 @@
             ?itemHolder platform:setItem ?item .
             platform:ontodiaDiagramContainer ldp:contains ?item .
             BIND(platform:ontodiaDiagramContainer as ?parent) .
-            #FILTER (EXISTS {?item <http://www.researchspace.org/pattern/system/resource_configuration/set_visible_in_group_with_id> "[[id]]".})
+            #FILTER (EXISTS {?item <http://www.researchspace.org/pattern/system/set/visible_in_group_with_id> "[[id]]".})
           } UNION {
             ?__rootSet__ ontodia:layoutData/ontodia:hasElement ?itemHolder .
             ?itemHolder ontodia:resource ?item .

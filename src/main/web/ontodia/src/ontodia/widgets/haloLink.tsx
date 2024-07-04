@@ -311,7 +311,7 @@ export class HaloLink extends React.Component<Props, State> {
         className={`${CLASS_NAME}__edit-label-button`}
         style={style}
         onClick={() => onEditLabel()}
-        title={'Edit Link Label'}
+        title={'Link label'}
       />
     );
   }

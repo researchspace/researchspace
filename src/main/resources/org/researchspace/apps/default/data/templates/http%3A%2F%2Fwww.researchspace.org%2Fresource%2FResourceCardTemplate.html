@@ -1,4 +1,4 @@
-<div  class="resource-card {{#if knowledgeMapCard}}resource-card__no-hover{{/if}}"
+<div  class="resource-card {{#if (or narrativeCard knowledgeMapCard)}}resource-card__no-hover{{/if}}"
       style="{{#if autosize}}{{else}}width:{{#if width}}{{width}}{{else}}155{{/if}}px; height:{{#if height}}{{height}}{{else}}200{{/if}}px; margin:{{#if cardMargin}}{{cardMargin}}{{else}}0{{/if}}px;{{/if}}">
       [[!-- when autosize is set we don't set any fixed height and width, used in semantic narratives where user can resize the card --]]
 
@@ -50,7 +50,7 @@
 
   {{#if hideMediaSection}}
   {{else}}
-    <div class="resource-card__media-container" style="{{#if autosize}}height:auto{{/if}}">
+    <div class="resource-card__media-container" style="{{#if autosize}}height:auto{{else}}max-height:142px;{{/if}}">
 
       {{#switch resourceOntologyClass}}
 
@@ -111,13 +111,13 @@
     </div>
   {{/if}}
 
-  <div class="resource-card__footer" style="{{#if hideMediaSection}}width: 170px;{{/if}}">
+  <div class="resource-card__footer" style="{{#if hideMediaSection}}width: 200px;{{/if}}">
     [[#if customFooter]]
       [[#block "customFooter"]][[/block]]
     [[else]]
       <div class="resource-card__footer-type color-secondary-light text-font-size__xsmall">
         {{#if resourceLabel}}
-          <span class="resource-card__footer-class">{{resourceLabel}}</span>
+          <span class="resource-card__footer-class" title="{{resourceLabel}}">{{resourceLabel}}</span>
         {{else}}
           <semantic-query query='SELECT ?ontologyClassLabel WHERE {
                                     BIND(<{{iri}}> as ?resource)
@@ -130,7 +130,7 @@
                           no-result-template='{{> noResults}}'>
       
               <template id='template'>
-                <span class="resource-card__footer-class">{{bindings.0.ontologyClassLabel.value}}</span>
+                <span class="resource-card__footer-class" title="{{bindings.0.ontologyClassLabel.value}}">{{bindings.0.ontologyClassLabel.value}}</span>
               </template>
 
               <template id="noResults">
@@ -156,16 +156,16 @@
             <div><mp-label iri='{{iri}}' class="text-link"></mp-label></div>
           </mp-event-trigger>
         {{else}}
-          {{#if label}}
-            [[!-- Label from KM props --]]
-            <span class="text-link">{{label}}</span>
-          {{else}}
-            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                            urlqueryparam-view='{{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}semantic-narrative{{else}}resource-editor{{/if}}'
-                            urlqueryparam-resource='{{iri}}'>
+          <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                          urlqueryparam-view='{{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}semantic-narrative{{else}}resource-editor{{/if}}'
+                          urlqueryparam-resource='{{iri}}'>
+            {{#if label}}
+              [[!-- Label from KM props --]]
+              <span class="text-link" title="{{label}}">{{label}}</span>
+            {{else}}
               <mp-label iri='{{iri}}' class="text-link" highlight='{{highlight}}' highlight-props='{"style": {"color": "#dc8a4b"}}'></mp-label>
-            </semantic-link>
-          {{/if}}
+            {{/if}}
+          </semantic-link>
         {{/if}}
       </div>
     [[/if]]

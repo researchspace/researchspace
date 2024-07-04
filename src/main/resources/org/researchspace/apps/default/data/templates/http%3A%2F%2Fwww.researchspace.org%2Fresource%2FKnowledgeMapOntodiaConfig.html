@@ -32,6 +32,8 @@ uses client-side templates:
   iri='{{#if iri}}{{iri}}{{/if}}' 
   iris='{{#if iris}}{{iris}}{{/if}}'
 
+  hide-halo=false
+
   left-panel-initially-open=false 
   default-node-template="{{> default}}"    
   additional-tree-item-template='{{> additionalTreeItemTemplate}}'
@@ -77,110 +79,115 @@ uses client-side templates:
                                 "type": "sparql",
                                 "targetInsertGraphIri": "http://www.researchspace.org/resource/g/data"
                             }'
-> 
+  > 
   
-  <rs-ontodia-metadata-from-fields 
-      fields-query='PREFIX field: <http://www.researchspace.org/resource/system/fields/>
-                    SELECT DISTINCT ?field WHERE { 
-                    {
-                      ?field a <http://www.researchspace.org/resource/system/fields/Field> . 
-                      ?field  a ?type . 
-                      VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}
-                      FILTER (!CONTAINS(STR(?field),"http://www.researchspace.org/ontology/"))
-                    } UNION
-                    { 
-                      ?field a <http://www.researchspace.org/resource/system/fields/Field> . 
-                      ?field  <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/image_annotation> . 
-                      }  
-										UNION {
-            					VALUES (?value){(<http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation>)
-                            (<http://www.researchspace.org/pattern/system/entity/primary_appellation>)
-                      			(<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>)
-                      			(<http://www.researchspace.org/pattern/system/entity/main_image>)  
-                            (<http://www.ics.forth.gr/isl/CRMdig/L49_is_primary_area_of>)
-                            (<http://www.researchspace.org/pattern/system/image_annotation/boundingBox>)
-                            (<http://www.w3.org/1999/02/22-rdf-syntax-ns#value>)
-                            (<http://www.researchspace.org/pattern/system/image_annotation/viewport>)
-                            (<http://www.researchspace.org/pattern/system/image_annotation/area_of_image>)}                                                   
-											
-            					BIND(?value as ?field)
-          					} 
-                    MINUS {
-                    	VALUES (?value) {
-                      (<http://www.ics.forth.gr/isl/CRMdig/L47_has_comment>)
-                      (<http://www.w3.org/2000/01/rdf-schema#label>)
+    <rs-ontodia-metadata-from-fields 
+        fields-query='PREFIX field: <http://www.researchspace.org/resource/system/fields/>
+                      SELECT DISTINCT ?field WHERE { 
+                      {
+                        ?field a <http://www.researchspace.org/resource/system/fields/Field> . 
+                        ?field  a ?type . 
+                        VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}
+                        FILTER (!CONTAINS(STR(?field),"http://www.researchspace.org/ontology/"))
+                      } UNION
+                      { 
+                        ?field a <http://www.researchspace.org/resource/system/fields/Field> . 
+                        ?field  <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/image_annotation> . 
+                        }  
+                      UNION {
+                        VALUES (?value){(<http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation>)
+                              (<http://www.researchspace.org/pattern/system/entity/primary_appellation>)
+                              (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>)
+                              (<http://www.researchspace.org/pattern/system/entity/main_image>)  
+                              (<http://www.ics.forth.gr/isl/CRMdig/L49_is_primary_area_of>)
+                              (<http://www.researchspace.org/pattern/system/image_annotation/boundingBox>)
+                              (<http://www.w3.org/1999/02/22-rdf-syntax-ns#value>)
+                              (<http://www.researchspace.org/pattern/system/image_annotation/viewport>)
+                              (<http://www.researchspace.org/pattern/system/image_annotation/area_of_image>)}                                                   
+                        
+                        BIND(?value as ?field)
+                      } 
+                      MINUS {
+                        VALUES (?value) {
+                        (<http://www.ics.forth.gr/isl/CRMdig/L47_has_comment>)
+                        (<http://www.w3.org/2000/01/rdf-schema#label>)
+                        }
                       }
-                    }
-                   }'>
-  </rs-ontodia-metadata-from-fields> 
-   [[#> ontodia-entity-metadata ]][[/ontodia-entity-metadata]]  
-
+                    }'>
+    </rs-ontodia-metadata-from-fields> 
+    [[#> ontodia-entity-metadata ]][[/ontodia-entity-metadata]]  
 
 		<ontodia-field-input-override for-field="label">
         <semantic-form-text-input></semantic-form-text-input>
-      </ontodia-field-input-override>
-    <ontodia-field-input-override for-field="http://www.researchspace.org/pattern/system/entity/main_image">
-    <semantic-form-autocomplete-input for='http://www.researchspace.org/pattern/system/entity/main_image' 
-      nested-form-templates='[ 
-                                                {
-                                                  "label": "Image",
-                                                  "nestedForm": "{{{{raw}}}}
-                                                                    {{> \"http://www.researchspace.org/resource/system/forms/Image\" nested=true editable=true mode=\"new\"}}
-                                                                {{{{/raw}}}}"
-                                                }
-                                              ]'>
-      </semantic-form-autocomplete-input>
     </ontodia-field-input-override>
 
-</ontodia-field-configuration>
+    <ontodia-field-input-override for-field="http://www.researchspace.org/pattern/system/entity/main_image">
+      <semantic-form-drag-and-drop-input for='http://www.researchspace.org/pattern/system/entity/main_image' label="Main image" 
+                                          placeholder-item-template="<div class='placeholder-item'>
+                                                                          <rs-icon icon-type='round' icon-name='file_upload' class='upload_icon'></rs-icon>
+                                                                          <div>Drag image or click to upload</div>
+                                                                      </div>"
+                                          nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+      </semantic-form-drag-and-drop-input>
+    </ontodia-field-input-override>
 
-<template id="additionalTreeItemTemplate">
-  <semantic-query template='{{> scopeNote}}' query='SELECT ?note WHERE { <{{iri}}> rdfs:comment ?note } LIMIT 1'
-  >
-    <template id='scopeNote'>
-      <mp-popover title="Scope Note">
-        <mp-popover-trigger placement="right" trigger='["click"]'>
-          <rs-icon icon-type="round" icon-name="help" style='margin-left: 10px;'></rs-icon>
-        </mp-popover-trigger>
-        <mp-popover-content>
-          <div style='height: 200px; width: 250px; overflow: auto;'>
-            <p>{{bindings.0.note.value}}</p>
-          </div>
-        </mp-popover-content>
-      </mp-popover>
+  </ontodia-field-configuration>
 
-    </template>
-  </semantic-query>
-</template>
+  <template id="additionalTreeItemTemplate">
+    <semantic-query template='{{> scopeNote}}' query='SELECT ?note WHERE { <{{iri}}> rdfs:comment ?note } LIMIT 1'
+    >
+      <template id='scopeNote'>
+        <mp-popover title="Scope Note">
+          <mp-popover-trigger placement="right" trigger='["click"]'>
+            <rs-icon icon-type="round" icon-name="help" style='margin-left: 10px;'></rs-icon>
+          </mp-popover-trigger>
+          <mp-popover-content>
+            <div style='height: 200px; width: 250px; overflow: auto;'>
+              <p>{{bindings.0.note.value}}</p>
+            </div>
+          </mp-popover-content>
+        </mp-popover>
 
-<template id="default">
-  [[!-- Don't add any other explicit style here, only width and height, style is overriden by the resizable component in the KM --]]
-  {{#if isExpanded }}
-    <div style="width: 270px; height:60px">
-      <div class="resource-card__kmTopButtons">
-        <button name="edit">Edit</button>
-        <button name="delete">Delete</button>
+      </template>
+    </semantic-query>
+  </template>
+
+  <template id="default">
+    [[!-- Don't add any other explicit style here, only width and height, style is overriden by the resizable component in the KM --]]
+    {{#if isExpanded }}
+      <div style="width: 270px; height:73px;">
+        <div class="resource-card__kmTopButtons">
+          <button name="edit" type="button" class="btn btn-default resource-card__button" title="Edit">
+            <rs-icon icon-type="rounded" icon-name="edit" symbol="true"></rs-icon>
+          </button>
+          <button name="delete" type="button" class="btn btn-default resource-card__button" title="Edit">
+            <rs-icon icon-type="rounded" icon-name="delete" symbol="true"></rs-icon>
+          </button>
+        </div>
+        {{> rsp:ResourceCard  iri=iri
+                              viewId="knowledgeMap"
+                              knowledgeMapCard=true
+                              hideMediaSection=true
+                              height=73
+                              width=270
+        }}
       </div>
-      {{> rsp:ResourceCard  iri=iri
-                            viewId="knowledgeMap"
-                            knowledgeMapCard=true
-                            hideMediaSection=true
-                            autosize=true
-      }}
-    </div>
-  {{else}}
-    <div style="width: 155px; height:200px">
-      <div class="resource-card__kmTopButtons">
-        <button name="edit">Edit</button>
-        <button name="delete">Delete</button>
+    {{else}}
+      <div style="width: 155px; height:200px">
+        <div class="resource-card__kmTopButtons">
+          <button name="edit" type="button" class="btn btn-default resource-card__button" title="Edit">
+            <rs-icon icon-type="rounded" icon-name="edit" symbol="true"></rs-icon>
+          </button>
+          <button name="delete" type="button" class="btn btn-default resource-card__button" title="Edit">
+            <rs-icon icon-type="rounded" icon-name="delete" symbol="true"></rs-icon>
+          </button>
+        </div>
+        {{> rsp:ResourceCard  iri=iri
+                              viewId="knowledgeMap"
+                              knowledgeMapCard=true
+        }}
       </div>
-      {{> rsp:ResourceCard  iri=iri
-                            viewId="knowledgeMap"
-                            autosize=true
-                            knowledgeMapCard=true
-      }}
-    </div>
-  {{/if}}
-</template>
+    {{/if}}
+  </template>
 
 </[[#if standalone]]ontodia[[else]]rs-ontodia-panel[[/if]]>

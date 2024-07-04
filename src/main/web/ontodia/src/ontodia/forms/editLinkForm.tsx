@@ -111,18 +111,18 @@ export class EditLinkForm extends React.Component<Props, State> {
               <ProgressBar state={ProgressState.loading} height={10} />
             </div>
           ) : null}
-        </div>
-        <div className={`${CLASS_NAME}__controls`}>
-          <button
-            className={`ontodia-btn ontodia-btn-success ${CLASS_NAME}__apply-button`}
-            onClick={() => this.props.onApply(linkValue.value.link)}
-            disabled={!isValid || isValidating}
-          >
-            Apply
-          </button>
-          <button className="ontodia-btn ontodia-btn-danger" onClick={this.props.onCancel}>
-            Cancel
-          </button>
+          <div className={`${CLASS_NAME}__controls`}>
+            <button className="btn btn-default" onClick={this.props.onCancel}>
+              Cancel
+            </button>
+            <button
+              className={`btn btn-action ${CLASS_NAME}__apply-button`}
+              onClick={() => this.props.onApply(linkValue.value.link)}
+              disabled={!isValid || isValidating}
+            >
+              Save
+            </button>
+          </div>
         </div>
       </div>
     );

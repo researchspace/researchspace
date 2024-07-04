@@ -52,7 +52,7 @@ interface Props {
  *  </mp-file-download>
  */
 export class FileDownload extends Component<Props, State> {
-  defaultProps = { delay: 1000, postAction: 'reload' };
+  static defaultProps = { delay: 1000, postAction: 'reload' };
 
   constructor(props: Props, state: State) {
     super(props, state);
@@ -87,11 +87,12 @@ export class FileDownload extends Component<Props, State> {
       };
 
       window.open(response.file);
-
+      
       if (postAction === 'reload') {
         refresh();
       } else {
-        navigateToResource(Rdf.iri(postAction)).onValue((v) => v);
+          if (postAction)
+            navigateToResource(Rdf.iri(postAction)).onValue((v) => v);
       }
     }, delay);
   };

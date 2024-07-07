@@ -107,24 +107,20 @@ export class LinkStateWidget extends React.Component<Props, {}> {
         let title: string;
 
         if (state.deleted) {
-          statusText = 'Delete';
-          title = 'Revert deletion of the link';
+          statusText = 'delete';
+          title = 'Cancel delete of the connection';
         } else if (!state.before) {
-          statusText = 'New';
-          title = 'Revert creation of the link';
+          statusText = 'new';
+          title = 'Cancel creation of the connenction';
         } else {
-          statusText = 'Change';
-          title = 'Revert all changes in properties of the link';
+          statusText = 'change';
+          title = 'Cancel all changes in properties of the connection';
         }
 
         if (statusText && title) {
           renderedState = (
-            <span>
-              <span className={`${CLASS_NAME}__state-label`}>{statusText}</span>[
-              <span className={`${CLASS_NAME}__state-cancel`} onClick={onCancel} title={title}>
-                cancel
-              </span>
-              ]
+            <span className={`${CLASS_NAME}__state-cancel btn btn-link text-underline`} onClick={onCancel} title={title}>
+              Cancel {statusText}
             </span>
           );
         }

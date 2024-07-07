@@ -4,17 +4,17 @@
     if node-templates is defined. This is a bug in ontodia. */
 
   .ontodia-overlayed-element  {
-    min-height: 200px;
+    min-height: 60px;
     min-width: 155px;
   }
 
   .ontodia-overlayed-element > div {
-    min-height: 200px;
+    min-height: 60px;
     min-width: 155px;
   }
 
   .ontodia-overlayed-element .resource-card {
-    min-height: 200px;
+    min-height: 60px;
     min-width: 155px;
   }
 
@@ -123,7 +123,8 @@
       "iconClass": "rs-icon rs-icon-map_location_grouped",
       "checkQuery": "ASK { 
         ?value a crm:E53_Place . 
-        ?value <http://www.cidoc-crm.org/cidoc-crm/P168_place_is_defined_by> ?coordinates . }",
+        ?value <http://www.cidoc-crm.org/cidoc-crm/P168_place_is_defined_by> ?coordinates .
+        ?coordinates <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> . }",
       "template": "{{> mapTemplate}}",
       "type": "view"
     },
@@ -189,6 +190,35 @@
     },
 
     {
+    	"id": "semantic-narrative-resources",
+      "label": "Semantic narrative resources",
+      "description": "Resources in the semantic narrative",
+      "iconName": "description",
+      "template": "{{> semanticNarrativeResources}}",
+      "checkQuery": "ASK { ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative> . }",
+      "type": "view"
+    },
+
+    {
+    	"id": "single-set-management",
+      "label": "Set management",
+      "description": "Manage the resources in a set",
+      "iconName": "topic",
+      "template": "{{> SingleSetManagement}}",
+      "checkQuery": "ASK { ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/set> . }",
+      "type": "view"
+    },
+
+    {
+    	"id": "sets-management",
+      "label": "Sets management",
+      "description": "Manage sets",
+      "iconName": "topic",
+      "template": "{{> SetsManagement}}",
+      "type": "view"
+    },
+
+    {
     	"id": "object-image-observation",
       "label": "Image annotations",
       "description": "Drag and drop an object here to combine image annotations with form authoring",
@@ -226,7 +256,7 @@
       "itemBodyTemplate": "{{> itemBodyTemplate}}",
       "frameVariable": "ontodiaVariable",
       "type": "authoring"
-    }, --]]
+    }, 
 
     {
     	"id": "system-narrative",
@@ -250,15 +280,16 @@
       "template": "{{> systemDigitalAssetsTemplate}}",
       "resourceNotRequired": true,
       "type": "view"
-    },
-    
-    {
+    }, 
+
+     {
     	"id": "system-activity",
       "label": "Dashboard",
       "template": "{{> systemActivityTemplate}}",
       "resourceNotRequired": true,
       "type": "view"
     },
+ --]]
 
     {
     	"id": "map-resource-search",
@@ -352,21 +383,21 @@
       [[> rsp:VocabularyContent iri=iri]]
     </template>
 
-    <template id='systemNarrativesTemplate'>
+[[!--     <template id='systemNarrativesTemplate'>
       [[> rsp:SystemNarrativesFrame]]
-    </template>
+    </template> --]]
 
-    <template id='systemKnowledgeMapsTemplate'>
+[[!--    <template id='systemKnowledgeMapsTemplate'>
       [[> rsp:SystemKnowledgeMapsFrame]]
-    </template>
+    </template> --]]
 
-    <template id='systemDigitalAssetsTemplate'>
+[[!--  <template id='systemDigitalAssetsTemplate'>
       [[> rsp:SystemAssetsFrame]]
-    </template>
+    </template> --]]
 
-    <template id='systemActivityTemplate'>
+[[!--    <template id='systemActivityTemplate'>
       [[> rsp:SystemActivityFrame]]
-    </template>
+    </template> --]]
 
     <template id='ontodiaTemplate'>
       [[> rsp:ThinkingFramesKnowledgeMapTemplate]]
@@ -386,6 +417,18 @@
 
     <template id='semanticNarrative'>
       [[> rsp:ThinkingFramesSemanticNarrativeTemplate]]
+    </template>
+
+    <template id='semanticNarrativeResources'>
+      [[> rsp:SemanticNarrativeResources]]
+    </template>
+
+    <template id='SingleSetManagement'>
+      [[> rsp:SingleSetManagement]]
+    </template>
+
+    <template id='SetsManagement'>
+      [[> rsp:SetsManagement]]
     </template>
 
     <template id='itemBodyTemplate'>

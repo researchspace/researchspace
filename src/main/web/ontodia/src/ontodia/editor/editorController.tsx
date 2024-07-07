@@ -426,7 +426,7 @@ export class EditorController {
         suggestProperties={this.options.suggestProperties}
       />
     );
-    this.showDialog({ target, dialogType, content, onClose });
+    this.showDialog({ target, dialogType, caption: 'Resource connections', content, onClose });
   }
 
   showEditEntityForm(target: Element) {
@@ -453,7 +453,7 @@ export class EditorController {
     ) : (
       <EditEntityForm view={this.view} entity={modelToEdit} onApply={onSubmit} onCancel={onCancel} />
     );
-    this.showDialog({ target, dialogType, content, onClose: onCancel });
+    this.showDialog({ target, dialogType, content, caption: 'Edit resource', onClose: onCancel });
   }
 
   showEditElementTypeForm({
@@ -543,7 +543,7 @@ export class EditorController {
         onCancel={onCancel}
       />
     );
-    this.showDialog({ target, dialogType, content, caption: 'Create new connection', onClose: onCancel });
+    this.showDialog({ target, dialogType, content, size: { width: 300, height: 350 }, caption: 'Create new connection', onClose: onCancel });
   }
 
   showEditLinkForm(link: Link) {
@@ -584,12 +584,12 @@ export class EditorController {
         onCancel={onCancel}
       />
     );
-    const caption = this.temporaryState.links.has(link.data) ? 'Create new Connection' : 'Edit Connection';
+    const caption = this.temporaryState.links.has(link.data) ? 'Create new connection' : 'Edit connection type';
     this.showDialog({
       target: link,
       dialogType,
       content,
-      size: { width: 300, height: 160 },
+      size: { width: 300, height: 180 },
       caption,
       onClose: onCancel,
     });
@@ -616,7 +616,7 @@ export class EditorController {
         />
       ),
       size,
-      caption: 'Edit Link Label',
+       caption: 'Edit connection label',
       offset: { x: 25, y: -size.height / 2 },
       calculatePosition: () => {
         const { x, y, width, height } = link.labelBounds;

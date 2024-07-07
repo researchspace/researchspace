@@ -10,14 +10,12 @@
       <semantic-search config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> .  ?field <http://www.researchspace.org/resource/system/fields/domain> ?domain . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . }" domain=(urlParam "resourceontologyclass" escape=false))]]'>      
     [[/if]]
       <div class="semantic-search-content">
-
         <div class="semantic-search-header-content">
-         
-          {{#ifCond "[[urlParam "searchall" escape=false]]" "==" true}}
+          {{#if [[urlParam "searchall" escape=false]]}}
             <div class="semantic-search-header-title"></div>
           {{else}}
             <h3 class="semantic-search-header-title">[[urlParam "resourcelabel" escape=false]]</h3>
-          {{/ifCond}}
+            {{/if}}
       
           <div class="semantic-search-header-actions">
 
@@ -411,7 +409,11 @@
                                                 <semantic-link iri='{{iri.value}}'></semantic-link>
                                                 </div>
                                             </mp-popover-trigger>
-                                            <mp-popover-content>{{> rsp:itemCardTemplate}}</mp-popover-content>
+                                            <mp-popover-content>
+                                              {{> rsp:ResourceCard  iri=iri.value
+                                                                    viewId="timeline"
+                                              }}
+                                            </mp-popover-content>
                                           </mp-popover>
                                       </template>
                                     </semantic-timeline>

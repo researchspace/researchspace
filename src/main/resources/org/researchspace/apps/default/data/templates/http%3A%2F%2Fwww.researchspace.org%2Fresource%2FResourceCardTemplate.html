@@ -1,5 +1,8 @@
-<div  class="resource-card {{#if knowledgeMapCard}}resource-card__no-hover{{/if}}"
-      style="{{#if autosize}}{{else}}width:{{#if width}}{{width}}{{else}}155{{/if}}px; height:{{#if height}}{{height}}{{else}}200{{/if}}px; margin:{{#if cardMargin}}{{cardMargin}}{{else}}0{{/if}}px;{{/if}}">
+<div  class="resource-card {{#if (or narrativeCard knowledgeMapCard)}}resource-card__no-hover{{/if}}"
+      style="{{#if autosize}}{{else if clipboardList}}width:100%; height:{{#if height}}{{height}}{{else}}200{{/if}}px;
+              {{else}}width:{{#if width}}{{width}}{{else}}155{{/if}}px; 
+                      height:{{#if height}}{{height}}{{else}}200{{/if}}px; 
+                      margin:{{#if cardMargin}}{{cardMargin}}{{else}}0{{/if}}px;{{/if}}">
       [[!-- when autosize is set we don't set any fixed height and width, used in semantic narratives where user can resize the card --]]
 
   {{#if newKMCard}}
@@ -10,14 +13,7 @@
           <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri}}"></mp-selection-toggle>
         {{/if}}
       [[/if]]
-      <div class="resource-card__buttons-container">
-
-        {{#if knowledgeMapCard}}
-        <div>
-          <button type="button"  name='edit' class="btn btn-default resource-card__button" title="Edit">
-            <rs-icon icon-type="round" icon-name="edit"></rs-icon>
-          </button></div>
-        {{/if}}
+      <div class="resource-card__buttons-container" style="{{#if clipboardList}}gap:5px{{/if}}">
     
         {{#if (or narrativeCard knowledgeMapCard)}}
           <mp-draggable iri='{{iri}}'>
@@ -34,7 +30,7 @@
                                         cardButton=true
         }}
 
-        {{#if clipboardCard}}
+        {{#if (or clipboardCard clipboardList)}}
           {{#if isSetItem}}
             <mp-anonymous-hidden>
               <mp-set-management-action-remove-set-item>
@@ -55,73 +51,66 @@
     </div>
   {{/if}}
 
-  <div class="resource-card__media-container" style="{{#if autosize}}height:auto{{/if}}">
+  {{#if hideMediaSection}}
+  {{else}}
+    <div class="resource-card__media-container" style="{{#if autosize}}height:auto{{else}}max-height:142px;{{/if}}">
 
-    {{#switch resourceOntologyClass}}
+      {{#switch resourceOntologyClass}}
 
-      {{#case "http://www.researchspace.org/ontology/EX_Digital_Image_Region" break=true}}
-        <rs-iiif-image-thumbnail height='480' width='640' style='height: 100%; width: 100%;'
-                                image-or-region='{{iri}}'      
-                                [[> rsp:IIIFConfig]]>
-        </rs-iiif-image-thumbnail>
-      {{/case}}
-
-      {{#case "http://iflastandards.info/ns/fr/frbr/frbroo/F26_Recording" break=true}}
-        <semantic-query query='SELECT DISTINCT ?video WHERE { 
-                                <{{iri}}> crm:P129i_is_subject_of ?digital_object.
-                                <{{iri}}> crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_video> .
-                                ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
-                                ?digital_object crm:P190_has_symbolic_content ?video .
-                              } LIMIT 1'
-                            
-                        template='{{> template}}'
-                        no-result-template='{{> noResults}}'>
-
-              <template id='template'>
-                      <div class="h100 w100">
-                          <iframe src='{{bindings.0.video.value}}' 
-                                  frameborder="0" 
-                                  allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
-                                  width="100%" height="100%"
-                                  allowfullscreen>
-                          </iframe>
-                      </div>
-              </template>
-
-              <template id="noResults">
-                [[> defaultCardIcon]]
-              </template>
-        </semantic-query>
-      {{/case}}
-
-      {{#default}}
-        {{#if props.[http://www.researchspace.org/pattern/system/image_annotation/area_of_image]}}
-          <rs-iiif-image-thumbnail  height='480' width='640' style='height: 100%; width: 100%;'
-                                    image-or-region='{{props.[http://www.researchspace.org/pattern/system/image_annotation/area_of_image].values.0.value}}' 
-                                    bbox='{{props.[http://www.researchspace.org/pattern/system/image_annotation/boundingBox].values.0.value}}'
-                                    viewport='{{props.[http://www.researchspace.org/pattern/system/image_annotation/viewport].values.0.value}}'
-                                    svg='{{props.[http://www.w3.org/1999/02/22-rdf-syntax-ns#value].values.0.value}}'
-                                    [[> rsp:IIIFConfig]]>
+        {{#case "http://www.researchspace.org/ontology/EX_Digital_Image_Region" break=true}}
+          <rs-iiif-image-thumbnail height='480' width='640' style='height: 100%; width: 100%;'
+                                  image-or-region='{{iri}}'      
+                                  [[> rsp:IIIFConfig]]>
           </rs-iiif-image-thumbnail>
-        {{else}}
+        {{/case}}
+
+        {{#case "http://iflastandards.info/ns/fr/frbr/frbroo/F26_Recording" break=true}}
+          <semantic-query query='SELECT DISTINCT ?video WHERE { 
+                                  <{{iri}}> crm:P129i_is_subject_of ?digital_object.
+                                  <{{iri}}> crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_video> .
+                                  ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                                  ?digital_object crm:P190_has_symbolic_content ?video .
+                                } LIMIT 1'
+                              
+                          template='{{> template}}'
+                          no-result-template='{{> noResults}}'>
+
+                <template id='template'>
+                        <div class="h100 w100">
+                            <iframe src='{{bindings.0.video.value}}' 
+                                    frameborder="0" 
+                                    allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
+                                    width="100%" height="100%"
+                                    allowfullscreen>
+                            </iframe>
+                        </div>
+                </template>
+
+                <template id="noResults">
+                  [[> defaultCardIcon]]
+                </template>
+          </semantic-query>
+        {{/case}}
+
+        {{#default}}
           <mp-resource-thumbnail iri='{{iri}}' class="resource-card__thumbnail">
             <mp-resource-thumbnail-fallback>
               [[> defaultCardIcon]]
             </mp-resource-thumbnail-fallback>
           </mp-resource-thumbnail>
-        {{/if}}
-      {{/default}}
+        {{/default}}
 
-    {{/switch}}
-  </div>
+      {{/switch}}
+    </div>
+  {{/if}}
 
-  <div class="resource-card__footer">
+  <div class="resource-card__footer" style="{{#if hideMediaSection}}width: 200px;{{/if}}{{#if clipboardList}}width: calc(100% - 70px); height: 40px; gap: 0;{{/if}}">
     [[#if customFooter]]
       [[#block "customFooter"]][[/block]]
     [[else]]
-      <div class="resource-card__footer-type color-secondary-light text-font-size__xsmall">
+      <div class="resource-card__footer-type color-secondary-light text-font-size__xsmall" style="{{#if clipboardList}}font-size:11px;{{/if}}">
         {{#if resourceLabel}}
-          <span>{{resourceLabel}}</span>
+          <span class="resource-card__footer-class" title="{{resourceLabel}}">{{resourceLabel}}</span>
         {{else}}
           <semantic-query query='SELECT ?ontologyClassLabel WHERE {
                                     BIND(<{{iri}}> as ?resource)
@@ -134,13 +123,13 @@
                           no-result-template='{{> noResults}}'>
       
               <template id='template'>
-                <span>{{bindings.0.ontologyClassLabel.value}}</span>
+                <span class="resource-card__footer-class" title="{{bindings.0.ontologyClassLabel.value}}">{{bindings.0.ontologyClassLabel.value}}</span>
               </template>
 
               <template id="noResults">
                 {{#if data.types}}
                   [[!-- ontology class from KM props --]]
-                    <div>
+                    <div class="resource-card__footer-class">
                       <mp-label iri='{{data.types}}'></mp-label>
                     </div>
                 {{/if}}
@@ -160,16 +149,16 @@
             <div><mp-label iri='{{iri}}' class="text-link"></mp-label></div>
           </mp-event-trigger>
         {{else}}
-          {{#if label}}
-            [[!-- Label from KM props --]]
-            <span class="text-link">{{label}}</span>
-          {{else}}
-            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                            urlqueryparam-view='{{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}semantic-narrative{{else}}resource-editor{{/if}}'
-                            urlqueryparam-resource='{{iri}}'>
+          <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                          urlqueryparam-view='{{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}semantic-narrative{{else}}resource-editor{{/if}}'
+                          urlqueryparam-resource='{{iri}}'>
+            {{#if label}}
+              [[!-- Label from KM props --]]
+              <span class="text-link" title="{{label}}">{{label}}</span>
+            {{else}}
               <mp-label iri='{{iri}}' class="text-link" highlight='{{highlight}}' highlight-props='{"style": {"color": "#dc8a4b"}}'></mp-label>
-            </semantic-link>
-          {{/if}}
+            {{/if}}
+          </semantic-link>
         {{/if}}
       </div>
     [[/if]]

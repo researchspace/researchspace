@@ -4,7 +4,8 @@
   </bs-dropdown-toggle>
 
   <bs-dropdown-menu class="resource-card__dropdown-menu {{#if (or clipboardCard cardInDragAndDropInput)}}resource-card__dropdown-multitle-actions{{/if}}
-                          {{#if (or clipboardCard cardInDragAndDropInput narrativeCard)}}resource-card__dropdown-small{{/if}}">
+                          {{#if (or clipboardCard cardInDragAndDropInput narrativeCard)}}resource-card__dropdown-small{{/if}}
+                          {{#if knowledgeMapCard}}resource-card__dropdown-km{{/if}}">
 
     {{#switch resourceConfig}}
       {{#case "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative" break=true}}
@@ -174,7 +175,7 @@
       </semantic-query>
     {{/if}}
 
-    {{#if clipboardCard}}
+    {{#if (or clipboardCard clipboardList)}}
     {{else}}
       <mp-copy-to-default-set id="{{viewId}}-copy-to-clipboard" resource="{{iri}}">
         <bs-menu-item>
@@ -211,13 +212,34 @@
         <span>Edit in draggable tab</span>
       </bs-menu-item>
     </semantic-link-container>
-    <hr>
 
     {{#if (not (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set"))}}
-      <bs-menu-item>
-        <rs-icon icon-type="rounded" icon-name="photo_size_select_large" class="icon-left" symbol="true"></rs-icon>
-        <span>Image view / annotations</span>
-      </bs-menu-item>
+    <hr>
+      <mp-event-trigger id='{{viewId}}-image-annotation-add-frame-trigger' 
+                        type='Dashboard.AddFrame' 
+                        data='{"resourceIri": "{{iri}}", 
+                                "viewId": "object-image-observation", 
+                                "objectIri": "{{iri}}",
+                                "frameId": "{{viewId}}"}' 
+                        targets='["thinking-frames"]'>
+          <bs-menu-item>
+            <rs-icon icon-type="rounded" icon-name="photo_size_select_large" class="icon-left" symbol="true"></rs-icon>
+            <span>Image view / annotations</span>
+          </bs-menu-item>
+      </mp-event-trigger>
+    {{/if}}
+
+    {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image")}}
+      <semantic-link-container  uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                urlqueryparam-view='image-graph-authoring' 
+                                urlqueryparam-resource='{{iri}}'>
+        <bs-menu-item>
+          <rs-icon icon-type="rounded" icon-name="wallpaper" class="icon-left" symbol="true"></rs-icon>
+          <span>Image graph authoring</span>
+        </bs-menu-item>
+      </semantic-link-container>
+      <hr>
+    {{else}}
       <hr>
     {{/if}}
 
@@ -230,13 +252,16 @@
             <span>Open in Knowledge map</span>
           </bs-menu-item>
       </semantic-link-container>
-      <hr>
     {{/if}}
 
-    <bs-menu-item>
-      <rs-icon icon-type="rounded" icon-name="delete" class="icon-left" symbol="true"></rs-icon>
-      <span>Delete</span>
-    </bs-menu-item>
+    {{#if (or knowledgeMapCard cardInDragAndDropInput)}}
+    {{else}}
+      <hr>
+      <bs-menu-item>
+        <rs-icon icon-type="rounded" icon-name="delete" class="icon-left" symbol="true"></rs-icon>
+        <span>Delete</span>
+      </bs-menu-item>
+    {{/if}}
 
     [[#if customAction]]
       [[#block "customAction"]][[/block]]

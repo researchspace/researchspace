@@ -277,7 +277,7 @@ export class Toolbar extends React.Component<ToolbarProps> {
                 disabled={saving}>
           <i className={saving ? 'fa fa-spinner fa-pulse fa-fw' : null }
             aria-hidden='true'></i>
-           Save
+           Save narrative
         </Button>
         
       </div>

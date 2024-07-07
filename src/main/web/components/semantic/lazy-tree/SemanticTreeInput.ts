@@ -727,7 +727,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
       ) {
         return D.span(
           { className: styles.searchMessage },
-          `Minimum length of search term is ${MIN_SEARCH_TERM_LENGTH} characters.`
+          `Minimum length of search term is ${MIN_SEARCH_TERM_LENGTH} characters`
         );
       } else if (this.state.searching) {
         return createElement(Spinner, { className: styles.searchSpinner });
@@ -749,7 +749,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
           `Only first ${matchedCount} matches are shown. Please refine your search.`
         );
       } else if (!forest.root.children || forest.root.children.length === 0) {
-        return D.span({ className: styles.searchMessage }, `No results found.`);
+        return D.span({ className: styles.searchMessage }, `No results found`);
       }
     }
     return D.div({ className: styles.tree }, this.renderTree(mode), limitMessage);

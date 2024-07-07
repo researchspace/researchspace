@@ -130,15 +130,8 @@ public abstract class AbstractLDPResource implements LDPResource {
             // add outgoing contains (i.e. stored in different contexts)            
             m.addAll(containsStmts);
             // but hide incoming statements (i.e. contains from parents)
-            m.remove(null, null, this.getResourceIRI());
-            return m;
-        }
-
-        Iterator<Statement> it = m.iterator();
-        while (it.hasNext()) {
-            Statement st = it.next();
-            logger.debug(st.getSubject()+" "+st.getPredicate()+" "+st.getObject());
-        }        
+            m.remove(null, null, this.getResourceIRI());            
+        }      
 
         return m;
     }

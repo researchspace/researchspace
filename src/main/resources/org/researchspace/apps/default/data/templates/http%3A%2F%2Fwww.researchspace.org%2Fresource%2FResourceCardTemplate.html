@@ -1,5 +1,8 @@
-<div  class="resource-card {{#if knowledgeMapCard}}resource-card__no-hover{{/if}}"
-      style="{{#if autosize}}{{else}}width:{{#if width}}{{width}}{{else}}155{{/if}}px; height:{{#if height}}{{height}}{{else}}200{{/if}}px; margin:{{#if cardMargin}}{{cardMargin}}{{else}}0{{/if}}px;{{/if}}">
+<div  class="resource-card {{#if (or narrativeCard knowledgeMapCard)}}resource-card__no-hover{{/if}}"
+      style="{{#if autosize}}{{else if clipboardList}}width:100%; height:{{#if height}}{{height}}{{else}}200{{/if}}px;
+              {{else}}width:{{#if width}}{{width}}{{else}}155{{/if}}px; 
+                      height:{{#if height}}{{height}}{{else}}200{{/if}}px; 
+                      margin:{{#if cardMargin}}{{cardMargin}}{{else}}0{{/if}}px;{{/if}}">
       [[!-- when autosize is set we don't set any fixed height and width, used in semantic narratives where user can resize the card --]]
 
   {{#if newKMCard}}
@@ -10,7 +13,7 @@
           <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri}}"></mp-selection-toggle>
         {{/if}}
       [[/if]]
-      <div class="resource-card__buttons-container">
+      <div class="resource-card__buttons-container" style="{{#if clipboardList}}gap:5px{{/if}}">
     
         {{#if (or narrativeCard knowledgeMapCard)}}
           <mp-draggable iri='{{iri}}'>
@@ -27,7 +30,7 @@
                                         cardButton=true
         }}
 
-        {{#if clipboardCard}}
+        {{#if (or clipboardCard clipboardList)}}
           {{#if isSetItem}}
             <mp-anonymous-hidden>
               <mp-set-management-action-remove-set-item>
@@ -50,7 +53,7 @@
 
   {{#if hideMediaSection}}
   {{else}}
-    <div class="resource-card__media-container" style="{{#if autosize}}height:auto{{/if}}">
+    <div class="resource-card__media-container" style="{{#if autosize}}height:auto{{else}}max-height:142px;{{/if}}">
 
       {{#switch resourceOntologyClass}}
 
@@ -90,34 +93,24 @@
         {{/case}}
 
         {{#default}}
-          {{#if props.[http://www.researchspace.org/pattern/system/image_annotation/area_of_image]}}
-            <rs-iiif-image-thumbnail  height='480' width='640' style='height: 100%; width: 100%;'
-                                      image-or-region='{{props.[http://www.researchspace.org/pattern/system/image_annotation/area_of_image].values.0.value}}' 
-                                      bbox='{{props.[http://www.researchspace.org/pattern/system/image_annotation/boundingBox].values.0.value}}'
-                                      viewport='{{props.[http://www.researchspace.org/pattern/system/image_annotation/viewport].values.0.value}}'
-                                      svg='{{props.[http://www.w3.org/1999/02/22-rdf-syntax-ns#value].values.0.value}}'
-                                      [[> rsp:IIIFConfig]]>
-            </rs-iiif-image-thumbnail>
-          {{else}}
-            <mp-resource-thumbnail iri='{{iri}}' class="resource-card__thumbnail">
-              <mp-resource-thumbnail-fallback>
-                [[> defaultCardIcon]]
-              </mp-resource-thumbnail-fallback>
-            </mp-resource-thumbnail>
-          {{/if}}
+          <mp-resource-thumbnail iri='{{iri}}' class="resource-card__thumbnail">
+            <mp-resource-thumbnail-fallback>
+              [[> defaultCardIcon]]
+            </mp-resource-thumbnail-fallback>
+          </mp-resource-thumbnail>
         {{/default}}
 
       {{/switch}}
     </div>
   {{/if}}
 
-  <div class="resource-card__footer" style="{{#if hideMediaSection}}width: 170px;{{/if}}">
+  <div class="resource-card__footer" style="{{#if hideMediaSection}}width: 200px;{{/if}}{{#if clipboardList}}width: calc(100% - 70px); height: 40px; gap: 0;{{/if}}">
     [[#if customFooter]]
       [[#block "customFooter"]][[/block]]
     [[else]]
-      <div class="resource-card__footer-type color-secondary-light text-font-size__xsmall">
+      <div class="resource-card__footer-type color-secondary-light text-font-size__xsmall" style="{{#if clipboardList}}font-size:11px;{{/if}}">
         {{#if resourceLabel}}
-          <span class="resource-card__footer-class">{{resourceLabel}}</span>
+          <span class="resource-card__footer-class" title="{{resourceLabel}}">{{resourceLabel}}</span>
         {{else}}
           <semantic-query query='SELECT ?ontologyClassLabel WHERE {
                                     BIND(<{{iri}}> as ?resource)
@@ -130,7 +123,7 @@
                           no-result-template='{{> noResults}}'>
       
               <template id='template'>
-                <span class="resource-card__footer-class">{{bindings.0.ontologyClassLabel.value}}</span>
+                <span class="resource-card__footer-class" title="{{bindings.0.ontologyClassLabel.value}}">{{bindings.0.ontologyClassLabel.value}}</span>
               </template>
 
               <template id="noResults">
@@ -156,16 +149,16 @@
             <div><mp-label iri='{{iri}}' class="text-link"></mp-label></div>
           </mp-event-trigger>
         {{else}}
-          {{#if label}}
-            [[!-- Label from KM props --]]
-            <span class="text-link">{{label}}</span>
-          {{else}}
-            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                            urlqueryparam-view='{{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}semantic-narrative{{else}}resource-editor{{/if}}'
-                            urlqueryparam-resource='{{iri}}'>
+          <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                          urlqueryparam-view='{{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}semantic-narrative{{else}}resource-editor{{/if}}'
+                          urlqueryparam-resource='{{iri}}'>
+            {{#if label}}
+              [[!-- Label from KM props --]]
+              <span class="text-link" title="{{label}}">{{label}}</span>
+            {{else}}
               <mp-label iri='{{iri}}' class="text-link" highlight='{{highlight}}' highlight-props='{"style": {"color": "#dc8a4b"}}'></mp-label>
-            </semantic-link>
-          {{/if}}
+            {{/if}}
+          </semantic-link>
         {{/if}}
       </div>
     [[/if]]

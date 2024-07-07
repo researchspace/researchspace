@@ -50,24 +50,24 @@ export class EditLinkLabelForm extends React.Component<Props, State> {
       <div className={CLASS_NAME}>
         <div className={`${CLASS_NAME}__body`}>
           <div className={`${CLASS_NAME}__form-row`}>
-            <label>Link Label</label>
+            <label>Connection label</label>
             <input
               className="ontodia-form-control"
               value={label}
               onChange={(e) => this.setState({ label: (e.target as HTMLInputElement).value })}
             />
           </div>
-        </div>
-        <div className={`${CLASS_NAME}__controls`}>
-          <button
-            className={`ontodia-btn ontodia-btn-success ${CLASS_NAME}__apply-button`}
-            onClick={() => onApply(label)}
-          >
-            Apply
-          </button>
-          <button className="ontodia-btn ontodia-btn-danger" onClick={() => onCancel()}>
-            Cancel
-          </button>
+          <div className={`${CLASS_NAME}__controls`}>
+            <button className="btn btn-default" onClick={() => onCancel()}>
+              Cancel
+            </button>
+            <button
+              className={`btn btn-action ${CLASS_NAME}__apply-button`}
+              onClick={() => onApply(label)}
+            >
+              Save
+            </button>
+          </div>
         </div>
       </div>
     );

@@ -171,21 +171,20 @@ export class EditElementTypeForm extends React.Component<Props, State> {
               <ProgressBar state={ProgressState.loading} height={10} />
             </div>
           ) : null}
+          <div className={`${CLASS_NAME}__controls`}>
+            <button className="btn btn-default" onClick={this.props.onCancel}>
+              Cancel
+            </button>
+            <button
+              className={`btn btn-action ${CLASS_NAME}__apply-button`}
+              onClick={() => this.props.onApply(elementValue.value, elementValue.isNew, linkValue.value.link)}
+              disabled={elementValue.loading || !isValid || isValidating}
+            >
+              Create
+            </button>
+          </div>
         </div>
-        <div className={`${CLASS_NAME}__controls`}>
-          <button className="btn btn-default" onClick={this.props.onCancel}>
-            Cancel
-          </button>
 
-          <button
-            className={`btn btn-action ${CLASS_NAME}__apply-button`}
-            onClick={() => this.props.onApply(elementValue.value, elementValue.isNew, linkValue.value.link)}
-            disabled={elementValue.loading || !isValid || isValidating}
-          >
-            Create
-          </button>
-          
-        </div>
       </div>
     );
   }

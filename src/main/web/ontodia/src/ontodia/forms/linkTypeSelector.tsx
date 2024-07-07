@@ -142,11 +142,11 @@ export class LinkTypeSelector extends React.Component<Props, State> {
     );
     return (
       <div className={`${CLASS_NAME}__control-row`}>
-        <label>Link Type</label>
+        <label>Connection type</label>
         {fatLinkTypes ? (
           <select className="ontodia-form-control" value={value} onChange={this.onChangeType} disabled={disabled}>
             <option value={-1} disabled={true}>
-              Select link type
+              Select connection type
             </option>
             {fatLinkTypes.map(this.renderPossibleLinkType)}
           </select>

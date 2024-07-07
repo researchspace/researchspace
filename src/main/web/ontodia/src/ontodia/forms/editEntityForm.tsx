@@ -140,18 +140,19 @@ export class EditEntityForm extends React.Component<Props, State> {
           <div className={`${CLASS_NAME}__form-row`}>{this.renderType()}</div>
           <div className={`${CLASS_NAME}__form-row`}>{this.renderLabel()}</div>
           {this.renderProperties()}
+          <div className={`${CLASS_NAME}__controls`}>
+            <button className="btn btn-default" onClick={this.props.onCancel}>
+              Cancel
+            </button>
+            <button
+              className={`btn btn-action ${CLASS_NAME}__apply-button`}
+              onClick={() => this.props.onApply(this.state.elementModel)}
+            >
+              Save
+            </button>
+          </div>
         </div>
-        <div className={`${CLASS_NAME}__controls`}>
-          <button
-            className={`ontodia-btn ontodia-btn-success ${CLASS_NAME}__apply-button`}
-            onClick={() => this.props.onApply(this.state.elementModel)}
-          >
-            Apply
-          </button>
-          <button className="ontodia-btn ontodia-btn-danger" onClick={this.props.onCancel}>
-            Cancel
-          </button>
-        </div>
+
       </div>
     );
   }

@@ -648,10 +648,6 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
 /*           D.span({}, 'Filter'), */
           D.span({
             className: 'material-icons-round',
-            style: {
-              transform: `${this.state.mode.type === 'full' ? 'rotate(180deg)' : 'rotate(0deg)'}`,
-              transition: 'all 0.25s'
-            },
             ['aria-hidden' as any]: true,
           }, 'expand_more')
 
@@ -677,6 +673,19 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
         return newState;
       }
     );
+  }
+
+  private clearSearch() {
+    this.search.cancelAll();
+    this.setState((): State => {
+      const newState: State = {
+        mode: { type: 'search', selection: null },
+        searchText: undefined,
+        searching: false,
+        searchResult: undefined,
+      };
+      return newState;
+    })
   }
 
   private renderOverlay() {
@@ -722,7 +731,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
   private renderDropdownContent(mode: ExpandedMode): ReactElement<any> {
     if (mode.type === 'search') {
       if (
-        this.state.searchText.length < MIN_SEARCH_TERM_LENGTH &&
+        this.state.searchText && this.state.searchText.length < MIN_SEARCH_TERM_LENGTH &&
         (!this.state.searchForce || !this.props.allowForceSuggestion)
       ) {
         return D.span(
@@ -731,7 +740,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
         );
       } else if (this.state.searching) {
         return createElement(Spinner, { className: styles.searchSpinner });
-      } else if (this.state.searchResult.error) {
+      } else if (this.state.searchResult?.error) {
         return createElement(ErrorNotification, { errorMessage: this.state.searchResult.error });
       }
     }
@@ -741,7 +750,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
   private renderScrollableDropdownContent(mode: ExpandedMode): ReactElement<any> {
     let limitMessage: ReactElement<any> = null;
 
-    if (mode.type === 'search') {
+    if (mode.type === 'search' && this.state.searchResult) {
       const { matchedCount, matchLimit, forest } = this.state.searchResult;
       if (matchLimit && matchedCount === matchLimit) {
         limitMessage = D.span(
@@ -815,7 +824,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
       },
       onClear: () => {
         if (this.state.searchInputFocused || this.state.searchText) {
-          this.closeDropdown({ saveSelection: false });
+          this.clearSearch()
         }
       },
     };
@@ -828,7 +837,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
 
   private renderTree(mode: ExpandedMode): ReactElement<any> {
     const inSearchMode = mode.type === 'search';
-    const renderedForest = inSearchMode ? this.state.searchResult.forest : this.state.forest;
+    const renderedForest = inSearchMode && this.state.searchResult ? this.state.searchResult.forest : this.state.forest;
     const searchTerm = inSearchMode && this.state.searchText ? this.state.searchText.toLowerCase() : undefined;
 
     const config: LazyTreeSelectorProps<Node> = {

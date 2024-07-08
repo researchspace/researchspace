@@ -20,7 +20,14 @@
 export * from './FieldDefinition';
 export * from './FieldMapping';
 export * from './FieldValues';
-export { readyToSubmit, fieldInitialState, generateSubjectByTemplate, wasIriGeneratedByTemplate } from './FormModel';
+export { 
+  readyToSubmit, 
+  fieldInitialState, 
+  generateSubjectByTemplate, 
+  wasIriGeneratedByTemplate, 
+  loadDefaults, 
+  tryBeginValidation 
+} from './FormModel';
 export * from './ResourceEditorForm';
 export * from './ResourceEditorFormConfig';
 export * from './SemanticForm';

@@ -37,8 +37,11 @@ const platformApiPackages = [
     'api/async',
 
     'components/forms',
+    'components/forms/inputs',
 
     'components/semantic/query',
+    
+    'components/ui/spinner'
 ];
 
 /**

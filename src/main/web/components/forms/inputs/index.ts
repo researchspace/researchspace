@@ -32,3 +32,5 @@ export { HiddenInput, HiddenInputProps } from './HiddenInput';
 export { PlainTextInput, PlainTextInputProps } from './PlainTextInput';
 export { SelectInput, SelectInputProps } from './SelectInput';
 export { TreePickerInput, TreePickerInputProps } from './TreePickerInput';
+export { ValidationMessages } from './Decorations';
+export { InputKind } from './InputCommpons';

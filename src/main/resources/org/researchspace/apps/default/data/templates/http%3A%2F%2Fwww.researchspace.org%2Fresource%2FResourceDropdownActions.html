@@ -1,5 +1,5 @@
 <bs-dropdown id="{{viewId}}-{{iri}}-item-actions-dropdown" pull-right=true class="dropdown-no-caret">
-  <bs-dropdown-toggle class="border-none {{#if cardButton}}resource-card__button{{/if}}">
+  <bs-dropdown-toggle class="{{#if resourceEditorButton}}{{else}}border-none {{#if cardButton}}resource-card__button{{/if}}{{/if}}">
     <rs-icon icon-type="round" icon-name="more_vert"></rs-icon>
   </bs-dropdown-toggle>
 
@@ -69,35 +69,37 @@
       {{/case}}
 
       {{#default}}
-        <mp-overlay-dialog  id="{{viewId}}-resource-preview-dialog"  
-                            type="modal" 
-                            class="modal-xlSize preview_modal"
-                            title="Preview">
-          <mp-overlay-dialog-trigger>
-            <bs-menu-item>
-              <rs-icon icon-type="rounded" icon-name="fullscreen" class="icon-left" symbol="true"></rs-icon>
-              <span>Preview</span>
-            </bs-menu-item>
-          </mp-overlay-dialog-trigger>
+        {{#if resourceEditorButton}}
+        {{else}}
+          <mp-overlay-dialog  id="{{viewId}}-resource-preview-dialog"  
+                              type="modal" 
+                              class="modal-xlSize preview_modal"
+                              title="Preview">
+            <mp-overlay-dialog-trigger>
+              <bs-menu-item>
+                <rs-icon icon-type="rounded" icon-name="fullscreen" class="icon-left" symbol="true"></rs-icon>
+                <span>Preview</span>
+              </bs-menu-item>
+            </mp-overlay-dialog-trigger>
 
-          <mp-overlay-dialog-content>
-            <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
-                              options='{  "resource": "{{iri}}", 
-                                          "resourceConfig": "{{resourceConfig}}", 
-                                          "resourceConfigLabel": "{{resourceLabel}}",
-                                          {{#if resourceDescription}}"resourceDescription": "{{resourceDescription}}",{{/if}}
-                                          "modalId": "{{viewId}}-resource-preview-dialog",
-                                          "resourceDetailSection": true
-                                        }' >
-            </inline-template> 
-          </mp-overlay-dialog-content>
-        </mp-overlay-dialog>
-        <hr>
+            <mp-overlay-dialog-content>
+              <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
+                                options='{  "resource": "{{iri}}", 
+                                            "resourceConfig": "{{resourceConfig}}", 
+                                            "resourceConfigLabel": "{{resourceLabel}}",
+                                            {{#if resourceDescription}}"resourceDescription": "{{resourceDescription}}",{{/if}}
+                                            "modalId": "{{viewId}}-resource-preview-dialog",
+                                            "resourceDetailSection": true
+                                          }' >
+              </inline-template> 
+            </mp-overlay-dialog-content>
+          </mp-overlay-dialog>
+          <hr>
+        {{/if}}
       {{/default}}
-
     {{/switch}}
 
-    {{#if (or (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Place") (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Organisation") (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Organisation"))}}
+    {{#if (or (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Place") (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Organisation") )}}
       <semantic-if query='ASK { <{{iri}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
                                 ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
                                 ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt . }'>
@@ -140,12 +142,12 @@
                 <span>Open PDF document</span>
               </bs-menu-item>
             {{/ifCond}}
-            <mp-file-download  download-url="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}">
               <bs-menu-item>
                 <rs-icon icon-type="rounded" icon-name="download" class="icon-left" symbol="true"></rs-icon>
-                <span>Download file</span>
+                <mp-file-download post-action="" download-url="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}">
+                  <span>Download file</span>
+                </mp-file-download>
               </bs-menu-item>
-            </mp-file-download>
             <hr>
           </template>
       </semantic-query>
@@ -153,23 +155,23 @@
 
     {{#if (or (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image") (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Audio") (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Video"))}}
       <semantic-query query='SELECT ?file ?fileName ?fileMediaType WHERE {
-                            BIND(<{{iri}}> as ?resource) .
-                            
-                            ?resource crmdig:L60i_is_documented_by ?digitizationProcess .
-                            ?digitizationProcess a crmdig:D2_Digitization_Process .    
-                            ?digitizationProcess crmdig:L11_had_output ?file .
-                            ?file rs:PX_has_file_name ?fileName .
-                            ?file rs:PX_has_media_type ?fileMediaType .
-                          }'
+                              BIND(<{{iri}}> as ?resource) .
+                              
+                              ?resource crmdig:L60i_is_documented_by ?digitizationProcess .
+                              ?digitizationProcess a crmdig:D2_Digitization_Process .    
+                              ?digitizationProcess crmdig:L11_had_output ?file .
+                              ?file rs:PX_has_file_name ?fileName .
+                              ?file rs:PX_has_media_type ?fileMediaType .
+                            }'
                     template='{{> template}}'
         >
           <template id='template'>
-            <mp-file-download  download-url="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}">
-              <bs-menu-item>
-                <rs-icon icon-type="rounded" icon-name="download" class="icon-left" symbol="true"></rs-icon>
-                <span>Download file</span>
-              </bs-menu-item>
-            </mp-file-download>
+            <bs-menu-item>
+              <rs-icon icon-type="rounded" icon-name="download" class="icon-left" symbol="true"></rs-icon>
+              <mp-file-download post-action="" download-url="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}">
+                <span>Download file </span>
+              </mp-file-download>
+            </bs-menu-item>
             <hr>
           </template>
       </semantic-query>
@@ -192,29 +194,32 @@
       </bs-menu-item>
     </mp-copy-to-clipboard>
 
-    <hr>
+    {{#if resourceEditorButton}}
+    {{else}}
+      <hr>
 
-    <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
-                              urlqueryparam-view="resource-editor"
-                              urlqueryparam-resource-iri='{{iri}}'>
-      <bs-menu-item>
-        <rs-icon icon-type="rounded" icon-name="edit_note" class="icon-left" symbol="true"></rs-icon>
-        <span>Edit</span>
-      </bs-menu-item>
-    </semantic-link-container>
+      <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                urlqueryparam-view="resource-editor"
+                                urlqueryparam-resource-iri='{{iri}}'>
+        <bs-menu-item>
+          <rs-icon icon-type="rounded" icon-name="edit_note" class="icon-left" symbol="true"></rs-icon>
+          <span>Edit</span>
+        </bs-menu-item>
+      </semantic-link-container>
 
-    <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
-                              urlqueryparam-view="resource-editor"
-                              urlqueryparam-resource-iri='{{iri}}'
-                              urlqueryparam-open-as-drag-and-drop='true'>
-      <bs-menu-item>
-        <rs-icon icon-type='rounded' icon-name='read_more' symbol='true' class="icon-left"></rs-icon>
-        <span>Edit in draggable tab</span>
-      </bs-menu-item>
-    </semantic-link-container>
+      <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                urlqueryparam-view="resource-editor"
+                                urlqueryparam-resource-iri='{{iri}}'
+                                urlqueryparam-open-as-drag-and-drop='true'>
+        <bs-menu-item>
+          <rs-icon icon-type='rounded' icon-name='read_more' symbol='true' class="icon-left"></rs-icon>
+          <span>Edit in draggable tab</span>
+        </bs-menu-item>
+      </semantic-link-container>
+    {{/if}}
 
     {{#if (not (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set"))}}
-    <hr>
+      <hr>
       <mp-event-trigger id='{{viewId}}-image-annotation-add-frame-trigger' 
                         type='Dashboard.AddFrame' 
                         data='{"resourceIri": "{{iri}}", 
@@ -237,13 +242,11 @@
           <rs-icon icon-type="rounded" icon-name="wallpaper" class="icon-left" symbol="true"></rs-icon>
           <span>Image graph authoring</span>
         </bs-menu-item>
-      </semantic-link-container>
-      <hr>
-    {{else}}
-      <hr>
+      </semantic-link-container> 
     {{/if}}
 
     {{#if (not (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map"))}}
+      <hr>
       <semantic-link-container  uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
                                 urlqueryparam-view='knowledge-map' 
                                 urlqueryparam-resource='{{iri}}'>
@@ -254,7 +257,7 @@
       </semantic-link-container>
     {{/if}}
 
-    {{#if (or knowledgeMapCard cardInDragAndDropInput)}}
+    {{#if (or knowledgeMapCard cardInDragAndDropInput resourceEditorButton)}}
     {{else}}
       <hr>
       <bs-menu-item>

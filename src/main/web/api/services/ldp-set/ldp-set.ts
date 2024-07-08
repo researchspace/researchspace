@@ -107,7 +107,7 @@ export class SetService extends LdpService {
     setIri: Rdf.Iri,
     visibleInViewForTemplateWithId: string   
   ) {
-    let setIriGraph = setIri.toString().replace(">","/context>");
+    let setIriGraph = setIri.toString().replace(">","/extended_context>");
     SparqlClient
       .executeSparqlUpdate(
           "INSERT DATA { graph <http://www.researchspace.org/sets/views_visibility> "+ " { "+

@@ -111,6 +111,21 @@ public abstract class AbstractLDPContainer extends AbstractLDPResource implement
         repConnection.add(pg.getGraph(), contextUri);
     }
 
+    public void renameUpdateSet(PointedGraph pointedGraph) throws RepositoryException {
+        try (RepositoryConnection connection = getRepository().getConnection()) {
+            connection.begin();
+            LDPResource toDelete = getLdpApi().getLDPResource(pointedGraph.getPointer());
+            if (!AbstractLDPResource.class.isAssignableFrom(toDelete.getClass())) {
+                throw new IllegalStateException("LDP Resource implementation " + toDelete.getClass() + " must extend "
+                        + AbstractLDPResource.class + " for save transaction handling.");
+            }
+            ((AbstractLDPResource) toDelete).deleteSetForRenaming(connection, new HashSet<>());
+            add(pointedGraph, connection);
+            connection.commit();
+        }
+        cacheManager.invalidateResources(Collections.singleton(pointedGraph.getPointer()));
+    }
+
     @Override
     public void update(PointedGraph pointedGraph) throws RepositoryException {
         try (RepositoryConnection connection = getRepository().getConnection()) {
@@ -141,12 +156,16 @@ public abstract class AbstractLDPContainer extends AbstractLDPResource implement
         } catch (Exception ex) {
             throw Throwables.propagate(ex);
         }
-
+        
         Model model = resource.getModel();
         model.remove(resourceIri, RDFS.LABEL, null);
         model.add(resourceIri, RDFS.LABEL, vf.createLiteral(newName));
 
-        this.update(new PointedGraph(resourceIri, model));
+        // if Set use renameUpdateSet
+        if (resource.isSet())
+            this.renameUpdateSet(new PointedGraph(resourceIri, model));
+        else
+            this.update(new PointedGraph(resourceIri, model));
     }
 
     @Override

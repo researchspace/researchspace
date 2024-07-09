@@ -78,7 +78,7 @@ export class ClearableInput extends React.Component<ClearableInputProps, State> 
             ref={this.onInputMount}
             className={controlClass}
             style={inputStyle}
-            placeholder='Search...'
+            placeholder='Search'
             onFocus={this.onFocus}
             onBlur={this.onBlur}
           />

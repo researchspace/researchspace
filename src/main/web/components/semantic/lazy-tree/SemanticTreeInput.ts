@@ -799,7 +799,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
           disabled: !enableSelectionSave,
           onClick: () => this.closeDropdown({ saveSelection: true }),
         },
-        'Done'
+        'Apply'
       )
     );
   }
@@ -814,6 +814,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
       inputClassName: styles.input,
       value: this.state.searchText || '',
       placeholder: this.props.placeholder,
+      showPlaceholderIcon: true,
       onFocus: () =>
         this.setState({
           searchInputFocused: true,

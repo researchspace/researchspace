@@ -345,16 +345,25 @@
                   </div>
                 {{/if}}
               </div>
+
+              [[!-- Refresh Search page for a particular resource if open --]]
+              <mp-event-proxy id='{{viewId}}-refresh-search-page'
+                              on-event-source='{{#if iri}}{{iri}}-resource-form{{else}}{{viewId}}-resource-form{{/if}}' 
+                              on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated", "Form.ResourceRemoved"]'      
+                              proxy-event-type='Component.TemplateUpdate' 
+                              proxy-targets='["{{resourceConfiguration}}-resourceSearch-frame"]'
+              ></mp-event-proxy>
     
               {{#if (not (eq mode "deleted"))}} 
-                <mp-event-proxy id='{{viewId}}-tab-refresh-on-created' 
-                                on-event-source='{{viewId}}-vocab-form' 
+        [[!--        <mp-event-proxy id='{{viewId}}-tab-refresh-on-created' 
+                                on-event-source='{{viewId}}-resource-form' 
                                 on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
                                 proxy-event-type='Dashboard.ResourceChanged' 
                                 proxy-targets='["{{viewId}}"]'                                                          
-                ></mp-event-proxy> 
+                ></mp-event-proxy>  --]]
+
                 <mp-event-proxy id='{{viewId}}-tree-refresh-on-created' 
-                                on-event-source='{{viewId}}-vocab-form' 
+                                on-event-source='{{#if iri}}{{iri}}-resource-form{{else}}{{viewId}}-resource-form{{/if}}' 
                                 on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
                                 proxy-event-type='Component.TemplateUpdate' 
                                 proxy-targets='["{{viewId}}-mytree", "{{viewId}}-term-forms"]'
@@ -371,7 +380,7 @@
 
                     <template id='template'>
                       <mp-event-proxy id='{{viewId}}-tree-refresh-on-delete' 
-                                      on-event-source='{{viewId}}-vocab-form' 
+                                      on-event-source='{{iri}}-resource-form' 
                                       on-event-types='["Form.ResourceRemoved"]'
                                       proxy-event-type='Component.TemplateUpdate' 
                                       proxy-targets='["{{viewId}}-mytree", "{{viewId}}-term-forms"]'
@@ -382,7 +391,7 @@
 
                     <template id="noResults">
                       <mp-event-proxy id='{{viewId}}-noResults-tree-refresh-on-delete' 
-                                      on-event-source='{{viewId}}-vocab-form' 
+                                      on-event-source='{{iri}}-resource-form' 
                                       on-event-types='["Form.ResourceRemoved"]'
                                       proxy-event-type='Component.TemplateUpdate' 
                                       proxy-targets='["{{viewId}}-mytree", "{{viewId}}-term-forms"]'
@@ -398,11 +407,12 @@
                                     options='{
                                             {{#if collection}}"scheme": "{{collection}}",{{/if}}
                                             {{#ifCond mode "!==" "new"}}"node": "{{iri}}",{{/ifCond}}
+                                            "resourceConfig":"{{resourceConfiguration}}",
                                             {{#if broader}}"broader": "{{broader}}",{{/if}}
                                             {{#if data.additional_data}}"additional-data":{{{stringify data.additional_data}}},{{/if}}
                                             "editable": {{editable}},
                                             "mode": "{{mode}}",
-                                            "viewId": "{{viewId}}",                                           
+                                            "viewId": "{{#if iri}}{{iri}}{{else}}{{viewId}}{{/if}}",                                           
                                             {{#if resourceLabelPattern}}"resourceLabelPattern": "{{resourceLabelPattern}}",{{/if}} 
                                             {{#if selectedApiResource}}
                                               {{#if apiResourceURI}}"apiResourceURI": "{{apiResourceURI}}",{{/if}}

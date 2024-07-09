@@ -77,7 +77,7 @@ export class SetManagement extends Component<Props, ViewState> {
     super(props, context);
 
     this.state = this.pendingState = ViewModel.loadState(this.props);
-
+    
     this.model = new ViewModel({
       props: this.props,
       cancellation: this.cancellation,
@@ -130,12 +130,14 @@ export class SetManagement extends Component<Props, ViewState> {
   }
 
   render() {
+    const only_opened_set = (this.state.openedSet && !ViewState.isSearchOpened(this.state))||(this.props.singleSetIri!=undefined);
+    const read_only = this.props.readonly || (this.props.singleSetIri!=undefined);
     const className = classnames({
       [CLASS_NAME]: true,
       [`${CLASS_NAME}--readonly`]: this.props.readonly,
       [`${CLASS_NAME}--list-view`]: this.state.itemViewMode === 'list',
       [`${CLASS_NAME}--grid-view`]: this.state.itemViewMode === 'grid',
-      [`${CLASS_NAME}--only-opened-set`]: this.state.openedSet && !ViewState.isSearchOpened(this.state),
+      [`${CLASS_NAME}--only-opened-set`]: only_opened_set,
     });
 
     const view = this.renderView();
@@ -190,6 +192,7 @@ export class SetManagement extends Component<Props, ViewState> {
         <Toolbar
           baseClass={CLASS_NAME}
           readonly={readonly}
+          singleSet={this.props.singleSetIri!=undefined}
           itemViewMode={itemViewMode}
           onModeChanged={this.model.setItemViewMode}
           canReorder={setHasItems}
@@ -203,9 +206,8 @@ export class SetManagement extends Component<Props, ViewState> {
           onPressCreateNewSet={this.model.startCreatingNewSet}
           onPressReorderApply={this.model.applyItemsOrder}
         />
-        {hasOpenedSet ? this.renderBackToContentsButton() : undefined}
-        {hasSearchOpened ? this.renderSearchResults() : hasOpenedSet ? this.renderOpenedSet() : this.renderAllSets()}
-
+        {hasOpenedSet ? this.props.singleSetIri != undefined? undefined : this.renderBackToContentsButton() : undefined}
+        {hasSearchOpened ? this.renderSearchResults() : hasOpenedSet ? this.renderOpenedSet() : this.renderAllSets()}      
       </div>
     );
     return Children.toArray((view.props as React.Props<any>).children);

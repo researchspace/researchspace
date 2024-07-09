@@ -135,6 +135,12 @@ export interface SetManagementProps {
    * Disallow addition, deletion or changes of sets and set items.
    */
   readonly?: boolean;
+
+  /**
+   * Manage a single set which is open by default
+   */
+  singleSetIri?: string;
+
   /**
    * Suffix for local storage ID.
    */

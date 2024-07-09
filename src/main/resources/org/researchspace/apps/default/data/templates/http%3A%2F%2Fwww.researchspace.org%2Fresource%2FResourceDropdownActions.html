@@ -3,8 +3,8 @@
     <rs-icon icon-type="round" icon-name="more_vert"></rs-icon>
   </bs-dropdown-toggle>
 
-  <bs-dropdown-menu class="resource-card__dropdown-menu {{#if (or clipboardCard cardInDragAndDropInput)}}resource-card__dropdown-multitle-actions{{/if}}
-                          {{#if (or clipboardCard cardInDragAndDropInput narrativeCard)}}resource-card__dropdown-small{{/if}}
+  <bs-dropdown-menu class="resource-card__dropdown-menu {{#if (or clipboardCard dragAndDropInputCard)}}resource-card__dropdown-multitle-actions{{/if}}
+                          {{#if (or clipboardCard dragAndDropInputCard narrativeCard)}}resource-card__dropdown-small{{/if}}
                           {{#if knowledgeMapCard}}resource-card__dropdown-km{{/if}}">
 
     {{#switch resourceConfig}}
@@ -257,13 +257,9 @@
       </semantic-link-container>
     {{/if}}
 
-    {{#if (or knowledgeMapCard cardInDragAndDropInput resourceEditorButton)}}
-    {{else}}
+    {{#if searchCard}}
       <hr>
-      <bs-menu-item>
-        <rs-icon icon-type="rounded" icon-name="delete" class="icon-left" symbol="true"></rs-icon>
-        <span>Delete</span>
-      </bs-menu-item>
+      [[> deleteButton resourceFormIRI=resourceFormIRI]]
     {{/if}}
 
     [[#if customAction]]
@@ -272,3 +268,95 @@
     
   </bs-dropdown-menu>
 </bs-dropdown>
+
+
+[[!-- DELETE BUTTON TRIGGERS FORM AND LDP DELETE OF resourceIri --]]
+[[#*inline "deleteButton"]]
+  <mp-overlay-dialog show='{{#if delete}}true{{else}}false{{/if}}' 
+                      id='{{viewId}}-delete-resource-dialog-{{iri}}' 
+                      title="Delete {{resourceName}}" type="modal" bs-size="large">
+    <mp-overlay-dialog-trigger>
+      <bs-menu-item>
+        <rs-icon icon-type="rounded" icon-name="delete" class="icon-left" symbol="true"></rs-icon>
+        <span>Delete</span>
+      </bs-menu-item>
+    </mp-overlay-dialog-trigger>
+    <mp-overlay-dialog-content>
+      <div>
+        <span>Are you sure you want to delete <strong><mp-label iri="{{iri}}"></mp-label></strong> ?</span>
+      
+        <semantic-query query='SELECT DISTINCT ?resource ?label  
+                                WHERE {
+                                  ?resource ?p <{{iri}}> .
+                                  OPTIONAL {<{{iri}}> skos:prefLabel ?nodeLabel .}
+                                  OPTIONAL {<{{iri}}> rdfs:label ?nodeLabel .}
+                  
+                                  OPTIONAL {
+                                    ?resource rdfs:label ?label .
+                                  }
+                                  OPTIONAL {
+                                    ?resource skos:prefLabel ?label .
+                                  }
+                                }
+                              '
+                              template='{{> referredByTemplate}}'
+          >
+
+            <template id='referredByTemplate'>
+              Some resources in the system link to it:
+              <ul>
+                {{#each bindings}}
+                  <li>
+                    <semantic-link iri='{{resource.value}}'>{{label.value}}</semantic-link>
+                  </li>
+                {{/each}}
+              </ul>
+            </template>
+        </semantic-query>
+      </div>
+    
+      <div style="display:none;visibility:hidden">
+        <inline-template template-iri='{{resourceFormIRI}}'
+                          options='{  
+                                      "viewId": "{{iri}}",
+                                      "mode": "edit",
+                                      "editable": true,
+                                      "node": "{{iri}}"
+                          }'>
+        </inline-template> 
+      </div>  
+   
+      <div class="form-btn-group">
+        <mp-event-trigger id='{{iri}}-cancel-feature-removal' 
+                          type='OverlayDialog.Close' 
+                          targets='["{{viewId}}-delete-resource-dialog-{{iri}}"]'>
+          <button class="btn btn-default">Cancel</button>
+        </mp-event-trigger>
+
+        <mp-event-trigger id='{{iri}}-confirm-entity-removal' 
+                          type='Form.RemoveResource'                               
+                          data='{"iri": "{{iri}}", "node": "{{iri}}"}' 
+                          targets='["{{iri}}-resource-form","{{iri}}-close-form-removal-dialog"]'>
+          <button class="btn btn-action">Delete</button>
+        </mp-event-trigger>  
+      </div>
+
+      [[!-- Refresh Search page for that particular resource if open --]]
+      <mp-event-proxy id='{{iri}}-refresh-search-page-{{viewId}}'
+                      on-event-source='{{iri}}-resource-form' 
+                      on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated", "Form.ResourceRemoved"]'      
+                      proxy-event-type='Component.TemplateUpdate' 
+                      proxy-targets='["{{resourceConfig}}-resourceSearch-frame"]'
+      ></mp-event-proxy>
+
+      [[!-- Close Delete dialog windown once form delete submitted --]]
+      <mp-event-proxy id='{{iri}}-close-form-removal-dialog-{{viewId}}' 
+                      on-event-source='{{iri}}-resource-form' 
+                      on-event-type='Form.ResourceRemoved'
+                      proxy-event-type='OverlayDialog.Close' 
+                      data='{}'
+                      proxy-targets='["{{viewId}}-delete-resource-dialog-{{iri}}"]'
+      ></mp-event-proxy>      
+    </mp-overlay-dialog-content>
+  </mp-overlay-dialog>
+[[/inline]]

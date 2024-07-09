@@ -355,12 +355,14 @@
               ></mp-event-proxy>
     
               {{#if (not (eq mode "deleted"))}} 
-        [[!--        <mp-event-proxy id='{{viewId}}-tab-refresh-on-created' 
-                                on-event-source='{{viewId}}-resource-form' 
+               {{#if (not collection )}}
+                <mp-event-proxy id='{{viewId}}-tab-refresh-on-created' 
+                                on-event-source='{{#if iri}}{{iri}}-resource-form{{else}}{{viewId}}-resource-form{{/if}}' 
                                 on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
                                 proxy-event-type='Dashboard.ResourceChanged' 
                                 proxy-targets='["{{viewId}}"]'                                                          
-                ></mp-event-proxy>  --]]
+                ></mp-event-proxy>
+                {{/if}}
 
                 <mp-event-proxy id='{{viewId}}-tree-refresh-on-created' 
                                 on-event-source='{{#if iri}}{{iri}}-resource-form{{else}}{{viewId}}-resource-form{{/if}}' 

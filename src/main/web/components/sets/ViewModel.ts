@@ -210,6 +210,7 @@ export class ViewModel {
     return {
       search: {},
       itemViewMode: itemViewMode || props.defaultViewMode,
+      openedSet: props.singleSetIri?Rdf.iri(props.singleSetIri):null,
     };
   }
 

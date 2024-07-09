@@ -27,6 +27,7 @@ import { ComponentTemplateUpdate } from 'platform/api/events/BuiltInEvents';
 export interface ToolbarProps extends ReorderingProps {
   baseClass: string;
   readonly: boolean;
+  singleSet: boolean;
   itemViewMode: ItemViewMode;
   onModeChanged: (newMode: ItemViewMode) => void;
   onPressCreateNewSet: () => void;
@@ -34,7 +35,7 @@ export interface ToolbarProps extends ReorderingProps {
 
 export class Toolbar extends React.Component<ToolbarProps, {}> {
   render() {
-    const { baseClass, readonly, itemViewMode, onModeChanged, isReordering, canReorder } = this.props;
+    const { baseClass, readonly, itemViewMode, onModeChanged, isReordering, canReorder, singleSet } = this.props;
 
     return (
       <div className={`${baseClass}__toolbar`}>
@@ -42,7 +43,7 @@ export class Toolbar extends React.Component<ToolbarProps, {}> {
           <ItemViewModeSwitch baseClass={baseClass} mode={itemViewMode} onModeChanged={onModeChanged} />
           {!readonly && canReorder ? <ReorderItemsButton {...this.props} /> : null}
           <div className={`${baseClass}__toolbar-spacer`}></div>
-          {readonly ? null : this.renderAddNewSetButton()}
+          {(readonly || singleSet)? null : this.renderAddNewSetButton()}
           <button className='btn btn-default btn-default-icon'
                   title="Refresh clipboard"
                   onClick={() => {

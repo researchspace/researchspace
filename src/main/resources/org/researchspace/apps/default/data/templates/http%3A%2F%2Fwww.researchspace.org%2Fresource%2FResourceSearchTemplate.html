@@ -2,10 +2,10 @@
 [[!--     <semantic-search domain='(urlParam "resourceontologyclass" escape=false)' config='[[searchConfigForFieldsFromQuery "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> . ?field <http://www.researchspace.org/resource/system/fields/domain> <http://www.researchspace.org/ontology/EX_Digital_Image> . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . ?field  <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/image> . OPTIONAL {?field <http://www.researchspace.org/resource/system/fields/order> ?fieldsOrder } } ORDER BY ASC(xsd:integer(?fieldsOrder))"]]'>
 --]]
 
-<mp-event-target-template-render id="[[urlParam 'viewid' escape=false]]-resourceSearch-frame" template='{{> template}}'>
+<mp-event-target-template-render id="[[urlParam 'resourceconfig' escape=false]]-resourceSearch-frame" template='{{> template}}'>
   <template id='template'>
     [[#if (urlParam "searchkpcategory")]]
-      <semantic-search config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> . ?field <http://www.researchspace.org/resource/system/fields/domain> ?domain . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . ?field <http://www.researchspace.org/resource/system/fields/category> ?category . }" domain=(urlParam "resourceontologyclass" escape=false) category=(urlParam "searchkpcategory" escape=false))]]'>
+      <semantic-search config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . ?field <http://www.researchspace.org/resource/system/fields/category> ?category . }" category=(urlParam "searchkpcategory" escape=false))]]'>
     [[else]]    
       <semantic-search config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> .  ?field <http://www.researchspace.org/resource/system/fields/domain> ?domain . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . }" domain=(urlParam "resourceontologyclass" escape=false))]]'>      
     [[/if]]
@@ -142,6 +142,10 @@
                                                         ?subject rdfs:label ?label .
                                                       [[/if]]
     
+
+                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
+                                                        MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
+                                                      {{/if}}
                                                       SERVICE <http://www.bigdata.com/rdf/search#search> {
                                                         ?label bds:search ?__token__ ;
                                                         bds:minRelevance "0.3" ;
@@ -161,10 +165,12 @@
                                                                 [[#if (urlParam "resourcerestrictionpattern")]] 
                                                                   [[urlParam "resourcerestrictionpattern" escape=false]] 
                                                                 [[/if]]
-    
+                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
+                                                                  MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
+                                                                {{/if}}
                                                                 
                                                               }'
-                                                debounce=500
+                                                debounce=300
                                                 placeholder="Search [[urlParam 'resourcelabel' escape=false]]"
               ></semantic-search-query-keyword>
             </div>
@@ -1038,6 +1044,7 @@
   </div>
 [[/inline ]]
 
+
 [[#*inline "resultCardActions"]]
 <div style="display: flex; align-items: stretch; gap: 1px;">
   <mp-draggable iri='{{iri.value}}' drag-style="cursor: grab;">
@@ -1050,7 +1057,9 @@
                                   iri=iri.value
                                   resourceConfig=resourceConfig.value
                                   resourceLabel="[[urlParam "resourcelabel" escape=false]]"
+                                  resourceLabelPattern="[[urlParam "resourcelabelpattern"]]"
                                   resourceDescription=description.value
+                                  resourceFormIRI="[[urlParam "resourceform" escape=false]]"
   }}
 </div>
 [[/inline ]]

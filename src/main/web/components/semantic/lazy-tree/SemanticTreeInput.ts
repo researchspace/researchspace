@@ -592,10 +592,22 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
       }
     } else {
       this.search.cancelAll();
-
+      
       let mode = this.state.mode;
-      if (text.length === 0 && !this.props.openDropdownOnFocus) {
-        mode = { type: 'collapsed' };
+      let newSearchResult = null
+
+      if (text.length === 0) {
+
+        newSearchResult = {
+          searching: false,
+          searchResult: undefined,
+        }
+
+         if(!this.props.openDropdownOnFocus) {
+          mode = { type: 'collapsed' };
+         } else {
+          mode = { type: 'search', selection: null };  
+         }
       } else if (text.length > 0) {
         mode = { type: 'search', selection: this.state.confirmedSelection };
       }
@@ -603,6 +615,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
         mode,
         searchText: text,
         searchForce: force,
+        ...newSearchResult,
       });
     }
   }

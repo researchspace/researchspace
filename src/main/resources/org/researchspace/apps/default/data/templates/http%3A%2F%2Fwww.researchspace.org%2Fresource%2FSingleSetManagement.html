@@ -1,11 +1,22 @@
-<mp-set-management  [[#if (hasPermission "forms:ldp:*")]] id="{{iri}}"
+<mp-event-proxy id='{{iri}}-set-update-on-create-set'
+                on-event-types='["Components.SetManagement.SetAdded",
+                                 "Components.SetManagement.SetRenamed",
+                                 "Components.SetManagement.SetRemoved",
+                                 "Components.SetManagement.ItemAdded",
+                                 "Components.SetManagement.ItemRemoved",
+                                 "Components.SetManagement.ItemsReordered"]'
+                on-event-source='{{iri}}-set'
+                proxy-event-type='Component.Refresh'
+                proxy-targets='["clipboard"]'>
+</mp-event-proxy>
+
+<mp-set-management  [[#if (hasPermission "forms:ldp:*")]] id="{{iri}}-set"
                           readonly='false'
                         [[else]]
                           readonly='true'
-                        [[/if]]
-                        id='set'
+                        [[/if]]                        
                         reparentable='true'
-                        fixed-key='set'
+                    [[!--    fixed-key='set' --]]
                         default-view-mode='grid'
                         style='flex: auto; overflow-y: auto;'
                         set-items-query='PREFIX ldp: <http://www.w3.org/ns/ldp#>

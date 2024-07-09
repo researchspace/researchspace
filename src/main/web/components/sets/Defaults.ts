@@ -26,7 +26,7 @@ const DefaultSetItemActions = `
   <div class='set-management__item-actions'>
     <bs-dropdown-button pull-right=true bs-style='link' title=''
                         id='set-actions-{{iri.value}}'>
-      <mp-set-management-action-remove-set-item>
+      <mp-set-management-action-remove-set-item item={{iri.value}}>
         <bs-menu-item event-key='remove'>Remove</bs-menu-item>
       </mp-set-management-action-remove-set-item>
     </bs-dropdown-button>
@@ -43,6 +43,8 @@ const DefaultItemLabel = `
 export const GridTemplate = `
   <mp-resource-card iri='{{iri.value}}'>${DefaultSetItemActions}</mp-resource-card>
 `;
+
+/*
 export const SetListTemplate = `
   <div style='display: flex; align-items: center; justify-content: space-between;'>
     <div style='overflow: hidden;'>
@@ -64,6 +66,96 @@ export const SetListTemplate = `
     </div>
   </div>
 `;
+*/
+
+export const SetListTemplate = `
+  <div style='display: flex; align-items: center; justify-content: space-between;'>
+  <div style='overflow: hidden;'>
+    <span style='display: flex;'>
+      ${DefaultItemLabel}
+    </span>
+  </div>
+
+  <div class='set-management__item-actions' style='margin-left: auto;'>
+
+    <bs-dropdown  pull-right=true 
+                  class="dropdown-no-caret"
+                  id='set-actions-{{iri.value}}'>
+
+    <bs-dropdown-toggle class="button-clipboard-folder-actions no-active-bg">
+      <rs-icon icon-type="round" icon-name="more_vert"></rs-icon>
+    </bs-dropdown-toggle>
+
+    <bs-dropdown-menu>
+         <mp-set-management-action-rename-set>
+          <bs-menu-item event-key='rename'>
+            <rs-icon icon-type="rounded" icon-name="drive_file_rename_outline" class="icon-left" symbol="true"></rs-icon>
+              Rename set
+            </bs-menu-item>
+        </mp-set-management-action-rename-set>
+        
+        
+
+        <hr>
+
+        <mp-copy-to-default-set id="{{iri.value}}-copy-to-clipboard" resource="{{iri.value}}">
+          <bs-menu-item>
+            <rs-icon icon-type="rounded" icon-name="inventory" class="icon-left" symbol="true"></rs-icon>
+            <span>Copy to clipboard</span>
+          </bs-menu-item>
+        </mp-copy-to-default-set>
+
+        <mp-copy-to-clipboard text='{{iri.value}}' message='IRI has been copied'>
+          <bs-menu-item>
+            <rs-icon icon-type="rounded" icon-name="content_copy" class="icon-left" symbol="true"></rs-icon>
+            <span>Copy IRI</span>
+          </bs-menu-item>
+        </mp-copy-to-clipboard>
+
+        
+        <hr>
+
+        <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                  urlqueryparam-view="resource-editor"
+                                  urlqueryparam-resource-iri='{{iri.value}}'>
+          <bs-menu-item>
+            <rs-icon icon-type="rounded" icon-name="edit_note" class="icon-left" symbol="true"></rs-icon>
+            <span>Edit</span>
+          </bs-menu-item>
+        </semantic-link-container>
+
+        <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                  urlqueryparam-view="resource-editor"
+                                  urlqueryparam-resource-iri='{{iri.value}}'
+                                  urlqueryparam-open-as-drag-and-drop='true'>
+          <bs-menu-item>
+            <rs-icon icon-type='rounded' icon-name='read_more' symbol='true' class="icon-left"></rs-icon>
+            <span>Edit in draggable tab</span>
+          </bs-menu-item>
+        </semantic-link-container>
+        <hr>
+        
+        <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames' 
+                                      urlqueryparam-view='knowledge-map' 
+                                      urlqueryparam-resource='{{iri.value}}'>
+            <bs-menu-item class='set-action__km-navigate' event-key=km>
+              <rs-icon icon-type="rounded" icon-name="hub" class="icon-left" symbol="true"></rs-icon>Open in Knowledge map</bs-menu-item>
+        </semantic-link-container>
+
+        
+          <hr>
+          <mp-set-management-action-remove-set item="{{iri.value}}">
+            <bs-menu-item event-key='remove'>
+              <rs-icon icon-type="rounded" icon-name="delete" class="icon-left" symbol="true"></rs-icon>
+              Delete
+            </bs-menu-item>
+          </mp-set-management-action-remove-set>
+        
+      </bs-dropdown-menu>
+    </div>
+  </div>
+`
+
 export const ItemListTemplate = `
   <div style='display: flex; align-items: center; justify-content: space-between;'>
     <div style='overflow: hidden;'>

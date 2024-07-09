@@ -33,12 +33,12 @@
         {{#if (or clipboardCard clipboardList)}}
           {{#if isSetItem}}
             <mp-anonymous-hidden>
-              <mp-set-management-action-remove-set-item>
-                <button type="button" class="btn btn-default resource-card__button" title="Remove from clipboard">
+              <mp-set-management-action-remove-set-item item="{{iri.value}}">
+                <button type="button" class="btn btn-default resource-card__button" title="Remove from set">
                   <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
                 </button>
               </mp-set-management-action-remove-set-item>
-            </mp-anonymous-hidden>
+            </mp-anonymous-hidden> 
           {{/if}}
         {{else if cardInDragAndDropInput}}
           <mp-event-trigger type='Form.DragAndDropInput.RemoveItem' targets='["{{inputId}}"]' data='{"iri": "{{iri}}"}'>
@@ -140,26 +140,31 @@
       </div>
 
       <div class="resource-card__footer-title">
-        {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map")}}
-          <mp-event-trigger id='{{iri}}-open-km-title-trigger' 
-                            type='Dashboard.AddFrame'
-                            data='{"viewId":"knowledge-map", 
-                                    "resourceIri": "{{iri}}"}' 
-                            targets='["thinking-frames"]'>
-            <div><mp-label iri='{{iri}}' class="text-link"></mp-label></div>
-          </mp-event-trigger>
-        {{else}}
-          <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                          urlqueryparam-view='{{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}semantic-narrative{{else}}resource-editor{{/if}}'
-                          urlqueryparam-resource='{{iri}}'>
-            {{#if label}}
-              [[!-- Label from KM props --]]
-              <span class="text-link" title="{{label}}">{{label}}</span>
+        <mp-draggable iri='{{iri}}'>
+          <div>
+            {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map")}}
+              <mp-event-trigger id='{{iri}}-open-km-title-trigger' 
+                              type='Dashboard.AddFrame'
+                              data='{"viewId":"knowledge-map", 
+                                      "resourceIri": "{{iri}}"}' 
+                              targets='["thinking-frames"]'>
+              
+                <div><mp-label iri='{{iri}}' class="text-link"></mp-label>1</div>
+              </mp-event-trigger>
             {{else}}
-              <mp-label iri='{{iri}}' class="text-link" highlight='{{highlight}}' highlight-props='{"style": {"color": "#dc8a4b"}}'></mp-label>
+              <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                              urlqueryparam-view='{{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}semantic-narrative{{else}}resource-editor{{/if}}'
+                              urlqueryparam-resource='{{iri}}'>
+                {{#if label}}
+                  [[!-- Label from KM props --]]
+                  <span class="text-link" title="{{label}}">{{label}}2</span>
+                {{else}}
+                  <mp-label iri='{{iri}}' class="text-link" highlight='{{highlight}}' highlight-props='{"style": {"color": "#dc8a4b"}}'></mp-label>
+                {{/if}}
+              </semantic-link>
             {{/if}}
-          </semantic-link>
-        {{/if}}
+          </div>
+        </mp-draggable>
       </div>
     [[/if]]
   </div>

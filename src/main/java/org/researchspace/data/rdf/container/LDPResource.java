@@ -113,5 +113,12 @@ public interface LDPResource {
      */
     public boolean isContainer();
 
+    /**
+     * Whether the current resource has CidocCRM.P2_has_type as PLATFORM.SET_TYPE.
+     * 
+     * @return
+     */
+    public boolean isSet();
+
     boolean isOwner(IRI user);
 }

@@ -62,12 +62,12 @@ export class ClearableInput extends React.Component<ClearableInputProps, State> 
       className
     );
     const controlClass = classnames(`${CLASS_NAME}__input form-control`, inputClassName);
-      
+
     return (
       <div className={groupClass} style={style} onClick={this.onClickSelf}>
         {hasNonEmptyAddon ? children : null}
         <div className={`${CLASS_NAME}__input-with-clear`}>
-          {showPlaceholderIcon && 
+          {showPlaceholderIcon &&
             <div className={`${CLASS_NAME}__icon`}>
               <Icon iconType='round' iconName='search'/>
             </div>
@@ -78,7 +78,7 @@ export class ClearableInput extends React.Component<ClearableInputProps, State> 
             ref={this.onInputMount}
             className={controlClass}
             style={inputStyle}
-            placeholder={hasNonEmptyAddon ? undefined : inputProps.placeholder}
+            placeholder='Search'
             onFocus={this.onFocus}
             onBlur={this.onBlur}
           />

@@ -130,7 +130,7 @@ export class HeadlessSaveSetDialog extends Component<HeadlessSaveSetDialogProps,
     if (setName.length < 6) {
       return this.setState({
         state: States.ERROR,
-        errorMessage: `Name of the set must have at least six characters.`,
+        errorMessage: `Name of the set must have at least six characters`,
       });
     }
     event && event.preventDefault();

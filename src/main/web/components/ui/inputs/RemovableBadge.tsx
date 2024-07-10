@@ -47,7 +47,10 @@ export class RemovableBadge extends Component<RemovableBadgeProps, {}> {
           className: `${CLASS_NAME}__content`,
           type: 'button',
           disabled: this.props.disableClick,
-          onClick: this.props.onClick,
+          onClick: (e) =>{
+            e.stopPropagation()
+            this.props.onClick()
+          },
         },
         this.props.children
       ),
@@ -56,7 +59,10 @@ export class RemovableBadge extends Component<RemovableBadgeProps, {}> {
           className: `${CLASS_NAME}__remove`,
           type: 'button',
           disabled: this.props.disableRemove,
-          onClick: this.props.onRemove,
+          onClick: (e) => {
+            e.stopPropagation();
+            this.props.onRemove()
+          },
         },
         D.i({className: 'material-icons-round'}, 'close')
       )

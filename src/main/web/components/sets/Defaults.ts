@@ -94,8 +94,6 @@ export const SetListTemplate = `
             </bs-menu-item>
         </mp-set-management-action-rename-set>
         
-        
-
         <hr>
 
         <mp-copy-to-default-set id="{{iri.value}}-copy-to-clipboard" resource="{{iri.value}}">

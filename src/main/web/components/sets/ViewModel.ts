@@ -250,7 +250,7 @@ export class ViewModel {
           const state = this.getState();
           let sets = params.keepItems ? reuseOldSetItems(loadedSets, state.sets) : loadedSets;
           if (!sets.has(defaultSet.value)) {
-            console.warn(`Default set ${defaultSet} not found`);
+            //console.warn(`Default set ${defaultSet} not found`);
             sets = sets.set(defaultSet.value, emptySet(defaultSet));
           }
 
@@ -334,7 +334,7 @@ export class ViewModel {
     this.setState({ openedSet: setIri, search: {}, itemsOrdering: undefined });
   }
 
-  onDropItemToSet(item: Rdf.Iri, targetSet: Rdf.Iri,sourceSetManager:string) {console.log(sourceSetManager);
+  onDropItemToSet(item: Rdf.Iri, targetSet: Rdf.Iri,sourceSetManager:string) {
     this.cancellation
       .map(getSetServiceForUser(this.getContext()).flatMap((service) => service.addToExistingSet(targetSet, item, this.props.id)))
       .observe({

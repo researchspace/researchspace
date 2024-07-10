@@ -9,7 +9,7 @@
                 proxy-event-type='Component.Refresh'
                 proxy-targets='["clipboard"]'>
 </mp-event-proxy>
-
+[[#if (hasPermission "forms:ldp:*")]]
 <mp-set-management  [[#if (hasPermission "forms:ldp:*")]] id="{{iri}}-set"
                           readonly='false'
                         [[else]]
@@ -41,11 +41,12 @@
             BIND(<{{iri}}> as ?parent) .
           } 
           }
-        } UNION {
+        } 
+        UNION {
           FILTER(?__isSearch__) .
           {
             {
-              <{{iri}}> ldp:contains ?__setToSearch__ .
+              
               ?__setToSearch__ ldp:contains ?itemHolder.
               BIND(?__setToSearch__ as ?parent) .
               ?itemHolder platform:setItem ?item .
@@ -53,7 +54,6 @@
            } 
           }
         } 
-
         OPTIONAL {
           ?itemHolder platform:setItemIndex ?i .
         }
@@ -144,4 +144,5 @@
               "
   }]'
     >
-    </mp-set-management>
+</mp-set-management>
+[[/if]]

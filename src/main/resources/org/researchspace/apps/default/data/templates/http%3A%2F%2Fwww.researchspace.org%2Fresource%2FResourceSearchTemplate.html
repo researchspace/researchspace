@@ -264,7 +264,7 @@
                 {{else}}
                   [[#if (hasPermission "forms:ldp:*")]]
                     <mp-selection-action-choice id='[[urlParam "viewid" escape=false]]-create-set-action' selection='item-selection-aggregator'>
-                      <mp-create-set-action icon="create_new_folder"></mp-create-set-action>
+                      <mp-create-set-action id="[[urlParam 'viewid' escape=false]]-new-set-with-results" icon="create_new_folder"></mp-create-set-action>
                     </mp-selection-action-choice>
                   [[/if]]
 
@@ -323,6 +323,45 @@
 
           </div>
         </div>
+
+        <mp-event-target-template-render id='[[urlParam "viewid" escape=false]]-created-new-set-message' template='{{> template}}'>
+          <template id='template'>
+            {{#if hideMessage}}
+            {{else if setCreated}}
+                <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%; margin-top: 5px; margin-bottom: 10px;">
+                  <div class="success-documentation-section-icon-container">
+                    <rs-icon icon-type="round" icon-name="done"></rs-icon>
+                  </div>
+
+                  <div style="flex: 1;"> 
+                    <div class="success-documentation-section-title">New set created!</div>
+                    <div class="success-documentation-section-content" style="display: flex; gap: 5px;">
+                      <mp-draggable iri='{{containerIri}}'>
+                        <div>
+                          <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                          urlqueryparam-view='single-set-management'
+                                          urlqueryparam-resource='{{containerIri}}'>
+                            <mp-label iri='{{containerIri}}' class="text-link color-success-text"></mp-label>
+                          </semantic-link>
+                        </div>
+                      </mp-draggable>
+                      <span> has been created.</span>
+                    </div>
+                  </div>
+                  
+                  <mp-event-trigger id='[[urlParam "viewid" escape=false]]-created-set-close-message'
+                                    type='Component.TemplateUpdate'
+                                    data='{ "hideMessage": "true" }'
+                                    targets='["[[urlParam "viewid" escape=false]]-created-new-set-message"]'
+                  >
+                    <button class="btn btn-documentation">
+                      <rs-icon icon-type="round" icon-name="close"></rs-icon>
+                    </button>
+                  </mp-event-trigger>
+                </div>
+            {{/if}}
+          </template>
+        </mp-event-target-template-render>
 
         <mp-splitpane id='[[urlParam "viewid" escape=false]]-search-filters-sidebar' min-size=43 default-size=230 snap-threshold=150 default-open=false always-render=true primary='second' class="search-filters-sidebar">
 
@@ -930,7 +969,7 @@
                                             </mp-event-trigger>
                                           {{else}}
                                             {{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
-                                                <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                              <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
                                                               urlqueryparam-view='single-set-management'
                                                               urlqueryparam-resource='{{iri.value}}'>
                                                 <mp-label iri='{{iri.value}}' class="text-link"></mp-label>
@@ -1028,6 +1067,14 @@
       </semantic-search> 
   </template>
 </mp-event-target-template-render>
+
+<mp-event-proxy id='[[urlParam "viewid" escape=false]]-search-refresh-on-create-set'
+                on-event-types='["Components.SetManagement.SetAdded"]'
+                on-event-source="[[urlParam 'viewid' escape=false]]-new-set-with-results"
+                proxy-event-type='Component.TemplateUpdate' 
+                proxy-targets='["[[urlParam "resourceconfig" escape=false]]-resourceSearch-frame"]'
+                additional-data='{"setCreated": true }' >
+</mp-event-proxy>
 
 [[#*inline "numberOfResults"]]
   <div class="semantic-search-num-results">

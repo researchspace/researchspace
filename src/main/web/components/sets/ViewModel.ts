@@ -478,7 +478,7 @@ export class ViewModel {
       .observe({
         value: () => {
           this.loadSets({ keepItems: true });
-          this.trigger(SetManagementEvents.SetAdded);
+          this.trigger(SetManagementEvents.SetAdded, {});
         },
         error: (error) => {
           addNotification(

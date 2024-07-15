@@ -136,7 +136,7 @@ export class SetService extends LdpService {
 function addSetItem(set: LdpService, item: Rdf.Iri, index?: number, setPropId?: string): Kefir.Property<HolderWithItem> {
   return createItemHolderGraph(Rdf.iri(''), item, index, setPropId)
     .flatMap((graph) => set.addResource(graph))
-    .map((holder) => ({ holder, item }))
+    .map((holder) => ({ holder, item, containerIri: set.getContainerIRI() }))
     .toProperty();
 }
 
@@ -168,6 +168,7 @@ function createItemHolderGraph(holderIri: Rdf.Iri, itemIri: Rdf.Iri, index?: num
 interface HolderWithItem {
   holder: Rdf.Iri;
   item: Rdf.Iri;
+  containerIri?: Rdf.Iri
 }
 
 export function addToDefaultSet(resource: Rdf.Iri, sourceId: string): Kefir.Property<Rdf.Iri> {

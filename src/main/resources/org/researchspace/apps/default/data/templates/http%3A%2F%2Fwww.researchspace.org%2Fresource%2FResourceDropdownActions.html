@@ -366,21 +366,23 @@
         </mp-event-trigger>  
       </div>
 
-      [[!-- Refresh Search page for that particular resource if open --]]
-      <mp-event-proxy id='{{iri}}-refresh-search-page-{{viewId}}'
-                      on-event-source='{{iri}}-resource-form' 
-                      on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated", "Form.ResourceRemoved"]'      
-                      proxy-event-type='Component.TemplateUpdate' 
-                      proxy-targets='["{{resourceConfig}}-resourceSearch-frame"]'
-      ></mp-event-proxy>
+      {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
+        [[!-- Refresh Search page for a set removed --]]
+        <mp-event-proxy id='{{iri}}-refresh-search-page-{{viewId}}'
+                        on-event-source='{{iri}}-resource-form' 
+                        on-event-types='["Form.ResourceRemoved"]'      
+                        proxy-event-type='Component.TemplateUpdate' 
+                        proxy-targets='["{{resourceConfig}}-resourceSearch-frame"]'
+        ></mp-event-proxy> 
 
-      [[!-- Refresh clipboard for a particular resource deleted --]]
-      <mp-event-proxy id='{{iri}}-clipboard-refresh-on-delete-action-{{viewId}}' 
-                      on-event-source='{{iri}}-resource-form'  
-                      on-event-type='Form.ResourceRemoved'
-                      proxy-event-type='Component.Refresh' 
-                      proxy-targets='["clipboard"]'
-      ></mp-event-proxy>
+        [[!-- Refresh clipboard for a set deleted --]]
+        <mp-event-proxy id='{{iri}}-clipboard-refresh-on-delete-action-{{viewId}}' 
+                        on-event-source='{{iri}}-resource-form'  
+                        on-event-type='Form.ResourceRemoved'
+                        proxy-event-type='Component.Refresh' 
+                        proxy-targets='["clipboard"]'
+        ></mp-event-proxy>
+      {{/if}}
 
       [[!-- Close Delete dialog windown once form delete submitted --]]
       <mp-event-proxy id='{{iri}}-close-form-removal-dialog-{{viewId}}' 

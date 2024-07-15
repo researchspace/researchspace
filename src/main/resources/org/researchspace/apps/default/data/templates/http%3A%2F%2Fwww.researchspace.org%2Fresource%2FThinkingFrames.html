@@ -24,10 +24,22 @@
   
 </style>
 
-<mp-event-proxy id='clipboard-update-on-create-set'
-                on-event-type='Components.SetManagement.SetAdded'
+<mp-event-proxy id='clipboard-update-on-set-modification'
+                on-event-types='["Components.SetManagement.SetRenamed",
+                                "Components.SetManagement.SetRemoved",
+                                "Components.SetManagement.ItemAdded",
+                                "Components.SetManagement.ItemRemoved",
+                                "Components.SetManagement.ItemsReordered"]'
                 proxy-event-type='Component.Refresh'
                 proxy-targets='["clipboard"]'>
+</mp-event-proxy>
+
+<mp-event-proxy id='search-refresh-on-create-modification'
+                on-event-types='["Components.SetManagement.SetAdded",
+                                  "Components.SetManagement.SetRenamed",
+                                  "Components.SetManagement.SetRemoved"]'
+                proxy-event-type='Component.TemplateUpdate' 
+                proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Set-resourceSearch-frame"]'>
 </mp-event-proxy>
 
 <mp-event-proxy id='clipboard-update-on-save-search' 

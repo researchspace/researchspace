@@ -141,7 +141,6 @@
                                                       [[else]]
                                                         ?subject rdfs:label ?label .
                                                       [[/if]]
-    
 
                                                       {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
                                                         MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
@@ -575,9 +574,12 @@
     
                               <template id='selectionCheckbox'>
                                 [[#if (hasPermission "forms:ldp:*")]]
-                                  <div class=''>
-                                    <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
-                                  </div>
+                                  {{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
+                                  {{else}}
+                                    <div class=''>
+                                      <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
+                                    </div>
+                                  {{/if}}
                                 [[/if]]
                               </template>
     
@@ -905,9 +907,12 @@
     
                               <template id='selectionCheckbox'>
                                 [[#if (hasPermission "forms:ldp:*")]]
-                                  <div class=''>
-                                    <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
-                                  </div>
+                                  {{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
+                                  {{else}}
+                                    <div class=''>
+                                      <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
+                                    </div>
+                                  {{/if}}
                                 [[/if]]
                               </template>
     
@@ -967,20 +972,18 @@
                                                               targets='["thinking-frames"]'>
                                               <div><mp-label iri='{{iri.value}}' class="text-link"></mp-label></div>
                                             </mp-event-trigger>
+                                          {{else if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
+                                            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                            urlqueryparam-view='single-set-management'
+                                                            urlqueryparam-resource='{{iri.value}}'>
+                                              <mp-label iri='{{iri.value}}' class="text-link"></mp-label>
+                                            </semantic-link>
                                           {{else}}
-                                            {{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
-                                              <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                              urlqueryparam-view='single-set-management'
-                                                              urlqueryparam-resource='{{iri.value}}'>
-                                                <mp-label iri='{{iri.value}}' class="text-link"></mp-label>
-                                              </semantic-link>
-                                            {{else}}
-                                              <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                              urlqueryparam-view='{{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}semantic-narrative{{else}}resource-editor{{/if}}'
-                                                              urlqueryparam-resource='{{iri.value}}'>
-                                                <mp-label iri='{{iri.value}}' class="text-link"></mp-label>
-                                              </semantic-link>
-                                            {{/if}}
+                                            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                            urlqueryparam-view='{{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}semantic-narrative{{else}}resource-editor{{/if}}'
+                                                            urlqueryparam-resource='{{iri.value}}'>
+                                              <mp-label iri='{{iri.value}}' class="text-link"></mp-label>
+                                            </semantic-link>
                                           {{/if}}
                                         </div>
                                       </mp-draggable>
@@ -1043,28 +1046,18 @@
 
             <mp-splitpane-sidebar-open style="flex: 1; overflow: hidden;">
               <div class="split-pane__sidebar-open">
-                <semantic-search-facet  id='semantic-search-facet'
-                                        open-by-default=true 
-                                        hide-toggle-button=true
-                                        value-categories='{ "<http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span>": 
-                                                              {
-                                                                "kind": "date-range",
-                                                                "valuesQuery": "SELECT ?dateBeginValue ?dateEndValue WHERE {
-                                                                                  FILTER(?__facetRelationPattern__).
-                                                                                  ?__value__ crm:P82a_begin_of_the_begin ?dateBeginValue ;
-                                                                                        crm:P82b_end_of_the_end     ?dateEndValue .
-                                                                                } ORDER BY ?dateBeginValue"
-                                                              }
-                                                          }'>
+                <semantic-search-facet  id='[[urlParam "viewid" escape=false]]-semantic-search-facet'
+                                        open-by-default=false 
+                                        hide-toggle-button=true>
                 </semantic-search-facet>
               </div>
             </mp-splitpane-sidebar-open>
 
           </div>
 
-          </mp-splitpane>
+        </mp-splitpane>
       </div>
-      </semantic-search> 
+    </semantic-search> 
   </template>
 </mp-event-target-template-render>
 
@@ -1095,21 +1088,21 @@
 
 
 [[#*inline "resultCardActions"]]
-<div style="display: flex; align-items: stretch; gap: 1px;">
-  <mp-draggable iri='{{iri.value}}' drag-style="cursor: grab;">
-    <button class="btn btn-default border-none" title="drag [[urlParam 'resourcelabel' escape=false]]" style="cursor: grab;">
-      <rs-icon icon-type="rounded" icon-name="drag_pan" symbol="true"></rs-icon>
-    </button>
-  </mp-draggable>
+  <div style="display: flex; align-items: stretch; gap: 1px;">
+    <mp-draggable iri='{{iri.value}}' drag-style="cursor: grab;">
+      <button class="btn btn-default border-none" title="drag [[urlParam 'resourcelabel' escape=false]]" style="cursor: grab;">
+        <rs-icon icon-type="rounded" icon-name="drag_pan" symbol="true"></rs-icon>
+      </button>
+    </mp-draggable>
 
-  {{> rsp:ResourceDropdownActions viewId=resourceConfig.value
-                                  iri=iri.value
-                                  resourceConfig=resourceConfig.value
-                                  resourceLabel="[[urlParam "resourcelabel" escape=false]]"
-                                  resourceLabelPattern="[[urlParam "resourcelabelpattern"]]"
-                                  resourceDescription=description.value
-                                  resourceFormIRI="[[urlParam "resourceform" escape=false]]"
-                                  searchCard=true
-  }}
-</div>
+    {{> rsp:ResourceDropdownActions viewId=resourceConfig.value
+                                    iri=iri.value
+                                    resourceConfig=resourceConfig.value
+                                    resourceLabel="[[urlParam "resourcelabel" escape=false]]"
+                                    resourceLabelPattern="[[urlParam "resourcelabelpattern"]]"
+                                    resourceDescription=description.value
+                                    resourceFormIRI="[[urlParam "resourceform" escape=false]]"
+                                    searchCard=true
+    }}
+  </div>
 [[/inline ]]

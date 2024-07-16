@@ -10,7 +10,10 @@
     <div class="resource-card__header-actions">
       [[#if (hasPermission "forms:ldp:*")]]
         {{#if selectionToggle}}
-          <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri}}"></mp-selection-toggle>
+          {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
+          {{else}}
+            <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri}}"></mp-selection-toggle>
+          {{/if}}
         {{/if}}
       [[/if]]
       <div class="resource-card__buttons-container" style="{{#if clipboardList}}gap:5px{{/if}}">
@@ -77,14 +80,14 @@
                           no-result-template='{{> noResults}}'>
 
                 <template id='template'>
-                        <div class="h100 w100">
-                            <iframe src='{{bindings.0.video.value}}' 
-                                    frameborder="0" 
-                                    allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
-                                    width="100%" height="100%"
-                                    allowfullscreen>
-                            </iframe>
-                        </div>
+                  <div class="h100 w100">
+                      <iframe src='{{bindings.0.video.value}}' 
+                              frameborder="0" 
+                              allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
+                              width="100%" height="100%"
+                              allowfullscreen>
+                      </iframe>
+                  </div>
                 </template>
 
                 <template id="noResults">
@@ -152,6 +155,12 @@
               
                 <div><mp-label iri='{{iri}}' class="text-link"></mp-label></div>
               </mp-event-trigger>
+            {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
+              <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                              urlqueryparam-view='single-set-management'
+                              urlqueryparam-resource='{{iri}}'>
+                <mp-label iri='{{iri}}' class="text-link"></mp-label>
+              </semantic-link>
             {{else}}
               <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
                               urlqueryparam-view='{{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}semantic-narrative{{else}}resource-editor{{/if}}'

@@ -28,17 +28,18 @@ uses client-side templates:
     readonly='true'
   [[/if]]
 
-  diagram='{{#if diagram}}{{diagram}}{{/if}}' 
-  iri='{{#if iri}}{{iri}}{{/if}}' 
+  diagram='{{#if diagram}}{{diagram}}{{/if}}'
+  iri='{{#if iri}}{{iri}}{{/if}}'
   iris='{{#if iris}}{{iris}}{{/if}}'
 
   hide-halo=false
 
-  left-panel-initially-open=false 
-  default-node-template="{{> default}}"    
+  left-panel-initially-open=false
+  default-node-template="{{> default}}"
   additional-tree-item-template='{{> additionalTreeItemTemplate}}'
-  
-  provider-settings='{ 
+  diagram-dropdown='{{> test-dropdown}}'
+
+  provider-settings='{
     "classTreeQuery": "
       PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
       PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -62,51 +63,51 @@ uses client-side templates:
     "
   }'>
 
-	<ontodia-field-configuration 
+	<ontodia-field-configuration
                             [[#if (hasPermission "forms:ldp:*")]]
                               authoring-mode=true
                             [[else]]
                               authoring-mode=false
                             [[/if]]
-                            
+
                             type-iri='http://www.w3.org/1999/02/22-rdf-syntax-ns#type'
                             default-label-iri='http://www.researchspace.org/pattern/system/entity/primary_appellation'
                             default-image-iri='http://www.researchspace.org/pattern/system/entity/main_image'
                             default-subject-template='/{{{{raw}}}}{{FIELD_VALUE_LOCAL_NAME http://www.w3.org/1999/02/22-rdf-syntax-ns#type}}{{{{/raw}}}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
                             force-datatype-fields='["http://www.researchspace.org/ontology/PX_has_video"]'
-                            
+
                             persistence='{
                                 "type": "sparql",
                                 "targetInsertGraphIri": "http://www.researchspace.org/resource/g/data"
                             }'
-  > 
-  
-    <rs-ontodia-metadata-from-fields 
+  >
+
+    <rs-ontodia-metadata-from-fields
         fields-query='PREFIX field: <http://www.researchspace.org/resource/system/fields/>
-                      SELECT DISTINCT ?field WHERE { 
+                      SELECT DISTINCT ?field WHERE {
                       {
-                        ?field a <http://www.researchspace.org/resource/system/fields/Field> . 
-                        ?field  a ?type . 
+                        ?field a <http://www.researchspace.org/resource/system/fields/Field> .
+                        ?field  a ?type .
                         VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}
                         FILTER (!CONTAINS(STR(?field),"http://www.researchspace.org/ontology/"))
                       } UNION
-                      { 
-                        ?field a <http://www.researchspace.org/resource/system/fields/Field> . 
-                        ?field  <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/image_annotation> . 
-                        }  
+                      {
+                        ?field a <http://www.researchspace.org/resource/system/fields/Field> .
+                        ?field  <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/image_annotation> .
+                        }
                       UNION {
                         VALUES (?value){(<http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation>)
                               (<http://www.researchspace.org/pattern/system/entity/primary_appellation>)
                               (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>)
-                              (<http://www.researchspace.org/pattern/system/entity/main_image>)  
+                              (<http://www.researchspace.org/pattern/system/entity/main_image>)
                               (<http://www.ics.forth.gr/isl/CRMdig/L49_is_primary_area_of>)
                               (<http://www.researchspace.org/pattern/system/image_annotation/boundingBox>)
                               (<http://www.w3.org/1999/02/22-rdf-syntax-ns#value>)
                               (<http://www.researchspace.org/pattern/system/image_annotation/viewport>)
-                              (<http://www.researchspace.org/pattern/system/image_annotation/area_of_image>)}                                                   
-                        
+                              (<http://www.researchspace.org/pattern/system/image_annotation/area_of_image>)}
+
                         BIND(?value as ?field)
-                      } 
+                      }
                       MINUS {
                         VALUES (?value) {
                         (<http://www.ics.forth.gr/isl/CRMdig/L47_has_comment>)
@@ -114,15 +115,15 @@ uses client-side templates:
                         }
                       }
                     }'>
-    </rs-ontodia-metadata-from-fields> 
-    [[#> ontodia-entity-metadata ]][[/ontodia-entity-metadata]]  
+    </rs-ontodia-metadata-from-fields>
+    [[#> ontodia-entity-metadata ]][[/ontodia-entity-metadata]]
 
 		<ontodia-field-input-override for-field="label">
         <semantic-form-text-input></semantic-form-text-input>
     </ontodia-field-input-override>
 
     <ontodia-field-input-override for-field="http://www.researchspace.org/pattern/system/entity/main_image">
-      <semantic-form-drag-and-drop-input for='http://www.researchspace.org/pattern/system/entity/main_image' label="Main image" 
+      <semantic-form-drag-and-drop-input for='http://www.researchspace.org/pattern/system/entity/main_image' label="Main image"
                                           placeholder-item-template="<div class='placeholder-item'>
                                                                           <rs-icon icon-type='round' icon-name='file_upload' class='upload_icon'></rs-icon>
                                                                           <div>Drag image or click to upload</div>
@@ -188,6 +189,404 @@ uses client-side templates:
         }}
       </div>
     {{/if}}
+  </template>
+
+  <template id="test-dropdown">
+    <bs-dropdown id="{{viewId}}-{{iri}}-item-actions-dropdown" pull-right=true class="dropdown-no-caret">
+      <bs-dropdown-toggle class="{{#if resourceEditorButton}}{{else}}border-none {{#if cardButton}}resource-card__button{{/if}}{{/if}}">
+        <rs-icon icon-type="round" icon-name="more_vert"></rs-icon>
+      </bs-dropdown-toggle>
+    
+      <bs-dropdown-menu class="{{#if resourceEditorButton}}{{else}}resource-actions__dropdown-menu{{/if}}
+                              {{#if (or clipboardCard dragAndDropInputCard)}} resource-card__dropdown-multitle-actions{{/if}}
+                              {{#if (or dragAndDropInputCard)}} resource-card__dropdown-small{{/if}}
+                              {{#if knowledgeMapCard}} resource-card__dropdown-km{{/if}}">
+    
+        {{#switch resourceConfig}}
+          {{#case "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative" break=true}}
+            <mp-event-trigger id='{{viewId}}-open-narrative-trigger' 
+                              type='Dashboard.AddFrame'
+                              data='{"viewId":"semantic-narrative", 
+                                      "resourceIri": "{{iri}}"}' 
+                              targets='["thinking-frames"]'>
+              <bs-menu-item>
+                <rs-icon icon-type="rounded" icon-name="description" class="icon-left" symbol="true"></rs-icon>
+                <span>Open narrative</span>
+              </bs-menu-item>
+            </mp-event-trigger>
+    
+            <mp-event-trigger id='{{viewId}}-open-narrative-newTab-trigger' 
+                              type='Dashboard.AddFrame'
+                              data='{ "viewId":"semantic-narrative", 
+                                      "resourceIri": "{{iri}}",
+                                      "openAsDragAndDrop":true
+                                    }' 
+                              targets='["thinking-frames"]'>
+              <bs-menu-item>
+                <rs-icon icon-type="rounded" icon-name="tab_move" class="icon-left" symbol="true"></rs-icon>
+                <span>Open narrative in draggable tab</span>
+              </bs-menu-item>
+            </mp-event-trigger>
+            <hr>
+          {{/case}}
+    
+          {{#case "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map" break=true}}
+            <mp-event-trigger id='{{viewId}}-open-km-trigger' 
+                              type='Dashboard.AddFrame'
+                              data='{"viewId":"knowledge-map", 
+                                      "resourceIri": "{{iri}}"}' 
+                              targets='["thinking-frames"]'>
+              <bs-menu-item>
+                <rs-icon icon-type="rounded" icon-name="account_tree" class="icon-left" symbol="true"></rs-icon>
+                <span>Open knowledge map</span>
+              </bs-menu-item>
+            </mp-event-trigger>
+    
+            <mp-event-trigger id='{{viewId}}-open-km-newTab-trigger' 
+                              type='Dashboard.AddFrame'
+                              data='{ "viewId":"knowledge-map", 
+                                      "resourceIri": "{{iri}}",
+                                      "openAsDragAndDrop":true
+                                    }' 
+                              targets='["thinking-frames"]'>
+              <bs-menu-item>
+                <rs-icon icon-type="rounded" icon-name="tab_move" class="icon-left" symbol="true"></rs-icon>
+                <span>Open knowledge map in draggable tab</span>
+              </bs-menu-item>
+            </mp-event-trigger>
+            <hr>
+          {{/case}}
+    
+          {{#case "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set" break=true}}
+           <mp-event-trigger id='{{viewId}}-open-set-trigger' 
+                              type='Dashboard.AddFrame'
+                              data='{"viewId":"single-set-management", 
+                                      "resourceIri": "{{iri}}"}' 
+                              targets='["thinking-frames"]'>
+              <bs-menu-item>
+                <rs-icon icon-type="rounded" icon-name="topic" class="icon-left" symbol="true"></rs-icon>
+                <span>Open set</span>
+              </bs-menu-item>
+            </mp-event-trigger>
+    
+            <mp-event-trigger id='{{viewId}}-open-set-newTab-trigger' 
+                              type='Dashboard.AddFrame'
+                              data='{"viewId":"single-set-management", 
+                                      "resourceIri": "{{iri}}",
+                                      "openAsDragAndDrop":true
+                                    }' 
+                              targets='["thinking-frames"]'>
+              <bs-menu-item>
+                <rs-icon icon-type="rounded" icon-name="topic" class="icon-left" symbol="true"></rs-icon>
+                <span>Open set in draggable tab</span>
+              </bs-menu-item>
+            </mp-event-trigger>
+            <hr>
+          {{/case}}
+    
+          {{#case "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item" break=true}}
+          {{/case}}
+    
+          {{#default}}
+            {{#if resourceEditorButton}}
+            {{else}}
+              <mp-overlay-dialog  id="{{viewId}}-resource-preview-dialog"  
+                                  type="modal" 
+                                  class="modal-xlSize preview_modal"
+                                  title="Preview">
+                <mp-overlay-dialog-trigger>
+                  <bs-menu-item>
+                    <rs-icon icon-type="rounded" icon-name="fullscreen" class="icon-left" symbol="true"></rs-icon>
+                    <span>Preview</span>
+                  </bs-menu-item>
+                </mp-overlay-dialog-trigger>
+    
+                <mp-overlay-dialog-content>
+                  <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
+                                    options='{  "resource": "{{iri}}", 
+                                                "resourceConfig": "{{resourceConfig}}", 
+                                                "resourceConfigLabel": "{{resourceLabel}}",
+                                                {{#if resourceDescription}}"resourceDescription": "{{resourceDescription}}",{{/if}}
+                                                "modalId": "{{viewId}}-resource-preview-dialog",
+                                                "resourceDetailSection": true
+                                              }' >
+                  </inline-template> 
+                </mp-overlay-dialog-content>
+              </mp-overlay-dialog>
+              <hr>
+            {{/if}}
+          {{/default}}
+        {{/switch}}
+    
+        {{#if (or (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Place") (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Organisation") )}}
+          <semantic-if query='ASK { <{{iri}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
+                                    ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
+                                    ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt . }'>
+            <template id='then'>
+              <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                        urlqueryparam-view='map' 
+                                        urlqueryparam-resource='{{iri}}'>
+                <bs-menu-item>
+                  <rs-icon icon-type="rounded" icon-name="place" class="icon-left" symbol="true"></rs-icon>
+                  <span>Open map</span>
+                </bs-menu-item>
+              </semantic-link-container>
+            </template>
+          </semantic-if>
+          <semantic-if query='ASK { <{{iri}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
+                                    ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
+                                    ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt . }'>
+            <template id='then'>
+              <hr>
+            </template>
+          </semantic-if>
+        {{/if}}
+    
+        {{#if (or (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Document") (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document") (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/3d_model"))}}
+          <semantic-query query='SELECT ?file ?fileName ?fileMediaType WHERE {
+                                BIND(<{{iri}}> as ?resource) .
+                                
+                                ?resource crmdig:L60i_is_documented_by ?digitizationProcess .
+                                ?digitizationProcess a crmdig:D2_Digitization_Process .    
+                                ?digitizationProcess crmdig:L11_had_output ?file .
+                                ?file rs:PX_has_file_name ?fileName .
+                                ?file rs:PX_has_media_type ?fileMediaType .
+                              }'
+                        template='{{> template}}'
+            >
+              <template id='template'>
+                {{#ifCond bindings.0.fileMediaType.value "==" "application/pdf"}}
+                  <bs-menu-item href="/file?fileName={{bindings.0.fileName.value}}&storage=images&mode=open&mediaType=application%2Fpdf" target="_blank">
+                    <rs-icon icon-type="rounded" icon-name="open_in_new" class="icon-left" symbol="true"></rs-icon>
+                    <span>Open PDF document</span>
+                  </bs-menu-item>
+                {{/ifCond}}
+                  <bs-menu-item>
+                    <rs-icon icon-type="rounded" icon-name="download" class="icon-left" symbol="true"></rs-icon>
+                    <mp-file-download post-action="" download-url="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}">
+                      <span>Download file</span>
+                    </mp-file-download>
+                  </bs-menu-item>
+                <hr>
+              </template>
+          </semantic-query>
+        {{/if}}
+    
+        {{#if (or (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image") (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Audio") (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Video"))}}
+          <semantic-query query='SELECT ?file ?fileName ?fileMediaType WHERE {
+                                  BIND(<{{iri}}> as ?resource) .
+                                  
+                                  ?resource crmdig:L60i_is_documented_by ?digitizationProcess .
+                                  ?digitizationProcess a crmdig:D2_Digitization_Process .    
+                                  ?digitizationProcess crmdig:L11_had_output ?file .
+                                  ?file rs:PX_has_file_name ?fileName .
+                                  ?file rs:PX_has_media_type ?fileMediaType .
+                                }'
+                        template='{{> template}}'
+            >
+              <template id='template'>
+                <bs-menu-item>
+                  <rs-icon icon-type="rounded" icon-name="download" class="icon-left" symbol="true"></rs-icon>
+                  <mp-file-download post-action="" download-url="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}">
+                    <span>Download file </span>
+                  </mp-file-download>
+                </bs-menu-item>
+                <hr>
+              </template>
+          </semantic-query>
+        {{/if}}
+    
+        {{#if (or clipboardCard clipboardList)}}
+        {{else}}
+          <mp-copy-to-default-set id="{{viewId}}-copy-to-clipboard" resource="{{iri}}">
+            <bs-menu-item>
+              <rs-icon icon-type="rounded" icon-name="inventory" class="icon-left" symbol="true"></rs-icon>
+              <span>Copy to clipboard</span>
+            </bs-menu-item>
+          </mp-copy-to-default-set>
+        {{/if}}
+    
+        <mp-copy-to-clipboard text='{{iri}}' message='IRI has been copied'>
+          <bs-menu-item>
+            <rs-icon icon-type="rounded" icon-name="content_copy" class="icon-left" symbol="true"></rs-icon>
+            <span>Copy IRI</span>
+          </bs-menu-item>
+        </mp-copy-to-clipboard>
+    
+        {{#if resourceEditorButton}}
+        {{else}}
+          <hr>
+    
+          <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                    urlqueryparam-view="resource-editor"
+                                    urlqueryparam-resource-iri='{{iri}}'>
+            <bs-menu-item>
+              <rs-icon icon-type="rounded" icon-name="edit_note" class="icon-left" symbol="true"></rs-icon>
+              <span>Edit</span>
+            </bs-menu-item>
+          </semantic-link-container>
+    
+          <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                    urlqueryparam-view="resource-editor"
+                                    urlqueryparam-resource-iri='{{iri}}'
+                                    urlqueryparam-open-as-drag-and-drop='true'>
+            <bs-menu-item>
+              <rs-icon icon-type='rounded' icon-name='read_more' symbol='true' class="icon-left"></rs-icon>
+              <span>Edit in draggable tab</span>
+            </bs-menu-item>
+          </semantic-link-container>
+        {{/if}}
+    
+        {{#if (not (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set"))}}
+          <hr>
+          <mp-event-trigger id='{{viewId}}-image-annotation-add-frame-trigger' 
+                            type='Dashboard.AddFrame' 
+                            data='{"resourceIri": "{{iri}}", 
+                                    "viewId": "object-image-observation", 
+                                    "objectIri": "{{iri}}",
+                                    "frameId": "{{viewId}}"}' 
+                            targets='["thinking-frames"]'>
+              <bs-menu-item>
+                <rs-icon icon-type="rounded" icon-name="photo_size_select_large" class="icon-left" symbol="true"></rs-icon>
+                <span>Image view / annotations</span>
+              </bs-menu-item>
+          </mp-event-trigger>
+        {{/if}}
+    
+        {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image")}}
+          <semantic-link-container  uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                    urlqueryparam-view='image-graph-authoring' 
+                                    urlqueryparam-resource='{{iri}}'>
+            <bs-menu-item>
+              <rs-icon icon-type="rounded" icon-name="wallpaper" class="icon-left" symbol="true"></rs-icon>
+              <span>Image graph authoring</span>
+            </bs-menu-item>
+          </semantic-link-container> 
+        {{/if}}
+    
+        {{#if (not (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map"))}}
+          <hr>
+          <semantic-link-container  uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                    urlqueryparam-view='knowledge-map' 
+                                    urlqueryparam-resource='{{iri}}'>
+              <bs-menu-item>
+                <rs-icon icon-type="rounded" icon-name="hub" class="icon-left" symbol="true"></rs-icon>
+                <span>Open in Knowledge map</span>
+              </bs-menu-item>
+          </semantic-link-container>
+        {{/if}}
+    
+        {{#if searchCard}}
+          <hr>
+          [[> deleteButton resourceFormIRI=resourceFormIRI]]
+        {{/if}}
+    
+        [[#if customAction]]
+          [[#block "customAction"]][[/block]]
+        [[/if]]
+        
+      </bs-dropdown-menu>
+    </bs-dropdown>
+    
+    
+    [[!-- DELETE BUTTON TRIGGERS FORM AND LDP DELETE OF resourceIri --]]
+    [[#*inline "deleteButton"]]
+      <mp-overlay-dialog show='{{#if delete}}true{{else}}false{{/if}}' 
+                          id='{{viewId}}-delete-resource-dialog-{{iri}}' 
+                          title="Delete {{resourceName}}" type="modal" bs-size="large">
+        <mp-overlay-dialog-trigger>
+          <bs-menu-item>
+            <rs-icon icon-type="rounded" icon-name="delete" class="icon-left" symbol="true"></rs-icon>
+            <span>Delete</span>
+          </bs-menu-item>
+        </mp-overlay-dialog-trigger>
+        <mp-overlay-dialog-content>
+          <div>
+            <span>Are you sure you want to delete <strong><mp-label iri="{{iri}}"></mp-label></strong> ?</span>
+          
+            <semantic-query query='SELECT DISTINCT ?resource ?label  
+                                    WHERE {
+                                      ?resource ?p <{{iri}}> .
+                                      OPTIONAL {<{{iri}}> skos:prefLabel ?nodeLabel .}
+                                      OPTIONAL {<{{iri}}> rdfs:label ?nodeLabel .}
+                      
+                                      OPTIONAL {
+                                        ?resource rdfs:label ?label .
+                                      }
+                                      OPTIONAL {
+                                        ?resource skos:prefLabel ?label .
+                                      }
+                                    }
+                                  '
+                                  template='{{> referredByTemplate}}'
+              >
+    
+                <template id='referredByTemplate'>
+                  Some resources in the system link to it:
+                  <ul>
+                    {{#each bindings}}
+                      <li>
+                        <semantic-link iri='{{resource.value}}'>{{label.value}}</semantic-link>
+                      </li>
+                    {{/each}}
+                  </ul>
+                </template>
+            </semantic-query>
+          </div>
+        
+          <div style="visibility: hidden; height: 0px; width: 0; overflow: hidden;">
+            <inline-template template-iri='{{resourceFormIRI}}'
+                              options='{  
+                                          "viewId": "{{iri}}",
+                                          "mode": "edit",
+                                          "editable": true,
+                                          "node": "{{iri}}"
+                              }'>
+            </inline-template> 
+          </div>  
+       
+          <div class="form-btn-group">
+            <mp-event-trigger id='{{iri}}-cancel-feature-removal' 
+                              type='OverlayDialog.Close' 
+                              targets='["{{viewId}}-delete-resource-dialog-{{iri}}"]'>
+              <button class="btn btn-default">Cancel</button>
+            </mp-event-trigger>
+    
+            <mp-event-trigger id='{{iri}}-confirm-entity-removal' 
+                              type='Form.RemoveResource'                               
+                              data='{"iri": "{{iri}}", "node": "{{iri}}"}' 
+                              targets='["{{iri}}-resource-form","{{iri}}-close-form-removal-dialog"]'>
+              <button class="btn btn-action">Delete</button>
+            </mp-event-trigger>  
+          </div>
+    
+          [[!-- Refresh Search page for that particular resource if open --]]
+          <mp-event-proxy id='{{iri}}-refresh-search-page-{{viewId}}'
+                          on-event-source='{{iri}}-resource-form' 
+                          on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated", "Form.ResourceRemoved"]'      
+                          proxy-event-type='Component.TemplateUpdate' 
+                          proxy-targets='["{{resourceConfig}}-resourceSearch-frame"]'
+          ></mp-event-proxy>
+    
+          [[!-- Refresh clipboard for a particular resource deleted --]]
+          <mp-event-proxy id='{{iri}}-clipboard-refresh-on-delete-action-{{viewId}}' 
+                          on-event-source='{{iri}}-resource-form'  
+                          on-event-type='Form.ResourceRemoved'
+                          proxy-event-type='Component.Refresh' 
+                          proxy-targets='["clipboard"]'
+          ></mp-event-proxy>
+    
+          [[!-- Close Delete dialog windown once form delete submitted --]]
+          <mp-event-proxy id='{{iri}}-close-form-removal-dialog-{{viewId}}' 
+                          on-event-source='{{iri}}-resource-form' 
+                          on-event-type='Form.ResourceRemoved'
+                          proxy-event-type='OverlayDialog.Close' 
+                          data='{}'
+                          proxy-targets='["{{viewId}}-delete-resource-dialog-{{iri}}"]'
+          ></mp-event-proxy>      
+        </mp-overlay-dialog-content>
+      </mp-overlay-dialog>
+    [[/inline]]
   </template>
 
 </[[#if standalone]]ontodia[[else]]rs-ontodia-panel[[/if]]>

@@ -27,7 +27,6 @@ export function createNewSetFromItems(source: string, name: string, items: Rdf.I
   return getSetServiceForUser()
     .flatMap((service) => service.createSetAndAddItems(name, List(items)))
     .onValue((value) => {
-      console.log('SIMONE ', value)
       trigger({ eventType: SetManagementEvents.SetAdded, source: source, data: {containerIri: value[0].containerIri.value} });
     });
 }

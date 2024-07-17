@@ -1063,7 +1063,15 @@
 
 <mp-event-proxy id='[[urlParam "viewid" escape=false]]-search-refresh-on-create-set'
                 on-event-types='["Components.SetManagement.SetAdded"]'
-                on-event-sources='["[[urlParam "viewid" escape=false]]-new-set-with-results", "[[urlParam "viewid" escape=false]]-create-set-result-action" ]'
+                on-event-source='[[urlParam "viewid" escape=false]]-new-set-with-results'
+                proxy-event-type='Component.TemplateUpdate' 
+                proxy-targets='["[[urlParam "resourceconfig" escape=false]]-resourceSearch-frame"]'
+                additional-data='{"setCreated": true }' >
+</mp-event-proxy>
+
+<mp-event-proxy id='[[urlParam "viewid" escape=false]]-search-refresh-on-create-set'
+                on-event-types='["Components.SetManagement.SetAdded"]'
+                on-event-source='[[urlParam "viewid" escape=false]]-create-set-result-action'
                 proxy-event-type='Component.TemplateUpdate' 
                 proxy-targets='["[[urlParam "resourceconfig" escape=false]]-resourceSearch-frame"]'
                 additional-data='{"setCreated": true }' >

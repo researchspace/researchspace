@@ -391,6 +391,7 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
                   editor={this.editorRef}
                   options={this.state.availableTemplates}
                   onDocumentSave={this.onDocumentSave}
+                  showDropdown={!!this.state.documentIri}
           />
           }
             <div className={styles.sidebarAndEditorHolder}>

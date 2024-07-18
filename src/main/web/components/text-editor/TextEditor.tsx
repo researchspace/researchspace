@@ -48,9 +48,16 @@ import { InternalLink } from './InternalLink';
 import * as styles from './TextEditor.scss';
 import { ResourceBlock } from './ResourceBlock';
 import Icon from '../ui/icon/Icon';
+import { trigger } from 'platform/api/events';
+import * as TextEditorEvents from './TextEditorEvents'
 
 
 interface TextEditorProps {
+  /**
+   * Used as source id for emitted events.
+   */
+  id?: string;
+
   /**
    * Text document IRI to load.
    */
@@ -529,7 +536,8 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
 
   private onDocumentSave = () => {
     this.setState({saving: true});
-    const { value, title } = this.state;
+    const { value, title, documentIri} = this.state;
+    const isEdit = !!documentIri
 
     const html = new Html({ rules: SLATE_RULES });
     const content =
@@ -580,6 +588,13 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
     ).observe({
       value: resource => {
         this.setState({documentIri: resource.value, saving: false});
+        trigger({
+          eventType: isEdit ? TextEditorEvents.NarrativeUpdated : TextEditorEvents.NarrativeCreated,
+          source: this.props.id,
+          data: {
+            iri: this.state.documentIri
+          }
+        })
       },
       error: error => { console.error(error) },
     });

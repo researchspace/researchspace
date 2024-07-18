@@ -348,11 +348,6 @@ export interface OntodiaConfig {
    * If true right panel is initially open.
    */
   rightPanelInitiallyOpen?: boolean;
-
-   /**
-   * Custom template of diagram dropdown
-   */
-  diagramDropdown?: string;
 }
 
 export type OntodiaPersistenceMode = FormBasedPersistenceProps;
@@ -589,7 +584,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
         onSaveDiagramAs: () => this.openSaveModal(),
         onPersistChangesAndSaveDiagram: () => this.onPersistChangesAndSaveDiagram(),
         diagramIri: this.state.diagramIri,
-        dropdownTemplate: this.getTemplate(this.props.diagramDropdown)
+        dropdownTemplate: this.getTemplate('{{> knowledge-map-dropdown}}')
       }),
       metadataApi: this.metadataApi,
       validationApi: this.validationApi,
@@ -1397,7 +1392,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
   private getTemplate = (template: string): React.CElement<{}, TemplateItem> => {
     if(!template) return null;
     return createElement(TemplateItem, {
-      template: { source: this.props.diagramDropdown },
+      template: { source: template },
     })
   }
 

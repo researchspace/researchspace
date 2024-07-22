@@ -205,7 +205,21 @@
 
         {{#if resourceConfig}}
           <mp-event-proxy id='{{resource}}-closeDialog-proxy'
-                          on-event-sources='["{{resource}}-edit-btn-trigger", "{{resource}}-open-narrative-trigger", "{{resource}}-open-km-trigger"]'
+                          on-event-source='{{resource}}-edit-btn-trigger'
+                          on-event-type='Dashboard.AddFrame'
+                          proxy-event-type='OverlayDialog.Close' 
+                          proxy-targets='["{{modalId}}"]'
+          ></mp-event-proxy>
+
+          <mp-event-proxy id='{{resource}}-closeDialog-proxy'
+                          on-event-source='{{resource}}-open-narrative-trigger'
+                          on-event-type='Dashboard.AddFrame'
+                          proxy-event-type='OverlayDialog.Close' 
+                          proxy-targets='["{{modalId}}"]'
+          ></mp-event-proxy>
+
+          <mp-event-proxy id='{{resource}}-closeDialog-proxy'
+                          on-event-source='{{resource}}-open-km-trigger'
                           on-event-type='Dashboard.AddFrame'
                           proxy-event-type='OverlayDialog.Close' 
                           proxy-targets='["{{modalId}}"]'

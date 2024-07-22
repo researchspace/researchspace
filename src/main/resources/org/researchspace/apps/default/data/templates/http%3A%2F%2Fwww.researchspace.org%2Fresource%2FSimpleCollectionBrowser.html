@@ -286,7 +286,13 @@
                                 <div style="flex: 1;"> 
                                   <div class="success-documentation-section-title">Success!</div>
                                   <div class="success-documentation-section-content">
-                                    <span style="text-transform: capitalize;">{{label}}</span>
+                                    <span style="text-transform: capitalize;">
+                                      {{#if label}}
+                                        {{label}}
+                                      {{else}}
+                                        <mp-label iri='{{iri}}'></mp-label>
+                                      {{/if}}
+                                    </span>
                                     <span> has been deleted.</span>
                                   </div>
                                 </div>
@@ -346,7 +352,7 @@
                 {{/if}}
               </div>
 
-              [[!-- Refresh Search page for a particular resource if open --]]
+              [[!-- Refresh Search page if a particular resource is created, updated or removed --]]
               <mp-event-proxy id='{{viewId}}-refresh-search-page'
                               on-event-source='{{#if iri}}{{iri}}-resource-form{{else}}{{viewId}}-resource-form{{/if}}' 
                               on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated", "Form.ResourceRemoved"]'      
@@ -354,7 +360,7 @@
                               proxy-targets='["{{resourceConfiguration}}-resourceSearch-frame"]'
               ></mp-event-proxy>
 
-              [[!-- Refresh clipboard for a particular resource modified or deleted --]]
+              [[!-- Refresh clipboard if a particular resource is modified or deleted --]]
               <mp-event-proxy id='{{viewId}}-clipboard-refresh-on-form-action' 
                               on-event-source='{{#if iri}}{{iri}}-resource-form{{else}}{{viewId}}-resource-form{{/if}}' 
                               on-event-types='["Form.ResourceUpdated", "Form.ResourceRemoved"]'

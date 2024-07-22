@@ -1,6 +1,6 @@
 <semantic-form [[> rsp:FormDefaults]] 
                persistence='{"type": "sparql", "targetGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
-               new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{entity_prefLabel}}{{{{/raw}}}}{{else}}/type/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
+               new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{entity_prefLabel}}{{{{/raw}}}}{{else}}/measurement_unit/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
                fields='[[fieldDefinitions
                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                         inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
@@ -22,6 +22,7 @@
                         entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
                         entity_id="http://www.researchspace.org/pattern/system/entity/identifier"
                         entity_description="http://www.researchspace.org/pattern/system/entity/description"
+                        measurement_unit_is_unit_of="http://www.researchspace.org/pattern/system/measurement_unit/is_unit_of"
 
                         type_is_type_of="http://www.researchspace.org/pattern/system/type/is_type_of"
                         type_exemplifies_range="http://www.researchspace.org/pattern/system/type/PC137_exemplifies_range"
@@ -66,7 +67,7 @@
 >
 
   <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
-    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E55_Type'></semantic-form-hidden-input>
+    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E58_Measurement_Unit'></semantic-form-hidden-input>
 
     {{#if scheme}}
       <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
@@ -82,10 +83,23 @@
 
             <semantic-form-text-input for="entity_description" multiline=true label="Description" placeholder="Enter description/comment"></semantic-form-text-input>
 
+            <semantic-form-autocomplete-input for='measurement_unit_is_unit_of' 
+                                              label="Is unit of"
+                                              placeholder="Select the dimension it is unit of" 
+                                              nested-form-templates='[ 
+                                                  {
+                                                      "label": "Dimension",
+                                                      "nestedForm": " {{{{raw}}}}
+                                                                        {{> \"http://www.researchspace.org/resource/system/forms/Dimension\" nested=true editable=true mode=\"new\"}}
+                                                                      {{{{/raw}}}}"
+                                                  }
+                                              ]'>  
+            </semantic-form-autocomplete-input>
+
             {{#if scheme}}
               <semantic-form-tree-picker-input  for="type_broader" 
-                                                label="Broader {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
-                                                placeholder="Select broader {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                                label="Broader {{#if entityType}}{{entityType}}{{else}}measurement unit{{/if}}" 
+                                                placeholder="Select broader {{#if entityType}}{{entityType}}{{else}}measurement unit{{/if}}" 
                                                 close-dropdown-on-selection='false'
                                                 default-values='[{{#if broader}}"{{broader}}"{{/if}}]'
 
@@ -100,8 +114,8 @@
               ></semantic-form-tree-picker-input>
 
               <semantic-form-tree-picker-input  for="type_narrower" 
-                                                label="Narrower {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
-                                                placeholder="Select narrower {{#if entityType}}{{entityType}}{{else}}type{{/if}}"
+                                                label="Narrower {{#if entityType}}{{entityType}}{{else}}measurement unit{{/if}}" 
+                                                placeholder="Select narrower {{#if entityType}}{{entityType}}{{else}}measurement unit{{/if}}"
                                                 close-dropdown-on-selection='false'
                                                 
                                                 tree-patterns='{"scheme": "{{scheme}}",
@@ -116,8 +130,8 @@
             {{/if}}
 
             <semantic-form-autocomplete-input for='type_related_type' 
-                                              label="Related {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
-                                              placeholder="Enter related {{#if entityType}}{{entityType}}{{else}}type{{/if}}"
+                                              label="Related {{#if entityType}}{{entityType}}{{else}}measurement unit{{/if}}" 
+                                              placeholder="Enter related {{#if entityType}}{{entityType}}{{else}}measurement unit{{/if}}"
                                               nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
             </semantic-form-autocomplete-input> 
 
@@ -146,7 +160,7 @@
 
           <semantic-form-autocomplete-input for='type_is_type_of' 
                                             label="Is type of" 
-                                            placeholder="Select entity that has this type" 
+                                            placeholder="Select entity that has this measurement unit" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_allEntities]]'> 
           </semantic-form-autocomplete-input> 
 
@@ -167,32 +181,32 @@
                 <div style="flex: 1;">
                   <semantic-form-autocomplete-input for='exemplifies_entity_domain' 
                                                     render-header="false"
-                                                    placeholder="Select entity that has been declared to be a particularly characteristic example of this type"
+                                                    placeholder="Select entity that has been declared to be a particularly characteristic example of this measurement unit"
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_allEntities]]'>
                   </semantic-form-autocomplete-input>
                 </div>
                 <div style="flex: 1;">
                   <semantic-form-tree-picker-input  for="taxonomic_role" 
-                                                      render-header="false"
-                                                      placeholder="Select taxonomic role"
-                                                      close-dropdown-on-selection='true'
-                                                      tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/taxonomic_role>", 
-                                                                      "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/taxonomic_role>",
-                                                                      "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
-      
-                                                      scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                  "view": "vocabulary-content",
-                                                                                  "scheme": "http://www.researchspace.org/resource/vocab/taxonomic_role",
-                                                                                  "tooltip": "Open list of taxonomic roles"
-                                                                              }'
-                                                      
-                                                      nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                          scheme="http://www.researchspace.org/resource/vocab/taxonomic_role"
-                                                                                          entityType="taxonomic role" }}{{{{/raw}}}}'
-      
-                                                      query-item-label='SELECT ?label WHERE {
-                                                                          ?item skos:prefLabel ?label .
-                                                                      }'>
+                                                    render-header="false"
+                                                    placeholder="Select taxonomic role"
+                                                    close-dropdown-on-selection='true'
+                                                    tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/taxonomic_role>", 
+                                                                    "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/taxonomic_role>",
+                                                                    "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+    
+                                                    scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                "view": "vocabulary-content",
+                                                                                "scheme": "http://www.researchspace.org/resource/vocab/taxonomic_role",
+                                                                                "tooltip": "Open list of taxonomic roles"
+                                                                            }'
+                                                    
+                                                    nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                        scheme="http://www.researchspace.org/resource/vocab/taxonomic_role"
+                                                                                        entityType="taxonomic role" }}{{{{/raw}}}}'
+    
+                                                    query-item-label='SELECT ?label WHERE {
+                                                                        ?item skos:prefLabel ?label .
+                                                                    }'>
                   </semantic-form-tree-picker-input>
                 </div>
               </div>
@@ -207,7 +221,7 @@
             <div class="hierarchyView-form-container">
               <div class="page__section-container formHierarchyView-container">
                   <div class="form-header-withButtons">
-                      <h4>Types</h4>
+                      <h4>Measurement units/Types</h4>
                   </div>
                   <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
                       {{#if node}}
@@ -260,14 +274,14 @@
 
               <div class="page__section-container formHierarchyInputs-container">
                 <semantic-form-autocomplete-input for='type_broader' 
-                                                  label="Broader type" 
+                                                  label="Broader measurement unit/type" 
                                                   placeholder="Enter broader type"
                                                   nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
                 </semantic-form-autocomplete-input> 
 
                 <semantic-form-autocomplete-input for='type_narrower' 
                                                   label="Narrower type" 
-                                                  placeholder="Enter narrower type"
+                                                  placeholder="Enter narrower measurement unit/type"
                                                   nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
                 </semantic-form-autocomplete-input> 
               </div>
@@ -336,13 +350,13 @@
               <div class="page__section-container formHierarchyInputs-container">
                   <semantic-form-autocomplete-input for='type_typical_parts_of' 
                                                   label="Typical parts of" 
-                                                  placeholder="Enter type that defines typical wholes for the type"
+                                                  placeholder="Enter type that defines typical wholes for the measurement unit"
                                                   nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
                   </semantic-form-autocomplete-input> 
 
                   <semantic-form-autocomplete-input for='type_typical_wholes_for' 
                                                   label="Typical wholes for" 
-                                                  placeholder="Enter type that defines typical part of the type"
+                                                  placeholder="Enter type that defines typical part of the measurement unit"
                                                   nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
                   </semantic-form-autocomplete-input> 
               </div>
@@ -354,13 +368,13 @@
       
           <semantic-form-autocomplete-input   for='man-made_thing_was_intended_for' 
                                               label="Was intended for" 
-                                              placeholder="Select the type describing the intended usage of the type" 
+                                              placeholder="Select the type describing the intended usage of the measurement unit" 
                                               nested-form-templates='[[> Platform:NestedFormTemplates_types]]'>
           </semantic-form-autocomplete-input>
 
           <semantic-form-autocomplete-input   for='thing_general_use' 
                                               label="Had as general use" 
-                                              placeholder="Select the type of use that the type was actually employed for" 
+                                              placeholder="Select the type of use that the measurement unit was actually employed for" 
                                               nested-form-templates='[[> Platform:NestedFormTemplates_types]]'>
           </semantic-form-autocomplete-input>
 
@@ -382,25 +396,25 @@
 
           <semantic-form-autocomplete-input   for='type_was_purpose_of' 
                                               label="Was purpose of"
-                                              placeholder="Select activity that had the type as general purpose" 
+                                              placeholder="Select activity that had the measurement unit as general purpose" 
                                               nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
           </semantic-form-autocomplete-input>
 
           <semantic-form-autocomplete-input   for='type_was_technique_of' 
                                               label="Was technique of"
-                                              placeholder="Select activity that used the type as general technique" 
+                                              placeholder="Select activity that used the measurement unit as general technique" 
                                               nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
           </semantic-form-autocomplete-input>
           
           <semantic-form-autocomplete-input   for='type_was_type_of_object_used_in' 
-                                              label="Was type of object used in"
-                                              placeholder="Select activity that used object of this type" 
+                                              label="Was measurement unit of object used in"
+                                              placeholder="Select activity that used object of this measurement unit" 
                                               nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
           </semantic-form-autocomplete-input>
 
           <semantic-form-autocomplete-input   for='type_was_assigned_by' 
                                               label="Was assigned by"
-                                              placeholder="Select assignment that assign the type to a specific entity/item" 
+                                              placeholder="Select assignment that assign the measurement unit to a specific entity/item" 
                                               nested-form-templates='[ 
                                                   {
                                                       "label": "Type assignment",
@@ -413,7 +427,7 @@
 
           <semantic-form-autocomplete-input   for='type_was_created_by' 
                                               label="Created by"
-                                              placeholder="Select the creation event of the type" 
+                                              placeholder="Select the creation event of the measurement unit" 
                                               nested-form-templates='[ 
                                                   {
                                                       "label": "Type creation",
@@ -426,7 +440,7 @@
 
           <semantic-form-autocomplete-input   for='conceptual_object_created_by' 
                                               label="Created by" 
-                                              placeholder="Select the event that created the type" 
+                                              placeholder="Select the event that created the measurement unit" 
                                               nested-form-templates='[[> Platform:NestedFormTemplates_creations]]'>  
           </semantic-form-autocomplete-input> 
 
@@ -447,7 +461,7 @@
                 <div style="flex: 1;">
                   <semantic-form-autocomplete-input for='was_intended_use_of_activity_domain' 
                                                     render-header="false"
-                                                    placeholder="Select activity for which the type was made for" 
+                                                    placeholder="Select activity for which the measurement unit was made for" 
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>
                   </semantic-form-autocomplete-input> 
                 </div>
@@ -498,7 +512,7 @@
                       <semantic-form-autocomplete-input for='used_specific_object_activity_domain' 
                                                         label="Used for" 
                                                         render-header="false"
-                                                        placeholder="Select activity in which the use of the type was essential to the performance or outcome" 
+                                                        placeholder="Select activity in which the use of the measurement unit was essential to the performance or outcome" 
                                                         nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'> 
                       </semantic-form-autocomplete-input> 
                     </div>
@@ -533,37 +547,37 @@
 
           <semantic-form-autocomplete-input   for='persistent_item_present_at' 
                                               label="Present at" 
-                                              placeholder="Select event in which the type had an active or passive presence" 
+                                              placeholder="Select event in which the measurement unit had an active or passive presence" 
                                               nested-form-templates='[[> Platform:NestedFormTemplates_events]]'>  
           </semantic-form-autocomplete-input> 
 
           <semantic-form-autocomplete-input   for='persistent_item_brought_into_existence_by' 
                                               label="Brought into existence by" 
-                                              placeholder="Select event that brought the type into existence" 
+                                              placeholder="Select event that brought the measurement unit into existence" 
                                               nested-form-templates='[[> Platform:NestedFormTemplates_beginningOfExistences]]'>  
           </semantic-form-autocomplete-input>
 
           <semantic-form-autocomplete-input   for='persistent_item_taken_out_of_existence_by' 
                                               label="Taken out of existence by" 
-                                              placeholder="Select event that took the type out of existence" 
+                                              placeholder="Select event that took the measurement unit out of existence" 
                                               nested-form-templates='[[> Platform:NestedFormTemplates_endOfExistences]]'>  
           </semantic-form-autocomplete-input>
 
           <semantic-form-autocomplete-input   for='entity_influenced_activity' 
                                               label="Influenced"
-                                              placeholder="Select activity influenced by the {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                              placeholder="Select activity influenced by the {{#if entityType}}{{entityType}}{{else}}measurement unit{{/if}}" 
                                               nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
           </semantic-form-autocomplete-input>
 
           <semantic-form-autocomplete-input   for='entity_motivated_activity' 
                                               label="Motivated"
-                                              placeholder="Select activity motivated by the {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                              placeholder="Select activity motivated by the {{#if entityType}}{{entityType}}{{else}}measurement unit{{/if}}" 
                                               nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
           </semantic-form-autocomplete-input>
 
           <semantic-form-autocomplete-input   for='entity_attributed_by_attribute_assignment' 
                                               label="Attributed by"
-                                              placeholder="Select what assigned attribute to the {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                              placeholder="Select what assigned attribute to the {{#if entityType}}{{entityType}}{{else}}measurement unit{{/if}}" 
                                               nested-form-templates='[ 
                                                   {
                                                       "label": "Attribute assignment",
@@ -576,7 +590,7 @@
 
           <semantic-form-autocomplete-input   for='entity_assigned_by_attribute_assignment' 
                                               label="Assigned by"
-                                              placeholder="Select what assigned the {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                              placeholder="Select what assigned the {{#if entityType}}{{entityType}}{{else}}measurement unit{{/if}}" 
                                               nested-form-templates='[ 
                                                   {
                                                       "label": "Attribute assignment",
@@ -605,13 +619,13 @@
 
             <semantic-form-autocomplete-input   for='type_was_intention_of' 
                                                 label="Was intention of"
-                                                placeholder="Select thing, physical or immaterial, that had this type as intended method or technique of use" 
+                                                placeholder="Select thing, physical or immaterial, that had this measurement unit as intended method or technique of use" 
                                                 nested-form-templates='[[> Platform:NestedFormTemplates_manMadeThings]]'> 
             </semantic-form-autocomplete-input>
 
             <semantic-form-autocomplete-input   for='type_was_use_of' 
                                                 label="Was use of"
-                                                placeholder="Select thing, physical or immaterial, that had this type of use" 
+                                                placeholder="Select thing, physical or immaterial, that had this measurement unit of use" 
                                                 nested-form-templates='[[> Platform:NestedFormTemplates_things]]'> 
             </semantic-form-autocomplete-input>
 
@@ -632,7 +646,7 @@
                   <div style="flex: 1;">
                     <semantic-form-autocomplete-input for='shows_features_of_range'  
                                                       render-header="false"
-                                                      placeholder="Select thing that has similarity with the type" 
+                                                      placeholder="Select thing that has similarity with the measurement unit" 
                                                       nested-form-templates='[[> Platform:NestedFormTemplates_things]]'> 
                     </semantic-form-autocomplete-input> 
                   </div>
@@ -681,7 +695,7 @@
                   <div style="flex: 1;">
                     <semantic-form-autocomplete-input for='shows_features_of_domain'  
                                                       render-header="false"
-                                                      placeholder="Select thing that shows similarity with the type" 
+                                                      placeholder="Select thing that shows similarity with the measurement unit" 
                                                       nested-form-templates='[[> Platform:NestedFormTemplates_things]]'> 
                     </semantic-form-autocomplete-input> 
                   </div>
@@ -730,7 +744,7 @@
                 <div style="flex: 1;">
                   <semantic-form-autocomplete-input for='depicts_thing_domain' 
                                                     render-header="false"
-                                                    placeholder="Select what depicts the {{#if entityType}}{{entityType}}{{else}}type{{/if}}"
+                                                    placeholder="Select what depicts the {{#if entityType}}{{entityType}}{{else}}measurement unit{{/if}}"
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'>
                   </semantic-form-autocomplete-input>
                 </div>
@@ -764,7 +778,7 @@
 
             <semantic-form-autocomplete-input   for='entity_subject_of' 
                                                 label="Subject of"
-                                                placeholder="Select what is about the {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                                placeholder="Select what is about the {{#if entityType}}{{entityType}}{{else}}measurement unit{{/if}}" 
                                                 nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
             </semantic-form-autocomplete-input>
 
@@ -785,7 +799,7 @@
                       <div style="flex: 1;">
                           <semantic-form-autocomplete-input for='refers_to_propObj_domain' 
                                                           render-header="false"
-                                                          placeholder="Select what refers to the type" 
+                                                          placeholder="Select what refers to the measurement unit" 
                                                           nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'>
                           </semantic-form-autocomplete-input>
                       </div>
@@ -827,5 +841,5 @@
   </div>
   
   <semantic-form-errors></semantic-form-errors>
-  [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}type{{/if}}']] 
+  [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}measurement unit{{/if}}']] 
 </semantic-form>

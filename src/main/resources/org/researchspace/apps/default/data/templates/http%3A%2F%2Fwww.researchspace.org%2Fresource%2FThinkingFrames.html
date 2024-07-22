@@ -24,10 +24,22 @@
   
 </style>
 
-<mp-event-proxy id='clipboard-update-on-create-set'
-                on-event-type='Components.SetManagement.SetAdded'
+<mp-event-proxy id='clipboard-update-on-set-modification'
+                on-event-types='["Components.SetManagement.SetRenamed",
+                                "Components.SetManagement.SetRemoved",
+                                "Components.SetManagement.ItemAdded",
+                                "Components.SetManagement.ItemRemoved",
+                                "Components.SetManagement.ItemsReordered"]'
                 proxy-event-type='Component.Refresh'
                 proxy-targets='["clipboard"]'>
+</mp-event-proxy>
+
+<mp-event-proxy id='search-refresh-on-create-modification'
+                on-event-types='["Components.SetManagement.SetAdded",
+                                  "Components.SetManagement.SetRenamed",
+                                  "Components.SetManagement.SetRemoved"]'
+                proxy-event-type='Component.TemplateUpdate' 
+                proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Set-resourceSearch-frame"]'>
 </mp-event-proxy>
 
 <mp-event-proxy id='clipboard-update-on-save-search' 
@@ -203,7 +215,7 @@
     	"id": "single-set-management",
       "label": "Set management",
       "description": "Manage the resources in a set",
-      "iconName": "topic",
+      "iconName": "gallery_thumbnail",
       "template": "{{> SingleSetManagement}}",
       "checkQuery": "ASK { ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/set> . }",
       "type": "view"
@@ -420,7 +432,11 @@
     </template>
 
     <template id='semanticNarrativeResources'>
-      [[> rsp:SemanticNarrativeResources]]
+      <div class='page__grid-container search-page-container'>
+        <div id="template-content">
+          [[> rsp:SemanticNarrativeResources iri=iri]] 
+        </div>
+      </div>
     </template>
 
     <template id='SingleSetManagement'>

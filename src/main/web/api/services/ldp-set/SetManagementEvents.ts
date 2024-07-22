@@ -20,7 +20,7 @@
 import { EventMaker } from 'platform/api/events';
 
 export interface SetManagementEventData {
-  'Components.SetManagement.SetAdded': void;
+  'Components.SetManagement.SetAdded': {containerIri: string};
   'Components.SetManagement.SetRenamed': void;
   'Components.SetManagement.SetRemoved': void;
   'Components.SetManagement.SetRemovedFromView': void;

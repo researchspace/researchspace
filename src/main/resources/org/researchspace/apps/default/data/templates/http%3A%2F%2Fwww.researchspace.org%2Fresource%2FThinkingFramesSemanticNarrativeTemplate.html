@@ -15,6 +15,13 @@
                   proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative-resourceSearch-frame"]'
   ></mp-event-proxy>
 
+  <mp-event-proxy id='{{viewId}}-refresh-resources-in-narrative-on-narrative-updated'
+                  on-event-type='Narrative.Updated'
+                  on-event-source='{{viewId}}-semantic-narrative'     
+                  proxy-event-type='Component.TemplateUpdate' 
+                  proxy-targets='["{{iri}}-resources-in-narrative-frame"]'
+  ></mp-event-proxy>
+
   [[!-- Refresh clipboard on narrative updated --]]
   <mp-event-proxy id='{{viewId}}-refresh-clipboard-on-narrative-updated' 
                   on-event-type='Narrative.Updated'
@@ -170,11 +177,13 @@
     </template>
 
     <template id="semantic-narrative-dropdown">
-      {{> rsp:ResourceDropdownActions viewId=viewId
-      iri=iri resourceConfig="http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative"
-      resourceLabel="Semantic narrative"
-      resourceFormIRI="http://www.researchspace.org/resource/system/forms/SemanticNarrative"
-    }}
+      {{> rsp:ResourceDropdownActions iri=iri
+                                      viewId=viewId
+                                      resourceLabel="Semantic narrative"
+                                      resourceFormIRI="http://www.researchspace.org/resource/system/forms/SemanticNarrative"
+                                      hidePreview=true
+                                      headerButton=true
+      }}
     </template>
     
   </rs-text-editor>

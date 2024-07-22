@@ -288,6 +288,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
         </div>
 
         <div className={styles.buttonsContainer}>
+          {this.renderOptionDropdown()}
           <HasPermission
             permission={Permissions.toLdp('container', VocabPlatform.OntodiaDiagramContainer, 'create', 'any')}
           >
@@ -300,7 +301,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
 
           {this.renderLanguages()}
         </div>
-        {this.renderOptionDropdown()}
+        
       </div>
     );
   }

@@ -281,16 +281,18 @@ export class Toolbar extends React.Component<ToolbarProps> {
 
         </div>
         
-        <Button bsStyle='default' 
-                className='btn-action'
-                onClick={this.props.onDocumentSave} 
-                disabled={saving}>
-          <i className={saving ? 'fa fa-spinner fa-pulse fa-fw' : null }
-            aria-hidden='true'></i>
-           Save narrative
-        </Button>
-        {dropdownTemplate}
-        
+        <div className={styles.toolbarBtnGroup}>
+          {dropdownTemplate}
+          <Button bsStyle='default' 
+                  className='btn-action'
+                  onClick={this.props.onDocumentSave} 
+                  disabled={saving}>
+            <i className={saving ? 'fa fa-spinner fa-pulse fa-fw' : null }
+              aria-hidden='true'></i>
+            Save narrative
+          </Button>
+        </div>
+
       </div>
     );
   }

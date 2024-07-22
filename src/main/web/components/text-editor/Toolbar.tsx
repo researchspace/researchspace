@@ -28,6 +28,7 @@ import {
 import { ResourceTemplateConfig } from './Config';
 import * as styles from './TextEditor.scss';
 import Icon from '../ui/icon/Icon';
+import { TemplateItem } from '../ui/template';
 
 export const BLOCK_TO_ICON: { [block in Block]: string } = {
   [Block.empty]: 'fa-font',
@@ -74,9 +75,17 @@ export interface ToolbarProps {
   options?: { [objectIri: string]: ResourceTemplateConfig[] }
   onDocumentSave: () => void;
   saving?: boolean;
+  showDropdown?: boolean;
 }
 
 export class Toolbar extends React.Component<ToolbarProps> {
+
+  private getTemplate = (template: string): React.CElement<{}, TemplateItem> => {
+    if(!template) return null;
+    return React.createElement(TemplateItem, {
+      template: { source: template },
+    })
+  }
 
   isTextSelectionActionDisabled = () =>
     !isTextBlock(this.props.anchorBlock) || this.props.value.selection.isCollapsed
@@ -213,7 +222,8 @@ export class Toolbar extends React.Component<ToolbarProps> {
   }
 
   render() {
-    const { saving } = this.props;
+    const { saving, showDropdown } = this.props;
+    const dropdownTemplate = showDropdown ? this.getTemplate('{{> semantic-narrative-dropdown}}') : null
     return (
       <div className={styles.toolbar}>
 
@@ -271,15 +281,18 @@ export class Toolbar extends React.Component<ToolbarProps> {
 
         </div>
         
-        <Button bsStyle='default' 
-                className='btn-action'
-                onClick={this.props.onDocumentSave} 
-                disabled={saving}>
-          <i className={saving ? 'fa fa-spinner fa-pulse fa-fw' : null }
-            aria-hidden='true'></i>
-           Save narrative
-        </Button>
-        
+        <div className={styles.toolbarBtnGroup}>
+          {dropdownTemplate}
+          <Button bsStyle='default' 
+                  className='btn-action'
+                  onClick={this.props.onDocumentSave} 
+                  disabled={saving}>
+            <i className={saving ? 'fa fa-spinner fa-pulse fa-fw' : null }
+              aria-hidden='true'></i>
+            Save narrative
+          </Button>
+        </div>
+
       </div>
     );
   }

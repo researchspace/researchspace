@@ -17,9 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 import * as React from 'react';
-import {OverlayTrigger, Popover, Button, ButtonGroup, Dropdown, MenuItem, SplitButton } from 'react-bootstrap';
+import { OverlayTrigger, Popover, Button, ButtonGroup, Dropdown, MenuItem, SplitButton } from 'react-bootstrap';
 import * as classnames from 'classnames';
-import { Workspace, ToolbarProps as BaseProps, CommandHistory, EventObserver } from 'ontodia';
+import { Workspace, ToolbarProps as BaseProps, CommandHistory, EventObserver, ElementTemplate } from 'ontodia';
 
 import { Component } from 'platform/api/components';
 import { VocabPlatform } from 'platform/api/rdf/vocabularies';
@@ -39,6 +39,8 @@ export interface ToolbarProps extends BaseProps {
   onClearAll?: () => void;
   onSaveDiagramAs?: () => void;
   onPersistChangesAndSaveDiagram?: () => void;
+  diagramIri?: string;
+  dropdownTemplate?: ElementTemplate;
 }
 
 export interface ToolbarCommand {
@@ -63,7 +65,6 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
     }
   }
 
-  
   protected renderSaveButton() {
     const {
       canPersistChanges,
@@ -78,18 +79,17 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
     } = this.props;
     if (onPersistChanges && hasUnpersistedChanges) {
       return (
-        <Dropdown id="persist-changes-button"
-          disabled={!canPersistChanges}
-        >
-          <Button disabled={!canPersistChanges}
-                  onClick={onPersistChanges} 
-                  className="btn-action btn-split"
-                  bsStyle='default'
+        <Dropdown id="persist-changes-button" disabled={!canPersistChanges}>
+          <Button
+            disabled={!canPersistChanges}
+            onClick={onPersistChanges}
+            className="btn-action btn-split"
+            bsStyle="default"
           >
             {persistChangesLabel}
           </Button>
-          <Dropdown.Toggle bsStyle='default' className="btn-action" />
-          <Dropdown.Menu >
+          <Dropdown.Toggle bsStyle="default" className="btn-action" />
+          <Dropdown.Menu>
             <MenuItem href="#" onClick={onPersistChangesAndSaveDiagram}>
               {persistChangesLabel} &amp; {saveDiagramLabel}
             </MenuItem>
@@ -100,11 +100,11 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
     if (onSaveDiagram && canSaveDiagram) {
       return (
         <Dropdown id="save-diagram-button">
-          <Dropdown.Toggle bsStyle='default' className="btn-action">
+          <Dropdown.Toggle bsStyle="default" className="btn-action">
             {saveDiagramLabel}
           </Dropdown.Toggle>
           <Dropdown.Menu>
-          <MenuItem href="#" onClick={onSaveDiagram}>
+            <MenuItem href="#" onClick={onSaveDiagram}>
               {saveDiagramLabel}
             </MenuItem>
             <MenuItem href="#" onClick={onSaveDiagramAs}>
@@ -127,23 +127,22 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
       onPersistChangesAndSaveDiagram,
     } = this.props;
 
-    const canSaveData=onPersistChanges && hasUnpersistedChanges;
+    const canSaveData = onPersistChanges && hasUnpersistedChanges;
 
     return (
-      <Dropdown id="persist-changes-button"
-                disabled={!canPersistChanges || !canSaveData}
-      >
-        <Button disabled={!canPersistChanges || !canSaveData}
-                onClick={onPersistChanges} 
-                className="btn-action btn-split"
-                bsStyle='default'
+      <Dropdown id="persist-changes-button" disabled={!canPersistChanges || !canSaveData}>
+        <Button
+          disabled={!canPersistChanges || !canSaveData}
+          onClick={onPersistChanges}
+          className="btn-action btn-split"
+          bsStyle="default"
         >
           {persistChangesLabel}
         </Button>
-        <Dropdown.Toggle bsStyle='default' className="btn-action" />
-        <Dropdown.Menu >
+        <Dropdown.Toggle bsStyle="default" className="btn-action" />
+        <Dropdown.Menu>
           <MenuItem href="#" onClick={onPersistChangesAndSaveDiagram}>
-            <Icon iconType='round' iconName='save' className='icon-left' />
+            <Icon iconType="round" iconName="save" className="icon-left" />
             {persistChangesLabel} and map
           </MenuItem>
         </Dropdown.Menu>
@@ -152,29 +151,26 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
   }
 
   protected renderSaveMapButton() {
-    const {
-      canSaveDiagram,
-      saveDiagramLabel,
-      onSaveDiagram,
-      onSaveDiagramAs,
-    } = this.props;
+    const { canSaveDiagram, saveDiagramLabel, onSaveDiagram, onSaveDiagramAs } = this.props;
 
-    const canSaveMap=onSaveDiagram && canSaveDiagram;
+    const canSaveMap = onSaveDiagram && canSaveDiagram;
 
     return (
-      <SplitButton title={saveDiagramLabel} 
-                    id="save-diagram-button-split" 
-                    disabled={!canSaveMap}
-                    onClick={onSaveDiagram}
-                    bsStyle='default'
-                    className='btn-action btn-split'>
+      <SplitButton
+        title={saveDiagramLabel}
+        id="save-diagram-button-split"
+        disabled={!canSaveMap}
+        onClick={onSaveDiagram}
+        bsStyle="default"
+        className="btn-action btn-split"
+      >
         <MenuItem href="#" onClick={onSaveDiagramAs}>
-          <Icon iconType='round' iconName='save' className='icon-left' />
+          <Icon iconType="round" iconName="save" className="icon-left" />
           {saveDiagramLabel} as...
         </MenuItem>
       </SplitButton>
 
-/*       <Dropdown id="save-diagram-button" 
+      /*       <Dropdown id="save-diagram-button"
                 disabled={!canSaveMap}>
         <Dropdown.Toggle bsStyle='default' className="btn-action">
           {saveDiagramLabel}
@@ -189,45 +185,41 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
         </Dropdown.Menu>
       </Dropdown> */
     );
-
   }
 
   render() {
     const { redo, undo } = this.getUndoReduCommands(this.props.history);
-
     return (
       <div className={styles.component}>
-
         <div className={styles.buttonsContainer}>
-        {undo && redo ? (
-          <ButtonGroup>
-            <Button
-              className="ontodia-btn ontodia-btn-default"
-              title={undo.title}
-              disabled={!undo.enabled}
-              onClick={undo.invoke}
-            >
-              <Icon iconType='round' iconName='undo' />
-            </Button>
-            <Button
-              className="ontodia-btn ontodia-btn-default"
-              title={redo.title}
-              disabled={!redo.enabled}
-              onClick={redo.invoke}
-            >
-              <Icon iconType='round' iconName='repeat'/>
-            </Button>
-          </ButtonGroup>
-        ) : null}
+          {undo && redo ? (
+            <ButtonGroup>
+              <Button
+                className="ontodia-btn ontodia-btn-default"
+                title={undo.title}
+                disabled={!undo.enabled}
+                onClick={undo.invoke}
+              >
+                <Icon iconType="round" iconName="undo" />
+              </Button>
+              <Button
+                className="ontodia-btn ontodia-btn-default"
+                title={redo.title}
+                disabled={!redo.enabled}
+                onClick={redo.invoke}
+              >
+                <Icon iconType="round" iconName="repeat" />
+              </Button>
+            </ButtonGroup>
+          ) : null}
 
-        <ButtonGroup className={styles.groupButtons}>
-
-            <Button bsStyle='default' className="btn-icon" onClick={this.props.onZoomIn}>
-              <Icon iconType='round' iconName='add_circle_outline'/>
+          <ButtonGroup className={styles.groupButtons}>
+            <Button bsStyle="default" className="btn-icon" onClick={this.props.onZoomIn}>
+              <Icon iconType="round" iconName="add_circle_outline" />
             </Button>
 
-            <Button bsStyle='default' className="btn-icon" onClick={this.props.onZoomOut}>
-              <Icon iconType='round' iconName='remove_circle_outline'/>
+            <Button bsStyle="default" className="btn-icon" onClick={this.props.onZoomOut}>
+              <Icon iconType="round" iconName="remove_circle_outline" />
             </Button>
 
             <OverlayTrigger
@@ -235,8 +227,8 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
               placement="bottom"
               overlay={<Popover id="tooltip">Fit to screen</Popover>}
             >
-              <Button bsStyle='default' className="btn-icon" onClick={this.props.onZoomToFit}>
-                <Icon iconType='round' iconName='zoom_out_map'/>
+              <Button bsStyle="default" className="btn-icon" onClick={this.props.onZoomToFit}>
+                <Icon iconType="round" iconName="zoom_out_map" />
               </Button>
             </OverlayTrigger>
 
@@ -245,18 +237,19 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
               placement="bottom"
               overlay={<Popover id="tooltip">Force layout</Popover>}
             >
-              <Button bsStyle='default' className="btn-icon" onClick={this.props.onForceLayout}>
-                <Icon iconType='round' iconName='auto_awesome_mosaic'/>
+              <Button bsStyle="default" className="btn-icon" onClick={this.props.onForceLayout}>
+                <Icon iconType="round" iconName="auto_awesome_mosaic" />
               </Button>
             </OverlayTrigger>
 
             {this.props.onClearAll ? (
-              <OverlayTrigger trigger={['hover']}
-                              placement="bottom"
-                              overlay={<Popover id="tooltip">Clear all</Popover>}
+              <OverlayTrigger
+                trigger={['hover']}
+                placement="bottom"
+                overlay={<Popover id="tooltip">Clear all</Popover>}
               >
-                <Button onClick={this.props.onClearAll} bsStyle='default' className="btn-icon">
-                  <Icon iconType='round' iconName='layers_clear'/>
+                <Button onClick={this.props.onClearAll} bsStyle="default" className="btn-icon">
+                  <Icon iconType="round" iconName="layers_clear" />
                 </Button>
               </OverlayTrigger>
             ) : null}
@@ -265,49 +258,61 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
               trigger={['hover']}
               placement="bottom"
               overlay={<Popover id="tooltip">Print knowledge map</Popover>}
-              
             >
-              <Button bsStyle='default' className="btn-icon" onClick={this.props.onPrint} style={{ marginLeft: '30px' }} >
-                <Icon iconType='round' iconName='print'/>
+              <Button
+                bsStyle="default"
+                className="btn-icon"
+                onClick={this.props.onPrint}
+                style={{ marginLeft: '30px' }}
+              >
+                <Icon iconType="round" iconName="print" />
               </Button>
             </OverlayTrigger>
 
             <Dropdown id="export-diagram-button">
-
-              <Dropdown.Toggle bsStyle='default' className="btn-textAndIcon btn-icon" style={{marginRight: 20}}>
-                <Icon iconType='round' iconName='download'/>
+              <Dropdown.Toggle bsStyle="default" className="btn-textAndIcon btn-icon" style={{ marginRight: 20 }}>
+                <Icon iconType="round" iconName="download" />
               </Dropdown.Toggle>
               <Dropdown.Menu>
                 <MenuItem href="#" onClick={this.onExportPng}>
-                  <Icon iconType='round' iconName='download' className='icon-left' />
+                  <Icon iconType="round" iconName="download" className="icon-left" />
                   Export as PNG
                 </MenuItem>
                 <MenuItem href="#" onClick={this.onExportSvg}>
-                  <Icon iconType='round' iconName='download' className='icon-left' />
+                  <Icon iconType="round" iconName="download" className="icon-left" />
                   Export as SVG
                 </MenuItem>
               </Dropdown.Menu>
             </Dropdown>
-        </ButtonGroup>
-
+          </ButtonGroup>
         </div>
 
         <div className={styles.buttonsContainer}>
-
-          <HasPermission permission={Permissions.toLdp('container', VocabPlatform.OntodiaDiagramContainer, 'create', 'any')}
+          {this.renderOptionDropdown()}
+          <HasPermission
+            permission={Permissions.toLdp('container', VocabPlatform.OntodiaDiagramContainer, 'create', 'any')}
           >
-{/*             {this.renderSaveButton()} */}
+            {/*             {this.renderSaveButton()} */}
             <>
               {this.renderSaveDataButton()}
               {this.renderSaveMapButton()}
-            </>        
+            </>
           </HasPermission>
-          
+
           {this.renderLanguages()}
         </div>
-
+        
       </div>
     );
+  }
+
+  protected renderOptionDropdown() {
+    const {diagramIri, dropdownTemplate} = this.props;
+    if (!diagramIri || !dropdownTemplate) {
+      return null
+    }
+
+    return dropdownTemplate
   }
 
   protected renderLanguages() {

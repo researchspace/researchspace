@@ -1,9 +1,9 @@
 <bs-dropdown id="{{viewId}}-{{iri}}-item-actions-dropdown" pull-right=true class="dropdown-no-caret">
-  <bs-dropdown-toggle class="{{#if resourceEditorButton}}{{else}}border-none {{#if cardButton}}resource-card__button{{/if}}{{/if}}">
+  <bs-dropdown-toggle class="{{#if headerButton}}{{else}}border-none {{#if cardButton}}resource-card__button{{/if}}{{/if}}">
     <rs-icon icon-type="round" icon-name="more_vert"></rs-icon>
   </bs-dropdown-toggle>
 
-  <bs-dropdown-menu class="{{#if resourceEditorButton}}{{else}}resource-actions__dropdown-menu{{/if}}
+  <bs-dropdown-menu class="{{#if headerButton}}{{else}}resource-actions__dropdown-menu{{/if}}
                           {{#if (or clipboardCard dragAndDropInputCard)}} resource-card__dropdown-multitle-actions{{/if}}
                           {{#if (or dragAndDropInputCard)}} resource-card__dropdown-small{{/if}}
                           {{#if knowledgeMapCard}} resource-card__dropdown-km{{/if}}">
@@ -31,18 +31,6 @@
           <bs-menu-item>
             <rs-icon icon-type="rounded" icon-name="tab_move" class="icon-left" symbol="true"></rs-icon>
             <span>Open narrative in draggable tab</span>
-          </bs-menu-item>
-        </mp-event-trigger>
-        <hr>
-
-        <mp-event-trigger id='{{viewId}}-resources-in-narrative-trigger' 
-                          type='Dashboard.AddFrame'
-                          data='{"viewId":"semantic-narrative-resources", 
-                                  "resourceIri": "{{iri}}"}' 
-                          targets='["thinking-frames"]'>
-          <bs-menu-item>
-            <rs-icon icon-type="rounded" icon-name="gallery_thumbnail" class="icon-left" symbol="true"></rs-icon>
-            <span>View resources in narrative</span>
           </bs-menu-item>
         </mp-event-trigger>
         <hr>
@@ -106,7 +94,7 @@
       {{/case}}
 
       {{#default}}
-        {{#if resourceEditorButton}}
+        {{#if hidePreview}}
         {{else}}
           <mp-overlay-dialog  id="{{viewId}}-resource-preview-dialog"  
                               type="modal" 
@@ -135,6 +123,20 @@
         {{/if}}
       {{/default}}
     {{/switch}}
+
+    {{#if (eq resourceLabel "Semantic narrative")}}
+      <mp-event-trigger id='{{viewId}}-resources-in-narrative-trigger' 
+                          type='Dashboard.AddFrame'
+                          data='{"viewId":"semantic-narrative-resources", 
+                                  "resourceIri": "{{iri}}"}' 
+                          targets='["thinking-frames"]'>
+        <bs-menu-item>
+          <rs-icon icon-type="rounded" icon-name="gallery_thumbnail" class="icon-left" symbol="true"></rs-icon>
+          <span>View resources in narrative</span>
+        </bs-menu-item>
+      </mp-event-trigger>
+      <hr>
+    {{/if}}
 
     {{#if (or (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Place") (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Organisation") )}}
       <semantic-if query='ASK { <{{iri}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
@@ -282,7 +284,7 @@
       </semantic-link-container> 
     {{/if}}
 
-    {{#if (not (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map"))}}
+    {{#if (not (eq resourceLabel "Knowledge map"))}}
       <hr>
       <semantic-link-container  uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
                                 urlqueryparam-view='knowledge-map' 

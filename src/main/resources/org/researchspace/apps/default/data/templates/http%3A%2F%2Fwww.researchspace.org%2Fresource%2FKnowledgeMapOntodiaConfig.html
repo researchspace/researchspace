@@ -28,17 +28,17 @@ uses client-side templates:
     readonly='true'
   [[/if]]
 
-  diagram='{{#if diagram}}{{diagram}}{{/if}}' 
-  iri='{{#if iri}}{{iri}}{{/if}}' 
+  diagram='{{#if diagram}}{{diagram}}{{/if}}'
+  iri='{{#if iri}}{{iri}}{{/if}}'
   iris='{{#if iris}}{{iris}}{{/if}}'
 
   hide-halo=false
 
-  left-panel-initially-open=false 
-  default-node-template="{{> default}}"    
+  left-panel-initially-open=false
+  default-node-template="{{> default}}"
   additional-tree-item-template='{{> additionalTreeItemTemplate}}'
-  
-  provider-settings='{ 
+
+  provider-settings='{
     "classTreeQuery": "
       PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
       PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -62,51 +62,51 @@ uses client-side templates:
     "
   }'>
 
-	<ontodia-field-configuration 
+	<ontodia-field-configuration
                             [[#if (hasPermission "forms:ldp:*")]]
                               authoring-mode=true
                             [[else]]
                               authoring-mode=false
                             [[/if]]
-                            
+
                             type-iri='http://www.w3.org/1999/02/22-rdf-syntax-ns#type'
                             default-label-iri='http://www.researchspace.org/pattern/system/entity/primary_appellation'
                             default-image-iri='http://www.researchspace.org/pattern/system/entity/main_image'
                             default-subject-template='/{{{{raw}}}}{{FIELD_VALUE_LOCAL_NAME http://www.w3.org/1999/02/22-rdf-syntax-ns#type}}{{{{/raw}}}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
                             force-datatype-fields='["http://www.researchspace.org/ontology/PX_has_video"]'
-                            
+
                             persistence='{
                                 "type": "sparql",
                                 "targetInsertGraphIri": "http://www.researchspace.org/resource/g/data"
                             }'
-  > 
-  
-    <rs-ontodia-metadata-from-fields 
+  >
+
+    <rs-ontodia-metadata-from-fields
         fields-query='PREFIX field: <http://www.researchspace.org/resource/system/fields/>
-                      SELECT DISTINCT ?field WHERE { 
+                      SELECT DISTINCT ?field WHERE {
                       {
-                        ?field a <http://www.researchspace.org/resource/system/fields/Field> . 
-                        ?field  a ?type . 
+                        ?field a <http://www.researchspace.org/resource/system/fields/Field> .
+                        ?field  a ?type .
                         VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}
                         FILTER (!CONTAINS(STR(?field),"http://www.researchspace.org/ontology/"))
                       } UNION
-                      { 
-                        ?field a <http://www.researchspace.org/resource/system/fields/Field> . 
-                        ?field  <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/image_annotation> . 
-                        }  
+                      {
+                        ?field a <http://www.researchspace.org/resource/system/fields/Field> .
+                        ?field  <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/image_annotation> .
+                        }
                       UNION {
                         VALUES (?value){(<http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation>)
                               (<http://www.researchspace.org/pattern/system/entity/primary_appellation>)
                               (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>)
-                              (<http://www.researchspace.org/pattern/system/entity/main_image>)  
+                              (<http://www.researchspace.org/pattern/system/entity/main_image>)
                               (<http://www.ics.forth.gr/isl/CRMdig/L49_is_primary_area_of>)
                               (<http://www.researchspace.org/pattern/system/image_annotation/boundingBox>)
                               (<http://www.w3.org/1999/02/22-rdf-syntax-ns#value>)
                               (<http://www.researchspace.org/pattern/system/image_annotation/viewport>)
-                              (<http://www.researchspace.org/pattern/system/image_annotation/area_of_image>)}                                                   
-                        
+                              (<http://www.researchspace.org/pattern/system/image_annotation/area_of_image>)}
+
                         BIND(?value as ?field)
-                      } 
+                      }
                       MINUS {
                         VALUES (?value) {
                         (<http://www.ics.forth.gr/isl/CRMdig/L47_has_comment>)
@@ -114,15 +114,15 @@ uses client-side templates:
                         }
                       }
                     }'>
-    </rs-ontodia-metadata-from-fields> 
-    [[#> ontodia-entity-metadata ]][[/ontodia-entity-metadata]]  
+    </rs-ontodia-metadata-from-fields>
+    [[#> ontodia-entity-metadata ]][[/ontodia-entity-metadata]]
 
 		<ontodia-field-input-override for-field="label">
         <semantic-form-text-input></semantic-form-text-input>
     </ontodia-field-input-override>
 
     <ontodia-field-input-override for-field="http://www.researchspace.org/pattern/system/entity/main_image">
-      <semantic-form-drag-and-drop-input for='http://www.researchspace.org/pattern/system/entity/main_image' label="Main image" 
+      <semantic-form-drag-and-drop-input for='http://www.researchspace.org/pattern/system/entity/main_image' label="Main image"
                                           placeholder-item-template="<div class='placeholder-item'>
                                                                           <rs-icon icon-type='round' icon-name='file_upload' class='upload_icon'></rs-icon>
                                                                           <div>Drag image or click to upload</div>
@@ -165,7 +165,7 @@ uses client-side templates:
           </button>
         </div>
         {{> rsp:ResourceCard  iri=iri
-                              viewId="knowledgeMap"
+                              viewId=ontodiaVariable
                               knowledgeMapCard=true
                               hideMediaSection=true
                               height=73
@@ -183,11 +183,21 @@ uses client-side templates:
           </button>
         </div>
         {{> rsp:ResourceCard  iri=iri
-                              viewId="knowledgeMap"
+                              viewId=ontodiaVariable
                               knowledgeMapCard=true
         }}
       </div>
     {{/if}}
+  </template>
+
+  <template id="knowledge-map-dropdown">
+    {{> rsp:ResourceDropdownActions viewId=ontodiaVariable
+                                    iri=iri 
+                                    resourceLabel="Knowledge map"
+                                    resourceFormIRI="http://www.researchspace.org/resource/system/forms/KnowledgeMap"
+                                    hidePreview=true
+                                    headerButton=true
+    }}
   </template>
 
 </[[#if standalone]]ontodia[[else]]rs-ontodia-panel[[/if]]>

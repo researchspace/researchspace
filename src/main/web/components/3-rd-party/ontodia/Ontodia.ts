@@ -339,7 +339,6 @@ export interface OntodiaConfig {
    */
   postSaving?: 'navigate' | 'none';
 
-
   /*
    * If true left panel is initially open.
    */
@@ -526,10 +525,10 @@ export class Ontodia extends Component<OntodiaProps, State> {
       if (fieldConfiguration) {
         if (fieldConfiguration.authoringMode) {
           this.metadataApi = new FieldBasedMetadataApi(fieldConfiguration.metadata);
-          this.validationApi =
-            new FieldBasedValidationApi(
-              fieldConfiguration.metadata, fieldConfiguration.enforceConstraints
-            );
+          this.validationApi = new FieldBasedValidationApi(
+            fieldConfiguration.metadata,
+            fieldConfiguration.enforceConstraints
+          );
         }
         this.setState({ fieldConfiguration });
       } else {
@@ -584,6 +583,8 @@ export class Ontodia extends Component<OntodiaProps, State> {
         getWorkspace: this.getWorkspace,
         onSaveDiagramAs: () => this.openSaveModal(),
         onPersistChangesAndSaveDiagram: () => this.onPersistChangesAndSaveDiagram(),
+        diagramIri: this.state.diagramIri,
+        dropdownTemplate: this.getTemplate('{{> knowledge-map-dropdown}}')
       }),
       metadataApi: this.metadataApi,
       validationApi: this.validationApi,
@@ -613,8 +614,9 @@ export class Ontodia extends Component<OntodiaProps, State> {
   }
 
   componentDidMount() {
-    this.loadFieldConfiguration(deriveCancellationToken(this.cancellation))
-      .then(() => this.setState({loading: false}));
+    this.loadFieldConfiguration(deriveCancellationToken(this.cancellation)).then(() =>
+      this.setState({ loading: false })
+    );
 
     this.parsedMetadata = this.parseMetadata();
     this.prepareElementTemplates();
@@ -997,7 +999,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
                 data: { resourceIri: this.state.diagramIri },
               });
               trigger({
-                eventType: "Dashboard.ResourceChanged",
+                eventType: 'Dashboard.ResourceChanged',
                 source: this.props.id,
                 data: { resourceIri: this.state.diagramIri },
               });
@@ -1386,6 +1388,13 @@ export class Ontodia extends Component<OntodiaProps, State> {
       this.defaultNodeTemplate = this.getElementTemplate(defaultNodeTemplate);
     }
   };
+
+  private getTemplate = (template: string): React.CElement<{}, TemplateItem> => {
+    if(!template) return null;
+    return createElement(TemplateItem, {
+      template: { source: template },
+    })
+  }
 
   private getElementTemplate = (template: string): ElementTemplate => {
     const inAuthoringMode = () => this.state.fieldConfiguration.authoringMode;

@@ -15,53 +15,13 @@
   
   <div class='set-management__item-actions' style='margin-left: auto;'>
     
-    <bs-dropdown  pull-right=true 
-                  class="dropdown-no-caret"
-                  id='set-actions-{{iri.value}}'>
-
-        <bs-dropdown-toggle class="button-clipboard-folder-actions no-active-bg">
-          <rs-icon icon-type="round" icon-name="more_vert"></rs-icon>
-        </bs-dropdown-toggle>
-
-        <bs-dropdown-menu>
-          <mp-event-trigger  id='{{iri.value}}-set-action__km-add-frame-trigger' 
-                              type='Dashboard.AddFrame' 
-                              data='{"resourceIri": "{{iri.value}}", 
-                                      "viewId": "knowledge-map"}' 
-                              targets='["thinking-frames"]'>
-            <bs-menu-item event-key='km-add-frame'>
-                <rs-icon icon-type="rounded" icon-name="account_tree" class="icon-left" symbol="true"></rs-icon>
-                <span>Open knowledge map</span>
-            </bs-menu-item>
-          </mp-event-trigger>
-
-          <mp-event-trigger id='{{iri.value}}-set-action__km-add-frame-newTab-trigger' 
-                                type='Dashboard.AddFrame'
-                                data='{ "viewId":"knowledge-map", 
-                                        "resourceIri": "{{iri.value}}",
-                                        "openAsDragAndDrop":true
-                                      }' 
-                                targets='["thinking-frames"]'>
-            <bs-menu-item event-key='km-add-new-tab-frame'>
-              <rs-icon icon-type="rounded" icon-name="tab_move" class="icon-left" symbol="true"></rs-icon>
-              <span>Open knowledge map in draggable tab</span>
-            </bs-menu-item>
-          </mp-event-trigger>
-
-          <mp-anonymous-hidden>
-            <hr>
-          </mp-anonymous-hidden>
-
-          <mp-anonymous-hidden>
-            <mp-set-management-action-remove-set-item item='{{itemHolder.value}}'>
-              <bs-menu-item event-key=remove>
-                <rs-icon icon-type="rounded" icon-name="disabled_by_default" class="icon-left" symbol="true"></rs-icon>
-                <span id="all">Remove from clipboard</span>
-              </bs-menu-item>
-            </mp-set-management-action-remove-set-item>
-          </mp-anonymous-hidden>
-        </bs-dropdown-menu>
-
-    </bs-dropdown>
+    {{> rsp:ResourceDropdownActions viewId="clipboard-km-set"
+                                    iri=iri.value
+                                    resourceConfig="http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map"
+                                    resourceLabel="Knowledge map"
+                                    resourceFormIRI="http://www.researchspace.org/resource/system/forms/KnowledgeMap"
+                                    clipboardKm=true
+    }}
+  
   </div>
 </div>

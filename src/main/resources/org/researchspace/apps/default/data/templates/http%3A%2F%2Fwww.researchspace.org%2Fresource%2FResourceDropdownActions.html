@@ -1,12 +1,13 @@
 <bs-dropdown id="{{viewId}}-{{iri}}-item-actions-dropdown" pull-right=true class="dropdown-no-caret">
-  <bs-dropdown-toggle class="{{#if headerButton}}{{else}}border-none {{#if cardButton}}resource-card__button{{/if}}{{/if}}">
+  <bs-dropdown-toggle class="{{#if headerButton}}{{else if (or clipboardSet clipboardKm)}}button-clipboard-folder-actions no-active-bg{{else}}border-none {{#if cardButton}}resource-card__button{{/if}}{{/if}}">
     <rs-icon icon-type="round" icon-name="more_vert"></rs-icon>
   </bs-dropdown-toggle>
 
   <bs-dropdown-menu class="{{#if headerButton}}{{else}}resource-actions__dropdown-menu{{/if}}
                           {{#if (or clipboardCard dragAndDropInputCard)}} resource-card__dropdown-multitle-actions{{/if}}
                           {{#if (or dragAndDropInputCard)}} resource-card__dropdown-small{{/if}}
-                          {{#if knowledgeMapCard}} resource-card__dropdown-km{{/if}}">
+                          {{#if knowledgeMapCard}} resource-card__dropdown-km{{/if}}"
+                    style="{{#if (or clipboardSet clipboardKm)}}min-width: 200px;{{/if}}">
 
     {{#switch resourceConfig}}
       {{#case "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative" break=true}}
@@ -61,33 +62,67 @@
           </bs-menu-item>
         </mp-event-trigger>
         <hr>
+
+        {{#if clipboardKm}}
+          <mp-set-management-action-remove-set-item item='{{itemHolder.value}}'>
+            <bs-menu-item event-key=remove>
+              <rs-icon icon-type="rounded" icon-name="disabled_by_default" class="icon-left" symbol="true"></rs-icon>
+              <span id="all">Remove from clipboard</span>
+            </bs-menu-item>
+          </mp-set-management-action-remove-set-item>
+          <hr>
+        {{/if}}
       {{/case}}
 
       {{#case "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set" break=true}}
-       <mp-event-trigger id='{{viewId}}-open-set-trigger' 
-                          type='Dashboard.AddFrame'
-                          data='{"viewId":"single-set-management", 
-                                  "resourceIri": "{{iri}}"}' 
-                          targets='["thinking-frames"]'>
-          <bs-menu-item>
-            <rs-icon icon-type="rounded" icon-name="topic" class="icon-left" symbol="true"></rs-icon>
-            <span>Open set</span>
-          </bs-menu-item>
-        </mp-event-trigger>
+        [[#if (hasPermission "forms:ldp:*")]]
 
-        <mp-event-trigger id='{{viewId}}-open-set-newTab-trigger' 
-                          type='Dashboard.AddFrame'
-                          data='{"viewId":"single-set-management", 
-                                  "resourceIri": "{{iri}}",
-                                  "openAsDragAndDrop":true
-                                }' 
-                          targets='["thinking-frames"]'>
-          <bs-menu-item>
-            <rs-icon icon-type="rounded" icon-name="topic" class="icon-left" symbol="true"></rs-icon>
-            <span>Open set in draggable tab</span>
-          </bs-menu-item>
-        </mp-event-trigger>
-        <hr>
+          {{#if clipboardSet}}
+            <mp-set-management-action-rename-set>
+              <bs-menu-item event-key='rename'>
+                <rs-icon icon-type="rounded" icon-name="drive_file_rename_outline" class="icon-left" symbol="true"></rs-icon>
+                  Rename set
+                </bs-menu-item>
+            </mp-set-management-action-rename-set>
+            <hr>
+          {{/if}}
+
+          <mp-event-trigger id='{{viewId}}-open-set-trigger' 
+                            type='Dashboard.AddFrame'
+                            data='{"viewId":"single-set-management", 
+                                    "resourceIri": "{{iri}}"}' 
+                            targets='["thinking-frames"]'>
+            <bs-menu-item>
+              <rs-icon icon-type="rounded" icon-name="topic" class="icon-left" symbol="true"></rs-icon>
+              <span>Open set</span>
+            </bs-menu-item>
+          </mp-event-trigger>
+
+          <mp-event-trigger id='{{viewId}}-open-set-newTab-trigger' 
+                            type='Dashboard.AddFrame'
+                            data='{"viewId":"single-set-management", 
+                                    "resourceIri": "{{iri}}",
+                                    "openAsDragAndDrop":true
+                                  }' 
+                            targets='["thinking-frames"]'>
+            <bs-menu-item>
+              <rs-icon icon-type="rounded" icon-name="topic" class="icon-left" symbol="true"></rs-icon>
+              <span>Open set in draggable tab</span>
+            </bs-menu-item>
+          </mp-event-trigger>
+          <hr>
+
+          {{#if clipboardSet}}
+            <mp-set-management-action-remove-set show-confirmation="false" remove-from-view="true">
+              <bs-menu-item event-key='remove'>
+                <rs-icon icon-type="rounded" icon-name="disabled_by_default" class="icon-left" symbol="true"></rs-icon>
+                <span id="all">Remove from clipboard</span>
+              </bs-menu-item>
+            </mp-set-management-action-remove-set>
+            <hr>
+          {{/if}}
+
+        [[/if]]
       {{/case}}
 
       {{#case "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item" break=true}}
@@ -216,7 +251,7 @@
       </semantic-query>
     {{/if}}
 
-    {{#if (or clipboardCard clipboardList)}}
+    {{#if (or clipboardCard clipboardList clipboardSet clipboardKm)}}
     {{else}}
       <mp-copy-to-default-set id="{{viewId}}-copy-to-clipboard" resource="{{iri}}">
         <bs-menu-item>

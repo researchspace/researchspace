@@ -153,7 +153,7 @@ class SetCaption extends React.Component<SetCaptionProps, {}> {
       return <Spinner />;
     } else if (set.editing) {
       const { onEditCompleted } = this.props;
-      return <EditableLabel editing={set.editing} onEditCompleted={onEditCompleted} />;
+      return <div style={{flex:1}}><EditableLabel editing={set.editing} onEditCompleted={onEditCompleted} /></div>;
     } else {
       const { baseClass } = this.props;
       return (

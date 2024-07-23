@@ -51,7 +51,7 @@ export class HighlightComponent extends Component<Props, {}> {
     }
     const label = this.props.children;
     const { className, style } = this.props;
-    return D.span({ className, style }, ...highlight(label, this.props.highlight, this.props.highlightProps));
+    return D.span({ className, style, title:label }, ...highlight(label, this.props.highlight, this.props.highlightProps));
   }
 }
 

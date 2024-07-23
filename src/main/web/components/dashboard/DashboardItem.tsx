@@ -366,7 +366,7 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
     const { homePageIri } = this.props;
 
     return (<PageLoaderComponent
-            iri={homePageIri}>
+            iri={homePageIri}> 
             </PageLoaderComponent>)
   };
 

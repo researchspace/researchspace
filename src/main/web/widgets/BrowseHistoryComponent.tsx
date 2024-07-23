@@ -136,7 +136,7 @@ export class BrowseHistoryComponent extends React.Component<Props, State> {
             {this.state.links.map((link, index) => {
               return (
                 <li key={link.link + index}>
-                  <ResourceLinkComponent uri={link.link} guessRepository={true}></ResourceLinkComponent>
+                  <ResourceLinkComponent iri={link.link} guessRepository={true}></ResourceLinkComponent>
                 </li>
               );
             })}

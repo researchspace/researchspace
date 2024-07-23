@@ -112,7 +112,7 @@ export function ExistingBeliefContentView(belief: ArgumentsBelief) {
           <Col sm={9}>
             <FormControl.Static>
               <SemanticContextProvider repository="assets">
-                <ResourceLinkComponent uri={belief.assertion.value} />
+                <ResourceLinkComponent iri={belief.assertion.value} />
               </SemanticContextProvider>
             </FormControl.Static>
           </Col>
@@ -126,7 +126,7 @@ export function ExistingBeliefContentView(belief: ArgumentsBelief) {
           </Col>
           <Col sm={9}>
             <FormControl.Static>
-              <ResourceLinkComponent uri={belief.target.value} guessRepository={true} />
+              <ResourceLinkComponent iri={belief.target.value} guessRepository={true} />
             </FormControl.Static>
           </Col>
         </FormGroup>,
@@ -138,7 +138,7 @@ export function ExistingBeliefContentView(belief: ArgumentsBelief) {
             <FormControl.Static>
               {/* fields are always stored in assets repository */}
               <SemanticContextProvider repository="assets">
-                <ResourceLinkComponent uri={belief.field.iri} />
+                <ResourceLinkComponent iri={belief.field.iri} />
               </SemanticContextProvider>
             </FormControl.Static>
           </Col>

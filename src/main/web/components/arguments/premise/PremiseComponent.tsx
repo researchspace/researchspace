@@ -262,7 +262,7 @@ export class PremiseComponent extends Component<Props, State> {
         <ControlLabel>Place</ControlLabel>
         <FormControl.Static>
           <SemanticContextProvider repository="default">
-            <ResourceLinkComponent uri={argument.place.value} />
+            <ResourceLinkComponent iri={argument.place.value} />
           </SemanticContextProvider>
         </FormControl.Static>
       </FormGroup>
@@ -298,7 +298,7 @@ export class PremiseComponent extends Component<Props, State> {
           <ControlLabel>Logic Type</ControlLabel>
           <FormControl.Static>
             <SemanticContextProvider repository="assets">
-              <ResourceLinkComponent uri={argument.logicType.value} />
+              <ResourceLinkComponent iri={argument.logicType.value} />
             </SemanticContextProvider>
           </FormControl.Static>
         </FormGroup>

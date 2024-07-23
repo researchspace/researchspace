@@ -198,7 +198,7 @@ class SimpleAssertionDialog extends Component<SimpleAssertionConfig, State> {
       <ul>
         {_.map(this.state.values, (value) => (
           <li key={value.value}>
-            <ResourceLinkComponent guessRepository={true} uri={value.value} />
+            <ResourceLinkComponent guessRepository={true} iri={value.value} />
           </li>
         ))}
       </ul>

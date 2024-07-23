@@ -100,7 +100,7 @@ interface SemanticQueryState {
  *    	data-template='
  *    		<ul>
  *    			{{#each bindings}}
- *    				<li><semantic-link data-uri="{{person.value}}">{{name.value}}</semantic-link></li>
+ *    				<li><semantic-link iri="{{person.value}}">{{name.value}}</semantic-link></li>
  *    		 	{{/each}}
  *    		</ul>
  *    	'>

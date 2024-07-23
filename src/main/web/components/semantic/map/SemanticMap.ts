@@ -455,7 +455,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
   private compileTemplatesInConfig = (config: SemanticMapConfig): void => {
     const defaultTemplate = `
-        <semantic-link class="map-resource-link" data-uri="{{link.value}}">
+        <semantic-link class="map-resource-link" iri="{{link.value}}">
         </semantic-link>
         <p>{{description.value}}</p>
     `;

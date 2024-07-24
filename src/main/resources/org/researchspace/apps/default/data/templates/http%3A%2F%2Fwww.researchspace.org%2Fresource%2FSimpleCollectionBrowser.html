@@ -354,12 +354,20 @@
                 {{/if}}
               </div>
 
-              [[!-- Refresh Search page if a particular resource is created, updated or removed --]]
+              [[!-- Update Search page if a particular resource is created, updated or removed --]]
               <mp-event-proxy id='{{viewId}}-refresh-search-page'
                               on-event-source='{{#if iri}}{{iri}}-resource-form{{else}}{{viewId}}-resource-form{{/if}}' 
                               on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated", "Form.ResourceRemoved"]'      
                               proxy-event-type='Component.TemplateUpdate' 
                               proxy-targets='["{{resourceConfiguration}}-resourceSearch-frame"]'
+              ></mp-event-proxy>
+
+              [[!-- Update Homepage if a particular resource is created, updated or removed --]]
+              <mp-event-proxy id='{{viewId}}-refresh-home-page'
+                              on-event-source='{{#if iri}}{{iri}}-resource-form{{else}}{{viewId}}-resource-form{{/if}}' 
+                              on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated", "Form.ResourceRemoved"]'      
+                              proxy-event-type='Component.TemplateUpdate' 
+                              proxy-targets='["homepage-render-area"]'
               ></mp-event-proxy>
 
               [[!-- Refresh clipboard if a particular resource is modified or deleted --]]

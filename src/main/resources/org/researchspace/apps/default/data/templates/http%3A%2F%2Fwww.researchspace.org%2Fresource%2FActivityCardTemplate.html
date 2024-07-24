@@ -1,0 +1,45 @@
+<semantic-query query='SELECT ?subject ?type ?modifiedDate ?modifiedActor ?mediaType ?creationActor ?creationDate WHERE {
+
+                        BIND(<{{iri}}> as ?subject)
+                    #    ?subject a ?resourceOntologyClass .
+                    #    ?resourceOntologyClass a owl:Class .
+
+                        OPTIONAL {
+                          ?subject crm:P2_has_type ?type .
+                          ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/resource_type> .
+                        }
+
+                        OPTIONAL {
+                          ?subject prov:generatedAtTime ?modifiedDate .
+                          ?subject prov:wasAttributedTo ?modifiedActor .
+                        }
+
+                        OPTIONAL {
+                          ?subject crm:P129i_is_subject_of ?entityFormRecord .
+                          ?entityFormRecord a crmdig:D1_Digital_Object .
+                          ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                          ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
+                          ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+
+                          ?entityFormRecordCreation crm:P14_carried_out_by ?creationActor .
+                          ?entityFormRecordCreation crm:P4_has_time-span ?creation .
+                          ?creation crm:P82_at_some_time_within ?creationDate .
+                        }
+
+                        OPTIONAL {
+                          ?subject rso:PX_has_media_type ?mediaType .
+                        }
+
+                      } LIMIT 1'
+      
+                template='{{> template}}'
+                no-result-template='{{> noResults}}'
+        >
+
+    <template id='template'>
+      <div>
+        {{bindings.0.resourceOntologyClass.value}}
+      </div>
+    </template>
+
+</semantic-query>

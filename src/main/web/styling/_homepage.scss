@@ -18,11 +18,18 @@
 
  
 /* Homepage */
+
+#template-content:has(.homepage-container) {
+overflow: hidden;
+}
+
 .homepage-container {
     width: 100%;
     display: grid;
     grid-template-columns: 2fr 1fr;
-    min-height: 100%;
+    
+    overflow: hidden;
+    height: 100%;
 }
 
 .homepage-project-container {
@@ -30,6 +37,9 @@
 
     display: flex;
     flex-direction: column;
+
+    height: 100%;
+    overflow: hidden;
 }
 
 .homepage-project-header {
@@ -77,6 +87,8 @@
     display: flex;
     flex-direction: column;
 
+    overflow: hidden;
+
     #projectTabs {
         flex: 1;
         margin-top: 10px;
@@ -84,9 +96,12 @@
         display: flex;
         flex-direction: column;
 
+        overflow: hidden;
+
         .tab-content {
 
             flex: 1;
+            overflow: hidden;
 
             .tab-pane {
 
@@ -97,10 +112,13 @@
                     height: 100%;
                     display: flex;
                     flex-direction: column;
+                    overflow: hidden;
 
                     .search-results-area {
 
                         flex: 1;
+                        overflow: hidden;
+                        height: 100%;
 
                         & > div,
                         .table-projects,
@@ -110,6 +128,23 @@
                             flex: 1;
                             display: flex;
                             flex-direction: column;
+                        }
+
+                        .researchspace-table-widget-holder {
+                            height: 100%;
+
+                            .griddle,
+                            .griddle-container,
+                            .griddle-body,
+                            .griddle-body > div {
+                                height: 100%;
+                                overflow: hidden;
+                            }
+
+                            .table {
+                                height: 100%;
+                                margin-top: 15px;
+                            }
                         }
                     }
                 }
@@ -127,6 +162,7 @@
 .homepage-activity-container {
 
     height: 100%;
+    overflow: hidden;
 
     .search-container {
         height: 100%;
@@ -134,7 +170,6 @@
         flex-direction: column;
     }
     
-
     .homepage-activity-header {
 
         padding: 18px 30px 14px 30px;
@@ -153,14 +188,90 @@
 
     .homepage-activity-content {
 
-        padding: 18px 30px 14px 30px;
+        padding: 0 23px 0 30px;
         flex: 1;
+        overflow-y: auto;
+    }
+
+    .activity-result-grid {
+        
+        .griddle-custom-row {
+
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+
+            height: 100%;
+        }
+    }
+
+    .homepage-activity-more {
+
+        width: 100%;
+        padding: 10px 0;
+
+        a {
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     }
 }
 
-.activity-card-container {
+.activity-card-template {
 
+    width: 100%;
+    height: 100px;
+    border: 1px solid $color-border;
+    border-radius: $border-radius;
+    background-color: $color-white;
+    padding: 15px;
+    color: $color-secondary;
 
+    .activity-card-content {
+
+        display: flex;
+        gap: 15px;
+        align-items: flex-start;
+        height: 100%;
+
+        .person-icon {
+
+            font-size: 23px;
+            color: $color-secondary-light; 
+            background:$color-light; 
+            border: 1px solid $color-border;
+        }
+
+        .activity-card-data {
+
+            flex: 1;
+            height: 100%;
+
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+
+            span {
+                word-break: break-word;
+            }
+
+            .activity-card-actor-value {
+
+             //   color: $color-dark;
+                font-size: $font-size-small;
+                font-weight: 600;
+                text-transform: capitalize;
+            }
+
+            .activity-card-date-value {
+
+                color: $color-base;
+                font-size: $font-size-small;
+            }
+        }
+    }
 }
 
 

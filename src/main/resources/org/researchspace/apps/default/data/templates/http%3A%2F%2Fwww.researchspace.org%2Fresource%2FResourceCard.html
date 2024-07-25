@@ -1,19 +1,22 @@
 {{#if resourceConfig}}
   {{> rsp:resourceCardTemplate}} 
 {{else}}
-  <semantic-query query='SELECT ?resourceOntologyClass ?resourceConfig ?resourceLabel ?resourceIcon WHERE {
-                          <{{iri}}> a ?resourceOntologyClass .
-                          ?resourceOntologyClass a owl:Class .
+  <semantic-query query='SELECT ?iri ?resourceOntologyClass ?resourceConfig ?resourceLabel ?resourceIcon WHERE {
+                          BIND(<{{iri}}> as ?iri)
 
                           OPTIONAL {
+                            ?iri a ?resourceOntologyClass .
+                            ?resourceOntologyClass a owl:Class .
                             ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
                             ?resourceConfigWithP2 a <http://www.researchspace.org/resource/system/resource_configuration> .
-                            <{{iri}}> crm:P2_has_type ?resourceType . 
+                            ?iri crm:P2_has_type ?resourceType . 
                             ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceType .
                             ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceLabel .
                             OPTIONAL {?resourceConfigWithP2  <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .}
                           }
                           OPTIONAL {
+                            ?iri a ?resourceOntologyClass .
+                            ?resourceOntologyClass a owl:Class .
                             ?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
                             ?resourceConfigWithoutP2 a <http://www.researchspace.org/resource/system/resource_configuration> .
                             ?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceLabel .

@@ -1,17 +1,31 @@
-<semantic-query query='SELECT ?subject ?type ?modifiedDate ?modifiedActor ?mediaType ?creationActor ?creationDate WHERE {
+<semantic-query query='SELECT DISTINCT ?subject ?resourceConfig ?resourceLabel ?resourceType ?date ?modifiedActorName ?creationActorName WHERE {
 
-                        BIND(<{{iri}}> as ?subject)
-                    #    ?subject a ?resourceOntologyClass .
-                    #    ?resourceOntologyClass a owl:Class .
+                         BIND(<{{iri}}> as ?subject)
+                         BIND("{{date.value}}" as ?date)
 
                         OPTIONAL {
-                          ?subject crm:P2_has_type ?type .
-                          ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/resource_type> .
+                          ?subject a ?resourceOntologyClass .
+                          ?resourceOntologyClass a owl:Class .
+                          ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
+                          ?resourceConfigWithP2 a <http://www.researchspace.org/resource/system/resource_configuration> .
+                          ?subject crm:P2_has_type ?resourceType . 
+                          ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceType .
+                          ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceLabel .
                         }
 
                         OPTIONAL {
-                          ?subject prov:generatedAtTime ?modifiedDate .
+                          ?subject a ?resourceOntologyClass .
+                          ?resourceOntologyClass a owl:Class .
+                          ?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
+                          ?resourceConfigWithoutP2 a <http://www.researchspace.org/resource/system/resource_configuration> .
+                          ?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceLabel .
+                        }
+
+                        BIND(COALESCE(?resourceConfigWithP2, ?resourceConfigWithP2, ?resourceConfigWithoutP2) AS ?resourceConfig)
+
+                        OPTIONAL {
                           ?subject prov:wasAttributedTo ?modifiedActor .
+                          BIND(REPLACE(REPLACE(STR(?modifiedActor), STR(User:), ""), "%40", "@") as ?modifiedActorName) 
                         }
 
                         OPTIONAL {
@@ -22,12 +36,7 @@
                           ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
 
                           ?entityFormRecordCreation crm:P14_carried_out_by ?creationActor .
-                          ?entityFormRecordCreation crm:P4_has_time-span ?creation .
-                          ?creation crm:P82_at_some_time_within ?creationDate .
-                        }
-
-                        OPTIONAL {
-                          ?subject rso:PX_has_media_type ?mediaType .
+                          BIND(REPLACE(REPLACE(STR(?creationActor), STR(User:), ""), "%40", "@") as ?creationActorName) 
                         }
 
                       } LIMIT 1'
@@ -37,8 +46,50 @@
         >
 
     <template id='template'>
-      <div>
-        {{bindings.0.resourceOntologyClass.value}}
+      <div class="activity-card-content">
+        <div>
+          <rs-icon icon-type="round" icon-name="person" class="person-icon"></rs-icon>
+        </div>
+        <div class="activity-card-data">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div class="activity-card-actor-value text-truncate-line1">
+              {{#if bindings.0.modifiedActorName.value}}{{bindings.0.modifiedActorName.value}}{{/if}}
+              {{#if bindings.0.creationActorName.value}}{{bindings.0.creationActorName.value}}{{/if}}
+            </div>
+            <div class="activity-card-date-value text-truncate-line1">{{dateTimeFormat bindings.0.date.value "LLL"}}</div>
+          </div>
+          {{#if bindings.0.modifiedActorName.value}}
+            <div class="text-font-size__small text-truncate-line1">modified a {{bindings.0.resourceLabel.value}}</div>
+            {{else if bindings.0.creationActorName.value}}
+            <div class="text-font-size__small text-truncate-line1">created a {{bindings.0.resourceLabel.value}}</div>
+          {{/if}}
+          <mp-draggable iri='{{iri}}'>
+            <div style="flex: 1; align-content: center;">
+              {{#if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map")}}
+                <mp-event-trigger id='{{iri}}-homepageActivity-open-km-title-trigger' 
+                                type='Dashboard.AddFrame'
+                                data='{"viewId":"knowledge-map", 
+                                        "resourceIri": "{{iri}}"}' 
+                                targets='["thinking-frames"]'>
+                
+                  <div><mp-label iri='{{iri}}' class="text-link text-truncate-line1"></mp-label></div>
+                </mp-event-trigger>
+              {{else if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
+                <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                urlqueryparam-view='single-set-management'
+                                urlqueryparam-resource='{{iri}}'>
+                  <mp-label iri='{{iri}}' class="text-link text-truncate-line1"></mp-label>
+                </semantic-link>
+              {{else}}
+                <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                urlqueryparam-view='{{#if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}semantic-narrative{{else}}resource-editor{{/if}}'
+                                urlqueryparam-resource='{{iri}}'>
+                    <mp-label iri='{{iri}}' class="text-link text-truncate-line1" highlight='{{highlight}}' highlight-props='{"style": {"color": "#396EFE"}}'></mp-label>
+                </semantic-link>
+              {{/if}}
+            </div>
+          </mp-draggable>
+        </div>
       </div>
     </template>
 

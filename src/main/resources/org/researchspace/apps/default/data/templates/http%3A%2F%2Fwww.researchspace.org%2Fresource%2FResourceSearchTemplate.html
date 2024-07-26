@@ -145,6 +145,10 @@
                                                       {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
                                                         MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
                                                       {{/if}}
+
+                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor")}}
+                                                        MINUS {?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .}
+                                                      {{/if}}
                                                       SERVICE <http://www.bigdata.com/rdf/search#search> {
                                                         ?label bds:search ?__token__ ;
                                                         bds:minRelevance "0.3" ;
@@ -167,7 +171,9 @@
                                                                 {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
                                                                   MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
                                                                 {{/if}}
-                                                                
+                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor")}}
+                                                                  MINUS {?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .}
+                                                                {{/if}}
                                                               }'
                                                 debounce=300
                                                 placeholder="Search [[urlParam 'resourcelabel' escape=false]]"

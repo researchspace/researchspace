@@ -76,15 +76,14 @@
               <bs-tab event-key="proposed" title="Proposed">
                 [[> projectSearch label="proposed" status="proposed" statusIRI="http://www.researchspace.org/resource/vocab/status/proposed"]]
               </bs-tab>
-              
-                <semantic-query query='SELECT ?__useruri__ ?userName { BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userName) }'
-                                template='{{> template}}'>
-                  <template id='template'>
-                    <bs-tab event-key="myTeamProjects" title="My Team Projects" tab-class-name="tab-right pr-0">
-                      [[> projectSearch label="my-team-project" actorIRI="{{bindings.0.userName.value}}"]]
-                    </bs-tab>
-                  </template>
-                </semantic-query>
+              <semantic-query query='SELECT ?__useruri__ ?userName { BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userName) }'
+                              template='{{> template}}'>
+                <template id='template'>
+                  <bs-tab event-key="myTeamProjects" title="My Team Projects" tab-class-name="tab-right pr-0">
+                    [[> projectSearch label="my-team-project" actorIRI="{{bindings.0.userName.value}}"]]
+                  </bs-tab>
+                </template>
+              </semantic-query>
               <bs-tab event-key="myProjects" title="My Projects" tab-class-name="tab-right">
                 <semantic-query query='SELECT ?__useruri__ ?userName { BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userName) }'
                                     template='{{> template}}'>
@@ -94,9 +93,31 @@
                   </semantic-query>
                 [[> projectSearch label="my-project" actorIRI=""]]
               </bs-tab>
-          </bs-tabs>
+            </bs-tabs>
+
+            <semantic-if query="ASK { ?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .}"
+                         then="{{> then}}"
+                         else="{{> else}}">
+
+              <template id="then">
+                <div class="homepage-project-all">
+                  <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                            urlqueryparam-view="resource-search" 
+                                            urlqueryparam-iri="http://www.researchspace.org/resource/system/resource_configurations_container/data/Project"
+                                            urlqueryparam-custom-label="Search project">
+                    <div>
+                      <span class="text-link">all projects</span>
+                      <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
+                    </div>
+                  </semantic-link-container>
+                </div>
+              </template>
+
+              <template id="else">
+                <div><div style="height: 37px;"></div></div>
+              </template>
+            </semantic-if>
           </div>
-      
         </div>
       
         <div class="homepage-activity-container">
@@ -180,10 +201,10 @@
                                       query='SELECT DISTINCT ?subject ?iri ?date WHERE {
                                                   BIND(?subject as ?iri) .
                                               } ORDER BY DESC(?date)
-                                              LIMIT 200'
+                                              LIMIT 100'
                                       tuple-template='{{> gridItem }}'
                                       options='{"showFilter":false,
-                                                "resultsPerPage":200
+                                                "resultsPerPage":100
                                               }'
                       >
                         <template id='gridItem'>
@@ -200,14 +221,37 @@
               </div>
             </div>
 
-            <div class="homepage-activity-more">
-              <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                            urlqueryparam-view='system-activity'
-                            getlabel=false> 
-                <span class="text-link">more</span>
-                <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
-              </semantic-link>
-            </div>
+            <semantic-if  query='ASK {
+                                      {
+                                        ?subject prov:generatedAtTime ?date .
+                                        ?subject crm:P2_has_type ?type .
+                                        FILTER(?type IN (<http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative>, <http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map>, <http://www.researchspace.org/resource/system/vocab/resource_type/set>))
+                                        MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
+                                      } UNION {
+                                        ?subject crm:P129i_is_subject_of ?entityFormRecord .
+                                        ?entityFormRecord a crmdig:D1_Digital_Object .
+                                        ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                        ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
+                                        ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+                                        ?entityFormRecordCreation crm:P4_has_time-span ?creation .
+                                        ?creation crm:P82_at_some_time_within ?date .
+                                      }
+                                    }'
+                          then='{{> then}}'>
+
+              <template id='then'>
+                <div class="homepage-activity-all">
+                  <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                urlqueryparam-view='system-activity'
+                                getlabel=false> 
+                    <span class="text-link">all activities</span>
+                    <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
+                  </semantic-link>
+                </div>
+              </template>
+            </semantic-if>
+
+
           </semantic-search>
         </div>
       
@@ -447,36 +491,34 @@
                                         ?information_object crm:P190_has_symbolic_content ?description .
                                       }
                                     } ORDER BY ?projectName
-                                      LIMIT 200 '
+                                      LIMIT 100'
                           
                               options='{"showFilter":false,
-                                        "resultsPerPage":200}'
+                                        "resultsPerPage":100,
+                                        "useFixedHeader":true}'
 
                               no-result-template='<div class="table-no-results">
                                                     <div class="no-results-container">
                                                       <rs-icon icon-type="round" icon-name="search_off" class="no-results-icon"></rs-icon>
                                                       <div class="no-results-text">No [[#if status]][[status]] [[/if]]projects found</div>
                                                     </div>
-                                                    <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                              urlqueryparam-view="resource-editor" 
-                                                                              urlqueryparam-entity-type-config="http://www.researchspace.org/resource/system/resource_configurations_container/data/Project"
-                                                                              urlqueryparam-mode="new"
-                                                                              urlqueryparam-custom-label="New project">
-                                                      <button class="btn btn-default btn-textAndIcon">
-                                                        <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
-                                                          <span>New Project</span>
-                                                      </button>
-                                                    </semantic-link-container>
+                                                      <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                urlqueryparam-view="resource-editor" 
+                                                                                urlqueryparam-entity-type-config="http://www.researchspace.org/resource/system/resource_configurations_container/data/Project"
+                                                                                urlqueryparam-mode="new"
+                                                                                urlqueryparam-custom-label="New project">
+                                                        <button class="btn btn-default btn-textAndIcon">
+                                                          <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                                                            <span>New Project</span>
+                                                        </button>
+                                                      </semantic-link-container>
                                                   </div>'
-
-                              number-of-displayed-rows=5
 
                               column-configuration='[
                                                       {"variableName": "projectName", "displayName": "Project name","cellTemplate": "{{> details}}"},
                                                       {"displayName": "Type","cellTemplate": "{{> type}}"},
                                                       {"displayName": "Carried out by","cellTemplate": "{{> actor}}"},
-                                                      {"displayName": "Start date","cellTemplate": "{{> startDate}}"},
-                                                      {"displayName": "End date","cellTemplate": "{{> endDate}}"},
+                                                      {"displayName": "Date","cellTemplate": "{{> date}}"},
                                                       {"displayName": "Priority","cellTemplate": "{{> priority}}"},
                                                       {"displayName": "more", "cellTemplate": "{{> actions}}" }
                                                     ]'
@@ -563,9 +605,11 @@
                                           ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                           ?appellation crm:P190_has_symbolic_content ?projectActorName .
 
-                                          ?pc14 crm:P14.1_in_the_role_of ?role .
-                                          ?role crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/actor_role> . 
-                                          ?role skos:prefLabel ?projectActorRole .
+                                          OPTIONAL {
+                                            ?pc14 crm:P14.1_in_the_role_of ?role .
+                                            ?role crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/actor_role> . 
+                                            ?role skos:prefLabel ?projectActorRole .
+                                          }
 
                                         } GROUP BY ?projectActor ?projectActorName
                                           ORDER BY ?projectActorName'
@@ -587,7 +631,7 @@
                                       <div class="text-link">{{projectActorName.value}}</div>
                                     </semantic-link-container>
                                   </mp-draggable>
-                                  {{#if projectActorRoles}}
+                                  {{#if projectActorRoles.value}}
                                     <div>({{projectActorRoles.value}})</div>
                                   {{/if}}
                                 </div>
@@ -600,28 +644,44 @@
                   </semantic-query>
                 </template>
                 
-                <template id='startDate'>
-                  <semantic-query query='SELECT ?projectStartDate WHERE {
+                <template id='date'>
+                  <semantic-query query='SELECT ?timespan ?timespanLabel ?projectStartDate ?projectEndDate WHERE {
                                           <{{subject.value}}> crm:P4_has_time-span ?timespan . 
                                           ?timespan a crm:E52_Time-Span . 
-                                          ?timespan crm:P82a_begin_of_the_begin ?projectStartDate .
+                                          ?timespan crm:P170i_time_is_defined_by ?timePrimitive .
+                                          ?timePrimitive a crm:E61_Time_Primitive .
+                                          ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
+                                          ?timePrimitive crm:P190_has_symbolic_content ?timespanLabel . 
+                                        
+                                          OPTIONAL {
+                                            ?timespan crm:P82a_begin_of_the_begin ?projectStartDate .
+                                          }
+                                          OPTIONAL {
+                                            ?timespan crm:P82b_end_of_the_end ?projectEndDate .
+                                          }
                                         }'
                                   template='{{> template}}'>
-                    <template id='template'>
-                      <span>{{bindings.0.projectStartDate.value}}</span>
-                    </template>
-                  </semantic-query>
-                </template>
 
-                <template id='endDate'>
-                  <semantic-query query='SELECT ?projectEndDate WHERE {
-                                          <{{subject.value}}> crm:P4_has_time-span ?timespan . 
-                                          ?timespan a crm:E52_Time-Span . 
-                                          ?timespan crm:P82b_end_of_the_end ?projectEndDate .
-                                        }'
-                                  template='{{> template}}'>
                     <template id='template'>
-                      <span>{{bindings.0.projectEndDate.value}}</span>
+                      <div>
+                        {{#if bindings.0.projectStartDate.value}}
+                          <p>Start: {{bindings.0.projectStartDate.value}}</p>
+                        {{/if}}
+                        {{#if bindings.0.projectEndDate.value}}
+                          <p>End: {{bindings.0.projectEndDate.value}}</p>
+                        {{/if}}
+                        {{#if (not bindings.0.projectStartDate.value)}}
+                          {{#if (not bindings.0.projectEndDate.value)}}
+                            <mp-draggable iri='{{bindings.0.timespan.value}}'>
+                              <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                        urlqueryparam-view="resource-editor"
+                                                        urlqueryparam-resource-iri='{{bindings.0.timespan.value}}'>
+                                <div class="text-link">{{bindings.0.timespanLabel.value}}</div>
+                              </semantic-link-container>
+                            </mp-draggable>
+                          {{/if}}
+                        {{/if}}
+                      </div>
                     </template>
                   </semantic-query>
                 </template>
@@ -667,5 +727,5 @@
       </semantic-search-result-holder>
     </div>
   </semantic-search>
-[[/inline ]]
+[[/inline]]
 [[!-- END OF CUSTOM HOMEPAGE --]]

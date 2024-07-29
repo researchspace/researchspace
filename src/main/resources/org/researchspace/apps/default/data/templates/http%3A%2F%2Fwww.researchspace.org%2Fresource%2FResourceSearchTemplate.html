@@ -266,6 +266,7 @@
                 {{/ifCond}}
 
                 {{#ifCond "[[urlParam "resourceconfig" escape=false]]" "==" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set"}}
+                {{else ifCond "[[urlParam "resourceconfig" escape=false]]" "==" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map"}}
                 {{else}}
                   [[#if (hasPermission "forms:ldp:*")]]
                     <mp-selection-action-choice id='[[urlParam "viewid" escape=false]]-create-set-action' selection='item-selection-aggregator'>
@@ -583,7 +584,7 @@
     
                               <template id='selectionCheckbox'>
                                 [[#if (hasPermission "forms:ldp:*")]]
-                                  {{#if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
+                                  {{#if (or (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map"))}}
                                   {{else}}
                                     <div class=''>
                                       <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
@@ -899,7 +900,7 @@
     
                               <template id='selectionCheckbox'>
                                 [[#if (hasPermission "forms:ldp:*")]]
-                                  {{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
+                                  {{#if (or (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map"))}}
                                   {{else}}
                                     <div class=''>
                                       <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>

@@ -43,12 +43,9 @@
 
   <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
 
-    <semantic-form-hidden-input for="classtype" 
-    default-values='["http://www.cidoc-crm.org/cidoc-crm/E39_Actor"
-                      {{#if (eq user_type "http://www.researchspace.org/resource/system/vocab/user_type/department")}},"http://www.cidoc-crm.org/cidoc-crm/E74_Group"{{/if}}
-                      {{#if (eq user_type "http://www.researchspace.org/resource/system/vocab/user_type/team")}},"http://www.cidoc-crm.org/cidoc-crm/E74_Group"{{/if}}
-                      {{#if (eq user_type "http://www.researchspace.org/resource/system/vocab/user_type/person")}},"http://www.cidoc-crm.org/cidoc-crm/E21_Person"{{/if}}]'
-    ></semantic-form-hidden-input>
+    [[!-- classtype is define inside KP http://www.researchspace.org/pattern/system/user/type]]
+    <semantic-form-hidden-input for="classtype"></semantic-form-hidden-input>
+    --]]
 
     <semantic-form-hidden-input for="entity_resource_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/user'></semantic-form-hidden-input>
     
@@ -629,17 +626,14 @@
   
    <semantic-form-errors></semantic-form-errors>
 
-[[!--  allow user to edit only their user data, not other users 
+[[!--  allow user to edit only their user data, not other users --]]
 
   {{#if node}}
-    {{#ifCond current_user_email '==' form_user_name}}
-      [[> rsp:FormDefaultActions formEntity='user']]
+    {{#if isSystemUser}}
+      [[> rsp:FormDefaultActions formEntity='my profile']]
     {{else}}
-      <div></div>
-    {{/ifCond}}
+    {{/if}}
   {{else}}
     [[> rsp:FormDefaultActions formEntity='user']]
-  {{/if}}--]]
-
-  [[> rsp:FormDefaultActions formEntity='user']]
+  {{/if}}
 </semantic-form>

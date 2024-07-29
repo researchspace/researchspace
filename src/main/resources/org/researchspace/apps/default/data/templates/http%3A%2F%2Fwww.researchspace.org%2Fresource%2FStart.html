@@ -24,22 +24,37 @@
               </div>
             </div>
 
-            <semantic-query query='SELECT ?project ?projectName (COUNT(?project) as ?projectCount) { 
+            <semantic-query query='SELECT ?project ?projectName ?projectCount { 
                                     ?project a crm:E7_Activity .
                                     ?project crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
+                                    ?project crm:P2_has_type <http://www.researchspace.org/resource/vocab/status/ongoing> .
+
+                                    ?project crm:P1_is_identified_by ?appellation . 
+                                    ?appellation a crm:E41_Appellation . 
+                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                    ?appellation crm:P190_has_symbolic_content ?projectName .
 
                                     ?project crm:P01i_is_domain_of ?pc14 .
                                     ?pc14 rdf:type crm:PC14_carried_out_by .
                                     ?pc14 crm:P02_has_range ?__useruri__ .
 
-                                  } GROUP BY ?project ?projectName'
+                                    {
+                                      SELECT (COUNT(?project1) as ?projectCount) WHERE {
+                                        ?project1 crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
+                                        ?project1 crm:P2_has_type <http://www.researchspace.org/resource/vocab/status/ongoing> .
+                                        ?project1 crm:P01i_is_domain_of ?pc14 .
+                                        ?pc14 rdf:type crm:PC14_carried_out_by .
+                                        ?pc14 crm:P02_has_range ?__useruri__ .
+                                      }
+                                    }
+                                  } ORDER BY ?projectName'
                             template='{{> template}}'
                             no-result-template='{{> noResults}}'>
 
               <template id='template'>
                 <div class="ongoing-projects">
                   <div>You have</div>
-                  <bs-dropdown id='ongoingProjectsDropdown'>
+                  <bs-dropdown id='ongoingProjectsDropdown' pull-right=true>
                     <bs-dropdown-toggle class="text-dropdown link-dropdown">
                         {{bindings.0.projectCount.value}} projects ongoing
                     </bs-dropdown-toggle>
@@ -80,18 +95,17 @@
                               template='{{> template}}'>
                 <template id='template'>
                   <bs-tab event-key="myTeamProjects" title="My Team Projects" tab-class-name="tab-right pr-0">
-                    [[> projectSearch label="my-team-project" actorIRI="{{bindings.0.userName.value}}"]]
+                    [[> projectSearch label="my-team-project" actorIRI="{{bindings.0.__useruri__.value}}" teamProject=true]]
                   </bs-tab>
                 </template>
               </semantic-query>
               <bs-tab event-key="myProjects" title="My Projects" tab-class-name="tab-right">
                 <semantic-query query='SELECT ?__useruri__ ?userName { BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userName) }'
-                                    template='{{> template}}'>
+                                template='{{> template}}'>
                     <template id='template'>
-                      [[> projectSearch label="my-project" actorIRI="{{bindings.0.userName.value}}"]]
+                      [[> projectSearch label="my-project" actorIRI="{{bindings.0.__useruri__.value}}"]]
                     </template>
-                  </semantic-query>
-                [[> projectSearch label="my-project" actorIRI=""]]
+                </semantic-query>
               </bs-tab>
             </bs-tabs>
 
@@ -275,9 +289,19 @@
                                                 ?appellation crm:P190_has_symbolic_content ?label .
 
                                                 [[#if actorIRI]]
-                                                  ?subject crm:P01i_is_domain_of ?pc14 .
-                                                  ?pc14 rdf:type crm:PC14_carried_out_by .
-                                                  ?pc14 crm:P02_has_range <[[actorIRI]]> .
+                                                  [[#if teamProject]]
+                                                   <[[actorIRI]]> crm:P107i_is_current_or_former_member_of ?group .
+                                                   ?group crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                                   ?group crm:P107_has_current_or_former_member ?groupMember . 
+                                                   ?groupMember crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                                   ?subject crm:P01i_is_domain_of ?pc14 .
+                                                   ?pc14 rdf:type crm:PC14_carried_out_by .
+                                                   ?pc14 crm:P02_has_range ?group|?groupMember .
+                                                  [[else]]
+                                                    ?subject crm:P01i_is_domain_of ?pc14 .
+                                                    ?pc14 rdf:type crm:PC14_carried_out_by .
+                                                    ?pc14 crm:P02_has_range <[[actorIRI]]> .
+                                                  [[/if]]
                                                 [[/if]]
 
                                                 SERVICE <http://www.bigdata.com/rdf/search#search> {
@@ -470,7 +494,7 @@
           <semantic-search-result id='[[label]]-projects-result'>
             <div class="table-fixed-header table-scrollable-content table-expanded table-projects">
               <semantic-table id='[[label]]-projects-table'
-                              query='SELECT ?subject ?iri ?projectName ?description WHERE {
+                              query='SELECT DISTINCT ?subject ?iri ?projectName ?description WHERE {
                                       BIND(?subject as ?iri) .
 
                                       ?subject crm:P1_is_identified_by ?appellation . 

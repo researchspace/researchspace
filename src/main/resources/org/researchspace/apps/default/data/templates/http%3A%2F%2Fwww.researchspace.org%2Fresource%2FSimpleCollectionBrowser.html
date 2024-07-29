@@ -226,16 +226,29 @@
                           </mp-draggable>
                         </div>
                       </h2>
-                      {{#if resourceName}}
+                      {{#if resourceName}} 
                         <div class="color-base" style="font-size: 21px; padding-bottom: 3px;">|</div>
-                        <div class="text-type-subheader" style="margin-right: 30px;">
-                          {{#if resourceIcon}}
-                            <rs-icon icon-type="rounded" icon-name="{{resourceIcon}}" symbol=true></rs-icon>
-                          {{else}}
-                            <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol=true></rs-icon>
-                          {{/if}}
-                            <div>{{resourceName}}</div>
-                        </div>
+                        <semantic-query query='SELECT DISTINCT ?systemUser WHERE { 
+                                                BIND(?__useruri__ as ?systemUser)
+                                              } LIMIT 1'>
+                          <template id='template'>
+                            {{#ifCond bindings.0.systemUser.value "===" iri}}
+                              <div class="text-type-subheader" style="margin-right: 30px;">
+                                <rs-icon icon-type="rounded" icon-name="{{resourceIcon}}" symbol=true></rs-icon>
+                                <div>My profile</div>
+                              </div>
+                            {{else}}
+                              <div class="text-type-subheader" style="margin-right: 30px;">
+                                {{#if resourceIcon}}
+                                  <rs-icon icon-type="rounded" icon-name="{{resourceIcon}}" symbol=true></rs-icon>
+                                {{else}}
+                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol=true></rs-icon>
+                                {{/if}}
+                                  <div>{{resourceName}}</div>
+                              </div>
+                            {{/ifCond}}
+                          </template>
+                        </semantic-query>
                       {{/if}}
                     {{/case}}
 

@@ -665,7 +665,22 @@
                                         </div>
                                       </mp-draggable>
 
-                                      <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">[[urlParam "resourcelabel" escape=false]]</div>
+                                      {{#if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/User")}}
+                                        <semantic-query query='SELECT DISTINCT ?systemUser ?subject WHERE { 
+                                                                BIND(?__useruri__ as ?systemUser)
+                                                                BIND(<{{iri.value}}> as ?subject)
+                                                              } LIMIT 1'>
+                                          <template id='template'>
+                                            {{#ifCond bindings.0.systemUser.value "===" bindings.0.subject.value}}
+                                              <div>test</div>
+                                            {{else}}
+                                              <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">[[urlParam "resourcelabel" escape=false]]</div>
+                                            {{/ifCond}}
+                                          </template>
+                                        </semantic-query>
+                                      {{else}}
+                                        <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">[[urlParam "resourcelabel" escape=false]]</div>
+                                      {{/if}}
                                     </div>
                                   </div>
                                 </div>
@@ -981,7 +996,21 @@
                                         </div>
                                       </mp-draggable>
 
-                                      <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">[[urlParam "resourcelabel" escape=false]]</div>
+                                      {{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/User")}}
+                                        <semantic-query query='SELECT DISTINCT ?systemUser WHERE { 
+                                                                BIND(?__useruri__ as ?systemUser)
+                                                              } LIMIT 1'>
+                                          <template id='template'>
+                                            {{#ifCond bindings.0.systemUser.value "===" iri.value}}
+                                              <div class="color-action text-bold600 text-font-size__xsmall text-truncate-line1">My profile</div>
+                                            {{else}}
+                                              <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">[[urlParam "resourcelabel" escape=false]]</div>
+                                            {{/ifCond}}
+                                          </template>
+                                        </semantic-query>
+                                      {{else}}
+                                        <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">[[urlParam "resourcelabel" escape=false]]111</div>
+                                      {{/if}}
                                     </div>
                                   </div>
                                 </div>

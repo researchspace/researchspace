@@ -1,19 +1,19 @@
 {{#if node}}
   [[!-- Existing user --]]
-  <semantic-query 
-                  query='SELECT DISTINCT ?userType ?userTypeLabel ?currentUserEmail ?formUserEmail WHERE { 
-                        #  BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?currentUserEmail) 
+  <semantic-query query='SELECT DISTINCT ?currentUser ?userType ?userTypeLabel ?systemUser WHERE { 
+                          BIND(?__useruri__ as ?systemUser)
+                          BIND(<{{node}}> as ?currentUser)
 
-                          <{{node}}> crm:P1_is_identified_by ?email .
-                          ?email crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation_type/user_email> .
-                          ?email crm:P190_has_symbolic_content ?formUserEmail .
-
-                          <{{node}}> crm:P2_has_type ?userType .
+                          ?currentUser crm:P2_has_type ?userType .
                           ?userType crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/user_type> .
                           ?userType skos:prefLabel ?userTypeLabel .
                         } LIMIT 1'>
     <template id='template'>
-      {{> forms:User_partial user_type=bindings.0.userType.value user_type_label=bindings.0.userTypeLabel.value current_user_email=bindings.0.currentUserEmail.value form_user_name=bindings.0.formUserEmail.value}}
+      {{#ifCond bindings.0.currentUser.value "===" bindings.0.systemUser.value}}
+        {{> forms:User_partial user_type=bindings.0.userType.value user_type_label=bindings.0.userTypeLabel.value isSystemUser=true}}
+      {{else}}
+        {{> forms:User_partial user_type=bindings.0.userType.value user_type_label=bindings.0.userTypeLabel.value isSystemUser=false}}
+      {{/ifCond}}
     </template>
   </semantic-query>
 {{else}}

@@ -538,6 +538,13 @@
                                       urlqueryparam-mode='new'>
               <bs-menu-item>Set</bs-menu-item>
             </semantic-link-container>
+
+            <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                      urlqueryparam-view='resource-editor' 
+                                      urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                      urlqueryparam-mode='new'>
+              <bs-menu-item>User</bs-menu-item>
+            </semantic-link-container>
           
 
         </bs-nav-dropdown>
@@ -1275,9 +1282,8 @@
               <bs-dropdown-toggle>
                 <div class="navDropdown-iconAndLabel"> 
                   <rs-icon icon-type="round" icon-name="account_box"></rs-icon>
-                    <semantic-query
-                      query='SELECT ?userName { BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userName) }'
-                      template='\{{> template}}'>
+                    <semantic-query query='SELECT ?userName { BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userName) }'
+                                    template='\{{> template}}'>
                       <template id='template'>
                           <div>\{{bindings.0.userName.value}}</div>
                       </template>
@@ -1285,60 +1291,65 @@
                 </div>
               </bs-dropdown-toggle>
               <bs-dropdown-menu>
-                <semantic-query query='SELECT ?__useruri__ ?userEmail ?actor ?actorFullName { 
-                                        BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userEmail) 
+                <semantic-query query='SELECT DISTINCT ?systemUser ?actorFullName ?group { 
+                                        BIND(?__useruri__ as ?systemUser)
+                                        ?systemUser a crm:E39_Actor .
+                                        ?systemUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                        ?systemUser crm:P1_is_identified_by ?actorName .
+                                        ?actorName a crm:E41_Appellation .
+                                        ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                        ?actorName crm:P190_has_symbolic_content ?actorFullName .
+
                                         OPTIONAL {
-                                              ?actor a crm:E39_Actor .
-                                              ?actor crm:P1_is_identified_by ?actorAppellationEmail .
-                                              ?actorAppellationEmail a crm:E41_Appellation .
-                                              ?actorAppellationEmail crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation_type/user_email> .
-                                              ?actorAppellationEmail crm:P190_has_symbolic_content ?userEmail .
-                                              
-                                              ?actor crm:P1_is_identified_by ?actorAppellationFullName .
-                                              ?actorAppellationFullName a crm:E41_Appellation .
-                                              ?actorAppellationFullName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
-                                              ?actorAppellationFullName crm:P190_has_symbolic_content ?actorFullName .
+                                          ?systemUser crm:P107i_is_current_or_former_member_of ?group .
+                                          ?group crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                          ?group a crm:E74_Group .
                                         }
                                       }'
-                                template='\{{> template}}'>
+                                template='\{{> template}}'
+                                no-result-template='\{{> noResults}}'>
+
                   <template id='template'>
-                    <semantic-link-container uri='\{{bindings.0.__useruri__.value}}'>
+                    <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                              urlqueryparam-view='resource-editor' 
+                                              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                              urlqueryparam-resource-iri="\{{bindings.0.systemUser.value}}"
+                                              urlqueryparam-mode='edit'>
                       <bs-menu-item title='userPrincipal'>
                         <rs-icon icon-type="round" icon-name="account_box" class="icon-left"></rs-icon>
-                          \{{#if bindings.0.actor.value}}
-                            <mp-event-trigger id='openEditUserForm-frame-trigger' 
-                                              type='Dashboard.AddFrame'
-                                              data='{"viewId":"resource-editor", 
-                                                    "entityTypeConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/User", 
-                                                    "resourceIri":"{{bindings.0.actor.value}}",
-                                                    "editable": true,
-                                                    "mode":"edit"}' 
-                                              targets='["thinking-frames"]'>
+                        <span>Profile</span> 
+                      </bs-menu-item>
+                    </semantic-link-container>
+                  </template>
 
-                                <span>Profile</span>  
-                            </mp-event-trigger>
-                          \{{else}}
-                            <mp-event-trigger id='openNewUserForm-frame-trigger' 
-                                              type='Dashboard.AddFrame'
-                                              data='{"viewId":"resource-editor", 
-                                                    "entityTypeConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/User", 
-                                                    "editable": true,
-                                                    "customLabel": "New user",
-                                                    "mode":"new"}' 
-                                              targets='["thinking-frames"]'>
-
-                                <span>Profile (not registered user)</span>  
-                            </mp-event-trigger>
-                          \{{/if}}
+                  <template id='noResults'>
+                    <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                            urlqueryparam-view='resource-editor' 
+                                            urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                            urlqueryparam-custom-label='New profile'
+                                            urlqueryparam-mode='new'>
+                      <bs-menu-item title='userPrincipal'>
+                        <rs-icon icon-type="round" icon-name="account_box" class="icon-left"></rs-icon>
+                        <span>Profile (not registered user)</span>  
                       </bs-menu-item>
                     </semantic-link-container>
                   </template>
                 </semantic-query>
                 
-                <bs-menu-item href="/logout" title='my team'>
-                  <rs-icon icon-type="round" icon-name="groups" class="icon-left"></rs-icon>
-                  <span>My team</span>
-                </bs-menu-item>
+                {{#if bindings.0.group.value}}
+                  {{#each bindings}}
+                    <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                              urlqueryparam-view='resource-editor' 
+                                              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                              urlqueryparam-resource-iri="\{{group.value}}"
+                                              urlqueryparam-mode='edit'>
+                      <bs-menu-item>
+                        <rs-icon icon-type="round" icon-name="groups" class="icon-left"></rs-icon>
+                        <span>My team: {{group.value}}</span>
+                      </bs-menu-item>
+                    </semantic-link-container>
+                  {{/each}}
+                {{/if}}
 
                 <bs-menu-item divider="true"></bs-menu-item>
 

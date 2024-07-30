@@ -7,18 +7,47 @@
       
           <div class="homepage-project-header">
             <div class="homepage-project-header__welcome">
-              <h4>Welcome back<mp-anonymous-hidden>
-                  <semantic-query query='SELECT ?__useruri__ ?userName { BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userName) }'
-                                    template='{{> template}}'>
-                    <template id='template'>
-                      <span>, <!-- <semantic-link-container uri='{{bindings.0.__useruri__.value}}'> -->
-                              <span style="text-transform:capitalize;">{{bindings.0.userName.value}}</span>
-                              <!-- </semantic-link-container> -->
-                      </span>
-                    </template>
-                  </semantic-query>
-                </mp-anonymous-hidden>!
-              </h4>
+              <div style="display: flex; align-items: center;"><h4>Welcome back</h4><mp-anonymous-hidden>
+                <semantic-query query='SELECT DISTINCT ?systemUser ?systemUserName ?actorFullName { 
+                                        BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
+                                        BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?systemUserName)
+
+                                        OPTIONAL {
+                                          ?systemUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                          ?systemUser crm:P1_is_identified_by ?actorName .
+                                          ?actorName a crm:E41_Appellation .
+                                          ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                          ?actorName crm:P190_has_symbolic_content ?actorFullName .
+                                        }
+                                      }'
+                                template='{{> template}}'>
+
+                  <template id='template'>
+                    {{#if bindings.0.actorFullName.value}}
+                      <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                urlqueryparam-view='resource-editor' 
+                                                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                                urlqueryparam-resource-iri="{{bindings.0.systemUser.value}}"
+                                                urlqueryparam-mode='edit'>
+                        <div style="display: flex; align-items: baseline; gap: 5px;">
+                          <h4>, </h4><h4 style="text-decoration: underline; cursor: pointer;"> {{bindings.0.actorFullName.value}}</h4>
+                        </div>
+                      </semantic-link-container>
+                    {{else}}
+                      <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                urlqueryparam-view='resource-editor' 
+                                                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                                urlqueryparam-custom-label='New profile'
+                                                urlqueryparam-mode='new'>
+                        <div style="display: flex; align-items: baseline; gap: 5px;">
+                          <h4>, </h4><h4 style="text-decoration: underline; cursor: pointer;"> {{bindings.0.systemUserName.value}}</h4><span class="text-font-size__small">(not registered user)</span>  
+                        </div>
+                      </semantic-link-container>
+                    {{/if}}
+                  </template>
+                </semantic-query>
+                </mp-anonymous-hidden>
+              </div>
               <div class="homepage-project-header__currentDate">
                 <span class="badge badge--secondary">[[currentDateTime format="dd MMMM yyyy"]]</span>
               </div>
@@ -91,22 +120,34 @@
               <bs-tab event-key="proposed" title="Proposed">
                 [[> projectSearch label="proposed" status="proposed" statusIRI="http://www.researchspace.org/resource/vocab/status/proposed"]]
               </bs-tab>
-              <semantic-query query='SELECT ?__useruri__ ?userName { BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userName) }'
+              <semantic-query query='SELECT ?systemUser ?userName { 
+                                      BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
+                                      BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userName) 
+
+                                      ?systemUser crm:P107i_is_current_or_former_member_of ?group .
+                                      ?group crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                      ?group a crm:E74_Group .
+                                    }'
                               template='{{> template}}'>
                 <template id='template'>
                   <bs-tab event-key="myTeamProjects" title="My Team Projects" tab-class-name="tab-right pr-0">
-                    [[> projectSearch label="my-team-project" actorIRI="{{bindings.0.__useruri__.value}}" teamProject=true]]
+                    [[> projectSearch label="my-team-project" actorIRI="{{bindings.0.systemUser.value}}" teamProject=true]]
                   </bs-tab>
                 </template>
               </semantic-query>
-              <bs-tab event-key="myProjects" title="My Projects" tab-class-name="tab-right">
-                <semantic-query query='SELECT ?__useruri__ ?userName { BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userName) }'
-                                template='{{> template}}'>
-                    <template id='template'>
-                      [[> projectSearch label="my-project" actorIRI="{{bindings.0.__useruri__.value}}"]]
-                    </template>
-                </semantic-query>
-              </bs-tab>
+              
+              <semantic-query query='SELECT ?systemUser ?userName { 
+                                        BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
+                                        BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userName) 
+                                        ?systemUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                      }'
+                              template='{{> template}}'>
+                  <template id='template'>
+                    <bs-tab event-key="myProjects" title="My Projects" tab-class-name="tab-right">
+                      [[> projectSearch label="my-project" actorIRI="{{bindings.0.systemUser.value}}"]]
+                    </bs-tab>
+                  </template>
+              </semantic-query>
             </bs-tabs>
 
             <semantic-if query="ASK { ?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .}"

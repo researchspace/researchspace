@@ -277,7 +277,7 @@
 
       {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/User")}}
         <semantic-query query='SELECT DISTINCT ?systemUser WHERE { 
-                                BIND(?__useruri__ as ?systemUser)
+                                BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
                               } LIMIT 1'>
           <template id='template'>
             {{#ifCond bindings.0.systemUser.value "===" iri}}

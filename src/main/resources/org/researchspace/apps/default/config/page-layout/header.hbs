@@ -1278,87 +1278,105 @@
         <li>
           <mp-anonymous-hidden alt='<li><a href="/login" title="login"></a></li>'>
 
-            <bs-dropdown id="navbar-dropdown" class="user-dropdown">
-              <bs-dropdown-toggle>
-                <div class="navDropdown-iconAndLabel"> 
-                  <rs-icon icon-type="round" icon-name="account_box"></rs-icon>
-                    <semantic-query query='SELECT ?userName { BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userName) }'
-                                    template='\{{> template}}'>
-                      <template id='template'>
-                          <div>\{{bindings.0.userName.value}}</div>
-                      </template>
-                    </semantic-query>
-                </div>
-              </bs-dropdown-toggle>
-              <bs-dropdown-menu>
-                <semantic-query query='SELECT DISTINCT ?systemUser ?actorFullName ?group { 
-                                        BIND(?__useruri__ as ?systemUser)
-                                        ?systemUser a crm:E39_Actor .
-                                        ?systemUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
-                                        ?systemUser crm:P1_is_identified_by ?actorName .
-                                        ?actorName a crm:E41_Appellation .
-                                        ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
-                                        ?actorName crm:P190_has_symbolic_content ?actorFullName .
+            <semantic-query query='SELECT DISTINCT ?systemUser ?systemUserName ?actorFullName ?mainImage ?group ?groupFullName { 
+                                    BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
+                                    BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?systemUserName)
 
-                                        OPTIONAL {
-                                          ?systemUser crm:P107i_is_current_or_former_member_of ?group .
-                                          ?group crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
-                                          ?group a crm:E74_Group .
-                                        }
-                                      }'
-                                template='\{{> template}}'
-                                no-result-template='\{{> noResults}}'>
+                                    OPTIONAL {
+                                      ?systemUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                      ?systemUser crm:P1_is_identified_by ?actorName .
+                                      ?actorName a crm:E41_Appellation .
+                                      ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                      ?actorName crm:P190_has_symbolic_content ?actorFullName .
+                                    }
 
-                  <template id='template'>
+                                    OPTIONAL {
+                                      ?systemUser rs:PX_has_main_representation ?mainImage .
+                                      ?mainImage a rs:EX_Digital_Image .
+                                    }
+
+                                    OPTIONAL {
+                                      ?systemUser crm:P107i_is_current_or_former_member_of ?group .
+                                      ?group crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                      ?group a crm:E74_Group .
+                                      ?group crm:P1_is_identified_by ?groupName .
+                                      ?groupName a crm:E41_Appellation .
+                                      ?groupName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                      ?groupName crm:P190_has_symbolic_content ?groupFullName .
+                                    }
+                                  }'
+                          template='\{{> template}}'>
+
+            <template id='template'>
+              <bs-dropdown id="navbar-dropdown" class="user-dropdown">
+                <bs-dropdown-toggle>
+                  <div class="navDropdown-iconAndLabel"> 
+                    \{{#if bindings.0.actorFullName.value}}
+                      \{{#if bindings.0.mainImage.value}}
+                        <img src="\{{bindings.0.mainImage.value}}" width="22" height="22" \>
+                      \{{else}}
+                        <rs-icon icon-type="round" icon-name="account_box"></rs-icon>
+                      \{{/if}}
+                      </mp-resource-thumbnail>
+                      <div>\{{bindings.0.actorFullName.value}}</div>
+                    \{{else}}
+                      <rs-icon icon-type="round" icon-name="account_box"></rs-icon>
+                      <div>\{{bindings.0.systemUserName.value}}</div>
+                    \{{/if}}
+                  </div>
+                </bs-dropdown-toggle>
+                <bs-dropdown-menu>
+                  \{{#if bindings.0.actorFullName.value}}
                     <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
                                               urlqueryparam-view='resource-editor' 
                                               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
                                               urlqueryparam-resource-iri="\{{bindings.0.systemUser.value}}"
                                               urlqueryparam-mode='edit'>
-                      <bs-menu-item title='userPrincipal'>
+                      <bs-menu-item>
                         <rs-icon icon-type="round" icon-name="account_box" class="icon-left"></rs-icon>
-                        <span>Profile</span> 
+                        <span>My profile</span> 
                       </bs-menu-item>
                     </semantic-link-container>
-                  </template>
-
-                  <template id='noResults'>
+                  \{{else}}
                     <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
                                             urlqueryparam-view='resource-editor' 
                                             urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
                                             urlqueryparam-custom-label='New profile'
                                             urlqueryparam-mode='new'>
-                      <bs-menu-item title='userPrincipal'>
-                        <rs-icon icon-type="round" icon-name="account_box" class="icon-left"></rs-icon>
-                        <span>Profile (not registered user)</span>  
-                      </bs-menu-item>
-                    </semantic-link-container>
-                  </template>
-                </semantic-query>
-                
-                {{#if bindings.0.group.value}}
-                  {{#each bindings}}
-                    <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
-                                              urlqueryparam-view='resource-editor' 
-                                              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
-                                              urlqueryparam-resource-iri="\{{group.value}}"
-                                              urlqueryparam-mode='edit'>
                       <bs-menu-item>
-                        <rs-icon icon-type="round" icon-name="groups" class="icon-left"></rs-icon>
-                        <span>My team: {{group.value}}</span>
+                        <rs-icon icon-type="round" icon-name="account_box" class="icon-left"></rs-icon>
+                        <span>My profile (not registered user)</span>  
                       </bs-menu-item>
                     </semantic-link-container>
-                  {{/each}}
-                {{/if}}
+                  \{{/if}}
+                  
+                  \{{#if bindings.0.group.value}}
+                    \{{#each bindings}}
+                      <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                urlqueryparam-view='resource-editor' 
+                                                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                                urlqueryparam-resource-iri="\{{group.value}}"
+                                                urlqueryparam-mode='edit'>
+                        <bs-menu-item>
+                          <rs-icon icon-type="round" icon-name="groups" class="icon-left"></rs-icon>
+                          <span>My team: \{{groupFullName.value}}</span>
+                        </bs-menu-item>
+                      </semantic-link-container>
+                    \{{/each}}
+                  \{{/if}}
 
-                <bs-menu-item divider="true"></bs-menu-item>
+                  <bs-menu-item divider="true"></bs-menu-item>
 
-                <bs-menu-item href="/logout" title='logout'>
-                  <rs-icon icon-type="round" icon-name="logout" class="icon-left"></rs-icon>
-                  <span>Logout</span>
-                </bs-menu-item>
-              </bs-dropdown-menu>
-            </bs-dropdown>
+                  <bs-menu-item href="/logout" title='logout'>
+                    <rs-icon icon-type="round" icon-name="logout" class="icon-left"></rs-icon>
+                    <span>Logout</span>
+                  </bs-menu-item>
+                </bs-dropdown-menu>
+              </bs-dropdown>
+            </template>
+
+            </semantic-query>
+
           </mp-anonymous-hidden>
         </li>
 

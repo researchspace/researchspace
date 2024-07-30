@@ -186,7 +186,7 @@
                         </h2>
                       {{else}}
 
-                        <h2 class="resource-editView-formHeader-title">New 
+                        <h2 class="resource-editView-formHeader-title">New
                           {{#if collection}}
                             {{#if collectionLabel}}
                               <span>{{collectionLabel}}</span>
@@ -194,7 +194,11 @@
                               <mp-label iri='{{collection}}' style="text-transform: lowercase;"></mp-label>
                             {{/if}}
                           {{else}}
-                            <span>{{resourceName}}</span>
+                            {{#if (eq resourceConfiguration "http://www.researchspace.org/resource/system/resource_configurations_container/data/User")}}
+                              <span>profile</span>
+                            {{else}}
+                              <span>{{resourceName}}</span>
+                            {{/if}}
                           {{/if}}
                         </h2>
                       {{/if}}
@@ -229,7 +233,7 @@
                       {{#if resourceName}} 
                         <div class="color-base" style="font-size: 21px; padding-bottom: 3px;">|</div>
                         <semantic-query query='SELECT DISTINCT ?systemUser WHERE { 
-                                                BIND(?__useruri__ as ?systemUser)
+                                                BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
                                               } LIMIT 1'>
                           <template id='template'>
                             {{#ifCond bindings.0.systemUser.value "===" iri}}

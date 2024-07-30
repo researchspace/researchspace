@@ -1,7 +1,7 @@
 {{#if node}}
   [[!-- Existing user --]]
   <semantic-query query='SELECT DISTINCT ?currentUser ?userType ?userTypeLabel ?systemUser WHERE { 
-                          BIND(?__useruri__ as ?systemUser)
+                          BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
                           BIND(<{{node}}> as ?currentUser)
 
                           ?currentUser crm:P2_has_type ?userType .

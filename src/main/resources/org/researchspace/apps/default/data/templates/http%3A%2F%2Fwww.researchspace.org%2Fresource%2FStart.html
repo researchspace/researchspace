@@ -110,42 +110,58 @@
       
           <div class="homepage-project-summary">
             <h3>Projects summary</h3>
-            <bs-tabs id="projectTabs" default-active-key='ongoing' unmount-on-exit=true>
-              <bs-tab event-key="ongoing" title="Ongoing">
-                [[> projectSearch label="ongoing" status="ongoing" statusIRI="http://www.researchspace.org/resource/vocab/status/ongoing"]]
-              </bs-tab>
-              <bs-tab event-key="completed" title="Completed">
-                [[> projectSearch label="completed" status="completed" statusIRI="http://www.researchspace.org/resource/vocab/status/completed"]]
-              </bs-tab>
-              <bs-tab event-key="proposed" title="Proposed">
-                [[> projectSearch label="proposed" status="proposed" statusIRI="http://www.researchspace.org/resource/vocab/status/proposed"]]
-              </bs-tab>
-              <semantic-query query='SELECT ?systemUser ?userName { 
-                                      BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
-                                      BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userName) 
 
-                                      ?systemUser crm:P107i_is_current_or_former_member_of ?group .
-                                      ?group crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
-                                      ?group a crm:E74_Group .
+              <semantic-query query='SELECT ?systemUser ?group ?project { 
+                                      BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
+                                      
+                                      OPTIONAL {
+                                        ?systemUser crm:P02i_is_range_of ?pc107 .
+                                        ?pc107 rdf:type crm:PC107_has_current_or_former_member .
+                                        ?pc107 crm:P01_has_domain ?group .
+                                        ?group crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                        ?group a crm:E74_Group .
+                                      }
+
+                                      OPTIONAL {
+                                        ?project crm:P01i_is_domain_of ?pc14 .
+                                        ?project crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
+                                        ?pc14 rdf:type crm:PC14_carried_out_by .
+                                        ?pc14 crm:P02_has_range ?systemUser .
+                                      }
+
                                     }'
                               template='{{> template}}'>
                 <template id='template'>
-                  <bs-tab event-key="myTeamProjects" title="My Team Projects" tab-class-name="tab-right pr-0">
-                    [[> projectSearch label="my-team-project" actorIRI="{{bindings.0.systemUser.value}}" teamProject=true]]
-                  </bs-tab>
+                  <bs-tabs id="projectTabs" default-active-key='ongoing' unmount-on-exit=true>
+                    <bs-tab event-key="ongoing" title="Ongoing">
+                      [[> projectSearch label="ongoing" status="ongoing" statusIRI="http://www.researchspace.org/resource/vocab/status/ongoing"]]
+                    </bs-tab>
+                    <bs-tab event-key="completed" title="Completed">
+                      [[> projectSearch label="completed" status="completed" statusIRI="http://www.researchspace.org/resource/vocab/status/completed"]]
+                    </bs-tab>
+                    <bs-tab event-key="proposed" title="Proposed">
+                      [[> projectSearch label="proposed" status="proposed" statusIRI="http://www.researchspace.org/resource/vocab/status/proposed"]]
+                    </bs-tab>
+                    {{#if bindings.0.group.value}}
+                      <bs-tab event-key="myTeamProjects" title="My Team Projects" tab-class-name="tab-right pr-0">
+                        [[> projectSearch label="my-team-project" actorIRI="{{bindings.0.systemUser.value}}" teamProject=true]]
+                      </bs-tab>
+                    {{/if}}
+                    {{#if bindings.0.project.value}}
+                      <bs-tab event-key="myProjects" title="My Projects" tab-class-name="tab-right">
+                        [[> projectSearch label="my-project" actorIRI="{{bindings.0.systemUser.value}}"]]
+                      </bs-tab>
+                    {{/if}}
                 </template>
               </semantic-query>
-              
-              <semantic-query query='SELECT ?systemUser ?userName { 
+
+              <semantic-query query='SELECT ?systemUser { 
                                         BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
-                                        BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userName) 
                                         ?systemUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
                                       }'
                               template='{{> template}}'>
                   <template id='template'>
-                    <bs-tab event-key="myProjects" title="My Projects" tab-class-name="tab-right">
-                      [[> projectSearch label="my-project" actorIRI="{{bindings.0.systemUser.value}}"]]
-                    </bs-tab>
+                    
                   </template>
               </semantic-query>
             </bs-tabs>
@@ -331,13 +347,15 @@
 
                                                 [[#if actorIRI]]
                                                   [[#if teamProject]]
-                                                   <[[actorIRI]]> crm:P107i_is_current_or_former_member_of ?group .
-                                                   ?group crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
-                                                   ?group crm:P107_has_current_or_former_member ?groupMember . 
-                                                   ?groupMember crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
-                                                   ?subject crm:P01i_is_domain_of ?pc14 .
-                                                   ?pc14 rdf:type crm:PC14_carried_out_by .
-                                                   ?pc14 crm:P02_has_range ?group|?groupMember .
+                                                    <[[actorIRI]]> crm:P02i_is_range_of ?pc107 .
+                                                    ?pc107 rdf:type crm:PC107_has_current_or_former_member .
+                                                    ?pc107 crm:P01_has_domain ?group .
+                                                    ?group crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                                    ?group a crm:E74_Group .
+
+                                                    ?subject crm:P01i_is_domain_of ?pc14 .
+                                                    ?pc14 rdf:type crm:PC14_carried_out_by .
+                                                    ?pc14 crm:P02_has_range ?group .
                                                   [[else]]
                                                     ?subject crm:P01i_is_domain_of ?pc14 .
                                                     ?pc14 rdf:type crm:PC14_carried_out_by .
@@ -544,9 +562,21 @@
                                       ?appellation crm:P190_has_symbolic_content ?projectName .
 
                                       [[#if actorIRI]]
-                                        ?subject crm:P01i_is_domain_of ?pc14 .
-                                        ?pc14 rdf:type crm:PC14_carried_out_by .
-                                        ?pc14 crm:P02_has_range <[[actorIRI]]> .
+                                        [[#if teamProject]]
+                                          <[[actorIRI]]> crm:P02i_is_range_of ?pc107 .
+                                          ?pc107 rdf:type crm:PC107_has_current_or_former_member .
+                                          ?pc107 crm:P01_has_domain ?group .
+                                          ?group crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                          ?group a crm:E74_Group .
+
+                                          ?subject crm:P01i_is_domain_of ?pc14 .
+                                          ?pc14 rdf:type crm:PC14_carried_out_by .
+                                          ?pc14 crm:P02_has_range ?group .
+                                        [[else]]
+                                          ?subject crm:P01i_is_domain_of ?pc14 .
+                                          ?pc14 rdf:type crm:PC14_carried_out_by .
+                                          ?pc14 crm:P02_has_range <[[actorIRI]]> .
+                                        [[/if]]
                                       [[/if]]
 
                                       OPTIONAL {

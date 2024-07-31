@@ -1296,7 +1296,9 @@
                                     }
 
                                     OPTIONAL {
-                                      ?systemUser crm:P107i_is_current_or_former_member_of ?group .
+                                      ?systemUser crm:P02i_is_range_of ?pc107 .
+                                      ?pc107 rdf:type crm:PC107_has_current_or_former_member .
+                                      ?pc107 crm:P01_has_domain ?group .
                                       ?group crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
                                       ?group a crm:E74_Group .
                                       ?group crm:P1_is_identified_by ?groupName .
@@ -1311,16 +1313,14 @@
               <bs-dropdown id="navbar-dropdown" class="user-dropdown">
                 <bs-dropdown-toggle>
                   <div class="navDropdown-iconAndLabel"> 
+                    <mp-resource-thumbnail iri='\{{bindings.0.systemUser.value}}' style="width: 25px; height:25px; border-radius:1.5px; object-fit: cover; object-position: top;">
+                      <mp-resource-thumbnail-fallback>
+                          <rs-icon icon-type="round" icon-name="account_box"></rs-icon>
+                      </mp-resource-thumbnail-fallback>
+                    </mp-resource-thumbnail>  
                     \{{#if bindings.0.actorFullName.value}}
-                      \{{#if bindings.0.mainImage.value}}
-                        <img src="\{{bindings.0.mainImage.value}}" width="22" height="22" \>
-                      \{{else}}
-                        <rs-icon icon-type="round" icon-name="account_box"></rs-icon>
-                      \{{/if}}
-                      </mp-resource-thumbnail>
                       <div>\{{bindings.0.actorFullName.value}}</div>
                     \{{else}}
-                      <rs-icon icon-type="round" icon-name="account_box"></rs-icon>
                       <div>\{{bindings.0.systemUserName.value}}</div>
                     \{{/if}}
                   </div>
@@ -1359,7 +1359,7 @@
                                                 urlqueryparam-mode='edit'>
                         <bs-menu-item>
                           <rs-icon icon-type="round" icon-name="groups" class="icon-left"></rs-icon>
-                          <span>My team: \{{groupFullName.value}}</span>
+                          <span>My team - \{{groupFullName.value}}</span>
                         </bs-menu-item>
                       </semantic-link-container>
                     \{{/each}}

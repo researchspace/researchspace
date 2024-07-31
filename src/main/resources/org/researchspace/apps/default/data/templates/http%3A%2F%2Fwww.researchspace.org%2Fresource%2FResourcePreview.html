@@ -195,8 +195,26 @@
           <mp-label iri='{{resource}}'></mp-label>
         </h3>
 
-        {{#if resourceConfigLabel}}
-          <p class="color-secondary-light">{{resourceConfigLabel}}</p>
+        {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/User") }}
+          <semantic-query query='SELECT DISTINCT ?systemUser  { 
+                                  BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
+                                }'
+                          template='{{> template}}'>
+
+            <template id='template'>
+              {{#ifCond bindings.0.systemUser.value "===" resource}}
+                <p class="color-action text-bold600">My profile</p>
+              {{else}}
+                <p class="color-secondary-light">{{resourceConfigLabel}}</p>
+              {{/ifCond}}
+            </template>
+          </semantic-query>
+        {{else}}
+          {{#if resourceConfigLabel}}
+            <p class="color-secondary-light">{{resourceConfigLabel}}</p>
+          {{else if resourceOntologyClass}}
+            <p class="color-secondary-light">{{resourceOntologyClass}}</p>
+          {{/if}}
         {{/if}}
 
         {{#if resourceDescription}}
@@ -255,19 +273,45 @@
               </mp-event-trigger>
             {{/if}}
 
-            <mp-event-trigger id='{{resource}}-edit-btn-trigger' 
-                              type='Dashboard.AddFrame'
-                              data='{ "viewId":"resource-editor", 
-                                      "resourceIri":"{{resource}}",
-                                      "entityTypeConfig": "{{resourceConfig}}", 
-                                      "editable": true,
-                                      "mode":"edit"}' 
-                              targets='["thinking-frames"]'>
-              <button class="btn btn-primary btn-textAndIcon">
-                <span>Edit</span>
-                <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
-              </button>
-            </mp-event-trigger>
+            {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/User") }}
+              <semantic-query query='SELECT DISTINCT ?systemUser  { 
+                                      BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
+                                    }'
+                              template='{{> template}}'>
+
+                <template id='template'>
+                  <mp-event-trigger id='{{resource}}-edit-btn-trigger' 
+                                    type='Dashboard.AddFrame'
+                                    data='{ "viewId":"resource-editor", 
+                                            "resourceIri":"{{resource}}",
+                                            "entityTypeConfig": "{{resourceConfig}}", 
+                                            "editable": true,
+                                            "mode":"edit"}' 
+                                    targets='["thinking-frames"]'>
+                    <button class="btn btn-primary btn-textAndIcon">
+                      <span>
+                        {{#ifCond bindings.0.systemUser.value "===" resource}}Edit{{else}}View{{/ifCond}}
+                      </span>
+                      <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
+                    </button>
+                  </mp-event-trigger>
+                </template>
+              </semantic-query>
+            {{else}}
+              <mp-event-trigger id='{{resource}}-edit-btn-trigger' 
+                                type='Dashboard.AddFrame'
+                                data='{ "viewId":"resource-editor", 
+                                        "resourceIri":"{{resource}}",
+                                        "entityTypeConfig": "{{resourceConfig}}", 
+                                        "editable": true,
+                                        "mode":"edit"}' 
+                                targets='["thinking-frames"]'>
+                <button class="btn btn-primary btn-textAndIcon">
+                  <span>Edit</span>
+                  <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
+                </button>
+              </mp-event-trigger>
+            {{/if}}
           </div>
         {{/if}}
       </div>

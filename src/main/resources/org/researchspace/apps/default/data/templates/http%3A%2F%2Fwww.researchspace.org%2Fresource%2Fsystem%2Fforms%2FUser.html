@@ -1,18 +1,18 @@
 {{#if node}}
   [[!-- Existing user --]]
-  <semantic-query query='SELECT DISTINCT ?currentUser ?userType ?userTypeLabel ?systemUser WHERE { 
+  <semantic-query query='SELECT DISTINCT ?currentUser ?userType ?systemUser WHERE { 
                           BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
                           BIND(<{{node}}> as ?currentUser)
 
                           ?currentUser crm:P2_has_type ?userType .
                           ?userType crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/user_type> .
-                          ?userType skos:prefLabel ?userTypeLabel .
+                        #  ?userType skos:prefLabel ?userTypeLabel .
                         } LIMIT 1'>
     <template id='template'>
       {{#ifCond bindings.0.currentUser.value "===" bindings.0.systemUser.value}}
-        {{> forms:User_partial user_type=bindings.0.userType.value user_type_label=bindings.0.userTypeLabel.value isSystemUser=true}}
+        {{> forms:User_partial user_type=bindings.0.userType.value isSystemUser=true}}
       {{else}}
-        {{> forms:User_partial user_type=bindings.0.userType.value user_type_label=bindings.0.userTypeLabel.value isSystemUser=false}}
+        {{> forms:User_partial user_type=bindings.0.userType.value isSystemUser=false}}
       {{/ifCond}}
     </template>
   </semantic-query>

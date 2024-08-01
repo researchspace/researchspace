@@ -60,52 +60,78 @@
   {{else}}
     <div class="resource-card__media-container" style="{{#if autosize}}height:auto{{else}}max-height:142px;{{/if}}">
 
-      {{#switch resourceOntologyClass}}
-
-        {{#case "http://www.researchspace.org/ontology/EX_Digital_Image_Region" break=true}}
-          <rs-iiif-image-thumbnail height='480' width='640' style='height: 100%; width: 100%;'
-                                  image-or-region='{{iri}}'      
-                                  [[> rsp:IIIFConfig]]>
+      {{#if props}}
+        {{#if props.[http://www.researchspace.org/pattern/system/image_annotation/area_of_image]}}
+          <rs-iiif-image-thumbnail  height='480' width='640' style='height: 100%; width: 100%;'
+                                    image-or-region='{{props.[http://www.researchspace.org/pattern/system/image_annotation/area_of_image].values.0.value}}' 
+                                    bbox='{{props.[http://www.researchspace.org/pattern/system/image_annotation/boundingBox].values.0.value}}'
+                                    viewport='{{props.[http://www.researchspace.org/pattern/system/image_annotation/viewport].values.0.value}}'
+                                    svg='{{props.[http://www.w3.org/1999/02/22-rdf-syntax-ns#value].values.0.value}}'
+                                    [[> rsp:IIIFConfig]]>
           </rs-iiif-image-thumbnail>
-        {{/case}}
-
-        {{#case "http://iflastandards.info/ns/fr/frbr/frbroo/F26_Recording" break=true}}
-          <semantic-query query='SELECT DISTINCT ?video WHERE { 
-                                  <{{iri}}> crm:P129i_is_subject_of ?digital_object.
-                                  <{{iri}}> crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_video> .
-                                  ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
-                                  ?digital_object crm:P190_has_symbolic_content ?video .
-                                } LIMIT 1'
-                              
-                          template='{{> template}}'
-                          no-result-template='{{> noResults}}'>
-
-                <template id='template'>
-                  <div class="h100 w100">
-                      <iframe src='{{bindings.0.video.value}}' 
-                              frameborder="0" 
-                              allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
-                              width="100%" height="100%"
-                              allowfullscreen>
-                      </iframe>
-                  </div>
-                </template>
-
-                <template id="noResults">
-                  [[> defaultCardIcon]]
-                </template>
-          </semantic-query>
-        {{/case}}
-
-        {{#default}}
+        {{else if imgUrl}}
+          <mp-resource-thumbnail fixed-key='image-{{imgUrl}}' iri='{{imgUrl}}' class="resource-card__thumbnail">
+            <mp-resource-thumbnail-fallback>
+              [[> defaultCardIcon]]
+            </mp-resource-thumbnail-fallback>
+          </mp-resource-thumbnail>
+        {{else}}
           <mp-resource-thumbnail iri='{{iri}}' class="resource-card__thumbnail">
             <mp-resource-thumbnail-fallback>
               [[> defaultCardIcon]]
             </mp-resource-thumbnail-fallback>
           </mp-resource-thumbnail>
-        {{/default}}
+        {{/if}}
+      {{else}}
 
-      {{/switch}}
+        {{#switch resourceOntologyClass}}
+
+          {{#case "http://www.researchspace.org/ontology/EX_Digital_Image_Region" break=true}}
+            <rs-iiif-image-thumbnail height='480' width='640' style='height: 100%; width: 100%;'
+                                    image-or-region='{{iri}}'      
+                                    [[> rsp:IIIFConfig]]>
+            </rs-iiif-image-thumbnail>
+          {{/case}}
+
+          {{#case "http://iflastandards.info/ns/fr/frbr/frbroo/F26_Recording" break=true}}
+            <semantic-query query='SELECT DISTINCT ?video WHERE { 
+                                    <{{iri}}> crm:P129i_is_subject_of ?digital_object.
+                                    <{{iri}}> crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_video> .
+                                    ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                                    ?digital_object crm:P190_has_symbolic_content ?video .
+                                  } LIMIT 1'
+                                
+                            template='{{> template}}'
+                            no-result-template='{{> noResults}}'>
+
+                  <template id='template'>
+                    <div class="h100 w100">
+                        <iframe src='{{bindings.0.video.value}}' 
+                                frameborder="0" 
+                                allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
+                                width="100%" height="100%"
+                                allowfullscreen>
+                        </iframe>
+                    </div>
+                  </template>
+
+                  <template id="noResults">
+                    [[> defaultCardIcon]]
+                  </template>
+            </semantic-query>
+          {{/case}}
+
+          {{#default}}
+            <mp-resource-thumbnail iri='{{iri}}' class="resource-card__thumbnail">
+              <mp-resource-thumbnail-fallback>
+                [[> defaultCardIcon]]
+              </mp-resource-thumbnail-fallback>
+            </mp-resource-thumbnail>
+          {{/default}}
+
+        {{/switch}}
+
+      {{/if}}
     </div>
   {{/if}}
 
@@ -132,6 +158,11 @@
           {{else}}
             <span class="resource-card__footer-class text-truncate-line1" title="{{resourceLabel}}">{{resourceLabel}}</span>
           {{/if}}
+        {{else if data.types}}
+          [[!-- ontology class from KM props --]]
+            <div class="resource-card__footer-class text-truncate-line1">
+              <mp-label iri='{{data.types}}'></mp-label>
+            </div>
         {{else}}
           <semantic-query query='SELECT ?ontologyClassLabel WHERE {
                                     BIND(<{{iri}}> as ?resource)
@@ -140,22 +171,11 @@
                                     ?ontologyClass rdfs:label ?ontologyClassLabel .
                                     FILTER(LANG(?ontologyClassLabel)="en")
                                   } LIMIT 1'
-                          template='{{> template}}'
-                          no-result-template='{{> noResults}}'>
+                          template='{{> template}}'>
       
               <template id='template'>
                 <span class="resource-card__footer-class text-truncate-line1" title="{{bindings.0.ontologyClassLabel.value}}">{{bindings.0.ontologyClassLabel.value}}</span>
               </template>
-
-              <template id="noResults">
-                {{#if data.types}}
-                  [[!-- ontology class from KM props --]]
-                    <div class="resource-card__footer-class text-truncate-line1">
-                      <mp-label iri='{{data.types}}'></mp-label>
-                    </div>
-                {{/if}}
-              </template>
-
           </semantic-query>
         {{/if}}
       </div>
@@ -206,6 +226,8 @@
     {{/if}}
     {{#if resourceLabel}}
       <div>{{resourceLabel}}</div>
+    {{else if data.types}} [[!-- ontology class from KM data --]]
+      <mp-label iri='{{data.types}}'></mp-label>
     {{/if}}
   </div>
 [[/inline]]

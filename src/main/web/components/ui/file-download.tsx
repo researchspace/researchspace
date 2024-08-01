@@ -36,13 +36,13 @@ interface Props {
   downloadUrl: string;
   /**
    * To open the download url with a delay in ms.
-   * @default 1000
+   * @default 0
    **/
   delay: number;
   /**
-   * @default 'reload'
+   * 'reload' to refresh the page
    */
-  postAction?: 'reload' | string;
+  postAction?:  string;
 }
 /**
  * Opens the given downloadUrl in a new window or tab after a delay.
@@ -52,7 +52,7 @@ interface Props {
  *  </mp-file-download>
  */
 export class FileDownload extends Component<Props, State> {
-  static defaultProps = { delay: 1000, postAction: 'reload' };
+  static defaultProps = { delay: 0 };
 
   constructor(props: Props, state: State) {
     super(props, state);
@@ -63,9 +63,6 @@ export class FileDownload extends Component<Props, State> {
 
   public render() {
     const Backdrop = createFactory(LoadingBackdrop);
-    if (this.state.isLoading) {
-      return <Backdrop />;
-    }
     const child = Children.only(this.props.children) as ReactElement<any>;
     const props = {
       onClick: this.download,
@@ -75,24 +72,13 @@ export class FileDownload extends Component<Props, State> {
 
   download = () => {
     const { downloadUrl, postAction, delay } = this.props;
-    this.setState({
-      isLoading: true,
-    });
+    
     setTimeout(() => {
-      this.setState({
-        isLoading: false,
-      });
-      const response = {
-        file: downloadUrl,
-      };
 
-      window.open(response.file);
+      window.open(downloadUrl);
       
-      if (postAction === 'reload') {
+      if (postAction && postAction === 'reload') {
         refresh();
-      } else {
-          if (postAction)
-            navigateToResource(Rdf.iri(postAction)).onValue((v) => v);
       }
     }, delay);
   };

@@ -54,6 +54,9 @@ import {
 import { InputKind } from './inputs/InputCommpons';
 
 import * as TabsEvents from '../ui/tabs/TabEvents'
+import { SparqlUtil, SparqlClient } from 'platform/api/sparql';
+import { string } from 'prop-types';
+import { LdpService } from 'platform/api/services/ldp';
 
 interface State {
   readonly model?: CompositeValue;
@@ -158,7 +161,8 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
       ).observe({
         value: (event) => {
           if (event.data.iri === this.props.subject) {
-            this.onRemove();
+            // To add a loading bar for slow deletes
+            if (this.initialState) this.onRemove();
           }
         }
       });
@@ -426,12 +430,22 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
     }
   }
 
-  private onRemove = () => {
+  private onRemove = () => { 
     const itemToRemove = this.initialState.model.subject;
     this.persistence
       .remove(this.initialState.model)
       .observe({
         value: () => {
+          // if item to be removed is a setItem also delete its connected setItems
+          this.getSetIris(itemToRemove)
+                .onValue(f => {
+                  f.results.bindings.map(binding => {
+                    new LdpService(binding["set"].value, { repository: "assets" })
+                      .deleteResource(Rdf.iri(binding["setItem"].value))
+                      .onValue(res => this.setState({}))
+                  })
+          });
+
           performFormPostAction({
             postAction: this.props.postAction,
             subject: itemToRemove,
@@ -442,6 +456,61 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
         error: () => {}
       })
     ;
+
+    this.executeAskIsResourceQuery(itemToRemove)
+      .onValue(answer => {
+        if (answer) 
+          new LdpPersistence()
+            .remove(this.initialState.model)
+            .observe({
+              value: () => {
+                // if item to be removed is a set also delete the set items
+                this.getSetItemIris(itemToRemove).onValue(f => {
+                  f.results.bindings.map(binding => {
+                    new LdpService(itemToRemove.toString(), { repository: "assets" })
+                      .deleteResource(Rdf.iri(binding["setItem"].value))
+                      .onValue(res => this.setState({}))
+                  })
+                });  
+                             
+                performFormPostAction({
+                  postAction: this.props.postAction,
+                  subject: itemToRemove,
+                  eventProps: { isNewSubject: false, isRemovedSubject: true, sourceId: this.props.id },
+                  queryParams: getPostActionUrlQueryParams(this.props),
+                });
+              },
+              error: () => {}
+            })
+          ;     
+      });   
+  }
+
+   private  executeAskIsResourceQuery(resourceIri: Rdf.Iri): Kefir.Property<boolean> {
+      const IS_LDP_RESOURCE_QUERY = SparqlUtil.Sparql`ASK { ?subject <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/ldp#Resource>}`;
+
+      return SparqlClient.ask(
+            SparqlClient.setBindings(IS_LDP_RESOURCE_QUERY, { subject: resourceIri }),
+                                    {context: {repository:"default"} });
+  }
+
+  private getSetItemIris(setIri: Rdf.Iri) {
+    const SELECT_SET_ITEMS_QUERY = SparqlUtil.Sparql
+                `SELECT ?setItem {
+                  ?setIri <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://www.researchspace.org/resource/system/vocab/resource_type/set> .
+                  ?setIri <http://www.w3.org/ns/ldp#contains> ?setItem .
+                }`
+    return SparqlClient.select(SparqlClient.setBindings(SELECT_SET_ITEMS_QUERY, { setIri: setIri }));
+  }
+
+  private getSetIris(setItemIri: Rdf.Iri) {
+    const SELECT_SETS_QUERY = SparqlUtil.Sparql`SELECT ?set ?setItem {
+        ?set <http://www.w3.org/ns/ldp#contains> ?setItem .
+        ?setItem <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://www.researchspace.org/resource/system/vocab/resource_type/set_item>;
+        <http://www.cidoc-crm.org/cidoc-crm/P67_refers_to> ?referredItem .
+      }`;
+
+    return SparqlClient.select(SparqlClient.setBindings(SELECT_SETS_QUERY, { referredItem: setItemIri }));
   }
 
   private onDryRun = () => {

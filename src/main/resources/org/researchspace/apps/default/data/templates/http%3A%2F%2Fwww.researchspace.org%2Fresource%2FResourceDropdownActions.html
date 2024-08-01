@@ -255,7 +255,7 @@
       </semantic-query>
     {{/if}}
 
-    {{#if (or clipboardCard clipboardList clipboardSet clipboardKm setPage)}}
+    {{#if (or clipboardCard clipboardList clipboardSet clipboardKm)}}
     {{else}}
       <mp-copy-to-default-set id="{{viewId}}-copy-to-clipboard" resource="{{iri}}">
         <bs-menu-item>
@@ -469,23 +469,22 @@
         </mp-event-trigger>  
       </div>
 
-      {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
-        [[!-- Refresh Search page and homepage for a set removed --]]
-        <mp-event-proxy id='{{iri}}-refresh-search-homepage-{{viewId}}'
-                        on-event-source='{{iri}}-resource-form' 
-                        on-event-types='["Form.ResourceRemoved"]'      
-                        proxy-event-type='Component.TemplateUpdate' 
-                        proxy-targets='["{{resourceConfig}}-resourceSearch-frame", "homepage-render-area", "system-activities-render-area"]'
-        ></mp-event-proxy> 
+      [[!-- Refresh clipboard for a set/KMap/SNarrative deleted --]]
+      <mp-event-proxy id='{{iri}}-clipboard-refresh-on-delete-action-{{viewId}}' 
+                      on-event-source='{{iri}}-resource-form' 
+                      on-event-types='["Form.ResourceRemoved"]' 
+                      proxy-event-type='Component.Refresh' 
+                      proxy-targets='["clipboard"]'
+      ></mp-event-proxy>
 
-        [[!-- Refresh clipboard for a set deleted --]]
-        <mp-event-proxy id='{{iri}}-clipboard-refresh-on-delete-action-{{viewId}}' 
-                        on-event-source='{{iri}}-resource-form'  
-                        on-event-type='Form.ResourceRemoved'
-                        proxy-event-type='Component.Refresh' 
-                        proxy-targets='["clipboard"]'
-        ></mp-event-proxy>
-      {{/if}}
+      [[!-- Refresh Search page and homepage for a set/KMap/SNarrative removed --]]
+      <mp-event-proxy id='{{iri}}-refresh-search-homepage-{{viewId}}'
+                      on-event-source='{{iri}}-resource-form' 
+                      on-event-types='["Form.ResourceRemoved"]'      
+                      proxy-event-type='Component.TemplateUpdate' 
+                      additional-data='{"resourceDeleted": true, "iri": "{{iri}}"}'
+                      proxy-targets='["{{resourceConfig}}-resourceSearch-frame", "homepage-render-area", "system-activities-render-area"]'
+      ></mp-event-proxy> 
 
       [[!-- Close Delete dialog windown once form delete submitted --]]
       <mp-event-proxy id='{{iri}}-close-form-removal-dialog-{{viewId}}' 

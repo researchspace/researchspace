@@ -15,13 +15,6 @@
                   proxy-targets='["homepage-render-area","system-activities-render-area","http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative-resourceSearch-frame"]'
   ></mp-event-proxy>
 
-  <mp-event-proxy id='{{viewId}}-refresh-resources-in-narrative-on-narrative-updated'
-                  on-event-type='Narrative.Updated'
-                  on-event-source='{{viewId}}-semantic-narrative'     
-                  proxy-event-type='Component.TemplateUpdate' 
-                  proxy-targets='["{{iri}}-resources-in-narrative-frame"]'
-  ></mp-event-proxy>
-
   [[!-- Refresh clipboard on narrative updated --]]
   <mp-event-proxy id='{{viewId}}-refresh-clipboard-on-narrative-updated' 
                   on-event-type='Narrative.Updated'
@@ -40,163 +33,208 @@
 
   <mp-event-target-template-render id='{{viewId}}-semantic-narrative-render-area' template='{{> template}}'>
     <template id='template'>
-      <rs-text-editor [[#if (hasPermission "forms:ldp:*")]]
-                        readonly='false'
-                      [[else]]
-                        readonly='true'
-                      [[/if]]
-                      id="{{viewId}}-semantic-narrative"
-                      document-iri='{{iri}}'
-                      resource-templates='[
-                                            {
-                                              "id": "image",
-                                              "type": "http://www.researchspace.org/ontology/EX_Digital_Image",
-                                              "label": "Annotated Image",
-                                              "template": "{{> image}}",
-                                              "resizable": true,
-                                              "defaults": {
-                                                "height": "600px",
-                                                "width": "100%"
-                                              }
-                                            },
-                                            {
-                                              "id": "full-size-image",
-                                              "type": "http://www.researchspace.org/ontology/EX_Digital_Image",
-                                              "label": "Full Image",
-                                              "template": "{{> fullImage}}",
-                                              "resizable": true,
-                                              "defaults": {
-                                                "height": "600px",
-                                                "width": "100%"
-                                              }
-                                            },
-                                            {
-                                              "id": "knowledge-map",
-                                              "type": "http://ontodia.org/schema/v1#Diagram",
-                                              "label": "Knowledge Map",
-                                              "template": "{{> knowledgeMap diagram=iri.value}}",
-                                              "resizable": true,
-                                              "defaults": {
-                                                "height": "600px",
-                                                "width": "100%"
-                                              }
-                                            },
-                                            {
-                                              "id": "set-grid",
-                                              "type": "http://www.researchspace.org/resource/system/Set",
-                                              "label": "Set Grid",
-                                              "template": "{{> setGrid}}",
-                                              "resizable": true,
-                                              "defaults": {
-                                                "height": "300px",
-                                                "width": "100%"
-                                              }
-                                            },
-                                            {
-                                              "id": "chart",
-                                              "type": "http://www.researchspace.org/ontologies/persist/PersistedComponent",
-                                              "label": "chart",
-                                              "template": "{{> chart}}",
-                                              "resizable": false
-                                            },
-                                            {
-                                              "id": "card",
-                                              "type": "any",
-                                              "label": "card",
-                                              "template": "{{> itemCard}}",
-                                              "resizable": true,
-                                              "defaults": {
-                                                "height": "240px",
-                                                "width": "180px"
-                                              }
-                                            }                      
-                      ]'
-      >
-        <template id='chart'>
-          <div>
-            <mp-persisted-component iri='{{iri.value}}'></mp-persisted-component>
-          </div>
-        </template>
+      {{#if iri}}
+        <mp-event-proxy id='{{viewId}}-refresh-narrative-onDelete'
+                        on-event-source='{{iri}}-resource-form' 
+                        on-event-types='["Form.ResourceRemoved"]'      
+                        proxy-event-type='Component.TemplateUpdate' 
+                        additional-data='{"resourceDeleted": true, "iri": "{{iri}}"}'
+                        proxy-targets='["{{viewId}}-semantic-narrative-render-area"]'
+        ></mp-event-proxy> 
 
-        <template id='itemCard'>
-          {{> rsp:ResourceCard  iri=iri.value
-                                viewId="narrative"
-                                autosize=true
-                                narrativeCard=true
-          }}
-        </template>
+        <mp-event-proxy id='{{viewId}}-refresh-resources-in-narrative-on-narrative-updated'
+                        on-event-type='Narrative.Updated'
+                        on-event-source='{{viewId}}-semantic-narrative'     
+                        proxy-event-type='Component.TemplateUpdate' 
+                        proxy-targets='["{{iri}}-resources-in-narrative-frame"]'
+        ></mp-event-proxy>
+      {{/if}}
 
-        <template id='image'>
-          [[!-- We generating random id for all mirador instances, because otherwise openseadragon can't be initialized --]]
-          <rs-iiif-mirador id='mirador-{{uuid}}'
-          [[> rsp:IIIFConfig]]
-          image-or-region='{{iri.value}}'
-          use-details-sidebar=true></rs-iiif-mirador>
-        </template>
+      {{#if resourceDeleted}}
+        {{#if hideMessage}}
+        {{else if resourceDeleted}}
+            <div class='success-documentation-section success-documentation-section-withIcon' style="margin: 25px 30px;">
+              <div class="success-documentation-section-icon-container">
+                <rs-icon icon-type="round" icon-name="done"></rs-icon>
+              </div>
 
-        <template id='fullImage'>
-          <rs-iiif-image-thumbnail
+              <div style="flex: 1;"> 
+                <div class="success-documentation-section-title">Success!</div>
+                <div class="success-documentation-section-content">
+                  <span><mp-label iri='{{iri}}'></mp-label> has been deleted.</span>
+                </div>
+              </div>
+              
+              <mp-event-trigger id='{{viewId}}-cancel-deleted-set-message'
+                                type='Component.TemplateUpdate'
+                                data='{ "hideMessage": "true" }'
+                                targets='["{{viewId}}-semantic-narrative-render-area"]'
+              >
+                <button class="btn btn-documentation">
+                  <rs-icon icon-type="round" icon-name="close"></rs-icon>
+                </button>
+              </mp-event-trigger>
+            </div>
+        {{/if}}
+      {{else}}
+        <rs-text-editor [[#if (hasPermission "forms:ldp:*")]]
+                          readonly='false'
+                        [[else]]
+                          readonly='true'
+                        [[/if]]
+                        id="{{viewId}}-semantic-narrative"
+                        document-iri='{{iri}}'
+                        resource-templates='[
+                                              {
+                                                "id": "image",
+                                                "type": "http://www.researchspace.org/ontology/EX_Digital_Image",
+                                                "label": "Annotated Image",
+                                                "template": "{{> image}}",
+                                                "resizable": true,
+                                                "defaults": {
+                                                  "height": "600px",
+                                                  "width": "100%"
+                                                }
+                                              },
+                                              {
+                                                "id": "full-size-image",
+                                                "type": "http://www.researchspace.org/ontology/EX_Digital_Image",
+                                                "label": "Full Image",
+                                                "template": "{{> fullImage}}",
+                                                "resizable": true,
+                                                "defaults": {
+                                                  "height": "600px",
+                                                  "width": "100%"
+                                                }
+                                              },
+                                              {
+                                                "id": "knowledge-map",
+                                                "type": "http://ontodia.org/schema/v1#Diagram",
+                                                "label": "Knowledge Map",
+                                                "template": "{{> knowledgeMap diagram=iri.value}}",
+                                                "resizable": true,
+                                                "defaults": {
+                                                  "height": "600px",
+                                                  "width": "100%"
+                                                }
+                                              },
+                                              {
+                                                "id": "set-grid",
+                                                "type": "http://www.researchspace.org/resource/system/Set",
+                                                "label": "Set Grid",
+                                                "template": "{{> setGrid}}",
+                                                "resizable": true,
+                                                "defaults": {
+                                                  "height": "300px",
+                                                  "width": "100%"
+                                                }
+                                              },
+                                              {
+                                                "id": "chart",
+                                                "type": "http://www.researchspace.org/ontologies/persist/PersistedComponent",
+                                                "label": "chart",
+                                                "template": "{{> chart}}",
+                                                "resizable": false
+                                              },
+                                              {
+                                                "id": "card",
+                                                "type": "any",
+                                                "label": "card",
+                                                "template": "{{> itemCard}}",
+                                                "resizable": true,
+                                                "defaults": {
+                                                  "height": "240px",
+                                                  "width": "180px"
+                                                }
+                                              }                      
+                        ]'
+        >
+          <template id='chart'>
+            <div>
+              <mp-persisted-component iri='{{iri.value}}'></mp-persisted-component>
+            </div>
+          </template>
+
+          <template id='itemCard'>
+            {{> rsp:ResourceCard  iri=iri.value
+                                  viewId="narrative"
+                                  autosize=true
+                                  narrativeCard=true
+            }}
+          </template>
+
+          <template id='image'>
+            [[!-- We generating random id for all mirador instances, because otherwise openseadragon can't be initialized --]]
+            <rs-iiif-mirador id='mirador-{{uuid}}'
             [[> rsp:IIIFConfig]]
-              image-or-region='{{iri.value}}'
-              format='auto'
-          >
-          </rs-iiif-image-thumbnail>
-        </template>
+            image-or-region='{{iri.value}}'
+            use-details-sidebar=true></rs-iiif-mirador>
+          </template>
 
-        <template id='knowledgeMap'>
-          <div>
-            <style>
-              .ontodia .Toolbar--component {
-                display: flex;
-                justify-content: center;
-              }
-            </style>
-            [[> rsp:KnowledgeMapOntodiaConfig standalone=true readonly=true]]
-          </div>
-        </template>
-
-        <template id='setGrid'>
-          <div>
-            <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                      urlqueryparam-view="resource-editor"
-                                      urlqueryparam-resource-iri='{{iri.value}}'>
-              <div style="margin-bottom: 10px;">Set: <mp-label iri='{{iri.value}}' class="text-link-action"></mp-label></div>
-            </semantic-link-container>
-
-            <semantic-table number-of-displayed-rows=1000
-                            query='SELECT ?iri WHERE {
-                                    <{{iri.value}}> a <http://www.researchspace.org/resource/system/Set> ;
-                                    <http://www.w3.org/ns/ldp#contains> ?item .
-                                    ?item <http://www.researchspace.org/resource/system/setItem> ?iri .
-                                    OPTIONAL {
-                                      ?item <http://www.researchspace.org/resource/system/setItemIndex> ?index .
-                                      ?item prov:generatedAtTime ?modificationDate .
-                                    }
-                                  } ORDER BY ?index DESC(?modificationDate)'
-                            tuple-template='{{> item}}'
-                            options='{"showFilter":false}'
+          <template id='fullImage'>
+            <rs-iiif-image-thumbnail
+              [[> rsp:IIIFConfig]]
+                image-or-region='{{iri.value}}'
+                format='auto'
             >
-                <template id="item">
-                  {{> rsp:ResourceCard  iri=iri.value
-                                        viewId="narrative"
-                                        narrativeCard=true
-                  }}
-                </template>
-            </semantic-table>
-          </div>
-        </template>
+            </rs-iiif-image-thumbnail>
+          </template>
 
-        <template id="semantic-narrative-dropdown">
-          {{> rsp:ResourceDropdownActions iri=iri
-                                          viewId=viewId
-                                          resourceLabel="Semantic narrative"
-                                          resourceFormIRI="http://www.researchspace.org/resource/system/forms/SemanticNarrative"
-                                          hidePreview=true
-                                          headerButton=true
-          }}
-        </template>
-        
-      </rs-text-editor>
+          <template id='knowledgeMap'>
+            <div>
+              <style>
+                .ontodia .Toolbar--component {
+                  display: flex;
+                  justify-content: center;
+                }
+              </style>
+              [[> rsp:KnowledgeMapOntodiaConfig standalone=true readonly=true]]
+            </div>
+          </template>
+
+          <template id='setGrid'>
+            <div>
+              <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                        urlqueryparam-view="resource-editor"
+                                        urlqueryparam-resource-iri='{{iri.value}}'>
+                <div style="margin-bottom: 10px;">Set: <mp-label iri='{{iri.value}}' class="text-link-action"></mp-label></div>
+              </semantic-link-container>
+
+              <semantic-table number-of-displayed-rows=1000
+                              query='SELECT ?iri WHERE {
+                                      <{{iri.value}}> a <http://www.researchspace.org/resource/system/Set> ;
+                                      <http://www.w3.org/ns/ldp#contains> ?item .
+                                      ?item <http://www.researchspace.org/resource/system/setItem> ?iri .
+                                      OPTIONAL {
+                                        ?item <http://www.researchspace.org/resource/system/setItemIndex> ?index .
+                                        ?item prov:generatedAtTime ?modificationDate .
+                                      }
+                                    } ORDER BY ?index DESC(?modificationDate)'
+                              tuple-template='{{> item}}'
+                              options='{"showFilter":false}'
+              >
+                  <template id="item">
+                    {{> rsp:ResourceCard  iri=iri.value
+                                          viewId="narrative"
+                                          narrativeCard=true
+                    }}
+                  </template>
+              </semantic-table>
+            </div>
+          </template>
+
+          <template id="semantic-narrative-dropdown">
+            {{> rsp:ResourceDropdownActions iri=iri
+                                            viewId=viewId
+                                            resourceLabel="Semantic narrative"
+                                            resourceFormIRI="http://www.researchspace.org/resource/system/forms/SemanticNarrative"
+                                            hidePreview=true
+                                            headerButton=true
+            }}
+          </template>
+          
+        </rs-text-editor>
+      {{/if}}
     </template>
   </mp-event-target-template-render>
 

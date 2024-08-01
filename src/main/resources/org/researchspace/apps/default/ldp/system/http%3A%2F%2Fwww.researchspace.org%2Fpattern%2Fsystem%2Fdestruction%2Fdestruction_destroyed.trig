@@ -1,0 +1,79 @@
+
+<http://www.researchspace.org/pattern/system/destruction/destruction_destroyed/context> {
+  _:genid-f61ba8f9b5c64f39a475c0d11c0907bd-kyaj3a a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E18_Physical_Thing .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label) 
+  LIMIT 10 """ .
+  
+  _:genid-f61ba8f9b5c64f39a475c0d11c0907bd-2i86aq a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+	$subject crm:P13_destroyed $value . 
+      
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E18_Physical_Thing .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  <http://www.researchspace.org/pattern/system/destruction/destruction_destroyed> a
+      <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
+      <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-f61ba8f9b5c64f39a475c0d11c0907bd-aqfe6j;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Destroyed";
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/destruction>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-f61ba8f9b5c64f39a475c0d11c0907bd-2i86aq;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E6_Destruction>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-f61ba8f9b5c64f39a475c0d11c0907bd-ifh0j7;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-f61ba8f9b5c64f39a475c0d11c0907bd-mmtq39;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E18_Physical_Thing>;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-f61ba8f9b5c64f39a475c0d11c0907bd-kyaj3a;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-05T16:03:35.499+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-f61ba8f9b5c64f39a475c0d11c0907bd-aqfe6j a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E18_Physical_Thing .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-f61ba8f9b5c64f39a475c0d11c0907bd-mmtq39 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+	$subject crm:P13_destroyed $value . 
+    $value crm:P13i_was_destroyed_by $subject .
+} WHERE {}""" .
+  
+  _:genid-f61ba8f9b5c64f39a475c0d11c0907bd-ifh0j7 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+	$subject crm:P13_destroyed $value . 
+    $value crm:P13i_was_destroyed_by $subject .
+} WHERE {
+	$subject crm:P13_destroyed $value . 
+    $value crm:P13i_was_destroyed_by $subject .
+     
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E18_Physical_Thing .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/destruction/destruction_destroyed> .
+}

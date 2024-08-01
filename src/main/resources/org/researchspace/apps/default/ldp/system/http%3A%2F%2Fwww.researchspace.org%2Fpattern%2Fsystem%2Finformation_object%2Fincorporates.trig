@@ -1,0 +1,96 @@
+
+<http://www.researchspace.org/pattern/system/information_object/incorporates/context> {
+  _:genid-706a2ebcdcd44f1e87b63bd46ece8d29-c3b5ln a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+	$subject crm:P165_incorporates $value . 
+      
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E90_Symbolic_Object .
+    { 
+      ?value crm:P1_is_identified_by ?appellation .
+      ?appellation a crm:E41_Appellation .
+      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+      ?appellation crm:P190_has_symbolic_content ?label .
+    } UNION {
+      ?value crm:P190_has_symbolic_content ?label .
+    }
+}""" .
+  
+  <http://www.researchspace.org/pattern/system/information_object/incorporates> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-706a2ebcdcd44f1e87b63bd46ece8d29-202n1b;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E90_Symbolic_Object>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-706a2ebcdcd44f1e87b63bd46ece8d29-udy8bi;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.w3.org/2000/01/rdf-schema#label> "Incorporates";
+    <http://www.w3.org/2000/01/rdf-schema#comment> """This property associates an Information Object with a Symbolic Object that was included in it. It accounts for many cultural facts that are quite frequent and significant: the inclusion of a poem in an anthology, the re-use of an operatic aria in a new opera, the use of a reproduction of a painting for a book cover or a CD booklet, the integration of textual quotations, the presence of lyrics in a song that sets those lyrics to music, the presence of the text of a play in a movie based on that play, etc.
+In particular, this property allows for modelling relationships of different levels of symbolic specificity, such as the natural language words making up a particular text, the characters making up the words and punctuation, the choice of fonts and page layout for the characters.""";
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/information_object>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-706a2ebcdcd44f1e87b63bd46ece8d29-c3b5ln;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-706a2ebcdcd44f1e87b63bd46ece8d29-8q4p2j;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-706a2ebcdcd44f1e87b63bd46ece8d29-8jfdul;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-25T13:24:07.223+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-706a2ebcdcd44f1e87b63bd46ece8d29-udy8bi a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+	$subject crm:P165_incorporates $value . 
+    $value crm:P165i_is_incorporated_in $subject .
+} WHERE {}""" .
+  
+  _:genid-706a2ebcdcd44f1e87b63bd46ece8d29-8q4p2j a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E90_Symbolic_Object .
+    { 
+      ?value crm:P1_is_identified_by ?appellation .
+      ?appellation a crm:E41_Appellation .
+      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+      ?appellation crm:P190_has_symbolic_content ?label .
+    } UNION {
+      ?value crm:P190_has_symbolic_content ?label .
+    }
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-706a2ebcdcd44f1e87b63bd46ece8d29-202n1b a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+	$subject crm:P165_incorporates $value . 
+    $value crm:P165i_is_incorporated_in $subject .
+} WHERE {
+	$subject crm:P165_incorporates $value . 
+    $value crm:P165i_is_incorporated_in $subject .
+      
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E90_Symbolic_Object .
+    { 
+      ?value crm:P1_is_identified_by ?appellation .
+      ?appellation a crm:E41_Appellation .
+      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+      ?appellation crm:P190_has_symbolic_content ?label .
+    } UNION {
+      ?value crm:P190_has_symbolic_content ?label .
+    }
+}""" .
+  
+  _:genid-706a2ebcdcd44f1e87b63bd46ece8d29-8jfdul a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E90_Symbolic_Object .
+    { 
+      ?value crm:P1_is_identified_by ?appellation .
+      ?appellation a crm:E41_Appellation .
+      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+      ?appellation crm:P190_has_symbolic_content ?label .
+    } UNION {
+      ?value crm:P190_has_symbolic_content ?label .
+    }
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/information_object/incorporates> .
+}

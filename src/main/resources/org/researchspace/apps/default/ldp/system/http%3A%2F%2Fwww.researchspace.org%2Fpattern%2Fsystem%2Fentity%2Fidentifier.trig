@@ -1,0 +1,70 @@
+
+<http://www.researchspace.org/pattern/system/entity/identifier/context> {
+  <http://www.researchspace.org/pattern/system/entity/identifier> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/entity>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-46355fc8a4b64b9ba125560dd5791488-ux8qo;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-46355fc8a4b64b9ba125560dd5791488-be6bkh;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-46355fc8a4b64b9ba125560dd5791488-9e8v98;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-46355fc8a4b64b9ba125560dd5791488-o5xwk;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E41_Appellation>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-46355fc8a4b64b9ba125560dd5791488-j3tzfl;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Entity identifier";
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-29T19:42:42.757+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-46355fc8a4b64b9ba125560dd5791488-9e8v98 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+	$subject crm:P1_is_identified_by $value . 
+
+    MINUS {?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . }
+    ?value a ?ontologyClass .
+  	?ontologyClass rdfs:subClassOf* crm:E41_Appellation .
+    ?value crm:P190_has_symbolic_content ?label .                          
+}""" .
+  
+  _:genid-46355fc8a4b64b9ba125560dd5791488-ux8qo a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    MINUS {?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . }
+    ?value a ?ontologyClass .
+  	?ontologyClass rdfs:subClassOf* crm:E41_Appellation .
+    ?value crm:P190_has_symbolic_content ?label .   
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-46355fc8a4b64b9ba125560dd5791488-o5xwk a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    MINUS {?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . }
+    ?value a ?ontologyClass .
+  	?ontologyClass rdfs:subClassOf* crm:E41_Appellation .
+    ?value crm:P190_has_symbolic_content ?label .   
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-46355fc8a4b64b9ba125560dd5791488-j3tzfl a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {  
+	$subject crm:P1_is_identified_by $value . 
+    $value crm:P1i_identifies $subject . 
+} WHERE {
+	$subject crm:P1_is_identified_by $value . 
+    $value crm:P1i_identifies $subject .
+      
+    MINUS {?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . }
+    ?value a ?ontologyClass .
+  	?ontologyClass rdfs:subClassOf* crm:E41_Appellation .
+    ?value crm:P190_has_symbolic_content ?label .   
+}""" .
+  
+  _:genid-46355fc8a4b64b9ba125560dd5791488-be6bkh a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+	$subject crm:P1_is_identified_by $value . 
+    $value crm:P1i_identifies $subject .
+} WHERE {}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/entity/identifier> .
+}

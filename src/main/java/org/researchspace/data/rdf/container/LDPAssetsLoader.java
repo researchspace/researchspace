@@ -43,7 +43,9 @@ import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
+
 import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.Models;
@@ -265,6 +267,12 @@ public class LDPAssetsLoader {
                     for (Resource ctx : toLoad) {
                         logger.trace("Loading LDP asset context: " + ctx.stringValue());
                         Model currentAsset = loadedAssetsModel.filter(null, null, null, ctx);
+                        
+                        if (repositoryId.equals("system")) {
+                            logger.info(ctx.isResource());
+                            if (ctx.isResource())   
+                                conn.clear(ctx);                                 
+                        }
                         conn.add(currentAsset);
                     }
                 }
@@ -331,6 +339,7 @@ public class LDPAssetsLoader {
         LinkedHashModel modelExisting;
         Set<Resource> inconsistentContexts = Sets.newHashSet();
         List<Resource> toLoad = Lists.newArrayList();
+        List<Resource> defaultToLoad = Lists.newArrayList();
         for (Resource ctx : contextsLoaded) {
             Model modelLoaded = loadedAssetsModel.filter(null, null, null, ctx);
             modelExisting = new LinkedHashModel();
@@ -345,6 +354,8 @@ public class LDPAssetsLoader {
             } 
             else if (!LDPAssetsLoader.compareModelsWithoutDates(modelExisting, modelLoaded)) {
                 inconsistentContexts.add(ctx);
+                //loadedAssetsModel.remove(ctx);
+                defaultToLoad.add(ctx);
             }
         }
 
@@ -355,6 +366,13 @@ public class LDPAssetsLoader {
             return toLoad;           
         }
 
+        if (!inconsistentContexts.isEmpty() && 
+                (repositoryId.equals("system"))) {
+            /* loading system repository and over-writing anything in the runtime repository */
+            //toLoad = Lists.newArrayList();
+            logger.debug("context"+defaultToLoad);
+            return defaultToLoad;           
+        }
         if (!inconsistentContexts.isEmpty()) {            
             String msg = "Inconsistent state of the LDP assets storage: the content of named graphs "
                     + inconsistentContexts.toString() + " in the \"" + repositoryId

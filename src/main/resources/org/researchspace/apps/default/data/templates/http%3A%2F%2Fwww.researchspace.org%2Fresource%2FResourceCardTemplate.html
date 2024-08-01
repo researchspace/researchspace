@@ -31,6 +31,7 @@
                                         resourceConfig=resourceConfig
                                         resourceLabel=resourceLabel
                                         resourceFormIRI=resourceFormIRI
+                                        resourceOntologyClass=resourceOntologyClass
                                         cardButton=true
         }}
 
@@ -114,7 +115,23 @@
     [[else]]
       <div class="resource-card__footer-type color-secondary-light text-font-size__xsmall" style="{{#if clipboardList}}font-size:11px;{{/if}}">
         {{#if resourceLabel}}
-          <span class="resource-card__footer-class text-truncate-line1" title="{{resourceLabel}}">{{resourceLabel}}</span>
+          {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/User")}}
+            <semantic-query query='SELECT DISTINCT ?systemUser  { 
+                                    BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
+                                  }'
+                            template='{{> template}}'>
+
+              <template id='template'>
+                {{#ifCond bindings.0.systemUser.value "===" iri}}
+                  <span class="resource-card__footer-class text-truncate-line1 color-action text-bold600">My profile</span>
+                {{else}}
+                  <span class="resource-card__footer-class text-truncate-line1" title="{{resourceLabel}}">{{resourceLabel}}</span>
+                {{/ifCond}}
+              </template>
+            </semantic-query>
+          {{else}}
+            <span class="resource-card__footer-class text-truncate-line1" title="{{resourceLabel}}">{{resourceLabel}}</span>
+          {{/if}}
         {{else}}
           <semantic-query query='SELECT ?ontologyClassLabel WHERE {
                                     BIND(<{{iri}}> as ?resource)

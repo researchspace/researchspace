@@ -266,6 +266,7 @@
                 {{/ifCond}}
 
                 {{#ifCond "[[urlParam "resourceconfig" escape=false]]" "==" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set"}}
+                {{else ifCond "[[urlParam "resourceconfig" escape=false]]" "==" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map"}}
                 {{else}}
                   [[#if (hasPermission "forms:ldp:*")]]
                     <mp-selection-action-choice id='[[urlParam "viewid" escape=false]]-create-set-action' selection='item-selection-aggregator'>
@@ -583,7 +584,7 @@
     
                               <template id='selectionCheckbox'>
                                 [[#if (hasPermission "forms:ldp:*")]]
-                                  {{#if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
+                                  {{#if (or (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map"))}}
                                   {{else}}
                                     <div class=''>
                                       <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
@@ -664,7 +665,22 @@
                                         </div>
                                       </mp-draggable>
 
-                                      <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">[[urlParam "resourcelabel" escape=false]]</div>
+                                      {{#if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/User")}}
+                                        <semantic-query query='SELECT DISTINCT ?systemUser ?subject WHERE { 
+                                                                BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
+                                                                BIND(<{{iri.value}}> as ?subject)
+                                                              } LIMIT 1'>
+                                          <template id='template'>
+                                            {{#ifCond bindings.0.systemUser.value "===" bindings.0.subject.value}}
+                                              <div>test</div>
+                                            {{else}}
+                                              <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">[[urlParam "resourcelabel" escape=false]]</div>
+                                            {{/ifCond}}
+                                          </template>
+                                        </semantic-query>
+                                      {{else}}
+                                        <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">[[urlParam "resourcelabel" escape=false]]</div>
+                                      {{/if}}
                                     </div>
                                   </div>
                                 </div>
@@ -899,7 +915,7 @@
     
                               <template id='selectionCheckbox'>
                                 [[#if (hasPermission "forms:ldp:*")]]
-                                  {{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
+                                  {{#if (or (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map"))}}
                                   {{else}}
                                     <div class=''>
                                       <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
@@ -980,7 +996,21 @@
                                         </div>
                                       </mp-draggable>
 
-                                      <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">[[urlParam "resourcelabel" escape=false]]</div>
+                                      {{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/User")}}
+                                        <semantic-query query='SELECT DISTINCT ?systemUser WHERE { 
+                                                                BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
+                                                              } LIMIT 1'>
+                                          <template id='template'>
+                                            {{#ifCond bindings.0.systemUser.value "===" iri.value}}
+                                              <div class="color-action text-bold600 text-font-size__xsmall text-truncate-line1">My profile</div>
+                                            {{else}}
+                                              <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">[[urlParam "resourcelabel" escape=false]]</div>
+                                            {{/ifCond}}
+                                          </template>
+                                        </semantic-query>
+                                      {{else}}
+                                        <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">[[urlParam "resourcelabel" escape=false]]111</div>
+                                      {{/if}}
                                     </div>
                                   </div>
                                 </div>
@@ -1098,6 +1128,7 @@
                                     iri=iri.value
                                     resourceConfig=[[resourceConfig]]
                                     resourceLabel="[[urlParam "resourcelabel" escape=false]]"
+                                    resourceOntologyClass="[[urlParam "resourceontologyclass" escape=false]]"
                                     resourceDescription=description.value
                                     resourceFormIRI="[[urlParam "resourceform" escape=false]]"
                                     searchCard=true

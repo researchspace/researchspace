@@ -7,39 +7,83 @@
       
           <div class="homepage-project-header">
             <div class="homepage-project-header__welcome">
-              <h4>Welcome back<mp-anonymous-hidden>
-                  <semantic-query query='SELECT ?__useruri__ ?userName { BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userName) }'
-                                    template='{{> template}}'>
-                    <template id='template'>
-                      <span>, <!-- <semantic-link-container uri='{{bindings.0.__useruri__.value}}'> -->
-                              <span style="text-transform:capitalize;">{{bindings.0.userName.value}}</span>
-                              <!-- </semantic-link-container> -->
-                      </span>
-                    </template>
-                  </semantic-query>
-                </mp-anonymous-hidden>!
-              </h4>
+              <div style="display: flex; align-items: center;"><h4>Welcome back</h4><mp-anonymous-hidden>
+                <semantic-query query='SELECT DISTINCT ?systemUser ?systemUserName ?actorFullName { 
+                                        BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
+                                        BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?systemUserName)
+
+                                        OPTIONAL {
+                                          ?systemUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                          ?systemUser crm:P1_is_identified_by ?actorName .
+                                          ?actorName a crm:E41_Appellation .
+                                          ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                          ?actorName crm:P190_has_symbolic_content ?actorFullName .
+                                        }
+                                      }'
+                                template='{{> template}}'>
+
+                  <template id='template'>
+                    {{#if bindings.0.actorFullName.value}}
+                      <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                urlqueryparam-view='resource-editor' 
+                                                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                                urlqueryparam-resource-iri="{{bindings.0.systemUser.value}}"
+                                                urlqueryparam-mode='edit'>
+                        <div style="display: flex; align-items: baseline; gap: 5px;">
+                          <h4>, </h4><h4 style="text-decoration: underline; cursor: pointer;"> {{bindings.0.actorFullName.value}}</h4>
+                        </div>
+                      </semantic-link-container>
+                    {{else}}
+                      <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                urlqueryparam-view='resource-editor' 
+                                                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                                urlqueryparam-custom-label='New profile'
+                                                urlqueryparam-mode='new'>
+                        <div style="display: flex; align-items: baseline; gap: 5px;">
+                          <h4>, </h4><h4 style="text-decoration: underline; cursor: pointer;"> {{bindings.0.systemUserName.value}}</h4><span class="text-font-size__small">(not registered user)</span>  
+                        </div>
+                      </semantic-link-container>
+                    {{/if}}
+                  </template>
+                </semantic-query>
+                </mp-anonymous-hidden>
+              </div>
               <div class="homepage-project-header__currentDate">
                 <span class="badge badge--secondary">[[currentDateTime format="dd MMMM yyyy"]]</span>
               </div>
             </div>
 
-            <semantic-query query='SELECT ?project ?projectName (COUNT(?project) as ?projectCount) { 
+            <semantic-query query='SELECT ?project ?projectName ?projectCount { 
                                     ?project a crm:E7_Activity .
                                     ?project crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
+                                    ?project crm:P2_has_type <http://www.researchspace.org/resource/vocab/status/ongoing> .
+
+                                    ?project crm:P1_is_identified_by ?appellation . 
+                                    ?appellation a crm:E41_Appellation . 
+                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                    ?appellation crm:P190_has_symbolic_content ?projectName .
 
                                     ?project crm:P01i_is_domain_of ?pc14 .
                                     ?pc14 rdf:type crm:PC14_carried_out_by .
                                     ?pc14 crm:P02_has_range ?__useruri__ .
 
-                                  } GROUP BY ?project ?projectName'
+                                    {
+                                      SELECT (COUNT(?project1) as ?projectCount) WHERE {
+                                        ?project1 crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
+                                        ?project1 crm:P2_has_type <http://www.researchspace.org/resource/vocab/status/ongoing> .
+                                        ?project1 crm:P01i_is_domain_of ?pc14 .
+                                        ?pc14 rdf:type crm:PC14_carried_out_by .
+                                        ?pc14 crm:P02_has_range ?__useruri__ .
+                                      }
+                                    }
+                                  } ORDER BY ?projectName'
                             template='{{> template}}'
                             no-result-template='{{> noResults}}'>
 
               <template id='template'>
                 <div class="ongoing-projects">
                   <div>You have</div>
-                  <bs-dropdown id='ongoingProjectsDropdown'>
+                  <bs-dropdown id='ongoingProjectsDropdown' pull-right=true>
                     <bs-dropdown-toggle class="text-dropdown link-dropdown">
                         {{bindings.0.projectCount.value}} projects ongoing
                     </bs-dropdown-toggle>
@@ -66,33 +110,60 @@
       
           <div class="homepage-project-summary">
             <h3>Projects summary</h3>
-            <bs-tabs id="projectTabs" default-active-key='ongoing' unmount-on-exit=true>
-              <bs-tab event-key="ongoing" title="Ongoing">
-                [[> projectSearch label="ongoing" status="ongoing" statusIRI="http://www.researchspace.org/resource/vocab/status/ongoing"]]
-              </bs-tab>
-              <bs-tab event-key="completed" title="Completed">
-                [[> projectSearch label="completed" status="completed" statusIRI="http://www.researchspace.org/resource/vocab/status/completed"]]
-              </bs-tab>
-              <bs-tab event-key="proposed" title="Proposed">
-                [[> projectSearch label="proposed" status="proposed" statusIRI="http://www.researchspace.org/resource/vocab/status/proposed"]]
-              </bs-tab>
-              <semantic-query query='SELECT ?__useruri__ ?userName { BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userName) }'
+
+              <semantic-query query='SELECT ?systemUser ?group ?project { 
+                                      BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
+                                      
+                                      OPTIONAL {
+                                        ?systemUser crm:P02i_is_range_of ?pc107 .
+                                        ?pc107 rdf:type crm:PC107_has_current_or_former_member .
+                                        ?pc107 crm:P01_has_domain ?group .
+                                        ?group crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                        ?group a crm:E74_Group .
+                                      }
+
+                                      OPTIONAL {
+                                        ?project crm:P01i_is_domain_of ?pc14 .
+                                        ?project crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
+                                        ?pc14 rdf:type crm:PC14_carried_out_by .
+                                        ?pc14 crm:P02_has_range ?systemUser .
+                                      }
+
+                                    }'
                               template='{{> template}}'>
                 <template id='template'>
-                  <bs-tab event-key="myTeamProjects" title="My Team Projects" tab-class-name="tab-right pr-0">
-                    [[> projectSearch label="my-team-project" actorIRI="{{bindings.0.userName.value}}"]]
-                  </bs-tab>
+                  <bs-tabs id="projectTabs" default-active-key='ongoing' unmount-on-exit=true>
+                    <bs-tab event-key="ongoing" title="Ongoing">
+                      [[> projectSearch label="ongoing" status="ongoing" statusIRI="http://www.researchspace.org/resource/vocab/status/ongoing"]]
+                    </bs-tab>
+                    <bs-tab event-key="completed" title="Completed">
+                      [[> projectSearch label="completed" status="completed" statusIRI="http://www.researchspace.org/resource/vocab/status/completed"]]
+                    </bs-tab>
+                    <bs-tab event-key="proposed" title="Proposed">
+                      [[> projectSearch label="proposed" status="proposed" statusIRI="http://www.researchspace.org/resource/vocab/status/proposed"]]
+                    </bs-tab>
+                    {{#if bindings.0.group.value}}
+                      <bs-tab event-key="myTeamProjects" title="My Team Projects" tab-class-name="tab-right pr-0">
+                        [[> projectSearch label="my-team-project" actorIRI="{{bindings.0.systemUser.value}}" teamProject=true]]
+                      </bs-tab>
+                    {{/if}}
+                    {{#if bindings.0.project.value}}
+                      <bs-tab event-key="myProjects" title="My Projects" tab-class-name="tab-right">
+                        [[> projectSearch label="my-project" actorIRI="{{bindings.0.systemUser.value}}"]]
+                      </bs-tab>
+                    {{/if}}
                 </template>
               </semantic-query>
-              <bs-tab event-key="myProjects" title="My Projects" tab-class-name="tab-right">
-                <semantic-query query='SELECT ?__useruri__ ?userName { BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userName) }'
-                                    template='{{> template}}'>
-                    <template id='template'>
-                      [[> projectSearch label="my-project" actorIRI="{{bindings.0.userName.value}}"]]
-                    </template>
-                  </semantic-query>
-                [[> projectSearch label="my-project" actorIRI=""]]
-              </bs-tab>
+
+              <semantic-query query='SELECT ?systemUser { 
+                                        BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
+                                        ?systemUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                      }'
+                              template='{{> template}}'>
+                  <template id='template'>
+                    
+                  </template>
+              </semantic-query>
             </bs-tabs>
 
             <semantic-if query="ASK { ?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .}"
@@ -275,9 +346,21 @@
                                                 ?appellation crm:P190_has_symbolic_content ?label .
 
                                                 [[#if actorIRI]]
-                                                  ?subject crm:P01i_is_domain_of ?pc14 .
-                                                  ?pc14 rdf:type crm:PC14_carried_out_by .
-                                                  ?pc14 crm:P02_has_range <[[actorIRI]]> .
+                                                  [[#if teamProject]]
+                                                    <[[actorIRI]]> crm:P02i_is_range_of ?pc107 .
+                                                    ?pc107 rdf:type crm:PC107_has_current_or_former_member .
+                                                    ?pc107 crm:P01_has_domain ?group .
+                                                    ?group crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                                    ?group a crm:E74_Group .
+
+                                                    ?subject crm:P01i_is_domain_of ?pc14 .
+                                                    ?pc14 rdf:type crm:PC14_carried_out_by .
+                                                    ?pc14 crm:P02_has_range ?group .
+                                                  [[else]]
+                                                    ?subject crm:P01i_is_domain_of ?pc14 .
+                                                    ?pc14 rdf:type crm:PC14_carried_out_by .
+                                                    ?pc14 crm:P02_has_range <[[actorIRI]]> .
+                                                  [[/if]]
                                                 [[/if]]
 
                                                 SERVICE <http://www.bigdata.com/rdf/search#search> {
@@ -470,7 +553,7 @@
           <semantic-search-result id='[[label]]-projects-result'>
             <div class="table-fixed-header table-scrollable-content table-expanded table-projects">
               <semantic-table id='[[label]]-projects-table'
-                              query='SELECT ?subject ?iri ?projectName ?description WHERE {
+                              query='SELECT DISTINCT ?subject ?iri ?projectName ?description WHERE {
                                       BIND(?subject as ?iri) .
 
                                       ?subject crm:P1_is_identified_by ?appellation . 
@@ -479,9 +562,21 @@
                                       ?appellation crm:P190_has_symbolic_content ?projectName .
 
                                       [[#if actorIRI]]
-                                        ?subject crm:P01i_is_domain_of ?pc14 .
-                                        ?pc14 rdf:type crm:PC14_carried_out_by .
-                                        ?pc14 crm:P02_has_range <[[actorIRI]]> .
+                                        [[#if teamProject]]
+                                          <[[actorIRI]]> crm:P02i_is_range_of ?pc107 .
+                                          ?pc107 rdf:type crm:PC107_has_current_or_former_member .
+                                          ?pc107 crm:P01_has_domain ?group .
+                                          ?group crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                          ?group a crm:E74_Group .
+
+                                          ?subject crm:P01i_is_domain_of ?pc14 .
+                                          ?pc14 rdf:type crm:PC14_carried_out_by .
+                                          ?pc14 crm:P02_has_range ?group .
+                                        [[else]]
+                                          ?subject crm:P01i_is_domain_of ?pc14 .
+                                          ?pc14 rdf:type crm:PC14_carried_out_by .
+                                          ?pc14 crm:P02_has_range <[[actorIRI]]> .
+                                        [[/if]]
                                       [[/if]]
 
                                       OPTIONAL {

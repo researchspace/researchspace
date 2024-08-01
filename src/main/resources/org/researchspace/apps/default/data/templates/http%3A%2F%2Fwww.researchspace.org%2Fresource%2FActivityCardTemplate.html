@@ -1,7 +1,9 @@
-<semantic-query query='SELECT DISTINCT ?subject ?resourceConfig ?resourceLabel ?resourceType ?date ?modifiedActorName ?creationActorName WHERE {
+<semantic-query query='SELECT DISTINCT  ?subject ?resourceConfig ?resourceLabel ?resourceType ?date 
+                                        ?modifiedActor ?systemModifiedActorName ?modifiedActorFullName
+                                        ?creationActor ?systemCreationActorName ?creationActorFullName WHERE {
 
-                         BIND(<{{iri}}> as ?subject)
-                         BIND("{{date.value}}" as ?date)
+                        BIND(<{{iri}}> as ?subject)
+                        BIND("{{date.value}}" as ?date)
 
                         OPTIONAL {
                           ?subject a ?resourceOntologyClass .
@@ -25,7 +27,15 @@
 
                         OPTIONAL {
                           ?subject prov:wasAttributedTo ?modifiedActor .
-                          BIND(REPLACE(REPLACE(STR(?modifiedActor), STR(User:), ""), "%40", "@") as ?modifiedActorName) 
+                          BIND(REPLACE(REPLACE(STR(?modifiedActor), STR(User:), ""), "%40", "@") as ?systemModifiedActorName) 
+
+                          OPTIONAL {
+                            ?modifiedActor crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                            ?modifiedActor crm:P1_is_identified_by ?actorName .
+                            ?actorName a crm:E41_Appellation .
+                            ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                            ?actorName crm:P190_has_symbolic_content ?modifiedActorFullName .
+                          }
                         }
 
                         OPTIONAL {
@@ -36,7 +46,15 @@
                           ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
 
                           ?entityFormRecordCreation crm:P14_carried_out_by ?creationActor .
-                          BIND(REPLACE(REPLACE(STR(?creationActor), STR(User:), ""), "%40", "@") as ?creationActorName) 
+                          BIND(REPLACE(REPLACE(STR(?creationActor), STR(User:), ""), "%40", "@") as ?systemCreationActorName) 
+
+                          OPTIONAL {
+                            ?creationActor crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                            ?creationActor crm:P1_is_identified_by ?creationActorName .
+                            ?creationActorName a crm:E41_Appellation .
+                            ?creationActorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                            ?creationActorName crm:P190_has_symbolic_content ?creationActorFullName .
+                          }
                         }
 
                       } LIMIT 1'
@@ -48,19 +66,41 @@
     <template id='template'>
       <div class="activity-card-content">
         <div>
-          <rs-icon icon-type="round" icon-name="person" class="person-icon"></rs-icon>
+          {{#if bindings.0.modifiedActor.value}}
+            <mp-resource-thumbnail iri='{{bindings.0.modifiedActor.value}}' class="person-thumbnail">
+              <mp-resource-thumbnail-fallback>
+                  <rs-icon icon-type="round" icon-name="person" class="person-icon"></rs-icon>
+              </mp-resource-thumbnail-fallback>
+            </mp-resource-thumbnail>  
+          {{else if bindings.0.creationActor.value}}
+            <mp-resource-thumbnail iri='{{bindings.0.creationActor.value}}' class="person-thumbnail">
+              <mp-resource-thumbnail-fallback>
+                  <rs-icon icon-type="round" icon-name="person" class="person-icon"></rs-icon>
+              </mp-resource-thumbnail-fallback>
+            </mp-resource-thumbnail>  
+          {{/if}}
         </div>
         <div class="activity-card-data">
           <div style="display: flex; align-items: center; justify-content: space-between;">
             <div class="activity-card-actor-value text-truncate-line1">
-              {{#if bindings.0.modifiedActorName.value}}{{bindings.0.modifiedActorName.value}}{{/if}}
-              {{#if bindings.0.creationActorName.value}}{{bindings.0.creationActorName.value}}{{/if}}
+              {{#if bindings.0.modifiedActorFullName.value}}
+                {{bindings.0.modifiedActorFullName.value}}
+              {{else}}
+                {{bindings.0.systemModifiedActorName.value}}
+              {{/if}}
+
+              {{#if bindings.0.creationActorFullName.value}}
+                {{bindings.0.creationActorFullName.value}}
+              {{else}}
+                {{bindings.0.systemCreationActorName.value}}
+              {{/if}}
             </div>
             <div class="activity-card-date-value text-truncate-line1">{{dateTimeFormat bindings.0.date.value "LLL"}}</div>
           </div>
-          {{#if bindings.0.modifiedActorName.value}}
+
+          {{#if bindings.0.modifiedActor.value}}
             <div class="text-font-size__small text-truncate-line1">modified a {{bindings.0.resourceLabel.value}}</div>
-            {{else if bindings.0.creationActorName.value}}
+          {{else if bindings.0.creationActor.value}}
             <div class="text-font-size__small text-truncate-line1">created a {{bindings.0.resourceLabel.value}}</div>
           {{/if}}
           <mp-draggable iri='{{iri}}'>

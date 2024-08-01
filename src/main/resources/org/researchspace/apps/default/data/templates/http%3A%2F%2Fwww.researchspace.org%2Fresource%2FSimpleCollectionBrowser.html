@@ -186,7 +186,7 @@
                         </h2>
                       {{else}}
 
-                        <h2 class="resource-editView-formHeader-title">New 
+                        <h2 class="resource-editView-formHeader-title">New
                           {{#if collection}}
                             {{#if collectionLabel}}
                               <span>{{collectionLabel}}</span>
@@ -194,7 +194,11 @@
                               <mp-label iri='{{collection}}' style="text-transform: lowercase;"></mp-label>
                             {{/if}}
                           {{else}}
-                            <span>{{resourceName}}</span>
+                            {{#if (eq resourceConfiguration "http://www.researchspace.org/resource/system/resource_configurations_container/data/User")}}
+                              <span>profile</span>
+                            {{else}}
+                              <span>{{resourceName}}</span>
+                            {{/if}}
                           {{/if}}
                         </h2>
                       {{/if}}
@@ -226,16 +230,29 @@
                           </mp-draggable>
                         </div>
                       </h2>
-                      {{#if resourceName}}
+                      {{#if resourceName}} 
                         <div class="color-base" style="font-size: 21px; padding-bottom: 3px;">|</div>
-                        <div class="text-type-subheader" style="margin-right: 30px;">
-                          {{#if resourceIcon}}
-                            <rs-icon icon-type="rounded" icon-name="{{resourceIcon}}" symbol=true></rs-icon>
-                          {{else}}
-                            <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol=true></rs-icon>
-                          {{/if}}
-                            <div>{{resourceName}}</div>
-                        </div>
+                        <semantic-query query='SELECT DISTINCT ?systemUser WHERE { 
+                                                BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
+                                              } LIMIT 1'>
+                          <template id='template'>
+                            {{#ifCond bindings.0.systemUser.value "===" iri}}
+                              <div class="text-type-subheader" style="margin-right: 30px;">
+                                <rs-icon icon-type="rounded" icon-name="{{resourceIcon}}" symbol=true></rs-icon>
+                                <div>My profile</div>
+                              </div>
+                            {{else}}
+                              <div class="text-type-subheader" style="margin-right: 30px;">
+                                {{#if resourceIcon}}
+                                  <rs-icon icon-type="rounded" icon-name="{{resourceIcon}}" symbol=true></rs-icon>
+                                {{else}}
+                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol=true></rs-icon>
+                                {{/if}}
+                                  <div>{{resourceName}}</div>
+                              </div>
+                            {{/ifCond}}
+                          </template>
+                        </semantic-query>
                       {{/if}}
                     {{/case}}
 
@@ -367,7 +384,7 @@
                               on-event-source='{{#if iri}}{{iri}}-resource-form{{else}}{{viewId}}-resource-form{{/if}}' 
                               on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated", "Form.ResourceRemoved"]'      
                               proxy-event-type='Component.TemplateUpdate' 
-                              proxy-targets='["homepage-render-area"]'
+                              proxy-targets='["homepage-render-area", "system-activities-render-area"]'
               ></mp-event-proxy>
 
               [[!-- Refresh clipboard if a particular resource is modified or deleted --]]

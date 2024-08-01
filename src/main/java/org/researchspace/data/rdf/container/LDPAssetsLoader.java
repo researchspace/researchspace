@@ -268,8 +268,7 @@ public class LDPAssetsLoader {
                         logger.trace("Loading LDP asset context: " + ctx.stringValue());
                         Model currentAsset = loadedAssetsModel.filter(null, null, null, ctx);
                         
-                        if (repositoryId.equals("system")) {
-                            logger.info(ctx.isResource());
+                        if (repositoryId.equals("system")) {                           
                             if (ctx.isResource())   
                                 conn.clear(ctx);                                 
                         }

@@ -19,7 +19,6 @@ uses client-side templates:
     }
   }'
 
-
   [[#if (hasPermission "forms:ldp:*")]]
     [[#if readonly]]
       readonly='true'
@@ -122,13 +121,35 @@ uses client-side templates:
     </ontodia-field-input-override>
 
     <ontodia-field-input-override for-field="http://www.researchspace.org/pattern/system/entity/main_image">
-      <semantic-form-drag-and-drop-input for='http://www.researchspace.org/pattern/system/entity/main_image' label="Main image"
-                                          placeholder-item-template="<div class='placeholder-item'>
-                                                                          <rs-icon icon-type='round' icon-name='file_upload' class='upload_icon'></rs-icon>
-                                                                          <div>Drag image or click to upload</div>
-                                                                      </div>"
-                                          nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
-      </semantic-form-drag-and-drop-input>
+      <div class="dragAndDrop-input-container">
+        <semantic-form-drag-and-drop-input  for='http://www.researchspace.org/pattern/system/entity/main_image' 
+                                            label="Main image" 
+                                            placeholder-item-template="<div class='placeholder-item'>
+                                                                        <rs-icon icon-type='round' icon-name='file_upload' class='upload_icon'></rs-icon>
+                                                                        <div>
+                                                                            <span>Drag image from </span>
+                                                                            <semantic-link-container    uri='http://www.researchspace.org/resource/ThinkingFrames' 
+                                                                                                        class='text-link' 
+                                                                                                        urlqueryparam-view='resource-search'
+                                                                                                        urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image'
+                                                                                                        urlqueryparam-custom-label='Search Image'>
+                                                                                <span class='text-link'>Image Library</span>
+                                                                            </semantic-link-container>
+                                                                        
+                                                                            <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                                                        urlqueryparam-view='resource-search' 
+                                                                                                        urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image'
+                                                                                                        urlqueryparam-open-as-drag-and-drop='true'
+                                                                                                        urlqueryparam-custom-label='Search Image'
+                                                                                                        >
+                                                                                <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding:0 8px 0 5px;' title='Open Image Library in new draggable tab'></rs-icon>
+                                                                            </semantic-link-container>
+                                                                            <span>or click to upload</span>
+                                                                        </div>
+                                                                    </div>"
+                                            nested-form-template='{{{{raw}}}}{{> forms:Image_minimal nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+        </semantic-form-drag-and-drop-input>
+      </div>
     </ontodia-field-input-override>
 
   </ontodia-field-configuration>
@@ -170,6 +191,8 @@ uses client-side templates:
                               hideMediaSection=true
                               height=73
                               width=270
+                              props=props
+                              data=data
         }}
       </div>
     {{else}}
@@ -185,6 +208,8 @@ uses client-side templates:
         {{> rsp:ResourceCard  iri=iri
                               viewId=ontodiaVariable
                               knowledgeMapCard=true
+                              props=props
+                              data=data
         }}
       </div>
     {{/if}}

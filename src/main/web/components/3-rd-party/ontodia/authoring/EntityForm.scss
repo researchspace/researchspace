@@ -18,7 +18,7 @@
  */
 .dialog {
   height: 100%;
-  overflow: auto;
+ // overflow: auto;
 }
 
 /*  Knowledge Map - Card Form */
@@ -26,26 +26,56 @@
   padding: 15px;
   height: 100%;
 
-  :global(.semantic-form) {
+    :global(.semantic-form) {
 
-    height: 100%;
+      height: calc(100% - 80px);
+      width: 100%;
 
-    :global(.composite-input) {
+      :global(.composite-input) {
 
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
 
+        .inputs {
+
+          flex: 1;
+          overflow: auto;
+
+          & > :global(.semantic-form-input-decorator.semantic-form-input-decorator--with-header:first-of-type .semantic-form-input-decorator__header) {
+
+            margin-top: 0;
+          }
+        }
+
+        :global(.btn-form-actions) {
+
+          margin-top: 10px;
+        }
+      }
+
+      :global(.form-scroll-area.nested-form) {
+        overflow: auto;
+      }
+
+      :global(.modal-header) {
+
+        padding: 10px 15px;
+
+        & :global(.modal-title) {
+          font-size: 15px;
+          font-weight: 700;
+        }
+      }
+
+      & :global(.modal-body) {
+        padding: 15px;
+      }
     }
-    
-  }
 
-  :global(.semantic-form-input-decorator--with-header) {
+    :global(.semantic-form:first-child) {
 
-    :global(.semantic-form-input-decorator__header) {
-
-      margin: 0 0 5px;
+      height: inherit;
     }
-    
-  }
+
 }

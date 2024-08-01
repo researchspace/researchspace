@@ -52,6 +52,8 @@ export type FieldInputElement = React.ReactElement<SingleValueInputProps | Multi
 
 export function generateFormFromFields(params: GenerateFormFromFieldsParams): JSX.Element[] {
   const content: JSX.Element[] = [];
+  const contentInputs: JSX.Element[] = [];
+
   for (const field of params.fields) {
     let lastMatched: FieldInputElement | undefined;
     for (const override of params.overrides) {
@@ -65,19 +67,22 @@ export function generateFormFromFields(params: GenerateFormFromFieldsParams): JS
     const generatedInput = lastMatched
       ? React.cloneElement(lastMatched, { for: field.iri })
       : generateInputForField(field);
-    content.push(generatedInput);
+      contentInputs.push(generatedInput);
   }
+  content.push(<div className='EntityForm--inputs'>{contentInputs}</div>)
+  
   content.push(<FormErrors />);
   content.push(
-    <button name="submit" className="btn btn-default">
-      Save
-    </button>
+    <div className='btn-form-actions'>
+      <button name="reset" className="btn btn-default">
+        Reset
+      </button>
+      <button name="submit" className="btn btn-action">
+        Save
+      </button>
+    </div>
   );
-  content.push(
-    <button name="reset" className="btn btn-default">
-      Reset
-    </button>
-  );
+
   return content;
 }
 

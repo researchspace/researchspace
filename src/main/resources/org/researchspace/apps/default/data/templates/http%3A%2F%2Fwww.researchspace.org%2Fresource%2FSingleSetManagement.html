@@ -42,6 +42,12 @@
                   additional-data='{"setRemoved": true, "iri": "{{iri}}"}'>
   </mp-event-proxy>
 
+  <mp-event-proxy id='{{viewId}}-refresh-setPage-on-resourceForm-deleted'
+                  on-event-types='["Form.ResourceRemoved"]'     
+                  proxy-event-type='Component.Refresh'
+                  proxy-targets='["{{iri}}-set"]'
+  ></mp-event-proxy>
+
   [[#if (hasPermission "forms:ldp:*")]]
     <div class="page__grid-container single-set-management-container">
       <div class="page__content-container">
@@ -191,30 +197,19 @@
 
         <mp-event-target-template-render id='{{viewId}}-deleted-set-message' template='{{> template}}'>
           <template id='template'>
-            {{#if hideMessage}}
-            {{else if setRemoved}}
-                <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%;">
-                  <div class="success-documentation-section-icon-container">
-                    <rs-icon icon-type="round" icon-name="done"></rs-icon>
-                  </div>
-
-                  <div style="flex: 1;"> 
-                    <div class="success-documentation-section-title">Success!</div>
-                    <div class="success-documentation-section-content">
-                      <span><mp-label iri='{{iri}}'></mp-label> has been deleted.</span>
-                    </div>
-                  </div>
-                  
-                  <mp-event-trigger id='{{viewId}}-cancel-deleted-set-message'
-                                    type='Component.TemplateUpdate'
-                                    data='{ "hideMessage": "true" }'
-                                    targets='["{{viewId}}-deleted-set-message"]'
-                  >
-                    <button class="btn btn-documentation">
-                      <rs-icon icon-type="round" icon-name="close"></rs-icon>
-                    </button>
-                  </mp-event-trigger>
+            {{#if setRemoved}}
+              <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%;">
+                <div class="success-documentation-section-icon-container">
+                  <rs-icon icon-type="round" icon-name="done"></rs-icon>
                 </div>
+
+                <div style="flex: 1;"> 
+                  <div class="success-documentation-section-title">Success!</div>
+                  <div class="success-documentation-section-content">
+                    <span><mp-label iri='{{iri}}'></mp-label> has been deleted.</span>
+                  </div>
+                </div>
+              </div>
             {{/if}}
           </template>
         </mp-event-target-template-render>

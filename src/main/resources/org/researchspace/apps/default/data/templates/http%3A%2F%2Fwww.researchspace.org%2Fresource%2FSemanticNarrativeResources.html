@@ -1,5 +1,5 @@
 {{#bind viewId=dashboardId}}
-    <mp-event-proxy id='{{iri}}-refresh-narrativeResources-onDelete'
+    <mp-event-proxy id='{{iri}}-refresh-narrativeResources-on-resourceForm-deleted'
                     on-event-source='{{iri}}-resource-form' 
                     on-event-types='["Form.ResourceRemoved"]'      
                     additional-data='{"resourceDeleted": true, "iri": "{{iri}}"}'
@@ -10,31 +10,18 @@
     <mp-event-target-template-render id="{{iri}}-resources-in-narrative-frame" template='{{> template}}'>
         <template id='template'>
             {{#if resourceDeleted}}
-                {{#if hideMessage}}
-                {{else if resourceDeleted}}
-                    <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%; height: fit-content;">
-                    <div class="success-documentation-section-icon-container">
-                        <rs-icon icon-type="round" icon-name="done"></rs-icon>
-                    </div>
+                <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%; height: fit-content;">
+                <div class="success-documentation-section-icon-container">
+                    <rs-icon icon-type="round" icon-name="done"></rs-icon>
+                </div>
 
-                    <div style="flex: 1;"> 
-                        <div class="success-documentation-section-title">Success!</div>
-                        <div class="success-documentation-section-content">
-                        <span><mp-label iri='{{iri}}'></mp-label> has been deleted.</span>
-                        </div>
+                <div style="flex: 1;"> 
+                    <div class="success-documentation-section-title">Success!</div>
+                    <div class="success-documentation-section-content">
+                    <span><mp-label iri='{{iri}}'></mp-label> has been deleted.</span>
                     </div>
-                    
-                    <mp-event-trigger id='{{viewId}}-cancel-deleted-set-message'
-                                        type='Component.TemplateUpdate'
-                                        data='{ "hideMessage": "true" }'
-                                        targets='["{{iri}}-resources-in-narrative-frame"]'
-                    >
-                        <button class="btn btn-documentation">
-                        <rs-icon icon-type="round" icon-name="close"></rs-icon>
-                        </button>
-                    </mp-event-trigger>
-                    </div>
-                {{/if}}
+                </div>
+                </div>
             {{else}}
                 <semantic-search config='[[searchConfigForFieldsFromQuery "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> . ?field <http://www.researchspace.org/resource/system/fields/domain> ?domain . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . }"]]'>
                     

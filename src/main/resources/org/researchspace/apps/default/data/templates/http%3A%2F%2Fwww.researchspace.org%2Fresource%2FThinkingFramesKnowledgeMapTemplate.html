@@ -4,39 +4,66 @@
 --]]
 
 <div style='flex: 1 1 0px; overflow: hidden; display: flex; flex-direction: column;'>
-{{#if iri}}
-  <semantic-switch query='
-    PREFIX ontodia: <http://ontodia.org/schema/v1#>
-    SELECT ?type {
-      OPTIONAL {
-        <{{iri}}> a ?type .
-        FILTER(?type in (ontodia:Diagram, Platform:Set))
-      }
-    }'>
-    <template id='http://ontodia.org/schema/v1#Diagram'>
-      {{> rsp:KnowledgeMapOntodiaConfig diagram=iri}}
-    </template>
-    <template id='http://www.researchspace.org/resource/system/Set'>
-      <semantic-query query='
-        PREFIX ldp: <http://www.w3.org/ns/ldp#>
-        SELECT (CONCAT("[", GROUP_CONCAT(CONCAT("\"", STR(?o), "\"");separator=", "), "]") as ?items) {
-          <{{iri}}> ldp:contains / Platform:setItem ?o
-        }'
-        template='{{> set}}'
-      >
-        <template id='set'>
-          [[!-- reset iri to null to make sure it is not picked up in the KnowledgeMapOntodiaConfig --]]
-          {{#bind iri=null}}{{> rsp:KnowledgeMapOntodiaConfig iris=bindings.0.items.value}}{{/bind}}
-        </template>
-      </semantic-query>
-    </template>
-    <template id='default'>
-      {{> rsp:KnowledgeMapOntodiaConfig iri=iri}}
-    </template>
-  </semantic-switch>
-{{else}}
-	{{> rsp:KnowledgeMapOntodiaConfig}}
-{{/if}}
+  {{#if iri}}
+    <mp-event-proxy id='{{ontodiaVariable}}-update-map-on-resourceForm-deleted'
+                    on-event-source='{{iri}}-resource-form' 
+                    on-event-types='["Form.ResourceRemoved"]'      
+                    proxy-event-type='Component.TemplateUpdate' 
+                    additional-data='{"resourceDeleted": true, "iri": "{{iri}}"}'
+                    proxy-targets='["{{ontodiaVariable}}-map-render-area"]'
+    ></mp-event-proxy> 
+
+    <mp-event-target-template-render id='{{ontodiaVariable}}-map-render-area' template='{{> template}}'>
+      <template id='template'>
+        {{#if resourceDeleted}}
+          <div class='success-documentation-section success-documentation-section-withIcon' style="margin: 25px 30px;">
+            <div class="success-documentation-section-icon-container">
+              <rs-icon icon-type="round" icon-name="done"></rs-icon>
+            </div>
+
+            <div style="flex: 1;"> 
+              <div class="success-documentation-section-title">Success!</div>
+              <div class="success-documentation-section-content">
+                <span><mp-label iri='{{iri}}'></mp-label> has been deleted.</span>
+              </div>
+            </div>
+          </div>
+        {{else}}
+          <semantic-switch query='
+            PREFIX ontodia: <http://ontodia.org/schema/v1#>
+            SELECT ?type {
+              OPTIONAL {
+                <{{iri}}> a ?type .
+                FILTER(?type in (ontodia:Diagram, Platform:Set))
+              }
+            }'>
+            <template id='http://ontodia.org/schema/v1#Diagram'>
+              {{> rsp:KnowledgeMapOntodiaConfig diagram=iri}}
+            </template>
+            <template id='http://www.researchspace.org/resource/system/Set'>
+              <semantic-query query='
+                PREFIX ldp: <http://www.w3.org/ns/ldp#>
+                SELECT (CONCAT("[", GROUP_CONCAT(CONCAT("\"", STR(?o), "\"");separator=", "), "]") as ?items) {
+                  <{{iri}}> ldp:contains / Platform:setItem ?o
+                }'
+                template='{{> set}}'
+              >
+                <template id='set'>
+                  [[!-- reset iri to null to make sure it is not picked up in the KnowledgeMapOntodiaConfig --]]
+                  {{#bind iri=null}}{{> rsp:KnowledgeMapOntodiaConfig iris=bindings.0.items.value}}{{/bind}}
+                </template>
+              </semantic-query>
+            </template>
+            <template id='default'>
+              {{> rsp:KnowledgeMapOntodiaConfig iri=iri}}
+            </template>
+          </semantic-switch>
+        {{/if}}
+      </template>
+    </mp-event-target-template-render>
+  {{else}}
+    {{> rsp:KnowledgeMapOntodiaConfig}}
+  {{/if}}
   
   <mp-event-proxy id='ontodia-is-dirty'
                   on-event-type='Ontodia.DiagramIsDirty'
@@ -57,7 +84,7 @@
                   on-event-type='Ontodia.DiagramSaved'
                   on-event-source='{{ontodiaVariable}}-ontodia'     
                   proxy-event-type='Component.TemplateUpdate' 
-                  proxy-targets='["homepage-render-area","system-activities-render-area","http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map-resourceSearch-frame"]'
+                  proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map-resourceSearch-frame"]'
   ></mp-event-proxy>
 
   [[!-- Refresh clipboard for map updated --]]

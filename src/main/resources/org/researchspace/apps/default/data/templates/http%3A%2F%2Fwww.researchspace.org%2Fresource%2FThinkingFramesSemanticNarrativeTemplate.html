@@ -5,14 +5,14 @@
                   on-event-type='Narrative.Created'
                   on-event-source='{{viewId}}-semantic-narrative'     
                   proxy-event-type='Component.TemplateUpdate' 
-                  proxy-targets='["homepage-render-area","system-activities-render-area","http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative-resourceSearch-frame"]'
+                  proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative-resourceSearch-frame"]'
   ></mp-event-proxy>
 
   <mp-event-proxy id='{{viewId}}-refresh-search-page-on-narrative-updated'
                   on-event-type='Narrative.Updated'
                   on-event-source='{{viewId}}-semantic-narrative'     
                   proxy-event-type='Component.TemplateUpdate' 
-                  proxy-targets='["homepage-render-area","system-activities-render-area","http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative-resourceSearch-frame"]'
+                  proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative-resourceSearch-frame"]'
   ></mp-event-proxy>
 
   [[!-- Refresh clipboard on narrative updated --]]
@@ -34,7 +34,7 @@
   <mp-event-target-template-render id='{{viewId}}-semantic-narrative-render-area' template='{{> template}}'>
     <template id='template'>
       {{#if iri}}
-        <mp-event-proxy id='{{viewId}}-refresh-narrative-onDelete'
+        <mp-event-proxy id='{{viewId}}-refresh-narrative-on-resourceForm-deleted'
                         on-event-source='{{iri}}-resource-form' 
                         on-event-types='["Form.ResourceRemoved"]'      
                         proxy-event-type='Component.TemplateUpdate' 
@@ -51,31 +51,18 @@
       {{/if}}
 
       {{#if resourceDeleted}}
-        {{#if hideMessage}}
-        {{else if resourceDeleted}}
-            <div class='success-documentation-section success-documentation-section-withIcon' style="margin: 25px 30px;">
-              <div class="success-documentation-section-icon-container">
-                <rs-icon icon-type="round" icon-name="done"></rs-icon>
-              </div>
+        <div class='success-documentation-section success-documentation-section-withIcon' style="margin: 25px 30px;">
+          <div class="success-documentation-section-icon-container">
+            <rs-icon icon-type="round" icon-name="done"></rs-icon>
+          </div>
 
-              <div style="flex: 1;"> 
-                <div class="success-documentation-section-title">Success!</div>
-                <div class="success-documentation-section-content">
-                  <span><mp-label iri='{{iri}}'></mp-label> has been deleted.</span>
-                </div>
-              </div>
-              
-              <mp-event-trigger id='{{viewId}}-cancel-deleted-set-message'
-                                type='Component.TemplateUpdate'
-                                data='{ "hideMessage": "true" }'
-                                targets='["{{viewId}}-semantic-narrative-render-area"]'
-              >
-                <button class="btn btn-documentation">
-                  <rs-icon icon-type="round" icon-name="close"></rs-icon>
-                </button>
-              </mp-event-trigger>
+          <div style="flex: 1;"> 
+            <div class="success-documentation-section-title">Success!</div>
+            <div class="success-documentation-section-content">
+              <span><mp-label iri='{{iri}}'></mp-label> has been deleted.</span>
             </div>
-        {{/if}}
+          </div>
+        </div>
       {{else}}
         <rs-text-editor [[#if (hasPermission "forms:ldp:*")]]
                           readonly='false'

@@ -293,38 +293,35 @@
                     {{#case "deleted" break=true}}
                       <mp-event-target-template-render id='{{viewId}}-deleted-state' template='{{> template}}'>
                         <template id='template'>
-                          {{#if hideMessage}}
-                          {{else}}
-                              <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%;">
-                                <div class="success-documentation-section-icon-container">
-                                  <rs-icon icon-type="round" icon-name="done"></rs-icon>
-                                </div>
+                          <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%;">
+                            <div class="success-documentation-section-icon-container">
+                              <rs-icon icon-type="round" icon-name="done"></rs-icon>
+                            </div>
 
-                                <div style="flex: 1;"> 
-                                  <div class="success-documentation-section-title">Success!</div>
-                                  <div class="success-documentation-section-content">
-                                    <span style="text-transform: capitalize;">
-                                      {{#if label}}
-                                        {{label}}
-                                      {{else}}
-                                        <mp-label iri='{{iri}}'></mp-label>
-                                      {{/if}}
-                                    </span>
-                                    <span> has been deleted.</span>
-                                  </div>
-                                </div>
-                                
-                                <mp-event-trigger id='{{viewId}}-cancel-deleted-state-message-{{iri}}'
-                                                  type='Component.TemplateUpdate'
-                                                  data='{ "hideMessage": "true" }'
-                                                  targets='["{{viewId}}-deleted-state"]'
-                                >
-                                  <button class="btn btn-documentation">
-                                    <rs-icon icon-type="round" icon-name="close"></rs-icon>
-                                  </button>
-                                </mp-event-trigger>
+                            <div style="flex: 1;"> 
+                              <div class="success-documentation-section-title">Success!</div>
+                              <div class="success-documentation-section-content">
+                                <span style="text-transform: capitalize;">
+                                  {{#if label}}
+                                    {{label}}
+                                  {{else}}
+                                    <mp-label iri='{{iri}}'></mp-label>
+                                  {{/if}}
+                                </span>
+                                <span> has been deleted.</span>
                               </div>
-                          {{/if}}
+                            </div>
+                            
+                            <mp-event-trigger id='{{viewId}}-cancel-deleted-state-message-{{iri}}'
+                                              type='Component.TemplateUpdate'
+                                              data='{ "hideMessage": "true" }'
+                                              targets='["{{viewId}}-deleted-state"]'
+                            >
+                              <button class="btn btn-documentation">
+                                <rs-icon icon-type="round" icon-name="close"></rs-icon>
+                              </button>
+                            </mp-event-trigger>
+                          </div>
                         </template>
                       </mp-event-target-template-render>
                     {{/case}}
@@ -371,28 +368,12 @@
                 {{/if}}
               </div>
 
-              [[!-- Update Search page if a particular resource is created, updated or removed --]]
+              [[!-- Update Search page if a particular resource is created, updated or removed (delete only from form page, doesn't work from search page) --]]
               <mp-event-proxy id='{{viewId}}-refresh-search-page'
                               on-event-source='{{#if iri}}{{iri}}-resource-form{{else}}{{viewId}}-resource-form{{/if}}' 
                               on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated", "Form.ResourceRemoved"]'      
                               proxy-event-type='Component.TemplateUpdate' 
                               proxy-targets='["{{resourceConfiguration}}-resourceSearch-frame"]'
-              ></mp-event-proxy>
-
-              [[!-- Update Homepage if a particular resource is created, updated or removed --]]
-              <mp-event-proxy id='{{viewId}}-refresh-homepage-on-form-action'
-                              on-event-source='{{#if iri}}{{iri}}-resource-form{{else}}{{viewId}}-resource-form{{/if}}' 
-                              on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated", "Form.ResourceRemoved"]'      
-                              proxy-event-type='Component.TemplateUpdate' 
-                              proxy-targets='["homepage-render-area", "system-activities-render-area"]'
-              ></mp-event-proxy>
-
-              [[!-- Refresh clipboard if a particular resource is modified or deleted --]]
-              <mp-event-proxy id='{{viewId}}-clipboard-refresh-on-form-action' 
-                              on-event-source='{{#if iri}}{{iri}}-resource-form{{else}}{{viewId}}-resource-form{{/if}}' 
-                              on-event-types='["Form.ResourceUpdated", "Form.ResourceRemoved"]'
-                              proxy-event-type='Component.Refresh' 
-                              proxy-targets='["clipboard"]'
               ></mp-event-proxy>
     
               {{#if (not (eq mode "deleted"))}} 

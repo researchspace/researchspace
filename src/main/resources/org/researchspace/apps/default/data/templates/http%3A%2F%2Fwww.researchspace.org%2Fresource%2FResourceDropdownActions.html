@@ -469,27 +469,19 @@
         </mp-event-trigger>  
       </div>
 
-      [[!-- Refresh clipboard for a set/KMap/SNarrative deleted --]]
-      <mp-event-proxy id='{{iri}}-clipboard-refresh-on-delete-action-{{viewId}}' 
-                      on-event-source='{{iri}}-resource-form' 
-                      on-event-types='["Form.ResourceRemoved"]' 
-                      proxy-event-type='Component.Refresh' 
-                      proxy-targets='["clipboard"]'
-      ></mp-event-proxy>
-
-      [[!-- Refresh Search page and homepage for a set/KMap/SNarrative removed --]]
-      <mp-event-proxy id='{{iri}}-refresh-search-homepage-{{viewId}}'
+      [[!-- Refresh Search page for a resource removed from search page - dropdown action --]]
+      <mp-event-proxy id='{{iri}}-refresh-search-on-resourceForm-deleted-{{viewId}}'
                       on-event-source='{{iri}}-resource-form' 
                       on-event-types='["Form.ResourceRemoved"]'      
                       proxy-event-type='Component.TemplateUpdate' 
                       additional-data='{"resourceDeleted": true, "iri": "{{iri}}"}'
-                      proxy-targets='["{{resourceConfig}}-resourceSearch-frame", "homepage-render-area", "system-activities-render-area"]'
+                      proxy-targets='["{{resourceConfig}}-resourceSearch-frame"]'
       ></mp-event-proxy> 
 
       [[!-- Close Delete dialog windown once form delete submitted --]]
       <mp-event-proxy id='{{iri}}-close-form-removal-dialog-{{viewId}}' 
                       on-event-source='{{iri}}-resource-form' 
-                      on-event-type='Form.ResourceRemoved'
+                      on-event-types='["Form.ResourceRemoved"]'
                       proxy-event-type='OverlayDialog.Close' 
                       data='{}'
                       proxy-targets='["{{viewId}}-delete-resource-dialog-{{iri}}"]'

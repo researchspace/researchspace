@@ -158,7 +158,7 @@
       "label": "Knowledge map",
       "description": "Express research thinking and processes as networks of relations",
       "iconName": "account_tree",
-      "template": "{{> ontodiaTemplate}}",
+      "template": "{{> knowledgeMapTemplate}}",
       "itemBodyTemplate": "{{> itemBodyTemplate}}",
       "resourceNotRequired": true,
       "frameVariable": "ontodiaVariable",
@@ -216,6 +216,33 @@
     },
 
     {
+    	"id": "image-annotation",
+      "label": "Image annotations",
+      "description": "Drag and drop a resource here to view and annotate its images",
+      "dropAreaDescription": "Drag and drop a resource here to view and annotate its images",
+      "iconName": "photo_size_select_large",
+      "template": "{{> imageViewAnnotation}}",
+      "checkQuery": "
+        PREFIX ontodia: <http://ontodia.org/schema/v1#>
+        PREFIX ldp: <http://www.w3.org/ns/ldp#>
+        ASK {
+          {
+            ?value a ontodia:Diagram .
+            ?value ontodia:layoutData/ontodia:hasElement/ontodia:resource ?resource .
+            ?resource crm:P138i_has_representation|rs:PX_has_main_representation ?image .
+          } UNION {
+            ?value a Platform:Set .
+            ?value ldp:contains / Platform:setItem ?resource .
+            ?resource crm:P138i_has_representation|rs:PX_has_main_representation ?image . 
+          } UNION {
+            ?value crm:P138i_has_representation|rs:PX_has_main_representation ?image .
+          }
+      }",
+      "unique": false,
+      "type": "authoring"
+    }
+
+[[!--  {
     	"id": "object-image-observation",
       "label": "Image annotations",
       "description": "Drag and drop an object here to combine image annotations with form authoring",
@@ -246,7 +273,7 @@
       "type": "authoring"
     }
 
-[[!--  {
+  {
     	"id": "feature-similarity-km",
       "label": "Exploring and comparing (visual) features",
       "template": "{{> featureSimilarityKm }}",
@@ -285,7 +312,7 @@
       "template": "{{> mapResourceSearch}}",
       "type": "view"
     }
-    
+
  --]]
 
 
@@ -395,24 +422,16 @@
       </div>
     </template>
 
-    <template id='ontodiaTemplate'>
-      [[> rsp:ThinkingFramesKnowledgeMapTemplate]]
+    <template id='knowledgeMapTemplate'>
+      [[> rsp:KnowledgeMapTemplate]]
     </template>
 
-    <template id='iiifTemplate'>
-      [[> rsp:ThinkingFramesIIIFTemplate]]
-    </template>
-
-    <template id='objectImageObservation'>
-      [[> rsp:ThinkingFramesObjectThroughImageObservation]]
-    </template>
-
-    <template id='featureSimilarityKm'>
-      [[> rsp:ThinkingFramesFeatureSimilarityKm]]
+    <template id='imageViewAnnotation'>
+      [[> rsp:ImageViewAnnotation]]
     </template>
 
     <template id='semanticNarrative'>
-      [[> rsp:ThinkingFramesSemanticNarrativeTemplate]]
+      [[> rsp:SemanticNarrativeTemplate]]
     </template>
 
     <template id='semanticNarrativeResources'>
@@ -429,41 +448,6 @@
 
     <template id='SetsManagement'>
       [[> rsp:SetsManagement]]
-    </template>
-
-    <template id='itemBodyTemplate'>
-      <ontodia-contents id='{{dashboardId}}-ontodia' template='{{> template}}'>
-        <div>
-          <button name='submit' className='btn btn-default btn-xs'>
-            Create Set
-          </button>&nbsp;
-          <mp-popover>
-            <mp-popover-trigger placement="right" trigger='["click","hover","focus"]' root-close='false'>
-              <small><rs-icon icon-type="round" icon-name="help"></rs-icon></small>
-            </mp-popover-trigger>
-            <mp-popover-content>Only persisted data will be saved to a set</mp-popover-content>
-          </mp-popover>
-        </div>
-        <template id='template'>
-          {{#ifCond persisted "==" true}}
-            <span class='set-management__set-item' style='padding: 10px'>
-              {{#bind iri=iri.value}}
-                {{> rsp:ResourceCard  iri=iri
-                                      viewId="setItem"
-                }}
-              {{/bind}}
-            </span>
-            {{else}}
-            <span class='set-management__set-item' style='opacity: 0.4; padding: 10px'>
-              {{#bind iri=iri.value}}
-                {{> rsp:ResourceCard  iri=iri
-                                      viewId="setItem"
-                }}
-              {{/bind}}          
-            </span>
-          {{/ifCond}}
-        </template>
-      </ontodia-contents>
     </template>
 
     <template id='mapTemplate'>
@@ -525,6 +509,55 @@
         </semantic-map>
     	</div>
     </template>
+
+    <template id='iiifTemplate'>
+      [[> rsp:ThinkingFramesIIIFTemplate]]
+    </template>
+
+    <template id='objectImageObservation'>
+      [[> rsp:ThinkingFramesObjectThroughImageObservation]]
+    </template>
+
+    <template id='featureSimilarityKm'>
+      [[> rsp:ThinkingFramesFeatureSimilarityKm]]
+    </template>
+
+    <template id='itemBodyTemplate'>
+      <ontodia-contents id='{{dashboardId}}-ontodia' template='{{> template}}'>
+        <div>
+          <button name='submit' className='btn btn-default btn-xs'>
+            Create Set
+          </button>&nbsp;
+          <mp-popover>
+            <mp-popover-trigger placement="right" trigger='["click","hover","focus"]' root-close='false'>
+              <small><rs-icon icon-type="round" icon-name="help"></rs-icon></small>
+            </mp-popover-trigger>
+            <mp-popover-content>Only persisted data will be saved to a set</mp-popover-content>
+          </mp-popover>
+        </div>
+        <template id='template'>
+          {{#ifCond persisted "==" true}}
+            <span class='set-management__set-item' style='padding: 10px'>
+              {{#bind iri=iri.value}}
+                {{> rsp:ResourceCard  iri=iri
+                                      viewId="setItem"
+                }}
+              {{/bind}}
+            </span>
+            {{else}}
+            <span class='set-management__set-item' style='opacity: 0.4; padding: 10px'>
+              {{#bind iri=iri.value}}
+                {{> rsp:ResourceCard  iri=iri
+                                      viewId="setItem"
+                }}
+              {{/bind}}          
+            </span>
+          {{/ifCond}}
+        </template>
+      </ontodia-contents>
+    </template>
+
+
 
  [[!--   <template id='mapResourceSearch'>
       [[> rsp:MapResourceSearch]]

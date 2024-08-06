@@ -2,11 +2,16 @@
 <http://www.researchspace.org/pattern/system/entity/images/context> {
   _:genid-817cc051da194fcc86ec12579e841654-3t9kd a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
-	?value a rs:EX_Digital_Image .
-  ?value crm:P1_is_identified_by ?appellation .
-  ?appellation a crm:E41_Appellation .
-  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-  ?appellation crm:P190_has_symbolic_content ?label .
+  ?value a ?ontologyClass .
+  FILTER(?ontologyClass IN (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+  { 
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+	} UNION {
+    ?value crm:P190_has_symbolic_content ?label .
+	}
   FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ASC(?label) 
   LIMIT 10""" .
@@ -29,13 +34,18 @@
   
   _:genid-817cc051da194fcc86ec12579e841654-a6lbqj a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
-   $subject crm:P138i_has_representation $value .
+    $subject crm:P138i_has_representation $value .
       
-  ?value a rs:EX_Digital_Image .
-  ?value crm:P1_is_identified_by ?appellation .
-  ?appellation a crm:E41_Appellation .
-  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-  ?appellation crm:P190_has_symbolic_content ?label .
+    ?value a ?ontologyClass .
+    FILTER(?ontologyClass IN (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+    { 
+      ?value crm:P1_is_identified_by ?appellation .
+      ?appellation a crm:E41_Appellation .
+      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+      ?appellation crm:P190_has_symbolic_content ?label .
+    } UNION {
+        ?value crm:P190_has_symbolic_content ?label .
+    }
 }""" .
   
   _:genid-817cc051da194fcc86ec12579e841654-xfad9j a <http://spinrdf.org/sp#Query>;
@@ -52,11 +62,16 @@
 	$subject crm:P138i_has_representation $value .
   $value crm:P138_represents $subject .
       
-  ?value a rs:EX_Digital_Image .
-  ?value crm:P1_is_identified_by ?appellation .
-  ?appellation a crm:E41_Appellation .
-  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-  ?appellation crm:P190_has_symbolic_content ?label .
+  ?value a ?ontologyClass .
+  FILTER(?ontologyClass IN (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+  { 
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+  } UNION {
+      ?value crm:P190_has_symbolic_content ?label .
+  }
 }""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>

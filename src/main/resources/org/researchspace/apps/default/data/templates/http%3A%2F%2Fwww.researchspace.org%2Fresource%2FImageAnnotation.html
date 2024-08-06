@@ -1,0 +1,78 @@
+<div style='height: 100%;'>
+  <semantic-query query=' PREFIX ontodia: <http://ontodia.org/schema/v1#>
+                          PREFIX ldp: <http://www.w3.org/ns/ldp#>
+
+                          SELECT (CONCAT("[", GROUP_CONCAT(DISTINCT CONCAT("\"", STR(?resource), "\"");separator=", "), "]") as ?resources) {
+                            {
+                              <{{iri}}> a ontodia:Diagram .
+                              <{{iri}}> ontodia:layoutData/ontodia:hasElement/ontodia:resource ?resource .
+                              { ?resource crm:P138i_has_representation|rs:PX_has_main_representation ?image .} UNION { ?resource a rs:EX_Digital_Image . }
+                            } UNION {
+                              <{{iri}}> a Platform:Set .
+                              <{{iri}}> ldp:contains / Platform:setItem ?resource .
+                              { ?resource crm:P138i_has_representation|rs:PX_has_main_representation ?image .} UNION { ?resource a rs:EX_Digital_Image . }
+                            } UNION {
+                              <{{iri}}> crm:P138i_has_representation|rs:PX_has_main_representation ?image .
+                              BIND(<{{iri}}> as ?resource) .
+                            } UNION {
+                              <{{iri}}> a rs:EX_Digital_Image .
+                              BIND(<{{iri}}> as ?resource) .
+                            }
+                          }'
+                  template='{{> template}}'>
+    <template id='template'>
+      {{#> rsp:ImageAnnotationTemplate viewId=dashboardId insideForm=insideForm recordType=recordType}}
+        <mp-event-target-template-render id='{{viewId}}-image-viewer-render-area' template='{{> template}}'>
+          <template id='template'>
+            <rs-iiif-viewer-panel id='{{viewId}}-image-annotation'
+                                  iris='{{bindings.0.resources.value}}'
+                                  query='SELECT DISTINCT ?image WHERE {
+                                          {
+                                            ?subject (crm:P138i_has_representation|rs:PX_has_main_representation) ?image .
+                                            ?image a ?type .
+                                            FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+                                          } UNION {
+                                            ?subject a rs:EX_Digital_Image .
+                                            BIND(?subject as ?image) .
+                                          }
+                                        }'
+                                  [[> rsp:IIIFConfig]]
+              
+                                  annotation-view-tooltip-template='
+                                    {{{{raw}}}}                                
+                                      <div class="all-annotations" id="annotation-viewer-{{windowId}}">
+                                        {{#each annotations}}
+                                          <div class="annotation-display annotation-tooltip" data-anno-id="{{id}}">
+                                            <div class="button-container">
+                                              {{#if id}}
+                                                <mp-template-item>
+                                                  <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                                                  draggable="false"
+                                                                  urlqueryparam-view="resource-editor"
+                                                                  urlqueryparam-resource-iri="{{id}}"
+                                                                    >
+                                                      <div style="width: 100%;    
+                                                                  text-decoration: underline;
+                                                                  font-weight: 600;
+                                                                  cursor: pointer;
+                                                                  color: #525156">
+                                                        {{{annoText}}}
+                                                      </div>
+                                                    </semantic-link>
+                                                </mp-template-item>
+                                              {{/if}}
+                                            </div>
+                                            
+                                          </div>
+                                        {{/each}}
+                                      </div>
+                                    {{{{/raw}}}}
+                                  '>
+            </rs-iiif-viewer-panel>
+          </template>
+        </mp-event-target-template-render>
+      {{/rsp:ImageAnnotationTemplate}}
+    </template>
+  </semantic-query>
+</div>
+

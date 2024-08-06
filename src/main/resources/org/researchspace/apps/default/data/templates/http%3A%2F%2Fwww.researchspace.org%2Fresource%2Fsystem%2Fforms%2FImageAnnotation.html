@@ -10,7 +10,6 @@
                             image_annotation_bounding_box="http://www.researchspace.org/pattern/system/image_annotation/boundingBox"   												
     												image_annotation_viewport="http://www.researchspace.org/pattern/system/image_annotation/viewport"
     												
- 														value="http://www.w3.org/1999/02/22-rdf-syntax-ns#value"
                           ]]'
               >
               
@@ -19,11 +18,9 @@
 
     <div class="form-inline-inputs" style="align-items:flex-end;">
       {{#if node}}
-        <rs-iiif-image-thumbnail height='480' width='640' style='height: 63px; width: 100px;'
+        <rs-iiif-image-thumbnail  height='480' width='640' style='height: 63px; width: 100px;'
                                   image-or-region='{{node}}'    
-                                  image-id-pattern='OPTIONAL { ?imageIRI crmdig:L60i_is_documented_by/crmdig:L11_had_output/rs:PX_has_file_name ?carrierImageID. } BIND(COALESCE(?carrierImageID, REPLACE(STR(?imageIRI), "^.*/(.*)$", "$1")) AS ?imageID) .'
-                                  
-                                  iiif-server-url='/proxy/iiif-server/iiif/2'
+                                  [[> rsp:IIIFConfig]]
                                 >
         </rs-iiif-image-thumbnail>
       {{/if}}
@@ -38,7 +35,10 @@
       <semantic-query query='SELECT ?image ?imageLabel WHERE {
                               <{{node}}> crmdig:L49_is_primary_area_of ?image .
                               ?image a rs:EX_Digital_Image .
-                              ?image <http://www.w3.org/2000/01/rdf-schema#label> ?imageLabel .
+                              ?image crm:P1_is_identified_by ?appellation . 
+                              ?appellation a crm:E41_Appellation . 
+                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                              ?appellation crm:P190_has_symbolic_content ?imageLabel .
                             } limit 1'
 
                       template='{{> template}}'>
@@ -55,11 +55,11 @@
                   <span class="text-link">{{bindings.0.imageLabel.value}}</span>
                 </semantic-link>
               </div>
-              <mp-resource-thumbnail iri='{{bindings.0.image.value}}' style="max-height: 220px;" title="{{bindings.0.imageLabel.value}}">
-                <mp-resource-thumbnail-fallback>
-                  <div>No image available</div>
-                </mp-resource-thumbnail-fallback>
-              </mp-resource-thumbnail>
+              <rs-iiif-image-thumbnail  height='40' width='45' style='border-radius: 1.5px;'
+                                        image-or-region='{{bindings.0.image.value}}'      
+                                        [[> rsp:IIIFConfig]]
+                                        >
+              </rs-iiif-image-thumbnail>
             </div>
           </template>
       </semantic-query>

@@ -27,7 +27,7 @@ import { Rdf } from 'platform/api/rdf';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 
 import { ImageRegionEditorComponentMirador, ImageRegionEditorConfig } from 'platform/components/iiif/ImageRegionEditor';
-import { AddImagesForObjectEvent, AddObjectImagesEvent, IiifManifestObject } from '../iiif/ImageRegionEditorEvents';
+import { AddImagesForResourceEvent, AddResourceImagesEvent, IiifManifestResource } from '../iiif/ImageRegionEditorEvents';
 
 
 const BINDING_VARIABLE = 'subject';
@@ -46,7 +46,7 @@ export interface IIIFViewerPanelProps extends ImageRegionEditorConfig {
 }
 
 export interface State {
-  imageOrRegion?:  IiifManifestObject[];
+  imageOrRegion?:  IiifManifestResource[];
 }
 
 /**
@@ -83,27 +83,27 @@ export class IIIFViewerPanel extends Component<IIIFViewerPanelProps, State> {
     this.cancellation
         .map(
           listen({
-            eventType: AddImagesForObjectEvent,
+            eventType: AddImagesForResourceEvent,
             target: this.props.id
           })
         ).observe({
           value: (event) => {
             const { query } = this.props;
             const parsedQuery = SparqlUtil.parseQuery(query);
-            const sparql = SparqlClient.setBindings(parsedQuery, { [BINDING_VARIABLE]: Rdf.iri(event.data.objectIri) });
+            const sparql = SparqlClient.setBindings(parsedQuery, { [BINDING_VARIABLE]: Rdf.iri(event.data.resourceIri) });
             SparqlClient.select(sparql)
                         .map(({ results }) => ({
-                          iri: event.data.objectIri,
+                          iri: event.data.resourceIri,
                           images: results.bindings.map(({ image }) => image.value),
                         }))
                         .onValue(
                           images => {
                             trigger({
-                              eventType: AddObjectImagesEvent,
+                              eventType: AddResourceImagesEvent,
                               source: this.props.id,
                               targets: [this.props.id],
                               data: {
-                                objectIri: event.data.objectIri,
+                                resourceIri: event.data.resourceIri,
                                 imageIris: images.images
                               }
                             });
@@ -130,9 +130,9 @@ export class IIIFViewerPanel extends Component<IIIFViewerPanelProps, State> {
     });
     this.queryingCancellation = this.cancellation.deriveAndCancel(this.queryingCancellation);
     this.queryingCancellation.map(Kefir.combine(querying)).onValue((result) => {
-      const imageOrRegion: IiifManifestObject[] = [];
+      const imageOrRegion: IiifManifestResource[] = [];
       flatten(result).forEach(({ iri, images }) => {
-        imageOrRegion.push({ objectIri: iri, images});
+        imageOrRegion.push({ resourceIri: iri, images});
       });
       this.setState({ imageOrRegion });
     });

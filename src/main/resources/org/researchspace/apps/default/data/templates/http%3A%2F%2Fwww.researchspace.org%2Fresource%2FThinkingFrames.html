@@ -221,30 +221,32 @@
       "description": "Drag and drop a resource here to view and annotate its images",
       "dropAreaDescription": "Drag and drop a resource here to view and annotate its images",
       "iconName": "photo_size_select_large",
-      "template": "{{> imageViewAnnotation}}",
-      "checkQuery": "
+      "template": "{{> imageAnnotation}}",
+    [[!--  "checkQuery": "
         PREFIX ontodia: <http://ontodia.org/schema/v1#>
         PREFIX ldp: <http://www.w3.org/ns/ldp#>
         ASK {
           {
             ?value a ontodia:Diagram .
             ?value ontodia:layoutData/ontodia:hasElement/ontodia:resource ?resource .
-            ?resource crm:P138i_has_representation|rs:PX_has_main_representation ?image .
+            { ?value crm:P138i_has_representation|rs:PX_has_main_representation ?image .} UNION { ?value a rs:EX_Digital_Image . }
           } UNION {
             ?value a Platform:Set .
             ?value ldp:contains / Platform:setItem ?resource .
-            ?resource crm:P138i_has_representation|rs:PX_has_main_representation ?image . 
+            { ?value crm:P138i_has_representation|rs:PX_has_main_representation ?image .} UNION { ?value a rs:EX_Digital_Image . }
           } UNION {
             ?value crm:P138i_has_representation|rs:PX_has_main_representation ?image .
+          } UNION {
+            ?value a rs:EX_Digital_Image .
           }
-      }",
+      }", --]]
       "unique": false,
       "type": "authoring"
-    }
+    } 
 
-[[!--  {
+    [[!--  {
     	"id": "object-image-observation",
-      "label": "Image annotations",
+      "label": "Object observation",
       "description": "Drag and drop an object here to combine image annotations with form authoring",
       "dropAreaDescription": "Drag and drop any entity of type MAN-MADE OBJECT here to combine image annotations with data authoring through forms",
       "iconName": "photo_size_select_large",
@@ -273,7 +275,7 @@
       "type": "authoring"
     }
 
-  {
+   {
     	"id": "feature-similarity-km",
       "label": "Exploring and comparing (visual) features",
       "template": "{{> featureSimilarityKm }}",
@@ -426,8 +428,8 @@
       [[> rsp:KnowledgeMapTemplate]]
     </template>
 
-    <template id='imageViewAnnotation'>
-      [[> rsp:ImageViewAnnotation]]
+    <template id='imageAnnotation'>
+      [[> rsp:ImageAnnotation]]
     </template>
 
     <template id='semanticNarrative'>

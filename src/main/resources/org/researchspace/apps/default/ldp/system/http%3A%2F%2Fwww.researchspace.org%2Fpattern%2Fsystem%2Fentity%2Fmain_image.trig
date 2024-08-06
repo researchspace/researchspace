@@ -2,11 +2,16 @@
 <http://www.researchspace.org/pattern/system/entity/main_image/context> {
   _:genid-2b4fc32384cc4b67850aea41e4a4a011-xeylnq a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
-  ?value a rs:EX_Digital_Image .
-  ?value crm:P1_is_identified_by ?appellation .
-  ?appellation a crm:E41_Appellation .
-  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-  ?appellation crm:P190_has_symbolic_content ?label .
+  ?value a ?ontologyClass .
+  FILTER(?ontologyClass IN (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+  { 
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+  } UNION {
+      ?value crm:P190_has_symbolic_content ?label .
+  }
   FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ASC(?label) 
   LIMIT 10""" .
@@ -33,20 +38,30 @@
     <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
   	$subject rs:PX_has_main_representation $value .
       
-    ?value a rs:EX_Digital_Image .
-    ?value crm:P1_is_identified_by ?appellation .
-    ?appellation a crm:E41_Appellation .
-    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-    ?appellation crm:P190_has_symbolic_content ?label .
+    ?value a ?ontologyClass .
+    FILTER(?ontologyClass IN (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+    { 
+      ?value crm:P1_is_identified_by ?appellation .
+      ?appellation a crm:E41_Appellation .
+      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+      ?appellation crm:P190_has_symbolic_content ?label .
+    } UNION {
+        ?value crm:P190_has_symbolic_content ?label .
+    }
 }""" .
   
   _:genid-2b4fc32384cc4b67850aea41e4a4a011-m7w1je a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
-    ?value a rs:EX_Digital_Image .
-    ?value crm:P1_is_identified_by ?appellation .
-    ?appellation a crm:E41_Appellation .
-    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-    ?appellation crm:P190_has_symbolic_content ?label .
+    ?value a ?ontologyClass .
+    FILTER(?ontologyClass IN (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+    { 
+      ?value crm:P1_is_identified_by ?appellation .
+      ?appellation a crm:E41_Appellation .
+      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+      ?appellation crm:P190_has_symbolic_content ?label .
+    } UNION {
+        ?value crm:P190_has_symbolic_content ?label .
+    }
 } ORDER BY ASC(LCASE(STR(?label)))""" .
   
   _:genid-2b4fc32384cc4b67850aea41e4a4a011-yxi7e a <http://spinrdf.org/sp#Query>;
@@ -57,11 +72,16 @@
     $subject rs:PX_has_main_representation $value .
     $value rs:PX_main_represents $subject .
       
-    ?value a rs:EX_Digital_Image .
-    ?value crm:P1_is_identified_by ?appellation .
-    ?appellation a crm:E41_Appellation .
-    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-    ?appellation crm:P190_has_symbolic_content ?label .
+    ?value a ?ontologyClass .
+    FILTER(?ontologyClass IN (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+    { 
+      ?value crm:P1_is_identified_by ?appellation .
+      ?appellation a crm:E41_Appellation .
+      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+      ?appellation crm:P190_has_symbolic_content ?label .
+    } UNION {
+        ?value crm:P190_has_symbolic_content ?label .
+    }
 }""" .
   
   _:genid-2b4fc32384cc4b67850aea41e4a4a011-4tm8o8 a <http://spinrdf.org/sp#Query>;

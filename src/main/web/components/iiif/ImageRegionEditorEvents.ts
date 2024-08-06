@@ -18,34 +18,34 @@
 
 import { EventMaker } from 'platform/api/events';
 
-export interface IiifManifestObject {
-  objectIri: string;
+export interface IiifManifestResource {
+  resourceIri: string;
 
   /**
-   * List of images associated with the object
+   * List of images associated with the resource
    */
   images?: string[];
 }
 
 export interface ImageRegionEditorEventData {
   // trigger
-  'IIIFViewer.ManifestUpdated': {objects?: IiifManifestObject[]}
+  'IIIFViewer.ManifestUpdated': {resources?: IiifManifestResource[]}
 
-  'IIIFViewer.RegionCreated': {objectIri: string, imageIri: string, regionIri: string, regionLabel: string}
+  'IIIFViewer.RegionCreated': {resourceIri: string, imageIri: string, regionIri: string, regionLabel: string}
 
-  'IIIFViewer.RegionRemoved': {objectIri: string, imageIri: string, regionIri: string, regionLabel: string}
+  'IIIFViewer.RegionRemoved': {resourceIri: string, imageIri: string, regionIri: string, regionLabel: string}
 
-  'IIIFViewer.RegionUpdated': {objectIri: string, imageIri: string, regionIri: string, regionLabel: string}
+  'IIIFViewer.RegionUpdated': {resourceIri: string, imageIri: string, regionIri: string, regionLabel: string}
 
   // listen
   'IIIFViewer.ZoomToRegion': {imageIri: string, regionIri: string}
   'IIIFViewer.HighlightRegion': {regionIri: string}
 
   // TODO, implement RemoveRegion
-  'IIIFViewer.RemoveRegion': { objectIri: string, imageIri: string, regionIri: string }
+  'IIIFViewer.RemoveRegion': { resourceIri: string, imageIri: string, regionIri: string }
 
-  'IIIFViewer.AddObjectImages': {objectIri: string, imageIris: string[]}
-  'IIIFViewer.AddImagesForObject': {objectIri: string}
+  'IIIFViewer.AddResourceImages': {resourceIri: string, imageIris: string[]}
+  'IIIFViewer.AddImagesForResource': {resourceIri: string}
 }
 
 const event: EventMaker<ImageRegionEditorEventData> = EventMaker;
@@ -58,5 +58,5 @@ export const RegionRemovedEvent = event('IIIFViewer.RegionRemoved');
 export const ZoomToRegionEvent = event('IIIFViewer.ZoomToRegion');
 export const HighlightRegion = event('IIIFViewer.HighlightRegion');
 export const RemoveRegion = event('IIIFViewer.RemoveRegion');
-export const AddObjectImagesEvent = event('IIIFViewer.AddObjectImages');
-export const AddImagesForObjectEvent = event('IIIFViewer.AddImagesForObject');
+export const AddResourceImagesEvent = event('IIIFViewer.AddResourceImages');
+export const AddImagesForResourceEvent = event('IIIFViewer.AddImagesForResource');

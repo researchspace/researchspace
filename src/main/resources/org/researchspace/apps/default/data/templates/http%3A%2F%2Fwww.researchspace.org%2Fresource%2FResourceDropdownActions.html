@@ -344,20 +344,47 @@
       {{/if}}
     {{/if}}
 
-    {{#if (not (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set"))}}
-      <hr>
-      <mp-event-trigger id='{{viewId}}-image-annotation-add-frame-trigger' 
-                        type='Dashboard.AddFrame' 
-                        data='{"resourceIri": "{{iri}}", 
-                                "viewId": "object-image-observation", 
-                                "objectIri": "{{iri}}",
-                                "frameId": "{{viewId}}"}' 
-                        targets='["thinking-frames"]'>
-          <bs-menu-item>
-            <rs-icon icon-type="rounded" icon-name="photo_size_select_large" class="icon-left" symbol="true"></rs-icon>
-            <span>Image view / annotations</span>
-          </bs-menu-item>
-      </mp-event-trigger>
+    {{#if (not (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation"))}}
+      <semantic-if  query=' PREFIX ontodia: <http://ontodia.org/schema/v1#>
+                            PREFIX ldp: <http://www.w3.org/ns/ldp#>
+                            ASK {
+                                  {
+                                    <{{iri}}> a ontodia:Diagram .
+                                    <{{iri}}> ontodia:layoutData/ontodia:hasElement/ontodia:resource ?resource .
+                                    { ?resource crm:P138i_has_representation|rs:PX_has_main_representation ?image .} UNION { ?resource a rs:EX_Digital_Image . }
+                                  } UNION {
+                                    <{{iri}}> a Platform:Set .
+                                    <{{iri}}> ldp:contains / Platform:setItem ?resource .
+                                    { ?resource crm:P138i_has_representation|rs:PX_has_main_representation ?image .} UNION { ?resource a rs:EX_Digital_Image . }
+                                  } UNION {
+                                    <{{iri}}> crm:P138i_has_representation|rs:PX_has_main_representation ?image .
+                                  } UNION {
+                                    <{{iri}}> a rs:EX_Digital_Image .
+                                  }
+                                }'
+                    then='{{> then}}'>
+
+        <template id='then'>
+          <hr>
+            <mp-event-trigger id='{{viewId}}-image-annotation-add-frame-trigger' 
+                              type='Dashboard.AddFrame' 
+                              data='{"resourceIri": "{{iri}}", 
+                                      "viewId": "image-annotation", 
+                                      "objectIri": "{{iri}}",
+                                      "frameId": "{{viewId}}"}' 
+                              targets='["thinking-frames"]'>
+                <bs-menu-item>
+                  <rs-icon icon-type="rounded" icon-name="photo_size_select_large" class="icon-left" symbol="true"></rs-icon>
+                  {{#if (or (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map") (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") )}}
+                    <span>Image of resources view / annotations</span>
+                  {{else}}
+                    <span>Image view / annotations</span>
+                  {{/if}}
+                </bs-menu-item>
+            </mp-event-trigger>
+        </template>
+
+      </semantic-if>
     {{/if}}
 
     {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image")}}

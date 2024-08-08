@@ -10,6 +10,13 @@
                 proxy-targets='["{{viewId}}-image-annotation-area"]'
 ></mp-event-proxy>
 
+<mp-event-proxy id='{{viewId}}-update-searchAnnotationPage' 
+                on-event-source='{{viewId}}-image-annotation' 
+                on-event-types='["IIIFViewer.RegionCreated", "IIIFViewer.RegionUpdated", "IIIFViewer.RegionRemoved"]'
+                proxy-event-type='Component.TemplateUpdate' 
+                proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation-resourceSearch-frame"]'
+></mp-event-proxy>
+
 
 [[!-- /EVENTS --]]
 
@@ -120,11 +127,22 @@
                                         <div class="imageAnnotation__resourceAnnotation-result-item">
 
                                           <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
-                                            <rs-iiif-image-thumbnail  height='40' width='45' style='border-radius: 1.5px;'
-                                                                      image-or-region='{{region.value}}'      
-                                                                      [[> rsp:IIIFConfig]]
-                                                                      >
-                                            </rs-iiif-image-thumbnail>
+                                            <mp-draggable iri='{{region.value}}'>
+                                              <div>
+                                                <mp-event-trigger id='{{../viewId}}-focus-event-trigger-{{resourceIri}}-{{region.value}}' 
+                                                                  type='IIIFViewer.ZoomToRegion' 
+                                                                  targets='["{{../viewId}}-image-annotation"]'
+                                                                  data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
+                                                  <div>
+                                                    <rs-iiif-image-thumbnail  height='40' width='45' style='border-radius: 1.5px;'
+                                                                              image-or-region='{{region.value}}'      
+                                                                              [[> rsp:IIIFConfig]]>
+                                                    </rs-iiif-image-thumbnail>
+                                                  </div>
+                                                </mp-event-trigger>
+
+                                              </div>
+                                            </mp-draggable>
 
                                             <div style="flex: 1;">
                                               <mp-draggable iri='{{region.value}}'>

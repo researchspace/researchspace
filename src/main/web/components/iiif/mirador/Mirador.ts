@@ -128,7 +128,7 @@ globalHandlebars.registerHelper(
 const defaultAnnotationViewerTemplate = globalHandlebars.compile(
   `
   <div class="all-annotations" id="annotation-viewer-{{windowId}}">
-    <div class="text-viewer">Image Region(s)</div>
+    <div class="text-viewer">Image annotation</div>
       {{#each annotations}}
         <div class="annotation-display annotation-tooltip" data-anno-id="{{id}}">
           <div class="button-container">
@@ -164,8 +164,8 @@ Mirador.AnnotationTooltip.prototype.editorTemplate = globalHandlebars.compile(
   <form id="annotation-editor-{{windowId}}" class="annotation-editor annotation-tooltip" {{#if id}}data-anno-id="{{id}}"{{/if}}>
     <div>
       <div class="button-container">
-        <a href="#cancel" class="cancel"><button class="btn btn-default">{{t "cancel"}}</button></a>
-        <a href="#save" class="save"><button class="btn btn-action">{{t "save"}}</button></a>
+        <button class="btn btn-default"><a href="#cancel" class="cancel">{{t "cancel"}}</a></button>
+        <button class="btn btn-action"><a href="#save" class="save">{{t "save"}}</a></button>
       </div>
     </div>
   </form>

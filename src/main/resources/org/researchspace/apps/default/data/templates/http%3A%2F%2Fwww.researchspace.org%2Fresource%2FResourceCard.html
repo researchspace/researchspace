@@ -28,22 +28,33 @@
                       } LIMIT 1'
       
                 template='{{> template}}'
-                no-result-template='{{> noResults}}'
         >
 
     <template id='template'>
       <div>
-        {{> rsp:resourceCardTemplate  resourceConfig=bindings.0.resourceConfig.value
-                                      resourceOntologyClass=bindings.0.resourceOntologyClass.value
-                                      resourceLabel=bindings.0.resourceLabel.value
-                                      resourceIcon=bindings.0.resourceIcon.value
-        }} 
-      </div>
-    </template>
+        {{#if bindings.0.resourceConfig.value}}
+          {{> rsp:resourceCardTemplate  resourceConfig=bindings.0.resourceConfig.value
+                                        resourceOntologyClass=bindings.0.resourceOntologyClass.value
+                                        resourceLabel=bindings.0.resourceLabel.value
+                                        resourceIcon=bindings.0.resourceIcon.value
+          }}
+        {{else}}
+          <semantic-query query='SELECT ?resourceOntologyClass WHERE {
+                                    BIND(<{{iri}}> as ?iri)
+                                    ?iri a ?resourceOntologyClass .
+                                  } LIMIT 1'
+                        template='{{> template}}'
+                        no-result-template='{{> noResults}}'>
+      
+            <template id='template'>
+              <div>{{> rsp:resourceCardTemplate resourceOntologyClass=bindings.0.resourceOntologyClass.value }}</div>
+            </template>
 
-    <template id="noResults">
-      <div>
-        {{> rsp:resourceCardTemplate newKMCard=true}} 
+            <template id="noResults">
+              <div>{{> rsp:resourceCardTemplate newKMCard=true }}</div>
+            </template>
+          </semantic-query>
+        {{/if}}
       </div>
     </template>
 

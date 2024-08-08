@@ -5,6 +5,7 @@
                       margin:{{#if cardMargin}}{{cardMargin}}{{else}}0{{/if}}px;{{/if}}">
       [[!-- when autosize is set we don't set any fixed height and width, used in semantic narratives where user can resize the card --]]
 
+
   {{#if newKMCard}}
   {{else}}
     <div class="resource-card__header-actions">
@@ -61,20 +62,35 @@
     <div class="resource-card__media-container" style="{{#if autosize}}height:auto{{else}}max-height:142px;{{/if}}">
 
       {{#if props}}
-        {{#if props.[http://www.researchspace.org/pattern/system/image_annotation/area_of_image]}}
+        [[!-- for card in KM --]]
+        
+        {{#if props.[http://www.researchspace.org/pattern/system/image_annotation/boundingBox]}}
+          [[!-- when the resource is an Image annotation --]]
           <rs-iiif-image-thumbnail  height='480' width='640' style='height: 100%; width: 100%;'
-                                    image-or-region='{{props.[http://www.researchspace.org/pattern/system/image_annotation/area_of_image].values.0.value}}' 
-                                    bbox='{{props.[http://www.researchspace.org/pattern/system/image_annotation/boundingBox].values.0.value}}'
-                                    viewport='{{props.[http://www.researchspace.org/pattern/system/image_annotation/viewport].values.0.value}}'
-                                    svg='{{props.[http://www.w3.org/1999/02/22-rdf-syntax-ns#value].values.0.value}}'
+                                    image-or-region='{{iri}}'
                                     [[> rsp:IIIFConfig]]>
           </rs-iiif-image-thumbnail>
         {{else if imgUrl}}
-          <mp-resource-thumbnail fixed-key='image-{{imgUrl}}' iri='{{imgUrl}}' class="resource-card__thumbnail">
-            <mp-resource-thumbnail-fallback>
-              [[> defaultCardIcon]]
-            </mp-resource-thumbnail-fallback>
-          </mp-resource-thumbnail>
+          <semantic-if query='ASK { <{{imgUrl}}> a rs:EX_Digital_Image_Region }'
+                       then='{{> then}}'
+                       else='{{> else}}'>
+
+            <template id='then'>
+              [[!-- when the resource has an annotation as image --]]
+              <rs-iiif-image-thumbnail  height='480' width='640' style='height: 100%; width: 100%;'
+                                        image-or-region='{{imgUrl}}'
+                                        [[> rsp:IIIFConfig]]>
+              </rs-iiif-image-thumbnail>
+            </template>
+
+            <template id='else'>
+              <mp-resource-thumbnail fixed-key='image-{{imgUrl}}' iri='{{imgUrl}}' class="resource-card__thumbnail">
+                <mp-resource-thumbnail-fallback>
+                  [[> defaultCardIcon]]
+                </mp-resource-thumbnail-fallback>
+              </mp-resource-thumbnail>
+            </template>
+          </semantic-if>
         {{else}}
           <mp-resource-thumbnail iri='{{iri}}' class="resource-card__thumbnail">
             <mp-resource-thumbnail-fallback>
@@ -82,9 +98,11 @@
             </mp-resource-thumbnail-fallback>
           </mp-resource-thumbnail>
         {{/if}}
+
       {{else}}
 
         {{#switch resourceOntologyClass}}
+        [[!-- for all other cards that are not in KM --]]
 
           {{#case "http://www.researchspace.org/ontology/EX_Digital_Image_Region" break=true}}
             <rs-iiif-image-thumbnail height='480' width='640' style='height: 100%; width: 100%;'
@@ -93,7 +111,15 @@
             </rs-iiif-image-thumbnail>
           {{/case}}
 
-          {{#case "http://iflastandards.info/ns/fr/frbr/frbroo/F26_Recording" break=true}}
+          {{#case "http://www.researchspace.org/ontology/EX_Digital_Image" break=true}}
+            <mp-resource-thumbnail iri='{{iri}}' class="resource-card__thumbnail">
+              <mp-resource-thumbnail-fallback>
+                [[> defaultCardIcon]]
+              </mp-resource-thumbnail-fallback>
+            </mp-resource-thumbnail>
+          {{/case}}
+
+    [[!--      {{#case "http://iflastandards.info/ns/fr/frbr/frbroo/F26_Recording" break=true}}
             <semantic-query query='SELECT DISTINCT ?video WHERE { 
                                     <{{iri}}> crm:P129i_is_subject_of ?digital_object.
                                     <{{iri}}> crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_video> .
@@ -119,14 +145,58 @@
                     [[> defaultCardIcon]]
                   </template>
             </semantic-query>
-          {{/case}}
+          {{/case}}  --]]
 
           {{#default}}
-            <mp-resource-thumbnail iri='{{iri}}' class="resource-card__thumbnail">
-              <mp-resource-thumbnail-fallback>
-                [[> defaultCardIcon]]
-              </mp-resource-thumbnail-fallback>
-            </mp-resource-thumbnail>
+            <semantic-query query='SELECT ?iri ?mainImage ?image ?mainImageOntologyClass ?imageOntologyClass WHERE  { 
+                                    BIND(<{{iri}}> as ?iri)
+                                    OPTIONAL { ?iri rs:PX_has_main_representation ?mainImage . ?mainImage a ?mainImageOntologyClass }  
+                                    OPTIONAL { ?iri crm:P138i_has_representation ?image . ?image a ?imageOntologyClass }
+                                  } LIMIT 1'
+                            template='{{> template}}'>
+
+              <template id='template'>
+            
+                  {{#if bindings.0.mainImage.value}}
+                    {{#if (eq bindings.0.mainImageOntologyClass.value "http://www.researchspace.org/ontology/EX_Digital_Image_Region")}}
+                      [[!-- when the resource has an annotation as image --]]
+                      <rs-iiif-image-thumbnail style='height: 100%; width: 100%;'
+                                              image-or-region='{{bindings.0.mainImage.value}}'      
+                                              [[> rsp:IIIFConfig]]>
+                      </rs-iiif-image-thumbnail>
+                    {{else}}
+                      <mp-resource-thumbnail iri='{{iri}}' class="resource-card__thumbnail">
+                        <mp-resource-thumbnail-fallback>
+                          [[> defaultCardIcon]]
+                        </mp-resource-thumbnail-fallback>
+                      </mp-resource-thumbnail>
+                    {{/if}}
+          
+                  {{else if bindings.0.image.value}}
+                    {{#if (eq bindings.0.imageOntologyClass.value "http://www.researchspace.org/ontology/EX_Digital_Image_Region")}}
+                      [[!-- when the resource has an annotation as image --]]
+                      <rs-iiif-image-thumbnail style='height: 100%; width: 100%;'
+                                              image-or-region='{{bindings.0.image.value}}'      
+                                              [[> rsp:IIIFConfig]]>
+                      </rs-iiif-image-thumbnail>
+                    {{else}}
+                      <mp-resource-thumbnail iri='{{iri}}' class="resource-card__thumbnail">
+                        <mp-resource-thumbnail-fallback>
+                          [[> defaultCardIcon]]
+                        </mp-resource-thumbnail-fallback>
+                      </mp-resource-thumbnail>
+                    {{/if}}
+
+                  {{else}}
+                    <mp-resource-thumbnail iri='{{iri}}' class="resource-card__thumbnail">
+                      <mp-resource-thumbnail-fallback>
+                        [[> defaultCardIcon]]
+                      </mp-resource-thumbnail-fallback>
+                    </mp-resource-thumbnail>
+                  {{/if}}
+    
+              </template>
+            </semantic-query>
           {{/default}}
 
         {{/switch}}
@@ -160,23 +230,11 @@
           {{/if}}
         {{else if data.types}}
           [[!-- ontology class from KM props --]]
-            <div class="resource-card__footer-class text-truncate-line1">
-              <mp-label iri='{{data.types}}'></mp-label>
-            </div>
-        {{else}}
-          <semantic-query query='SELECT ?ontologyClassLabel WHERE {
-                                    BIND(<{{iri}}> as ?resource)
-                                    ?resource a ?ontologyClass .
-                                    ?ontologyClass a owl:Class .
-                                    ?ontologyClass rdfs:label ?ontologyClassLabel .
-                                    FILTER(LANG(?ontologyClassLabel)="en")
-                                  } LIMIT 1'
-                          template='{{> template}}'>
-      
-              <template id='template'>
-                <span class="resource-card__footer-class text-truncate-line1" title="{{bindings.0.ontologyClassLabel.value}}">{{bindings.0.ontologyClassLabel.value}}</span>
-              </template>
-          </semantic-query>
+          <div class="resource-card__footer-class text-truncate-line1">
+            <mp-label iri='{{data.types}}'></mp-label>
+          </div>
+        {{else if resourceOntologyClass}}
+          <mp-label iri='{{resourceOntologyClass}}' class="resource-card__footer-class text-truncate-line1" highlight='{{highlight}}' highlight-props='{"style": {"color": "#396EFE"}}'></mp-label>
         {{/if}}
       </div>
 
@@ -224,10 +282,13 @@
     {{else}}
       <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol=true></rs-icon>
     {{/if}}
+
     {{#if resourceLabel}}
       <div>{{resourceLabel}}</div>
     {{else if data.types}} [[!-- ontology class from KM data --]]
       <mp-label iri='{{data.types}}'></mp-label>
+    {{else if resourceOntologyClass}}
+      <mp-label iri='{{resourceOntologyClass}}'></mp-label>
     {{/if}}
   </div>
 [[/inline]]

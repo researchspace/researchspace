@@ -498,7 +498,15 @@
                           }'>
         </inline-template> 
       </div>  
-   
+
+      <mp-event-target-template-render id="{{iri}}-deleting-area-{{viewId}}" template='{{> template}}'>
+        <template id='template'>
+          {{#if resourceDeleting}}
+            <div>Deleting resource. Please wait ..</div>
+          {{/if}}
+        </template>
+      </mp-event-target-template-render>
+      
       <div class="form-btn-group">
         <mp-event-trigger id='{{iri}}-cancel-feature-removal' 
                           type='OverlayDialog.Close' 
@@ -521,6 +529,15 @@
                       proxy-event-type='Component.TemplateUpdate' 
                       additional-data='{"resourceDeleted": true, "iri": "{{iri}}"}'
                       proxy-targets='["{{resourceConfig}}-resourceSearch-frame"]'
+      ></mp-event-proxy> 
+
+      [[!-- Close Delete dialog windown once form delete submitted --]]
+      <mp-event-proxy id='{{iri}}-deleting-resource-{{viewId}}' 
+                      on-event-source='{{iri}}-resource-form' 
+                      on-event-types='["Form.ResourceRemoving"]'
+                      proxy-event-type='Component.TemplateUpdate' 
+                      additional-data='{"resourceDeleting": true, "iri": "{{iri}}"}'
+                      proxy-targets='["{{iri}}-deleting-area-{{viewId}}"]'
       ></mp-event-proxy> 
 
       [[!-- Close Delete dialog windown once form delete submitted --]]

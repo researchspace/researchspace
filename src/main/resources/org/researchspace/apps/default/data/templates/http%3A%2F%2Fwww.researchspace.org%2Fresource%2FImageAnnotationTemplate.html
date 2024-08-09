@@ -7,7 +7,7 @@
                 on-event-source='{{viewId}}-image-annotation' 
                 on-event-type='IIIFViewer.ManifestUpdated'
                 proxy-event-type='Component.TemplateUpdate' 
-                proxy-targets='["{{viewId}}-image-annotation-area"]'
+                proxy-targets='["{{viewId}}-image-annotation-area", "{{viewId}}-image-upload-area"]'
 ></mp-event-proxy>
 
 <mp-event-proxy id='{{viewId}}-update-searchAnnotationPage' 
@@ -27,6 +27,187 @@
       <div class="imageAnnotation__viewer">
         [[!-- we assume that @partial-block is IIIF Viewer component. It is defined in the rsp:ImageAnnotation template --]]
         {{> @partial-block }}
+
+        <mp-event-target-template-render id='{{viewId}}-image-upload-area' template='{{> newImage}}'>
+          <template id='newImage'>
+            <div class="imageAnnotation__viewer-newImageUpload"> 
+              <semantic-switch query='SELECT ?type WHERE {
+                                        <{{iri}}> a ?type .
+                                      }'>
+                <template id='http://www.researchspace.org/ontology/EX_Digital_Image'></template>
+                <template id='default'>
+                  <semantic-if query='ASK { <{{iri}}> a ?type . FILTER(?type in (ontodia:Diagram, Platform:Set))  }'
+                            then='{{> then}}'
+                            else='{{> else}}'>
+
+                    <template id='then'>
+                      {{#bind viewId=viewId}}
+                        <bs-dropdown id="{{viewId}}-newImage-dropdown">
+                          <bs-dropdown-toggle>
+                            <div> 
+                              <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                              <span>New Image</span>
+                            </div>
+                          </bs-dropdown-toggle>
+                          <bs-dropdown-menu>
+                            {{#each resources}} <div>1 {{viewId}}</div><div>2 {{../viewId}}</div><div>3 {{../../viewId}}</div>
+                            <semantic-if query='ASK {<{{resourceIri}}> a <http://www.researchspace.org/ontology/EX_Digital_Image> }'
+                                         else='{{> else}}'>
+
+                              <template id='else'>
+                                {{#bind viewId=../viewId}} 
+                                  <mp-overlay-dialog id='{{viewId}}-newImage-dialog-{{resourceIri}}' type="modal" class="modal-xlSize newImageModal" title="New image">
+                                    <mp-overlay-dialog-trigger>
+                                      <bs-menu-item>
+                                        <mp-label iri="{{resourceIri}}"></mp-label> <div>a {{viewId}}</div><div>b {{../viewId}}</div><div>c {{../../viewId}}</div>
+                                      </bs-menu-item>
+                                    </mp-overlay-dialog-trigger>
+                                    <mp-overlay-dialog-content>  <div>A {{viewId}}</div><div>B {{../viewId}}</div><div>C {{../../viewId}}</div>
+                                      <div>
+                                        <mp-event-proxy id='{{viewId}}-refresh-image-viewer-afterUpload-{{resourceIri}}' 
+                                                        on-event-source='{{../viewId}}-upload-new-image-form-{{resourceIri}}'
+                                                        on-event-types='["Form.ResourceCreated"]'
+                                                        proxy-event-type='Component.TemplateUpdate'
+                                                        proxy-targets='["{{../viewId}}-image-viewer-render-area"]'
+                                        ></mp-event-proxy>
+                                
+                                        <mp-event-proxy id='{{../viewId}}-close-modal-upload-dialog-{{resourceIri}}' 
+                                                        on-event-source='{{../viewId}}-upload-new-image-form-{{resourceIri}}'
+                                                        on-event-types='["Form.ResourceCreated"]'
+                                                        proxy-event-type='OverlayDialog.Close' 
+                                                        proxy-targets='["{{../viewId}}-newImage-dialog-newImage-dialog-{{resourceIri}}"]'
+                                        ></mp-event-proxy>
+
+                                        <rs-tabs id="{{../viewId}}-newImage-tabs" class-name="form-tabs">
+                                          <rs-tab event-key="select" title="Select image">
+                                            <semantic-form  id='{{../viewId}}-upload-new-image-form-{{resourceIri}}' 
+                                                            post-action="event"
+                                                            subject='{{node}}'
+                                                            persistence='{"type": "sparql", "targetInsertGraphIri": "http://www.researchspace.org/resource/g/data"}'
+                                                            new-subject-template='{{resourceIri}}'
+                                                            fields='[[fieldDefinitions entity_image="http://www.researchspace.org/pattern/system/entity/images" ]]'>
+                                              <div class="form-scroll-area" style="padding-top: 20px;">
+                                                <div><span>Image for: </span> <mp-label iri="{{resourceIri}}" style="font-weight: 600;"></mp-label></div>
+                                                <semantic-form-autocomplete-input for='entity_image' 
+                                                                                  label="Image"
+                                                                                  placeholder="Select image to add" > 
+                                                </semantic-form-autocomplete-input>
+                                              </div>
+                                              <semantic-form-errors></semantic-form-errors> 
+
+                                              <div class="btn-group" style="margin-top: 15px;">
+                                                <div class="btn-form-actions"> 
+                                                  <button name="reset" class="btn btn-default">Reset</button>
+                                                  <button name="submit" class="btn btn-action">Add image</button>
+                                                </div>
+                                              </div>
+                                            </semantic-form>
+                                          </rs-tab>
+                                          <rs-tab event-key="upload" title="Upload new image">
+                                            <semantic-context repository='assets'>
+                                            <inline-template template-iri='http://www.researchspace.org/resource/system/forms/Image_minimal'
+                                                              options='{  
+                                                                          "formId": "{{../viewId}}-upload-new-image-form-{{resourceIri}}",
+                                                                          "mode": "new",
+                                                                          "editable": true,
+                                                                          "nested": true,
+                                                                          "onlyUpload": true,
+                                                                          "resourceIri": "{{resourceIri}}"
+                                                                        }'>
+                                            </inline-template>
+                                          </semantic-context>  
+                                          </rs-tab>
+                                        </rs-tabs>
+                                      </div>
+                                    </mp-overlay-dialog-content>
+                                  </mp-overlay-dialog>
+                                {{/bind}}
+                              </template>
+                            </semantic-if>
+                            {{/each}}
+                          </bs-dropdown-menu>
+                        </bs-dropdown>
+                      {{/bind}}
+                    </template>
+
+                    <template id='else'>
+                      {{#bind viewId=viewId}}
+                        <mp-overlay-dialog id='{{viewId}}-newImage-dialog' type="modal" class="modal-xlSize newImageModal" title="New image">
+                          <mp-overlay-dialog-trigger>
+                            <div> 
+                              <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                              <span>New Image</span>
+                            </div>
+                          </mp-overlay-dialog-trigger>
+                          <mp-overlay-dialog-content> 
+                            {{#each resources}}
+                                <mp-event-proxy id='{{../viewId}}-refresh-image-viewer-afterUpload-{{resourceIri}}' 
+                                                on-event-source='{{../viewId}}-upload-new-image-form-{{resourceIri}}'
+                                                on-event-types='["Form.ResourceCreated"]'
+                                                proxy-event-type='Component.TemplateUpdate'
+                                                proxy-targets='["{{../viewId}}-image-viewer-render-area"]'
+                                ></mp-event-proxy>
+                        
+                                <mp-event-proxy id='{{../viewId}}-close-modal-upload-dialog-{{resourceIri}}' 
+                                                on-event-source='{{../viewId}}-upload-new-image-form-{{resourceIri}}'
+                                                on-event-types='["Form.ResourceCreated"]'
+                                                proxy-event-type='OverlayDialog.Close' 
+                                                proxy-targets='["{{../viewId}}-newImage-dialog"]'
+                                ></mp-event-proxy>
+
+                                <rs-tabs id="{{../viewId}}-newImage-tabs" class-name="form-tabs">
+                                  <rs-tab event-key="select" title="Select image">
+                                    <semantic-form  id='{{../viewId}}-upload-new-image-form-{{resourceIri}}' 
+                                                    post-action="event"
+                                                    subject='{{node}}'
+                                                    persistence='{"type": "sparql", "targetInsertGraphIri": "http://www.researchspace.org/resource/g/data"}'
+                                                    new-subject-template='{{resourceIri}}'
+                                                    fields='[[fieldDefinitions entity_image="http://www.researchspace.org/pattern/system/entity/images" ]]'>
+                                      <div class="form-scroll-area" style="padding-top: 20px;">
+                                        <div><span>Image for: </span> <mp-label iri="{{resourceIri}}" style="font-weight: 600;"></mp-label></div>
+                                        <semantic-form-autocomplete-input for='entity_image' 
+                                                                          label="Image"
+                                                                          placeholder="Select image to add" > 
+                                        </semantic-form-autocomplete-input>
+                                      </div>
+                                      <semantic-form-errors></semantic-form-errors> 
+          
+                                      <div class="btn-group" style="margin-top: 15px;">
+                                        <div class="btn-form-actions"> 
+                                          <button name="reset" class="btn btn-default">Reset</button>
+                                          <button name="submit" class="btn btn-action">Add image</button>
+                                        </div>
+                                      </div>
+                                    </semantic-form>
+                                  </rs-tab>
+                                  <rs-tab event-key="upload" title="Upload new image">
+                                    <semantic-context repository='assets'>
+                                    <inline-template template-iri='http://www.researchspace.org/resource/system/forms/Image_minimal'
+                                                      options='{  
+                                                                  "formId": "{{../viewId}}-upload-new-image-form-{{resourceIri}}",
+                                                                  "mode": "new",
+                                                                  "editable": true,
+                                                                  "nested": true,
+                                                                  "onlyUpload": true,
+                                                                  "resourceIri": "{{resourceIri}}"
+                                                                }'>
+                                    </inline-template>
+                                  </semantic-context>  
+                                  </rs-tab>
+                                </rs-tabs>
+                            {{/each}}
+                          </mp-overlay-dialog-content>
+                        </mp-overlay-dialog>
+                      {{/bind}}
+                    </template>
+
+                  </semantic-if>
+                </template>
+              </semantic-switch>
+            </div>
+          </template>
+        </mp-event-target-template-render>
+
       </div>
 
       [[!-- List of resources is refreshed by `{{viewId}}-refresh-image-list` event-proxy at the top of the template.

@@ -1,19 +1,27 @@
-<semantic-form  [[> rsp:FormDefaults]] 
-                persistence='{"type": "sparql", "targetInsertGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/assets/images{{/if}}"}'
-                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/image/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
+<semantic-form  id='{{#if formId}}{{formId}}{{else}}{{viewId}}-resource-form{{/if}}' 
+                post-action="event"
+                subject='{{node}}'
+                persistence='{"type": "sparql", "targetInsertGraphIri": "http://www.researchspace.org/assets/images"}'
+                new-subject-template='/image/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
                 fields='[[fieldDefinitions
                             classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                             entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
-                            
-                            entity_file_identifier="http://www.researchspace.org/pattern/system/entity/file_identifier"
+                            image_represents="http://www.researchspace.org/pattern/system/image/represents"
                             entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
+                            entity_file_identifier="http://www.researchspace.org/pattern/system/entity/file_identifier"
                           ]]'
-              >
+                >
               
-    <div class="form-scroll-area nested-form">
+    <div class="form-scroll-area {{#if resourceIri}}{{else}}nested-form{{/if}}" style="{{#if resourceIri}}padding-top: 20px;{{/if}}">
         <semantic-form-hidden-input for='classtype' default-value='http://www.researchspace.org/ontology/EX_Digital_Image'> </semantic-form-hidden-input>
+        
+        {{#if resourceIri}}
+            <semantic-form-hidden-input for='image_represents' default-value='{{resourceIri}}'> </semantic-form-hidden-input>
+            <div><span>Image for: </span> <mp-label iri="{{resourceIri}}" style="font-weight: 600;"></mp-label></div>
+        {{/if}}
+
         <semantic-form-text-input for="entity_primary_appellation" label="Image name" placeholder="Enter image name"></semantic-form-text-input>
-            
+        
         <div style="margin-top: 5px;">
             <semantic-form-file-input   for='entity_file_identifier' 
                                         label='Image file'
@@ -36,7 +44,7 @@
             >
             <div className='placeholder-item'>
                 <rs-icon icon-type='round' icon-name='file_upload' class='upload_icon'></rs-icon>
-                <p>Drag image or click to upload</p>
+                <p>{{#if onlyUpload}}Click to upload{{else}}Drag image or click to upload{{/if}}</p>
                 <div>Supported format: .jpeg .jpg .tiff .bmp .png .svg+xml</div>
             </div>
             </semantic-form-file-input>
@@ -45,7 +53,8 @@
         [[> rsp:FormEntityRecord]]
     </div>
 
-    [[> rsp:FormDefaultActions actionType='Upload' formEntity='image' assetForm=true assetStorage='tmp']]
+    <semantic-form-errors></semantic-form-errors> 
 
+    [[> rsp:FormDefaultActions actionType='Upload' formEntity='image' assetForm=true assetStorage='tmp']]
   
 </semantic-form>

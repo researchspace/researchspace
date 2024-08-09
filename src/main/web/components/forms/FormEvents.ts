@@ -33,6 +33,11 @@ export interface FormEventData {
   'Form.ResourceUpdated': { iri: string };
 
   /**
+   * semantic-form fires this event when resource is removing
+   */
+    'Form.ResourceRemoving': { iri: string };
+
+  /**
    * semantic-form fires this event when resource is removed
    */
   'Form.ResourceRemoved': { iri: string };
@@ -58,6 +63,7 @@ const event: EventMaker<FormEventData> = EventMaker;
 
 export const FormResourceCreated = event('Form.ResourceCreated');
 export const FormResourceUpdated = event('Form.ResourceUpdated');
+export const FormResourceRemoving = event('Form.ResourceRemoving');
 export const FormResourceRemoved = event('Form.ResourceRemoved');
 export const FormDryRunResults = event('Form.DryRunResults');
 

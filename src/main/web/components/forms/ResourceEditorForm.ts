@@ -432,6 +432,11 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
 
   private onRemove = () => { 
     const itemToRemove = this.initialState.model.subject;
+    trigger({
+      eventType: FormEvents.FormResourceRemoving,
+      source: this.props.id,
+      data: { iri: itemToRemove.value },
+    })
     this.persistence
       .remove(this.initialState.model)
       .observe({

@@ -24,399 +24,399 @@
 
 
 <div class="imageAnnotation__container">
-      <div class="imageAnnotation__viewer">
-        [[!-- we assume that @partial-block is IIIF Viewer component. It is defined in the rsp:ImageAnnotation template --]]
-        {{> @partial-block }}
+  <div class="imageAnnotation__viewer">
+    [[!-- we assume that @partial-block is IIIF Viewer component. It is defined in the rsp:ImageAnnotation template --]]
+    {{> @partial-block }}
 
-        <mp-event-target-template-render id='{{viewId}}-image-upload-area' template='{{> newImage}}'>
-          <template id='newImage'>
-            <div class="imageAnnotation__viewer-newImageUpload"> 
-              <semantic-switch query='SELECT ?type WHERE {
-                                        <{{iri}}> a ?type .
-                                      }'>
-                <template id='http://www.researchspace.org/ontology/EX_Digital_Image'></template>
-                <template id='default'>
-                  <semantic-if query='ASK { <{{iri}}> a ?type . FILTER(?type in (ontodia:Diagram, Platform:Set))  }'
-                            then='{{> then}}'
-                            else='{{> else}}'>
+    <mp-event-target-template-render id='{{viewId}}-image-upload-area' template='{{> newImage}}'>
+      <template id='newImage'>
+        <div class="imageAnnotation__viewer-newImageUpload"> 
+          <semantic-switch query='SELECT ?type WHERE {
+                                    <{{iri}}> a ?type .
+                                  }'>
+            <template id='http://www.researchspace.org/ontology/EX_Digital_Image'></template>
+            <template id='default'>
+              <semantic-if query='ASK { <{{iri}}> a ?type . FILTER(?type in (ontodia:Diagram, Platform:Set))  }'
+                        then='{{> then}}'
+                        else='{{> else}}'>
 
-                    <template id='then'>
-                      {{#bind viewId=viewId}}
-                        <bs-dropdown id="{{viewId}}-newImage-dropdown">
-                          <bs-dropdown-toggle>
-                            <div> 
-                              <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
-                              <span>New Image</span>
-                            </div>
-                          </bs-dropdown-toggle>
-                          <bs-dropdown-menu>
-                            {{#each resources}} <div>1 {{viewId}}</div><div>2 {{../viewId}}</div><div>3 {{../../viewId}}</div>
-                            <semantic-if query='ASK {<{{resourceIri}}> a <http://www.researchspace.org/ontology/EX_Digital_Image> }'
-                                         else='{{> else}}'>
+                <template id='then'> 
+                  <bs-dropdown id="{{viewId}}-newImage-dropdown">
+                    <bs-dropdown-toggle>
+                      <div> 
+                        <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                        <span>New Image</span>
+                      </div>
+                    </bs-dropdown-toggle>
+                    <bs-dropdown-menu>
+                      {{#each resources}}
+                        {{#bind viewId=../viewId}} 
+                          <semantic-if query='ASK {<{{resourceIri}}> a <http://www.researchspace.org/ontology/EX_Digital_Image> }'
+                                        else='{{> else}}'>
 
-                              <template id='else'>
-                                {{#bind viewId=../viewId}} 
-                                  <mp-overlay-dialog id='{{viewId}}-newImage-dialog-{{resourceIri}}' type="modal" class="modal-xlSize newImageModal" title="New image">
-                                    <mp-overlay-dialog-trigger>
-                                      <bs-menu-item>
-                                        <mp-label iri="{{resourceIri}}"></mp-label> <div>a {{viewId}}</div><div>b {{../viewId}}</div><div>c {{../../viewId}}</div>
-                                      </bs-menu-item>
-                                    </mp-overlay-dialog-trigger>
-                                    <mp-overlay-dialog-content>  <div>A {{viewId}}</div><div>B {{../viewId}}</div><div>C {{../../viewId}}</div>
-                                      <div>
-                                        <mp-event-proxy id='{{viewId}}-refresh-image-viewer-afterUpload-{{resourceIri}}' 
-                                                        on-event-source='{{../viewId}}-upload-new-image-form-{{resourceIri}}'
-                                                        on-event-types='["Form.ResourceCreated"]'
-                                                        proxy-event-type='Component.TemplateUpdate'
-                                                        proxy-targets='["{{../viewId}}-image-viewer-render-area"]'
-                                        ></mp-event-proxy>
-                                
-                                        <mp-event-proxy id='{{../viewId}}-close-modal-upload-dialog-{{resourceIri}}' 
-                                                        on-event-source='{{../viewId}}-upload-new-image-form-{{resourceIri}}'
-                                                        on-event-types='["Form.ResourceCreated"]'
-                                                        proxy-event-type='OverlayDialog.Close' 
-                                                        proxy-targets='["{{../viewId}}-newImage-dialog-newImage-dialog-{{resourceIri}}"]'
-                                        ></mp-event-proxy>
+                            <template id='else'>
+                              <mp-overlay-dialog id='{{viewId}}-newImage-dialog-{{resourceIri}}' type="modal" class="modal-xlSize newImageModal" title="New image">
+                                <mp-overlay-dialog-trigger>
+                                  <bs-menu-item>
+                                    <mp-label iri="{{resourceIri}}"></mp-label> 
+                                  </bs-menu-item>
+                                </mp-overlay-dialog-trigger>
+                                <mp-overlay-dialog-content> 
+                                  <div>
+                                    <mp-event-proxy id='{{viewId}}-refresh-image-viewer-afterUpload-{{resourceIri}}' 
+                                                    on-event-source='{{viewId}}-upload-new-image-form-{{resourceIri}}'
+                                                    on-event-types='["Form.ResourceCreated"]'
+                                                    proxy-event-type='Component.TemplateUpdate'
+                                                    proxy-targets='["{{viewId}}-image-viewer-render-area"]'
+                                    ></mp-event-proxy>
+                            
+                                    <mp-event-proxy id='{{viewId}}-close-modal-upload-dialog-{{resourceIri}}' 
+                                                    on-event-source='{{viewId}}-upload-new-image-form-{{resourceIri}}'
+                                                    on-event-types='["Form.ResourceCreated"]'
+                                                    proxy-event-type='OverlayDialog.Close' 
+                                                    proxy-targets='["{{viewId}}-newImage-dialog-newImage-dialog-{{resourceIri}}"]'
+                                    ></mp-event-proxy>
 
-                                        <rs-tabs id="{{../viewId}}-newImage-tabs" class-name="form-tabs">
-                                          <rs-tab event-key="select" title="Select image">
-                                            <semantic-form  id='{{../viewId}}-upload-new-image-form-{{resourceIri}}' 
-                                                            post-action="event"
-                                                            subject='{{node}}'
-                                                            persistence='{"type": "sparql", "targetInsertGraphIri": "http://www.researchspace.org/resource/g/data"}'
-                                                            new-subject-template='{{resourceIri}}'
-                                                            fields='[[fieldDefinitions entity_image="http://www.researchspace.org/pattern/system/entity/images" ]]'>
-                                              <div class="form-scroll-area" style="padding-top: 20px;">
-                                                <div><span>Image for: </span> <mp-label iri="{{resourceIri}}" style="font-weight: 600;"></mp-label></div>
-                                                <semantic-form-autocomplete-input for='entity_image' 
-                                                                                  label="Image"
-                                                                                  placeholder="Select image to add" > 
-                                                </semantic-form-autocomplete-input>
-                                              </div>
-                                              <semantic-form-errors></semantic-form-errors> 
-
-                                              <div class="btn-group" style="margin-top: 15px;">
-                                                <div class="btn-form-actions"> 
-                                                  <button name="reset" class="btn btn-default">Reset</button>
-                                                  <button name="submit" class="btn btn-action">Add image</button>
-                                                </div>
-                                              </div>
-                                            </semantic-form>
-                                          </rs-tab>
-                                          <rs-tab event-key="upload" title="Upload new image">
-                                            <semantic-context repository='assets'>
-                                            <inline-template template-iri='http://www.researchspace.org/resource/system/forms/Image_minimal'
-                                                              options='{  
-                                                                          "formId": "{{../viewId}}-upload-new-image-form-{{resourceIri}}",
-                                                                          "mode": "new",
-                                                                          "editable": true,
-                                                                          "nested": true,
-                                                                          "onlyUpload": true,
-                                                                          "resourceIri": "{{resourceIri}}"
-                                                                        }'>
-                                            </inline-template>
-                                          </semantic-context>  
-                                          </rs-tab>
-                                        </rs-tabs>
-                                      </div>
-                                    </mp-overlay-dialog-content>
-                                  </mp-overlay-dialog>
-                                {{/bind}}
-                              </template>
-                            </semantic-if>
-                            {{/each}}
-                          </bs-dropdown-menu>
-                        </bs-dropdown>
-                      {{/bind}}
-                    </template>
-
-                    <template id='else'>
-                      {{#bind viewId=viewId}}
-                        <mp-overlay-dialog id='{{viewId}}-newImage-dialog' type="modal" class="modal-xlSize newImageModal" title="New image">
-                          <mp-overlay-dialog-trigger>
-                            <div> 
-                              <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
-                              <span>New Image</span>
-                            </div>
-                          </mp-overlay-dialog-trigger>
-                          <mp-overlay-dialog-content> 
-                            {{#each resources}}
-                                <mp-event-proxy id='{{../viewId}}-refresh-image-viewer-afterUpload-{{resourceIri}}' 
-                                                on-event-source='{{../viewId}}-upload-new-image-form-{{resourceIri}}'
-                                                on-event-types='["Form.ResourceCreated"]'
-                                                proxy-event-type='Component.TemplateUpdate'
-                                                proxy-targets='["{{../viewId}}-image-viewer-render-area"]'
-                                ></mp-event-proxy>
-                        
-                                <mp-event-proxy id='{{../viewId}}-close-modal-upload-dialog-{{resourceIri}}' 
-                                                on-event-source='{{../viewId}}-upload-new-image-form-{{resourceIri}}'
-                                                on-event-types='["Form.ResourceCreated"]'
-                                                proxy-event-type='OverlayDialog.Close' 
-                                                proxy-targets='["{{../viewId}}-newImage-dialog"]'
-                                ></mp-event-proxy>
-
-                                <rs-tabs id="{{../viewId}}-newImage-tabs" class-name="form-tabs">
-                                  <rs-tab event-key="select" title="Select image">
-                                    <semantic-form  id='{{../viewId}}-upload-new-image-form-{{resourceIri}}' 
-                                                    post-action="event"
-                                                    subject='{{node}}'
-                                                    persistence='{"type": "sparql", "targetInsertGraphIri": "http://www.researchspace.org/resource/g/data"}'
-                                                    new-subject-template='{{resourceIri}}'
-                                                    fields='[[fieldDefinitions entity_image="http://www.researchspace.org/pattern/system/entity/images" ]]'>
-                                      <div class="form-scroll-area" style="padding-top: 20px;">
-                                        <div><span>Image for: </span> <mp-label iri="{{resourceIri}}" style="font-weight: 600;"></mp-label></div>
-                                        <semantic-form-autocomplete-input for='entity_image' 
-                                                                          label="Image"
-                                                                          placeholder="Select image to add" > 
-                                        </semantic-form-autocomplete-input>
-                                      </div>
-                                      <semantic-form-errors></semantic-form-errors> 
-          
-                                      <div class="btn-group" style="margin-top: 15px;">
-                                        <div class="btn-form-actions"> 
-                                          <button name="reset" class="btn btn-default">Reset</button>
-                                          <button name="submit" class="btn btn-action">Add image</button>
-                                        </div>
-                                      </div>
-                                    </semantic-form>
-                                  </rs-tab>
-                                  <rs-tab event-key="upload" title="Upload new image">
-                                    <semantic-context repository='assets'>
-                                    <inline-template template-iri='http://www.researchspace.org/resource/system/forms/Image_minimal'
-                                                      options='{  
-                                                                  "formId": "{{../viewId}}-upload-new-image-form-{{resourceIri}}",
-                                                                  "mode": "new",
-                                                                  "editable": true,
-                                                                  "nested": true,
-                                                                  "onlyUpload": true,
-                                                                  "resourceIri": "{{resourceIri}}"
-                                                                }'>
-                                    </inline-template>
-                                  </semantic-context>  
-                                  </rs-tab>
-                                </rs-tabs>
-                            {{/each}}
-                          </mp-overlay-dialog-content>
-                        </mp-overlay-dialog>
-                      {{/bind}}
-                    </template>
-
-                  </semantic-if>
-                </template>
-              </semantic-switch>
-            </div>
-          </template>
-        </mp-event-target-template-render>
-
-      </div>
-
-      [[!-- List of resources is refreshed by `{{viewId}}-refresh-image-list` event-proxy at the top of the template.
-        Variables available in the template: resources: Array of { resourceIri: resource iri string, images: array of image iris strings } --]]
-      <mp-event-target-template-render id='{{viewId}}-image-annotation-area' template='{{> annotation}}'>
-        <template id='annotation'>
-          <div class="imageAnnotation__resourceAnnotation-container">
-
-            <div class="imageAnnotation__resourceAnnotation-header">
-              <h6>Image annotations</h6>
-            </div>
-            
-            <div class="imageAnnotation__resourceAnnotation-result">
-              [[!-- iterate over all resources available in the current IIIF Viewer --]]
-
-              <bs-tab-container id="{{viewId}}-annotation-resources-tabs" class="imageAnnotation__resourceAnnotation-result-tabs" default-active-key="{{#each resources}}{{#if @first}}{{../viewId}}-resource-tab-{{resourceIri}}{{/if}}{{/each}}">
-                <div>
-                  <bs-nav bs-style="tabs">
-                    {{#each resources}}
-                      {{#bind viewId=../viewId insideForm=../insideForm recordType=../recordType}}
-                        <bs-nav-item event-key="{{viewId}}-resource-tab-{{resourceIri}}">
-                          <mp-label iri="{{resourceIri}}" class="text-truncate-line1" style="max-width: 140px;"></mp-label> 
-                          <mp-event-trigger id='{{viewId}}-image-view-trigger-{{resourceIri}}' 
-                                            type='IIIFViewer.AddImagesForResource' 
-                                            targets='["{{viewId}}-image-annotation"]'
-                                            data='{ "resourceIri": "{{resourceIri}}" }'>
-                            <rs-icon icon-type="round" icon-name="image" title="View resource images in the viewer"></rs-icon>
-                          </mp-event-trigger>
-                        </bs-nav-item>
-                      {{/bind}}
-                    {{/each}}
-                  </bs-nav>
-
-                  <bs-tab-content animation>
-                    {{#each resources}}
-                      {{#bind viewId=../viewId insideForm=../insideForm recordType=../recordType}}
-                        <bs-tab-pane event-key="{{viewId}}-resource-tab-{{resourceIri}}">
-
-                          [[!-- To not fully refresh rendered list of resources when image annotation is created/updated/removed in the IIIF Viewer,
-                              for every resource we listen to all region related events triggered by the IIIF Viewer and refresh only part of the view related to updated resource. --]]
-                          <mp-event-proxy id='{{viewId}}-refresh-resource-{{resourceIri}}' 
-                                          on-event-source='{{viewId}}-image-annotation' 
-                                          on-event-types='["IIIFViewer.RegionCreated", "IIIFViewer.RegionUpdated", "IIIFViewer.RegionRemoved"]'
-                                          on-event-data='{"resourceIri": "{{resourceIri}}"}'
-                                          proxy-event-type='Component.TemplateUpdate' 
-                                          proxy-targets='["{{viewId}}-resource-annotation-{{resourceIri}}"]'
-                          ></mp-event-proxy>
-        
-                          <mp-event-target-template-render id='{{viewId}}-resource-annotation-{{resourceIri}}' template='{{> resourceTemplate}}'>
-                            <template id='resourceTemplate'> 
-                              <div style="height: 100%;">
-              
-                                [[!-- Query and show list of all image annotation for the current resource --]]
-                                <semantic-query query='SELECT DISTINCT ?region ?regionLabel ?image {
-                                                        {
-                                                          <{{resourceIri}}> crm:P138i_has_representation|rso:PX_has_main_representation ?image .
-                                                        }
-                                                        UNION {
-                                                          <{{resourceIri}}> a rs:EX_Digital_Image .
-                                                          BIND(<{{resourceIri}}> as ?image) .
-                                                        }
-                                                        ?region crmdig:L49_is_primary_area_of ?image .
-                                                        ?region crm:P190_has_symbolic_content ?regionLabel .
-                                                      }'
-                                                template='{{> imageAnnotations}}'
-                                                no-result-template='{{> noResults}}'>
-                                
-                                  <template id="noResults">
-                                    <div>
-                                      <div style="padding-top: 15px;">
-                                        <div class="documentation-section documentation-section-withIcon">
-                                          <div class="documentation-section-icon-container">
-                                            <i class="fa fa-info"></i>
+                                    <rs-tabs id="{{viewId}}-newImage-tabs" class-name="form-tabs">
+                                      <rs-tab event-key="select" title="Select image">
+                                        <semantic-form  id='{{viewId}}-upload-new-image-form-{{resourceIri}}' 
+                                                        post-action="event"
+                                                        subject='{{node}}'
+                                                        persistence='{"type": "sparql", "targetInsertGraphIri": "http://www.researchspace.org/resource/g/data"}'
+                                                        new-subject-template='{{resourceIri}}'
+                                                        fields='[[fieldDefinitions entity_image="http://www.researchspace.org/pattern/system/entity/images" ]]'>
+                                          <div class="form-scroll-area" style="padding-top: 20px;">
+                                            <div><span>Image for: </span> <mp-label iri="{{resourceIri}}" style="font-weight: 600;"></mp-label></div>
+                                            <semantic-form-autocomplete-input for='entity_image' 
+                                                                              label="Image"
+                                                                              placeholder="Select image to add" > 
+                                            </semantic-form-autocomplete-input>
                                           </div>
-                              
-                                          <div style="flex: 1;"> 
-                                            <div class="documentation-section-title">Create image annotation</div>
-                                            <div style="padding-top: 3px;">The toggle annotation in the image viewer allows to draw annotations 
-                                              with the selected shape, border style, color and fill.</div>
-                                          </div>
-                                          
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </template>
-              
-                                  <template id='imageAnnotations'>
-                                      <div class="imageAnnotation__resourceAnnotation-result-items">
-                                        
-                                      [[!-- Iterate over all query result bindings that represent image regions. --]]
-                                      {{#each bindings}}
-                                        <mp-event-trigger id='{{../viewId}}-highlightRegion-event-trigger-{{resourceIri}}-{{region.value}}' 
-                                                          type='IIIFViewer.HighlightRegion' 
-                                                          targets='["{{../viewId}}-image-annotation"]'
-                                                          data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}' 
-                                                          on='["hover"]'
-                                        >
-                                        <div class="imageAnnotation__resourceAnnotation-result-item">
+                                          <semantic-form-errors></semantic-form-errors> 
 
-                                          <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
-                                            <mp-draggable iri='{{region.value}}'>
-                                              <div>
-                                                <mp-event-trigger id='{{../viewId}}-focus-event-trigger-{{resourceIri}}-{{region.value}}' 
-                                                                  type='IIIFViewer.ZoomToRegion' 
-                                                                  targets='["{{../viewId}}-image-annotation"]'
-                                                                  data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
-                                                  <div>
-                                                    <rs-iiif-image-thumbnail  height='40' width='45' style='border-radius: 1.5px;'
-                                                                              image-or-region='{{region.value}}'      
-                                                                              [[> rsp:IIIFConfig]]>
-                                                    </rs-iiif-image-thumbnail>
-                                                  </div>
-                                                </mp-event-trigger>
-
-                                              </div>
-                                            </mp-draggable>
-
-                                            <div style="flex: 1;">
-                                              <mp-draggable iri='{{region.value}}'>
-                                                <div>
-                                                  <mp-event-trigger id='{{../viewId}}-focus-event-trigger-{{resourceIri}}-{{region.value}}' 
-                                                            type='IIIFViewer.ZoomToRegion' 
-                                                            targets='["{{../viewId}}-image-annotation"]'
-                                                            data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
-                                                    <div class="text-link text-truncate-line1">{{regionLabel.value}}</div>
-                                                  </mp-event-trigger>
-                                                </div>
-                                              </mp-draggable>
-    
-                                              <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">Image annotation</div>
+                                          <div class="btn-group" style="margin-top: 15px;">
+                                            <div class="btn-form-actions"> 
+                                              <button name="reset" class="btn btn-default">Reset</button>
+                                              <button name="submit" class="btn btn-action">Add image</button>
                                             </div>
                                           </div>
+                                        </semantic-form>
+                                      </rs-tab>
+                                      <rs-tab event-key="upload" title="Upload new image">
+                                        <semantic-context repository='assets'>
+                                        <inline-template template-iri='http://www.researchspace.org/resource/system/forms/Image_minimal'
+                                                          options='{  
+                                                                      "formId": "{{viewId}}-upload-new-image-form-{{resourceIri}}",
+                                                                      "mode": "new",
+                                                                      "editable": true,
+                                                                      "nested": true,
+                                                                      "onlyUpload": true,
+                                                                      "resourceIri": "{{resourceIri}}"
+                                                                    }'>
+                                        </inline-template>
+                                      </semantic-context>  
+                                      </rs-tab>
+                                    </rs-tabs>
+                                  </div>
+                                </mp-overlay-dialog-content>
+                              </mp-overlay-dialog>
+                            </template>
+                          </semantic-if>
+                        {{/bind}}
+                      {{/each}}
+                    </bs-dropdown-menu>
+                  </bs-dropdown>
+                </template>
 
-                                          <div class='imageAnnotation__resourceAnnotation-result-item-actions'>
+                <template id='else'> 
+              
+                    <mp-overlay-dialog id='{{viewId}}-newImage-dialog' type="modal" class="modal-xlSize newImageModal" title="New image">
+                      <mp-overlay-dialog-trigger>
+                        <div> 
+                          <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                          <span>New Image</span>
+                        </div>
+                      </mp-overlay-dialog-trigger>
+                      <mp-overlay-dialog-content> 
+                        {{#each resources}}
+                          {{#bind viewId=../viewId}}
+                            <mp-event-proxy id='{{viewId}}-refresh-image-viewer-afterUpload-{{resourceIri}}' 
+                                            on-event-source='{{viewId}}-upload-new-image-form-{{resourceIri}}'
+                                            on-event-types='["Form.ResourceCreated"]'
+                                            proxy-event-type='Component.TemplateUpdate'
+                                            proxy-targets='["{{viewId}}-image-viewer-render-area"]'
+                            ></mp-event-proxy>
+                    
+                            <mp-event-proxy id='{{viewId}}-close-modal-upload-dialog-{{resourceIri}}' 
+                                            on-event-source='{{viewId}}-upload-new-image-form-{{resourceIri}}'
+                                            on-event-types='["Form.ResourceCreated"]'
+                                            proxy-event-type='OverlayDialog.Close' 
+                                            proxy-targets='["{{viewId}}-newImage-dialog"]'
+                            ></mp-event-proxy>
 
-                                            [[!-- Zoom to the current image region in the IIIF Viewer, 
-                                            creates new slot if the viewer doesn't have active slot with the corresponding image. --]]                                         
+                            <rs-tabs id="{{viewId}}-newImage-tabs" class-name="form-tabs">
+                              <rs-tab event-key="select" title="Select image">
+                                <semantic-form  id='{{viewId}}-upload-new-image-form-{{resourceIri}}' 
+                                                post-action="event"
+                                                subject='{{node}}'
+                                                persistence='{"type": "sparql", "targetInsertGraphIri": "http://www.researchspace.org/resource/g/data"}'
+                                                new-subject-template='{{resourceIri}}'
+                                                fields='[[fieldDefinitions entity_image="http://www.researchspace.org/pattern/system/entity/images" ]]'>
+                                  <div class="form-scroll-area" style="padding-top: 20px;">
+                                    <div><span>Image for: </span> <mp-label iri="{{resourceIri}}" style="font-weight: 600;"></mp-label></div>
+                                    <semantic-form-autocomplete-input for='entity_image' 
+                                                                      label="Image"
+                                                                      placeholder="Select image to add" > 
+                                    </semantic-form-autocomplete-input>
+                                  </div>
+                                  <semantic-form-errors></semantic-form-errors> 
+      
+                                  <div class="btn-group" style="margin-top: 15px;">
+                                    <div class="btn-form-actions"> 
+                                      <button name="reset" class="btn btn-default">Reset</button>
+                                      <button name="submit" class="btn btn-action">Add image</button>
+                                    </div>
+                                  </div>
+                                </semantic-form>
+                              </rs-tab>
+                              <rs-tab event-key="upload" title="Upload new image">
+                                <semantic-context repository='assets'>
+                                <inline-template template-iri='http://www.researchspace.org/resource/system/forms/Image_minimal'
+                                                  options='{  
+                                                              "formId": "{{viewId}}-upload-new-image-form-{{resourceIri}}",
+                                                              "mode": "new",
+                                                              "editable": true,
+                                                              "nested": true,
+                                                              "onlyUpload": true,
+                                                              "resourceIri": "{{resourceIri}}"
+                                                            }'>
+                                </inline-template>
+                              </semantic-context>  
+                              </rs-tab>
+                            </rs-tabs>
+                          {{/bind}}
+                        {{/each}}
+                      </mp-overlay-dialog-content>
+                    </mp-overlay-dialog>
+               
+                </template>
+
+              </semantic-if>
+            </template>
+          </semantic-switch>
+        </div>
+      </template>
+    </mp-event-target-template-render>
+
+  </div>
+
+  [[!-- List of resources is refreshed by `{{viewId}}-refresh-image-list` event-proxy at the top of the template.
+    Variables available in the template: resources: Array of { resourceIri: resource iri string, images: array of image iris strings } --]]
+  <mp-event-target-template-render id='{{viewId}}-image-annotation-area' template='{{> annotation}}'>
+    <template id='annotation'>
+      <div class="imageAnnotation__resourceAnnotation-container">
+
+        <div class="imageAnnotation__resourceAnnotation-header">
+          <h6>Image annotations</h6>
+        </div>
+        
+        <div class="imageAnnotation__resourceAnnotation-result">
+          [[!-- iterate over all resources available in the current IIIF Viewer --]]
+
+          <bs-tab-container id="{{viewId}}-annotation-resources-tabs" class="imageAnnotation__resourceAnnotation-result-tabs" default-active-key="{{#each resources}}{{#if @first}}{{../viewId}}-resource-tab-{{resourceIri}}{{/if}}{{/each}}">
+            <div>
+              <bs-nav bs-style="tabs">
+                {{#each resources}}
+                  {{#bind viewId=../viewId insideForm=../insideForm recordType=../recordType}}
+                    <bs-nav-item event-key="{{viewId}}-resource-tab-{{resourceIri}}">
+                      <mp-label iri="{{resourceIri}}" class="text-truncate-line1" style="max-width: 140px;"></mp-label> 
+                      <mp-event-trigger id='{{viewId}}-image-view-trigger-{{resourceIri}}' 
+                                        type='IIIFViewer.AddImagesForResource' 
+                                        targets='["{{viewId}}-image-annotation"]'
+                                        data='{ "resourceIri": "{{resourceIri}}" }'>
+                        <rs-icon icon-type="round" icon-name="image" title="View resource images in the viewer"></rs-icon>
+                      </mp-event-trigger>
+                    </bs-nav-item>
+                  {{/bind}}
+                {{/each}}
+              </bs-nav>
+
+              <bs-tab-content animation>
+                {{#each resources}}
+                  {{#bind viewId=../viewId insideForm=../insideForm recordType=../recordType}}
+                    <bs-tab-pane event-key="{{viewId}}-resource-tab-{{resourceIri}}">
+
+                      [[!-- To not fully refresh rendered list of resources when image annotation is created/updated/removed in the IIIF Viewer,
+                          for every resource we listen to all region related events triggered by the IIIF Viewer and refresh only part of the view related to updated resource. --]]
+                      <mp-event-proxy id='{{viewId}}-refresh-resource-{{resourceIri}}' 
+                                      on-event-source='{{viewId}}-image-annotation' 
+                                      on-event-types='["IIIFViewer.RegionCreated", "IIIFViewer.RegionUpdated", "IIIFViewer.RegionRemoved"]'
+                                      on-event-data='{"resourceIri": "{{resourceIri}}"}'
+                                      proxy-event-type='Component.TemplateUpdate' 
+                                      proxy-targets='["{{viewId}}-resource-annotation-{{resourceIri}}"]'
+                      ></mp-event-proxy>
+    
+                      <mp-event-target-template-render id='{{viewId}}-resource-annotation-{{resourceIri}}' template='{{> resourceTemplate}}'>
+                        <template id='resourceTemplate'> 
+                          <div style="height: 100%;">
+          
+                            [[!-- Query and show list of all image annotation for the current resource --]]
+                            <semantic-query query='SELECT DISTINCT ?region ?regionLabel ?image {
+                                                    {
+                                                      <{{resourceIri}}> crm:P138i_has_representation|rso:PX_has_main_representation ?image .
+                                                    }
+                                                    UNION {
+                                                      <{{resourceIri}}> a rs:EX_Digital_Image .
+                                                      BIND(<{{resourceIri}}> as ?image) .
+                                                    }
+                                                    ?region crmdig:L49_is_primary_area_of ?image .
+                                                    ?region crm:P190_has_symbolic_content ?regionLabel .
+                                                  }'
+                                            template='{{> imageAnnotations}}'
+                                            no-result-template='{{> noResults}}'>
+                            
+                              <template id="noResults">
+                                <div>
+                                  <div style="padding: 10px;">
+                                    <div class="documentation-section documentation-section-withIcon">
+                                      <div class="documentation-section-icon-container">
+                                        <i class="fa fa-info"></i>
+                                      </div>
+                          
+                                      <div style="flex: 1;"> 
+                                        <div class="documentation-section-title">Create image annotation</div>
+                                        <div style="padding-top: 3px;">The toggle annotation in the image viewer allows to draw annotations 
+                                          with the selected shape, border style, color and fill.</div>
+                                      </div>
+                                      
+                                    </div>
+                                  </div>
+                                </div>
+                              </template>
+          
+                              <template id='imageAnnotations'>
+                                  <div class="imageAnnotation__resourceAnnotation-result-items">
+                                    
+                                  [[!-- Iterate over all query result bindings that represent image regions. --]]
+                                  {{#each bindings}}
+                                    <mp-event-trigger id='{{../viewId}}-highlightRegion-event-trigger-{{resourceIri}}-{{region.value}}' 
+                                                      type='IIIFViewer.HighlightRegion' 
+                                                      targets='["{{../viewId}}-image-annotation"]'
+                                                      data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}' 
+                                                      on='["hover"]'
+                                    >
+                                    <div class="imageAnnotation__resourceAnnotation-result-item">
+
+                                      <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+                                        <mp-draggable iri='{{region.value}}'>
+                                          <div>
                                             <mp-event-trigger id='{{../viewId}}-focus-event-trigger-{{resourceIri}}-{{region.value}}' 
                                                               type='IIIFViewer.ZoomToRegion' 
                                                               targets='["{{../viewId}}-image-annotation"]'
                                                               data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
-                                              <button class="btn btn-default border-none" title="Focus to annotation">
-                                                <rs-icon icon-type="rounded" icon-name="center_focus_strong" symbol="true"></rs-icon>
-                                              </button>
+                                              <div>
+                                                <rs-iiif-image-thumbnail  height='40' width='45' style='border-radius: 1.5px;'
+                                                                          image-or-region='{{region.value}}'      
+                                                                          [[> rsp:IIIFConfig]]>
+                                                </rs-iiif-image-thumbnail>
+                                              </div>
                                             </mp-event-trigger>
 
-                                            {{> rsp:ResourceDropdownActions viewId=../viewId
-                                                                            iri=region.value
-                                                                            resourceConfig="http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation"
-                                                                            resourceLabel="Image annotation"
-                                                                            resourceFormIRI="http://www.researchspace.org/resource/system/forms/ImageAnnotation"
-                                            }}
-              
-                                            [[!-- Delete image annotation  
-                                            <mp-overlay-dialog id='{{../viewId}}-region-remove-confirmation-dialog--{{region.value}}' title="Delete image annotation" type="modal">
-                                              <mp-overlay-dialog-trigger>
-                                                <div class='text-link'>delete</div>
-                                              </mp-overlay-dialog-trigger>
-                                              <mp-overlay-dialog-content>
-                                                <div>
-                                                  <div>
-                                                    <p>Are you sure you want to delete the image annotation '<strong><mp-label iri='{{region.value}}'></mp-label></strong>' ?</p>
-                                                  </div>
-                                                  <div class="form-btn-group">
-                                                    <div style="display: flex; justify-content: flex-end; width: 100%;">
-              
-                                                      <mp-event-trigger id='{{../viewId}}-cancel-feature-removal' 
-                                                                        type='OverlayDialog.Close' 
-                                                                        targets='["{{../viewId}}-region-remove-confirmation-dialog--{{region.value}}"]'>
-                                                        <button class="btn btn-default">Cancel</button>
-                                                      </mp-event-trigger>
-              
-                                                      <mp-event-trigger id='{{../viewId}}-remove-region-event-trigger--{{region.value}}' 
-                                                                        type='IIIFViewer.RemoveRegion' 
-                                                                        targets='["{{../viewId}}-image-annotation"]'
-                                                                        data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
-                                                        <button class="btn btn-action">Delete annotation</button>
-                                                      </mp-event-trigger>
-              
-                                                      <mp-event-proxy id='{{../viewId}}-close-region-removal-dialog--{{feature.value}}' 
-                                                                      on-event-source='{{../viewId}}-remove-region-event-trigger--{{region.value}}'
-                                                                      proxy-event-type='OverlayDialog.Close' 
-                                                                      targets='["{{../viewId}}-region-remove-confirmation-dialog--{{region.value}}"]'
-                                                      ></mp-event-proxy>
-                                                    </div>
-                                                  </div>
-                                                </div>
-                                              </mp-overlay-dialog-content>
-                                            </mp-overlay-dialog>--]]
                                           </div>
+                                        </mp-draggable>
+
+                                        <div style="flex: 1;">
+                                          <mp-draggable iri='{{region.value}}'>
+                                            <div>
+                                              <mp-event-trigger id='{{../viewId}}-focus-event-trigger-{{resourceIri}}-{{region.value}}' 
+                                                        type='IIIFViewer.ZoomToRegion' 
+                                                        targets='["{{../viewId}}-image-annotation"]'
+                                                        data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
+                                                <div class="text-link text-truncate-line1">{{regionLabel.value}}</div>
+                                              </mp-event-trigger>
+                                            </div>
+                                          </mp-draggable>
+
+                                          <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">Image annotation</div>
                                         </div>
+                                      </div>
+
+                                      <div class='imageAnnotation__resourceAnnotation-result-item-actions'>
+
+                                        [[!-- Zoom to the current image region in the IIIF Viewer, 
+                                        creates new slot if the viewer doesn't have active slot with the corresponding image. --]]                                         
+                                        <mp-event-trigger id='{{../viewId}}-focus-event-trigger-{{resourceIri}}-{{region.value}}' 
+                                                          type='IIIFViewer.ZoomToRegion' 
+                                                          targets='["{{../viewId}}-image-annotation"]'
+                                                          data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
+                                          <button class="btn btn-default border-none" title="Focus to annotation">
+                                            <rs-icon icon-type="rounded" icon-name="center_focus_strong" symbol="true"></rs-icon>
+                                          </button>
                                         </mp-event-trigger>
-                                        
-                                      {{/each}}
+
+                                        {{> rsp:ResourceDropdownActions viewId=../viewId
+                                                                        iri=region.value
+                                                                        resourceConfig="http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation"
+                                                                        resourceLabel="Image annotation"
+                                                                        resourceFormIRI="http://www.researchspace.org/resource/system/forms/ImageAnnotation"
+                                        }}
+          
+                                        [[!-- Delete image annotation  
+                                        <mp-overlay-dialog id='{{../viewId}}-region-remove-confirmation-dialog--{{region.value}}' title="Delete image annotation" type="modal">
+                                          <mp-overlay-dialog-trigger>
+                                            <div class='text-link'>delete</div>
+                                          </mp-overlay-dialog-trigger>
+                                          <mp-overlay-dialog-content>
+                                            <div>
+                                              <div>
+                                                <p>Are you sure you want to delete the image annotation '<strong><mp-label iri='{{region.value}}'></mp-label></strong>' ?</p>
+                                              </div>
+                                              <div class="form-btn-group">
+                                                <div style="display: flex; justify-content: flex-end; width: 100%;">
+          
+                                                  <mp-event-trigger id='{{../viewId}}-cancel-feature-removal' 
+                                                                    type='OverlayDialog.Close' 
+                                                                    targets='["{{../viewId}}-region-remove-confirmation-dialog--{{region.value}}"]'>
+                                                    <button class="btn btn-default">Cancel</button>
+                                                  </mp-event-trigger>
+          
+                                                  <mp-event-trigger id='{{../viewId}}-remove-region-event-trigger--{{region.value}}' 
+                                                                    type='IIIFViewer.RemoveRegion' 
+                                                                    targets='["{{../viewId}}-image-annotation"]'
+                                                                    data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
+                                                    <button class="btn btn-action">Delete annotation</button>
+                                                  </mp-event-trigger>
+          
+                                                  <mp-event-proxy id='{{../viewId}}-close-region-removal-dialog--{{feature.value}}' 
+                                                                  on-event-source='{{../viewId}}-remove-region-event-trigger--{{region.value}}'
+                                                                  proxy-event-type='OverlayDialog.Close' 
+                                                                  targets='["{{../viewId}}-region-remove-confirmation-dialog--{{region.value}}"]'
+                                                  ></mp-event-proxy>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </mp-overlay-dialog-content>
+                                        </mp-overlay-dialog>--]]
+                                      </div>
                                     </div>
-                                  </template>
-                                </semantic-query>
-                              </div>
-                            </template>
-                          </mp-event-target-template-render>
-                        </bs-tab-pane>
-                      {{/bind}}
-                    {{/each}}
-                  </bs-tab-content>
-                </div>
-              </div>
-            </bs-tab-container>
+                                    </mp-event-trigger>
+                                    
+                                  {{/each}}
+                                </div>
+                              </template>
+                            </semantic-query>
+                          </div>
+                        </template>
+                      </mp-event-target-template-render>
+                    </bs-tab-pane>
+                  {{/bind}}
+                {{/each}}
+              </bs-tab-content>
+            </div>
           </div>
-        </template>
-      </mp-event-target-template-render>
+        </bs-tab-container>
+      </div>
+    </template>
+  </mp-event-target-template-render>
         
-  </div>
+</div>

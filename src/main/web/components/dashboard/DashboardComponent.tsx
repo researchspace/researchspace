@@ -747,7 +747,20 @@ export class DashboardComponent extends Component<Props, State> {
     }
   }
 
-  private onLayoutAction = (action: Action) => {
+  private onLayoutAction = (action: Action) => { console.log("layout action");
+    /* Identify DashboardItems that contain an image viewer based on viewId */
+    const images = this.state.items.filter((i) => i.viewId === "image-annotation");
+    const iiifViewerDashboardItems = []; 
+
+    images.forEach(image => iiifViewerDashboardItems.push(image.id+"-image-viewer-render-area"));
+    
+    trigger({
+      eventType: 'Component.TemplateUpdate',
+      source: 'link',
+      targets: iiifViewerDashboardItems,
+      
+    });
+    
     if (action.type === Actions.DELETE_TAB) {
       const tab = this.state.layout.getNodeById(action.data.node) as TabNode;
       return this.onRemoveItem(action, tab.getConfig().itemId);

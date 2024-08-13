@@ -1,6 +1,7 @@
 <semantic-query query='SELECT DISTINCT  ?subject ?resourceConfig ?resourceLabel ?resourceType ?date 
-                                        ?modifiedActor ?systemModifiedActorName ?modifiedActorFullName
-                                        ?creationActor ?systemCreationActorName ?creationActorFullName WHERE {
+                                        ?modifiedActor ?systemModifiedActorName ?modifiedActorFullName ?modifiedActorMainImage ?modifiedActorMainImageClass
+                                        ?creationActor ?systemCreationActorName ?creationActorFullName ?creationActorMainImage ?creationActorMainImageClass
+                                 WHERE {
 
                         BIND(<{{iri}}> as ?subject)
                         BIND("{{date.value}}" as ?date)
@@ -35,6 +36,12 @@
                             ?actorName a crm:E41_Appellation .
                             ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                             ?actorName crm:P190_has_symbolic_content ?modifiedActorFullName .
+
+                            OPTIONAL {
+                              ?modifiedActor rs:PX_has_main_representation ?modifiedActorMainImage .
+                              ?modifiedActorMainImage a ?modifiedActorMainImageClass .
+                              FILTER(?modifiedActorMainImageClass in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+                            }
                           }
                         }
 
@@ -54,8 +61,16 @@
                             ?creationActorName a crm:E41_Appellation .
                             ?creationActorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                             ?creationActorName crm:P190_has_symbolic_content ?creationActorFullName .
+
+                            OPTIONAL {
+                              ?creationActor rs:PX_has_main_representation ?creationActorMainImage .
+                              ?creationActorMainImage a ?creationActorMainImageClass .
+                              FILTER(?creationActorMainImageClass in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+                            }
                           }
                         }
+
+
 
                       } LIMIT 1'
       
@@ -67,17 +82,31 @@
       <div class="activity-card-content">
         <div>
           {{#if bindings.0.modifiedActor.value}}
-            <mp-resource-thumbnail iri='{{bindings.0.modifiedActor.value}}' class="person-thumbnail">
-              <mp-resource-thumbnail-fallback>
-                  <rs-icon icon-type="round" icon-name="person" class="person-icon"></rs-icon>
-              </mp-resource-thumbnail-fallback>
-            </mp-resource-thumbnail>  
+            {{#if (eq bindings.0.modifiedActorMainImageClass.value "http://www.researchspace.org/ontology/EX_Digital_Image_Region")}}
+              <rs-iiif-image-thumbnail  height='25' width='25' class="person-thumbnail"
+                                        image-or-region='{{bindings.0.modifiedActorMainImage.value}}'
+                                        [[> rsp:IIIFConfig]]>
+              </rs-iiif-image-thumbnail>
+            {{else}}
+              <mp-resource-thumbnail iri='{{bindings.0.modifiedActor.value}}' class="person-thumbnail">
+                <mp-resource-thumbnail-fallback>
+                    <rs-icon icon-type="round" icon-name="person" class="person-icon"></rs-icon>
+                </mp-resource-thumbnail-fallback>
+              </mp-resource-thumbnail>  
+            {{/if}}
           {{else if bindings.0.creationActor.value}}
-            <mp-resource-thumbnail iri='{{bindings.0.creationActor.value}}' class="person-thumbnail">
-              <mp-resource-thumbnail-fallback>
-                  <rs-icon icon-type="round" icon-name="person" class="person-icon"></rs-icon>
-              </mp-resource-thumbnail-fallback>
-            </mp-resource-thumbnail>  
+            {{#if (eq bindings.0.creationActorMainImageClass.value "http://www.researchspace.org/ontology/EX_Digital_Image_Region")}}
+              <rs-iiif-image-thumbnail  height='25' width='25' class="person-thumbnail"
+                                        image-or-region='{{bindings.0.creationActorMainImage.value}}'
+                                        [[> rsp:IIIFConfig]]>
+              </rs-iiif-image-thumbnail>
+            {{else}}
+              <mp-resource-thumbnail iri='{{bindings.0.creationActor.value}}' class="person-thumbnail">
+                <mp-resource-thumbnail-fallback>
+                    <rs-icon icon-type="round" icon-name="person" class="person-icon"></rs-icon>
+                </mp-resource-thumbnail-fallback>
+              </mp-resource-thumbnail>  
+            {{/if}}
           {{/if}}
         </div>
         <div class="activity-card-data">

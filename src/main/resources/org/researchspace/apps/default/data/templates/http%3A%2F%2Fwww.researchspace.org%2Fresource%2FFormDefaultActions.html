@@ -54,7 +54,7 @@
       {{/switch}}
 
       <mp-event-proxy id='{{viewId}}-show-form-debug-dialog' 
-                      on-event-source='{{viewId}}-resource-form' 
+                      on-event-source='{{#if iri}}{{iri}}-resource-form{{else}}{{viewId}}-resource-form{{/if}}' 
                       on-event-type='Form.DryRunResults'
                       proxy-event-type='Component.TemplateUpdate' 
                       additional-data='{"show": true}' 
@@ -266,18 +266,18 @@
             <mp-event-trigger id='{{viewId}}-confirm-entity-removal' 
                               type='Form.RemoveResource' 
                               data='{"iri": "{{node}}"}' 
-                              targets='["{{viewId}}-resource-form"]'>
+                              targets='["{{#if iri}}{{iri}}-resource-form{{else}}{{viewId}}-resource-form{{/if}}"]'>
               <button class="btn btn-action">Delete</button>
             </mp-event-trigger>  
           [[/if]]
           <mp-event-proxy id='{{viewId}}-update-form' 
-                          on-event-source='{{viewId}}-resource-form' 
+                          on-event-source='{{#if iri}}{{iri}}-resource-form{{else}}{{viewId}}-resource-form{{/if}}' 
                           on-event-type='Form.ResourceRemoved'
                           proxy-event-type='Component.TemplateUpdate'
                           proxy-targets='["{{viewId}}-term-forms", "{{viewId}}-resource-config-term-forms"]'
           ></mp-event-proxy>
           <mp-event-proxy id='{{viewId}}-close-form-removal-dialog' 
-                          on-event-source='{{viewId}}-resource-form' 
+                          on-event-source='{{#if iri}}{{iri}}-resource-form{{else}}{{viewId}}-resource-form{{/if}}' 
                           on-event-type='Form.ResourceRemoved'
                           proxy-event-type='OverlayDialog.Close' 
                           data='{}'

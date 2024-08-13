@@ -153,7 +153,7 @@ export interface State {
 
 export class DashboardComponent extends Component<Props, State> {
   static defaultProps: Partial<Props> = {
-    frameMinSize: 150,
+    frameMinSize: 260,
     linkedViews: [],
   };
 
@@ -754,12 +754,12 @@ export class DashboardComponent extends Component<Props, State> {
 
     images.forEach(image => iiifViewerDashboardItems.push(image.id+"-image-viewer-render-area"));
     
-    trigger({
-      eventType: 'Component.TemplateUpdate',
-      source: 'link',
-      targets: iiifViewerDashboardItems,
-      
-    });
+    if (action.type === Actions.ADJUST_BORDER_SPLIT || action.type === Actions.ADJUST_SPLIT)
+      trigger({
+        eventType: 'Component.TemplateUpdate',
+        source: 'link',
+        targets: iiifViewerDashboardItems,
+      });
     
     if (action.type === Actions.DELETE_TAB) {
       const tab = this.state.layout.getNodeById(action.data.node) as TabNode;

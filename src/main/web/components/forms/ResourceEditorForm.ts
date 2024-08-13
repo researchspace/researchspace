@@ -161,8 +161,7 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
       ).observe({
         value: (event) => {
           if (event.data.iri === this.props.subject) {
-            // To add a loading bar for slow deletes
-            if (this.initialState) this.onRemove();
+            this.onRemove();
           }
         }
       });

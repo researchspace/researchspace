@@ -747,7 +747,7 @@ export class DashboardComponent extends Component<Props, State> {
     }
   }
 
-  private onLayoutAction = (action: Action) => { console.log("layout action ", action);
+  private onLayoutAction = (action: Action) => {
     /* Identify DashboardItems that contain an image viewer based on viewId */
     const images = this.state.items.filter((i) => i.viewId === "image-annotation");
     const iiifViewerDashboardItems = []; 

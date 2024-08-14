@@ -128,33 +128,41 @@ globalHandlebars.registerHelper(
 const defaultAnnotationViewerTemplate = globalHandlebars.compile(
   `
   <div class="all-annotations" id="annotation-viewer-{{windowId}}">
-    <div class="text-viewer">Image annotation</div>
-      {{#each annotations}}
-        <div class="annotation-display annotation-tooltip" data-anno-id="{{id}}">
-          <div class="button-container">
-            {{#if id}}
-              <mp-template-item style="max-width: calc(100% - 80px);">
-                <div>
-                  <semantic-link iri="{{id}}" style="display: block; width: 100%;">{{{annoText}}}</semantic-link>
+    {{#each annotations}}
+      <div class="annotation-display annotation-tooltip" data-anno-id="{{id}}">
+        <div class="button-container">
+          {{#if id}}
+            <mp-template-item>
+              <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames" 
+                            draggable="false"
+                            urlqueryparam-view="resource-editor"
+                            urlqueryparam-resource-iri="{{id}}"
+                              >
+                <div style="width: 100%;    
+                            text-decoration: underline;
+                            font-weight: 600;
+                            cursor: pointer;
+                            color: #525156">
+                  {{{annoText}}}
                 </div>
-              </mp-template-item>
+              </semantic-link>
+            </mp-template-item>
+          {{/if}}
+/*             <div>
+            {{#if showUpdate}}
+              <a href="#edit" class="edit">
+                <rs-icon icon-type="round" icon-name="edit"></rs-icon>
+              </a>
             {{/if}}
-            <div>
-              {{#if showUpdate}}
-                <a href="#edit" class="edit">
-                  <rs-icon icon-type="round" icon-name="edit"></rs-icon>
-                </a>
-              {{/if}}
-              {{#if showDelete}}
-                <a href="#delete" class="delete">
-                <rs-icon icon-type="round" icon-name="delete"></rs-icon>
-                </a>
-              {{/if}}
-            </div>
-          </div>
+            {{#if showDelete}}
+              <a href="#delete" class="delete">
+              <rs-icon icon-type="round" icon-name="delete"></rs-icon>
+              </a>
+            {{/if}}
+          </div> */
         </div>
-      {{/each}}
-    </div>
+      </div>
+    {{/each}}
   </div>
   `
  );

@@ -330,8 +330,8 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
     const showLinkResourceButton = !this.props.readonlyResource
 
     const showEditButton = selectedValue !== undefined && !this.props.readonlyResource // this.state.activeForm !== undefined && !this.props.readonlyResource;
-    const showCreateNewDropdown = !_.isEmpty(this.state.nestedFormTemplates) && this.state.nestedFormTemplates.length > 1 && !this.state.valueSelectedWithoutEditForm && !showEditButton;
-    const showCreateNewButton = !_.isEmpty(this.state.nestedFormTemplates) && this.state.nestedFormTemplates.length === 1 && !this.state.valueSelectedWithoutEditForm && !showEditButton;
+    const showCreateNewDropdown = !_.isEmpty(this.state.nestedFormTemplates) && this.state.nestedFormTemplates.length > 1 && !this.state.valueSelectedWithoutEditForm && !selectedValue;
+    const showCreateNewButton = !_.isEmpty(this.state.nestedFormTemplates) && this.state.nestedFormTemplates.length === 1 && !this.state.valueSelectedWithoutEditForm && !selectedValue;
 
     const placeholder =
       typeof this.props.placeholder === 'undefined'

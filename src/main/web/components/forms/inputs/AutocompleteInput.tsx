@@ -89,7 +89,6 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
       nestedFormTemplates: []
     };
     this.tupleTemplate = this.tupleTemplate || this.compileTemplate();
-    console.log('SIMONE ', this)
   }
 
   private compileTemplate() {
@@ -218,10 +217,12 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
         ? this.createDefaultPlaceholder(definition)
         : this.props.placeholder;
     
-    const showLinkResourceButton = !this.props.readonlyResource
-    const showEditButton = !this.props.readonlyResource
-    const showCreateNewDropdown = !_.isEmpty(this.state.nestedFormTemplates) && this.state.nestedFormTemplates.length > 1 && !this.state.valueSelectedWithoutEditForm && !showEditButton;
-    const showCreateNewButton = !_.isEmpty(this.state.nestedFormTemplates) && this.state.nestedFormTemplates.length === 1 && !this.state.valueSelectedWithoutEditForm && !showEditButton;
+    const isFieldValueEmpty = FieldValue.isEmpty(this.props.value)
+    
+    const showLinkResourceButton = !isFieldValueEmpty && !this.props.readonlyResource
+    const showEditButton = !isFieldValueEmpty && !this.props.readonlyResource
+    const showCreateNewDropdown = !_.isEmpty(this.state.nestedFormTemplates) && this.state.nestedFormTemplates.length > 1 && !this.state.valueSelectedWithoutEditForm && isFieldValueEmpty
+    const showCreateNewButton = !_.isEmpty(this.state.nestedFormTemplates) && this.state.nestedFormTemplates.length === 1 && !this.state.valueSelectedWithoutEditForm && isFieldValueEmpty
 
     return (
       <div className={`${CLASS_NAME}__main-row`}>
@@ -272,7 +273,7 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
             <Icon iconType='round' iconName='edit'/>
           </Button>
         }
-        {showLinkResourceButton && !FieldValue.isEmpty(this.props.value) && 
+        {showLinkResourceButton && 
           <ResourceLinkContainer 
             uri="http://www.researchspace.org/resource/ThinkingFrames" 
             urlqueryparam-view="resource-editor"

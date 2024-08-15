@@ -10,12 +10,7 @@
                 proxy-targets='["{{viewId}}-image-annotation-area", "{{viewId}}-image-upload-area"]'
 ></mp-event-proxy>
 
-<mp-event-proxy id='{{viewId}}-update-searchAnnotationPage' 
-                on-event-source='{{viewId}}-image-annotation' 
-                on-event-types='["IIIFViewer.RegionCreated", "IIIFViewer.RegionUpdated", "IIIFViewer.RegionRemoved"]'
-                proxy-event-type='Component.TemplateUpdate' 
-                proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation-resourceSearch-frame"]'
-></mp-event-proxy>
+[[!-- TO BE DONE: viewer refresh button with IIIFViewer.ManifestUpdated --]]
 
 
 [[!-- /EVENTS --]]
@@ -272,7 +267,7 @@
                                                     }
                                                     ?region crmdig:L49_is_primary_area_of ?image .
                                                     ?region crm:P190_has_symbolic_content ?regionLabel .
-                                                  }'
+                                                  } ORDER BY ASC(?regionLabel)'
                                             template='{{> imageAnnotations}}'
                                             no-result-template='{{> noResults}}'>
                             
@@ -360,10 +355,11 @@
                                                                           resourceConfig="http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation"
                                                                           resourceLabel="Image annotation"
                                                                           resourceFormIRI="http://www.researchspace.org/resource/system/forms/ImageAnnotation"
+                                                                          imageAnnotation="true"
                                           }}
             
-                                          [[!-- Delete image annotation  
-                                          <mp-overlay-dialog id='{{viewId}}-region-remove-confirmation-dialog--{{region.value}}' title="Delete image annotation" type="modal">
+                                          [[!-- Old Delete image annotation --]]
+                                          [[!-- <mp-overlay-dialog id='{{viewId}}-region-remove-confirmation-dialog--{{region.value}}' title="Delete image annotation" type="modal">
                                             <mp-overlay-dialog-trigger>
                                               <div class='text-link'>delete</div>
                                             </mp-overlay-dialog-trigger>
@@ -375,7 +371,7 @@
                                                 <div class="form-btn-group">
                                                   <div style="display: flex; justify-content: flex-end; width: 100%;">
             
-                                                    <mp-event-trigger id='{{viewId}}-cancel-feature-removal' 
+                                                    <mp-event-trigger id='{{viewId}}-cancel-modal' 
                                                                       type='OverlayDialog.Close' 
                                                                       targets='["{{viewId}}-region-remove-confirmation-dialog--{{region.value}}"]'>
                                                       <button class="btn btn-default">Cancel</button>
@@ -397,7 +393,7 @@
                                                 </div>
                                               </div>
                                             </mp-overlay-dialog-content>
-                                          </mp-overlay-dialog>--]]
+                                          </mp-overlay-dialog>  --]]
                                         </div>
                                       </div>
                                       </mp-event-trigger>

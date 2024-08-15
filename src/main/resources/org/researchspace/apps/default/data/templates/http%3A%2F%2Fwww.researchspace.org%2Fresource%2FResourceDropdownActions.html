@@ -453,7 +453,7 @@
       </semantic-link-container>
     {{/if}}
 
-    {{#if searchCard}}
+    {{#if (or searchCard imageAnnotation)}} 
       {{#if (not (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/User"))}}
         <hr>
         [[> deleteButton resourceFormIRI=resourceFormIRI]]
@@ -485,27 +485,36 @@
       
         <semantic-query query='SELECT DISTINCT ?resource ?label  
                                 WHERE {
-                                  ?resource ?p <{{iri}}> .
-                                  OPTIONAL {<{{iri}}> skos:prefLabel ?nodeLabel .}
-                                  OPTIONAL {<{{iri}}> rdfs:label ?nodeLabel .}
-                  
-                                  OPTIONAL {
-                                    ?resource rdfs:label ?label .
-                                  }
-                                  OPTIONAL {
+                                    <{{iri}}> ?p ?resource .
+                                  { 
+                                    ?resource crm:P1_is_identified_by ?appellation .
+                                    ?appellation a crm:E41_Appellation .
+                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                    ?appellation crm:P190_has_symbolic_content ?label .
+                                  } UNION {
+                                    ?resource crm:P170i_time_is_defined_by ?timePrimitive .
+                                    ?timePrimitive a crm:E61_Time_Primitive .
+                                    ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
+                                    ?timePrimitive crm:P190_has_symbolic_content ?label .
+                                  } UNION {
                                     ?resource skos:prefLabel ?label .
+                                  } UNION {
+                                    ?resource crm:P190_has_symbolic_content ?label .
                                   }
-                                }
-                              '
-                              template='{{> referredByTemplate}}'
-          >
+                                }'
+                              template='{{> referredByTemplate}}'>
 
             <template id='referredByTemplate'>
               Some resources in the system link to it:
               <ul>
                 {{#each bindings}}
                   <li>
-                    <semantic-link iri='{{resource.value}}'>{{label.value}}</semantic-link>
+                    <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                    draggable="false"
+                                    urlqueryparam-view="resource-editor"
+                                    urlqueryparam-resource-iri="{{resource.value}}">
+                      <div class="text-link">{{label.value}}</div>
+                    </semantic-link>
                   </li>
                 {{/each}}
               </ul>
@@ -537,22 +546,32 @@
       </mp-event-target-template-render>
       
       <div class="form-btn-group">
-        <mp-event-trigger id='{{iri}}-cancel-feature-removal' 
+        <mp-event-trigger id='{{iri}}-cancel-modal' 
                           type='OverlayDialog.Close' 
                           targets='["{{viewId}}-delete-resource-dialog-{{iri}}"]'>
           <button class="btn btn-default">Cancel</button>
         </mp-event-trigger>
 
-        <mp-event-trigger id='{{iri}}-confirm-entity-removal' 
+        <mp-event-trigger id='{{iri}}-resource-removal' 
                           type='Form.RemoveResource'                               
                           data='{"iri": "{{iri}}", "node": "{{iri}}"}' 
-                          targets='["{{iri}}-resource-form","{{iri}}-close-form-removal-dialog"]'>
+                          targets='["{{iri}}-resource-form"]'>
           <button class="btn btn-action">Delete</button>
         </mp-event-trigger>  
       </div>
 
+      {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation")}}
+        <mp-event-proxy id='{{viewId}}-remove-image-region-{{iri}}' 
+                        on-event-source='{{iri}}-resource-form' 
+                        on-event-types='["Form.ResourceRemoved"]'
+                        proxy-event-type='IIIFViewer.RemoveRegion' 
+                        data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'
+                        proxy-targets='["{{viewId}}-image-annotation"]'
+        ></mp-event-proxy>
+      {{/if}} 
+
       [[!-- Refresh Search page for a resource removed from search page - dropdown action --]]
-      <mp-event-proxy id='{{iri}}-refresh-search-on-resourceForm-deleted-{{viewId}}'
+      <mp-event-proxy id='{{iri}}-update-ResourceSearchPage-on-resourceForm-deleted-{{viewId}}'
                       on-event-source='{{iri}}-resource-form' 
                       on-event-types='["Form.ResourceRemoved"]'      
                       proxy-event-type='Component.TemplateUpdate' 
@@ -560,8 +579,8 @@
                       proxy-targets='["{{resourceConfig}}-resourceSearch-frame"]'
       ></mp-event-proxy> 
 
-      [[!-- Close Delete dialog windown once form delete submitted --]]
-      <mp-event-proxy id='{{iri}}-deleting-resource-{{viewId}}' 
+      [[!-- Listen Form.ResourceRemoving to display a 'please wait' message while waiting the delete --]]
+      <mp-event-proxy id='{{iri}}-resource-removing-{{viewId}}' 
                       on-event-source='{{iri}}-resource-form' 
                       on-event-types='["Form.ResourceRemoving"]'
                       proxy-event-type='Component.TemplateUpdate' 
@@ -569,14 +588,14 @@
                       proxy-targets='["{{iri}}-deleting-area-{{viewId}}"]'
       ></mp-event-proxy> 
 
-      [[!-- Close Delete dialog windown once form delete submitted --]]
-      <mp-event-proxy id='{{iri}}-close-form-removal-dialog-{{viewId}}' 
-                      on-event-source='{{iri}}-resource-form' 
-                      on-event-types='["Form.ResourceRemoved"]'
-                      proxy-event-type='OverlayDialog.Close' 
-                      data='{}'
-                      proxy-targets='["{{viewId}}-delete-resource-dialog-{{iri}}"]'
-      ></mp-event-proxy>      
+      [[!-- Close Delete dialog window once delete submitted --]]
+      <mp-event-proxy id='{{iri}}-close-removal-dialog' 
+                        on-event-source='{{iri}}-resource-form' 
+                        on-event-types='["Form.ResourceRemoved"]'
+                        proxy-event-type='OverlayDialog.Close' 
+                        proxy-targets='["{{viewId}}-delete-resource-dialog-{{iri}}"]'
+      ></mp-event-proxy>       
+      
     </mp-overlay-dialog-content>
   </mp-overlay-dialog>
 [[/inline]]

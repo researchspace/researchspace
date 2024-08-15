@@ -142,7 +142,7 @@
           <div class="homepage-project-summary">
             <h3>Projects summary</h3>
 
-              <semantic-query query='SELECT ?systemUser ?group ?project { 
+              <semantic-query query='SELECT DISTINCT ?systemUser ?hasTeamProject ?hasMyProject { 
                                       BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
                                       
                                       OPTIONAL {
@@ -151,15 +151,22 @@
                                         ?pc107 crm:P01_has_domain ?group .
                                         ?group crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
                                         ?group a crm:E74_Group .
+                             
+                                        ?teamProject crm:P01i_is_domain_of ?pc14Group .
+                                        ?teamProject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
+                                        ?pc14Group rdf:type crm:PC14_carried_out_by .
+                                        ?pc14Group crm:P02_has_range ?group .
                                       }
 
                                       OPTIONAL {
-                                        ?project crm:P01i_is_domain_of ?pc14 .
-                                        ?project crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
-                                        ?pc14 rdf:type crm:PC14_carried_out_by .
-                                        ?pc14 crm:P02_has_range ?systemUser .
+                                        ?userProject crm:P01i_is_domain_of ?pc14User .
+                                        ?userProject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
+                                        ?pc14User rdf:type crm:PC14_carried_out_by .
+                                        ?pc14User crm:P02_has_range ?systemUser .
                                       }
 
+                                      BIND(IF(BOUND(?pc14Group), true, false) AS ?hasTeamProject) .
+                                      BIND(IF(BOUND(?pc14User), true, false) AS ?hasMyProject) .
                                     }'
                               template='{{> template}}'>
                 <template id='template'>
@@ -173,27 +180,17 @@
                     <bs-tab event-key="proposed" title="Proposed">
                       [[> projectSearch label="proposed" status="proposed" statusIRI="http://www.researchspace.org/resource/vocab/status/proposed"]]
                     </bs-tab>
-                    {{#if bindings.0.group.value}}
+                    {{#if (eq bindings.0.hasTeamProject.value 'true')}}
                       <bs-tab event-key="myTeamProjects" title="My Team Projects" tab-class-name="tab-right pr-0">
                         [[> projectSearch label="my-team-project" actorIRI="{{bindings.0.systemUser.value}}" teamProject=true]]
                       </bs-tab>
                     {{/if}}
-                    {{#if bindings.0.project.value}}
+                    {{#if (eq bindings.0.hasMyProject.value 'true')}}
                       <bs-tab event-key="myProjects" title="My Projects" tab-class-name="tab-right">
                         [[> projectSearch label="my-project" actorIRI="{{bindings.0.systemUser.value}}"]]
                       </bs-tab>
                     {{/if}}
                 </template>
-              </semantic-query>
-
-              <semantic-query query='SELECT ?systemUser { 
-                                        BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
-                                        ?systemUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
-                                      }'
-                              template='{{> template}}'>
-                  <template id='template'>
-                    
-                  </template>
               </semantic-query>
             </bs-tabs>
 

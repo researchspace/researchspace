@@ -1,34 +1,22 @@
 {{#bind viewId=dashboardId}}
 
-  [[!-- Update activities on resourceForm actions --]]
+  [[!-- Update activities on resourceForm actions, set actions, narrative actions, map saved --]]
   <mp-event-proxy id='update-activities-on-resourceForm-actions'
-                  on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated", "Form.ResourceRemoved"]'         
+                  on-event-types='["Form.ResourceCreated", 
+                                    "Form.ResourceUpdated", 
+                                    "Form.ResourceRemoved",
+                                    "Components.SetManagement.SetAdded",
+                                    "Components.SetManagement.SetRenamed",
+                                    "Components.SetManagement.SetRemoved",
+                                    "Narrative.Created", 
+                                    "Narrative.Updated",
+                                    "Ontodia.DiagramSaved"
+                                    ]'         
                   proxy-event-type='Component.TemplateUpdate' 
                   proxy-targets='["system-activities-render-area"]'
   ></mp-event-proxy> 
 
-  [[!-- Update activities on set actions --]]
-  <mp-event-proxy id='update-activities-on-set-actions'
-                  on-event-types='["Components.SetManagement.SetAdded",
-                                    "Components.SetManagement.SetRenamed",
-                                    "Components.SetManagement.SetRemoved"]'
-                  proxy-event-type='Component.TemplateUpdate' 
-                  proxy-targets='["system-activities-render-area"]'>
-  </mp-event-proxy>
-
-  [[!-- Update activities on narrative created or updated --]]
-  <mp-event-proxy id='update-activities-on-narrative-actions'
-                  on-event-types='["Narrative.Created", "Narrative.Updated"]'  
-                  proxy-event-type='Component.TemplateUpdate' 
-                  proxy-targets='["system-activities-render-area"]'
-  ></mp-event-proxy>
-
-  [[!-- Update activities for map created or updated --]]
-  <mp-event-proxy id='update-activities-on-map-actions'
-                  on-event-type='Ontodia.DiagramSaved'  
-                  proxy-event-type='Component.TemplateUpdate' 
-                  proxy-targets='["system-activities-render-area"]'
-  ></mp-event-proxy>
+  [[!-- TO BE DONE: update when Sava data in KM --]]
 
     <mp-event-target-template-render id="system-activities-render-area" template='{{> template}}'>
         <template id='template'>

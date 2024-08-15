@@ -1,14 +1,67 @@
-[[!-- Uncomment line below if you want to see all available facets --]]
-[[!--     <semantic-search domain='(urlParam "resourceontologyclass" escape=false)' config='[[searchConfigForFieldsFromQuery "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> . ?field <http://www.researchspace.org/resource/system/fields/domain> <http://www.researchspace.org/ontology/EX_Digital_Image> . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . ?field  <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/image> . OPTIONAL {?field <http://www.researchspace.org/resource/system/fields/order> ?fieldsOrder } } ORDER BY ASC(xsd:integer(?fieldsOrder))"]]'>
---]]
-
 <mp-event-target-template-render id="[[urlParam 'resourceconfig' escape=false]]-resourceSearch-frame" template='{{> template}}'>
   <template id='template'>
+
+    <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-searchPage-on-create-setWithSelection'
+                    on-event-types='["Components.SetManagement.SetAdded"]'
+                    on-event-source='[[urlParam "viewid" escape=false]]-new-set-with-selection'
+                    proxy-event-type='Component.TemplateUpdate' 
+                    proxy-targets='["[[urlParam "resourceconfig" escape=false]]-resourceSearch-frame"]'
+                    additional-data='{"setCreated": true }' >
+    </mp-event-proxy>
+
+    <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-searchPage-on-create-setWithResults'
+                    on-event-types='["Components.SetManagement.SetAdded"]'
+                    on-event-source='[[urlParam "viewid" escape=false]]-new-set-with-results'
+                    proxy-event-type='Component.TemplateUpdate' 
+                    proxy-targets='["[[urlParam "resourceconfig" escape=false]]-resourceSearch-frame"]'
+                    additional-data='{"setCreated": true }' >
+    </mp-event-proxy>
+
+    [[!-- TO BE DONE: update when Sava data in KM --]]
+
+    {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
+      <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-setSearch-on-set-modification'
+                      on-event-types='["Components.SetManagement.SetAdded",
+                                        "Components.SetManagement.SetRenamed",
+                                        "Components.SetManagement.SetRemoved"]'
+                      proxy-event-type='Component.TemplateUpdate' 
+                      proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Set-resourceSearch-frame"]'>
+      </mp-event-proxy>
+    {{/if}}
+
+    {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation")}}
+      <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-ImageAnnotationSearch-on-IIIFViewer-modification' 
+                      on-event-types='["IIIFViewer.RegionCreated", "IIIFViewer.RegionUpdated", "IIIFViewer.RegionRemoved"]'
+                      proxy-event-type='Component.TemplateUpdate' 
+                      proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation-resourceSearch-frame"]'
+      ></mp-event-proxy>
+    {{/if}}
+
+    {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map")}}
+      <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-KMSearch-on-diagram-saved'
+                      on-event-type='Ontodia.DiagramSaved' 
+                      proxy-event-type='Component.TemplateUpdate' 
+                      proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map-resourceSearch-frame"]'
+      ></mp-event-proxy>
+    {{/if}}
+
+    {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}
+      <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-SNSearch-on-narrative-created-or-updated'
+                      on-event-types='["Narrative.Created", "Narrative.Updated"]'    
+                      proxy-event-type='Component.TemplateUpdate' 
+                      proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative-resourceSearch-frame"]'
+      ></mp-event-proxy>
+    {{/if}}
+
     [[#if (urlParam "searchkpcategory")]]
       <semantic-search config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . ?field <http://www.researchspace.org/resource/system/fields/category> ?category . }" category=(urlParam "searchkpcategory" escape=false))]]'>
     [[else]]    
       <semantic-search config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> .  ?field <http://www.researchspace.org/resource/system/fields/domain> ?domain . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . }" domain=(urlParam "resourceontologyclass" escape=false))]]'>      
     [[/if]]
+
+    [[!-- Uncomment line below if you want to see all available facets --]]
+[[!--     <semantic-search domain='(urlParam "resourceontologyclass" escape=false)' config='[[searchConfigForFieldsFromQuery "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> . ?field <http://www.researchspace.org/resource/system/fields/domain> <http://www.researchspace.org/ontology/EX_Digital_Image> . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . ?field  <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/image> . OPTIONAL {?field <http://www.researchspace.org/resource/system/fields/order> ?fieldsOrder } } ORDER BY ASC(xsd:integer(?fieldsOrder))"]]'>
+--]]
       <div class="semantic-search-content">
         <div class="semantic-search-header-content">
           {{#if [[urlParam "searchall" escape=false]]}}
@@ -274,12 +327,12 @@
                 {{else}}
                   [[#if (hasPermission "forms:ldp:*")]]
                     <mp-selection-action-choice id='[[urlParam "viewid" escape=false]]-create-set-action' selection='item-selection-aggregator'>
-                      <mp-create-set-action id="[[urlParam 'viewid' escape=false]]-new-set-with-results" icon="create_new_folder"></mp-create-set-action>
+                      <mp-create-set-action id="[[urlParam 'viewid' escape=false]]-new-set-with-selection" icon="create_new_folder"></mp-create-set-action>
                     </mp-selection-action-choice>
                   [[/if]]
 
                   <mp-anonymous-hidden>
-                    <semantic-search-action-save-set-result id='[[urlParam "viewid" escape=false]]-create-set-result-action'>
+                    <semantic-search-action-save-set-result id='[[urlParam "viewid" escape=false]]-new-set-with-results'>
                       <bs-menu-item>
                         <rs-icon icon-type="rounded" icon-name="create_new_folder" class="icon-left" symbol="true"></rs-icon>
                         <span>New set with results</span>
@@ -1085,22 +1138,6 @@
     </semantic-search> 
   </template>
 </mp-event-target-template-render>
-
-<mp-event-proxy id='[[urlParam "viewid" escape=false]]-search-refresh-on-create-set'
-                on-event-types='["Components.SetManagement.SetAdded"]'
-                on-event-source='[[urlParam "viewid" escape=false]]-new-set-with-results'
-                proxy-event-type='Component.TemplateUpdate' 
-                proxy-targets='["[[urlParam "resourceconfig" escape=false]]-resourceSearch-frame"]'
-                additional-data='{"setCreated": true }' >
-</mp-event-proxy>
-
-<mp-event-proxy id='[[urlParam "viewid" escape=false]]-search-refresh-on-create-set'
-                on-event-types='["Components.SetManagement.SetAdded"]'
-                on-event-source='[[urlParam "viewid" escape=false]]-create-set-result-action'
-                proxy-event-type='Component.TemplateUpdate' 
-                proxy-targets='["[[urlParam "resourceconfig" escape=false]]-resourceSearch-frame"]'
-                additional-data='{"setCreated": true }' >
-</mp-event-proxy>
 
 [[#*inline "numberOfResults"]]
   <div class="semantic-search-num-results">

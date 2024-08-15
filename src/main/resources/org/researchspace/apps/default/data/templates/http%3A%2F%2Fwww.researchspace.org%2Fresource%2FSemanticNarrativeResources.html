@@ -7,6 +7,21 @@
                     proxy-targets='["{{iri}}-resources-in-narrative-frame"]'
     ></mp-event-proxy>
 
+    [[!-- Update on resourceForm actions, set actions, narrative updated, map saved --]]
+    <mp-event-proxy id='{{iri}}-update-narrativeResources-on-actions'
+                    on-event-types='["Form.ResourceUpdated", 
+                                    "Form.ResourceRemoved",
+                                    "Components.SetManagement.SetRenamed",
+                                    "Components.SetManagement.SetRemoved",
+                                    "Narrative.Updated",
+                                    "Ontodia.DiagramSaved"
+                                    ]'         
+                    proxy-event-type='Component.TemplateUpdate' 
+                    proxy-targets='["{{iri}}-resources-in-narrative-frame"]'
+    ></mp-event-proxy> 
+
+    [[!-- TO BE DONE: update when Sava data in KM --]]
+
     <mp-event-target-template-render id="{{iri}}-resources-in-narrative-frame" template='{{> template}}'>
         <template id='template'>
             {{#if resourceDeleted}}
@@ -143,12 +158,12 @@
 
                                         [[#if (hasPermission "forms:ldp:*")]]
                                             <mp-selection-action-choice id='{{viewId}}-create-set-action' selection='item-selection-aggregator'>
-                                                <mp-create-set-action id="{{viewId}}-new-set-with-results" icon="create_new_folder"></mp-create-set-action>
+                                                <mp-create-set-action id="{{viewId}}-new-set-with-selection" icon="create_new_folder"></mp-create-set-action>
                                             </mp-selection-action-choice>
                                         [[/if]]
 
                                         <mp-anonymous-hidden>
-                                            <semantic-search-action-save-set-result id='{{viewId}}-create-set-result-action'>
+                                            <semantic-search-action-save-set-result id='{{viewId}}-new-set-with-results'>
                                                 <bs-menu-item>
                                                     <rs-icon icon-type="rounded" icon-name="create_new_folder" class="icon-left" symbol="true"></rs-icon>
                                                     <span>New set with results</span>

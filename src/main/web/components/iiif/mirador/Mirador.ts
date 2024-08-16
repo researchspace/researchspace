@@ -148,24 +148,27 @@ const defaultAnnotationViewerTemplate = globalHandlebars.compile(
               </semantic-link>
             </mp-template-item>
           {{/if}}
-/*             <div>
-            {{#if showUpdate}}
-              <a href="#edit" class="edit">
-                <rs-icon icon-type="round" icon-name="edit"></rs-icon>
-              </a>
-            {{/if}}
-            {{#if showDelete}}
-              <a href="#delete" class="delete">
-              <rs-icon icon-type="round" icon-name="delete"></rs-icon>
-              </a>
-            {{/if}}
-          </div> */
         </div>
       </div>
     {{/each}}
   </div>
   `
  );
+
+/*  Mirador Buttons in annotation popup 
+<div>
+{{#if showUpdate}}
+  <a href="#edit" class="edit">
+    <rs-icon icon-type="round" icon-name="edit"></rs-icon>
+  </a>
+{{/if}}
+{{#if showDelete}}
+  <a href="#delete" class="delete">
+  <rs-icon icon-type="round" icon-name="delete"></rs-icon>
+  </a>
+{{/if}}
+</div>  */
+
 Mirador.AnnotationTooltip.prototype.viewerTemplate = defaultAnnotationViewerTemplate;
 Mirador.AnnotationTooltip.prototype.editorTemplate = globalHandlebars.compile(
   `

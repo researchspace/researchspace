@@ -623,9 +623,17 @@ export class DashboardComponent extends Component<Props, State> {
   }
 
   private onResourceChange(itemId: string, resourceIri: string, data?: { [key: string]: string }) {
+    const changedItem = this.state.items.find(item => item.id ===itemId);console.log(changedItem);
+    let changedItemId = itemId;
+    /* This check is needed as we modified the default naming of the frames for unique dashboard items,
+       with resource */
+    if (changedItem.resourceIri && changedItem.viewId && changedItem["mode"] !== "new")
+        changedItemId = changedItem.resourceIri+changedItem.viewId;
+
     LabelsService.getLabel(Rdf.iri(resourceIri)).onValue((label) => {
-      this.state.layout.doAction(FlexLayout.Actions.renameTab(itemId, label));
+      this.state.layout.doAction(FlexLayout.Actions.renameTab(changedItemId, label));
     });
+
     this.setState(
       (prevState): State => {
         const newItems = prevState.items.map((item) => {
@@ -754,7 +762,7 @@ export class DashboardComponent extends Component<Props, State> {
 
     images.forEach(image => iiifViewerDashboardItems.push(image.id+"-image-viewer-render-area"));
     
-    const actions = [Actions.ADJUST_BORDER_SPLIT, Actions.ADJUST_SPLIT, Actions.MOVE_NODE, Actions.ADD_NODE, Actions.SELECT_TAB]
+    const actions = [Actions.ADJUST_BORDER_SPLIT, Actions.ADJUST_SPLIT, Actions.MOVE_NODE, Actions.ADD_NODE, Actions.SELECT_TAB, Actions.DELETE_TAB]
     if (actions.includes(action.type)) {
       trigger({source:'dashboard', eventType: LayoutChanged})
     }

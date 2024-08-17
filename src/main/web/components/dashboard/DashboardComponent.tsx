@@ -623,9 +623,17 @@ export class DashboardComponent extends Component<Props, State> {
   }
 
   private onResourceChange(itemId: string, resourceIri: string, data?: { [key: string]: string }) {
+    const changedItem = this.state.items.find(item => item.id ===itemId);console.log(changedItem);
+    let changedItemId = itemId;
+    /* This check is needed as we modified the default naming of the frames for unique dashboard items,
+       with resource */
+    if (changedItem.resourceIri && changedItem.viewId && changedItem["mode"] !== "new")
+        changedItemId = changedItem.resourceIri+changedItem.viewId;
+
     LabelsService.getLabel(Rdf.iri(resourceIri)).onValue((label) => {
-      this.state.layout.doAction(FlexLayout.Actions.renameTab(itemId, label));
+      this.state.layout.doAction(FlexLayout.Actions.renameTab(changedItemId, label));
     });
+
     this.setState(
       (prevState): State => {
         const newItems = prevState.items.map((item) => {
@@ -752,11 +760,14 @@ export class DashboardComponent extends Component<Props, State> {
     const images = this.state.items.filter((i) => i.viewId === "image-annotation");
     const iiifViewerDashboardItems = []; 
 
-    images.forEach(image => iiifViewerDashboardItems.push(image.id+"-image-viewer-render-area"));
-    
-    if (action.type === Actions.ADJUST_BORDER_SPLIT || action.type === Actions.ADJUST_SPLIT)
+    images.forEach(image => iiifViewerDashboardItems.push(image.id+"-image-annotation"));
+    console.log(action.type);
+    if (action.type === Actions.ADJUST_BORDER_SPLIT 
+          || action.type === Actions.ADJUST_SPLIT 
+          || action.type === Actions.SELECT_TAB
+          || action.type === Actions.DELETE_TAB)
       trigger({
-        eventType: 'Component.TemplateUpdate',
+        eventType: 'IIIFViewer.ResizeAll',
         source: 'link',
         targets: iiifViewerDashboardItems,
       });

@@ -29,7 +29,7 @@ import { getOverlaySystem } from 'platform/components/ui/overlay';
 import { ConfirmationDialog } from 'platform/components/ui/confirmation-dialog';
 
 import { DashboardItem, DashboardViewConfig } from './DashboardItem';
-import { DashboardEvents } from './DashboardEvents';
+import { DashboardEvents, LayoutChanged } from './DashboardEvents';
 import * as styles from './Dashboard.scss';
 import { Cancellation } from 'platform/api/async';
 import { listen, trigger } from 'platform/api/events';
@@ -747,19 +747,17 @@ export class DashboardComponent extends Component<Props, State> {
     }
   }
 
-  private onLayoutAction = (action: Action) => { console.log("layout action");
+  private onLayoutAction = (action: Action) => { console.log("layout action ", action);
     /* Identify DashboardItems that contain an image viewer based on viewId */
     const images = this.state.items.filter((i) => i.viewId === "image-annotation");
     const iiifViewerDashboardItems = []; 
 
     images.forEach(image => iiifViewerDashboardItems.push(image.id+"-image-viewer-render-area"));
     
-    if (action.type === Actions.ADJUST_BORDER_SPLIT || action.type === Actions.ADJUST_SPLIT)
-      trigger({
-        eventType: 'Component.TemplateUpdate',
-        source: 'link',
-        targets: iiifViewerDashboardItems,
-      });
+    const actions = [Actions.ADJUST_BORDER_SPLIT, Actions.ADJUST_SPLIT, Actions.MOVE_NODE, Actions.ADD_NODE, Actions.SELECT_TAB]
+    if (actions.includes(action.type)) {
+      trigger({source:'dashboard', eventType: LayoutChanged})
+    }
     
     if (action.type === Actions.DELETE_TAB) {
       const tab = this.state.layout.getNodeById(action.data.node) as TabNode;

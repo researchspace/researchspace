@@ -27,8 +27,10 @@ import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
  */
 public class CustomSPARQLConnection extends SPARQLConnection {
 
-    public CustomSPARQLConnection(SPARQLRepository repository, SPARQLProtocolSession client, boolean quadMode) {
+    public CustomSPARQLConnection(SPARQLRepository repository, SPARQLProtocolSession client, boolean quadMode,
+            boolean isSilentMode) {
         super(repository, client, quadMode);
+        this.enableSilentMode(isSilentMode);
     }
 
     public CustomSPARQLConnection(SPARQLRepository repository, SPARQLProtocolSession client) {

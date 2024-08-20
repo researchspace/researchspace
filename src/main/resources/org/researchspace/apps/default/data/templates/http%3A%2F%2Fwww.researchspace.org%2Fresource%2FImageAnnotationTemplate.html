@@ -25,7 +25,7 @@
 
     <mp-event-target-template-render id='{{viewId}}-image-upload-area' template='{{> newImage}}'>
       <template id='newImage'>
-        <div class="imageAnnotation__viewer-newImageUpload"> 
+        <div class="imageAnnotation__viewer-customActions"> 
           <semantic-switch query='SELECT ?type WHERE {
                                     <{{iri}}> a ?type .
                                   }'>
@@ -200,9 +200,22 @@
               </semantic-if>
             </template>
           </semantic-switch>
+
+          <mp-event-trigger id='{{viewId}}-refresh-image-viewer-render-area' 
+                            type='Component.TemplateUpdate' 
+                            targets='["{{viewId}}-image-viewer-render-area"]'>
+            <div> 
+              <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
+              <span>Refresh</span>
+            </div>
+          </mp-event-trigger>
+
+
         </div>
       </template>
     </mp-event-target-template-render>
+
+
 
   </div>
 
@@ -325,9 +338,9 @@
                                             <mp-draggable iri='{{region.value}}'>
                                               <div>
                                                 <mp-event-trigger id='{{viewId}}-focus-event-trigger-{{resourceIri}}-{{region.value}}' 
-                                                          type='IIIFViewer.ZoomToRegion' 
-                                                          targets='["{{viewId}}-image-annotation"]'
-                                                          data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
+                                                                  type='IIIFViewer.ZoomToRegion' 
+                                                                  targets='["{{viewId}}-image-annotation"]'
+                                                                  data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
                                                   <div class="text-link text-truncate-line1">{{regionLabel.value}}</div>
                                                 </mp-event-trigger>
                                               </div>

@@ -439,6 +439,29 @@
         </template>
 
       </semantic-if>
+    {{else}}
+      <semantic-query query='SELECT DISTINCT ?image WHERE {
+                              <{{iri}}> crmdig:L49_is_primary_area_of ?image .
+                              ?image a rs:EX_Digital_Image .
+                            
+                          }'
+                      template='{{> imageOfAnnotation}}'>
+
+          <template id='imageOfAnnotation'>
+            <hr>
+            <mp-event-trigger id='{{viewId}}-image-annotation-add-frame-trigger' 
+                              type='Dashboard.AddFrame' 
+                              data='{"resourceIri": "{{bindings.0.image.value}}", 
+                                      "viewId": "image-annotation", 
+                                      "frameId": "{{viewId}}"}' 
+                              targets='["thinking-frames"]'>
+                <bs-menu-item>
+                  <rs-icon icon-type="rounded" icon-name="photo_size_select_large" class="icon-left" symbol="true"></rs-icon>
+                    <span>Open in image view / annotations</span>
+                </bs-menu-item>
+            </mp-event-trigger>
+          </template>
+      </semantic-query>
     {{/if}}
 
     {{#if (not (eq resourceLabel "Knowledge map"))}}
@@ -547,9 +570,7 @@
         <template id='template'>
           {{#if resourceDeleting}}
             <div>
-              <div style="padding: 10px 0;">
-                Deleting resource. Please wait ...
-              </div>
+              <bs-progress-bar active="true" min="0" now="100" max="100" label="Deliting resource" striped="true"></bs-progress-bar>
             </div>
           {{/if}}
         </template>

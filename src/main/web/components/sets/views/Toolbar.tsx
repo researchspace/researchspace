@@ -44,7 +44,7 @@ export class Toolbar extends React.Component<ToolbarProps, {}> {
           {!readonly && canReorder ? <ReorderItemsButton {...this.props} /> : null}
           <div className={`${baseClass}__toolbar-spacer`}></div>
           {(readonly || singleSet)? null : this.renderAddNewSetButton()}
-          <button className='btn btn-default btn-default-icon'
+{/*           <button className='btn btn-default btn-default-icon'
                   title="Refresh clipboard"
                   onClick={() => {
                     trigger({ 
@@ -53,7 +53,7 @@ export class Toolbar extends React.Component<ToolbarProps, {}> {
                   }}
             >
             <Icon iconType='round' iconName='refresh'/>
-          </button>
+          </button> */}
           
         </div>
         {isReordering && canReorder ? <ReorderConfirmation {...this.props} /> : null}

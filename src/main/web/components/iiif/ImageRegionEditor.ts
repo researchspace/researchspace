@@ -378,9 +378,19 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
 
           if (windowForImage) {
             const annotation = windowForImage.annotationsList.find(a => a['@id'] === event.data.regionIri) as OARegionAnnotation;
+            
             this.cancellation.map(
               this.annotationEndpoint.remove(annotation)
-            ).observe({
+            )
+            .onError(() => { 
+              /* Errors are triggered when an image annotation has been created in the image graph authoring,
+                 as the data it creates depends on the persistence model chosen in the ontodia configuration,
+                 the AnnotationEndpoint will create LDP Resources for the image annotations i.e. regions
+              */
+              this.miradorInstance.eventEmitter.publish('updateAnnotationList.'+windowForImage.id);
+              this.triggerManifestUpdatedEvent(this.state.allImages);
+            })
+            .observe({
               value: (event) => {
                 this.miradorInstance.eventEmitter.publish('updateAnnotationList.'+windowForImage.id);
               }
@@ -393,7 +403,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
                   regions => {
                     const regionToRemove =
                       regions.find(region => region['@id'] === event.data.regionIri);
-                    return this.annotationEndpoint.remove(regionToRemove);
+                    return this.annotationEndpoint.remove(regionToRemove);                   
                   }
                 )
             ).observe({
@@ -640,7 +650,7 @@ class AnnotationEndpointProxy implements AnnotationEndpoint {
 
   remove(annotation: OARegionAnnotation) {
     return this.endpoint.remove(annotation)
-      .onValue(() => this.onRemoved(Rdf.iri(annotation['@id']), annotation));
+      .onValue(() => {console.log("annotation");this.onRemoved(Rdf.iri(annotation['@id']), annotation); });
   }
 
   userAuthorize = this.endpoint.userAuthorize ? (action: any, annotation: OARegionAnnotation) => {

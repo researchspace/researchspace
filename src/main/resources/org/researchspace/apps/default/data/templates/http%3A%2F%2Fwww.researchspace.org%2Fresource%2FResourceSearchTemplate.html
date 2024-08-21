@@ -608,8 +608,7 @@
                         <template id='custom-list-view'>
                           <semantic-search-result>
                             <semantic-table id='semantic-search-result-list'
-                                            class-name="semantic-search-custom-result-list table-fixed-header table-scrollable-content table-expanded"
-
+                            class-name="table-fixed-header table-scrollable-content table-expanded search-table-container {{#if (or (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Set')(eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map'))}}table-without-checkbox{{else}}table-with-checkbox{{/if}}"
                                             query='SELECT DISTINCT ?subject ?iri ?description WHERE {
                                                     BIND(?subject as ?iri) .
                                                     #?subject a ?type .
@@ -643,7 +642,7 @@
                                 [[#if (hasPermission "forms:ldp:*")]]
                                   {{#if (or (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map"))}}
                                   {{else}}
-                                    <div class=''>
+                                    <div>
                                       <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
                                     </div>
                                   {{/if}}
@@ -945,7 +944,7 @@
                         <template id='default-list-view'>
                           <semantic-search-result>
                             <semantic-table id='semantic-search-result-list'
-                                            class-name="semantic-search-default-result-list table-fixed-header table-scrollable-content table-expanded"
+                                            class-name="table-fixed-header table-scrollable-content table-expanded search-table-container {{#if (or (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Set')(eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map'))}}table-without-checkbox{{else}}table-with-checkbox{{/if}}"
                                             query='SELECT DISTINCT ?subject ?iri ?description ?resourceConfig WHERE {
                                                     BIND(?subject as ?iri) .
                                                     BIND(<[[urlParam "resourceconfig" escape=false]]> as ?resourceConfig) .
@@ -974,7 +973,7 @@
                                 [[#if (hasPermission "forms:ldp:*")]]
                                   {{#if (or (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map"))}}
                                   {{else}}
-                                    <div class=''>
+                                    <div>
                                       <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
                                     </div>
                                   {{/if}}

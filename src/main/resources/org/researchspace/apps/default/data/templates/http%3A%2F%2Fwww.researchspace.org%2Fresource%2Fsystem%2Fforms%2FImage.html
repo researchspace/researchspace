@@ -342,7 +342,6 @@
                                                                                             {"variableName": "subject", "displayName": "", "cellTemplate": "{{> selectionCheckbox}}" },
                                                                                             {"variableName": "annotationName", "displayName": "Image annotation name","cellTemplate": "{{> details}}"},
                                                                                             {"displayName": "Type","cellTemplate": "{{> type}}"},
-                                                                                            {"displayName": "Main image of","cellTemplate": "{{> mainImageOf}}"},
                                                                                             {"displayName": "Image of","cellTemplate": "{{> imageOf}}"},
                                                                                             {"displayName": "more", "cellTemplate": "{{> actions}}" }
                                                                                         ]'
@@ -353,6 +352,7 @@
                                                                 <mp-selection-toggle selection="item-selection-aggregator" tag="{{subject.value}}"></mp-selection-toggle>
                                                             </div>
                                                         </template>
+
                                                         <template id='details'>  
                                                             <div>
                                                                 <div style="display: flex; align-items: center; gap: 15px;">                                 
@@ -421,41 +421,22 @@
                                                                 </template>
                                                             </semantic-query>
                                                         </template>
-                                        
-                                                        <template id='mainImageOf'>
-                                                            <semantic-query query='SELECT ?entity WHERE {
-                                                                                    <{{subject.value}}> rs:PX_main_represents ?entity .
-                                                                                }'
-                                                                            template='{{> template}}'>
-                                                                <template id='template'>
-                                                                    <div>
-                                                                        {{#each bindings}}
-                                                                            <semantic-link-container    uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                                                                        urlqueryparam-view="resource-editor"
-                                                                                                        urlqueryparam-resource-iri='{{entity.value}}'>
-                                                                                <mp-label iri='{{entity.value}}' class="text-link"></mp-label>
-                                                                            </semantic-link-container>
-                                                                            <span>{{#if @last}}{{else}}, {{/if}}</span>
-                                                                        {{/each}}
-                                                                    </div>
-                                                                </template>
-                                                            </semantic-query>
-                                                        </template>
 
                                                         <template id='imageOf'>
                                                             <semantic-query query='SELECT ?entity WHERE {
-                                                                                    <{{subject.value}}> crm:P138_represents ?entity .
+                                                                                    <{{subject.value}}> rs:PX_main_represents|crm:P138_represents ?entity .
                                                                                 }'
                                                                             template='{{> template}}'>
                                                                 <template id='template'>
                                                                     <div>
                                                                         {{#each bindings}}
-                                                                            <semantic-link-container    uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                                                                        urlqueryparam-view="resource-editor"
-                                                                                                        urlqueryparam-resource-iri='{{entity.value}}'
-                                                                                                        urlqueryparam-iri="{{entity.value}}">
-                                                                                <mp-label iri='{{entity.value}}' class="text-link"></mp-label>
-                                                                            </semantic-link-container>
+                                                                            <mp-draggable iri='{{entity.value}}'>
+                                                                                <semantic-link-container    uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                                                            urlqueryparam-view="resource-editor"
+                                                                                                            urlqueryparam-resource-iri='{{entity.value}}'>
+                                                                                    <mp-label iri='{{entity.value}}' class="text-link"></mp-label>
+                                                                                </semantic-link-container>
+                                                                            </mp-draggable>
                                                                             <span>{{#if @last}}{{else}}, {{/if}}</span>
                                                                         {{/each}}
                                                                     </div>

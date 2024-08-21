@@ -608,7 +608,7 @@
                         <template id='custom-list-view'>
                           <semantic-search-result>
                             <semantic-table id='semantic-search-result-list'
-                            class-name="table-fixed-header table-scrollable-content table-expanded search-table-container {{#if (or (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Set')(eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map'))}}table-without-checkbox{{else}}table-with-checkbox{{/if}}"
+                                            class-name="table-fixed-header table-scrollable-content table-expanded search-table-container {{#if (or (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Set')(eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map'))}}table-without-checkbox{{else}}table-with-checkbox{{/if}}"
                                             query='SELECT DISTINCT ?subject ?iri ?description WHERE {
                                                     BIND(?subject as ?iri) .
                                                     #?subject a ?type .
@@ -722,13 +722,12 @@
                                       </mp-draggable>
 
                                       {{#if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/User")}}
-                                        <semantic-query query='SELECT DISTINCT ?systemUser ?subject WHERE { 
+                                        <semantic-query query='SELECT DISTINCT ?systemUser WHERE { 
                                                                 BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
-                                                                BIND(<{{iri.value}}> as ?subject)
                                                               } LIMIT 1'>
                                           <template id='template'>
-                                            {{#ifCond bindings.0.systemUser.value "===" bindings.0.subject.value}}
-                                              <div>test</div>
+                                            {{#ifCond bindings.0.systemUser.value "===" iri.value}}
+                                              <div class="color-action text-bold600 text-font-size__xsmall text-truncate-line1">My profile</div>
                                             {{else}}
                                               <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">[[urlParam "resourcelabel" escape=false]]</div>
                                             {{/ifCond}}
@@ -749,8 +748,8 @@
                                                             BIND("{{bindings.0.columnContentType2.value}}" AS ?columnContentType2)
                                                             {{bindings.0.columnContentSparqlPattern2.value}}
                                                           }'
-                                                    template='{{> customColumnContent}}'
-                                                    no-result-template='{{> noResults}}'
+                                                  template='{{> customColumnContent}}'
+                                                  no-result-template='{{> noResults}}'
                                     >
 
                                       <template id='customColumnContent'>
@@ -781,11 +780,13 @@
                                                   <mp-draggable iri='{{value.value}}'><span>{{dateTimeFormat label.value "DD/MM/YYYY"}}</span></mp-draggable>
                                                   <span>{{#if @last}}{{else}}, {{/if}}</span>
                                                 {{else if (eq columnContentType2.value "link")}}
-                                                  <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                                            urlqueryparam-view="resource-editor"
-                                                                            urlqueryparam-resource-iri='{{value.value}}'>
-                                                    <span class="text-link">{{label.value}}</span>
-                                                  </semantic-link-container>
+                                                  <mp-draggable iri='{{value.value}}'>
+                                                    <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                              urlqueryparam-view="resource-editor"
+                                                                              urlqueryparam-resource-iri='{{value.value}}'>
+                                                      <span class="text-link">{{label.value}}</span>
+                                                    </semantic-link-container>
+                                                  </mp-draggable>
                                                   <span>{{#if @last}}{{else}}, {{/if}}</span>
                                                 {{else if (eq columnContentType2.value "tag")}}
                                                   <span class="badge badge--secondary">{{label.value}}</span>
@@ -852,11 +853,13 @@
                                                 <mp-draggable iri='{{value.value}}'><span>{{dateTimeFormat label.value "DD/MM/YYYY"}}</span></mp-draggable>
                                                 <span>{{#if @last}}{{else}}, {{/if}}</span>
                                               {{else if (eq columnContentType3.value "link")}}
-                                                <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                                          urlqueryparam-view="resource-editor"
-                                                                          urlqueryparam-resource-iri='{{value.value}}'>
-                                                  <span class="text-link">{{label.value}}</span>
-                                                </semantic-link-container>
+                                                <mp-draggable iri='{{value.value}}'>
+                                                  <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                            urlqueryparam-view="resource-editor"
+                                                                            urlqueryparam-resource-iri='{{value.value}}'>
+                                                    <span class="text-link">{{label.value}}</span>
+                                                  </semantic-link-container>
+                                                </mp-draggable>
                                                 <span>{{#if @last}}{{else}}, {{/if}}</span>
                                               {{else if (eq columnContentType3.value "tag")}}
                                                 <span class="badge badge--secondary">{{label.value}}</span>
@@ -908,14 +911,18 @@
                                             {{#if (eq bindings.0.columnContentType4.value "tag")}}<div style="display: flex; gap: 5px; flex-wrap: wrap;">{{/if}}
                                             {{#each bindings}}
                                               {{#if (eq columnContentType4.value "date")}}
-                                                <mp-draggable iri='{{value.value}}'><span>{{dateTimeFormat label.value "DD/MM/YYYY"}}</span></mp-draggable>
+                                                <mp-draggable iri='{{value.value}}'>
+                                                  <span>{{dateTimeFormat label.value "DD/MM/YYYY"}}</span>
+                                                </mp-draggable>
                                                 <span>{{#if @last}}{{else}}, {{/if}}</span>
                                               {{else if (eq columnContentType4.value "link")}}
-                                                <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                                          urlqueryparam-view="resource-editor"
-                                                                          urlqueryparam-resource-iri='{{value.value}}'>
-                                                  <span class="text-link">{{label.value}}</span>
-                                                </semantic-link-container>
+                                                <mp-draggable iri='{{value.value}}'>
+                                                  <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                            urlqueryparam-view="resource-editor"
+                                                                            urlqueryparam-resource-iri='{{value.value}}'>
+                                                    <span class="text-link">{{label.value}}</span>
+                                                  </semantic-link-container>
+                                                </mp-draggable>
                                                 <span>{{#if @last}}{{else}}, {{/if}}</span>
                                               {{else if (eq columnContentType4.value "tag")}}
                                                 <span class="badge badge--secondary">{{label.value}}</span>

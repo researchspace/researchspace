@@ -170,7 +170,10 @@ public class LDPAssetsLoader {
         logger.info("All LDP assets loading finished");
 
         //generate KPs if they don't already exist
-        String checkIfKPsExistForPreloadedOntologies = "SELECT ?ontology (count(?prop) as ?propCount) (count(?kp) as ?kpCount) {" +
+        String checkIfKPsExistForPreloadedOntologies = "" +
+                        "PREFIX owl: <http://www.w3.org/2002/07/owl#>" +
+                        "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
+                        "SELECT ?ontology (count(?prop) as ?propCount) (count(?kp) as ?kpCount) {" +
                              "?ontology a owl:Ontology . " +
                              "BIND((IF((STRENDS(STR(?ontology),\"/\")),STR(?ontology),CONCAT(STR(?ontology),\"/\"))) as ?ontologyURI)" +
                              "BIND(IRI(CONCAT(STR(?ontologyURI),\"context\")) as ?ontologyContext)" +

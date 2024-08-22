@@ -17,7 +17,11 @@
                     additional-data='{"setCreated": true }' >
     </mp-event-proxy>
 
-    [[!-- TO BE DONE: update when Sava data in KM --]]
+    <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-searchPage-on-ontodia-data-changed'
+                    on-event-type='Ontodia.DiagramDataPersisted'
+                    proxy-event-type='Component.TemplateUpdate' 
+                    proxy-targets='["[[urlParam "resourceconfig" escape=false]]-resourceSearch-frame"]'>
+    </mp-event-proxy>
 
     {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
       <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-setSearch-on-set-modification'

@@ -1,36 +1,21 @@
 [[!-- CUSTOM HOMEPAGE --]]
 
-[[!-- Update homepage on resourceForm actions --]]
-<mp-event-proxy id='update-homepage-on-resourceForm-actions'
-                on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated", "Form.ResourceRemoved"]'         
+[[!-- Update homepage on actions --]]
+<mp-event-proxy id='update-homepage-on-actions'
+                on-event-types='[ "Form.ResourceCreated", 
+                                  "Form.ResourceUpdated", 
+                                  "Form.ResourceRemoved",
+                                  "Components.SetManagement.SetAdded",
+                                  "Components.SetManagement.SetRenamed",
+                                  "Components.SetManagement.SetRemoved",
+                                  "Narrative.Created", 
+                                  "Narrative.Updated",
+                                  "Ontodia.DiagramSaved",
+                                  "Ontodia.DiagramDataPersisted"
+                                ]'         
                 proxy-event-type='Component.TemplateUpdate' 
                 proxy-targets='["homepage-render-area"]'
 ></mp-event-proxy> 
-
-[[!-- Update homepage on set actions --]]
-<mp-event-proxy id='update-homepage-on-set-actions'
-                on-event-types='["Components.SetManagement.SetAdded",
-                                  "Components.SetManagement.SetRenamed",
-                                  "Components.SetManagement.SetRemoved"]'
-                proxy-event-type='Component.TemplateUpdate' 
-                proxy-targets='["homepage-render-area"]'>
-</mp-event-proxy>
-
-[[!-- Update homepage on narrative created or updated --]]
-<mp-event-proxy id='update-homepage-on-narrative-actions'
-                on-event-types='["Narrative.Created", "Narrative.Updated"]'  
-                proxy-event-type='Component.TemplateUpdate' 
-                proxy-targets='["homepage-render-area"]'
-></mp-event-proxy>
-
-[[!-- Update homepage for map created or updated --]]
-<mp-event-proxy id='update-homepage-on-map-actions'
-                on-event-type='Ontodia.DiagramSaved'  
-                proxy-event-type='Component.TemplateUpdate' 
-                proxy-targets='["homepage-render-area"]'
-></mp-event-proxy>
-
-[[!-- TO BE DONE: update when Sava data in KM --]]
 
 <mp-event-target-template-render id='homepage-render-area' template='{{> template}}'>
   <template id='template'>

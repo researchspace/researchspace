@@ -1095,6 +1095,14 @@ export class Ontodia extends Component<OntodiaProps, State> {
 
     trigger({
       source: this.props.id,
+      eventType: OntodiaEvents.DiagramDataPersisted,
+      data: {
+        model: model,
+      },
+    });
+
+    trigger({
+      source: this.props.id,
       eventType: OntodiaEvents.DiagramChanged,
       data: {
         model: model,

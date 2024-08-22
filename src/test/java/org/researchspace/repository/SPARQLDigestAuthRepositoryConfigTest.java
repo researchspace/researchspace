@@ -35,7 +35,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.researchspace.junit.TestUtils;
-import org.researchspace.repository.RepositoryConfigUtils;
 import org.researchspace.repository.sparql.SPARQLDigestAuthRepositoryConfig;
 
 /**

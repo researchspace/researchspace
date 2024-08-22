@@ -17,7 +17,11 @@
                     additional-data='{"setCreated": true }' >
     </mp-event-proxy>
 
-    [[!-- TO BE DONE: update when Sava data in KM --]]
+    <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-searchPage-on-ontodia-data-changed'
+                    on-event-type='Ontodia.DiagramDataPersisted'
+                    proxy-event-type='Component.TemplateUpdate' 
+                    proxy-targets='["[[urlParam "resourceconfig" escape=false]]-resourceSearch-frame"]'>
+    </mp-event-proxy>
 
     {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
       <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-setSearch-on-set-modification'
@@ -199,13 +203,44 @@
                                                         ?subject rdfs:label ?label .
                                                       [[/if]]
 
-                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
-                                                        MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
+                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Appellation")}}
+                                                        MINUS { <http://www.researchspace.org/resource/system/ontodiaDiagramContainer> crm:P1_is_identified_by ?subject .}
                                                       {{/if}}
 
                                                       {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor")}}
                                                         MINUS {?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .}
                                                       {{/if}}
+
+                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Entity")}}
+                                                        MINUS { ?configuration <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_listView_column> ?subject .}
+                                                      {{/if}}
+
+                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Information_object")}}
+                                                        MINUS { ?subject a Platform:resource_configuration .}
+                                                      {{/if}}
+
+                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Term")}}
+                                                        MINUS { ?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/KP_category> .}
+                                                      {{/if}}
+
+                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Timespan")}}
+                                                        MINUS { 
+                                                          ?entityFormRecordCreation crm:P4_has_time-span ?subject .
+                                                          ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+                                                        }
+                                                      {{/if}}
+
+                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Type")}}
+                                                        MINUS { 
+                                                          ?subject crm:P71i_is_listed_in ?vocabulary .
+                                                          ?vocabulary crm:P2_has_type Platform:System_Resource .
+                                                        }
+                                                      {{/if}}
+
+                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
+                                                        MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
+                                                      {{/if}}
+
                                                       SERVICE <http://www.bigdata.com/rdf/search#search> {
                                                         ?label bds:search ?__token__ ;
                                                         bds:minRelevance "0.3" ;
@@ -225,12 +260,38 @@
                                                                 [[#if (urlParam "resourcerestrictionpattern")]] 
                                                                   [[urlParam "resourcerestrictionpattern" escape=false]] 
                                                                 [[/if]]
-                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
-                                                                  MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
+
+                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Appellation")}}
+                                                                  MINUS { <http://www.researchspace.org/resource/system/ontodiaDiagramContainer> crm:P1_is_identified_by ?subject .}
                                                                 {{/if}}
                                                                 {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor")}}
                                                                   MINUS {?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .}
                                                                 {{/if}}
+                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Entity")}}
+                                                                  MINUS { ?configuration <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_listView_column> ?subject .}
+                                                                {{/if}}
+                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Information_object")}}
+                                                                  MINUS { ?subject a Platform:resource_configuration .}
+                                                                {{/if}}
+                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Term")}}
+                                                                  MINUS { ?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/KP_category> .}
+                                                                {{/if}}
+                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Timespan")}}
+                                                                  MINUS { 
+                                                                    ?entityFormRecordCreation crm:P4_has_time-span ?subject .
+                                                                    ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+                                                                  }
+                                                                {{/if}}
+                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Type")}}
+                                                                  MINUS { 
+                                                                    ?subject crm:P71i_is_listed_in ?vocabulary .
+                                                                    ?vocabulary crm:P2_has_type Platform:System_Resource .
+                                                                  }
+                                                                {{/if}}
+                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
+                                                                  MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
+                                                                {{/if}}
+
                                                               }'
                                                 debounce=300
                                                 placeholder="Search [[urlParam 'resourcelabel' escape=false]]"
@@ -617,9 +678,10 @@
 
                                                     OPTIONAL {
                                                       ?subject crm:P67i_is_referred_to_by ?information_object  .
-                                                      ?information_object a crm:E73_Information_Object .
                                                       ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
-                                                      ?information_object crm:P190_has_symbolic_content ?description . 
+                                                      ?information_object crm:P1_is_identified_by ?descriptionAppellation . 
+                                                      ?descriptionAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                      ?descriptionAppellation crm:P190_has_symbolic_content ?description .
                                                     }
                                                   } ORDER BY ?subject'
     
@@ -958,9 +1020,10 @@
                                                     
                                                     OPTIONAL {
                                                       ?subject crm:P67i_is_referred_to_by ?information_object  .
-                                                      ?information_object a crm:E73_Information_Object .
                                                       ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
-                                                       ?information_object crm:P190_has_symbolic_content ?description . 
+                                                      ?information_object crm:P1_is_identified_by ?descriptionAppellation . 
+                                                      ?descriptionAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                      ?descriptionAppellation crm:P190_has_symbolic_content ?description .
                                                     }
                                                   } ORDER BY ?subject'
     

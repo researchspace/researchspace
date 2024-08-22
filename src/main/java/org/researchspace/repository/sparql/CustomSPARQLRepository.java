@@ -44,6 +44,13 @@ public class CustomSPARQLRepository extends org.eclipse.rdf4j.repository.sparql.
      */
     private boolean isWritable;
 
+    /**
+     * True if SILENT modifier should be used for GRAPH commands
+     * 
+     * see https://github.com/eclipse-rdf4j/rdf4j/issues/956
+     */
+    private boolean isSilentMode;
+
     public CustomSPARQLRepository(String endpointUrl) {
         super(endpointUrl);
     }
@@ -65,6 +72,14 @@ public class CustomSPARQLRepository extends org.eclipse.rdf4j.repository.sparql.
     @Override
     public boolean isWritable() throws RepositoryException {
         return this.isWritable;
+    }
+
+    public boolean isSilentMode() {
+        return isSilentMode;
+    }
+
+    public void setSilentMode(boolean isSilentMode) {
+        this.isSilentMode = isSilentMode;
     }
 
     @Override
@@ -102,6 +117,6 @@ public class CustomSPARQLRepository extends org.eclipse.rdf4j.repository.sparql.
         if (!isInitialized()) {
             init();
         }
-        return new CustomSPARQLConnection(this, createHTTPClient(), this.quadMode);
+        return new CustomSPARQLConnection(this, createHTTPClient(), this.quadMode, this.isSilentMode);
     }
 }

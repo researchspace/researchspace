@@ -260,8 +260,7 @@ public class RepositoryManager implements RepositoryManagerInterface {
     private void initializeDefaultRepositories(Map<String, RepositoryConfig> repositoryConfigs) {
         String sparqlRepositoryUrl = this.config.getEnvironmentConfig().getSparqlEndpoint();
         if (repositoryConfigs.containsKey(DEFAULT_REPOSITORY_ID)) {
-            // Do nothing: the repository will be initialized in the standard sequence
-            // from a Turtle file
+            initializeRepository(repositoryConfigs.get(DEFAULT_REPOSITORY_ID), false);
         } else if (!StringUtils.isEmpty(sparqlRepositoryUrl)) {
             logger.info("Initializing HTTP Sparql Repository with URL: {}.", sparqlRepositoryUrl);
             RepositoryConfig repConfig = RepositoryManager.createSPARQLRepositoryConfigForEndpoint(sparqlRepositoryUrl);

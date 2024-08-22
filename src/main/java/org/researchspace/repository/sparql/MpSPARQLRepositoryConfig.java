@@ -44,6 +44,7 @@ public class MpSPARQLRepositoryConfig extends SPARQLRepositoryConfig {
 
     private boolean usingQuads = true;
     private boolean writable = true;
+    private boolean silentMode = false;
 
     public MpSPARQLRepositoryConfig() {
         super();
@@ -75,11 +76,20 @@ public class MpSPARQLRepositoryConfig extends SPARQLRepositoryConfig {
         this.writable = writable;
     }
 
+    public boolean isSilentMode() {
+        return silentMode;
+    }
+
+    public void setSilentMode(boolean silentMode) {
+        this.silentMode = silentMode;
+    }
+
     @Override
     public Resource export(Model model) {
         Resource implNode = super.export(model);
         model.add(implNode, MpRepositoryVocabulary.QUAD_MODE, vf.createLiteral(usingQuads));
         model.add(implNode, MpRepositoryVocabulary.WRITABLE, vf.createLiteral(writable));
+        model.add(implNode, MpRepositoryVocabulary.SILENT_MODE, vf.createLiteral(silentMode));
         return implNode;
     }
 
@@ -92,6 +102,8 @@ public class MpSPARQLRepositoryConfig extends SPARQLRepositoryConfig {
                     .ifPresent(lit -> setUsingQuads(lit.booleanValue()));
             Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.WRITABLE, null))
                     .ifPresent(lit -> setWritable(lit.booleanValue()));
+            Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.SILENT_MODE, null))
+                    .ifPresent(lit -> setSilentMode(lit.booleanValue()));
         } catch (ModelException e) {
             throw new SailConfigException(e.getMessage(), e);
         }

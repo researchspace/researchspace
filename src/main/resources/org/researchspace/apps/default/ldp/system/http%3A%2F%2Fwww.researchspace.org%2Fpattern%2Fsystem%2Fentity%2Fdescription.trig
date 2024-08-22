@@ -1,4 +1,3 @@
-
 <http://www.researchspace.org/pattern/system/entity/description/context> {
   <http://www.researchspace.org/pattern/system/entity/description> a <http://www.researchspace.org/resource/system/fields/Field>,
       <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
@@ -16,10 +15,13 @@
   
   _:genid-e6e6ecbdd35f4d9c8eba3cf053b98f4a-upn11v a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
-   	$subject crm:P67i_is_referred_to_by ?information_object  .
+    $subject crm:P67i_is_referred_to_by ?information_object  .
     ?information_object a crm:E73_Information_Object .
     ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
-   	?information_object crm:P190_has_symbolic_content $value . 
+ 	  ?information_object crm:P1_is_identified_by ?appellation . 
+    ?appellation a crm:E41_Appellation . 
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content $value .
 }""" .
   
   _:genid-e6e6ecbdd35f4d9c8eba3cf053b98f4a-r7bxch a <http://spinrdf.org/sp#Query>;
@@ -27,22 +29,33 @@
     $subject crm:P67i_is_referred_to_by ?information_object  .
     ?information_object a crm:E73_Information_Object .
     ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
- 	?information_object crm:P190_has_symbolic_content $value . 
+ 	  ?information_object crm:P1_is_identified_by ?appellation . 
+    ?appellation a crm:E41_Appellation . 
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content $value .
+} WHERE {
+  BIND(URI(CONCAT(str($subject), \"/description\")) as ?information_object)
+  BIND(URI(CONCAT(STR($subject), \"/description/primary_appellation\") ) as ?appellation)
 }
-  where {
-BIND(URI(CONCAT(str($subject), \"/description\")) as ?information_object)}""" .
+""" .
   
   _:genid-e6e6ecbdd35f4d9c8eba3cf053b98f4a-flv9j6 a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """DELETE { 
     $subject crm:P67i_is_referred_to_by ?information_object  .
     ?information_object a crm:E73_Information_Object .
     ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
-   	?information_object crm:P190_has_symbolic_content $value . 
+ 	?information_object crm:P1_is_identified_by ?appellation . 
+    ?appellation a crm:E41_Appellation . 
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content $value .
 } WHERE {
     $subject crm:P67i_is_referred_to_by ?information_object  .
     ?information_object a crm:E73_Information_Object .
     ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
-   	?information_object crm:P190_has_symbolic_content $value . 
+ 	?information_object crm:P1_is_identified_by ?appellation . 
+    ?appellation a crm:E41_Appellation . 
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content $value .
 }""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>

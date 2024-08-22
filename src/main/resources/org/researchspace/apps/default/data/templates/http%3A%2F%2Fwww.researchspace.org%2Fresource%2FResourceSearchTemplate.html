@@ -17,7 +17,11 @@
                     additional-data='{"setCreated": true }' >
     </mp-event-proxy>
 
-    [[!-- TO BE DONE: update when Sava data in KM --]]
+    <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-searchPage-on-ontodia-data-changed'
+                    on-event-type='Ontodia.DiagramDataPersisted'
+                    proxy-event-type='Component.TemplateUpdate' 
+                    proxy-targets='["[[urlParam "resourceconfig" escape=false]]-resourceSearch-frame"]'>
+    </mp-event-proxy>
 
     {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
       <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-setSearch-on-set-modification'
@@ -199,13 +203,44 @@
                                                         ?subject rdfs:label ?label .
                                                       [[/if]]
 
-                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
-                                                        MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
+                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Appellation")}}
+                                                        MINUS { <http://www.researchspace.org/resource/system/ontodiaDiagramContainer> crm:P1_is_identified_by ?subject .}
                                                       {{/if}}
 
                                                       {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor")}}
                                                         MINUS {?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .}
                                                       {{/if}}
+
+                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Entity")}}
+                                                        MINUS { ?configuration <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_listView_column> ?subject .}
+                                                      {{/if}}
+
+                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Information_object")}}
+                                                        MINUS { ?subject a Platform:resource_configuration .}
+                                                      {{/if}}
+
+                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Term")}}
+                                                        MINUS { ?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/KP_category> .}
+                                                      {{/if}}
+
+                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Timespan")}}
+                                                        MINUS { 
+                                                          ?entityFormRecordCreation crm:P4_has_time-span ?subject .
+                                                          ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+                                                        }
+                                                      {{/if}}
+
+                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Type")}}
+                                                        MINUS { 
+                                                          ?subject crm:P71i_is_listed_in ?vocabulary .
+                                                          ?vocabulary crm:P2_has_type Platform:System_Resource .
+                                                        }
+                                                      {{/if}}
+
+                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
+                                                        MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
+                                                      {{/if}}
+
                                                       SERVICE <http://www.bigdata.com/rdf/search#search> {
                                                         ?label bds:search ?__token__ ;
                                                         bds:minRelevance "0.3" ;
@@ -225,12 +260,38 @@
                                                                 [[#if (urlParam "resourcerestrictionpattern")]] 
                                                                   [[urlParam "resourcerestrictionpattern" escape=false]] 
                                                                 [[/if]]
-                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
-                                                                  MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
+
+                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Appellation")}}
+                                                                  MINUS { <http://www.researchspace.org/resource/system/ontodiaDiagramContainer> crm:P1_is_identified_by ?subject .}
                                                                 {{/if}}
                                                                 {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor")}}
                                                                   MINUS {?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .}
                                                                 {{/if}}
+                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Entity")}}
+                                                                  MINUS { ?configuration <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_listView_column> ?subject .}
+                                                                {{/if}}
+                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Information_object")}}
+                                                                  MINUS { ?subject a Platform:resource_configuration .}
+                                                                {{/if}}
+                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Term")}}
+                                                                  MINUS { ?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/KP_category> .}
+                                                                {{/if}}
+                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Timespan")}}
+                                                                  MINUS { 
+                                                                    ?entityFormRecordCreation crm:P4_has_time-span ?subject .
+                                                                    ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+                                                                  }
+                                                                {{/if}}
+                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Type")}}
+                                                                  MINUS { 
+                                                                    ?subject crm:P71i_is_listed_in ?vocabulary .
+                                                                    ?vocabulary crm:P2_has_type Platform:System_Resource .
+                                                                  }
+                                                                {{/if}}
+                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
+                                                                  MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
+                                                                {{/if}}
+
                                                               }'
                                                 debounce=300
                                                 placeholder="Search [[urlParam 'resourcelabel' escape=false]]"
@@ -608,8 +669,7 @@
                         <template id='custom-list-view'>
                           <semantic-search-result>
                             <semantic-table id='semantic-search-result-list'
-                                            class-name="semantic-search-custom-result-list table-fixed-header table-scrollable-content table-expanded"
-
+                                            class-name="table-fixed-header table-scrollable-content table-expanded search-table-container {{#if (or (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Set')(eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map'))}}table-without-checkbox{{else}}table-with-checkbox{{/if}}"
                                             query='SELECT DISTINCT ?subject ?iri ?description WHERE {
                                                     BIND(?subject as ?iri) .
                                                     #?subject a ?type .
@@ -618,9 +678,10 @@
 
                                                     OPTIONAL {
                                                       ?subject crm:P67i_is_referred_to_by ?information_object  .
-                                                      ?information_object a crm:E73_Information_Object .
                                                       ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
-                                                      ?information_object crm:P190_has_symbolic_content ?description . 
+                                                      ?information_object crm:P1_is_identified_by ?descriptionAppellation . 
+                                                      ?descriptionAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                      ?descriptionAppellation crm:P190_has_symbolic_content ?description .
                                                     }
                                                   } ORDER BY ?subject'
     
@@ -643,7 +704,7 @@
                                 [[#if (hasPermission "forms:ldp:*")]]
                                   {{#if (or (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map"))}}
                                   {{else}}
-                                    <div class=''>
+                                    <div>
                                       <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
                                     </div>
                                   {{/if}}
@@ -723,13 +784,12 @@
                                       </mp-draggable>
 
                                       {{#if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/User")}}
-                                        <semantic-query query='SELECT DISTINCT ?systemUser ?subject WHERE { 
+                                        <semantic-query query='SELECT DISTINCT ?systemUser WHERE { 
                                                                 BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
-                                                                BIND(<{{iri.value}}> as ?subject)
                                                               } LIMIT 1'>
                                           <template id='template'>
-                                            {{#ifCond bindings.0.systemUser.value "===" bindings.0.subject.value}}
-                                              <div>test</div>
+                                            {{#ifCond bindings.0.systemUser.value "===" iri.value}}
+                                              <div class="color-action text-bold600 text-font-size__xsmall text-truncate-line1">My profile</div>
                                             {{else}}
                                               <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">[[urlParam "resourcelabel" escape=false]]</div>
                                             {{/ifCond}}
@@ -750,8 +810,8 @@
                                                             BIND("{{bindings.0.columnContentType2.value}}" AS ?columnContentType2)
                                                             {{bindings.0.columnContentSparqlPattern2.value}}
                                                           }'
-                                                    template='{{> customColumnContent}}'
-                                                    no-result-template='{{> noResults}}'
+                                                  template='{{> customColumnContent}}'
+                                                  no-result-template='{{> noResults}}'
                                     >
 
                                       <template id='customColumnContent'>
@@ -782,11 +842,13 @@
                                                   <mp-draggable iri='{{value.value}}'><span>{{dateTimeFormat label.value "DD/MM/YYYY"}}</span></mp-draggable>
                                                   <span>{{#if @last}}{{else}}, {{/if}}</span>
                                                 {{else if (eq columnContentType2.value "link")}}
-                                                  <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                                            urlqueryparam-view="resource-editor"
-                                                                            urlqueryparam-resource-iri='{{value.value}}'>
-                                                    <span class="text-link">{{label.value}}</span>
-                                                  </semantic-link-container>
+                                                  <mp-draggable iri='{{value.value}}'>
+                                                    <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                              urlqueryparam-view="resource-editor"
+                                                                              urlqueryparam-resource-iri='{{value.value}}'>
+                                                      <span class="text-link">{{label.value}}</span>
+                                                    </semantic-link-container>
+                                                  </mp-draggable>
                                                   <span>{{#if @last}}{{else}}, {{/if}}</span>
                                                 {{else if (eq columnContentType2.value "tag")}}
                                                   <span class="badge badge--secondary">{{label.value}}</span>
@@ -853,11 +915,13 @@
                                                 <mp-draggable iri='{{value.value}}'><span>{{dateTimeFormat label.value "DD/MM/YYYY"}}</span></mp-draggable>
                                                 <span>{{#if @last}}{{else}}, {{/if}}</span>
                                               {{else if (eq columnContentType3.value "link")}}
-                                                <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                                          urlqueryparam-view="resource-editor"
-                                                                          urlqueryparam-resource-iri='{{value.value}}'>
-                                                  <span class="text-link">{{label.value}}</span>
-                                                </semantic-link-container>
+                                                <mp-draggable iri='{{value.value}}'>
+                                                  <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                            urlqueryparam-view="resource-editor"
+                                                                            urlqueryparam-resource-iri='{{value.value}}'>
+                                                    <span class="text-link">{{label.value}}</span>
+                                                  </semantic-link-container>
+                                                </mp-draggable>
                                                 <span>{{#if @last}}{{else}}, {{/if}}</span>
                                               {{else if (eq columnContentType3.value "tag")}}
                                                 <span class="badge badge--secondary">{{label.value}}</span>
@@ -909,14 +973,18 @@
                                             {{#if (eq bindings.0.columnContentType4.value "tag")}}<div style="display: flex; gap: 5px; flex-wrap: wrap;">{{/if}}
                                             {{#each bindings}}
                                               {{#if (eq columnContentType4.value "date")}}
-                                                <mp-draggable iri='{{value.value}}'><span>{{dateTimeFormat label.value "DD/MM/YYYY"}}</span></mp-draggable>
+                                                <mp-draggable iri='{{value.value}}'>
+                                                  <span>{{dateTimeFormat label.value "DD/MM/YYYY"}}</span>
+                                                </mp-draggable>
                                                 <span>{{#if @last}}{{else}}, {{/if}}</span>
                                               {{else if (eq columnContentType4.value "link")}}
-                                                <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                                          urlqueryparam-view="resource-editor"
-                                                                          urlqueryparam-resource-iri='{{value.value}}'>
-                                                  <span class="text-link">{{label.value}}</span>
-                                                </semantic-link-container>
+                                                <mp-draggable iri='{{value.value}}'>
+                                                  <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                            urlqueryparam-view="resource-editor"
+                                                                            urlqueryparam-resource-iri='{{value.value}}'>
+                                                    <span class="text-link">{{label.value}}</span>
+                                                  </semantic-link-container>
+                                                </mp-draggable>
                                                 <span>{{#if @last}}{{else}}, {{/if}}</span>
                                               {{else if (eq columnContentType4.value "tag")}}
                                                 <span class="badge badge--secondary">{{label.value}}</span>
@@ -945,16 +1013,17 @@
                         <template id='default-list-view'>
                           <semantic-search-result>
                             <semantic-table id='semantic-search-result-list'
-                                            class-name="semantic-search-default-result-list table-fixed-header table-scrollable-content table-expanded"
+                                            class-name="table-fixed-header table-scrollable-content table-expanded search-table-container {{#if (or (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Set')(eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map'))}}table-without-checkbox{{else}}table-with-checkbox{{/if}}"
                                             query='SELECT DISTINCT ?subject ?iri ?description ?resourceConfig WHERE {
                                                     BIND(?subject as ?iri) .
                                                     BIND(<[[urlParam "resourceconfig" escape=false]]> as ?resourceConfig) .
                                                     
                                                     OPTIONAL {
                                                       ?subject crm:P67i_is_referred_to_by ?information_object  .
-                                                      ?information_object a crm:E73_Information_Object .
                                                       ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
-                                                       ?information_object crm:P190_has_symbolic_content ?description . 
+                                                      ?information_object crm:P1_is_identified_by ?descriptionAppellation . 
+                                                      ?descriptionAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                      ?descriptionAppellation crm:P190_has_symbolic_content ?description .
                                                     }
                                                   } ORDER BY ?subject'
     
@@ -974,7 +1043,7 @@
                                 [[#if (hasPermission "forms:ldp:*")]]
                                   {{#if (or (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map"))}}
                                   {{else}}
-                                    <div class=''>
+                                    <div>
                                       <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
                                     </div>
                                   {{/if}}

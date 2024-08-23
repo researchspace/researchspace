@@ -2,7 +2,7 @@
 
 [[!--  VOCABULARY representation:
 
-  This application page is used to create and edit skos:ConceptScheme or crm:E32_Authority_Document, corresponding to thesauri or authority lists.
+  This application page is used to create and edit skos:ConceptScheme or crm:E32_Authority_Document, corresponding to vocabulary or authority lists.
   Creating a skos:ConceptScheme is suitable for hierarchical conceptual structure where the hierarchy is best described by broader or narrower type of relations.
   Creating a crm:E32_Authority_Document can represent lists of persons, periods, events, etc. The assumption is that all entities in an Authority Document have the same
   type and relations between entities are based on cidoc-crm entities and their corresponding properties; 
@@ -26,12 +26,12 @@
                                                                       }
                                                     }'
 
-                                    fields='[{"iri": "http://www.researchspace.org/pattern/system/vocabularyLabel", "id": "label", "label": "Label", "xsdDatatype": "http://www.w3.org/2001/XMLSchema#string"},
+                                    fields='[{"iri": "http://www.researchspace.org/pattern/system/vocabularyLabel", "id": "label", "label": "Name", "xsdDatatype": "http://www.w3.org/2001/XMLSchema#string"},
                                             {"iri": "http://www.researchspace.org/pattern/system/vocabularyDescription", "id": "description", "label": "Description", "xsdDatatype": "http://www.w3.org/2001/XMLSchema#string"}
                                     ]'>
                             
             <div id="{{viewId}}-newVocabulary-search-form" class="vocabulary-search-form">
-              <semantic-form-text-input for="label" placeholder="Enter vocabulary / authority label" label="Label" ></semantic-form-text-input> 
+              <semantic-form-text-input for="label" placeholder="Enter vocabulary / authority name" label="Name" ></semantic-form-text-input> 
               <semantic-form-text-input for="description" placeholder="Enter vocabulary / authority description" label="Description" multiline='true'></semantic-form-text-input>        
 
               <semantic-form-errors></semantic-form-errors>
@@ -79,7 +79,7 @@
                   
                           <div> 
                             <div class="danger-documentation-section-title">Already exists!</div>
-                            <div class="danger- documentation-section-content">A vocabulary / authority with label <b>{{bindings.0.vocabularyLabel.value}}</b> 
+                            <div class="danger-documentation-section-content">A vocabulary / authority with name <b>{{bindings.0.vocabularyLabel.value}}</b> 
                               already exists.</div>
                           </div>
                         </div>
@@ -108,22 +108,21 @@
                                     fields='[[fieldDefinitions
                                               classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                                               has_type="http://www.researchspace.org/pattern/system/entity/has_all_types"
-                                              rdfsLabel="http://www.w3.org/2000/01/rdf-schema#label"
+                                              entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
                                               vocabulary_refersto_resourceConfig="http://www.researchspace.org/pattern/system/system_vocabulary/refers_to_resourceConfig"
-                                              vocabulary_description="http://www.researchspace.org/pattern/system/entity/description"
+                                              entity_description="http://www.researchspace.org/pattern/system/entity/description"
                                             ]]'
                       >
                         <div>
-                          <semantic-form-hidden-input for="classtype" 
-                                                      default-values='["http://www.cidoc-crm.org/cidoc-crm/E32_Authority_Document","http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object"]'>
+                          <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E32_Authority_Document">
                           </semantic-form-hidden-input>
                           <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/System_Resource'>
                           </semantic-form-hidden-input>   
-                          <semantic-form-hidden-input for="rdfsLabel" placeholder="Enter vocabulary / authority label" label="Label"
+                          <semantic-form-hidden-input for="entity_primary_appellation" placeholder="Enter vocabulary / authority name" label="Name"
                                                       default-value='{{bindings.0.vocabularyLabel.value}}'>
                           </semantic-form-hidden-input>   
                           <div>
-                            <span class="customFormHeader">Label:</span>
+                            <span class="customFormHeader">Name:</span>
                             <span>{{bindings.0.vocabularyLabel.value}}</span>
                           </div>
 
@@ -134,28 +133,28 @@
                             </div>
                           {{/if}}
 
-                          <semantic-form-hidden-input for="vocabulary_description" placeholder="Enter vocabulary / authority description" label="Description" multiline='true'
+                          <semantic-form-hidden-input for="entity_description" placeholder="Enter vocabulary / authority description" label="Description" multiline='true'
                                                       default-value='{{bindings.0.vocabularyDescription.value}}'>
                           </semantic-form-hidden-input>
 
                           <div style="display: flex; align-items: baseline; justify-content: space-between;">
-                            <div class="customFormHeader">Type<span style="margin-bottom: 2px; margin-left: 2px;">*</span></div>
+                            <div class="customFormHeader">Resource type<span style="margin-bottom: 2px; margin-left: 2px;">*</span></div>
                             <div class="btn-inline-container">
-                              <semantic-link iri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                                      class="text-link"
-                                                      target="_blank"
-                                                      urlqueryparam-view='resource-configuration'
-                                                      style="text-decoration: underline;">
-                                <div>+ New vocabulary / authority type</div>
-                              </semantic-link>
-                              <mp-popover title="Vocabulary / Authority type">
+                              <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                                       urlqueryparam-view='resource-configuration'>
+                                <button class="btn btn-default btn-textAndIcon" style="padding: 4px 10px; font-size: 13px;">
+                                  <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                                  New resource type
+                                </button>
+                              </semantic-link-container>
+                              <mp-popover title="Resource type">
                                 <mp-popover-trigger placement="bottom" trigger='["hover", "click"]'>
-                                  <div class="badge">
+                                  <div class="badge badge--default">
                                     <rs-icon icon-type="round" icon-name="question_mark"></rs-icon>
                                   </div>
                                 </mp-popover-trigger>
                                 <mp-popover-content>
-                                    <p>Vocabulary / Authority types are defined in 
+                                    <p>Resource types are defined in 
                                       <b>Resource Configuration - Vocabulary / Authority tab</b>.
                                     </p>
                                     <div>To use a resource as vocabulary / authority type go in tab Vocabulary / Authority, enable <b>Use as Vocabulary / Authority type</b> and enter a
@@ -166,7 +165,7 @@
                           </div>
                           
                           <div class="vocabularyType-checklist-input-container page__section-container" style="margin: 0;">
-                            <semantic-form-checklist-input for='vocabulary_refersto_resourceConfig' type="checkbox" label="Type" render-header="false"></semantic-form-checklist-input>
+                            <semantic-form-checklist-input for='vocabulary_refersto_resourceConfig' type="checkbox" label="Resource type" render-header="false"></semantic-form-checklist-input>
                           </div>
                         </div>
 
@@ -280,19 +279,27 @@
     
     [[#*inline "VocabularySearchResults"]]
       <semantic-search>
-        <semantic-search-query-keyword placeholder="Search vocabulary / authority (minimum 3 characters)"
+        <semantic-search-query-keyword placeholder="Search vocabulary / authority by name (minimum 3 characters)"
                                        query='PREFIX bds: <http://www.bigdata.com/rdf/search#>
                                               SELECT ?vocabulary ?vocabularyLabel ?managedByResourceConfig WHERE {
                                                 {
                                                   GRAPH ?vocabulary {
                                                     ?vocabulary a skos:ConceptScheme ;
-                                                            skos:prefLabel ?vocabularyLabel .
+                                                    crm:P1_is_identified_by ?vocabularyAppellation .
+
+                                                    ?vocabularyAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> ;
+                                                    crm:P190_has_symbolic_content ?vocabularyLabel .
+
                                                     ?vocabularyLabel bds:search ?__token__ .
                                                   }
                                                 } UNION {
                                                   GRAPH ?vocabulary {
                                                     ?vocabulary rdf:type crm:E32_Authority_Document ;
-                                                            rdfs:label ?vocabularyLabel .
+                                                    crm:P1_is_identified_by ?vocabularyAppellation .
+
+                                                    ?vocabularyAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> ;
+                                                    crm:P190_has_symbolic_content ?vocabularyLabel .
+
                                                     ?vocabularyLabel bds:search ?__token__ .
                                                   }
                                                 }
@@ -310,18 +317,24 @@
                                                 BIND(BOUND(?refersToResourceConfig) as ?managedByResourceConfig) .
                                               }'
                                               
-                default-query='SELECT DISTINCT ?vocabulary ?vocabularyLabel ?managedByResourceConfig 
-                                               ?resourceConfig ?resourceConfigLabel WHERE {
+                default-query='SELECT DISTINCT ?vocabulary ?vocabularyLabel ?vocabularyType ?vocabularyDescription ?managedByResourceConfig ?resourceConfig ?resourceConfigLabel WHERE {
                                 {
                                   GRAPH ?vocabulary {
                                       ?vocabulary rdf:type skos:ConceptScheme;
-                                              skos:prefLabel ?vocabularyLabel.
+                                      crm:P1_is_identified_by ?vocabularyAppellation .
+
+                                      ?vocabularyAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> ;
+                                      crm:P190_has_symbolic_content ?vocabularyLabel .
+
                                       BIND(skos:ConceptScheme AS ?vocabularyType)
                                   }
                                 } UNION {
                                     GRAPH ?vocabulary {
                                         ?vocabulary rdf:type crm:E32_Authority_Document;
-                                                rdfs:label ?vocabularyLabel.
+                                        crm:P1_is_identified_by ?vocabularyAppellation .
+
+                                      ?vocabularyAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> ;
+                                      crm:P190_has_symbolic_content ?vocabularyLabel .
 
                                         BIND(crm:E32_Authority_Document AS ?vocabularyType)
                                     }
@@ -356,14 +369,14 @@
               <semantic-search-result>
                 
                 <semantic-table id='vocabulary-table'
-                                query='SELECT DISTINCT ?vocabulary ?vocabularyLabel ?managedByResourceConfig ?resourceConfigLabel ?vocabularyDescription
+                                query='SELECT DISTINCT ?vocabulary ?vocabularyLabel ?vocabularyDescription ?managedByResourceConfig ?resourceConfigLabel
                                         WHERE {} 
                                         ORDER BY ASC(STR(LCASE(?vocabularyLabel)))'
                                 number-of-displayed-rows=15
                                 options='{"showFilter": false}'
                                 no-result-template='{{> noVocabulary}}'
                                 column-configuration='[ {"variableName": "vocabularyLabel", "displayName": "Vocabulary / Authority", "cellTemplate": "{{> vocabulary}}" },
-                                                        {"variableName": "resourceConfigLabel", "displayName": "Type"},
+                                                        {"variableName": "resourceConfigLabel", "displayName": "Resource type"},
                                                         {"variableName": "vocabularyDescription", "displayName": "Description"},
                                                         {"variableName": "vocabulary", "displayName": "Actions", "cellTemplate": "{{> actions}}" }
                                                       ]'>
@@ -385,11 +398,17 @@
 
                       <template id='actions'>
                         <div class="btn-inline-container">
-        <!--                <mp-event-trigger id='{{viewId}}-set-action__reading-add-add-frame' type='Dashboard.AddFrame' 
-                                data='{"resourceIri": "{{scheme.value}}", "viewId": "vocabulary-content","viewId":"{{viewId}}"}' 
-                                targets='["thinking-frames"]'>
-                                <button class="btn btn-default">Show Terms</button>
-                            </mp-event-trigger> -->
+                          
+                          <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                    urlqueryparam-view='vocabulary-content' 
+                                                    urlqueryparam-resource='{{vocabulary.value}}'
+                                                    urlqueryparam-mode='new'>
+                            <button class="btn btn-default btn-textAndIcon">
+                              <rs-icon icon-type='rounded' icon-name='list' symbol='true'></rs-icon> List of resources
+                            </button>
+                          </semantic-link-container>
+
+                          <div style="display: flex; align-items: center;"> 
                             <mp-overlay-dialog id='{{viewId}}-edit-vocabulary-dialog'
                                               title="Edit vocabulary / authority: {{vocabularyLabel.value}}" 
                                               type="modal" bs-size="large" class="editVocabulary-modal">
@@ -406,33 +425,32 @@
                                                   subject='{{vocabulary.value}}'
                                                   post-action="event"
                                                   fields='[[fieldDefinitions
-                                                        rdfsLabel="http://www.w3.org/2000/01/rdf-schema#label"
-                                                        vocabulary_refersto_resourceConfig="http://www.researchspace.org/pattern/system/system_vocabulary/refers_to_resourceConfig"
-                                                        vocabulary_description="http://www.researchspace.org/pattern/system/entity/description"
-                                                  ]]'
-                                  >
+                                                        entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
+                                                        vocabulary_refersto_resourceConfig="http://www.researchspace.org/pattern/system/vocabulary/refers_to_resourceConfig"
+                                                        entity_description="http://www.researchspace.org/pattern/system/entity/description"
+                                                  ]]'>
                                     
-                                    <semantic-form-text-input for="rdfsLabel" placeholder="Enter vocabulary / authority label" label="Label"></semantic-form-text-input>   
-                                    <semantic-form-text-input for="vocabulary_description" placeholder="Enter vocabulary / authority description" label="Description" multiline='true'></semantic-form-text-input>
+                                    <semantic-form-text-input for="entity_primary_appellation" placeholder="Enter vocabulary / authority name" label="Name"></semantic-form-text-input>   
+                                    <semantic-form-text-input for="entity_description" placeholder="Enter vocabulary / authority description" label="Description" multiline='true'></semantic-form-text-input>
                                     
                                     <div style="display: flex; align-items: baseline; justify-content: space-between;">
-                                      <div class="customFormHeader">Type<span style="margin-bottom: 2px; margin-left: 2px;">*</span></div>
+                                      <div class="customFormHeader">Resource type<span style="margin-bottom: 2px; margin-left: 2px;">*</span></div>
                                       <div class="btn-inline-container">
-                                        <semantic-link iri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                                                class="text-link"
-                                                                target="_blank"
-                                                                urlqueryparam-view='resource-configuration'
-                                                                style="text-decoration: underline;">
-                                          <div>+ New vocabulary / authority type</div>
-                                        </semantic-link>
-                                        <mp-popover title="Vocabulary / Authority type">
+                                        <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                                                urlqueryparam-view='resource-configuration'>
+                                          <button class="btn btn-default btn-textAndIcon" style="padding: 4px 10px; font-size: 13px;">
+                                            <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                                            New resource type
+                                          </button>
+                                        </semantic-link-container>
+                                        <mp-popover title="Resource type">
                                           <mp-popover-trigger placement="bottom" trigger='["hover", "click"]'>
-                                            <div class="badge">
+                                            <div class="badge badge--default">
                                               <rs-icon icon-type="round" icon-name="question_mark"></rs-icon>
                                             </div>
                                           </mp-popover-trigger>
                                           <mp-popover-content>
-                                              <p>Vocabulary / Authority types are defined in 
+                                              <p>Resource types are defined in 
                                                 <b>Resource Configuration - Vocabulary / Authority tab</b>.
                                               </p>
                                               <div>To use a resource as vocabulary / authority type go in tab Vocabulary / Authority, enable <b>Use as Vocabulary / Authority type</b> and enter a
@@ -443,7 +461,7 @@
                                     </div>
 
                                     <div class="vocabularyType-checklist-input-container page__section-container" style="margin: 0;">
-                                      <semantic-form-checklist-input for='vocabulary_refersto_resourceConfig' type="checkbox" label="Type" render-header="false"></semantic-form-checklist-input>
+                                      <semantic-form-checklist-input for='vocabulary_refersto_resourceConfig' type="checkbox" label="Resource type" render-header="false"></semantic-form-checklist-input>
                                     </div>
 
                                     <div class="btn-form-actions" style="margin-top: 20px;"> 
@@ -477,23 +495,23 @@
                                       </div>
 
                                       <div style="display: flex; align-items: baseline; justify-content: space-between;">
-                                        <div class="customFormHeader">Type<span style="margin-bottom: 2px; margin-left: 2px;">*</span></div>
+                                        <div class="customFormHeader">Resource type<span style="margin-bottom: 2px; margin-left: 2px;">*</span></div>
                                         <div class="btn-inline-container">
-                                          <semantic-link iri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                                                  target="_blank"
-                                                                  class="text-link"
-                                                                  urlqueryparam-view='resource-configuration'
-                                                                  style="text-decoration: underline;">
-                                            <div>+ New vocabulary / authority type</div>
-                                          </semantic-link>
-                                          <mp-popover title="Vocabulary / Authority type">
+                                          <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                                                  urlqueryparam-view='resource-configuration'>
+                                            <button class="btn btn-default btn-textAndIcon" style="padding: 4px 10px; font-size: 13px;">
+                                              <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                                              New resource type
+                                            </button>
+                                          </semantic-link-container>
+                                          <mp-popover title="Resource type">
                                             <mp-popover-trigger placement="bottom" trigger='["hover", "click"]'>
-                                              <div class="badge">
+                                              <div class="badge badge--default">
                                                 <rs-icon icon-type="round" icon-name="question_mark"></rs-icon>
                                               </div>
                                             </mp-popover-trigger>
                                             <mp-popover-content>
-                                                <p>Vocabulary / Authority types are defined in 
+                                                <p>Resource types are defined in 
                                                   <b>Resource Configuration - Vocabulary / Authority tab</b>.
                                                 </p>
                                                 <div>To use a resource as vocabulary / authority type go in tab Vocabulary / Authority, enable <b>Use as Vocabulary / Authority type</b> and enter a
@@ -504,7 +522,7 @@
                                       </div>
 
                                       <div class="vocabularyType-checklist-input-container page__section-container" style="margin: 0;">
-                                        <semantic-form-checklist-input for='vocabulary_refersto_resourceConfig' type="checkbox" label="Type" render-header="false"></semantic-form-checklist-input>
+                                        <semantic-form-checklist-input for='vocabulary_refersto_resourceConfig' type="checkbox" label="Resource type" render-header="false"></semantic-form-checklist-input>
                                       </div>
                                       
                                       <div class="btn-form-actions" style="margin-top: 20px;"> 
@@ -517,56 +535,65 @@
 
                               </mp-overlay-dialog-content>
                             </mp-overlay-dialog>
-                        
-                            <mp-graph-store-action title="Download" action="GET" graphuri="{{vocabulary.value}}" file-ending="trig">
-                              <button class="btn btn-default btn-textAndIcon"> 
-                                <rs-icon icon-type="round" icon-name="file_download"></rs-icon> Download
+
+                            <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                      urlqueryparam-view='resource-editor'
+                                                      urlqueryparam-resource='{{vocabulary.value}}'>
+                              <button class="btn btn-default btn-textAndIcon" title='Edit Authority document' style="border-left: none;">
+                                <rs-icon icon-type='rounded' icon-name='edit_note' symbol='true'></rs-icon>
                               </button>
-                            </mp-graph-store-action>
+                            </semantic-link-container>
+                          </div>
+                        
+                          <mp-graph-store-action title="Download" action="GET" graphuri="{{vocabulary.value}}" file-ending="trig">
+                            <button class="btn btn-default btn-textAndIcon"> 
+                              <rs-icon icon-type="round" icon-name="file_download"></rs-icon> Download
+                            </button>
+                          </mp-graph-store-action>
 
-                            <mp-overlay-dialog show='{{#if delete}}true{{else}}false{{/if}}' 
-                                                id='{{viewId}}-vocabulary-delete-confirmation-dialog' 
-                                                title="Delete vocabulary / authority" 
-                                                type="modal" 
-                                                bs-size="large">
-                              <mp-overlay-dialog-trigger>
-                                <button class="btn btn-default btn-textAndIcon"> 
-                                  <rs-icon icon-type="round" icon-name="delete"></rs-icon> Delete
-                                </button>
-                              </mp-overlay-dialog-trigger>
-                              <mp-overlay-dialog-content>
-                                <div>
-                                  <p>Are you sure you want to delete the vocabulary / authority '<strong>{{vocabularyLabel.value}}</strong>'?</p>
-                             
-                                  <div style="justify-content: end;" class="btn-inline-container">
-                                      <mp-event-trigger id='{{viewId}}-cancel-vocabulary-delete' 
-                                                        type='OverlayDialog.Close' 
-                                                        targets='["{{viewId}}-vocabulary-delete-confirmation-dialog"]'>
-                                        <button class="btn btn-default">Cancel</button>
-                                      </mp-event-trigger>
+                          <mp-overlay-dialog show='{{#if delete}}true{{else}}false{{/if}}' 
+                                              id='{{viewId}}-vocabulary-delete-confirmation-dialog' 
+                                              title="Delete vocabulary / authority" 
+                                              type="modal" 
+                                              bs-size="large">
+                            <mp-overlay-dialog-trigger>
+                              <button class="btn btn-default btn-textAndIcon"> 
+                                <rs-icon icon-type="round" icon-name="delete"></rs-icon> Delete
+                              </button>
+                            </mp-overlay-dialog-trigger>
+                            <mp-overlay-dialog-content>
+                              <div>
+                                <p>Are you sure you want to delete the vocabulary / authority '<strong>{{vocabularyLabel.value}}</strong>'?</p>
+                            
+                                <div style="justify-content: end;" class="btn-inline-container">
+                                    <mp-event-trigger id='{{viewId}}-cancel-vocabulary-delete' 
+                                                      type='OverlayDialog.Close' 
+                                                      targets='["{{viewId}}-vocabulary-delete-confirmation-dialog"]'>
+                                      <button class="btn btn-default">Cancel</button>
+                                    </mp-event-trigger>
 
-                                      <mp-graph-store-action title="Delete" 
-                                                              action="DELETE CUSTOM" 
-                                                              graphuri="{{vocabulary.value}}" 
-                                                              graph-description="{{vocabularyLabel.value}}">
-                                        <button class="btn btn-action">Delete</button>
-                                      </mp-graph-store-action>
-                                  </div>
-
-                                  <mp-event-proxy id='{{viewId}}-update-vocabulary-table' 
-                                                  on-event-type='GraphAction.Success'
-                                                  proxy-event-type='Component.TemplateUpdate'
-                                                  proxy-targets='["{{viewId}}-vocabulary-table"]'
-                                  ></mp-event-proxy>
-
-                                  <mp-event-proxy id='{{viewId}}-close-vocabulary-delete-dialog' 
-                                                  on-event-type='GraphAction.Success'
-                                                  proxy-event-type='OverlayDialog.Close' 
-                                                  proxy-targets='["{{viewId}}-vocabulary-delete-confirmation-dialog"]'
-                                  ></mp-event-proxy>
+                                    <mp-graph-store-action title="Delete" 
+                                                            action="DELETE CUSTOM" 
+                                                            graphuri="{{vocabulary.value}}" 
+                                                            graph-description="{{vocabularyLabel.value}}">
+                                      <button class="btn btn-action">Delete</button>
+                                    </mp-graph-store-action>
                                 </div>
-                              </mp-overlay-dialog-content>
-                            </mp-overlay-dialog>
+
+                                <mp-event-proxy id='{{viewId}}-update-vocabulary-table' 
+                                                on-event-type='GraphAction.Success'
+                                                proxy-event-type='Component.TemplateUpdate'
+                                                proxy-targets='["{{viewId}}-vocabulary-table"]'
+                                ></mp-event-proxy>
+
+                                <mp-event-proxy id='{{viewId}}-close-vocabulary-delete-dialog' 
+                                                on-event-type='GraphAction.Success'
+                                                proxy-event-type='OverlayDialog.Close' 
+                                                proxy-targets='["{{viewId}}-vocabulary-delete-confirmation-dialog"]'
+                                ></mp-event-proxy>
+                              </div>
+                            </mp-overlay-dialog-content>
+                          </mp-overlay-dialog>
                         
                         </div>
                       </template>

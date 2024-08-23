@@ -335,6 +335,19 @@
                       [[> rsp:ImportFromExternalSource]] 
                     {{/if}} 
 
+                    {{#if (not (eq mode "new"))}}
+                      {{#if (eq resourceConfiguration "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
+                        <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                  urlqueryparam-view='vocabulary-content' 
+                                                  urlqueryparam-resource='{{iri}}'>
+                            <button class="btn btn-action btn-textAndIcon">
+                              <rs-icon icon-type='round' icon-name='list'></rs-icon>
+                              <span>List of resources</span>
+                            </button>
+                        </semantic-link-container>
+                      {{/if}} 
+                    {{/if}}
+
                     {{#if (not (eq mode "deleted"))}}
                       <mp-event-trigger id='{{viewId}}-form-refresh-trigger' 
                                         type='Component.TemplateUpdate' 
@@ -387,7 +400,7 @@
                   ></mp-event-proxy>
                 {{/if}}
 
-                <mp-event-proxy id='{{viewId}}-view-refresh-on-created' 
+                <mp-event-proxy id='{{viewId}}-view-update-on-created' 
                                 on-event-source='{{#if iri}}{{iri}}-resource-form{{else}}{{viewId}}-resource-form{{/if}}' 
                                 on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
                                 proxy-event-type='Component.TemplateUpdate' 
@@ -426,7 +439,7 @@
                     </template>
                   </semantic-query>
                 {{/if}}
-                
+
                 {{#if mode}}                 
                   <inline-template template-iri='{{resourceForm}}' 
                                     options='{

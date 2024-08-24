@@ -51,6 +51,7 @@ import {
   LiteralFacetValue,
   NumericRangeFacetValue,
   ResourceFacetValue,
+  HierarchyFacetValue,
 } from 'platform/components/semantic/search/config/SearchConfig';
 import * as SearchConfig from 'platform/components/semantic/search/config/SearchConfig';
 import * as SearchDefaults from 'platform/components/semantic/search/config/Defaults';
@@ -93,16 +94,26 @@ export interface FacetData {
   ast: F.Ast;
 }
 
+export interface FacetRelationQueries {
+  rootsQuery: string; 
+  childrenQuery: string; 
+  parentsQuery: string; 
+  searchQuery: string;
+};
+export type FacetValuesResult = Array<F.FacetValue> | FacetRelationQueries
+
 export type SelectedValues = OrderedMap<Relation, List<F.FacetValue>>;
 export interface FacetViewState {
   category: Data.Maybe<Category>;
   categoryTemplate: string;
   relation: Data.Maybe<Relation>;
   relationTemplate: string;
-  values: { values: Array<F.FacetValue>; loading: boolean; error?: boolean };
+  values: { 
+    values: FacetValuesResult; loading: boolean; error?: boolean;
+  };
   selectedValues: SelectedValues;
   valuesTemplate: { resource: string; literal: string };
-  relationType: 'resource' | 'date-range' | 'literal' | 'numeric-range';
+  relationType: 'resource' | 'date-range' | 'literal' | 'numeric-range' | 'hierarchy';
   selectorMode: 'stack' | 'dropdown';
 }
 
@@ -142,12 +153,23 @@ export class FacetStore {
   private toggleRelationAction: Action<Data.Maybe<Relation>>;
   private selectValueAction = Action<{ relation: Relation; value: F.FacetValue }>();
   private deselectValueAction = Action<{ relation: Relation; value: F.FacetValue }>();
+  
+  /*
+   * It is used in hierarchical facet, where by selecting item in already selceted sub-tree
+   * we need to remove all selected sub-tree terminal node
+   * and replace it with the current selection.
+   */ 
+  private replaceValueAction = Action<{
+    relation: Relation;
+    oldValue: F.FacetValue;
+    newValue: F.FacetValue;
+  }>();  
   private selectedValues: Action<SelectedValues>;
   private removeConjunctAction = Action<SearchModel.RelationConjunct>();
 
   private actions: F.Actions;
   private relationsCache: { [key: string]: boolean } = {};
-  private valuesCache: { [relation: string]: Array<F.FacetValue> } = {};
+  private valuesCache: { [relation: string]: FacetValuesResult } = {};
 
   constructor(config: FacetStoreConfig, context: SemanticContext & FacetContext) {
     this.context = context;
@@ -166,6 +188,7 @@ export class FacetStore {
       deselectRelation: this.deselectRelation,
       selectFacetValue: this.selectFacetValue,
       deselectFacetValue: this.deselectFacetValue,
+      replaceFacetValue: this.replaceFacetValue,
       setBaseQuery: this.setBaseQuery,
       removeConjunct: this.removeConjunct,
     };
@@ -225,6 +248,25 @@ export class FacetStore {
       }
     );
 
+    Kefir.combine(
+      { replace: this.replaceValueAction.$property },
+      { selected: this.selectedValues.$property }
+    ).onValue(({ replace, selected }) => {
+      const { relation, oldValue, newValue } = replace;
+      let selectedValues = selected.get(relation) || List<F.FacetValue>();
+      
+      // Remove the old value
+      selectedValues = selectedValues.filterNot(
+        (selectedValue) => F.partialValueEquals(oldValue, selectedValue)
+      ) as List<F.FacetValue>;
+      
+      // Add the new value
+      selectedValues = selectedValues.push(newValue);
+      
+      this.selectedValues(selected.set(relation, selectedValues));
+    });
+    
+
     // update facet AST when list of selected values changes
     this.selectedValues.$property.map(this.buldAst).onValue(this.ast);
 
@@ -268,14 +310,15 @@ export class FacetStore {
       },
       { facetView: this.facetView.$property }
     ).onValue(({ relation, category, values, facetView, selectedValues }) => {
-      facetView.relation = relation;
-      facetView.category = category;
-      facetView.values = values;
-      facetView.selectedValues = selectedValues;
+      const newFacetView = { ...facetView };
+      newFacetView.relation = relation;
+      newFacetView.category = category;
+      newFacetView.values = values;
+      newFacetView.selectedValues = selectedValues;
 
       if (relation.isJust) {
         const pattern = this.getFacetValuesQueryForRelation(this.config, relation.get());
-        facetView.relationType = pattern.kind;
+        newFacetView.relationType = pattern.kind;
 
         let literal;
         let resource;
@@ -283,10 +326,12 @@ export class FacetStore {
           literal = pattern.tupleTemplate || config.config.defaultValueTemplate.literal;
         } else if (pattern.kind === 'resource') {
           resource = pattern.tupleTemplate || config.config.defaultValueTemplate.resource;
+        } else if (pattern.kind === 'hierarchy') {
+          resource = pattern.tupleTemplate || config.config.defaultValueTemplate.resource;
         }
-        facetView.valuesTemplate = { literal, resource };
+        newFacetView.valuesTemplate = { literal, resource };
       }
-      this.facetView(facetView);
+      this.facetView(newFacetView);
     });
 
     // update facet values when user select/deselect relation
@@ -313,7 +358,7 @@ export class FacetStore {
         facetValues
           .onValue((facetValues) => {
             this.values({ values: facetValues, loading: false, error: false });
-            this.valuesCache = { [relationIri]: facetValues };
+            this.valuesCache[relationIri] = facetValues;
             trigger({ eventType: BuiltInEvents.ComponentLoaded, source: config.config.id });
           })
           .onError((error) => {
@@ -367,6 +412,8 @@ export class FacetStore {
     switch (relationType) {
       case 'resource':
         return SearchModel.EntityDisjunctKinds.Resource;
+      case 'hierarchy':
+          return SearchModel.EntityDisjunctKinds.Resource;
       case 'date-range':
         return SearchModel.TemporalDisjunctKinds.DateRange;
       case 'literal':
@@ -432,6 +479,9 @@ export class FacetStore {
   private deselectFacetValue = (relation: Relation) => (value: F.FacetValue) =>
     this.deselectValueAction({ relation: relation, value: value });
 
+  private replaceFacetValue = (relation: Relation) => (oldValue: F.FacetValue, newValue: F.FacetValue) =>
+    this.replaceValueAction({ relation, oldValue, newValue });
+
   private fetchRelations(
     baseQuery: SparqlJs.SelectQuery,
     conjuntcs: F.Conjuncts,
@@ -459,19 +509,20 @@ export class FacetStore {
       .map((relation) => this.fetchRelation(query, relation))
       .toArray();
 
-    return Kefir.merge(enabledFacets)
+    return Kefir.zip(enabledFacets)
       .toProperty()
-      .scan(
-        (rels, rel) =>
-          rels.set(
+      .map((rels) =>
+        rels.reduce((acc, rel) => {
+          acc.set(
             RelationKey.key({
               iri: rel.iri,
               domain: rel.hasDomain.iri,
               range: rel.hasRange.iri,
             }),
             rel
-          ),
-        relations
+          )
+          return acc;
+        }, relations)
       );
   }
 
@@ -517,7 +568,7 @@ export class FacetStore {
       $relation: relation.tuple,
       $domain: relation.hasDomain.tuple,
       $range: relation.hasRange.tuple,
-      available: undefined,
+      available: true,
     };
     return { ...relation, tuple };
   }
@@ -537,7 +588,7 @@ export class FacetStore {
     baseQuery: SparqlJs.SelectQuery,
     conjuncts: F.Conjuncts,
     relation: Relation
-  ): Kefir.Property<Array<F.FacetValue>> {
+  ): Kefir.Property<FacetValuesResult> {
     const relationConfig = this.getFacetValuesQueryForRelation(this.config, relation);
     switch (relationConfig.kind) {
       case 'resource':
@@ -548,6 +599,8 @@ export class FacetStore {
         return this.fetchFacetLiteralValues(baseQuery, conjuncts, relation, relationConfig);
       case 'numeric-range':
         return this.fetchFacetNumericRangeValues(baseQuery, conjuncts, relation, relationConfig);
+      case 'hierarchy':
+        return this.generateHierarchyQueryies(baseQuery, conjuncts, relation, relationConfig);
     }
   }
 
@@ -602,8 +655,208 @@ export class FacetStore {
         }))
       )
       .flatMap((values) => this.augmentWithLabelsFromServiceIfNeeded(values))
-      .map((values) => _.sortBy(values, (v) => v.label))
+  //    .map((values) => _.sortBy(values, (v) => v.label))
       .toProperty();
+  }
+
+  private generateHierarchyQueryies(
+    baseQuery: SparqlJs.SelectQuery,
+    conjuncts: F.Conjuncts,
+    relation: Relation,
+    relationConfig: HierarchyFacetValue
+  ): Kefir.Property<FacetRelationQueries> {
+  
+    let rootsQuery = 
+    SparqlUtil.parseQuery(
+`
+    SELECT DISTINCT (?value as ?item) ?hasChildren ?count WHERE {
+      {
+        SELECT ?value (COUNT(DISTINCT ?subject) AS ?count) WHERE {
+          FILTER(?__baseQuery__)
+          # ?subject crm:P2_has_type/crm:P127_has_broader_term* ?value .
+          FILTER(?__queryPattern__)
+          MINUS {
+            # ?value crm:P127_has_broader_term ?parent .
+            FILTER(?__parentsPattern__)
+          }
+        } GROUP BY ?value 
+      }
+      OPTIONAL {
+        # ?child crm:P127_has_broader_term ?value .
+        FILTER(?__childrenPattern__)
+      }
+      BIND(bound(?child) as ?hasChildren)
+    }
+    ORDER BY DESC (?count)
+`);
+
+let childrenQuery = 
+SparqlUtil.parseQuery(
+`
+SELECT DISTINCT (?value as ?item) ?hasChildren ?count WHERE {
+  
+    {
+    SELECT ?value (COUNT(DISTINCT ?subject) AS ?count) WHERE {
+      FILTER(?__baseQuery__)
+
+      # ?subject crm:P2_has_type/crm:P127_has_broader_term* ?value .
+      FILTER(?__queryPattern__)
+
+      # ?value crm:P127_has_broader_term ?parent .
+      FILTER(?__parentsPattern__)               
+    } GROUP BY ?value 
+  }
+  OPTIONAL { 
+    # ?child crm:P127_has_broader_term ?value .
+    FILTER(?__childrenPattern__)
+  }
+  BIND(BOUND(?child) AS ?hasChildren)
+} 
+ORDER BY DESC(?count)
+`);
+
+let parentsQuery = 
+SparqlUtil.parseQuery(
+`
+SELECT DISTINCT ?item ?parent ?count WHERE {
+   {
+    SELECT (?value as ?item) ?parent (COUNT(DISTINCT ?subject) AS ?count) WHERE {
+      FILTER(?__baseQuery__)
+      
+      # ?subject crm:P2_has_type/crm:P127_has_broader_term* ?value .
+      FILTER(?__queryPattern__)
+
+      
+      # ?value crm:P127_has_broader_term ?parent .
+      FILTER(?__parentsPattern__)
+    } GROUP BY ?parent ?value 
+  }
+} 
+ORDER BY DESC(?count)
+`);
+
+let searchQuery = 
+SparqlUtil.parseQuery(
+`
+SELECT DISTINCT (?value as ?item) ?hasChildren ?count (?ql_score_text_var_value AS ?score) WHERE {
+  {
+    SELECT ?value (COUNT(DISTINCT ?subject) AS ?count) WHERE {
+      FILTER(?__baseQuery__)
+      
+      # ?subject crm:P2_has_type/crm:P127_has_broader_term* ?value .
+      FILTER(?__queryPattern__)
+    } 
+    GROUP BY ?value
+  }
+  OPTIONAL {
+    # ?child crm:P127_has_broader_term ?value .
+    FILTER(?__childrenPattern__)
+  }
+  BIND(BOUND(?child) AS ?hasChildren)
+
+  #   ?text ql:contains-entity ?value;
+  #       ql:contains-word ?__token__.
+  FILTER(?__searchPattern__)
+}
+ORDER BY DESC (?score) DESC (?count)                           
+`);
+
+    let baseQueryPatterns = [];
+    baseQueryPatterns.unshift(...baseQuery.where);
+    baseQueryPatterns = baseQueryPatterns.concat(
+      this.generateQueryClause(baseQuery, this.excludeClauseForRelation(conjuncts, relation.iri))
+    );
+
+
+    const prefixes = SparqlUtil.parseQuery('SELECT * WHERE {}').prefixes;
+    const relationPattern =  
+      tryGetRelationPatterns(this.config.baseConfig, relation).find(p => p.kind === 'hierarchy') as SearchConfig.Hierarchy;
+    let queryPattern = SparqlUtil.parsePatterns(relationPattern.queryPattern, prefixes);
+    queryPattern = transformRelationPatternForFacetValues(queryPattern, 'resource');
+    const childrenPattern = SparqlUtil.parsePatterns(relationPattern.childrenPattern, prefixes);
+    const parentsPattern = SparqlUtil.parsePatterns(relationPattern.parentsPattern, prefixes);
+    const searchPattern = SparqlUtil.parsePatterns(relationPattern.searchPattern, prefixes);
+
+
+    new PatternBinder('__baseQuery__', baseQueryPatterns).sparqlQuery(rootsQuery);
+    new PatternBinder('__queryPattern__', queryPattern).sparqlQuery(rootsQuery);
+    new PatternBinder('__childrenPattern__', childrenPattern).sparqlQuery(rootsQuery);
+    new PatternBinder('__parentsPattern__', parentsPattern).sparqlQuery(rootsQuery);
+
+
+    new PatternBinder('__baseQuery__', baseQueryPatterns).sparqlQuery(childrenQuery);
+    new PatternBinder('__queryPattern__', queryPattern).sparqlQuery(childrenQuery);
+    new PatternBinder('__childrenPattern__', childrenPattern).sparqlQuery(childrenQuery);
+    new PatternBinder('__parentsPattern__', parentsPattern).sparqlQuery(childrenQuery);
+
+    new PatternBinder('__baseQuery__', baseQueryPatterns).sparqlQuery(parentsQuery);
+    new PatternBinder('__queryPattern__', queryPattern).sparqlQuery(parentsQuery);
+    new PatternBinder('__parentsPattern__', parentsPattern).sparqlQuery(parentsQuery);
+
+    new PatternBinder('__baseQuery__', baseQueryPatterns).sparqlQuery(searchQuery);
+    new PatternBinder('__queryPattern__', queryPattern).sparqlQuery(searchQuery);
+    new PatternBinder('__childrenPattern__', childrenPattern).sparqlQuery(searchQuery);
+    new PatternBinder('__searchPattern__', searchPattern).sparqlQuery(searchQuery);
+
+
+    rootsQuery = SparqlClient.setBindings(
+      rootsQuery,
+      _.assign(
+        {
+          [SEMANTIC_SEARCH_VARIABLES.SELECTED_ALIGNMENT]: this.context.selectedAlignment
+            .map((a) => a.iri)
+            .getOrElse(undefined),
+        }
+      )
+    );
+
+    childrenQuery = SparqlClient.setBindings(
+      childrenQuery,
+      _.assign(
+        {
+          [SEMANTIC_SEARCH_VARIABLES.SELECTED_ALIGNMENT]: this.context.selectedAlignment
+            .map((a) => a.iri)
+            .getOrElse(undefined),
+        }
+      )
+    );
+
+    parentsQuery = SparqlClient.setBindings(
+      parentsQuery,
+      _.assign(
+        {
+          [SEMANTIC_SEARCH_VARIABLES.SELECTED_ALIGNMENT]: this.context.selectedAlignment
+            .map((a) => a.iri)
+            .getOrElse(undefined),
+        }
+      )
+    );
+
+    searchQuery = SparqlClient.setBindings(
+      searchQuery,
+      _.assign(
+        {
+          [SEMANTIC_SEARCH_VARIABLES.SELECTED_ALIGNMENT]: this.context.selectedAlignment
+            .map((a) => a.iri)
+            .getOrElse(undefined),
+        }
+      )
+    );
+
+    /*
+    const federatedQuery = generateQueryForMultipleDatasets(
+      query,
+      this.context.selectedDatasets,
+      this.context.baseConfig.datasetsConfig
+    );
+*/
+
+    return Kefir.constant({
+      rootsQuery: SparqlUtil.serializeQuery(rootsQuery),
+      childrenQuery: SparqlUtil.serializeQuery(childrenQuery),
+      parentsQuery: SparqlUtil.serializeQuery(parentsQuery),
+      searchQuery: SparqlUtil.serializeQuery(searchQuery),
+    });
   }
 
   private fetchFacetDateRangeValues(
@@ -768,7 +1021,7 @@ type PatternKind = PatterConfig['kind'];
  */
 function generateFacetValuePatternFromRelation(config: FacetStoreConfig, relation: Relation): FacetValuePattern {
   const relationPatterns = tryGetRelationPatterns(config.baseConfig, relation).filter((p) =>
-    _.some(['resource', 'literal', 'date-range', 'numeric-range'], (kind) => kind === p.kind)
+    _.some(['resource', 'hierarchy', 'literal', 'date-range', 'numeric-range'], (kind) => kind === p.kind)
   ) as PatterConfig[];
 
   const patternConfig = relationPatterns.length === 1 ? relationPatterns[0] : undefined;
@@ -797,6 +1050,8 @@ function generateFacetValuePatternFromRelation(config: FacetStoreConfig, relatio
     ? { kind: 'resource', valuesQuery }
     : kind === 'literal'
     ? { kind: 'literal', valuesQuery }
+    : kind === 'hierarchy'
+    ? { kind: 'hierarchy', valuesQuery }
     : kind === 'date-range'
     ? { kind: 'date-range', valuesQuery }
     : kind === 'numeric-range'
@@ -810,6 +1065,8 @@ function getDefaultValuesQuery(config: SemanticFacetConfig, kind: PatternKind) {
     ? config.defaultValueQueries.resource || defaultQueries.forResource()
     : kind === 'literal'
     ? config.defaultValueQueries.literal || defaultQueries.forLiteral()
+    : kind === 'hierarchy'
+    ? config.defaultValueQueries.resource || defaultQueries.forResource()
     : kind === 'date-range'
     ? defaultQueries.forDateRange()
     : kind === 'numeric-range'
@@ -827,6 +1084,8 @@ function transformRelationPatternForFacetValues(pattern: SparqlJs.Pattern[], kin
     binder = new VariableRenameBinder(SEMANTIC_SEARCH_VARIABLES.RESOURCE_VAR, FACET_VARIABLES.VALUE_RESOURCE_VAR);
   } else if (kind === 'literal') {
     binder = new VariableRenameBinder(SEMANTIC_SEARCH_VARIABLES.LITERAL_VAR, FACET_VARIABLES.VALUE_LITERAL);
+  } else if (kind === 'hierarchy') {
+    binder = new VariableRenameBinder(SEMANTIC_SEARCH_VARIABLES.RESOURCE_VAR, FACET_VARIABLES.VALUE_RESOURCE_VAR);
   } else if (kind === 'date-range') {
     const range = {
       begin: SEMANTIC_SEARCH_VARIABLES.DATE_BEGING_VAR,

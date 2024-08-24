@@ -26,3 +26,4 @@ export * from './SelectionMode';
 export * from './GraphAlgorithms';
 export * from './KeyedForest';
 export * from './QueryDefaults';
+export * from './LazyTreeWithSearch';

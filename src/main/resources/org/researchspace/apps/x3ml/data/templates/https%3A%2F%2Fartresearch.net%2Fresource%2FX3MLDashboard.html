@@ -1,0 +1,577 @@
+<style>
+ 
+  /*  we need to set this sizes because otherwise ontodia can't properly make initial layout
+   if node-templates is defined. This is a bug in ontodia. */
+
+ .ontodia-overlayed-element  {
+   min-height: 234px;
+   min-width: 185px;
+ }
+
+ .component-page-toolbar.btn-toolbar {
+   display: none;
+ }
+ 
+ .Dashboard--viewContainer ol.page-breadcrumb {
+   position: relative;
+ }
+ 
+</style>
+
+<mp-event-proxy id='clipboard-update-on-create-set'
+               on-event-type='Components.SetManagement.SetAdded'
+               proxy-event-type='Component.Refresh'
+               proxy-targets='["clipboard"]'>
+</mp-event-proxy>
+
+<mp-event-proxy id='clipboard-update-on-save-search' 
+               on-event-source='save-search-result-action'
+               proxy-event-type='Component.Refresh' 
+               proxy-targets='["clipboard"]'
+></mp-event-proxy>
+
+<mp-event-proxy id='clipboard-update-on-persisted-component' 
+               on-event-source='persit-component-action'
+               proxy-event-type='Component.Refresh' 
+               proxy-targets='["clipboard"]'
+></mp-event-proxy>
+
+
+<div class='page_100vh thinking-frames-page'>
+ <rs-dashboard
+ [[!-- home-page-iri="http://www.researchspace.org/resource/Start" --]]
+
+   [[#if (urlParam "view")]]
+     initial-view='{"view": "[[urlParam "view"]]", 
+                   "resource": "[[urlParam "resource"]]" 
+                   [[#if (urlParam "entityTypeConfig")]] , 
+                     "data": {"entityTypeConfig": "[[urlParam "entityTypeConfig"]]"} 
+                   [[/if]]}'
+   [[/if]] 
+   [[#if view]]
+     initial-view='{"view": "[[view]]", "resource": "[[resource]]"}'
+   [[/if]] 
+
+   views='[
+   {
+     "id": "resource",
+     "label": "Entity record",
+     "description": "Drag and drop an entity here to display the entity record",
+     "dropAreaDescription": "Drag and drop any entity here to display the entity record",
+     "iconName": "insert_drive_file",
+     "template": "{{> resourceTemplate}}",
+     "type": "hidden"
+   },
+
+   {
+     "id": "itatti3m",
+     "template": "{{> mapperTemplate project=\"itatti\" scriptUrl=\"https://script.google.com/macros/s/AKfycbyz5hL0DUz5n5uon63nsQh5QevGAy3HF_TeAfYjCLgqYhNsHRZTfhP5J4yOKnuzF42ohw/exec\"}}",
+     "resourceNotRequired": true,
+     "type": "hidden"
+   },
+   {
+     "id": "itattiSheet",
+     "template": "{{> googleDriveTemplate url=\"https://docs.google.com/spreadsheets/d/10gpJR2ZIMQ5svgn88qhYyCKUfKzOvGpfUofv77DOzR0/edit?usp=sharing\"}}",
+     "resourceNotRequired": true,
+     "type": "hidden"
+   },
+   {
+     "id": "itattiDocument",
+     "template": "{{> googleDriveTemplate url=\"https://docs.google.com/document/d/1oicQnSUE-Zk7W0GJcD1iV7LLPOIsamiEf3oeIya_iXE/edit?usp=sharing\"}}",
+     "resourceNotRequired": true,
+     "type": "hidden"
+   },
+   {
+     "id": "itattiXmlView",
+     "template": "{{> xmlView project=\"itatti\" file=\"2055\"}}",
+     "resourceNotRequired": true,
+     "type": "hidden"
+   },   
+   {
+     "id": "itattiJupiterView",
+     "template": "{{> jupiterTemplate project=\"itatti\"}}",
+     "resourceNotRequired": true,
+     "type": "hidden"
+   },  
+          
+   {
+     "id": "zeri3m",
+     "template": "{{> mapperTemplate project=\"zeri\" scriptUrl=\"https://script.google.com/macros/s/AKfycbyz5hL0DUz5n5uon63nsQh5QevGAy3HF_TeAfYjCLgqYhNsHRZTfhP5J4yOKnuzF42ohw/exec\"}}",
+     "resourceNotRequired": true,
+     "type": "hidden"
+   },
+   {
+     "id": "zeriSheet",
+     "template": "{{> googleDriveTemplate url=\"https://docs.google.com/spreadsheets/d/18Q1WEalkMUJfDyRoNmpmKhG-3to83iwzPb0QnIm0eZM/edit?usp=sharing\"}}",
+     "resourceNotRequired": true,
+     "type": "hidden"
+   },
+   {
+     "id": "zeriDocument",
+     "template": "{{> googleDriveTemplate url=\"https://docs.google.com/document/d/1GSxGn20pjKpYpbQguvI1QZmuI-DU4MN16flITUEKdmE/edit?usp=sharing\"}}",
+     "resourceNotRequired": true,
+     "type": "hidden"
+   },
+   {
+     "id": "zeriXmlView",
+     "template": "{{> xmlView project=\"zeri\" file=\"2055\"}}",
+     "resourceNotRequired": true,
+     "type": "hidden"
+   },   
+   {
+     "id": "zeriJupiterView",
+     "template": "{{> jupiterTemplate project=\"zeri\"}}",
+     "resourceNotRequired": true,
+     "type": "hidden"
+   },  
+          
+   {
+     "id": "frick3m",
+     "template": "{{> mapperTemplate project=\"frick\" scriptUrl=\"https://script.google.com/macros/s/AKfycbyi96x-2I_ctEpPpqII0ew9nPMbR7HTZg9D3MI9h3c3avwcZwRbFXfyQy-meowUstDA/exec\"}}",
+     "resourceNotRequired": true,
+     "type": "hidden"
+   },
+   {
+     "id": "frickSheet",
+     "template": "{{> googleDriveTemplate url=\"https://docs.google.com/spreadsheets/d/1UOg_lcSm9DoTaBeiLqwKLqkHlJ1iHFHmpakXzuTC-Eo/edit?usp=sharing\"}}",
+     "resourceNotRequired": true,
+     "type": "hidden"
+   },
+   {
+     "id": "frickDocument",
+     "template": "{{> googleDriveTemplate url=\"https://docs.google.com/document/d/1zAECzMKEhk6KRsPn9UIcd0T4cWQpbGcv7UOls3vOjXg/edit?usp=sharing\"}}",
+     "resourceNotRequired": true,
+     "type": "hidden"
+   },
+   {
+     "id": "frickXmlView",
+     "template": "{{> xmlView project=\"frick\" file=\"991013309269707141\"}}",
+     "resourceNotRequired": true,
+     "type": "hidden"
+   },   
+   {
+     "id": "frickJupiterView",
+     "template": "{{> jupiterTemplate project=\"frick\"}}",
+     "resourceNotRequired": true,
+     "type": "hidden"
+   },              
+          
+     
+   {
+     "id": "hertziana3m",
+     "template": "{{> mapperTemplate project=\"hertziana\" scriptUrl=\"https://script.google.com/macros/s/AKfycbwEBF5hBZy2zghq-fdlSJvJegj0xUHToa5bReLTXYbCYIQXZfVKXiT8Navt2E8ivTM2fQ/exec\"}}",
+     "resourceNotRequired": true,
+     "type": "hidden"
+   },
+   {
+     "id": "hertzianaSheet",
+     "template": "{{> googleDriveTemplate url=\"https://docs.google.com/spreadsheets/d/1w0as0u8i56Vd1PMMn4VnVzXYtN-3qaGbedEcVdLL_KE/edit?usp=sharing\"}}",
+     "resourceNotRequired": true,
+     "type": "hidden"
+   },
+   {
+     "id": "hertzianaDocument",
+     "template": "{{> googleDriveTemplate url=\"https://docs.google.com/document/d/12EbAePbfg5iTLVd5xDLdYqq3Q0bmFQxwBKxVxtbpm3g/edit?usp=sharing\"}}",
+     "resourceNotRequired": true,
+     "type": "hidden"
+   },                 
+   {
+     "id": "hertzianaXmlView",
+     "template": "{{> xmlView project=\"hertziana\" file=\"08027714\"}}",
+     "resourceNotRequired": true,
+     "type": "hidden"
+   },
+   {
+     "id": "hertzianaJupiterView",
+     "template": "{{> jupiterTemplate project=\"hertziana\"}}",
+     "resourceNotRequired": true,
+     "type": "hidden"
+   },
+          
+   {
+     "id": "pmc3m",
+     "template": "{{> mapperTemplate project=\"pmc\" scriptUrl=\"https://script.google.com/macros/s/AKfycbwEBF5hBZy2zghq-fdlSJvJegj0xUHToa5bReLTXYbCYIQXZfVKXiT8Navt2E8ivTM2fQ/exec\"}}",
+     "resourceNotRequired": true,
+     "type": "hidden"
+   },
+   {
+     "id": "pmcXmlView",
+     "template": "{{> xmlView project=\"pmc\" file=\"446255\"}}",
+     "resourceNotRequired": true,
+     "type": "hidden"
+   }
+   ]'
+          
+   linked-views='[
+   {
+     "id": "3m-workflow-itatti",
+     "label": "Itatti",
+     "type": "view",
+     "description": "",
+     "iconName": "wallpaper",
+     "viewIds": ["itattiSheet", "itattiDocument", "itattiJupiterView"],
+     "resourceNotRequired": true,
+     "layout": {
+       "type": "row", 
+       "children": [
+         {
+           "type": "tabset",
+           "children": [
+             {
+               "type": "tab",
+               "name": "Jupiter Notebooks",
+               "config": {
+                 "viewId": "itattiJupiterView"
+               }
+             }
+           ]
+         },
+         {
+           "type": "tabset",
+           "children": [
+             {
+               "type": "tab",
+               "name": "Modeling Sheet",
+               "config": {
+                 "viewId": "itattiSheet"
+               }
+             },
+             {
+               "type": "tab",
+               "name": "Modeling Logbook",
+               "config": {
+                 "viewId": "itattiDocument"
+               }
+             }
+
+           ]
+         }
+       ] 
+     }
+   },                 
+   {
+     "id": "3m-workflow-zeri",
+     "label": "Zeri",
+     "type": "view",
+     "description": "",
+     "iconName": "wallpaper",
+     "viewIds": ["zeri3m", "zeriSheet", "zeriDocument", "zeriXmlView", "zeriJupiterView"],
+     "resourceNotRequired": true,
+     "layout": {
+       "type": "row", 
+       "children": [
+         {
+           "type": "tabset",
+           "children": [
+             {
+               "type": "tab",
+               "name": "X3ML",
+               "config": {
+                 "viewId": "zeri3m"
+               }
+             },
+             {
+               "type": "tab",
+               "name": "Debug",
+               "config": {
+                 "viewId": "zeriXmlView"
+               }
+             },
+             {
+               "type": "tab",
+               "name": "Jupiter Notebooks",
+               "config": {
+                 "viewId": "zeriJupiterView"
+               }
+             }
+           ]
+         },
+         {
+           "type": "tabset",
+           "children": [
+             {
+               "type": "tab",
+               "name": "Modeling Sheet",
+               "config": {
+                 "viewId": "zeriSheet"
+               }
+             },
+             {
+               "type": "tab",
+               "name": "Modeling Logbook",
+               "config": {
+                 "viewId": "zeriDocument"
+               }
+             }
+
+           ]
+         }
+       ] 
+     }
+   },
+   {
+     "id": "3m-workflow-frick",
+     "label": "Frick Data Modeling",
+     "type": "view",
+     "description": "",
+     "iconName": "wallpaper",
+     "viewIds": ["frick3m", "frickSheet", "frickDocument", "frickXmlView", "frickJupiterView"],
+     "resourceNotRequired": true,
+     "layout": {
+       "type": "row", 
+       "children": [
+         {
+           "type": "tabset",
+           "children": [
+             {
+               "type": "tab",
+               "name": "X3ML",
+               "config": {
+                 "viewId": "frick3m"
+               }
+             },
+             {
+               "type": "tab",
+               "name": "Debug",
+               "config": {
+                 "viewId": "frickXmlView"
+               }
+             },
+             {
+               "type": "tab",
+               "name": "Jupiter Notebooks",
+               "config": {
+                 "viewId": "frickJupiterView"
+               }
+             }
+           ]
+         },
+         {
+           "type": "tabset",
+           "children": [
+             {
+               "type": "tab",
+               "name": "Modeling Sheet",
+               "config": {
+                 "viewId": "frickSheet"
+               }
+             },
+             {
+               "type": "tab",
+               "name": "Modeling Document",
+               "config": {
+                 "viewId": "frickDocument"
+               }
+             }
+
+           ]
+         }
+       ] 
+     }
+   },
+   {
+     "id": "3m-workflow-hertziana",
+     "label": "Hertziana Data Modeling",
+     "type": "view",
+     "description": "",
+     "iconName": "wallpaper",
+     "viewIds": ["hertziana3m", "hertzianaSheet", "hertzianaDocument", "hertzianaXmlView", "hertzianaJupiterView"],
+     "resourceNotRequired": true,
+     "layout": {
+       "type": "row", 
+       "children": [
+         {
+           "type": "tabset",
+           "children": [
+             {
+               "type": "tab",
+               "name": "X3ML",
+               "config": {
+                 "viewId": "hertziana3m"
+               }
+             },
+             {
+               "type": "tab",
+               "name": "Debug",
+               "config": {
+                 "viewId": "hertzianaXmlView"
+               }
+             },
+             {
+               "type": "tab",
+               "name": "Jupiter Notebooks",
+               "config": {
+                 "viewId": "hertzianaJupiterView"
+               }
+             }
+           ]
+         },
+         {
+           "type": "tabset",
+           "children": [
+             {
+               "type": "tab",
+               "name": "Modeling Sheet",
+               "config": {
+                 "viewId": "hertzianaSheet"
+               }
+             },
+             {
+               "type": "tab",
+               "name": "Modeling Document",
+               "config": {
+                 "viewId": "hertzianaDocument"
+               }
+             }
+
+           ]
+         }
+       ] 
+     }
+   },
+   {
+     "id": "3m-workflow-pmc",
+     "label": "PMC",
+     "type": "view",
+     "description": "",
+     "iconName": "wallpaper",
+     "viewIds": ["pmc3m", "pmcSheet", "pmcXmlView"],
+     "resourceNotRequired": true,
+     "layout": {
+       "type": "row", 
+       "children": [
+         {
+           "type": "tabset",
+           "children": [
+             {
+               "type": "tab",
+               "name": "X3ML",
+               "config": {
+                 "viewId": "pmc3m"
+               }
+             },
+             {
+               "type": "tab",
+               "name": "Debug",
+               "config": {
+                 "viewId": "pmcXmlView"
+               }
+             }
+           ]
+         }
+       ] 
+     }
+   }   
+   ]'
+
+   left-panels='[]'
+   right-panels='[{"label": "Details", "template": "{{> details}}", "class": "clipboard"}]'
+
+ [[!--  
+   right-panels='[{"label": "Details", "template": "{{> details}}"}]'
+ --]]
+   >
+   
+   <template id="mapperTemplate">
+     <div style='flex: 1 1 0px; overflow: auto;'>
+           <iframe 
+       src="/assets/no_auth/3m.html?project={{encodeUriComponent project}}&scriptUrl={{encodeUriComponent scriptUrl}}" 
+       scrolling="no" 
+       frameborder="0"
+       style="position: relative; height: 100%; width: 100%;"
+       allowfullscreen> 
+         </iframe>
+     </div>
+   </template>
+     
+   <template id="googleDriveTemplate">
+     <div style='flex: 1 1 0px; overflow: auto;'>
+       <iframe src="{{url}}" scrolling="no" frameborder="0" style="position: relative; height: 100%; width: 100%;"></iframe>
+     </div>
+   </template>
+     
+   <template id="xmlView">
+     <div style='height: 100%;'>
+       <x3ml-workbench repository='mappings-test' project-title="{{project}}" file-name='{{file}}.xml'></x3ml-workbench>  
+     </div>    
+   </template>
+   
+   <template id="jupiterTemplate">
+     <div style='flex: 1 1 0px; overflow: auto;'>
+       <iframe src="/proxy/jupiter/lab/tree/mappings/{{project}}/{{project}}.ipynb" scrolling="no" frameborder="0" style="position: relative; height: 100%; width: 100%;"></iframe>
+     </div>
+   </template>
+    
+
+   <template id='details'>
+       <mp-event-target-template-render fixed-key='x3ml-resource-view' reparentable='true' id='x3ml-resource-view' template='{{> template}}'>
+           <template id='template'>
+               {{#if iri}}
+             {{log this}}
+               <div class="details-container">
+<semantic-context repository='{{repository}}' default-graphs='["{{defaultGraph}}"]'>              
+   <resource-info subject="{{iri}}" knowledge-patterns="{{stringify knowledgePatterns}}" template="{{> template}}">
+     <template id="template">
+       <bs-panel>
+             <table class="table table-hover">
+               <tbody>
+                 {{#each knowledgePatterns}}
+                   {{> fieldTemplate data=../data field=this}}
+                 {{/each}}
+               </tbody>
+             </table>
+       </bs-panel>
+       </template>
+       <template id="fieldTemplate">
+         {{#if (lookup data field)}}
+           <tr class="rs-page-resource__field">
+             <td class="rs-page-resource__field-label-holder headLine">
+               {{log this}}
+               <semantic-context repository='assets'>
+                 <semantic-link iri='{{field}}'>
+                   <span class="rs-page-resource__field-label">
+                     {{lookup (lookup data field) 'label'}}
+                   </span>
+                 </semantic-link>
+               </semantic-context>
+             </td>
+             <td>
+               <span class="rs-page-resource__field-value">
+                 <div style="width:25vw; max-width: 450px;">
+                   {{#each (lookup (lookup data field) 'values')}}
+                     <div class="informationRow">
+                       {{#if [@id]}}
+                         <semantic-link iri="{{[@id]}}">{{label}}</semantic-link>
+                       {{else}}
+                         <span>{{[@value]}}</span>
+                       {{/if}}
+                     </div>
+                   {{/each}}
+                 </div>
+               </span>
+             </td>
+           </tr>
+         {{/if}}
+       </template>
+     </resource-info>
+ </semantic-context>
+
+               </div>
+               {{else}}
+               <div class="details-container">No resource available</div>
+               {{/if}}
+           </template>
+       </mp-event-target-template-render>
+   </template>
+
+   <template id='resourceTemplate'>
+     <div style='flex: 1 1 0px; overflow: auto;'>
+       {{log "in resource template" this}}
+       <mp-page-loader urlqueryparam-frame=true iri='{{iri}}' context='{{iri}}' urlqueryparam-repository='{{data.repository}}'>
+       </mp-page-loader>
+     </div>
+   </template>
+
+ 
+ </rs-dashboard>
+</div>

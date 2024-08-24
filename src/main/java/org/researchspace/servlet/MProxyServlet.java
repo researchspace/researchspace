@@ -160,6 +160,7 @@ public class MProxyServlet extends ProxyServlet {
         String loginName = getConfigParam("loginName");
         String loginPassword = getConfigParam("loginPassword");
         String loginBase64 = getConfigParam("loginBase64");
+        String additionalHeaders = getConfigParam("additionalHeaders");
         String permission = Permissions.PROXY.PREFIX + key;
         String encodedAuth = null;
 
@@ -181,6 +182,19 @@ public class MProxyServlet extends ProxyServlet {
                                                          // but with invalid
                                                          // Authorizations. Remove just in case.
             proxyRequest.addHeader("Authorization", "Basic " + encodedAuth);
+        }
+
+        // set additional headers from the config
+        if (additionalHeaders != null) {
+            String[] headers = additionalHeaders.split(";");
+            for (String header : headers) {
+                int colonIndex = header.indexOf(':');
+                if (colonIndex > 0) {
+                    String key = header.substring(0, colonIndex).trim();
+                    String value = header.substring(colonIndex + 1).trim();
+                    proxyRequest.setHeader(key, value);
+                }
+            }
         }
 
         if (logger.isTraceEnabled()) {

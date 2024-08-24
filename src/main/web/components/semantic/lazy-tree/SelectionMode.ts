@@ -103,6 +103,46 @@ const multipleFullSubtrees: SelectionMode<Node> = {
   },
 };
 /**
+ * Allows to select multiple whole subtrees. When a node is selected,
+ * resets selection to subtree of the node.
+ * Can be used with depth- and breadth-lazy loading.
+ */
+export function MultipleFullSubtreesUnselectable<T>(): SelectionMode<T> {
+  return multipleFullSubtreesUnselectable as SelectionMode<any>;
+}
+
+const multipleFullSubtreesUnselectable: SelectionMode<Node> = {
+  renderSelected: (forest, item, selection, itemSelection, defaultSelection) => {
+    return singleFullSubtree.renderSelected(forest, item, selection, itemSelection, defaultSelection);
+  },
+  change: (forest, item, previous, itemSelection, defaultSelection) => {
+    if (itemSelection) {
+      return TreeSelection.unselect(previous, forest.keyOf(item));
+    } else {
+      const itemPath = forest.getNodePath(item);
+      
+      // Find the topmost selected ancestor in the previous selection
+      const selectedAncestor = itemPath.find(node => {
+        const selection = previous.fromKeyPath(forest.getKeyPath(node));
+        return selection && TreeSelection.isTerminal(selection);
+      });
+      
+      if (selectedAncestor) {
+        // If a selected ancestor is found, remove its selection and select the current item
+        const updatedSelection = TreeSelection.unselect(previous, forest.keyOf(selectedAncestor));
+        return TreeSelection.selectTerminal(updatedSelection, forest.getNodePath(item));
+      } else if (!itemSelection) {
+        // If no selected ancestor and the item is not selected, select it
+        return TreeSelection.selectTerminal(previous, forest.getNodePath(item));
+      }
+      
+      // If the item is already a terminal selection, do nothing
+      return previous;
+    }
+  },
+};
+
+/**
  * Allows to select multiple whole subtrees (without the ability to
  * unselect selected node's children).
  * Can be used with depth- and breadth-lazy loading.

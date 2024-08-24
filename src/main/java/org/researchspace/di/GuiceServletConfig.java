@@ -68,9 +68,10 @@ public class GuiceServletConfig extends GuiceServletContextListener {
             }
             throw new IllegalStateException("Failed to initialize webapp context. See error log for details.");
         } catch (Throwable e) {
-            logger.error("Failed to initialize web application: " + e.getMessage());
-            logger.debug("Details: ", e);
-            throw new IllegalStateException("Failed to initialize webapp context. See error log for details.");
+            throw e;
+            //logger.error("Failed to initialize web application: " + e.getMessage());
+            //logger.debug("Details: ", e);
+            //throw new IllegalStateException("Failed to initialize webapp context. See error log for details.");
         }
 
         logger.info("Main platform servlet context initialized.");

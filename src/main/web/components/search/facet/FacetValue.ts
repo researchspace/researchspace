@@ -46,7 +46,6 @@ export interface FacetValueProps extends Props<FacetValueComponent> {
 
 interface FacetValueState {
   selected: boolean;
-  isLoading: boolean;
 }
 
 /**
@@ -59,14 +58,12 @@ export class FacetValueComponent extends Component<FacetValueProps, FacetValueSt
     super(props, context);
     this.state = {
       selected: props.facetValue.selected,
-      isLoading: false,
     };
   }
 
   componentWillReceiveProps(newProps: FacetValueProps) {
     this.setState({
       selected: newProps.facetValue.selected,
-      isLoading: false,
     });
   }
 
@@ -95,7 +92,6 @@ export class FacetValueComponent extends Component<FacetValueProps, FacetValueSt
           checked: this.state.selected,
         }),
         this.renderCheckboxLabel(),
-        this.state.isLoading ? createElement(Spinner) : D.span({})
       )
     );
   }
@@ -109,7 +105,6 @@ export class FacetValueComponent extends Component<FacetValueProps, FacetValueSt
     if (event.target['tagName'] === 'INPUT') {
       this.setState({
         selected: (event.target as HTMLInputElement).checked,
-        isLoading: true,
       });
       if (this.props.facetValue.selected) {
         this.props.actions.deselectFacetValue(this.props.facetValue.entity);

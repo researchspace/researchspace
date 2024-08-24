@@ -1,6 +1,6 @@
 declare namespace LogBrowserScssNamespace {
   export interface ILogBrowserScss {
-    'admin-log-browser': string;
+    "admin-log-browser": string;
     adminLogBrowser: string;
   }
 }

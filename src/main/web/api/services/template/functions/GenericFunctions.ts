@@ -56,115 +56,172 @@ function checkCondition(v1, operator, v2) {
 /**
  * Generic helper functions for Handlebars templates.
  */
-export const GenericFunctions = {
-  /**
-   * if operator for handlebars templates.
-   */
-  ifCond: function (v1, operator, v2, options) {
-    return checkCondition(v1, operator, v2) ? options.fn(this) : options.inverse(this);
-  },
+export function GenericFunctions(handlebars) {
+  return {
+    /**
+     * if operator for handlebars templates.
+     */
+    ifCond: function (v1, operator, v2, options) {
+      return checkCondition(v1, operator, v2) ? options.fn(this) : options.inverse(this);
+    },
 
-  and: function() {
-    return Array.prototype.every.call(arguments, Boolean);
-  },
+    and: function() {
+      return Array.prototype.every.call(arguments, Boolean);
+    },
 
-  eq: (v1, v2) => v1 === v2,
-  not: (v1) => !v1,
+    eq: (v1, v2) => v1 === v2,
+    not: (v1) => !v1,
 
-  or: function() {
-    return Array.prototype.slice.call(arguments, 0, -1).some(Boolean);
-  },
+    or: function() {
+      return Array.prototype.slice.call(arguments, 0, -1).some(Boolean);
+    },
 
-  /**
-   * switch statement for handlebars templates
-   * Use break=true to skip other cases
-   * Use default for unmatched cases
-   *
-   * @example
-   *
-   * {{#switch type}}
-   *   {{#case "http://example.com/Organisation" break=true}}
-   *     <p>Type is Organisation</p>
-   *   {{/case}}
-   *   {{#case "http://example.com/Person" break=true}}
-   *     <p>Type is Person</p>
-   *   {{/case}}
-   *   {{#default}}
-   *     <p>Default content here</p>
-   *   {{/default}}
-   * {{/switch}}
-   *
-   */
-  switch: function (value, options) {
-    this.switchValue = value;
-    this.switchBreak = false;
-    let html = options.fn(this);
-    delete this.switchBreak;
-    delete this.switchValue;
-    return html;
-  },
+    /**
+     * switch statement for handlebars templates
+     * Use break=true to skip other cases
+     * Use default for unmatched cases
+     *
+     * @example
+     *
+     * {{#switch type}}
+     *   {{#case "http://example.com/Organisation" break=true}}
+     *     <p>Type is Organisation</p>
+     *   {{/case}}
+     *   {{#case "http://example.com/Person" break=true}}
+     *     <p>Type is Person</p>
+     *   {{/case}}
+     *   {{#default}}
+     *     <p>Default content here</p>
+     *   {{/default}}
+     * {{/switch}}
+     *
+     */
+    switch: function (value, options) {
+      this.switchValue = value;
+      this.switchBreak = false;
+      let html = options.fn(this);
+      delete this.switchBreak;
+      delete this.switchValue;
+      return html;
+    },
 
-  case: function (value) {
-    let args = Array.prototype.slice.call(arguments);
-    let options = args.pop();
+    case: function (value) {
+      let args = Array.prototype.slice.call(arguments);
+      let options = args.pop();
 
-    if (this.switchBreak || args.indexOf(this.switchValue) === -1) {
-      return '';
-    } else {
-      if (options.hash.break === true) {
-        this.switchBreak = true;
+      if (this.switchBreak || args.indexOf(this.switchValue) === -1) {
+        return '';
+      } else {
+        if (options.hash.break === true) {
+          this.switchBreak = true;
+        }
+        return options.fn(this);
       }
-      return options.fn(this);
-    }
-  },
+    },
 
-  default: function (options) {
-    if (!this.switchBreak) {
-      return options.fn(this);
-    }
-  },
-
-  /**
-   *  object length helper for handlebars templates.
-   */
-  objectLength: function (object) {
-    return Object.keys(object).length;
-  },
-
-  /**
-   * Raw block for template escaping.
-   */
-  raw: function (options) {
-    return options.fn(this);
-  },
-
-  getValueByKey(options: Array<{key: string, value: string}>, keys: Array<string>, noMatch: any) {
-    for (let i = 0; i < keys.length; i++) {
-      const value = _.find(options, o => o.key === keys[i]);
-      if (value) {
-        return value.value;
+    default: function (options) {
+      if (!this.switchBreak) {
+        return options.fn(this);
       }
-    }
-    return noMatch;
-  },
+    },
 
-  hasKey(options: Array<string>, key: string) {
-    const has = _.some(options, o => o === key);
-    return has ? true : undefined;
-  },
+    /**
+     *  object length helper for handlebars templates.
+     */
+    objectLength: function (object) {
+      return Object.keys(object).length;
+    },
 
-  stringify(options) {
-    return JSON.stringify(options);
-  },
+    /**
+     * Raw block for template escaping.
+     */
+    raw: function (options) {
+      return options.fn(this);
+    },
 
-  parse(options) {
-    return JSON.parse(options);
-  },
+    getValueByKey(options: Array<{key: string, value: string}>, keys: Array<string>, noMatch: any) {
+      for (let i = 0; i < keys.length; i++) {
+        const value = _.find(options, o => o.key === keys[i]);
+        if (value) {
+          return value.value;
+        }
+      }
+      return noMatch;
+    },
 
-  /**
-   * generate uuid
-   */
-  uuid() {
-    return uuidLib.v4();
-  }
+    hasKey(options: Array<string>, key: string) {
+      const has = _.some(options, o => o === key);
+      return has ? true : undefined;
+    },
+
+    stringify(options) {
+      return JSON.stringify(options);
+    },
+
+    parse(options) {
+      return JSON.parse(options);
+    },
+
+    /**
+     * generate uuid
+     */
+    uuid() {
+      return uuidLib.v4();
+    },
+
+
+    hasAnyValues(data, fields) {
+      return fields.some(field => {
+        const fieldName = typeof field === 'string' ? field : field.field;
+        const fieldData = data[fieldName];
+        return fieldData && fieldData.values && fieldData.values.length > 0;
+      });
+    },
+
+    getFieldName(field) {
+      return typeof field === 'string' ? field : field.field;
+    },
+
+    find: function(array, expression) {
+      const template = handlebars.compile("{{#if " + expression + "}}true{{/if}}");
+      for (let i = 0; i < array.length; i++) {
+        let item = array[i];
+        let context = { item: item };
+        if (template(context) === 'true') {
+          return item;
+        }
+      }
+      return null;
+    },    
+
+    uniqBy: function(array, key) {
+      return _.uniqBy(array, item => _.get(item, key));
+    },
+
+    mergeUniqueValues: function(values: any) {
+      return _.values(_.reduce(values, (result: any, value: any) => {
+        if (!result[value.label]) {
+            result[value.label] = {...value};
+        } else {
+            result[value.label].provenance = _.uniqWith([
+                ...result[value.label].provenance, 
+                ...value.provenance
+            ], _.isEqual);
+        }
+        return result;
+      }, {}));
+    },
+  
+    uniqProviders: function(provenance: any) {
+      let providers = provenance.flatMap(prov => 
+          prov['https://artresearch.net/resource/field_definition/pharos_model/provider'].values.map(provider => ({
+              label: provider.label,
+              icon: provider['https://artresearch.net/resource/field_definition/pharos_model/provider_icon'].values[0]['@value']
+          }))
+      );
+      return _.uniqBy(providers, 'icon');
+    },
+
+    isEmpty: _.isEmpty,
+  };
 };

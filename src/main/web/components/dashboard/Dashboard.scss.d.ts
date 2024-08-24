@@ -1,7 +1,7 @@
 declare namespace DashboardScssNamespace {
   export interface IDashboardScss {
     addItemButton: string;
-    'container-fluid': string;
+    "container-fluid": string;
     containerFluid: string;
     defaultColumnItem: string;
     defaultComponent: string;
@@ -37,7 +37,7 @@ declare namespace DashboardScssNamespace {
     itemsList: string;
     notOpacity: string;
     pulse: string;
-    'pulse-animation': string;
+    "pulse-animation": string;
     pulseAnimation: string;
     template: string;
     viewContainer: string;

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<x3ml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" source_type="xpath" version="1.0" xsi:noNamespaceSchemaLocation="https://isl.ics.forth.gr/x3ml/schema/x3ml.xsd">
+   <info>
+      <title>hertziana</title>
+      <general_description>Mappings for Hertziana PHAROS data. This are mappings only for top lever obj (obj with lvl="1"). Mappings for nested objects are automatically generated from this project and saved to hertziana-generated project. </general_description>
+      <source>
+         <source_info>
+            <source_schema schema_file="08015427.xml" type="xml" version="">08015427</source_schema>
+            <namespaces>
+               <namespace prefix="" uri=""/>
+            </namespaces>
+         </source_info>
+      </source>
+      <target>
+         <target_info>
+            <target_schema schema_file="CIDOC_CRM_v7.1.3.rdf" type="rdf" version="">CIDOC_CRM_v7.1.3</target_schema>
+            <namespaces>
+               <namespace prefix="owl" uri="http://www.w3.org/2002/07/owl#"/>
+               <namespace prefix="rdf" uri="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+               <namespace prefix="aat" uri="http://vocab.getty.edu/aat/"/>
+               <namespace prefix="custom" uri="https://artresearch.net/custom/"/>
+               <namespace prefix="xsd" uri="http://www.w3.org/2001/XMLSchema#"/>
+               <namespace prefix="skos" uri="http://www.w3.org/2004/02/skos/core#"/>
+               <namespace prefix="rdfs" uri="http://www.w3.org/2000/01/rdf-schema#"/>
+               <namespace prefix="crmdig" uri="http://www.ics.forth.gr/isl/CRMdig/"/>
+               <namespace prefix="crm" uri="http://www.cidoc-crm.org/cidoc-crm/"/>
+            </namespaces>
+         </target_info>
+      </target>
+      <mapping_info>
+         <mapping_created_by_org/>
+         <mapping_created_by_person/>
+         <in_collaboration_with/>
+      </mapping_info>
+      <example_data_info>
+         <example_data_from/>
+         <example_data_contact_person/>
+         <example_data_source_record/>
+         <generator_policy_info/>
+         <example_data_target_record/>
+         <thesaurus_info/>
+      </example_data_info>
+   </info>
+   <namespaces>
+      <namespace prefix="gernsheim" uri="https://artresearch.net/resource/gernsheim/"/>
+      <namespace prefix="iiif_json" uri="https://hertz-foto-os1.biblhertz.it/iiif/3/"/>
+      <namespace prefix="prefix" uri="https://artresearch.net/resource/midas/"/>
+      <namespace prefix="vocab" uri="https://artresearch.net/resource/midas/vocabulary/"/>
+      <namespace prefix="image" uri="https://fotothek.biblhertz.it/bh/320px/"/>
+      <namespace prefix="original" uri="https://foto.biblhertz.it/document/obj/"/>
+      <namespace prefix="ico" uri="http://iconclass.org/"/>
+   </namespaces>
+   <mappings>
+      <mapping>
+         <domain>
+            <source_node>//obj</source_node>
+            <target_node>
+               <entity>
+                  <type>crm:E22_Human-Made_Object</type>
+                  <instance_generator name="URIwithTypeAndId">
+                     <arg name="type" type="constant">work</arg>
+                     <arg name="id" type="xpath">@id</arg>
+                  </instance_generator>
+                  <label_generator name="Literal">
+                     <arg name="text" type="xpath">a5200/text()</arg>
+                  </label_generator>
+                  <additional>
+                     <relationship>crm:P2_has_type</relationship>
+                     <entity>
+                        <type>crm:E55_Type</type>
+                        <instance_generator name="URIorUUID">
+                           <arg name="text" type="constant">http://vocab.getty.edu/aat/300133025</arg>
+                        </instance_generator>
+                     </entity>
+                  </additional>
+               </entity>
+             </target_node>
+         </domain>
+         <link>
+            <path>
+               <source_relation>
+                  <relation>a5200</relation>
+               </source_relation>
+               <target_relation>
+                  <relationship>crm:P1_is_identified_by</relationship>
+               </target_relation>
+            </path>
+            <range>
+               <source_node>a5200</source_node>
+               <target_node>
+                  <entity>
+                     <type>crm:E41_Appellation</type>
+                     <instance_generator name="IdentifierURI">
+                        <arg name="subject_type" type="constant">work</arg>
+                        <arg name="subject_id" type="xpath">../@id</arg>
+                        <arg name="identifier_type" type="constant">appellation</arg>
+                        <arg name="identifier_id" type="xpath">text()</arg>
+                     </instance_generator>
+                     <label_generator name="Literal">
+                        <arg name="text" type="xpath">.</arg>
+                     </label_generator>
+                     <additional>
+                        <relationship>crm:P2_has_type</relationship>
+                        <entity>
+                           <type>crm:E55_Type</type>
+                           <instance_generator name="URIorUUID">
+                              <arg name="text" type="constant">http://vocab.getty.edu/aat/300417193</arg>
+                           </instance_generator>
+                        </entity>
+                     </additional>
+                  </entity>
+               </target_node>
+            </range>
+         </link>
+      </mapping>
+   </mappings>
+</x3ml>

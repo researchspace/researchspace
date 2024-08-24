@@ -114,20 +114,40 @@ export class FacetSliderGraph extends Component<FacetSliderGraphProps, {}> {
     const h = canvas.height;
     const w = canvas.width;
     const ctx = canvas.getContext('2d');
-
+  
+    // Clear the canvas
+    ctx.clearRect(0, 0, w, h);
+  
     // Draw graph
     const points = this.points;
     if (points.length > 0) {
       ctx.beginPath();
       ctx.strokeStyle = '#008cba';
-      ctx.lineWidth = 0.5;
-      ctx.moveTo(points[0][0] * (w - 2) + 1, h - points[0][1] * h);
+      ctx.lineWidth = 1;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      
+      let lastX = points[0][0] * (w - 2) + 1;
+      let lastY = h - (points[0][1] * (h - 2) + 1);
+      ctx.moveTo(lastX, lastY);
+  
       for (let i = 1; i < points.length; ++i) {
-        ctx.lineTo(points[i][0] * (w - 2) + 1, h - points[i][1] * h);
+        const x = points[i][0] * (w - 2) + 1;
+        const y = h - (points[i][1] * (h - 2) + 1);
+        
+        // Check for large gaps in data
+        if (Math.abs(x - lastX) > w / 100 || Math.abs(y - lastY) > h / 100) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+        
+        lastX = x;
+        lastY = y;
       }
       ctx.stroke();
     }
-
+  
     // Draw selection
     const min = this.props.min;
     const max = this.props.max;
@@ -140,7 +160,7 @@ export class FacetSliderGraph extends Component<FacetSliderGraphProps, {}> {
       Math.round(((this.props.range.end - this.props.range.begin) / (max - min)) * w),
       h + 20
     );
-  }
+  }  
 
   render() {
     return D.div(

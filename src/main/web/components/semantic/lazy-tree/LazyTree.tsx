@@ -205,6 +205,7 @@ export class LazyTree extends Component<LazyTreeProps, State> {
       <div className={styles.component}>
         <SemanticTreeInput
           {...patterns}
+          infoTemplate={this.props.infoTemplate}
           placeholder={this.props.inputPlaceholder}
           ref={this.onSelectionReady}
           multipleSelection={false}
@@ -246,7 +247,7 @@ export class LazyTree extends Component<LazyTreeProps, State> {
 
   private renderNodeInfoTemplate(node: Node) {
     if (this.props.infoTemplate) {
-      return <TemplateItem template={{source: this.props.infoTemplate, options: {iri: node.iri.value, label: node.label.value}}} />;
+      return <TemplateItem template={{source: this.props.infoTemplate, options: {iri: node.iri.value, label: node.label.value, binding: node.tuple}}} />;
     } else {
       return null;
     }

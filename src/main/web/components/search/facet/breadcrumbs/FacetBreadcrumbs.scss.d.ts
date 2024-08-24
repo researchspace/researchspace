@@ -1,8 +1,6 @@
 declare namespace FacetBreadcrumbsScssNamespace {
   export interface IFacetBreadcrumbsScss {
-    breadcrumbs: string;
     cancelButton: string;
-    cancelButtonfocus: string;
     conjunct: string;
     container: string;
     disjunct: string;

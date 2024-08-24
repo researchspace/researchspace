@@ -24,6 +24,7 @@ import * as SparqlJs from 'sparqljs';
 
 import { Rdf } from 'platform/api/rdf';
 import { SparqlClient } from 'platform/api/sparql';
+import * as LabelsService from 'platform/api/services/resource-label';
 
 import { breakGraphCycles, transitiveReduction, findRoots } from './GraphAlgorithms';
 import { KeyedForest, KeyPath, mapBottomUp } from './KeyedForest';
@@ -31,12 +32,14 @@ import { TreeNode, mergeRemovingDuplicates } from './NodeModel';
 
 export interface Node extends TreeNode {
   readonly iri: Rdf.Iri;
+  readonly tuple: SparqlClient.Binding;
   label?: Rdf.Literal;
   readonly children?: ReadonlyArray<Node>;
   readonly reachedLimit?: boolean;
   /** search relevance */
   readonly score?: number;
 }
+
 export namespace Node {
   export const rootKey = 'SparqlNode:root';
   export const keyOf = (node: Node) => (node.iri ? node.iri.value : rootKey);
@@ -44,11 +47,13 @@ export namespace Node {
     iri: Rdf.iri(rootKey),
     children: undefined,
     reachedLimit: false,
+    tuple: {},
   };
   export const emptyRoot: Node = {
     iri: Rdf.iri(rootKey),
     children: [],
     reachedLimit: true,
+    tuple: {},
   };
 
   export const readyToLoadForest = KeyedForest.create(keyOf, readyToLoadRoot);
@@ -68,6 +73,7 @@ export class SparqlNodeModel {
   private readonly childrenQuery: SparqlJs.SelectQuery;
   private readonly parentsQuery: SparqlJs.SelectQuery;
   private readonly limit: number | undefined;
+  private readonly useLabelService: boolean;
 
   readonly sparqlOptions: () => SparqlClient.SparqlOptions;
 
@@ -77,13 +83,15 @@ export class SparqlNodeModel {
     parentsQuery: SparqlJs.SelectQuery;
     limit?: number;
     sparqlOptions: () => SparqlClient.SparqlOptions;
+    useLabelService?: boolean;
   }) {
-    const { rootsQuery, childrenQuery, parentsQuery, limit, sparqlOptions } = params;
+    const { rootsQuery, childrenQuery, parentsQuery, limit, sparqlOptions, useLabelService = false } = params;
     this.rootsQuery = rootsQuery;
     this.childrenQuery = childrenQuery;
     this.parentsQuery = parentsQuery;
     this.limit = limit;
     this.sparqlOptions = sparqlOptions;
+    this.useLabelService = useLabelService;
   }
 
   hasMoreChildren(node: Node): boolean {
@@ -102,35 +110,50 @@ export class SparqlNodeModel {
       parametrized.offset = parent.children ? parent.children.length : 0;
     }
 
-    type Result = { nodes?: Node[]; error?: any };
     return SparqlClient.select(parametrized, this.sparqlOptions())
-      .map<Result>((queryResult) => ({ nodes: nodesFromQueryResult(queryResult) }))
-      .flatMapErrors<Result>((error) => Kefir.constant({ error }))
-      .map(
-        ({ nodes, error }): Node => {
-          if (error) {
-            return Node.set(parent, { error });
-          } else {
-            const initialChildren = parent.children ? parent.children : [];
-            const children = mergeRemovingDuplicates(Node.keyOf, initialChildren, nodes);
-            return Node.set(parent, {
-              error: undefined,
-              children,
-              reachedLimit: !hasLimit || children.length === initialChildren.length || nodes.length < this.limit,
-            });
-          }
-        }
-      )
+      .flatMapErrors((error) => Kefir.constant({ error }))
+      .flatMap(this.processQueryResult(parent, hasLimit))
       .toProperty();
+  }
+
+  private processQueryResult = (parent: Node, hasLimit: boolean) => (result: SparqlClient.SparqlSelectResult | { error: any }) => {
+    if ('error' in result) {
+      return Kefir.constant(Node.set(parent, { error: result.error }));
+    }
+
+    const nodes = nodesFromQueryResult(result, this.useLabelService);
+    return this.applyLabels(nodes).map(nodesWithLabels => {
+      const initialChildren = parent.children || [];
+      const children = mergeRemovingDuplicates(Node.keyOf, initialChildren, nodesWithLabels);
+      return Node.set(parent, {
+        error: undefined,
+        children,
+        reachedLimit: !hasLimit || children.length === initialChildren.length || nodes.length < this.limit,
+      });
+    });
+  }
+
+  private applyLabels = (nodes: Node[]): Kefir.Property<Node[]> => {
+    if (!this.useLabelService) {
+      return Kefir.constant(nodes);
+    }
+    const iris = nodes.map(node => node.iri);
+    return LabelsService.getLabels(iris, this.sparqlOptions()).map(labels => 
+      nodes.map(node => ({
+        ...node,
+        label: labels.has(node.iri) ? Rdf.literal(labels.get(node.iri)) : undefined,
+      }))
+    );
   }
 
   loadFromLeafs(leafs: ReadonlyArray<Node>, options: { transitiveReduction: boolean }): Kefir.Property<Node> {
     const initialOrphans = Immutable.List(leafs as Node[])
       .groupBy((node) => node.iri.value)
       .map((group) => group.first())
-      .map<MutableNode>(({ iri, label, score, reachedLimit }) => ({
+      .map<MutableNode>(({ iri, label, tuple: binding, score, reachedLimit }) => ({
         iri,
         label,
+        binding,
         score,
         reachedLimit,
         children: new Set<MutableNode>(),
@@ -141,7 +164,7 @@ export class SparqlNodeModel {
       return Kefir.constant(Node.readyToLoadRoot);
     }
 
-    return restoreGraphFromLeafs(initialOrphans, this.parentsQuery, this.sparqlOptions()).map((nodes) => {
+    return restoreGraphFromLeafs(initialOrphans, this.parentsQuery, this.sparqlOptions(), this.useLabelService).map((nodes) => {
       const graph = Array.from(nodes.values());
       breakGraphCycles(graph);
       if (options.transitiveReduction) {
@@ -153,7 +176,6 @@ export class SparqlNodeModel {
     });
   }
 
-  /** @returns parent key for the specified child key. */
   loadParent(key: string): Kefir.Property<string> {
     const parameters = [{ item: Rdf.iri(key) }];
     const parametrized = SparqlClient.prepareParsedQuery(parameters)(this.parentsQuery);
@@ -178,7 +200,7 @@ export class SparqlNodeModel {
   }
 }
 
-export function nodesFromQueryResult(result: SparqlClient.SparqlSelectResult): Node[] {
+export function nodesFromQueryResult(result: SparqlClient.SparqlSelectResult, useLabelService: boolean): Node[] {
   return result.results.bindings
     .map(
       (binding): Node => {
@@ -187,19 +209,16 @@ export function nodesFromQueryResult(result: SparqlClient.SparqlSelectResult): N
           return undefined;
         }
 
-        const nodeLabel = label && label.isLiteral() ? label : undefined;
+        const nodeLabel = useLabelService ? undefined : (label && label.isLiteral() ? label : undefined);
 
         return hasChildren && hasChildren.value === 'false'
-          ? { iri: item, label: nodeLabel, children: [], reachedLimit: true }
-          : { iri: item, label: nodeLabel, reachedLimit: false };
+          ? { iri: item, label: nodeLabel, tuple: binding, children: [], reachedLimit: true }
+          : { iri: item, label: nodeLabel, tuple: binding, reachedLimit: false };
       }
     )
     .filter((node) => node !== undefined);
 }
 
-/**
- * Marks every node with at least one child as finished loading.
- */
 export function sealLazyExpanding(root: Node): Node {
   return mapBottomUp<Node>(root, (node) => {
     const sealed =
@@ -212,48 +231,30 @@ export function sealLazyExpanding(root: Node): Node {
 export interface MutableNode {
   iri: Rdf.Iri;
   label: Rdf.Literal;
+  binding: SparqlClient.Binding;
   reachedLimit: boolean;
   children: Set<MutableNode>;
   score?: number;
 }
 
+interface ParentsResult {
+  result: SparqlClient.SparqlSelectResult;
+  requested: string[];
+}
+
 function restoreGraphFromLeafs(
   leafs: MutableNode[],
   parentsQuery: SparqlJs.SelectQuery,
-  options: SparqlClient.SparqlOptions
+  options: SparqlClient.SparqlOptions,
+  useLabelService: boolean
 ): Kefir.Property<Map<string, MutableNode>> {
   return Kefir.stream<Map<string, MutableNode>>((emitter) => {
-    const nodes = new Map(
-      leafs.map<[string, MutableNode]>((node) => [node.iri.value, node])
-    );
+    const nodes = new Map(leafs.map<[string, MutableNode]>((node) => [node.iri.value, node]));
     let unresolvedOrphans = new Set(nodes.keys());
-    let disposed = false;
 
-    const onError = (error: any) => {
-      disposed = true;
-      emitter.error(error);
-      emitter.end();
-    };
-
-    type ParentsResult = { requested: string[]; result: SparqlClient.SparqlSelectResult };
-    let onResult: (result: ParentsResult) => void;
-
-    const request = (orphanKeys: string[]) => {
-      const parametrized = SparqlClient.prepareParsedQuery(orphanKeys.map((key) => ({ item: Rdf.iri(key) })))(
-        parentsQuery
-      );
-      SparqlClient.select(parametrized, options)
-        .map((result) => ({ result, requested: orphanKeys }))
-        .onValue(onResult)
-        .onError(onError);
-    };
-
-    onResult = ({ result, requested }) => {
-      if (disposed) {
-        return;
-      }
-
-      for (const { item, parent, parentLabel } of result.results.bindings) {
+    const processResult = ({ result, requested }: ParentsResult) => {
+      for (const binding of result.results.bindings) {
+        const { item, parent, parentLabel } = binding;
         if (!(item && item.isIri() && parent && parent.isIri())) {
           continue;
         }
@@ -268,31 +269,61 @@ function restoreGraphFromLeafs(
           const parentOrphan: MutableNode = {
             iri: parent,
             label: parentLabel && parentLabel.isLiteral() ? parentLabel : undefined,
+            binding: binding,
             reachedLimit: false,
             children: new Set<MutableNode>([nodes.get(item.value)]),
           };
           nodes.set(parentOrphan.iri.value, parentOrphan);
-          unresolvedOrphans = unresolvedOrphans.add(parentOrphan.iri.value);
+          unresolvedOrphans.add(parentOrphan.iri.value);
         }
       }
 
-      for (const requestedKey of requested) {
-        unresolvedOrphans.delete(requestedKey);
-      }
+      requested.forEach(key => unresolvedOrphans.delete(key));
 
+      return unresolvedOrphans.size === 0;
+    };
+
+    const applyLabels = () => {
+      if (!useLabelService) {
+        return Kefir.constant(nodes);
+      }
+      const newNodes = Array.from(nodes.values()).filter(node => !node.label);
+      return LabelsService.getLabels(newNodes.map(node => node.iri), options)
+        .map(labels => {
+          newNodes.forEach(node => {
+            if (labels.has(node.iri)) {
+              node.label = Rdf.literal(labels.get(node.iri));
+            }
+          });
+          return nodes;
+        });
+    };
+
+    const request = (orphanKeys: string[]) => {
+      const parametrized = SparqlClient.prepareParsedQuery(orphanKeys.map((key) => ({ item: Rdf.iri(key) })))(parentsQuery);
+      return SparqlClient.select(parametrized, options)
+        .map((result) => ({ result, requested: orphanKeys }));
+    };
+
+    Kefir.repeat(() => {
       if (unresolvedOrphans.size === 0) {
-        emitter.emit(nodes);
-        emitter.end();
-      } else {
-        request(Array.from(unresolvedOrphans.values()));
+        return false;
       }
-    };
+      return request(Array.from(unresolvedOrphans));
+    })
+    .takeWhile(result => !processResult(result))
+    .last()
+    .flatMap(() => applyLabels())
+    .onValue(result => {
+      emitter.emit(result);
+      emitter.end();
+    })
+    .onError(error => {
+      emitter.error(error);
+      emitter.end();
+    });
 
-    request(leafs.map((orphan) => orphan.iri.value));
-
-    return () => {
-      disposed = true;
-    };
+    return () => {};
   }).toProperty();
 }
 
@@ -301,7 +332,6 @@ const COMPARE_BY_SCORE_THEN_BY_LABEL: ReadonlyArray<(node: Node) => any> = [
   (node: Node) => (node.label ? node.label.value : node.iri.value),
 ];
 
-/** Convert into immutable tree and sort by search relevance. */
 function asImmutableForest(roots: Set<MutableNode>): ReadonlyArray<Node> {
   return Array.from(roots).map(
     (root): Node => {
@@ -311,6 +341,7 @@ function asImmutableForest(roots: Set<MutableNode>): ReadonlyArray<Node> {
         iri: root.iri,
         label: root.label,
         children,
+        tuple: root.binding,
         reachedLimit: root.reachedLimit,
         score: total + (root.score === undefined ? 0 : root.score),
       };

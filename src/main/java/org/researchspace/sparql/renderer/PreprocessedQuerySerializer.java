@@ -163,7 +163,7 @@ public class PreprocessedQuerySerializer extends AbstractQueryModelVisitor<Runti
 
     protected StringBuilder builder;
 
-    protected Map<AbstractSerializableParsedQuery, Set<String>> renderedExtensionElements = Maps.newHashMap();
+    protected Map<AbstractSerializableParsedQuery, Set<Integer>> renderedExtensionElements = Maps.newHashMap();
 
     protected boolean insideFunction = false;
 
@@ -631,20 +631,20 @@ public class PreprocessedQuerySerializer extends AbstractQueryModelVisitor<Runti
     }
 
     protected boolean isExtensionElemAlreadyRendered(ExtensionElem element) {
-        Set<String> alreadyRenderedList = this.renderedExtensionElements.get(this.currentQueryProfile);
+        Set<Integer> alreadyRenderedList = this.renderedExtensionElements.get(this.currentQueryProfile);
         if (alreadyRenderedList != null) {
-            return alreadyRenderedList.contains(element.getName());
+            return alreadyRenderedList.contains(element.hashCode());
         }
         return false;
     }
 
     protected void setExtensionElemAlreadyRendered(ExtensionElem element) {
-        Set<String> alreadyRenderedList = this.renderedExtensionElements.get(this.currentQueryProfile);
+        Set<Integer> alreadyRenderedList = this.renderedExtensionElements.get(this.currentQueryProfile);
         if (alreadyRenderedList == null) {
             alreadyRenderedList = Sets.newHashSet();
             this.renderedExtensionElements.put(this.currentQueryProfile, alreadyRenderedList);
         }
-        alreadyRenderedList.add(element.getName());
+        alreadyRenderedList.add(element.hashCode());
     }
 
     @Override
@@ -1116,8 +1116,7 @@ public class PreprocessedQuerySerializer extends AbstractQueryModelVisitor<Runti
 
     @Override
     public void meet(SingletonSet node) throws RuntimeException {
-        builder.append("{ } \n");
-
+        //builder.append("{ } \n");
     }
 
     @Override
@@ -1185,7 +1184,7 @@ public class PreprocessedQuerySerializer extends AbstractQueryModelVisitor<Runti
                     builder.append("?");
                     builder.append(node.getName());
                 } else {
-                    builder.append("_:");
+                    builder.append("?");
                     builder.append(node.getName());
                 }
             } else {

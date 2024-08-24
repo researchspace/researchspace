@@ -78,6 +78,16 @@ public class ProxyConfigs {
         private String socketTimeout;
         private String forwardip;
         private String preserveHost;
+        // ; separated list of headers
+        private String additionalHeaders;
+
+        public String getAdditionalHeaders() {
+            return additionalHeaders;
+        };
+
+        public void setAdditionalHeaders(String additionalHeaders) {
+            this.additionalHeaders = additionalHeaders;
+        };
 
         public String getPreserveHost() {
             return preserveHost;
@@ -175,6 +185,7 @@ public class ProxyConfigs {
                 Map<String, Object> map = Maps.newHashMap();
                 ConfigurationConverter.getMap(proxyProperties).entrySet()
                         .forEach(entry -> map.put((String) entry.getKey(), entry.getValue()));
+
                 BeanUtils.populate(proxyConfig, map);
 
                 Map<String, String> pmap = Maps.newHashMap();
@@ -184,6 +195,7 @@ public class ProxyConfigs {
                         SecretsHelper.resolveSecretOrFallback(secretResolver, proxyConfig.loginPassword));
                 pmap.put("loginBase64", SecretsHelper.resolveSecretOrFallback(secretResolver, proxyConfig.loginBase64));
                 pmap.put("log", "true");
+                pmap.put("additionalHeaders", proxyConfig.additionalHeaders);
 
                 pmap.put(ProxyServlet.P_PRESERVEHOST, proxyConfig.preserveHost);
                 pmap.put(ProxyServlet.P_PRESERVECOOKIES, proxyConfig.preserveCookies);

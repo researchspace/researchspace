@@ -20,22 +20,32 @@
 import * as React from 'react';
 
 import 'codemirror/lib/codemirror.css';
-import 'codemirror/mode/turtle/turtle';
 
+import 'codemirror/mode/turtle/turtle';
 import 'codemirror/addon/fold/foldcode';
 import 'codemirror/addon/fold/brace-fold';
 import 'codemirror/addon/fold/indent-fold';
 import 'codemirror/addon/edit/matchtags';
 import 'codemirror/addon/edit/matchbrackets';
 
-import { Controlled as ReactCodeMirror } from 'react-codemirror2';
+import { DomEvent, Controlled as ReactCodeMirror } from 'react-codemirror2';
+
+import * as styles from './TurtleEditor.scss';
 
 interface Props {
   turtleString: string;
+  readonly?: boolean;
   onChange?: (turtle: string) => void;
+  onMouseDown?: DomEvent;
 }
 
 export class TurtleEditorComponent extends React.Component<Props, { source: string }> {
+  public editor: CodeMirror.Editor;
+
+  static defaultProps = {
+    readonly: false,
+  }
+
   constructor(props: Props, context: any) {
     super(props, context);
     this.state = {
@@ -50,19 +60,15 @@ export class TurtleEditorComponent extends React.Component<Props, { source: stri
   }
 
   public render() {
-    const codeMirrorAddonOptions = {
-      foldGutter: false,
-      textAreaClassName: ['form-control'],
-      matchTags: { bothTags: true },
-      matchBrackets: true,
-    };
     return React.createElement(ReactCodeMirror, {
-      className: 'turtle-editor',
+      ref: (ref: any) => this.editor = ref?.editor,
+      className: 'turtle-editor ' + styles.holder,
       value: this.state.source,
       onBeforeChange: this.onChangeTurtle,
+      onMouseDown: this.onMouseDown,
       options: {
-        ...codeMirrorAddonOptions,
         mode: 'text/turtle',
+        readOnly: this.props.readonly,
         indentWithTabs: false,
         indentUnit: 2,
         tabSize: 2,
@@ -83,6 +89,26 @@ export class TurtleEditorComponent extends React.Component<Props, { source: stri
       });
     }
   };
+
+  private onMouseDown = (instance, event) => {
+    console.log(event)
+    const pos = instance.coordsChar({ left: event.pageX, top: event.pageY });
+    const token = instance.getTokenAt(pos);
+    this.highlightUri(instance, pos, token);
+
+    if (this.props.onMouseDown) {
+      this.props.onMouseDown(instance, event);
+    }
+  }
+
+  private highlightUri(instance, pos, token) {
+    // Remove previous highlights
+    instance.getAllMarks().forEach(mark => mark.clear());
+    
+    // Add new highlight
+    instance.markText({line: pos.line, ch: token.start}, {line: pos.line, ch: token.end}, {className: "highlighted-uri"});
+  }
+  
 
   public getTurtle = () => {
     return this.state.source;

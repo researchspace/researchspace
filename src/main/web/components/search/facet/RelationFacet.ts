@@ -22,7 +22,7 @@
  * @author Denis Ostapenko
  */
 
-import { PureComponent, createFactory, Props, createElement } from 'react';
+import { Component, createFactory, Props, createElement } from 'react';
 import * as D from 'react-dom-factories';
 import * as maybe from 'data.maybe';
 import * as InfiniteComponent from 'react-infinite';
@@ -30,13 +30,14 @@ import * as classnames from 'classnames';
 import * as nlp from 'nlp_compromise';
 import * as _ from 'lodash';
 
+import { Rdf } from 'platform/api/rdf';
 import { trigger } from 'platform/api/events';
 import { TemplateItem } from 'platform/components/ui/template';
 import { Spinner } from 'platform/components/ui/spinner';
 import { ClearableInput } from 'platform/components/ui/inputs';
 
 import { Resource } from 'platform/components/semantic/search/data/Common';
-import { FacetData, FacetViewState } from './FacetStore';
+import { FacetData, FacetViewState, FacetRelationQueries, FacetValuesResult } from './FacetStore';
 import { Relation } from 'platform/components/semantic/search/data/profiles/Model';
 import * as F from 'platform/components/semantic/search/data/facet/Model';
 import * as Model from 'platform/components/semantic/search/data/search/Model';
@@ -46,6 +47,9 @@ import { FacetSlider, SliderRange } from './slider/FacetSlider';
 import { Literal, NumericRange, DateRange } from 'platform/components/semantic/search/data/search/Model';
 import { SemanticFacetConfig } from 'platform/components/semantic/search/config/SearchConfig';
 import { SearchFacetPropertySelected } from 'platform/components/search/query-builder/SearchEvents';
+import { LazyTreeWithSearch, Node, TreeSelection } from 'platform/components/semantic/lazy-tree';
+import { List } from 'immutable';
+import { init } from 'platform/api/http';
 
 interface RelationFacetProps extends Props<RelationFacetComponent> {
   relation: Relation;
@@ -67,14 +71,84 @@ interface RelationFacetState {
 /**
  * Component which displays all facet values specific to the given relation.
  */
-export class RelationFacetComponent extends PureComponent<RelationFacetProps, RelationFacetState> {
+export class RelationFacetComponent extends Component<RelationFacetProps, RelationFacetState> {
   constructor(props, context) {
     super(props, context);
     this.state = {};
   }
 
+  private areFacetValuesEqual(oldValues: FacetValuesResult, newValues: FacetValuesResult): boolean {
+    if (oldValues === newValues) return true;
+
+    if (_.isArray(oldValues) && _.isArray(newValues)) {
+      oldValues = oldValues as Array<F.FacetValue>;
+      newValues = newValues as Array<F.FacetValue>;
+      if (oldValues.length !== newValues.length) return false;
+      
+      return oldValues.every((oldValue, index) => {
+        const newValue = newValues[index];
+        if (_.has(oldValue, 'iri') && _.has(newValue, 'iri')) {
+          const oldV = oldValue as Resource;
+          const newV = newValue as Resource;
+          return oldV.iri.equals(newV.iri) && _.isEqual(oldV.tuple, newV.tuple);
+        } else if (_.has(oldValue, 'literal') && _.has(newValue, 'literal')) {
+          return (oldValue as Literal).literal.value === (newValue as Literal).literal.value;
+        }
+        return false;
+      });
+    } else {
+      _.isEqual(oldValues, newValues);
+    }
+  }
+
+  componentDidMount() {
+    console.log('mounting relation/tree' + this.props.relation.iri.value)
+  }
+
+  componentWillUnmount() {
+    console.log('unmounting relation/tree ' + this.props.relation.iri.value)
+  }
+  /*
+  shouldComponentUpdate(nextProps: RelationFacetProps, nextState: RelationFacetState): boolean {
+    // Always update if the state changes (e.g., filterString)
+    if (this.state.filterString !== nextState.filterString) {
+      return true;
+    }
+
+    const currentViewState = this.props.data.viewState;
+    const nextViewState = nextProps.data.viewState;
+
+    // Check if loading state changed
+    if (currentViewState.values.loading !== nextViewState.values.loading) {
+      return true;
+    }
+
+    // Check if error state changed
+    if (currentViewState.values.error !== nextViewState.values.error) {
+      return true;
+    }
+
+    if (this.isSelectedRelation(this.props) !== this.isSelectedRelation(nextProps)) {
+      return true;
+    }
+
+    // Check if facet values changed
+    if (!this.areFacetValuesEqual(currentViewState.values.values as any, nextViewState.values.values as any)) {
+      return true;
+    }
+
+    // If we got here, only the selection state might have changed, so don't update
+    return false;
+  }
+*/
+
+componentWillReceiveProps(newProps: RelationFacetProps) {
+  console.log('relation facet nowe props ' + newProps.relation.iri.value);
+  console.log(newProps);
+}
+
   render() {
-    return this.props.relation.available === true ? this.renderRelation() : null;
+    return this.renderRelation();
   }
 
   private renderRelation = () =>
@@ -87,8 +161,8 @@ export class RelationFacetComponent extends PureComponent<RelationFacetProps, Re
         },
         D.i({
           className: classnames({
-            'facet__relation__header__icon--selected': this.isSelectedRelation(),
-            facet__relation__header__icon: !this.isSelectedRelation(),
+            'facet__relation__header__icon--selected': this.isSelectedRelation(this.props),
+            facet__relation__header__icon: !this.isSelectedRelation(this.props),
           }),
         }),
         createElement(TemplateItem, {
@@ -97,24 +171,80 @@ export class RelationFacetComponent extends PureComponent<RelationFacetProps, Re
             options: this.props.relation.tuple,
           },
         }),
-        this.isSelectedRelation() && this.props.data.viewState.values.loading ? createElement(Spinner) : D.span({})
+        this.isSelectedRelation(this.props) && this.props.data.viewState.values.loading ? createElement(Spinner) : D.span({})
       ),
-      this.isSelectedRelation() && !this.props.data.viewState.values.loading
+      this.isSelectedRelation(this.props) && !this.props.data.viewState.values.loading
         ? D.div({ className: 'facet__relation__body' }, this.renderRelationFacetBody(this.props.data.viewState))
         : D.div({})
     );
 
-  private isSelectedRelation = () =>
-    this.props.data.viewState.relation.map((res) => res.iri.equals(this.props.relation.iri)).getOrElse(false);
+  private isSelectedRelation = (props: RelationFacetProps) =>
+    props.data.viewState.relation.map((res) => res.iri.equals(props.relation.iri)).getOrElse(false);
 
   private renderRelationFacetBody(viewState: FacetViewState) {
     const { relationType, values } = viewState;
     if (relationType === 'resource' || relationType === 'literal') {
       return this.renderFacetValues(values.values as Array<Resource | Literal>, relationType);
+    } else if (relationType === "hierarchy") {
+      return this.renderHierarchy(viewState);
     } else if (relationType === 'numeric-range' || relationType === 'date-range') {
       return this.renderSlider(values.values as Array<NumericRange | DateRange>, relationType);
     }
     return null;
+  }
+
+  private renderHierarchy(viewState: FacetViewState) {
+    console.log(
+      viewState.values.values
+    );
+
+    const initialSelection = viewState.selectedValues.get(this.props.relation) as List<Resource> || List();
+
+
+    return D.div(
+      { className: 'facet__relation__values' },
+      D.div({ className: 'facet__relation__values__filter', style: { height: '500px' } },
+        createElement(LazyTreeWithSearch, {
+          ...(viewState.values.values as FacetRelationQueries),
+          infoTemplate: " ({{binding.count.value}})",
+          multipleSelection: true,
+          initialSelection: initialSelection.map((r) => r.iri).toArray(),
+          onSelectionChanged: (selection: TreeSelection<Node>) => {
+            const newSelections = TreeSelection.leafs(selection);
+            const oldSelections = viewState.selectedValues.get(this.props.relation) as List<Resource> || List();
+          
+            if (oldSelections.size < newSelections.size) {
+              // Item selected
+              const {iri, label, tuple} = 
+                newSelections.find(newItem => 
+                  !oldSelections.some(oldItem => oldItem.iri.equals(newItem.iri))
+                );
+              this.props.actions.selectFacetValue(this.props.relation)({iri, tuple, label: label?.value});
+            } else if (oldSelections.size > newSelections.size) {
+              // Item deselected
+              const deselected =
+                oldSelections.find(oldItem => 
+                  !newSelections.some(newItem => oldItem.iri.equals(newItem.iri))
+                )
+              this.props.actions.deselectFacetValue(this.props.relation)(deselected);
+            } else {
+              // One item deselected, one selected. 
+              // That happens when we select item in already selected subtree
+              const deselected =
+                oldSelections.find(oldItem => 
+                  !newSelections.some(newItem => oldItem.iri.equals(newItem.iri))
+                )
+              const {iri, label, tuple} = 
+                newSelections.find(newItem => 
+                  !oldSelections.some(oldItem => oldItem.iri.equals(newItem.iri))
+                );
+              this.props.actions.replaceFacetValue(this.props.relation)(deselected, {iri, tuple, label: label?.value});
+            }
+          }          
+        }
+        ),
+      )
+    );
   }
 
   private renderFacetValues(facetValues: Array<Resource | Literal>, kind: 'resource' | 'literal') {
@@ -137,6 +267,7 @@ export class RelationFacetComponent extends PureComponent<RelationFacetProps, Re
     } else if (showNoFacetValuesWarning) {
       return D.div({ className: 'facet__relation__values' }, D.em({}, 'Values not found...'));
     } else {
+      console.log('render facet values for ' + this.props.relation.iri.value)
       return D.div(
         { className: 'facet__relation__values' },
         showTooManyFacetValuesWarning
@@ -157,7 +288,7 @@ export class RelationFacetComponent extends PureComponent<RelationFacetProps, Re
           },
         }),
         Infinite(
-          {
+          {key: 'facet-values', 
             elementHeight: 20,
             containerHeight: 200,
             className: 'facet__relation__values_list_container', 
@@ -210,7 +341,7 @@ export class RelationFacetComponent extends PureComponent<RelationFacetProps, Re
 
   private onRelationClick() {
     return () => {
-      if (this.isSelectedRelation()) {
+      if (this.isSelectedRelation(this.props)) {
         this.props.actions.deselectRelation();
       } else {
         trigger({

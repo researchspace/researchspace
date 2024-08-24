@@ -1,0 +1,105 @@
+/**
+ * ResearchSpace
+ * Copyright (C) 2024, PHAROS: The International Consortium of Photo Archives
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+@import '~basic-styles.scss';
+
+.holder {
+    height: 100%;
+    display: flex; /* Ensures flex layout */
+    flex-direction: column; /* Children are stacked vertically */
+    overflow: hidden;
+}
+
+.editorAreaHolder {
+    display: flex;
+    flex-direction: column; /* Stack children vertically */
+    height: 100%; /* Keeps existing height */
+
+    flex-grow: 1;
+    overflow: hidden;
+
+    :global {
+        .panel {
+            margin-bottom: $padding-base-vertical;
+        }
+    }
+}
+
+.buttonRow {
+    display: flex;
+    justify-content: flex-end; /* Aligns buttons to the right */
+}
+
+.editorHolder {
+    overflow: auto; /* Changed from 'scroll' to 'auto' for cleaner look */
+    flex-grow: 1; /* Allows the editor to grow and fill available space */
+    flex-shrink: 1;
+
+    :global {
+        .highlighted-token {
+            background-color: rgba(255, 229, 153, 0.4);
+            border: 1px solid #FFDA99;
+            cursor: pointer;
+        }
+
+        .highlighted-text {
+            background-color: rgba(255, 229, 153, 0.4);
+            cursor: pointer;
+        }
+    }
+}
+
+.flexRow {
+    display: flex;
+    align-items: stretch; /* Aligns items vertically */
+    margin-bottom: 10px; /* Adds space between rows */
+
+    flex-shrink: 0; /* Prevent shrinking */
+
+    :global {
+        .input-group {
+            flex: 1; /* Ensures input takes all available space */
+        }
+        /* Additional styles to make sure buttons are the same height as inputs */
+        .input-group .form-control,
+        .input-group .input-group-btn .btn {
+            height: 34px;
+            /* Adjust to match the height of your inputs */
+        }
+    }
+}
+
+.xPathResultsList {
+    list-style-type: none;
+    overflow: auto;
+    max-height: 200px;
+}
+
+.xPathResultHeader {
+    font-weight: bold;
+    font-style: italic;
+}
+
+.activeXMLElement {
+    :global {
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+    }
+    animation: blink 1s linear infinite;
+}

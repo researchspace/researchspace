@@ -104,6 +104,7 @@ public class FieldDefinitionManager implements PlatformCache {
     public Map<IRI, FieldDefinition> queryFieldDefinitions(Iterable<? extends IRI> fieldIris) {
         try {
             logger.trace("Querying field definitions: {}", fieldIris);
+            this.cache.invalidateAll(fieldIris);
             Map<IRI, Optional<FieldDefinition>> found = this.cache.getAll(fieldIris);
             return flattenOptionMap(found);
         } catch (ExecutionException e) {
@@ -196,8 +197,8 @@ public class FieldDefinitionManager implements PlatformCache {
         return builder.toString();
     }
 
-    private Map<IRI, FieldDefinition> frameFieldDefinitions(GraphQueryResult queryResult) {
-        Map<IRI, FieldDefinition> definitions = new LinkedHashMap<>();
+    private LinkedHashMap<IRI, FieldDefinition> frameFieldDefinitions(GraphQueryResult queryResult) {
+        LinkedHashMap<IRI, FieldDefinition> definitions = new LinkedHashMap<>();
         while (queryResult.hasNext()) {
             Statement st = queryResult.next();
             if (!(st.getSubject() instanceof IRI)) {

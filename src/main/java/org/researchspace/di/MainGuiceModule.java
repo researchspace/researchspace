@@ -45,6 +45,7 @@ import org.researchspace.repository.RepositoryManager;
 import org.researchspace.security.ShiroTextRealm;
 import org.researchspace.services.fields.FieldDefinitionManager;
 import org.researchspace.services.fields.FieldsBasedSearch;
+import org.researchspace.services.info.ResourceInfoService;
 import org.researchspace.servlet.MProxyServlet;
 import org.researchspace.servlet.SparqlServlet;
 import org.researchspace.thumbnails.DefaultThumbnailService;
@@ -52,6 +53,7 @@ import org.researchspace.thumbnails.ThumbnailServiceRegistry;
 import org.researchspace.ui.templates.MainTemplate;
 import org.researchspace.upload.UploadHandler;
 import org.researchspace.upload.handlers.FileUploadHandler;
+import org.researchspace.x3ml.X3MLTestRunner;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -102,6 +104,7 @@ public class MainGuiceModule extends AbstractModule {
         bind(DefaultThumbnailService.class).asEagerSingleton();
         bind(FieldDefinitionManager.class).in(Singleton.class);
         bind(FieldsBasedSearch.class).in(Singleton.class);
+        bind(ResourceInfoService.class).in(Singleton.class);
 
         bind(LDPImplManager.class).in(Singleton.class);
         bind(LDPAssetsLoader.class).in(Singleton.class);

@@ -43,7 +43,7 @@ class GraphStoreService {
       .toProperty();
   }
 
-  private createGraphRequest({
+  public createGraphRequest({
     targetGraph,
     turtleString,
     repository,

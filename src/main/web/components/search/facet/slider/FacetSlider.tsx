@@ -157,7 +157,7 @@ export class FacetSliderComponent extends Component<FacetSliderProps, FacetSlide
       let events = [];
       for (let entity of props.data) {
         const { begin, end } = converter.toSliderRange(entity);
-        const weight = 1.0;
+        const weight = 1.5;
         if (begin && end) {
           events.push(new GraphEvent(begin, end, weight));
         }

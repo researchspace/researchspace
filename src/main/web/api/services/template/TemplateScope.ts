@@ -19,6 +19,7 @@
 
 import { WrappingError } from 'platform/api/async';
 import { Rdf } from 'platform/api/rdf';
+import * as Handlebars from 'handlebars';
 
 import { DefaultHelpers, ContextCapturer, CapturedContext } from './functions';
 
@@ -93,18 +94,21 @@ export class TemplateScope {
 
   private readonly partials: ReadonlyMap<string, ParsedTemplate>;
 
+  private readonly helpers: { readonly [id: string]: Function };
+
   private constructor(
-    private readonly helpers: { readonly [id: string]: Function },
+    private readonly helpersFn: (arg: typeof Handlebars) => { readonly [id: string]: Function },
     private readonly scopeTrace?: TemplateScopeTrace,
     partials?: ReadonlyMap<string, ParsedTemplate>,
     cache?: Map<string, HandlebarsTemplateDelegate>,
   ) {
     this.compiledCache = cache || new Map<string, HandlebarsTemplateDelegate>();
-    for (const helperId in helpers) {
-      if (!helpers.hasOwnProperty(helperId)) {
+    this.helpers = helpersFn(this.handlebars);
+    for (const helperId in this.helpers) {
+      if (!this.helpers.hasOwnProperty(helperId)) {
         continue;
       }
-      this.handlebars.registerHelper(helperId, helpers[helperId]);
+      this.handlebars.registerHelper(helperId, this.helpers[helperId]);
     }
 
     this.partials = partials || new Map<string, ParsedTemplate>();
@@ -122,7 +126,7 @@ export class TemplateScope {
   }
 
   static builder(options: TemplateScopeOptions = {}): TemplateScopeBuilder {
-    const helpers = { ...DefaultHelpers, ...options.helpers };
+    const helpers = (handlebars) => ({ ...DefaultHelpers(handlebars), ...options.helpers });
     return new TemplateScopeBuilder(
       options, (partials) => new TemplateScope(helpers, options.scopeTrace, partials)
     );

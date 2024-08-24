@@ -107,7 +107,7 @@ export function getCurrentUrl(): uri.URI {
  * are redirected to frame component.
  */
 let inFrame = false;
-let inFrameNavigationHandler: (iri: Rdf.Iri, props?: {}) => boolean;
+let inFrameNavigationHandler: (iri: Rdf.Iri, props?: {}, repository?: string) => boolean;
 export function setFrameNavigation(enable: boolean, handler?: typeof inFrameNavigationHandler) {
   inFrame = enable;
   inFrameNavigationHandler = handler;
@@ -123,7 +123,7 @@ export function navigateToResource(
   repository?: string,
   fragment?: string
 ): Kefir.Property<void> {
-  if (inFrame && inFrameNavigationHandler(iri, props)) {
+  if (inFrame && inFrameNavigationHandler(iri, props, repository)) {
     return Kefir.constant(null);
   } else {
     return constructUrlForResource(iri, props, repository, fragment).flatMap(navigateToUrl).toProperty();

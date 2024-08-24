@@ -69,27 +69,29 @@ export class FacetComponent extends Component<FacetProps, {}> {
   }
 
   private renderRelations() {
+    console.log('relations');
+    console.log(this.props.data.relations);
     return D.div(
       { className: 'facet-relations' },
       ...this.renderLoadingIndicator(),
       this.props.data.relations
         .filter((rel) => rel.available !== false)
-        .map((relationEntity) =>
-          RelationFacet({
+        .map((relationEntity) => {
+          return RelationFacet({
             key: relationEntity.iri.value,
             relation: relationEntity,
             data: this.props.data,
             actions: this.props.actions,
             config: this.props.config,
           })
-        )
+  })
         .toArray()
     );
   }
 
   private renderLoadingIndicator = () => {
     const loading = this.props.data.relations.some((rel) => _.isUndefined(rel.available));
-    return loading ? [D.div({}, D.em({}, 'Searching for relations ...')), D.div({}, createElement(Spinner))] : [];
+    return loading ? [D.div({key: 'loading-div'}, D.em({}, 'Searching for relations ...')), D.div({key: 'spinner'}, createElement(Spinner))] : [];
   };
 
   private onCategoryChange = (clas: Category) => {

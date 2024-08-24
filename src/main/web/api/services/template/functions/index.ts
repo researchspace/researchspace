@@ -25,14 +25,16 @@ import { UriComponentFunctions } from './UriComponentFunctions';
 import { NumbersFunctions } from './NumbersFunctions';
 import { StringsFunctions } from './StringsFunctions';
 
-export const DefaultHelpers = {
-  ...DataContextFunctions,
-  ...GenericFunctions,
-  ...DateTimeFunctions,
-  ...RdfFunctions,
-  ...UriComponentFunctions,
-  ...NumbersFunctions,
-  ...StringsFunctions
+export function DefaultHelpers(handlebars) {
+  return {
+    ...DataContextFunctions,
+    ...GenericFunctions(handlebars),
+    ...DateTimeFunctions,
+    ...RdfFunctions,
+    ...UriComponentFunctions,
+    ...NumbersFunctions,
+    ...StringsFunctions
+  };
 };
 
 export { ContextCapturer, CapturedContext } from './DataContextFunctions';

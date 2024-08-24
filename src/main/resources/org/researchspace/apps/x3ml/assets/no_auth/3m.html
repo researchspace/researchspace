@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html style="height: 100%; width: 100%; position: relative;">
+    <body style="height: 100%; width: 100%; position: relative;">
+
+        <script>
+         window.parent.document.cookie = "3mToken=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhcnRlbSIsInVzZXJuYW1lIjoiYXJ0ZW0iLCJyb2xlcyI6W3siYXV0aG9yaXR5IjoiYWRtaW5pc3RyYXRvciJ9LHsiYXV0aG9yaXR5IjoicmVndWxhciJ9LHsiYXV0aG9yaXR5IjoidXNlcl9tYW5hZ2VyIn1dfQ.ogqpPpazJoJbMe_AIlp26LcBAhmKVIKkpy5S6aKLCoFT5fQweGWJwnRqtbpfCynLQky80j5h2bWNHSxi5SZGuQ; path=/";
+         // Extract query parameters from the current URL
+         function getQueryParam(param) {
+             var urlParams = new URLSearchParams(window.location.search);
+             return urlParams.get(param);
+         }
+
+         // Add global css styles to X3ML ifarme
+         function addX3MLStyles(iframeDoc) {
+             const style = iframeDoc.createElement('style');
+             style.type = 'text/css';
+             style.innerHTML = `
+           div[style*="height: calc(-240px + 100vh);"] {
+               height: calc(-240px + 100vh) !important;
+           }
+             `;
+             iframeDoc.head.appendChild(style);
+         }
+
+         // Add CSS for blinking animation to the iframe document
+         function addBlinkingCSS(iframeDoc) {
+             const style = iframeDoc.createElement('style');
+             style.type = 'text/css';
+             style.innerHTML = `
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        .blinking {
+            animation: blink 1s linear infinite;
+        }
+             `;
+             iframeDoc.head.appendChild(style);
+         }
+
+
+         function findNodeWithContentUsingXPath(xpath, contextDoc) {
+             var result = contextDoc.evaluate(xpath, contextDoc, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+             return result.singleNodeValue;
+         }
+
+         function waitForElementAndClick(content, iframeDoc, interval = 200, timeout = 30000) {
+             return new Promise((resolve, reject) => {
+                 var elapsedTime = 0;
+                 var checkInterval = setInterval(() => {
+                     var xpath = `//*[starts-with(text(), '${content}')]`;
+                     var node = findNodeWithContentUsingXPath(xpath, iframeDoc);
+                     if (node) {
+                         clearInterval(checkInterval);
+                         node.click();
+                         resolve();
+                     } else {
+                         elapsedTime += interval;
+                         if (elapsedTime >= timeout) {
+                             clearInterval(checkInterval);
+                             reject(`Timeout waiting for element with content: ${content}`);
+                         }
+                     }
+                 }, interval);
+             });
+         }
+
+         function findButtonWithAriaLabel(label, contextDoc) {
+             // Find a button element with the specified aria-label
+             return contextDoc.querySelector(`button[aria-label="${label}"]`);
+         }
+
+         function waitForButtonAndClick(label, iframeDoc, interval = 500, timeout = 30000) {
+             return new Promise((resolve, reject) => {
+                 var elapsedTime = 0;
+                 var checkInterval = setInterval(() => {
+                     var button = findButtonWithAriaLabel(label, iframeDoc);
+                     if (button) {
+                         clearInterval(checkInterval);
+                         button.click();
+                         resolve();
+                     } else {
+                         elapsedTime += interval;
+                         if (elapsedTime >= timeout) {
+                             clearInterval(checkInterval);
+                             reject(`Timeout waiting for button with aria-label: ${label}`);
+                         }
+                     }
+                 }, interval);
+             });
+         }
+
+         function hideElementInIframe(selector, iframeDoc) {
+             var element = iframeDoc.querySelector(selector);
+             if (element) {
+                 element.style.display = 'none';
+             }
+         }
+
+
+         function executeSequenceInIframe(iframeId, projectName, scriptUrl) {
+             var iframe = document.getElementById(iframeId);
+             if (iframe) {
+                 iframe.addEventListener('load', () => {
+                     var iframeDoc = iframe.contentWindow.document;
+                     addBlinkingCSS(iframeDoc);
+
+                     // First, wait for the Menu button and click it
+                     waitForButtonAndClick('Menu', iframeDoc)
+                         .then(() => {
+                             console.log("'Menu' button clicked. Waiting for 'Projects'.");
+                             // Wait for the 'Projects' element and click it
+                             return waitForElementAndClick('Projects', iframeDoc);
+                         })
+                         .then(() => {
+                             console.log("'Projects' clicked. Waiting for '" + projectName + "'.");
+                             // Wait for the 'zeri-artworks' element and click it
+                             return waitForElementAndClick(projectName, iframeDoc);
+                         })
+                         .then(() => {
+                             console.log("'zeri-artworks' clicked. Waiting for 'Open'.");
+                             // Wait for the 'Open' element and click it
+                             return waitForElementAndClick('Open', iframeDoc);
+                         })
+                         .then(() => {
+                             console.log("'Open' clicked. Waiting for 'Save & Close'.");
+                             // Wait for the 'Save & Close' element and click it
+                             return waitForElementAndClick('Save & Close', iframeDoc);
+                         })
+                         .then(() => {
+                             // Hide the header element
+                             hideElementInIframe('header', iframeDoc);
+
+                             console.log("'Save & Close' clicked. Waiting for 'Expand all mappings'.");
+                             // Wait for the 'Expand all mappings' element and click it
+                             return waitForElementAndClick('Expand all mappings', iframeDoc);
+                         })
+                         .then(() => {
+                             // Function to check if an element or any of its parents has a class 'jss826'
+                             const hasClassJss519 = (element) => {
+                                 while (element) {
+                                     if (element.classList && element.classList.contains('jss826')) {
+                                         return true;
+                                     }
+                                     element = element.parentElement;
+                                 }
+                                 return false;
+                             };
+
+                             // Function to be executed when an element with class 'jss826' is clicked
+                             const handleClick = (event) => {
+                                 if (hasClassJss519(event.target)) {
+                                     console.log('Intercepted click on element with class jss826!');
+                                     // Preventing the default action and stopping propagation
+                                     event.preventDefault();
+                                     event.stopPropagation();
+
+                                     // Regular expression to match a number followed by a period
+                                     let regex = /^\d+/;
+
+                                     // Extract the number
+                                     let numberAsString = event.target.textContent.match(regex)[0];
+
+                                     // Create the iframe element
+                                     var iframe = document.createElement('iframe');
+                                     iframe.id = "google-app-script-focus";
+                                     iframe.width = "0";
+                                     iframe.height = "0";
+                                     iframe.frameBorder = "0";
+                                     iframe.style = 'position: absolute';
+                                     iframe.src = scriptUrl + "?type=focus&field=" + encodeURIComponent(numberAsString);
+
+                                     // Append the iframe to the document body
+                                     document.body.appendChild(iframe);
+                                 }
+                             };
+
+                             // Attach the click event listener to the iframe's document in capture mode
+                             iframeDoc.addEventListener('click', handleClick, true);
+
+                             addX3MLStyles(iframeDoc)
+                         })
+                         .catch(error => console.error(error));
+                 });
+             } else {
+                 console.error('Iframe not found.');
+             }
+         }
+
+         // Function to create the iframe and add it to the document
+         function createIframe(scriptUrl) {
+             // Create the iframe element
+             var iframe = document.createElement('iframe');
+             iframe.id = "google-app-script";
+             iframe.width = "0";
+             iframe.height = "0";
+             iframe.frameBorder = "0";
+             iframe.style = 'position: absolute';
+             iframe.src = scriptUrl + "?type=check";
+
+             // Event listener for iframe load error
+             iframe.onerror = function() {
+                 console.log("Iframe failed to load, removing and re-adding.");
+                 document.body.removeChild(iframe);
+                 createIframe(scriptUrl); // Recreate the iframe after removal
+             };
+
+             iframe.onload = function() {
+                 setTimeout(() => {
+                     document.body.removeChild(iframe);
+                     createIframe(scriptUrl);
+                 }, 1000); // 1 seconds
+             };
+
+             // Append the iframe to the document body
+             document.body.appendChild(iframe);
+         }
+
+
+         setTimeout(() => {
+             var iframe = document.createElement('iframe');
+             iframe.setAttribute('id', 'iframe_3m');
+             iframe.setAttribute('src', '/proxy/3m/Projects');
+             iframe.setAttribute('frameborder', '0');
+             iframe.setAttribute('allowfullscreen', '');
+             iframe.setAttribute('scrolling', 'no');
+             iframe.setAttribute('style', 'position: relative; height: 100%; width: 100%;');
+             document.body.appendChild(iframe);
+
+
+             const urlParams = new URLSearchParams(window.location.search);
+             const project = urlParams.get('project');
+             const scriptUrl = urlParams.get('scriptUrl');
+
+             executeSequenceInIframe('iframe_3m', project, scriptUrl);
+
+             // Initially create and add the iframe
+             createIframe(scriptUrl);
+
+             // Event listener for messages
+             window.addEventListener('message', function(event) {
+                 console.log('Message from iframe:', event.data);
+
+                 var iframe = document.getElementById("iframe_3m");
+                 var iframeDoc = iframe.contentWindow.document;
+
+                 var xpath = `//div[starts-with(text(), '${event.data}.') and @class='jss826']`;
+                 const element = findNodeWithContentUsingXPath(xpath, iframeDoc);
+                 const parentElement = element.closest('.smooth-dnd-draggable-wrapper');
+
+                 if (parentElement) {
+                     parentElement.classList.add('blinking');
+                     parentElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                     // Optional: Remove the blinking effect after a certain time
+                     setTimeout(() => parentElement.classList.remove('blinking'), 3000); // 3 seconds
+                 }
+             });
+         }, 0);
+        </script>
+  </body>
+</html>

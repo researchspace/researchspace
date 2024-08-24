@@ -17,8 +17,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// <reference types="codemirror/codemirror-runmode" />
-
 import { Component, createFactory } from 'react';
 import * as D from 'react-dom-factories';
 import { findDOMNode } from 'react-dom';

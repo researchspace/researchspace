@@ -29,7 +29,7 @@ export function Action<T>(initalValue?: T): Action<T> {
   const fn: any = function (args: T): void {
     pool.plug(Kefir.constant(args));
   };
-  if (initalValue) {
+  if (initalValue !== null && initalValue !== undefined) {
     fn(initalValue);
   }
   fn.$property = pool.toProperty();

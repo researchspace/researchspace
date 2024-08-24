@@ -3,7 +3,7 @@ declare namespace SemanticTreeInputScssNamespace {
     active: string;
     browseButton: string;
     dropdown: string;
-    'dropdown-toggle': string;
+    "dropdown-toggle": string;
     dropdownButton: string;
     dropdownFooter: string;
     dropdownToggle: string;

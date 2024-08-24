@@ -3,9 +3,9 @@ declare namespace ItemSelectorScssNamespace {
     dropdown: string;
     itemHolder: string;
     itemSelector: string;
-    'itemSelector--active': string;
-    'itemSelector--dropdown-toggle': string;
-    'itemSelector--focus': string;
+    "itemSelector--active": string;
+    "itemSelector--dropdown-toggle": string;
+    "itemSelector--focus": string;
     itemSelectorActive: string;
     itemSelectorDropdownToggle: string;
     itemSelectorFocus: string;

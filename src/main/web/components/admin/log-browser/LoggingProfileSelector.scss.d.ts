@@ -1,6 +1,6 @@
 declare namespace LoggingProfileSelectorScssNamespace {
   export interface ILoggingProfileSelectorScss {
-    'admin-profile-selector': string;
+    "admin-profile-selector": string;
     adminProfileSelector: string;
   }
 }

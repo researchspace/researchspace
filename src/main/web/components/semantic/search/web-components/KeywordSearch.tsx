@@ -93,13 +93,16 @@ class KeywordSearchInner extends React.Component<InnerProps, State> {
     escapeLuceneSyntax: true,
   };
 
-  private keys = Action<string>();
+  private keys: Action<string>;
 
   constructor(props: InnerProps) {
     super(props);
+    const value = props.initialInput || '';
     this.state = {
-      value: undefined,
+      value,
     };
+
+    this.keys = Action<string>(value); 
   }
 
   componentDidMount() {
@@ -141,18 +144,20 @@ class KeywordSearchInner extends React.Component<InnerProps, State> {
       .map(this.buildQuery(query));
 
     const defaultQueryProp = this.keys.$property
-      .filter((str) => props.defaultQuery && _.isEmpty(str))
+      .filter((str) => _.isEmpty(str))
       .map(() => defaultQuery.get());
 
     const initializers = [queryProp];
     if (props.defaultQuery) {
-      initializers.push(Kefir.constant(defaultQuery.get()), defaultQueryProp);
+      initializers.push(defaultQueryProp);
     }
 
     Kefir.merge(initializers).onValue((q) => this.props.context.setBaseQuery(Maybe.Just(q)));
   };
 
-  private onKeyPress = (event: React.FormEvent<FormControl>) => this.keys((event.target as any).value);
+  private onKeyPress = (event: React.FormEvent<FormControl>) => {
+    this.setState({ value: (event.target as any).value }, () => this.keys(this.state.value));
+  }
 
   private buildQuery = (baseQuery: SparqlJs.SelectQuery) => (token: string): SparqlJs.SelectQuery => {
     const { searchTermVariable, escapeLuceneSyntax, tokenizeLuceneQuery } = this.props;

@@ -750,16 +750,18 @@ class QueryBuilderInner extends React.Component<InnerProps, State> {
   };
 
   private prepareHierarchySelectorInputConfig(searchState: RelationTermSelection): SemanticTreeInputProps {
+    console.log(this.props.context);
     const selectorPatterns = this.getTreeSelectorConfigForRelation(searchState.relation);
     const hierarchySelectorConfig = this.isLightweightTreeConfig(selectorPatterns)
       ? createDefaultTreeQueries(selectorPatterns)
       : selectorPatterns;
     return _.assign(_.cloneDeep(hierarchySelectorConfig), {
-      rootsQuery: this.multiDatasetQuery(searchState, hierarchySelectorConfig.rootsQuery),
-      childrenQuery: this.multiDatasetQuery(searchState, hierarchySelectorConfig.childrenQuery),
-      parentsQuery: this.multiDatasetQuery(searchState, hierarchySelectorConfig.parentsQuery),
-      searchQuery: this.multiDatasetQuery(searchState, hierarchySelectorConfig.searchQuery),
+      rootsQuery: this.multiDatasetQuery(searchState, hierarchySelectorConfig.rootsQuery, this.props.context.resultQuery),
+      childrenQuery: this.multiDatasetQuery(searchState, hierarchySelectorConfig.childrenQuery, this.props.context.resultQuery),
+      parentsQuery: this.multiDatasetQuery(searchState, hierarchySelectorConfig.parentsQuery, this.props.context.resultQuery),
+      searchQuery: this.multiDatasetQuery(searchState, hierarchySelectorConfig.searchQuery, this.props.context.resultQuery),
       droppable: this.droppableConfig(searchState),
+      infoTemplate: " ({{binding.count.value}})",
       onSelectionChanged: (selection: TreeSelection<TreeNode>) => {
         const nodes = TreeSelection.leafs(selection);
         if (nodes.size === 0) {
@@ -777,13 +779,21 @@ class QueryBuilderInner extends React.Component<InnerProps, State> {
     });
   }
 
-  private multiDatasetQuery(searchState: RelationTermSelection, query: string) {
-    return SparqlUtil.serializeQuery(
+  private multiDatasetQuery(searchState: RelationTermSelection, query: string, baseQuery: Data.Maybe<SparqlJs.Query[]>) {
+    let generatedQuery = 
       generateQueryForMultipleDatasets(
         this.setClauseBindingsParsed(searchState, query),
         this.props.context.selectedDatasets,
         this.props.context.baseConfig.datasetsConfig
-      )
+      );
+
+    console.log(baseQuery)
+    baseQuery.map(query =>
+      new PatternBinder('__baseQueryPattern__', query.where).sparqlQuery(generatedQuery)
+    );
+
+    return SparqlUtil.serializeQuery(
+      generatedQuery
     );
   }
 
@@ -796,8 +806,8 @@ class QueryBuilderInner extends React.Component<InnerProps, State> {
       escapeLuceneSyntax,
     } = this.getResourceSelectorConfigForRelation(searchState.relation);
     return {
-      query: this.multiDatasetQuery(searchState, query),
-      defaultQuery: defaultQuery ? this.multiDatasetQuery(searchState, defaultQuery) : undefined,
+      query: this.multiDatasetQuery(searchState, query, this.props.context.resultQuery),
+      defaultQuery: defaultQuery ? this.multiDatasetQuery(searchState, defaultQuery, this.props.context.resultQuery) : undefined,
       droppable: this.droppableConfig(searchState),
       templates: {
         empty: noSuggestionsTemplate,

@@ -40,11 +40,6 @@ plugins {
 
 version = findProperty('buildVersion') ?: '4.0-SNAPSHOT'
 
-// currently we use Java 11 for development
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = JavaVersion.VERSION_11
-
-
 clean {
     delete "${projectDir}/src/main/webpapp/assets"
     delete "${projectDir}/node_modules"
@@ -63,7 +58,7 @@ eclipse {
     jdt {
         file {
             withProperties { properties ->
-                properties.putAll(eclipseJdtProps)
+                properties.putAll(eclipseJdtProps) 
             }
         }
     }
@@ -158,7 +153,7 @@ gretty {
     fastReload = "${projectDir.getAbsolutePath()}/src/main/resources/org/researchspace/apps".toString()
 
     // use custom jetty-env.xml to disable websocket support
-    contextConfigFile = "${projectDir}/jetty-env.xml"
+//    contextConfigFile = "${projectDir}/jetty-env.xml"
 
     recompileOnSourceChange = false
 
@@ -170,7 +165,7 @@ gretty {
             "-Dconfig.storage.images.root=./runtime-data/images",
             "-Dconfig.storage.tmp.root=./runtime-data/tmp",
 
-            "-Dlog4j.configurationFile=classpath:org/researchspace/logging/log4j2.xml",
+            "-Dlog4j.configurationFile=classpath:org/researchspace/logging/log4j2-debug.xml",
         ]
     } else {
         jvmArgs = defaultJvmArgs + [
@@ -287,6 +282,7 @@ task runWiremock(type: JavaExec) {
 
 repositories {
     mavenCentral()
+    mavenLocal()
 
     // for blazegraph war
     maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
@@ -296,6 +292,12 @@ repositories {
 
     // needed for SMAL2 integration
     maven { url 'https://build.shibboleth.net/nexus/content/repositories/releases/' }
+
+    // needed for x3ml
+    maven { url "https://jitpack.io" }
+
+    // needed for x3ml
+    maven { url "https://isl.ics.forth.gr/maven-releases/"}
 }
 
 ext {
@@ -316,10 +318,20 @@ configurations.all {
     exclude group: 'javax.xml.bind', module: 'jaxb-api'
 }
 
+configurations.all {
+  resolutionStrategy{
+    cacheChangingModulesFor 0, 'seconds'
+  }
+}
+
 dependencies {
     implementation platform('com.amazonaws:aws-java-sdk-bom:1.11.994')
     implementation 'com.amazonaws:aws-java-sdk-s3'
     implementation 'org.semarglproject:semargl-rdf:0.7'
+    implementation('com.github.aindlq:x3ml:local-build-SNAPSHOT') {changing = true}
+
+    //implementation('gr.forth.ics.isl:x3ml-engine:local-build-SNAPSHOT') {changing = true}
+
 
     compileOnly (
         "javax.servlet:javax.servlet-api:3.1.0",
@@ -385,6 +397,9 @@ dependencies {
         "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:${JACKSON_VERSION}",
         "com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:${JACKSON_VERSION}",
 
+        // Jackson, for YAML
+        "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${JACKSON_VERSION}",
+
         // Google Guice, for dependency injection
         "com.google.inject:guice:${GUICE_VERSION}",
         "com.google.inject.extensions:guice-servlet:${GUICE_VERSION}",
@@ -440,7 +455,7 @@ dependencies {
         "org.eclipse.jgit:org.eclipse.jgit.ssh.apache:5.13.1.202206130422-r",
 
         "com.twelvemonkeys.imageio:imageio-tiff:${IMAGEIO_VERSION}",
-        "com.twelvemonkeys.imageio:imageio-core:${IMAGEIO_VERSION}",
+        "com.twelvemonkeys.imageio:imageio-core:${IMAGEIO_VERSION}"
     ) 
     testImplementation (
         "org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-inmemory:${JERSEY_VERSION}",

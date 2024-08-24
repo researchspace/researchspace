@@ -527,6 +527,9 @@ export interface Hierarchy {
    * @default `$subject ?__relation__ ?__value__ .`
    */
   queryPattern: string;
+  childrenPattern: string;
+  parentsPattern: string;
+  searchPattern: string;
 }
 
 export interface Text {
@@ -779,7 +782,7 @@ export interface SemanticFacetConfig {
 export interface FacetValuePatterns {
   [iri: string]: FacetValuePattern;
 }
-export type FacetValuePattern = ResourceFacetValue | DateRangeFacetValue | LiteralFacetValue | NumericRangeFacetValue;
+export type FacetValuePattern = ResourceFacetValue | DateRangeFacetValue | LiteralFacetValue | NumericRangeFacetValue | HierarchyFacetValue;
 
 export const FACET_VARIABLES = {
   RELATION_VAR: '__relation__',
@@ -832,6 +835,12 @@ export interface LiteralFacetValue {
 export interface NumericRangeFacetValue {
   kind: 'numeric-range';
   valuesQuery: string;
+}
+
+export interface HierarchyFacetValue {
+  kind: 'hierarchy';
+  valuesQuery: string;
+  tupleTemplate?: string;
 }
 
 export interface FacetCategoryConfig {

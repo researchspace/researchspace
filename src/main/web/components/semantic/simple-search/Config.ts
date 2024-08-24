@@ -63,6 +63,11 @@ export interface SemanticSimpleSearchBaseConfig {
    * @default true
    */
   tokenizeLuceneQuery?: boolean;
+
+  /**
+   * Initial input to be shown in the input field.
+   */
+  initialInput?: string;
 }
 
 export interface SemanticSimpleSearchConfig extends SemanticSimpleSearchBaseConfig {

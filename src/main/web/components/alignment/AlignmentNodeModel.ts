@@ -279,7 +279,7 @@ function loadNodesUsingNodeQuery(
   const parameters = iris.map((iri) => ({ item: iri }));
   const parametrized = SparqlClient.prepareParsedQuery(parameters)(nodeQuery);
   return SparqlClient.select(parametrized, sparqlOptions).map((result) => {
-    const nodes = nodesFromQueryResult(result);
+    const nodes = nodesFromQueryResult(result, false);
     return Immutable.Map(nodes.map((node) => [node.iri.value, node] as [string, Node]));
   });
 }

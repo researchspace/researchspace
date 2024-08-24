@@ -1,16 +1,16 @@
 declare namespace StorageSelectorScssNamespace {
   export interface IStorageSelectorScss {
     component: string;
-    'effective-app': string;
+    "effective-app": string;
     effectiveApp: string;
-    'labeled-control': string;
+    "labeled-control": string;
     labeledControl: string;
-    'main-part': string;
+    "main-part": string;
     mainPart: string;
-    'overridden-app': string;
+    "overridden-app": string;
     overriddenApp: string;
-    'override-arrow': string;
-    'override-chain': string;
+    "override-arrow": string;
+    "override-chain": string;
     overrideArrow: string;
     overrideChain: string;
     selector: string;

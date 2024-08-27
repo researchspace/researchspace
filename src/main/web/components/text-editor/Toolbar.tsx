@@ -76,6 +76,8 @@ export interface ToolbarProps {
   onDocumentSave: () => void;
   saving?: boolean;
   showDropdown?: boolean;
+  showRefresh?: boolean;
+  onRefresh?: () => void; 
 }
 
 export class Toolbar extends React.Component<ToolbarProps> {
@@ -222,7 +224,7 @@ export class Toolbar extends React.Component<ToolbarProps> {
   }
 
   render() {
-    const { saving, showDropdown } = this.props;
+    const { saving, showDropdown, showRefresh, onRefresh } = this.props;
     const dropdownTemplate = showDropdown ? this.getTemplate('{{> semantic-narrative-dropdown}}') : null
     return (
       <div className={styles.toolbar}>
@@ -282,6 +284,9 @@ export class Toolbar extends React.Component<ToolbarProps> {
         </div>
         
         <div className={styles.toolbarBtnGroup}>
+          {showRefresh && <Button onClick={onRefresh} className='btn-textAndIcon' title='Refresh narrative'>
+                            <Icon iconType='round' iconName='refresh' />
+                          </Button>}
           {dropdownTemplate}
           <Button bsStyle='default' 
                   className='btn-action'

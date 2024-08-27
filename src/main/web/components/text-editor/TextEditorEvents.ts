@@ -31,6 +31,11 @@ export interface TextEditorEventData {
    * Event which should be triggered when a narrative has been updated.
    */
   'Narrative.Updated': { iri: string };
+
+  /**
+   * Event which should be triggered when refresh button is clicked.
+   */
+  'Narrative.Refreshed': {};
   
 
 }
@@ -38,3 +43,4 @@ const event: EventMaker<TextEditorEventData> = EventMaker;
 
 export const NarrativeCreated = event('Narrative.Created');
 export const NarrativeUpdated = event('Narrative.Updated');
+export const NarrativeRefreshed = event('Narrative.Refreshed');

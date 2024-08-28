@@ -14,13 +14,12 @@
                                     "Components.SetManagement.SetRenamed",
                                     "Components.SetManagement.SetRemoved",
                                     "Narrative.Updated",
-                                    "Ontodia.DiagramSaved"
+                                    "Ontodia.DiagramSaved",
+                                    "Ontodia.DiagramDataPersisted"
                                     ]'         
                     proxy-event-type='Component.TemplateUpdate' 
                     proxy-targets='["{{iri}}-resources-in-narrative-frame"]'
     ></mp-event-proxy> 
-
-    [[!-- TO BE DONE: update when Sava data in KM --]]
 
     <mp-event-target-template-render id="{{iri}}-resources-in-narrative-frame" template='{{> template}}'>
         <template id='template'>
@@ -271,9 +270,10 @@
                                                                             
                                                                                 OPTIONAL {
                                                                                     ?subject crm:P67i_is_referred_to_by ?information_object  .
-                                                                                    ?information_object a crm:E73_Information_Object .
                                                                                     ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
-                                                                                    ?information_object crm:P190_has_symbolic_content ?description . 
+                                                                                    ?information_object crm:P1_is_identified_by ?descriptionAppellation . 
+                                                                                    ?descriptionAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                                    ?descriptionAppellation crm:P190_has_symbolic_content ?description .
                                                                                 }
 
                                                                             } ORDER BY ?subject'
@@ -357,6 +357,12 @@
                                                                                                 targets='["thinking-frames"]'>
                                                                                 <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
                                                                             </mp-event-trigger>
+                                                                        {{else if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
+                                                                            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                                            urlqueryparam-view='vocabulary-content'
+                                                                                            urlqueryparam-resource='{{iri.value}}'>
+                                                                            <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
+                                                                            </semantic-link>
                                                                         {{else if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
                                                                             <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
                                                                                             urlqueryparam-view='single-set-management'

@@ -354,6 +354,13 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
   private onFocus = () => {
   }
 
+  private onRefresh = () => {
+    trigger({
+      eventType: TextEditorEvents.NarrativeRefreshed,
+      source: this.props.id
+    })
+  } 
+
   componentDidMount() {
     if (this.props.documentIri) {
       const documentIri = Rdf.iri(this.props.documentIri);
@@ -399,6 +406,8 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
                   options={this.state.availableTemplates}
                   onDocumentSave={this.onDocumentSave}
                   showDropdown={!!this.state.documentIri}
+                  showRefresh={!!this.state.documentIri}
+                  onRefresh={this.onRefresh}
           />
           }
             <div className={styles.sidebarAndEditorHolder}>

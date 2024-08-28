@@ -19,28 +19,10 @@
 
 import { EventMaker } from 'platform/api/events';
 
-export interface TextEditorEventData {
-  // triggers
-
-  /**
-   * Event which should be triggered when a narrative has been created.
-   */
-  'Narrative.Created': { iri: string };
-
-  /**
-   * Event which should be triggered when a narrative has been updated.
-   */
-  'Narrative.Updated': { iri: string };
-
-  /**
-   * Event which should be triggered when refresh button is clicked.
-   */
-  'Narrative.Refreshed': {};
-  
-
+export interface ToolbarEventData {
+    'Toolbar.Refresh': {}
 }
-const event: EventMaker<TextEditorEventData> = EventMaker;
 
-export const NarrativeCreated = event('Narrative.Created');
-export const NarrativeUpdated = event('Narrative.Updated');
-export const NarrativeRefreshed = event('Narrative.Refreshed');
+const event: EventMaker<ToolbarEventData> = EventMaker;
+
+export const ToolbarRefreshed = event('Toolbar.Refresh');

@@ -335,6 +335,19 @@
                       [[> rsp:ImportFromExternalSource]] 
                     {{/if}} 
 
+                    {{#if (not (eq mode "new"))}}
+                      {{#if (eq resourceConfiguration "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
+                        <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                  urlqueryparam-view='vocabulary-content' 
+                                                  urlqueryparam-resource='{{iri}}'>
+                            <button class="btn btn-action btn-textAndIcon">
+                              <rs-icon icon-type='round' icon-name='list'></rs-icon>
+                              <span>List of resources</span>
+                            </button>
+                        </semantic-link-container>
+                      {{/if}} 
+                    {{/if}}
+
                     {{#if (not (eq mode "deleted"))}}
                       <mp-event-trigger id='{{viewId}}-form-refresh-trigger' 
                                         type='Component.TemplateUpdate' 
@@ -377,53 +390,61 @@
               ></mp-event-proxy>
     
               {{#if (not (eq mode "deleted"))}} 
-                {{#if collection}}
-                  <mp-event-proxy id='{{viewId}}-tree-refresh-on-created' 
-                                  on-event-source='{{#if iri}}{{iri}}-resource-form{{else}}{{viewId}}-resource-form{{/if}}' 
-                                  on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
-                                  proxy-event-type='Component.TemplateUpdate' 
-                                  proxy-targets='["{{viewId}}-mytree", "{{viewId}}-term-forms"]'
-                                  additional-data='{"mode": "edit"}'
-                  ></mp-event-proxy>
 
-                  {{#if iri}}
-                    <semantic-query query="SELECT ?label WHERE {
-                                            BIND(<{{iri}}> as ?item) .
-                                            {{resourceLabelPattern}}
-                                          }"
-                                    template='{{> template}}'
-                                    no-result-template='{{> noResults}}'>
-
-                      <template id='template'>
-                        <mp-event-proxy id='{{viewId}}-tree-refresh-on-delete' 
-                                        on-event-source='{{iri}}-resource-form' 
-                                        on-event-types='["Form.ResourceRemoved"]'
-                                        proxy-event-type='Component.TemplateUpdate' 
-                                        proxy-targets='["{{viewId}}-mytree", "{{viewId}}-term-forms"]'
-                                        additional-data='{"mode": "deleted", 
-                                                          "label": "{{bindings.0.label.value}}" }'
-                        ></mp-event-proxy>
-                      </template>
-
-                      <template id="noResults">
-                        <mp-event-proxy id='{{viewId}}-noResults-tree-refresh-on-delete' 
-                                        on-event-source='{{iri}}-resource-form' 
-                                        on-event-types='["Form.ResourceRemoved"]'
-                                        proxy-event-type='Component.TemplateUpdate' 
-                                        proxy-targets='["{{viewId}}-mytree", "{{viewId}}-term-forms"]'
-                                        additional-data='{"mode": "deleted",
-                                                        "label": "{{label}}" }'
-                        ></mp-event-proxy>
-                      </template>
-                    </semantic-query>
-                  {{/if}}
-                {{else}}
+                {{#if (not collection)}}
                   <mp-event-proxy id='{{viewId}}-tab-refresh-on-created' 
                                   on-event-source='{{#if iri}}{{iri}}-resource-form{{else}}{{viewId}}-resource-form{{/if}}' 
                                   on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
                                   proxy-event-type='Dashboard.ResourceChanged' 
                                   proxy-targets='["{{viewId}}"]'                                                          
                   ></mp-event-proxy>
+
+                  <mp-event-proxy id='{{viewId}}-tab-refresh-on-AuthorityDocumentForm-created' 
+                                  on-event-source='{{viewId}}-new-authorityDocument-form'
+                                  on-event-types='["Form.ResourceCreated"]'
+                                  proxy-event-type='Dashboard.ResourceChanged' 
+                                  proxy-targets='["{{viewId}}"]'                                                          
+                  ></mp-event-proxy>
+                {{/if}}
+
+                <mp-event-proxy id='{{viewId}}-view-update-on-created' 
+                                on-event-source='{{#if iri}}{{iri}}-resource-form{{else}}{{viewId}}-resource-form{{/if}}' 
+                                on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
+                                proxy-event-type='Component.TemplateUpdate' 
+                                proxy-targets='[{{#if collection}}"{{viewId}}-mytree",{{/if}} "{{viewId}}-term-forms"]'
+                                additional-data='{"mode": "edit"}'
+                ></mp-event-proxy>
+
+                {{#if iri}}
+                  <semantic-query query="SELECT ?label WHERE {
+                                          BIND(<{{iri}}> as ?item) .
+                                          {{resourceLabelPattern}}
+                                        }"
+                                  template='{{> template}}'
+                                  no-result-template='{{> noResults}}'>
+
+                    <template id='template'>
+                      <mp-event-proxy id='{{viewId}}-tree-refresh-on-delete' 
+                                      on-event-source='{{iri}}-resource-form' 
+                                      on-event-types='["Form.ResourceRemoved"]'
+                                      proxy-event-type='Component.TemplateUpdate' 
+                                      proxy-targets='[{{#if collection}}"{{viewId}}-mytree",{{/if}} "{{viewId}}-term-forms"]'
+                                      additional-data='{"mode": "deleted", 
+                                                        "label": "{{bindings.0.label.value}}" }'
+                      ></mp-event-proxy>
+                    </template>
+
+                    <template id="noResults">
+                      <mp-event-proxy id='{{viewId}}-noResults-tree-refresh-on-delete' 
+                                      on-event-source='{{iri}}-resource-form' 
+                                      on-event-types='["Form.ResourceRemoved"]'
+                                      proxy-event-type='Component.TemplateUpdate' 
+                                      proxy-targets='[{{#if collection}}"{{viewId}}-mytree",{{/if}} "{{viewId}}-term-forms"]'
+                                      additional-data='{"mode": "deleted",
+                                                      "label": "{{label}}" }'
+                      ></mp-event-proxy>
+                    </template>
+                  </semantic-query>
                 {{/if}}
 
                 {{#if mode}}                 

@@ -17,7 +17,11 @@
                     additional-data='{"setCreated": true }' >
     </mp-event-proxy>
 
-    [[!-- TO BE DONE: update when Sava data in KM --]]
+    <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-searchPage-on-ontodia-data-changed'
+                    on-event-type='Ontodia.DiagramDataPersisted'
+                    proxy-event-type='Component.TemplateUpdate' 
+                    proxy-targets='["[[urlParam "resourceconfig" escape=false]]-resourceSearch-frame"]'>
+    </mp-event-proxy>
 
     {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
       <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-setSearch-on-set-modification'
@@ -178,6 +182,74 @@
 
             </semantic-switch>
 
+            {{#ifCond "[[urlParam "resourceconfig" escape=false]]" "==" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document"}}
+              <mp-overlay-dialog  id='{{viewId}}-import-authorityDocument-dialog'
+                                  title="Import authority document" 
+                                  type="modal" 
+                                  bs-size="large"
+                                  class="importVocabulary-modal">
+                <mp-overlay-dialog-trigger>
+                  <button class="btn btn-default btn-textAndIcon">
+                    <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                    <span>Import</span>
+                  </button>
+                </mp-overlay-dialog-trigger>
+                <mp-overlay-dialog-content>
+                  <mp-rdf-upload accept='[".trig", ".nq"]' 
+                                  keep-source-graphs='true' 
+                                  allow-load-by-url='false' 
+                                  show-advanced-options='false' 
+                                  drop-area-template='{{> template}}'>
+                    <template id='template'>
+                      <div class='RdfUpload__rdf-dropzone-content' style='text-align: center;'>
+                        {{#if isDragAccept}}
+                          <div>
+                            <bs-progress-bar active="true" min="0" now="100" max="100" label="Uploading files" striped="true"></bs-progress-bar>
+                          </div>
+                        {{else}}
+                          {{#if isDragReject}}
+                            Only *.trig or *.nq files are accepted.
+                          {{else}}
+                            <div class='placeholder-item'>
+                              <rs-icon icon-type='round' icon-name='file_upload' class='upload_icon'></rs-icon>
+                              <div> 
+                                <p>Drag authority document as *.trig or *.nq RDF file(s) or click to upload</p>
+                                <div class="documentation-section documentation-section-withIcon" style="margin: 20px 0;">
+                                  <div class="documentation-section-icon-container">
+                                    <i class="fa fa-info"></i>
+                                  </div>
+                      
+                                  <div style="flex: 1;"> 
+                                    <div class="documentation-section-title">Authority document must be of ontology class crm:E32_Authority_Document.</div>
+                                    <div class="documentation-section-content"> 
+                                      The authority document and all associated data must be defined in one named graph that equals to the authority document IRI.
+                                    </div>
+                                  </div>
+                                </div> 
+                              </div>
+                            </div>  
+                          {{/if}}
+                        {{/if}}
+                      </div>
+                    </template>
+                  </mp-rdf-upload>
+                </mp-overlay-dialog-content>
+              </mp-overlay-dialog>
+
+              <mp-event-proxy id='{{viewId}}-authorityDocument-import-closeModal-proxy' 
+                              on-event-type='RdfUpload.Success'
+                              proxy-event-type='OverlayDialog.Close' 
+                              proxy-targets='["{{viewId}}-import-authorityDocument-dialog"]'
+              ></mp-event-proxy>
+
+              <mp-event-proxy id='{{viewId}}-authorityDocument-importSuccess-refreshSearch-proxy' 
+                              on-event-type='RdfUpload.Success'
+                              proxy-event-type='Component.TemplateUpdate' 
+                              proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document-resourceSearch-frame"]'
+                              additional-data='{"authorityDocumentImported": "true" }'>
+              ></mp-event-proxy>
+            {{/ifCond}}
+
             <div class="search-results-header-keyword">
               <semantic-search-query-keyword  domain='[[urlParam "resourceontologyclass" escape=false]]'
                                               query='SELECT ?subject WHERE { 
@@ -199,13 +271,48 @@
                                                         ?subject rdfs:label ?label .
                                                       [[/if]]
 
-                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
-                                                        MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
+                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Appellation")}}
+                                                        MINUS { <http://www.researchspace.org/resource/system/ontodiaDiagramContainer> crm:P1_is_identified_by ?subject .}
                                                       {{/if}}
 
                                                       {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor")}}
                                                         MINUS {?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .}
                                                       {{/if}}
+
+                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
+                                                        MINUS { ?subject crm:P2_has_type Platform:System_Resource .}
+                                                      {{/if}}
+
+                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Entity")}}
+                                                        MINUS { ?configuration <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_listView_column> ?subject .}
+                                                      {{/if}}
+
+                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Information_object")}}
+                                                        MINUS { ?subject a Platform:resource_configuration .}
+                                                      {{/if}}
+
+                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Term")}}
+                                                        MINUS { ?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/KP_category> .}
+                                                      {{/if}}
+
+                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Timespan")}}
+                                                        MINUS { 
+                                                          ?entityFormRecordCreation crm:P4_has_time-span ?subject .
+                                                          ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+                                                        }
+                                                      {{/if}}
+
+                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Type")}}
+                                                        MINUS { 
+                                                          ?subject crm:P71i_is_listed_in ?vocabulary .
+                                                          ?vocabulary crm:P2_has_type Platform:System_Resource .
+                                                        }
+                                                      {{/if}}
+
+                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
+                                                        MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
+                                                      {{/if}}
+
                                                       SERVICE <http://www.bigdata.com/rdf/search#search> {
                                                         ?label bds:search ?__token__ ;
                                                         bds:minRelevance "0.3" ;
@@ -225,12 +332,41 @@
                                                                 [[#if (urlParam "resourcerestrictionpattern")]] 
                                                                   [[urlParam "resourcerestrictionpattern" escape=false]] 
                                                                 [[/if]]
-                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
-                                                                  MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
+
+                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Appellation")}}
+                                                                  MINUS { <http://www.researchspace.org/resource/system/ontodiaDiagramContainer> crm:P1_is_identified_by ?subject .}
                                                                 {{/if}}
                                                                 {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor")}}
                                                                   MINUS {?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .}
                                                                 {{/if}}
+                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
+                                                                  MINUS { ?subject crm:P2_has_type Platform:System_Resource .}
+                                                                {{/if}}
+                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Entity")}}
+                                                                  MINUS { ?configuration <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_listView_column> ?subject .}
+                                                                {{/if}}
+                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Information_object")}}
+                                                                  MINUS { ?subject a Platform:resource_configuration .}
+                                                                {{/if}}
+                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Term")}}
+                                                                  MINUS { ?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/KP_category> .}
+                                                                {{/if}}
+                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Timespan")}}
+                                                                  MINUS { 
+                                                                    ?entityFormRecordCreation crm:P4_has_time-span ?subject .
+                                                                    ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+                                                                  }
+                                                                {{/if}}
+                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Type")}}
+                                                                  MINUS { 
+                                                                    ?subject crm:P71i_is_listed_in ?vocabulary .
+                                                                    ?vocabulary crm:P2_has_type Platform:System_Resource .
+                                                                  }
+                                                                {{/if}}
+                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
+                                                                  MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
+                                                                {{/if}}
+
                                                               }'
                                                 debounce=300
                                                 placeholder="Search [[urlParam 'resourcelabel' escape=false]]"
@@ -426,6 +562,86 @@
           </template>
         </mp-event-target-template-render>
 
+        <mp-event-target-template-render id='[[urlParam "viewid" escape=false]]-imported-new-authorityDocument-message' template='{{> template}}'>
+          <template id='template'>
+            {{#if hideMessage}}
+            {{else if authorityDocumentImported}}
+                <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%; margin-top: 5px; margin-bottom: 10px;">
+                  <div class="success-documentation-section-icon-container">
+                    <rs-icon icon-type="round" icon-name="done"></rs-icon>
+                  </div>
+
+                  <div style="flex: 1;"> 
+                    <div class="success-documentation-section-title">New authority document imported!</div>
+                    <div class="success-documentation-section-content" style="display: flex; gap: 5px;">
+                      <mp-draggable iri='{{iri}}'>
+                        <div>
+                          <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                          urlqueryparam-view='resource-editor'
+                                          urlqueryparam-resource-iri='{{iri}}'>
+                            <mp-label iri='{{iri}}' class="text-link color-success-text"></mp-label>
+                          </semantic-link>
+                        </div>
+                      </mp-draggable>
+                      <span> has been imported.</span>
+                    </div>
+                  </div>
+                  
+                  <mp-event-trigger id='[[urlParam "viewid" escape=false]]-imported-new-authorityDocument-close-message'
+                                    type='Component.TemplateUpdate'
+                                    data='{ "hideMessage": "true" }'
+                                    targets='["[[urlParam "viewid" escape=false]]-imported-new-authorityDocument-message"]'
+                  >
+                    <button class="btn btn-documentation">
+                      <rs-icon icon-type="round" icon-name="close"></rs-icon>
+                    </button>
+                  </mp-event-trigger>
+                </div>
+            {{/if}}
+          </template>
+        </mp-event-target-template-render>
+
+        {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
+          <semantic-query query='SELECT ?vocabulary ?vocabularyGraph WHERE { 
+                                  
+                                  GRAPH ?vocabularyGraph {
+                                    ?vocabulary a crm:E32_Authority_Document .
+                                  }
+                                  
+                                  MINUS {
+                                    ?vocabulary crm:P2_has_type <http://www.researchspace.org/resource/system/System_Resource> .
+                                  }
+                                  FILTER(?vocabularyGraph != ?vocabulary) .
+                                }' 
+                          template='{{> template}}'
+                          >
+
+            <template id='template'>
+              <div>
+                <div class="warning-documentation-section warning-documentation-section-withIcon" style="margin: 5px 0 10px;">
+                  <div class="warning-documentation-section-icon-container">
+                    <rs-icon icon-type="round" icon-name="priority_high"></rs-icon>
+                  </div>
+          
+                  <div> 
+                    <div class="warning-documentation-section-title">Warning! &nbsp; The following authority documents can't be edited.</div>
+                    <div class="warning-documentation-section-content">
+                      <div>Authority documents of ontology class crm:E32_Authority_Document and all associated data should be defined in one named graph that equals to the vocabulary IRI.</div>
+                        <ul>
+                          {{#each bindings}}
+                            <li>
+                              Authority document IRI '{{vocabulary.value}}' in graph '{{vocabularyGraph.value}}'
+                            </li>
+                          {{/each}}
+                        </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>  
+            </template>
+          </semantic-query>
+        {{/if}}
+
         <mp-splitpane id='[[urlParam "viewid" escape=false]]-search-filters-sidebar' min-size=43 default-size=230 snap-threshold=150 default-open=false always-render=true primary='second' class="search-filters-sidebar">
 
           <div class="search-results-area page__section-container">
@@ -617,9 +833,10 @@
 
                                                     OPTIONAL {
                                                       ?subject crm:P67i_is_referred_to_by ?information_object  .
-                                                      ?information_object a crm:E73_Information_Object .
                                                       ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
-                                                      ?information_object crm:P190_has_symbolic_content ?description . 
+                                                      ?information_object crm:P1_is_identified_by ?descriptionAppellation . 
+                                                      ?descriptionAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                      ?descriptionAppellation crm:P190_has_symbolic_content ?description .
                                                     }
                                                   } ORDER BY ?subject'
     
@@ -705,6 +922,12 @@
                                                               targets='["thinking-frames"]'>
                                               <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
                                             </mp-event-trigger>
+                                          {{else if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
+                                            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                            urlqueryparam-view='vocabulary-content'
+                                                            urlqueryparam-resource='{{iri.value}}'>
+                                              <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
+                                            </semantic-link>
                                           {{else if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
                                             <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
                                                             urlqueryparam-view='single-set-management'
@@ -958,9 +1181,10 @@
                                                     
                                                     OPTIONAL {
                                                       ?subject crm:P67i_is_referred_to_by ?information_object  .
-                                                      ?information_object a crm:E73_Information_Object .
                                                       ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
-                                                       ?information_object crm:P190_has_symbolic_content ?description . 
+                                                      ?information_object crm:P1_is_identified_by ?descriptionAppellation . 
+                                                      ?descriptionAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                      ?descriptionAppellation crm:P190_has_symbolic_content ?description .
                                                     }
                                                   } ORDER BY ?subject'
     
@@ -1043,6 +1267,12 @@
                                                               targets='["thinking-frames"]'>
                                               <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
                                             </mp-event-trigger>
+                                          {{else if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
+                                            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                            urlqueryparam-view='vocabulary-content'
+                                                            urlqueryparam-resource='{{iri.value}}'>
+                                              <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
+                                            </semantic-link>
                                           {{else if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
                                             <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
                                                             urlqueryparam-view='single-set-management'

@@ -1,6 +1,6 @@
 {{#bind viewId=dashboardId}}
 
-  <mp-event-proxy id='{{iri}}-refresh-setPage-on-setInClipboard-modification'
+  <mp-event-proxy id='{{viewId}}-refresh-setPage-on-setInClipboard-modification'
                   on-event-types='["Components.SetManagement.SetRenamed",
                                   "Components.SetManagement.ItemAdded",
                                   "Components.SetManagement.ItemRemoved",
@@ -9,6 +9,18 @@
                   proxy-event-type='Component.Refresh'
                   proxy-targets='["{{iri}}-set"]'>
   </mp-event-proxy>
+
+  <mp-event-proxy id='{{viewId}}-refresh-setPage-on-resourceForm-actions'
+                  on-event-types='["Form.ResourceUpdated", "Form.ResourceRemoved"]'     
+                  proxy-event-type='Component.Refresh'
+                  proxy-targets='["{{iri}}-set"]'
+  ></mp-event-proxy>
+
+  <mp-event-proxy id='{{viewId}}-refresh-setPage-on-ontodia-data-changed'
+                  on-event-type='Ontodia.DiagramDataPersisted'    
+                  proxy-event-type='Component.Refresh'
+                  proxy-targets='["{{iri}}-set"]'
+  ></mp-event-proxy>
 
   <mp-event-proxy id='{{viewId}}-refresh-setPage-on-set-deleted'
                   on-event-type='Components.SetManagement.SetRemoved'
@@ -41,14 +53,6 @@
                   proxy-targets='["{{viewId}}-deleted-set-message"]'
                   additional-data='{"setRemoved": true, "iri": "{{iri}}"}'>
   </mp-event-proxy>
-
-  <mp-event-proxy id='{{viewId}}-refresh-setPage-on-resourceForm-actions'
-                  on-event-types='["Form.ResourceUpdated", "Form.ResourceRemoved"]'     
-                  proxy-event-type='Component.Refresh'
-                  proxy-targets='["{{iri}}-set"]'
-  ></mp-event-proxy>
-
-  [[!-- TO BE DONE: update when Sava data in KM --]]
 
   [[#if (hasPermission "forms:ldp:*")]]
     <div class="page__grid-container single-set-management-container">

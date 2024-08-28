@@ -1,6 +1,5 @@
 <semantic-form [[> rsp:FormDefaults]] 
-                persistence='{"type": "sparql", "targetInsertGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/assets/files{{/if}}"}'
-                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/document/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
+                persistence='{"type": "sparql", "targetInsertGraphIri": "{{node}}"}'
                 fields='[[fieldDefinitions
                           classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                           inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
@@ -17,14 +16,16 @@
                           entity_web_URL="http://www.researchspace.org/pattern/system/entity/web_URL_embed"
   
                           entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
-                          entity_file_identifier="http://www.researchspace.org/pattern/system/entity/file_identifier"
                           man-made_thing_title="http://www.researchspace.org/pattern/system/man-made_thing/PC102_has_title"
-                          document_type="http://www.researchspace.org/pattern/system/document/type"
+                          authority_document_type="http://www.researchspace.org/pattern/system/authority_document/type"
                           document_abstract="http://www.researchspace.org/pattern/system/document/abstract"
                           entity_description="http://www.researchspace.org/pattern/system/entity/description"
                           symbolic_object_content="http://www.researchspace.org/pattern/system/symbolic_object/has_symbolic_content"
                           entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
                           entity_id="http://www.researchspace.org/pattern/system/entity/identifier"
+
+                          vocabulary_refersto_resourceConfig="http://www.researchspace.org/pattern/system/vocabulary/refers_to_resourceConfig_Min0"
+                          authority_document_lists="http://www.researchspace.org/pattern/system/authority_document/lists"
 
                           document_documents="http://www.researchspace.org/pattern/system/document/documents"
                           
@@ -71,79 +72,16 @@
               
   <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
 
-    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E31_Document'> </semantic-form-hidden-input>
+    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E32_Authority_Document'> </semantic-form-hidden-input>
     
     {{#if scheme}}
       <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
     {{/if}}
 
     <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
-      {{#if node}}
-      <rs-tab event-key="detail" title="Details">
-      {{else}}
-      <rs-tab event-key="upload" title="Upload">
-      {{/if}}
-        <semantic-form-text-input for="entity_primary_appellation" label="Document name" placeholder="Enter document name"></semantic-form-text-input>
 
-        <div style="{{#if node}}display: flex; gap: 3px;{{/if}}">
-          <div class="FileUploader-container" style="flex: 1;">
-            <semantic-form-file-input for='entity_file_identifier' 
-                                      label='Document file'
-                                      accept-pattern='application/*,text/*' 
-                                      storage='images'
-                                      temp-storage='tmp'
-                                      name-predicate-iri='http://www.researchspace.org/ontology/PX_has_file_name'
-                                      media-type-predicate-iri='http://www.researchspace.org/ontology/PX_has_media_type'
-                                      resource-query='PREFIX rs: <http://www.researchspace.org/ontology/>
-                                                      CONSTRUCT {
-                                                        ?__resourceIri__ a rs:EX_File.
-                                                        ?__resourceIri__ rs:PX_has_file_name ?__fileName__.
-                                                        ?__resourceIri__ rs:PX_has_media_type ?__mediaType__.
-                                                      } WHERE {}'
-                                      generate-iri-query='SELECT ?resourceIri {
-                                                            BIND(IRI(CONCAT(STR(Default:), "EX_File/", ?__fileName__)) AS ?resourceIri) .
-                                                          }'
-            >
-                <div className='placeholder-item'>
-                  <rs-icon icon-type='round' icon-name='file_upload' class='upload_icon'></rs-icon>
-                  <p>Drag file or click to upload</p>
-                  <div>Supported format: .pdf .doc .xml .ppt .pptx .json .rdf .html .rtf .ics .md .zip</div>
-                </div>
-            </semantic-form-file-input>
-          </div>
-          {{#if node}}
-            <div style="align-self: end; height: 40px; display: flex; gap: 3px;">
-              <semantic-query query='SELECT ?file ?fileName ?fileMediaType WHERE {
-                                      BIND(<{{node}}> as ?doc) .
-                                      ?doc crmdig:L60i_is_documented_by ?digitizationProcess .
-                                      ?digitizationProcess a crmdig:D2_Digitization_Process .    
-                                      ?digitizationProcess crmdig:L11_had_output ?file .
-                                      ?file rs:PX_has_file_name ?fileName .
-                                      ?file rs:PX_has_media_type ?fileMediaType .
-                                    }'
-                              template='{{> template}}'
-              >
-                <template id='template'>
-                
-                    <mp-file-download post-action="" download-url="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}">
-                      <button class="btn btn-default btn-textAndIcon" style="height: 40px;">
-                        <rs-icon icon-type="rounded" icon-name="download" title="Download document" symbol="true"></rs-icon>
-                      </button>
-                    </mp-file-download>
-                    
-                    {{#ifCond bindings.0.fileMediaType.value "==" "application/pdf"}}
-                      <button class="btn btn-default btn-textAndIcon" style="height: 40px;">
-                        <a href="/file?fileName={{bindings.0.fileName.value}}&storage=images&mode=open&mediaType=application%2Fpdf" target="_blank" title='Open PDF document' class="btn-textAndIcon">
-                          <rs-icon icon-type="rounded" icon-name="open_in_new" symbol="true"></rs-icon>
-                          <span>Open</span>
-                        </a>
-                      </button>
-                    {{/ifCond}}
-                </template>
-              </semantic-query>
-            </div>
-          {{/if}}
-        </div>
+      <rs-tab event-key="detail" title="Details">
+        <semantic-form-text-input for="entity_primary_appellation" label="Authority document name" placeholder="Enter authority document name"></semantic-form-text-input>
       
         <div class="inline-composite-container">
           <semantic-form-composite-input  for="man-made_thing_title" 
@@ -200,23 +138,23 @@
           </semantic-form-composite-input>
         </div>
 
-        <semantic-form-tree-picker-input for='document_type' 
+        <semantic-form-tree-picker-input for='authority_document_type' 
                                         default-values='[{{#if docType}}"{{docType}}"{{/if}}]' 
-                                        label="Document type" 
+                                        label="Authority document type" 
                                         placeholder="Select document type" 
                                         close-dropdown-on-selection='true'
-                                        tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/document_type>", 
-                                                        "schemePattern": "?item crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/document_type>",
+                                        tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/authority_document_type>", 
+                                                        "schemePattern": "?item crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/authority_document_type>",
                                                         "relationPattern": "?item crm:P127_has_broader_term ?parent" }'
 
                                         scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
                                                                     "view": "vocabulary-content",
-                                                                    "scheme": "http://www.researchspace.org/resource/vocab/document_type",
+                                                                    "scheme": "http://www.researchspace.org/resource/vocab/authority_document_type",
                                                                     "tooltip": "Open list of document types"
                                                                   }'
 
                                         nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                            scheme="http://www.researchspace.org/resource/vocab/document_type"
+                                                                            scheme="http://www.researchspace.org/resource/vocab/authority_document_type"
                                                                             entityType="document type" }}
                                                               {{{{/raw}}}}'
 
@@ -226,7 +164,7 @@
                                               >
         </semantic-form-tree-picker-input>
 
-        <semantic-form-text-input for="document_abstract" multiline='true' label="Document abstract" placeholder="Enter abstract"> </semantic-form-text-input>
+        <semantic-form-text-input for="document_abstract" multiline='true' label="Authority document abstract" placeholder="Enter abstract"> </semantic-form-text-input>
 
         <semantic-form-text-input for="entity_description" multiline=true label="Description" placeholder="Enter description/comment"></semantic-form-text-input>
 
@@ -250,6 +188,325 @@
 
         <semantic-form-text-input for="symbolic_object_content" multiline=true label="Content/value" placeholder="Enter the complete, identifying representation of its content"></semantic-form-text-input>
             
+      </rs-tab>
+
+      <rs-tab event-key="lists" title="List of resources">
+
+        <div style="display: flex; align-items: baseline; justify-content: space-between;">
+          <div class="customFormHeader">Resource type<span style="margin-bottom: 2px; margin-left: 2px;">*</span></div>
+          <div class="btn-inline-container">
+            <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                    urlqueryparam-view='resource-configuration'>
+              <button class="btn btn-default btn-textAndIcon" style="padding: 4px 10px; font-size: 13px;">
+                <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                New resource type
+              </button>
+            </semantic-link-container>
+            <mp-popover title="Resource type">
+              <mp-popover-trigger placement="bottom" trigger='["hover", "click"]'>
+                <div class="badge badge--default">
+                  <rs-icon icon-type="round" icon-name="question_mark"></rs-icon>
+                </div>
+              </mp-popover-trigger>
+              <mp-popover-content>
+                  <p>Resource types are defined in 
+                    <b>Resource Configuration - Vocabulary / Authority tab</b>.
+                  </p>
+                  <div>To use a resource as vocabulary / authority type go in tab Vocabulary / Authority, enable <b>Use as Vocabulary / Authority type</b> and enter a
+                    <b>membership property</b>.</div>
+              </mp-popover-content>
+            </mp-popover>
+          </div>
+        </div>
+
+        <semantic-form-select-input for="vocabulary_refersto_resourceConfig" render-header="false" placeholder='Select the type of the resources listed in the document' readonly-resource="true" readonly="true"></semantic-form-select-input>
+
+        <div class="customFormHeader">List of resources</div>
+
+        <div class="semantic-search-table-container">
+                        
+          <mp-event-target-template-render id="{{node}}-listOfResources-container" template='{{> template}}'>
+              <template id='template'>
+
+                  <mp-event-proxy id='{{viewId}}-update-listOfResources-on-create-setWithSelection'
+                                  on-event-types='["Components.SetManagement.SetAdded"]'
+                                  on-event-source='{{viewId}}-new-set-with-selection'
+                                  proxy-event-type='Component.TemplateUpdate' 
+                                  proxy-targets='["{{node}}-listOfResources-container"]'
+                                  additional-data='{"setCreated": true }' >
+                  </mp-event-proxy>
+              
+                  <mp-event-proxy id='{{viewId}}-update-listOfResources-on-create-setWithResults'
+                                  on-event-types='["Components.SetManagement.SetAdded"]'
+                                  on-event-source='{{viewId}}-new-set-with-results'
+                                  proxy-event-type='Component.TemplateUpdate' 
+                                  proxy-targets='["{{node}}-listOfResources-container"]'
+                                  additional-data='{"setCreated": true }' >
+                  </mp-event-proxy>
+
+                  <semantic-search id="{{viewId}}-listOfResources-search">
+                      <div class="semantic-search-header-actions">
+                          <semantic-search-query-keyword  domain='<{{resourceOntologyClass}}>'
+                                                          query='SELECT ?subject WHERE { 
+                                                                      <{{node}}> crm:P71_lists|^crm:P71i_is_listed_in ?subject .
+                                                                      ?subject a <{{resourceOntologyClass}}> .
+
+                                                                      SERVICE <http://www.bigdata.com/rdf/search#search> {
+                                                                              ?label bds:search ?__token__ ;
+                                                                              bds:minRelevance "0.3" ;
+                                                                              bds:matchAllTerms "true"  .
+                                                                      }
+                                                                  }'
+                                                          default-query='SELECT ?subject WHERE {
+                                                                            <{{node}}> crm:P71_lists|^crm:P71i_is_listed_in ?subject .
+                                                                            ?subject a <{{resourceOntologyClass}}> .
+                                                                          }'
+                                                          debounce=500
+                                                          placeholder="Search by image annotation name"
+                          ></semantic-search-query-keyword> 
+
+                          [[!-- More actions button --]]
+                          [[#if (hasPermission "forms:ldp:*")]]
+                              <bs-dropdown id="{{viewId}}-search-actions-dropdown" pull-right=true class="dropdown-no-caret">
+                                  <bs-dropdown-toggle>
+                                      <rs-icon icon-type="round" icon-name="more_vert"></rs-icon>
+                                  </bs-dropdown-toggle>
+
+                                  <bs-dropdown-menu>
+                                      <mp-selection-action-choice id='{{viewId}}-create-set-action' selection='item-selection-aggregator'>
+                                          <mp-create-set-action id="{{viewId}}-new-set-with-selection" icon="create_new_folder"></mp-create-set-action>
+                                      </mp-selection-action-choice>
+
+                                      <semantic-search-action-save-set-result id='{{viewId}}-new-set-with-results'>
+                                          <bs-menu-item>
+                                              <rs-icon icon-type="rounded" icon-name="create_new_folder" class="icon-left" symbol="true"></rs-icon>
+                                              <span>New set with all annotations</span>
+                                          </bs-menu-item>  
+                                      </semantic-search-action-save-set-result>
+                                  </bs-dropdown-menu>
+                              </bs-dropdown>
+                          [[/if]]
+                      </div>
+
+                      <mp-event-target-template-render id='{{viewId}}--imageForm-annotations-created-new-set-message' template='{{> template}}'>
+                          <template id='template'>
+                            {{#if hideMessage}}
+                            {{else if setCreated}}
+                                <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%; margin-top: 10px;">
+                                  <div class="success-documentation-section-icon-container">
+                                    <rs-icon icon-type="round" icon-name="done"></rs-icon>
+                                  </div>
+                
+                                  <div style="flex: 1;"> 
+                                    <div class="success-documentation-section-title">New set created!</div>
+                                    <div class="success-documentation-section-content" style="display: flex; gap: 5px;">
+                                      <mp-draggable iri='{{containerIri}}'>
+                                        <div>
+                                          <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                          urlqueryparam-view='single-set-management'
+                                                          urlqueryparam-resource='{{containerIri}}'>
+                                            <mp-label iri='{{containerIri}}' class="text-link color-success-text"></mp-label>
+                                          </semantic-link>
+                                        </div>
+                                      </mp-draggable>
+                                      <span> has been created.</span>
+                                    </div>
+                                  </div>
+                                  
+                                  <mp-event-trigger id='{{viewId}}-created-set-close-message'
+                                                    type='Component.TemplateUpdate'
+                                                    data='{ "hideMessage": "true" }'
+                                                    targets='["{{viewId}}--imageForm-annotations-created-new-set-message"]'
+                                  >
+                                    <button class="btn btn-documentation">
+                                      <rs-icon icon-type="round" icon-name="close"></rs-icon>
+                                    </button>
+                                  </mp-event-trigger>
+                                </div>
+                            {{/if}}
+                          </template>
+                        </mp-event-target-template-render>
+                      
+                      <div data-flex-layout="row stretch-stretch" class='search-results-area'>
+                          <semantic-search-result-holder>
+                              <div data-flex-self="md-full">
+                                  <semantic-search-result id='{{viewId}}-imageForm-annotations-result'>
+                                      <semantic-table id='{{viewId}}-imageForm-annotations-table'
+                                                      class-name="table-fixed-header table-scrollable-content table-expanded search-table-container table-with-checkbox"
+                                                      query='SELECT DISTINCT ?subject ?iri ?annotationName ?description WHERE {
+                                                                  BIND(?subject as ?iri) .
+
+                                                                  ?subject a <http://www.researchspace.org/ontology/EX_Digital_Image_Region> .
+                                                                  ?subject crmdig:L49_is_primary_area_of <{{node}}> .
+                                                                  ?subject crm:P190_has_symbolic_content ?annotationName .
+
+                                                                  OPTIONAL {
+                                                                      ?subject crm:P67i_is_referred_to_by ?information_object  .
+                                                                      ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
+                                                                      ?information_object crm:P1_is_identified_by ?descriptionAppellation . 
+                                                                      ?descriptionAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                      ?descriptionAppellation crm:P190_has_symbolic_content ?description .
+                                                                  }
+
+                                                              } ORDER BY ?annotationName'
+                                                  
+                                                      options='{"showFilter":false,
+                                                                  "resultsPerPage":100,
+                                                                  "useFixedHeader":true}'
+                          
+                                                      no-result-template='<div class="table-no-results">
+                                                                              <div class="no-results-container">
+                                                                                <rs-icon icon-type="round" icon-name="search_off" class="no-results-icon"></rs-icon>
+                                                                                <div class="no-results-text">No resource found</div>
+                                                                              </div>
+                                                                              <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                                          urlqueryparam-view="vocabulary-content" 
+                                                                                                          urlqueryparam-resource="{{node}}"
+                                                                                                      >
+                                                                                  <button class="btn btn-default btn-textAndIcon">
+                                                                                  <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                                                                                      <span>Add resource</span>
+                                                                                  </button>
+                                                                              </semantic-link-container>
+                                                                          </div>'
+                          
+                                                      column-configuration='[
+                                                                              {"variableName": "subject", "displayName": "", "cellTemplate": "{{> selectionCheckbox}}" },
+                                                                              {"variableName": "annotationName", "displayName": "Image annotation name","cellTemplate": "{{> details}}"},
+                                                                              {"displayName": "Type","cellTemplate": "{{> type}}"},
+                                                                              {"displayName": "Image of","cellTemplate": "{{> imageOf}}"},
+                                                                              {"displayName": "more", "cellTemplate": "{{> actions}}" }
+                                                                          ]'
+                          
+                                      >
+                                          <template id='selectionCheckbox'>
+                                              <div>
+                                                  <mp-selection-toggle selection="item-selection-aggregator" tag="{{subject.value}}"></mp-selection-toggle>
+                                              </div>
+                                          </template>
+
+                                          <template id='details'>  
+                                              <div>
+                                                  <div style="display: flex; align-items: center; gap: 15px;">                                 
+                                                  
+                                                      <mp-overlay-dialog  id="imageAnnotation-resource-preview-dialog"  
+                                                                          type="modal" 
+                                                                          class="modal-xlSize preview_modal"
+                                                                          title="Preview">
+                                                          <mp-overlay-dialog-trigger>
+                                                              <div>
+                                                                  <mp-draggable iri='{{subject.value}}'>
+                                                                      <div class="table-image-container">
+                                                                          <rs-iiif-image-thumbnail   class='table-thumbnail-container'
+                                                                                                      image-or-region='{{subject.value}}' 
+                                                                                                      [[> rsp:IIIFConfig]]>
+                                                                          </rs-iiif-image-thumbnail>     
+                                                                      </div>
+                                                                  </mp-draggable>
+                                                              </div>
+                                                          </mp-overlay-dialog-trigger>
+                                                          <mp-overlay-dialog-content>
+                                                              <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
+                                                                              options='{"resource": "{{subject.value}}", 
+                                                                                          "resourceConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation", 
+                                                                                          "resourceConfigLabel": "Image annotation",
+                                                                                          "resourceDescription": "{{description.value}}",
+                                                                                          "modalId": "imageAnnotation-resource-preview-dialog",
+                                                                                          "resourceDetailSection": true
+                                                                                      }' >
+                                                              </inline-template> 
+                                                          </mp-overlay-dialog-content>
+                                                      </mp-overlay-dialog>
+                                  
+                                                      <div>
+                                                          <mp-draggable iri='{{subject.value}}'>
+                                                              <div>
+                                                                  <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                                  urlqueryparam-view='resource-editor'
+                                                                                  urlqueryparam-resource='{{subject.value}}'>
+                                                                      <mp-label iri='{{subject.value}}' class="text-link text-truncate-line1"></mp-label>
+                                                                  </semantic-link>
+                                                              </div>
+                                                          </mp-draggable>
+                                  
+                                                          <div class="color-secondary-light text-font-size__xsmall">Image annotation</div>
+                                                      </div>
+                                                  </div>
+                                              </div>
+                                          </template>
+                              
+                                          <template id='type'>
+                                              <semantic-query query='SELECT ?annotationType WHERE {
+                                                                      <{{subject.value}}> crm:P2_has_type ?type.
+                                                                      ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/image_annotation_type> .
+                                                                      ?type skos:prefLabel ?annotationType .
+                                                                  } ORDER BY ?annotationType'
+                                                              template='{{> template}}'>
+                                                  <template id='template'>
+                                                  <div>
+                                                      <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                                                      {{#each bindings}}
+                                                          <span class="badge badge--secondary">{{annotationType.value}}</span>
+                                                      {{/each}}
+                                                      </div>
+                                                  </div>
+                                                  </template>
+                                              </semantic-query>
+                                          </template>
+
+                                          <template id='imageOf'>
+                                              <semantic-query query='SELECT ?entity WHERE {
+                                                                      <{{subject.value}}> rs:PX_main_represents|crm:P138_represents ?entity .
+                                                                  }'
+                                                              template='{{> template}}'>
+                                                  <template id='template'>
+                                                      <div>
+                                                          {{#each bindings}}
+                                                              <mp-draggable iri='{{entity.value}}'>
+                                                                  <semantic-link-container    uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                                              urlqueryparam-view="resource-editor"
+                                                                                              urlqueryparam-resource-iri='{{entity.value}}'>
+                                                                      <mp-label iri='{{entity.value}}' class="text-link"></mp-label>
+                                                                  </semantic-link-container>
+                                                              </mp-draggable>
+                                                              <span>{{#if @last}}{{else}}, {{/if}}</span>
+                                                          {{/each}}
+                                                      </div>
+                                                  </template>
+                                              </semantic-query>
+                                          </template>
+                          
+                                          <template id='actions'>
+                                          <div>
+                                              <div style="display: flex; align-items: stretch; gap: 1px;">
+                                              <mp-draggable iri='{{subject.value}}' drag-style="cursor: grab;">
+                                                  <button class="btn btn-default border-none" title="drag image annotation" style="cursor: grab;">
+                                                  <rs-icon icon-type="rounded" icon-name="drag_pan" symbol="true"></rs-icon>
+                                                  </button>
+                                              </mp-draggable>
+                                          
+                                              {{> rsp:ResourceDropdownActions viewId=viewId
+                                                                              iri=subject.value
+                                                                              resourceConfig="http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation"
+                                                                              resourceLabel="Image annotation"
+                                                                              resourceDescription=description.value
+                                                                              resourceFormIRI="http://www.researchspace.org/resource/system/forms/ImageAnnotation"
+                                                                              searchCard=true
+                                              }}
+                                              </div>
+                                          </div>
+                                          </template>
+                              
+                                      </semantic-table>  
+                                  </semantic-search-result>
+                              </div>
+                          </semantic-search-result-holder>
+                      </div>
+                  </semantic-search>
+              </template>
+          </mp-event-target-template-render>
+        </div>
+    
       </rs-tab>
 
       <rs-tab event-key="documents" title="Resource documented">
@@ -276,7 +533,7 @@
                                     <semantic-form-drag-and-drop-input  for='document_documents' 
                                                                         render-header="false"
                                                                         placeholder-item-template="<div class='placeholder-item'>
-                                                                                                        <div>Drag a resource documented in the document</div>
+                                                                                                        <div>Drag a resource documented in the authority document</div>
                                                                                                     </div>">
                                     </semantic-form-drag-and-drop-input>
                                 </div>
@@ -287,7 +544,7 @@
                             <div style="padding:  20px 20px 20px 0;">
                                 <semantic-form-autocomplete-input for='document_documents' 
                                                                   render-header="false"
-                                                                  placeholder="Select resource documented in the document" 
+                                                                  placeholder="Select resource documented in the authority document" 
                                                                   nested-form-templates='[[> Platform:NestedFormTemplates_allEntities]]'> 
                                 </semantic-form-autocomplete-input> 
                             </div>
@@ -305,7 +562,7 @@
         {{#if scheme}}
           <semantic-form-tree-picker-input  for='propositional_object_is_component_of' 
                                               label="Part of" 
-                                              placeholder="Select the item of which the document is structural part of" 
+                                              placeholder="Select the item of which the authority document is structural part of" 
                                               default-values='[{{#if broader}}"{{broader}}"{{/if}}]'
                                               tree-patterns='{"scheme": "{{scheme}}",
                                                               "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
@@ -334,7 +591,7 @@
 
           <semantic-form-tree-picker-input    for='propositional_object_has_component' 
                                               label="Components" 
-                                              placeholder="Select component (structural part) of the document" 
+                                              placeholder="Select component (structural part) of the authority document" 
                                               tree-patterns='{"scheme": "{{scheme}}",
                                                               "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
                                                               "relationPattern": "?item crm:P148i_is_component_of ?parent",
@@ -422,13 +679,13 @@
               <div class="page__section-container formHierarchyInputs-container">    
                   <semantic-form-autocomplete-input   for='propositional_object_is_component_of' 
                                                       label="Part of" 
-                                                      placeholder="Select the item of which the document is structural part of" 
+                                                      placeholder="Select the item of which the authority document is structural part of" 
                                                       nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
                   </semantic-form-autocomplete-input>
 
                   <semantic-form-autocomplete-input   for='propositional_object_has_component' 
                                                       label="Components" 
-                                                      placeholder="Select component (structural part) of the document" 
+                                                      placeholder="Select component (structural part) of the authority document" 
                                                       nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'>
                   </semantic-form-autocomplete-input>
               </div>
@@ -441,7 +698,7 @@
         {{#if scheme}}
           <semantic-form-tree-picker-input  for='symbolic_object_incorporated_in' 
                                             label="Incorporated in" 
-                                            placeholder="Select what incorporates the document" 
+                                            placeholder="Select what incorporates the authority document" 
                                             default-values='[{{#if broader}}"{{broader}}"{{/if}}]'
                                             tree-patterns='{"scheme": "{{scheme}}",
                                                               "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
@@ -470,7 +727,7 @@
 
           <semantic-form-tree-picker-input    for='information_object_incorporates' 
                                               label="Incorporates" 
-                                              placeholder="Select what is included in the document"
+                                              placeholder="Select what is included in the authority document"
                                               tree-patterns='{"scheme": "{{scheme}}",
                                                               "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
                                                               "relationPattern": "?item crm:P165i_is_incorporated_in ?parent",
@@ -558,13 +815,13 @@
               <div class="page__section-container formHierarchyInputs-container">    
                 <semantic-form-autocomplete-input   for='symbolic_object_incorporated_in' 
                                                     label="Incorporated in" 
-                                                    placeholder="Select what incorporates the document" 
+                                                    placeholder="Select what incorporates the authority document" 
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_informationObjects]]'> 
                 </semantic-form-autocomplete-input> 
 
                 <semantic-form-autocomplete-input   for='information_object_incorporates' 
                                                     label="Incorporates" 
-                                                    placeholder="Select what is included in the document" 
+                                                    placeholder="Select what is included in the authority document" 
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_symbolicObjects]]'> 
                 </semantic-form-autocomplete-input> 
               </div>
@@ -576,13 +833,13 @@
     
         <semantic-form-autocomplete-input   for='man-made_thing_was_intended_for' 
                                             label="Was intended for" 
-                                            placeholder="Select the type describing the intended usage of the document" 
+                                            placeholder="Select the type describing the intended usage of the authority document" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_types]]'>
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='thing_general_use' 
                                             label="Had as general use" 
-                                            placeholder="Select the type of use that the document was actually employed for" 
+                                            placeholder="Select the type of use that the authority document was actually employed for" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_types]]'>
         </semantic-form-autocomplete-input>
 
@@ -617,7 +874,7 @@
 
         <semantic-form-autocomplete-input   for='legal_object_right_held_by_actor' 
                                             label="Right held by" 
-                                            placeholder="Select actor who holds legal right on the document" 
+                                            placeholder="Select actor who holds legal right on the authority document" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'> 
         </semantic-form-autocomplete-input> 
 
@@ -627,7 +884,7 @@
 
         <semantic-form-autocomplete-input   for='conceptual_object_created_by' 
                                             label="Created by" 
-                                            placeholder="Select the event that created the document" 
+                                            placeholder="Select the event that created the authority document" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_creations]]'>  
         </semantic-form-autocomplete-input> 
 
@@ -648,7 +905,7 @@
                 <div style="flex: 1;">
                   <semantic-form-autocomplete-input for='was_intended_use_of_activity_domain' 
                                                     render-header="false"
-                                                    placeholder="Select activity for which the document was made for" 
+                                                    placeholder="Select activity for which the authority document was made for" 
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>
                   </semantic-form-autocomplete-input> 
                 </div>
@@ -683,7 +940,7 @@
 
         <semantic-form-autocomplete-input   for='symbolic_object_used_in' 
                                             label="Used in" 
-                                            placeholder="Select the assignment that used the document as constituent of an identifier" 
+                                            placeholder="Select the assignment that used the authority document as constituent of an identifier" 
                                             nested-form-templates='[ 
                                                 {
                                                     "label": "Identifier assignment",
@@ -712,7 +969,7 @@
                     <semantic-form-autocomplete-input for='used_specific_object_activity_domain' 
                                                       label="Used for" 
                                                       render-header="false"
-                                                      placeholder="Select activity in which the use of the document was essential to the performance or outcome" 
+                                                      placeholder="Select activity in which the use of the authority document was essential to the performance or outcome" 
                                                       nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'> 
                     </semantic-form-autocomplete-input> 
                   </div>
@@ -747,37 +1004,37 @@
 
         <semantic-form-autocomplete-input   for='persistent_item_present_at' 
                                             label="Present at" 
-                                            placeholder="Select event in which the document had an active or passive presence" 
+                                            placeholder="Select event in which the authority document had an active or passive presence" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_events]]'>  
         </semantic-form-autocomplete-input> 
 
         <semantic-form-autocomplete-input   for='persistent_item_brought_into_existence_by' 
                                             label="Brought into existence by" 
-                                            placeholder="Select event that brought the document into existence" 
+                                            placeholder="Select event that brought the authority document into existence" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_beginningOfExistences]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='persistent_item_taken_out_of_existence_by' 
                                             label="Taken out of existence by" 
-                                            placeholder="Select event that took the document out of existence" 
+                                            placeholder="Select event that took the authority document out of existence" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_endOfExistences]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_influenced_activity' 
                                             label="Influenced"
-                                            placeholder="Select activity influenced by the document" 
+                                            placeholder="Select activity influenced by the authority document" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_motivated_activity' 
                                             label="Motivated"
-                                            placeholder="Select activity motivated by the document" 
+                                            placeholder="Select activity motivated by the authority document" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_attributed_by_attribute_assignment' 
                                             label="Attributed by"
-                                            placeholder="Select what assigned attribute to the document" 
+                                            placeholder="Select what assigned attribute to the authority document" 
                                             nested-form-templates='[ 
                                                 {
                                                     "label": "Attribute assignment",
@@ -790,7 +1047,7 @@
 
         <semantic-form-autocomplete-input   for='entity_assigned_by_attribute_assignment' 
                                             label="Assigned by"
-                                            placeholder="Select what assigned the document" 
+                                            placeholder="Select what assigned the authority document" 
                                             nested-form-templates='[ 
                                                 {
                                                     "label": "Attribute assignment",
@@ -819,7 +1076,7 @@
 
         <semantic-form-autocomplete-input   for='symbolic_object_carried_by' 
                                             label="Carried by"
-                                            placeholder="Select what carries the document" 
+                                            placeholder="Select what carries the authority document" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
         </semantic-form-autocomplete-input>
 
@@ -840,7 +1097,7 @@
                 <div style="flex: 1;">
                   <semantic-form-autocomplete-input for='shows_features_of_range'  
                                                     render-header="false"
-                                                    placeholder="Select thing that has similarity with the document" 
+                                                    placeholder="Select thing that has similarity with the authority document" 
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_things]]'> 
                   </semantic-form-autocomplete-input> 
                 </div>
@@ -889,7 +1146,7 @@
                 <div style="flex: 1;">
                   <semantic-form-autocomplete-input for='shows_features_of_domain'  
                                                     render-header="false"
-                                                    placeholder="Select thing that shows similarity with the document" 
+                                                    placeholder="Select thing that shows similarity with the authority document" 
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_things]]'> 
                   </semantic-form-autocomplete-input> 
                 </div>
@@ -938,7 +1195,7 @@
             <div style="flex: 1;">
               <semantic-form-autocomplete-input for='depicts_thing_domain' 
                                                 render-header="false"
-                                                placeholder="Select what depicts the document"
+                                                placeholder="Select what depicts the authority document"
                                                 nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'>
               </semantic-form-autocomplete-input>
             </div>
@@ -972,7 +1229,7 @@
 
         <semantic-form-autocomplete-input   for='entity_subject_of' 
                                             label="Subject of"
-                                            placeholder="Select what is about the document" 
+                                            placeholder="Select what is about the authority document" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
         </semantic-form-autocomplete-input>
 
@@ -993,7 +1250,7 @@
                     <div style="flex: 1;">
                         <semantic-form-autocomplete-input for='refers_to_propObj_domain' 
                                                         render-header="false"
-                                                        placeholder="Select what refers to the document" 
+                                                        placeholder="Select what refers to the authority document" 
                                                         nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'>
                         </semantic-form-autocomplete-input>
                     </div>
@@ -1031,7 +1288,7 @@
 
         <semantic-form-autocomplete-input   for='propositional_object_is_about' 
                                             label="Is about" 
-                                            placeholder="Select what the document is subject of" 
+                                            placeholder="Select what the authority document is subject of" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_allEntities]]'> 
         </semantic-form-autocomplete-input> 
 
@@ -1052,7 +1309,7 @@
               <div style="flex: 1;">
                 <semantic-form-autocomplete-input for='refers_to_entity_range' 
                                                   render-header="false"
-                                                  placeholder="Select what the document refers to" 
+                                                  placeholder="Select what the authority document refers to" 
                                                   nested-form-templates='[[> Platform:NestedFormTemplates_allEntities]]'>
                 </semantic-form-autocomplete-input>
               </div>
@@ -1094,9 +1351,9 @@
   
   <semantic-form-errors></semantic-form-errors>
   {{#ifCond mode "===" "new"}}
-    [[> rsp:FormDefaultActions actionType='Upload' formEntity='{{#if entityType}}document{{entityType}}{{else}}{{/if}}' assetForm=true assetStorage='tmp']] 
+    [[> rsp:FormDefaultActions actionType='Upload' formEntity='{{#if entityType}}authority document{{entityType}}{{else}}{{/if}}' assetForm=true assetStorage='tmp']] 
   {{else}}
-    [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}document{{/if}}' assetForm=true assetStorage='tmp']] 
+    [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}authority document{{/if}}' assetForm=true assetStorage='tmp']] 
   {{/ifCond}}
 
 </semantic-form>

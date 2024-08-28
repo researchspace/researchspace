@@ -245,8 +245,7 @@
               <mp-event-proxy id='{{viewId}}-authorityDocument-importSuccess-refreshSearch-proxy' 
                               on-event-type='RdfUpload.Success'
                               proxy-event-type='Component.TemplateUpdate' 
-                              proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document-resourceSearch-frame"]'
-                              additional-data='{"authorityDocumentImported": "true" }'>
+                              proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document-resourceSearch-frame"]'>
               ></mp-event-proxy>
             {{/ifCond}}
 
@@ -552,45 +551,6 @@
                                     type='Component.TemplateUpdate'
                                     data='{ "hideMessage": "true" }'
                                     targets='["[[urlParam "viewid" escape=false]]-created-new-set-message"]'
-                  >
-                    <button class="btn btn-documentation">
-                      <rs-icon icon-type="round" icon-name="close"></rs-icon>
-                    </button>
-                  </mp-event-trigger>
-                </div>
-            {{/if}}
-          </template>
-        </mp-event-target-template-render>
-
-        <mp-event-target-template-render id='[[urlParam "viewid" escape=false]]-imported-new-authorityDocument-message' template='{{> template}}'>
-          <template id='template'>
-            {{#if hideMessage}}
-            {{else if authorityDocumentImported}}
-                <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%; margin-top: 5px; margin-bottom: 10px;">
-                  <div class="success-documentation-section-icon-container">
-                    <rs-icon icon-type="round" icon-name="done"></rs-icon>
-                  </div>
-
-                  <div style="flex: 1;"> 
-                    <div class="success-documentation-section-title">New authority document imported!</div>
-                    <div class="success-documentation-section-content" style="display: flex; gap: 5px;">
-                      <mp-draggable iri='{{iri}}'>
-                        <div>
-                          <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                          urlqueryparam-view='resource-editor'
-                                          urlqueryparam-resource-iri='{{iri}}'>
-                            <mp-label iri='{{iri}}' class="text-link color-success-text"></mp-label>
-                          </semantic-link>
-                        </div>
-                      </mp-draggable>
-                      <span> has been imported.</span>
-                    </div>
-                  </div>
-                  
-                  <mp-event-trigger id='[[urlParam "viewid" escape=false]]-imported-new-authorityDocument-close-message'
-                                    type='Component.TemplateUpdate'
-                                    data='{ "hideMessage": "true" }'
-                                    targets='["[[urlParam "viewid" escape=false]]-imported-new-authorityDocument-message"]'
                   >
                     <button class="btn btn-documentation">
                       <rs-icon icon-type="round" icon-name="close"></rs-icon>

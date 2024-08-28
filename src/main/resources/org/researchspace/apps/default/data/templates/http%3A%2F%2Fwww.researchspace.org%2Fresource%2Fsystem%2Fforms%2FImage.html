@@ -192,14 +192,14 @@
             {{#if node}}
                 <rs-tab event-key="annotation" title="Annotations">
                     <div class="semantic-search-table-container">
-                        <mp-event-target-template-render id="{{viewId}}-imageForm-annotations-container" template='{{> template}}'>
+                        <mp-event-target-template-render id="{{node}}-imageForm-annotations-container" template='{{> template}}'>
                             <template id='template'>
 
                                 <mp-event-proxy id='{{viewId}}-update-imageForm-annotations-on-create-setWithSelection'
                                                 on-event-types='["Components.SetManagement.SetAdded"]'
                                                 on-event-source='{{viewId}}-new-set-with-selection'
                                                 proxy-event-type='Component.TemplateUpdate' 
-                                                proxy-targets='["{{viewId}}-imageForm-annotations-container"]'
+                                                proxy-targets='["{{node}}-imageForm-annotations-container"]'
                                                 additional-data='{"setCreated": true }' >
                                 </mp-event-proxy>
                             
@@ -207,7 +207,7 @@
                                                 on-event-types='["Components.SetManagement.SetAdded"]'
                                                 on-event-source='{{viewId}}-new-set-with-results'
                                                 proxy-event-type='Component.TemplateUpdate' 
-                                                proxy-targets='["{{viewId}}-imageForm-annotations-container"]'
+                                                proxy-targets='["{{node}}-imageForm-annotations-container"]'
                                                 additional-data='{"setCreated": true }' >
                                 </mp-event-proxy>
 
@@ -473,6 +473,12 @@
                                 </semantic-search>
                             </template>
                         </mp-event-target-template-render>
+
+                        <mp-event-proxy id='{{viewId}}-update-imageForm-annotations-on-resource-updated'
+                                        on-event-types='["Form.ResourceUpdated"]'      
+                                        proxy-event-type='Component.TemplateUpdate' 
+                                        proxy-targets='["{{node}}-imageForm-annotations-container"]'
+                        ></mp-event-proxy>
                     </div>
                 </rs-tab>
             {{/if}}

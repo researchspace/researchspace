@@ -221,7 +221,7 @@
           <semantic-form-select-input for="vocabulary_refersto_resourceConfig" render-header="false" placeholder='Select the type of the resources listed in the document' readonly-resource="true" readonly="true"></semantic-form-select-input>
 
           <div class="customFormHeader">List of resources</div>
-          <div class="semantic-search-table-container" style="overflow: hidden;">
+          <div class="semantic-search-table-container semantic-search-table-container-in-form" style="overflow: hidden;">
                           
             <mp-event-target-template-render id="{{node}}-listOfResources-container" template='{{> template}}'>
                 <template id='template'>
@@ -381,7 +381,7 @@
                                                                 } ORDER BY ?resourceLabel'
                                                     
                                                         options='{"showFilter":false,
-                                                                    "resultsPerPage":100,
+                                                                    "resultsPerPage":10,
                                                                     "useFixedHeader":true}'
                             
                                                         no-result-template='<div class="table-no-results">
@@ -744,6 +744,12 @@
                     </semantic-search>
                 </template>
             </mp-event-target-template-render>
+
+            <mp-event-proxy id='{{viewId}}-update-listOfResources-on-resource-actions'
+                            on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated", "Form.ResourceRemoved"]' 
+                            proxy-event-type='Component.TemplateUpdate' 
+                            proxy-targets='["{{node}}-listOfResources-container"]'
+            ></mp-event-proxy>
           </div>
  
       </rs-tab>

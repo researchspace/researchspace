@@ -41,6 +41,7 @@ import { ManifestUpdatedEvent, ZoomToRegionEvent, IiifManifestResource, AddResou
 import { renderMirador, removeMirador, scrollToRegions, scrollToRegion } from './mirador/Mirador';
 import { computeDisplayedRegionWithMargin } from './ImageThumbnail';
 import { OARegionAnnotation, getAnnotationTextResource } from 'platform/data/iiif/LDPImageRegionService';
+import { LayoutChanged } from '../dashboard/DashboardEvents';
 
 export interface ImageRegionEditorConfig {
   id?: string;
@@ -473,6 +474,21 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
           }
         }
       })
+
+      this.cancellation
+      .map(
+        listen({
+          eventType: LayoutChanged
+        })
+      )
+      .observe({
+        value: (event) => {
+          setTimeout(() => {
+            this.miradorInstance.viewer.workspace.calculateLayout()
+          }, 100)
+          
+        }
+      });
   }
 
   private queryManifestParameters({

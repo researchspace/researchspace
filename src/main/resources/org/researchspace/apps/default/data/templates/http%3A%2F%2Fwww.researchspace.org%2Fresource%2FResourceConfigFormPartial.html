@@ -20,7 +20,7 @@
 
                   resource_card_icon="http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon"
 
-                  resource_use_as_vocabulary_type="http://www.researchspace.org/pattern/system/resource_configuration/resource_use_as_vocabulary_type"
+                  resource_list_in_authority="http://www.researchspace.org/pattern/system/resource_configuration/resource_list_in_authority"
                   resource_membership_property="http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property"
                   resource_broader_property="http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property"
                   resource_order_sparql_pattern="http://www.researchspace.org/pattern/system/resource_configuration/resource_order_sparql_pattern"
@@ -118,7 +118,7 @@
         </mp-event-trigger>
 
      [[!--  
-          <semantic-if query='ASK { <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_use_as_vocabulary_type> ?value . }'
+          <semantic-if query='ASK { <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_list_in_authority> ?value . }'
                       then='{{> then}}'>
 
           <template id='then'>
@@ -211,7 +211,7 @@
                                                             "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
 
                                             scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                        "view": "vocabulary-content",
+                                                                        "view": "authority-list",
                                                                         "scheme": "http://www.researchspace.org/resource/system/vocab/resource_type",
                                                                         "tooltip": "Open list of resource types"
                                                                       }'
@@ -448,7 +448,7 @@
 
           <div class="form-section-content page__section-container">
             <div class="menu-toggle toggle-label-right">
-                <semantic-form-checkbox-input custom-source="list_in_authority__toogle" class="toggle" for='resource_use_as_vocabulary_type' label="List in authority document"></semantic-form-checkbox-input>
+                <semantic-form-checkbox-input custom-source="list_in_authority__toogle" class="toggle" for='resource_list_in_authority' label="List in authority document"></semantic-form-checkbox-input>
             </div>
           </div>
 
@@ -462,7 +462,7 @@
           <mp-event-proxy id='{{viewId}}-resourceVocabulary-onFormSave-proxy' 
                           on-event-source='{{viewId}}-resourceVocabulary-configuration-form'
                           on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
-                          additional-data='{"vocabularyConfigSaved": "true" }'
+                          additional-data='{"authorityConfigSaved": "true" }'
                           proxy-event-type='Component.TemplateUpdate' 
                           proxy-targets='["{{viewId}}-resourceVocabulary-config-formContainer"]'>
           </mp-event-proxy>
@@ -489,17 +489,17 @@
               
               {{#if (not (eq value true))}}
                 {{#if (not (eq value false))}}
-                  {{#if (or use_as_vocabulary_type vocabularyConfigSaved)}} 
-                    [[> resourceVocabularyConfig_form]]
+                  {{#if (or list_in_authority_document authorityConfigSaved)}} 
+                    [[> resourceAuthorityConfig_form]]
                   {{/if}}
                 {{/if}}
               {{else}}
                 {{#if (eq value true) }}
-                  [[> resourceVocabularyConfig_form]]
+                  [[> resourceAuthorityConfig_form]]
                 {{/if}}
               {{/if}}
 
-              [[#*inline "resourceVocabularyConfig_form"]]
+              [[#*inline "resourceAuthorityConfig_form"]]
               <div class="semantic-form-container-OverflowAuto">
                 <semantic-form id='{{viewId}}-resourceVocabulary-configuration-form' 
                               post-action="event"
@@ -542,7 +542,7 @@
                           </div>
                         </div>
                       {{else}}
-                        <semantic-if query='ASK { <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_use_as_vocabulary_type> ?useAsVocabularyType .
+                        <semantic-if query='ASK { <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_list_in_authority> ?listInAuthority .
                                             FILTER NOT EXISTS {  <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?membership .}
 
                                       }'
@@ -601,7 +601,7 @@
                                                               "relationPattern": "?item skos:broader ?parent"}'
 
                                               scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                          "view": "vocabulary-content",
+                                                                          "view": "authority-list",
                                                                           "scheme": "http://www.researchspace.org/resource/system/FieldCategories",
                                                                           "tooltip": "Open list of knowledge pattern categories"
                                                                         }'

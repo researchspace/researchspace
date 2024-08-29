@@ -1,16 +1,16 @@
-[[!-- uses client-side template: [[> rsp:VocabularyManagerTemplate]] --]]
+[[!-- uses client-side template: [[> rsp:AuthorityManagerTemplate]] --]]
 
-[[!--  VOCABULARY representation:
+[[!--  AUTHORITY representation:
 
-  This application page is used to create and edit skos:ConceptScheme or crm:E32_Authority_Document, corresponding to vocabulary or authority lists.
+  This application page is used to create and edit skos:ConceptScheme or crm:E32_Authority_Document, corresponding to an authority document list of resources.
   Creating a skos:ConceptScheme is suitable for hierarchical conceptual structure where the hierarchy is best described by broader or narrower type of relations.
   Creating a crm:E32_Authority_Document can represent lists of persons, periods, events, etc. The assumption is that all entities in an Authority Document have the same
-  type and relations between entities are based on cidoc-crm entities and their corresponding properties; 
+  type and relations between resources are based on cidoc-crm entities and their corresponding properties;
 --]]
 
-[[#> rsp:VocabularyManagerTemplate title="Vocabularies / Authorities" addTitle='vocabulary / authority']]
+[[#> rsp:AuthorityManagerTemplate title="Authority document" addTitle='authority document']]
     
-    [[#*inline "customInsertVocabularyForm"]]
+    [[#*inline "customInsertAuthorityForm"]]
       <semantic-search id="{{viewId}}-vocabulary-iri-selector">
         <semantic-search-form-query id="{{viewId}}-newVocabulary-form"
                                     element-id-to-hide-after-search="{{viewId}}-newVocabulary-search-form"
@@ -29,8 +29,8 @@
                                     ]'>
                             
             <div id="{{viewId}}-newVocabulary-search-form" class="vocabulary-search-form">
-              <semantic-form-text-input for="label" placeholder="Enter vocabulary / authority name" label="Name" ></semantic-form-text-input> 
-              <semantic-form-text-input for="description" placeholder="Enter vocabulary / authority description" label="Description" multiline='true'></semantic-form-text-input>        
+              <semantic-form-text-input for="label" placeholder="Enter authority document name" label="Name" ></semantic-form-text-input> 
+              <semantic-form-text-input for="description" placeholder="Enter authority document description" label="Description" multiline='true'></semantic-form-text-input>        
 
               <semantic-form-errors></semantic-form-errors>
 
@@ -78,7 +78,7 @@
                   
                           <div> 
                             <div class="danger-documentation-section-title">Already exists!</div>
-                            <div class="danger-documentation-section-content">A vocabulary / authority with name <b>{{bindings.0.vocabularyLabel.value}}</b> 
+                            <div class="danger-documentation-section-content">An authority document with name <b>{{bindings.0.vocabularyLabel.value}}</b> 
                               already exists.</div>
                           </div>
                         </div>
@@ -113,7 +113,7 @@
                       >
                         <div>
                           <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E32_Authority_Document"></semantic-form-hidden-input>
-                          <semantic-form-hidden-input for="entity_primary_appellation" placeholder="Enter vocabulary / authority name" label="Name"
+                          <semantic-form-hidden-input for="entity_primary_appellation" placeholder="Enter authority document name" label="Name"
                                                       default-value='{{bindings.0.vocabularyLabel.value}}'>
                           </semantic-form-hidden-input>   
                           <div>
@@ -128,7 +128,7 @@
                             </div>
                           {{/if}}
 
-                          <semantic-form-hidden-input for="entity_description"  placeholder="Enter vocabulary / authority description" label="Description" multiline='true'
+                          <semantic-form-hidden-input for="entity_description"  placeholder="Enter authority document description" label="Description" multiline='true'
                                                       default-value='{{bindings.0.vocabularyDescription.value}}'>
                           </semantic-form-hidden-input>
 
@@ -149,11 +149,10 @@
                                   </div>
                                 </mp-popover-trigger>
                                 <mp-popover-content>
-                                    <p>Resource types are defined in 
-                                      <b>Resource Configuration - Vocabulary / Authority tab</b>.
-                                    </p>
-                                    <div>To use a resource as vocabulary / authority type go in tab Vocabulary / Authority, enable <b>Use as Vocabulary / Authority type</b> and enter a
-                                      <b>membership property</b>.</div>
+                                  <div>Resource types are defined in the Resource Configuration. Go to tab
+                                    <b>Resource in authority document</b>, enable <b>List in authority document</b> and enter a
+                                    <b>membership property</b> to list that type of resource in the authority document.
+                                  </div>
                                 </mp-popover-content>
                               </mp-popover>
                             </div>
@@ -179,7 +178,7 @@
                             Back
                           </rs-back-button>
 
-                          <button name="submit" class="btn btn-action">Create vocabulary / authority</button>
+                          <button name="submit" class="btn btn-action">Create authority document</button>
                         </div>
 
                       </semantic-form>
@@ -192,23 +191,23 @@
       </semantic-search>
     [[/inline]]
     
-    [[#*inline "customVocabularyUploadDropzoneMessage"]]
+    [[#*inline "customAuthorityUploadDropzoneMessage"]]
       <div class='placeholder-item'>
         <rs-icon icon-type='round' icon-name='file_upload' class='upload_icon'></rs-icon>
         <div> 
-          <p>Drag vocabulary / authority as *.trig or *.nq RDF file(s) or click to upload</p>
+          <p>Drag authority document as *.trig or *.nq RDF file(s) or click to upload</p>
           <div class="documentation-section documentation-section-withIcon" style="margin: 20px 0;">
             <div class="documentation-section-icon-container">
               <i class="fa fa-info"></i>
             </div>
 
             <div style="flex: 1;"> 
-              <div class="documentation-section-title">Vocabularies / Authorities must be of ontology 
+              <div class="documentation-section-title">Authority documents must be of ontology 
                 class skos:ConceptScheme or crm:E32_Authority_Document.
               </div>
               <div class="documentation-section-content"> 
-                The vocabulary / authority and all associated 
-              entities must be defined in one named graph that equals to the vocabulary / authority IRI.
+                The authority document and all associated 
+              data must be defined in one named graph that equals to the authority document IRI.
               </div>
             </div>
           </div> 
@@ -243,15 +242,15 @@
             </div>
     
             <div> 
-              <div class="warning-documentation-section-title">Warning! &nbsp; The following vocabularies / authorities 
+              <div class="warning-documentation-section-title">Warning! &nbsp; The following authority 
                  can't be edited.</div>
               <div class="warning-documentation-section-content">
-                <div>Vocabularies / Authorities of ontology class skos:ConceptScheme or crm:E32_Authority_Document and all their 
-                  corresponding entities should be defined in one named graph that equals to the vocabulary IRI.</div>
+                <div>Authorities of ontology class skos:ConceptScheme or crm:E32_Authority_Document and all their 
+                  associated data should be defined in one named graph that equals to the vocabulary IRI.</div>
                   <ul>
                     {{#each bindings}}
                       <li>
-                        <semantic-link iri='{{vocabulary.value}}'></semantic-link> - Vocabulary / Authority IRI: {{vocabulary.value}} in graph: {{vocabularyGraph.value}}
+                        <semantic-link iri='{{vocabulary.value}}'></semantic-link> - Authority IRI: {{vocabulary.value}} in graph: {{vocabularyGraph.value}}
                       </li>
                     {{/each}}
                   </ul>
@@ -262,9 +261,9 @@
       </semantic-query>
     [[/inline]]
     
-    [[#*inline "VocabularySearchResults"]]
+    [[#*inline "AuthoritySearchResults"]]
       <semantic-search>
-        <semantic-search-query-keyword placeholder="Search vocabulary / authority by name (minimum 3 characters)"
+        <semantic-search-query-keyword placeholder="Search authority document by name (minimum 3 characters)"
                                        query='PREFIX bds: <http://www.bigdata.com/rdf/search#>
                                               SELECT ?vocabulary ?vocabularyLabel ?managedByResourceConfig WHERE {
                                                 {
@@ -354,20 +353,20 @@
                                 number-of-displayed-rows=15
                                 options='{"showFilter": false}'
                                 no-result-template='{{> noVocabulary}}'
-                                column-configuration='[ {"variableName": "vocabularyLabel", "displayName": "Vocabulary / Authority", "cellTemplate": "{{> vocabulary}}" },
+                                column-configuration='[ {"variableName": "vocabularyLabel", "displayName": "Authority document", "cellTemplate": "{{> vocabulary}}" },
                                                         {"variableName": "resourceConfigLabel", "displayName": "Resource type"},
                                                         {"variableName": "vocabularyDescription", "displayName": "Description"},
                                                         {"variableName": "vocabulary", "displayName": "Actions", "cellTemplate": "{{> actions}}" }
                                                       ]'>
                       <template id="noVocabulary">
                           <div style="padding: 12px 8px">
-                              No vocabulary / authority available
+                              No authority document available
                           </div>
                       </template>
 
                       <template id='vocabulary'>
                         <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames'
-                              urlqueryparam-view='vocabulary-content' 
+                              urlqueryparam-view='authority-list' 
                               urlqueryparam-resource='{{vocabulary.value}}'
                               urlqueryparam-mode='new'
                             >
@@ -378,7 +377,7 @@
                       <template id='actions'>
                         <div class="btn-inline-container">
                           <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                    urlqueryparam-view='vocabulary-content' 
+                                                    urlqueryparam-view='authority-list' 
                                                     urlqueryparam-resource='{{vocabulary.value}}'
                                                     urlqueryparam-mode='new'>
                             <button class="btn btn-default btn-textAndIcon">
@@ -388,7 +387,7 @@
 
                           <div style="display: flex; align-items: center;"> 
                             <mp-overlay-dialog id='{{viewId}}-edit-vocabulary-dialog'
-                                              title="Edit vocabulary / authority: {{vocabularyLabel.value}}" 
+                                              title="Edit authority document: {{vocabularyLabel.value}}" 
                                               type="modal" bs-size="large" class="editVocabulary-modal">
                               <mp-overlay-dialog-trigger>
                                 <button class="btn btn-default btn-textAndIcon"> 
@@ -408,8 +407,8 @@
                                                         entity_description="http://www.researchspace.org/pattern/system/entity/description"
                                                   ]]'>
                                     
-                                    <semantic-form-text-input for="entity_primary_appellation" placeholder="Enter vocabulary / authority name" label="Name"></semantic-form-text-input>   
-                                    <semantic-form-text-input for="entity_description" placeholder="Enter vocabulary / authority description" label="Description" multiline='true'></semantic-form-text-input>
+                                    <semantic-form-text-input for="entity_primary_appellation" placeholder="Enter authority document name" label="Name"></semantic-form-text-input>   
+                                    <semantic-form-text-input for="entity_description" placeholder="Enter authority document description" label="Description" multiline='true'></semantic-form-text-input>
                                     
                                     <div style="display: flex; align-items: baseline; justify-content: space-between;">
                                       <div class="customFormHeader">Resource type<span style="margin-bottom: 2px; margin-left: 2px;">*</span></div>
@@ -428,11 +427,10 @@
                                             </div>
                                           </mp-popover-trigger>
                                           <mp-popover-content>
-                                              <p>Resource types are defined in 
-                                                <b>Resource Configuration - Vocabulary / Authority tab</b>.
-                                              </p>
-                                              <div>To use a resource as vocabulary / authority type go in tab Vocabulary / Authority, enable <b>Use as Vocabulary / Authority type</b> and enter a
-                                                <b>membership property</b>.</div>
+                                            <div>Resource types are defined in the Resource Configuration. Go to tab
+                                              <b>Resource in authority document</b>, enable <b>List in authority document</b> and enter a
+                                              <b>membership property</b> to list that type of resource in the authority document.
+                                            </div>
                                           </mp-popover-content>
                                         </mp-popover>
                                       </div>
@@ -463,10 +461,10 @@
                                 
                                         <div> 
                                           <div class="warning-documentation-section-title">
-                                            Vocabulary / Authority '<b>{{vocabularyLabel.value}}</b>' is not managed by the system.
+                                            Authority document '<b>{{vocabularyLabel.value}}</b>' is not managed by the system.
                                           </div>
                                           <div class="warning-documentation-section-content">
-                                            <div>To enable the vocabulary / authority authoring just assign a vocabulary / authority type below.</div>
+                                            <div>To enable the authority authoring just assign a resource type below.</div>
                                           </div>
                                         </div>
                                       </div>
@@ -488,11 +486,10 @@
                                               </div>
                                             </mp-popover-trigger>
                                             <mp-popover-content>
-                                                <p>Resource types are defined in 
-                                                  <b>Resource Configuration - Vocabulary / Authority tab</b>.
-                                                </p>
-                                                <div>To use a resource as vocabulary / authority type go in tab Vocabulary / Authority, enable <b>Use as Vocabulary / Authority type</b> and enter a
-                                                  <b>membership property</b>.</div>
+                                              <div>Resource types are defined in the Resource Configuration. Go to tab
+                                                <b>Resource in authority document</b>, enable <b>List in authority document</b> and enter a
+                                                <b>membership property</b> to list that type of resource in the authority document.
+                                              </div>
                                             </mp-popover-content>
                                           </mp-popover>
                                         </div>
@@ -530,7 +527,7 @@
 
                           <mp-overlay-dialog show='{{#if delete}}true{{else}}false{{/if}}' 
                                               id='{{viewId}}-vocabulary-delete-confirmation-dialog' 
-                                              title="Delete vocabulary / authority" 
+                                              title="Delete authority document" 
                                               type="modal" 
                                               bs-size="large">
                             <mp-overlay-dialog-trigger>
@@ -540,7 +537,7 @@
                             </mp-overlay-dialog-trigger>
                             <mp-overlay-dialog-content>
                               <div>
-                                <p>Are you sure you want to delete the vocabulary / authority '<strong>{{vocabularyLabel.value}}</strong>'?</p>
+                                <p>Are you sure you want to delete the authority document '<strong>{{vocabularyLabel.value}}</strong>'?</p>
                             
                                 <div style="justify-content: end;" class="btn-inline-container">
                                     <mp-event-trigger id='{{viewId}}-cancel-vocabulary-delete' 
@@ -582,6 +579,6 @@
 
     [[/inline]]
 
-[[/rsp:VocabularyManagerTemplate]]
+[[/rsp:AuthorityManagerTemplate]]
 
 

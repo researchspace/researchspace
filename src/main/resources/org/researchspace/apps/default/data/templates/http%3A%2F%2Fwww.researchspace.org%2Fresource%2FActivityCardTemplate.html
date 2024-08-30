@@ -6,26 +6,30 @@
                         BIND(<{{iri}}> as ?subject)
                         BIND("{{date.value}}" as ?date)
 
-                        OPTIONAL {
-                          ?subject a ?resourceOntologyClass .
-                          ?resourceOntologyClass a owl:Class .
+                        ?subject a ?resourceOntologyClass .
+                        ?resourceOntologyClass a owl:Class .
+                        OPTIONAL {                            
                           ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
                           ?resourceConfigWithP2 a <http://www.researchspace.org/resource/system/resource_configuration> .
                           ?subject crm:P2_has_type ?resourceType . 
                           ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceType .
-                          ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceLabel .
+                          ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceConfigWithP2Label .
+                          OPTIONAL {?resourceConfigWithP2  <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceConfigWithP2Icon .}
                         }
-
-                        OPTIONAL {
-                          ?subject a ?resourceOntologyClass .
-                          ?resourceOntologyClass a owl:Class .
+                        OPTIONAL {                         
                           ?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
                           ?resourceConfigWithoutP2 a <http://www.researchspace.org/resource/system/resource_configuration> .
-                          ?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceLabel .
+                          ?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceConfigWithoutP2Label .
+                          FILTER NOT EXISTS {?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceType .}
+                          OPTIONAL{ ?resourceConfigWithoutP2  <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceConfigWithoutP2Icon .}
                         }
-
-                        BIND(COALESCE(?resourceConfigWithP2, ?resourceConfigWithP2, ?resourceConfigWithoutP2) AS ?resourceConfig)
-
+                        BIND((IF(BOUND(?resourceConfigWithP2), 
+                                ?resourceConfigWithP2, IF(BOUND(?resourceConfigWithoutP2),?resourceConfigWithoutP2,""))) AS ?resourceConfig)
+                        BIND((IF(BOUND(?resourceConfigWithP2Label), 
+                                ?resourceConfigWithP2Label, IF(BOUND(?resourceConfigWithoutP2Label),?resourceConfigWithoutP2Label,""))) AS ?resourceLabel)
+                        BIND((IF(BOUND(?resourceConfigWithP2Icon), 
+                              ?resourceConfigWithP2Icon, IF(BOUND(?resourceConfigWithoutP2Icon),?resourceConfigWithoutP2Icon,""))) AS ?resourceIcon)
+                        
                         OPTIONAL {
                           ?subject prov:wasAttributedTo ?modifiedActor .
                           BIND(REPLACE(REPLACE(STR(?modifiedActor), STR(User:), ""), "%40", "@") as ?systemModifiedActorName) 
@@ -69,9 +73,6 @@
                             }
                           }
                         }
-
-
-
                       } LIMIT 1'
       
                 template='{{> template}}'

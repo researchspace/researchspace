@@ -54,7 +54,7 @@
 
                                 <div class="search-results-header-keyword">
                                     <semantic-search-query-keyword  domain='<http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>'
-                                                                    query='SELECT ?subject WHERE { 
+                                                                    query='SELECT DISTINCT ?subject WHERE { 
                                                                             BIND(<{{iri}}> as ?narrative)
                                                                             ?narrative crm:P67_refers_to ?subject .
                                                                         #  ?subject a ?type .
@@ -82,7 +82,7 @@
                                                                                 bds:matchAllTerms "true"  .
                                                                             }
                                                                         }'
-                                                                    default-query='SELECT ?subject WHERE { 
+                                                                    default-query='SELECT distinct ?subject WHERE { 
                                                                                     BIND(<{{iri}}> as ?narrative)
                                                                                     ?narrative crm:P67_refers_to ?subject .
                                                                                 #    ?subject a ?type .
@@ -246,37 +246,42 @@
                                                 <semantic-search-result> 
                                                     <semantic-table id='semantic-search-result-list'
                                                                     class-name="semantic-search-default-result-list table-fixed-header table-scrollable-content table-expanded search-table-container table-with-checkbox"
-                                                                    query='SELECT DISTINCT ?subject ?iri ?resourceOntologyClass ?resourceConfig ?resourceLabel ?resourceIcon ?description WHERE {
-                                                                                BIND(?subject as ?iri) .
-                                                                                ?iri a ?resourceOntologyClass .
-                                                                                ?resourceOntologyClass a owl:Class .
-
+                                                                    query='SELECT DISTINCT ?subject ?iri ?resourceConfig ?resourceLabel ?resourceIcon ?description WHERE {
+                                                                                BIND(?subject AS ?iri)
+                                                                                ?iri rdf:type ?resourceOntologyClass.
+                                                                                ?resourceOntologyClass rdf:type owl:Class.
                                                                                 OPTIONAL {
-                                                                                    ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
-                                                                                    ?resourceConfigWithP2 a <http://www.researchspace.org/resource/system/resource_configuration> .
-                                                                                    ?iri crm:P2_has_type ?resourceType . 
-                                                                                    ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceType .
-                                                                                    ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceLabel .
-                                                                                    OPTIONAL {?resourceConfigWithP2  <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .}
+                                                                                    ?iri crm:P2_has_type ?resourceType .
+                                                                                    OPTIONAL {
+                                                                                    ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass;
+                                                                                        rdf:type Platform:resource_configuration.
+                                                                                    ?iri crm:P2_has_type ?resourceConfigWithP2Type.
+                                                                                    ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceConfigWithP2Type;
+                                                                                        <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceConfigWithP2Label.
+                                                                                    OPTIONAL { ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceConfigWithP2Icon. }
+                                                                                    } 
                                                                                 }
                                                                                 OPTIONAL {
-                                                                                    ?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
-                                                                                    ?resourceConfigWithoutP2 a <http://www.researchspace.org/resource/system/resource_configuration> .
-                                                                                    ?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceLabel .
-                                                                                    OPTIONAL{ ?resourceConfigWithoutP2  <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .}
+                                                                                    ?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass;
+                                                                                    rdf:type Platform:resource_configuration;
+                                                                                    <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceConfigWithoutP2Label.
+                                                                                    OPTIONAL { ?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceConfigWithoutP2Icon. }
+                                                                                    FILTER NOT EXISTS {?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceType .}                                                                                   
                                                                                 }
-                                                        
-                                                                                BIND(COALESCE(?resourceConfigWithP2, ?resourceConfigWithP2, ?resourceConfigWithoutP2) AS ?resourceConfig)
-                                                                            
+                                                                                BIND((IF(BOUND(?resourceConfigWithP2), 
+                                                                                        ?resourceConfigWithP2, IF(BOUND(?resourceConfigWithoutP2),?resourceConfigWithoutP2,""))) AS ?resourceConfig)
+                                                                                BIND((IF(BOUND(?resourceConfigWithP2Label), 
+                                                                                        ?resourceConfigWithP2Label, IF(BOUND(?resourceConfigWithoutP2Label),?resourceConfigWithoutP2Label,""))) AS ?resourceLabel)
+                                                                                BIND((IF(BOUND(?resourceConfigWithP2Icon), 
+                                                                                        ?resourceConfigWithP2Icon, IF(BOUND(?resourceConfigWithoutP2Icon),?resourceConfigWithoutP2Icon,""))) AS ?resourceIcon)
                                                                                 OPTIONAL {
-                                                                                    ?subject crm:P67i_is_referred_to_by ?information_object  .
-                                                                                    ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
-                                                                                    ?information_object crm:P1_is_identified_by ?descriptionAppellation . 
-                                                                                    ?descriptionAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                                    ?descriptionAppellation crm:P190_has_symbolic_content ?description .
-                                                                                }
-
-                                                                            } ORDER BY ?subject'
+                                                                                    ?subject crm:P67i_is_referred_to_by ?information_object.
+                                                                                    ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description>;
+                                                                                    crm:P1_is_identified_by ?descriptionAppellation.
+                                                                                    ?descriptionAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation>;
+                                                                                    crm:P190_has_symbolic_content ?description.
+                                                                                } }
+                                                                                ORDER BY ?subject'
                             
                                                                     options='{"showFilter":false, 
                                                                                 "resultsPerPage":50,
@@ -376,7 +381,8 @@
                                                                 {{#if resourceLabel.value}}
                                                                     {{resourceLabel.value}}
                                                                 {{else}}
-                                                                    <mp-label iri='{{resourceOntologyClass.value}}' class="text-link text-truncate-line1"></mp-label>
+                                                                    [[!-- <mp-label iri='{{resourceOntologyClass.value}}' class="text-link text-truncate-line1"></mp-label> --]]
+                                                                    {{groupResourceOntologyClass.value}}
                                                                 {{/if}}
                                                                 </div>
                                                             </div>

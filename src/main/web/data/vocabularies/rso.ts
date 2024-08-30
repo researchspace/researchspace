@@ -42,11 +42,14 @@ module rso {
   export const PX_narrow_match = iri('PX_narrow_match');
   export const PX_match_target = iri('PX_match_target');
   export const PX_match_excludes = iri('PX_match_excludes');
+  export const PX_has_file_name = iri('PX_has_file_name');
+  export const PX_has_media_type = iri('PX_has_media_type');
 
   export const Thing = iri('Thing');
   export const EX_Assertion = iri('EX_Assertion');
   export const EX_Digital_Image = iri('EX_Digital_Image');
   export const EX_Digital_Image_Region = iri('EX_Digital_Image_Region');
+  export const EX_File = iri('EX_File');
   export const viewport = iri('viewport');
   export const boundingBox = iri('boundingBox');
 

@@ -23,7 +23,7 @@ import * as Immutable from 'immutable';
 import * as classNames from 'classnames';
 
 import { Rdf } from 'platform/api/rdf';
-import { navigateToResource } from 'platform/api/navigation';
+import { navigateToResource, refresh } from 'platform/api/navigation';
 import { getOverlaySystem } from 'platform/components/ui/overlay';
 import { CreateResourceDialog } from 'platform/components/ldp';
 
@@ -159,16 +159,21 @@ export class OverlayComparison extends KefirComponentBase<Props, State, LoadedSt
 
     this.setState(this.updateState({ creatingImage: true }));
 
+    const image1Iri = this.state.metadata.get(0).carrierImageIRI?this.state.metadata.get(0).carrierImageIRI:this.state.metadata.get(0).imageIRI;
+    const image2Iri = this.state.metadata.get(1).carrierImageIRI?this.state.metadata.get(1).carrierImageIRI:this.state.metadata.get(1).imageIRI;
+    
     return LdpOverlayImageService.createOverlayImage(
       name,
-      this.state.metadata.get(0).iri,
+      Rdf.iri(""+image1Iri),
       this.state.firstImageWeight,
-      this.state.metadata.get(1).iri,
+      Rdf.iri(""+image2Iri),
       1 - this.state.firstImageWeight
     )
       .flatMap((res) => {
         this.setState(this.updateState({ creatingImage: false }));
-        return navigateToResource(res, {}, 'assets');
+        
+        //return navigateToResource(res), {}, 'assets');
+        return navigateToResource(res).onValue((v) => v);
       })
       .toProperty();
   };

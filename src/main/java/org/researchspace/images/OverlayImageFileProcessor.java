@@ -52,7 +52,7 @@ public class OverlayImageFileProcessor {
      * format to open it. First found file will be used with respect to order of
      * extensions.
      */
-    private static String[] extensions = new String[] { "jpg", "JPG", "tiff", "TIFF", "tif", "TIF", "png", "PNG" };
+    private static String[] extensions = new String[] { "jpg", "JPG","jpeg", "tiff", "TIFF", "tif", "TIF", "png", "PNG" };
     private final java.net.URI iiifFolder;
 
     public OverlayImageFileProcessor(java.net.URI iiifFolder) {

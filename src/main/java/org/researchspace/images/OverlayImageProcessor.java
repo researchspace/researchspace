@@ -115,9 +115,35 @@ public class OverlayImageProcessor {
         }
         ModelUtils.replaceSubjectAndObjects(model, modificationEvent,
                 vf.createIRI(overlayedImageUri.toString() + "/event"));
+
+        // Get timespan of modification event
+        Resource timespanModificationEvent = Models.subject(model.filter(null, CidocCRM.P82A_BEGIN_OF_THE_BEGIN_PROPERTY, null))
+                .get();
+        ModelUtils.replaceSubjectAndObjects(model, timespanModificationEvent,
+                vf.createIRI(overlayedImageUri.toString() + "/event/timespan"));
+
+        // Get digitisation process
+        Resource digitisationProcess = Models.subject(model.filter(null, RDF.TYPE, CRMdig.D2_DIGITIZATION_PROCESS_CLASS))
+                .get();
+        ModelUtils.replaceSubjectAndObjects(model, digitisationProcess,
+                vf.createIRI(overlayedImageUri.toString() + "/digitisation_process"));
+
+        // Get new file
+        Resource overlayFile = Models.subject(model.filter(null, RDF.TYPE, RSO.EX_FILE))
+                .get();
+        String str = overlayedImageUri.toString();
+
+        ModelUtils.replaceSubjectAndObjects(model, overlayFile,
+                vf.createIRI(overlayedImageUri.toString() + ".jpg"));
+        model.add(vf.createIRI(overlayedImageUri.toString() + ".jpg"), RSO.PX_HAS_FILE_NAME, vf.createLiteral(str.substring(str.lastIndexOf("/")+1,str.length()) + ".jpg"));  
+    
+        // Create appellation for image overlay
+        Resource overlayImageAppellation = Models.subject(model.filter(null, RDF.TYPE, CidocCRM.E41_APPELLATION_CLASS)).get();
+        ModelUtils.replaceSubjectAndObjects(model, overlayImageAppellation,
+                vf.createIRI(overlayedImageUri.toString() + "/primary_appellation"));
     }
 
-    void addMetadata(Model model, Resource modificationEvent) {
+    void addMetadata(Model model, Resource modificationEvent) {       
         IRI timespanImpl = vf.createIRI(modificationEvent.stringValue() + "/time");
         model.add(modificationEvent, CidocCRM.P4_HAS_TIME_SPAN_PROPERTY, timespanImpl);
         model.add(timespanImpl, RDF.TYPE, CidocCRM.E52_TIME_SPAN_CLASS);

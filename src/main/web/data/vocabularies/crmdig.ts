@@ -28,12 +28,15 @@ module crmdig {
   export const D29_Annotation_Object = iri('D29_Annotation_Object');
   export const D30_Annotation_Event = iri('D30_Annotation_Event');
   export const D35_Area = iri('D35_Area');
+  export const D2_Digitization_Process = iri('D2_Digitization_Process');
 
   export const L21_used_as_derivation_source = iri('L21_used_as_derivation_source');
   export const L22_created_derivative = iri('L22_created_derivative');
   export const L13_used_parameters = iri('L13_used_parameters');
   export const L43_annotates = iri('L43_annotates');
   export const L48i_was_annotation_created_by = iri('L48i_was_annotation_created_by');
+  export const L60i_is_documented_by = iri('L60i_is_documented_by');
+  export const L11_had_output = iri('L11_had_output');
 }
 
 export default crmdig;

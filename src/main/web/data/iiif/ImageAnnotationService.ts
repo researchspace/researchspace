@@ -179,7 +179,7 @@ function getImageBindings(
 
   new PatternBinder('__imageIdPattern__', imageIdPatterns).sparqlQuery(query);
   const parametrizedQuery = SparqlClient.setBindings(query, { __iri__: imageOrRegion });
-  console.log("param query"); console.log(parametrizedQuery);
+  
   return SparqlClient.select(parametrizedQuery, { context: { repository: repository } });
 }
 

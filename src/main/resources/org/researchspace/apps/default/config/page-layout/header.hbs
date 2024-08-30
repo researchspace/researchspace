@@ -62,20 +62,22 @@
                   </semantic-link-container>
 
                   <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames" 
-                                            urlqueryparam-view='vocabulary'>
+                                            urlqueryparam-view='resource-search'
+                                            urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document'
+                                            urlqueryparam-custom-label='Search Authority document'>
                     <bs-menu-item>
                       <div class="dropdown-item-iconContainer">
                         <i class="iconmoon iconmoon-books" style="color: #10BC7A;"></i>
                       </div>
                       <div>
-                        <div class="dropdown-item-title">Vocabularies/Authorities</div>
-                        <div class="dropdown-item-description">Create, view and edit vocabulary / authority list of terms.</div>
+                        <div class="dropdown-item-title">Authority document</div>
+                        <div class="dropdown-item-description">Create, view and edit list of resources like vocabularies, thesauri, etc.</div>
                       </div>
                     </bs-menu-item>
                   </semantic-link-container>
 
              {{!--     <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames" 
-                                            urlqueryparam-view='vocabulary'>
+                                            urlqueryparam-view='authority'>
                     <bs-menu-item>
                       <div class="dropdown-item-iconContainer">
                         <rs-icon icon-type="round" icon-name="image" style="color: #55A6FF;"></rs-icon>
@@ -132,7 +134,7 @@
                                                 FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>)
                                                 FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item>)
                                                 FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/User>)
-                                              } ORDER BY ASC(?resourceName)'
+                                              } ORDER BY (LCASE(STR(?resourceName)))'
 
                                         tuple-template='\{{> newResourceCard}}',
                                         options='{"showFilter":true, "filterPlaceholderText":"Filter results by ontological type", "resultsPerPage":100}'
@@ -184,7 +186,7 @@
 
                                                   FILTER (EXISTS {?resourceOntologyClass rdfs:subClassOf crm:E1_CRM_Entity} || (?resourceOntologyClass = crm:E1_CRM_Entity)) 
 
-                                              } ORDER BY ASC(?resourceName)'
+                                              } ORDER BY (LCASE(STR(?resourceName)))'
                                         tuple-template='\{{> newResourceCard}}',
                                         
                                         options='{"showFilter":true, "filterPlaceholderText":"Filter results by ontological type", "resultsPerPage":300}'
@@ -239,7 +241,7 @@
 
                                                 FILTER EXISTS {?resourceOntologyClass rdfs:subClassOf* crm:E18_Physical_Thing} 
 
-                                              } ORDER BY ASC(?resourceName)'
+                                              } ORDER BY (LCASE(STR(?resourceName)))'
 
                                         tuple-template='\{{> newResourceCard}}',
                                         options='{"showFilter":true, "filterPlaceholderText":"Filter results by ontological type", "resultsPerPage":50}'
@@ -291,7 +293,7 @@
 
                                                 FILTER EXISTS {?resourceOntologyClass rdfs:subClassOf* crm:E39_Actor} 
 
-                                              } ORDER BY ASC(?resourceName)'
+                                              } ORDER BY (LCASE(STR(?resourceName)))'
 
                                         tuple-template='\{{> newResourceCard}}',
                                         options='{"showFilter":true, "filterPlaceholderText":"Filter results by ontological type", "resultsPerPage":50}'
@@ -342,7 +344,7 @@
 
                                                 FILTER EXISTS {?resourceOntologyClass rdfs:subClassOf* crm:E2_Temporal_Entity} 
 
-                                              } ORDER BY ASC(?resourceName)'
+                                              } ORDER BY (LCASE(STR(?resourceName)))'
 
                                         tuple-template='\{{> newResourceCard}}',
                                         options='{"showFilter":true, "filterPlaceholderText":"Filter results by ontological type", "resultsPerPage":50}'
@@ -404,7 +406,7 @@
 
                                                 FILTER EXISTS {?resourceOntologyClass rdfs:subClassOf* crm:E28_Conceptual_Object} 
 
-                                              } ORDER BY ASC(?resourceName)'
+                                              } ORDER BY (LCASE(STR(?resourceName)))'
 
                                         tuple-template='\{{> newResourceCard}}',
                                         options='{"showFilter":true, "filterPlaceholderText":"Filter results by ontological type", "resultsPerPage":50}'
@@ -452,7 +454,7 @@
                                                 OPTIONAL {
                                                   ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .
                                                 }
-                                              } ORDER BY ASC(?resourceName)'
+                                              } ORDER BY (LCASE(STR(?resourceName)))'
 
                                         tuple-template='\{{> newResourceCard}}',
                                         options='{"showFilter":true, "filterPlaceholderText":"Filter results by ontological type", "resultsPerPage":50}'
@@ -702,7 +704,7 @@
                   </bs-menu-item>
               </bs-dropdown-menu>
           </bs-dropdown> --}}
-            <mp-overlay-dialog title="Contact us" type="modal" bs-size="large">
+            <mp-overlay-dialog id="header-contact-modal" type="modal" bs-size="large" class="header-contact-modal">
               <mp-overlay-dialog-trigger>
                 <button class="btn btn-icon">
                   <rs-icon icon-type="round" icon-name="forum"></rs-icon>
@@ -710,19 +712,91 @@
               </mp-overlay-dialog-trigger>
 
               <mp-overlay-dialog-content>
-                This version of ResearchSpace has been created and released by Kartography CIC.
+                   <div class="contact-container">
+                    <div class="contact-motif"></div>
+                    <div class="contact-header">
+                      <div class="title">Contact & Support</div>
+                      <div class="contact-icons-container">
+                          <a href="https://www.researchspace.org/" title="Researchspace website" target="_blank">
+                            <i class="rs-icon rs-icon-researchspace"></i>
+                          </a>
+                          <a href="mailto:info@kartography.org" title="mailto:info@kartography.org" target="_blank">
+                            <i class="rs-icon rs-icon-mail_send"></i>
+                          </a>
+                          <a href="https://www.youtube.com/channel/UCtUOzTB2vBG9ZimeDVrlULQ/featured" title="Youtube researchspace" target="_blank">
+                            <i class="rs-icon rs-icon-youtube"></i>
+                          </a>
+                          <a href="https://x.com/researchspace" title="X researchspace" target="_blank">
+                            <img src="/assets/images/logos/x-social-media-logo.svg">
+                          </a>
 
-                <a href="https://researchspace.org/" title="ResearchSpace" target="_blank" class="text-link-action">
-                  ResearchSpace
-                </a>
+                          <a href="https://github.com/researchspace/researchspace" title="Github researchspace" target="_blank">
+                            <i class="fa fa-github-square"></i>
+                          </a>
+                      </div>
+                    </div>
 
-                <a href="https://researchspace.org/blog/" title="ResearchSpace blog" target="_blank" class="text-link-action">
-                  ResearchSpace blog
-                </a>
+                    <div class="contact-content">
+                      <div>This version of ResearchSpace is released and supported by <a href="https://kartography.org/" title="Kartography" target="_blank" class="text-link-action">Kartography CIC</a>.</div>
+                      <div style="padding: 10px 0 10px 0;">Kartography offers:</div>
+                      <div class="contact-card-container">
+                        <div class="contact-card"> 
+                          <rs-icon icon-type="rounded" icon-name="school" symbol="true"></rs-icon>
+                          <div>
+                            <div class="card-title">Training</div>
+                            <div class="card-content">Workshops and personalised training sessions on how to use ResearchSpace are organised periodically by Kartography or available on request.</div>
+                          </div>
+                        </div>
+                        <div class="contact-card"> 
+                          <rs-icon icon-type="rounded" icon-name="live_help" symbol="true"></rs-icon>
+                          <div>
+                            <div class="card-title">Technical support</div>
+                            <div class="card-content">description</div>
+                          </div>
+                        </div>
+                        <div class="contact-card"> 
+                          <rs-icon icon-type="rounded" icon-name="display_settings" symbol="true"></rs-icon>
+                          <div>
+                            <div class="card-title">Customisations of ResearchSpace</div>
+                            <div class="card-content">Domain focus customisation of ResearchSpace functionalities can be develop to support your project or your institution.</div>
+                          </div>
+                        </div>
+                        <div class="contact-card"> 
+                          <rs-icon icon-type="rounded" icon-name="linked_services" symbol="true"></rs-icon>
+                          <div>
+                            <div class="card-title">Knowledge representation through semantic data</div>
+                            <div class="card-content">Expertise on CIDOC CRM data modelling</div>
+                          </div>
+                        </div>
+                        <div class="contact-card"> 
+                          <rs-icon icon-type="rounded" icon-name="biotech" symbol="true"></rs-icon>
+                          <div>
+                            <div class="card-title">Consultancy on digital research metodology</div>
+                            <div class="card-content">Semantic Web Application Design/User oriented software design and development</div>
+                          </div>
+                        </div>
+                        <div class="contact-card"> 
+                          <rs-icon icon-type="rounded" icon-name="data_exploration" symbol="true"></rs-icon>
+                          <div>
+                            <div class="card-title">Focused expertise on data diversity and contextualisation</div>
+                            <div class="card-content">description</div>
+                          </div>
+                        </div>
 
-                <a href="https://kartography.org/" title="Kartography" target="_blank" class="text-link-action">
-                  Kartography
-                </a>
+                      </div>
+                      <div class="contact-content-buttons">
+                        <mp-event-trigger id='header-close-header-contact-modal' 
+                                          type='OverlayDialog.Close' 
+                                          targets='["header-contact-modal"]'>
+                          <button class="btn btn-default">Close</button>
+                        </mp-event-trigger>
+                      </div>
+                    </div>
+                  </div>
+
+                
+
+                
                 
               </mp-overlay-dialog-content>
           </mp-overlay-dialog>

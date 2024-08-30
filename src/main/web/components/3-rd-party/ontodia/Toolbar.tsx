@@ -29,7 +29,9 @@ import { HasPermission } from 'platform/components/security/HasPermission';
 
 import * as styles from './Toolbar.scss';
 import Icon from 'platform/components/ui/icon/Icon';
+import { trigger } from 'platform/api/events';
 export const ToolbarStyles = styles;
+import * as ToolbarEvents from './ToolbarEvents'
 
 export interface ToolbarProps extends BaseProps {
   getWorkspace?: () => Workspace;
@@ -189,6 +191,15 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
 
   render() {
     const { redo, undo } = this.getUndoReduCommands(this.props.history);
+    const {diagramIri} = this.props
+    
+    function onRefreshButtonClicked() {
+      trigger({
+        eventType: ToolbarEvents.ToolbarRefreshed,
+        source: `toolbar-${diagramIri}`,
+      })
+    }
+
     return (
       <div className={styles.component}>
         <div className={styles.buttonsContainer}>
@@ -288,6 +299,10 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
         </div>
 
         <div className={styles.buttonsContainer}>
+          {this.props.diagramIri && 
+            <Button onClick={onRefreshButtonClicked} className='btn-textAndIcon' title='Refresh knowledge map'>
+              <Icon iconType='round' iconName='refresh' />
+            </Button>}
           {this.renderOptionDropdown()}
           <HasPermission
             permission={Permissions.toLdp('container', VocabPlatform.OntodiaDiagramContainer, 'create', 'any')}

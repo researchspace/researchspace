@@ -29,7 +29,7 @@ import { getOverlaySystem } from 'platform/components/ui/overlay';
 import { ConfirmationDialog } from 'platform/components/ui/confirmation-dialog';
 
 import { DashboardItem, DashboardViewConfig } from './DashboardItem';
-import { DashboardEvents } from './DashboardEvents';
+import { DashboardEvents, LayoutChanged } from './DashboardEvents';
 import * as styles from './Dashboard.scss';
 import { Cancellation } from 'platform/api/async';
 import { listen, trigger } from 'platform/api/events';
@@ -786,13 +786,12 @@ export class DashboardComponent extends Component<Props, State> {
 
     images.forEach(image => iiifViewerDashboardItems.push(image.id+"-image-annotation"));
     console.log(action.type);
-    if (action.type === Actions.ADJUST_BORDER_SPLIT 
-          || action.type === Actions.ADJUST_SPLIT 
-          || action.type === Actions.SELECT_TAB
-          || action.type === Actions.DELETE_TAB)
+
+    const actions = [Actions.ADJUST_BORDER_SPLIT, Actions.ADJUST_SPLIT, Actions.MOVE_NODE, Actions.ADD_NODE, Actions.SELECT_TAB, Actions.DELETE_TAB]
+    if (actions.includes(action.type))
       trigger({
-        eventType: 'IIIFViewer.ResizeAll',
-        source: 'link',
+        eventType: LayoutChanged,
+        source: 'dashboard',
         targets: iiifViewerDashboardItems,
       });
     

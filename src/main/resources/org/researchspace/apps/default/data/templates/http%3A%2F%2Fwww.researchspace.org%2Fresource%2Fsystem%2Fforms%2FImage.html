@@ -112,7 +112,7 @@
                                                                                     "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
                         
                                                                     scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                                "view": "vocabulary-content",
+                                                                                                "view": "authority-list",
                                                                                                 "scheme": "http://www.researchspace.org/resource/vocab/title_type",
                                                                                                 "tooltip": "Open list of title types"
                                                                                                 }'
@@ -139,7 +139,7 @@
                                                                         "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
 
                                                         scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                    "view": "vocabulary-content",
+                                                                                    "view": "authority-list",
                                                                                     "scheme": "http://www.researchspace.org/resource/vocab/image_type",
                                                                                     "tooltip": "Open list of image types"
                                                                                     }'
@@ -191,15 +191,15 @@
 
             {{#if node}}
                 <rs-tab event-key="annotation" title="Annotations">
-                    <div class="semantic-search-table-container">
-                        <mp-event-target-template-render id="{{viewId}}-imageForm-annotations-container" template='{{> template}}'>
+                    <div class="semantic-search-table-container semantic-search-table-container-in-form">
+                        <mp-event-target-template-render id="{{node}}-imageForm-annotations-container" template='{{> template}}'>
                             <template id='template'>
 
                                 <mp-event-proxy id='{{viewId}}-update-imageForm-annotations-on-create-setWithSelection'
                                                 on-event-types='["Components.SetManagement.SetAdded"]'
                                                 on-event-source='{{viewId}}-new-set-with-selection'
                                                 proxy-event-type='Component.TemplateUpdate' 
-                                                proxy-targets='["{{viewId}}-imageForm-annotations-container"]'
+                                                proxy-targets='["{{node}}-imageForm-annotations-container"]'
                                                 additional-data='{"setCreated": true }' >
                                 </mp-event-proxy>
                             
@@ -207,7 +207,7 @@
                                                 on-event-types='["Components.SetManagement.SetAdded"]'
                                                 on-event-source='{{viewId}}-new-set-with-results'
                                                 proxy-event-type='Component.TemplateUpdate' 
-                                                proxy-targets='["{{viewId}}-imageForm-annotations-container"]'
+                                                proxy-targets='["{{node}}-imageForm-annotations-container"]'
                                                 additional-data='{"setCreated": true }' >
                                 </mp-event-proxy>
 
@@ -460,7 +460,6 @@
                                                                                             resourceLabel="Image annotation"
                                                                                             resourceDescription=description.value
                                                                                             resourceFormIRI="http://www.researchspace.org/resource/system/forms/ImageAnnotation"
-                                                                                            searchCard=true
                                                             }}
                                                             </div>
                                                         </div>
@@ -474,6 +473,12 @@
                                 </semantic-search>
                             </template>
                         </mp-event-target-template-render>
+
+                        <mp-event-proxy id='{{viewId}}-update-imageForm-annotations-on-resource-updated'
+                                        on-event-types='["Form.ResourceUpdated"]'      
+                                        proxy-event-type='Component.TemplateUpdate' 
+                                        proxy-targets='["{{node}}-imageForm-annotations-container"]'
+                        ></mp-event-proxy>
                     </div>
                 </rs-tab>
             {{/if}}
@@ -848,7 +853,7 @@
                                                                                     "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
                         
                                                                     scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                                "view": "vocabulary-content",
+                                                                                                "view": "authority-list",
                                                                                                 "scheme": "http://www.researchspace.org/resource/vocab/mode_of_use",
                                                                                                 "tooltip": "Open list of modes of use"
                                                                                                 }'
@@ -912,7 +917,7 @@
                                                                                         "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
                     
                                                                         scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                                    "view": "vocabulary-content",
+                                                                                                    "view": "authority-list",
                                                                                                     "scheme": "http://www.researchspace.org/resource/vocab/mode_of_use",
                                                                                                     "tooltip": "Open list of modes of use"
                                                                                                 }'
@@ -1049,7 +1054,7 @@
                                                                                     "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
                     
                                                                     scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                                "view": "vocabulary-content",
+                                                                                                "view": "authority-list",
                                                                                                 "scheme": "http://www.researchspace.org/resource/vocab/thing_kind_of_similarity",
                                                                                                 "tooltip": "Open list of kind of similarities"
                                                                                                 }'
@@ -1098,7 +1103,7 @@
                                                                                     "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
                     
                                                                     scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                                "view": "vocabulary-content",
+                                                                                                "view": "authority-list",
                                                                                                 "scheme": "http://www.researchspace.org/resource/vocab/thing_kind_of_similarity",
                                                                                                 "tooltip": "Open list of kind of similarities"
                                                                                                 }'
@@ -1147,7 +1152,7 @@
                                                                                 "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
                 
                                                                 scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                            "view": "vocabulary-content",
+                                                                                            "view": "authority-list",
                                                                                             "scheme": "http://www.researchspace.org/resource/vocab/mode_of_depiction",
                                                                                             "tooltip": "Open list of mode of depictions"
                                                                                             }'
@@ -1202,7 +1207,7 @@
                                                                                         "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
                         
                                                                         scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                                    "view": "vocabulary-content",
+                                                                                                    "view": "authority-list",
                                                                                                     "scheme": "http://www.researchspace.org/resource/vocab/type_of_reference",
                                                                                                     "tooltip": "Open list of type of references"
                                                                                                     }'
@@ -1264,7 +1269,7 @@
                                                                                     "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
                     
                                                                     scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                                "view": "vocabulary-content",
+                                                                                                "view": "authority-list",
                                                                                                 "scheme": "http://www.researchspace.org/resource/vocab/type_of_reference",
                                                                                                 "tooltip": "Open list of type of references"
                                                                                             }'

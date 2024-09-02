@@ -45,165 +45,203 @@
     
 [[#*inline "resourceSidebarContent"]]
 [[#if imagesOnly]]
-<bs-tab-container id="{{viewId}}-formResourceAsset-tabs" default-active-key="{{viewId}}-images-thumbnailView" class="form-assetView-tabs">
-    <div>
-        <div class="page__section-container form-tabs-subtabs-content" style="overflow: hidden; padding: 12px 20px; margin: 0; display: flex; flex-direction: column; height: 100%;">
-            <div class="form-tabs-subtabs-content--title">
-                <h4 style="margin-top: 0;">Images</h4>
-                <div style="display: flex;align-items: center;gap: 20px;">
-                    {{#if node}}
-                        <semantic-if    query='ASK { <{{node}}> crm:P138i_has_representation|rso:PX_has_main_representation ?image . 
-                                                    ?image a rso:EX_Digital_Image .
-                                                    ?image crm:P1_is_identified_by ?appellation .
-                                                    ?appellation a crm:E41_Appellation .
-                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                    ?appellation crm:P190_has_symbolic_content ?label .
-                                                }'
-                                        then='{{> then}}'>
+    <bs-tab-container id="{{viewId}}-formResourceAsset-tabs" default-active-key="{{viewId}}-images-thumbnailView" class="form-assetView-tabs">
+        <div>
+            <div class="page__section-container form-tabs-subtabs-content" style="overflow: hidden; padding: 12px 20px; margin: 0; display: flex; flex-direction: column; height: 100%;">
+                <div class="form-tabs-subtabs-content--title">
+                    <h4 style="margin-top: 0;">Images</h4>
+                    <div style="display: flex;align-items: center;gap: 20px;">
+                        {{#if node}}
+                            <semantic-if    query='ASK { <{{node}}> crm:P138i_has_representation|rso:PX_has_main_representation ?image . 
+                                                        ?image a ?type .
+                                                        FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+                                                    }'
+                                            then='{{> then}}'>
 
-                            <template id='then'>
-                                <div class="form-tabs-subtabs-content--title-actions">
-                                    <mp-overlay-dialog  id="[[urlParam 'viewid' escape=false]]-resource-imagePreview-dialog"  
-                                                        type="modal" 
-                                                        class="modal-xlSize preview_modal"
-                                                        title="Image preview">
-                                        <mp-overlay-dialog-trigger>
-                                            <button class="btn btn-icon" title="Image preview">
-                                                <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
+                                <template id='then'>
+                                    <div class="form-tabs-subtabs-content--title-actions">
+                                        <mp-overlay-dialog  id="[[urlParam 'viewid' escape=false]]-resource-imagePreview-dialog"  
+                                                            type="modal" 
+                                                            class="modal-xlSize preview_modal"
+                                                            title="Image preview">
+                                            <mp-overlay-dialog-trigger>
+                                                <button class="btn btn-icon" title="Image preview">
+                                                    <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
+                                                </button>
+                                            </mp-overlay-dialog-trigger>
+
+                                            <mp-overlay-dialog-content>
+                                                <inline-template template-iri='[[resolvePrefix "rsp:ResourceImagesPreview"]]' 
+                                                                options='{  "resource": "{{node}}"  }' >
+                                                </inline-template> 
+                                            </mp-overlay-dialog-content>
+                                        </mp-overlay-dialog>
+
+                                        <mp-event-trigger id='{{viewId}}-image-annotation-add-frame-trigger' 
+                                                            type='Dashboard.AddFrame' 
+                                                            data='{"resourceIri": "{{node}}", 
+                                                                    "viewId": "image-annotation", 
+                                                                    "frameId": "{{viewId}}"}' 
+                                                            targets='["thinking-frames"]'>
+                                            <button class="btn btn-icon" title="Image view / annotations">
+                                                <rs-icon icon-type="round" icon-name="photo_size_select_large"></rs-icon>
                                             </button>
-                                        </mp-overlay-dialog-trigger>
-
-                                        <mp-overlay-dialog-content>
-                                            <inline-template template-iri='[[resolvePrefix "rsp:ResourceImagesPreview"]]' 
-                                                            options='{  "resource": "{{node}}"
-                                                                        }' >
-                                            </inline-template> 
-                                        </mp-overlay-dialog-content>
-                                    </mp-overlay-dialog>
-
-                                    <mp-event-trigger id='{{viewId}}-image-annotation-add-frame-trigger' 
-                                                        type='Dashboard.AddFrame' 
-                                                        data='{"resourceIri": "{{node}}", 
-                                                                "viewId": "image-annotation", 
-                                                                "frameId": "{{viewId}}"}' 
-                                                        targets='["thinking-frames"]'>
-                                        <button class="btn btn-icon" title="Image view / annotations">
-                                            <rs-icon icon-type="round" icon-name="photo_size_select_large"></rs-icon>
-                                        </button>
-                                    </mp-event-trigger>
-                                </div>
-                            </template>
-                        </semantic-if>
-                    {{/if}}
-                
-                    <bs-nav class="icon-tabs">
-                        <bs-nav-item event-key="{{viewId}}-images-thumbnailView" title="thumbnail view">
-                            <rs-icon icon-type="round" icon-name="view_module"></rs-icon>
-                        </bs-nav-item>
-                        <bs-nav-item event-key="{{viewId}}-images-listView" title="list view">
-                            <rs-icon icon-type="round" icon-name="view_list"></rs-icon>
-                        </bs-nav-item>
-                    </bs-nav>
-                </div>
-            </div>
-            <bs-tab-content animation="true" >
-                <bs-tab-pane event-key="{{viewId}}-images-thumbnailView">
-                    <div class="tab-pane-content" style="padding-top: 0;">
-                        <div class="dragAndDrop-input-container">
-                            <semantic-form-drag-and-drop-input  for='entity_image_main_representation' 
-                                                                label="Main image" 
-                                                                placeholder-item-template="<div class='placeholder-item'>
-                                                                                                <rs-icon icon-type='round' icon-name='file_upload' class='upload_icon'></rs-icon>
-                                                                                                <div>
-                                                                                                    <span>Drag main image from </span>
-                                                                                                    <semantic-link-container    uri='http://www.researchspace.org/resource/ThinkingFrames' 
-                                                                                                                                class='text-link' 
-                                                                                                                                urlqueryparam-view='resource-search'
-                                                                                                                                urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image'
-                                                                                                                                urlqueryparam-custom-label='Search Image'>
-                                                                                                        <div>Image Library</div>
-                                                                                                    </semantic-link-container>
-                                                                                                
-                                                                                                    <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                                                                                                urlqueryparam-view='resource-search' 
-                                                                                                                                urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image'
-                                                                                                                                urlqueryparam-open-as-drag-and-drop='true'
-                                                                                                                                urlqueryparam-custom-label='Search Image'
-                                                                                                                                >
-                                                                                                        <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding:0 8px 0 5px;' title='Open Image Library in new draggable tab'></rs-icon>
-                                                                                                    </semantic-link-container>
-                                                                                                    <span>or click to upload</span>
-                                                                                                </div>
-                                                                                            </div>"
-                                                                nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
-                            </semantic-form-drag-and-drop-input>
-
-                        </div>
-                        <div class="dragAndDrop-input-container">
-                            <semantic-form-drag-and-drop-input  for='entity_image' 
-                                                                label="More images"
-                                                                placeholder-item-template="<div class='placeholder-item'>
-                                                                                                <rs-icon icon-type='round' icon-name='file_upload' class='upload_icon'></rs-icon>
-                                                                                                <div>
-                                                                                                    <span>Drag image from </span>
-                                                                                                    <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames' 
-                                                                                                                    class='text-link' 
-                                                                                                                    urlqueryparam-view='resource-search'
-                                                                                                                    urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image'
-                                                                                                                    urlqueryparam-custom-label='Search Image'>
-                                                                                                                    Image Library
-                                                                                                    </semantic-link>
-                                                                                                
-                                                                                                    <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                                                                                                urlqueryparam-view='resource-search' 
-                                                                                                                                urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image'
-                                                                                                                                urlqueryparam-open-as-drag-and-drop='true'
-                                                                                                                                urlqueryparam-custom-label='Search Image'
-                                                                                                                                >
-                                                                                                        <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding:0 8px 0 5px;' title='Open Image Library in new draggable tab'></rs-icon>
-                                                                                                    </semantic-link-container>
-                                                                                                    <span>or click to upload</span>
-                                                                                                </div>
-                                                                                            </div>"
-                                                                nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
-                            </semantic-form-drag-and-drop-input>
-                        </div>
-                    </div>
-                </bs-tab-pane>
-
-                <bs-tab-pane event-key="{{viewId}}-images-listView">
-                    <div class="tab-pane-content" style="padding-top: 0;">
+                                        </mp-event-trigger>
+                                    </div>
+                                </template>
+                            </semantic-if>
+                        {{/if}}
                     
-                        <semantic-form-autocomplete-input   for='entity_image_main_representation' 
-                                                            label="Main image"
-                                                            placeholder="Select image" 
-                                                            nested-form-templates='[ 
-                                                                {
-                                                                    "label": "Image",
-                                                                    "nestedForm": "{{{{raw}}}}
-                                                                                    {{> \"http://www.researchspace.org/resource/system/forms/Image\" nested=true editable=true mode=\"new\"}}
-                                                                                {{{{/raw}}}}"
-                                                                }
-                                                            ]'> 
-                        </semantic-form-autocomplete-input>
-                
-                        <semantic-form-autocomplete-input   for='entity_image' 
-                                                            label="More images"
-                                                            placeholder="Select image" 
-                                                            nested-form-templates='[ 
-                                                                {
-                                                                    "label": "Image",
-                                                                    "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Image\" nested=true editable=true mode=\"new\" }}{{{{/raw}}}}"
-                                                                }
-                                                            
-                                                            ]'> 
-                        </semantic-form-autocomplete-input>
+                        <bs-nav class="icon-tabs">
+                            <bs-nav-item event-key="{{viewId}}-images-thumbnailView" title="thumbnail view">
+                                <rs-icon icon-type="round" icon-name="view_module"></rs-icon>
+                            </bs-nav-item>
+                            <bs-nav-item event-key="{{viewId}}-images-listView" title="list view">
+                                <rs-icon icon-type="round" icon-name="view_list"></rs-icon>
+                            </bs-nav-item>
+                        </bs-nav>
                     </div>
-                </bs-tab-pane>
-            </bs-tab-content>
+                </div>
+                <bs-tab-content animation="true" >
+                    <bs-tab-pane event-key="{{viewId}}-images-thumbnailView">
+                        <div class="tab-pane-content" style="padding-top: 0;">
+                            <div class="dragAndDrop-input-container">
+                                <semantic-form-drag-and-drop-input  for='entity_image_main_representation' 
+                                                                    label="Main image" 
+                                                                    placeholder-item-template="<div class='placeholder-item'>
+                                                                                                    <rs-icon icon-type='round' icon-name='file_upload' class='upload_icon'></rs-icon>
+                                                                                                    <div>
+                                                                                                        <div style='margin-bottom:3px;'>Drag main image from </div>
+                                                                                                        <div style='margin-bottom:7px;'>
+                                                                                                            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames' 
+                                                                                                                            class='text-link' 
+                                                                                                                            urlqueryparam-view='resource-search'
+                                                                                                                            urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image'
+                                                                                                                            urlqueryparam-custom-label='Search Image'>
+                                                                                                                            Image Library
+                                                                                                            </semantic-link>
+                                                                                                        
+                                                                                                            <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                                                                                        urlqueryparam-view='resource-search' 
+                                                                                                                                        urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image'
+                                                                                                                                        urlqueryparam-open-as-drag-and-drop='true'
+                                                                                                                                        urlqueryparam-custom-label='Search Image'
+                                                                                                                                        >
+                                                                                                                <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding-left: 5px;' title='Open Image Library in new draggable tab'></rs-icon>
+                                                                                                            </semantic-link-container>
+                                                                                                    
+                                                                                                            <span padding: 0 3px> or </span>
+                                                                                                    
+                                                                                                            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames' 
+                                                                                                                            class='text-link' 
+                                                                                                                            urlqueryparam-view='resource-search'
+                                                                                                                            urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation'
+                                                                                                                            urlqueryparam-custom-label='Search image annotation'>
+                                                                                                                Image Annotation Library
+                                                                                                            </semantic-link>
+                                                                                                        
+                                                                                                            <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                                                                                        urlqueryparam-view='resource-search' 
+                                                                                                                                        urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation'
+                                                                                                                                        urlqueryparam-open-as-drag-and-drop='true'
+                                                                                                                                        urlqueryparam-custom-label='Search image annotation'
+                                                                                                                                        >
+                                                                                                                <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding-left: 5px;' title='Open Image Annotation Library in new draggable tab'></rs-icon>
+                                                                                                            </semantic-link-container>
+                                                                                                        </div>
+                                                                                                        <div>or click to upload</div>
+                                                                                                    </div>
+                                                                                                </div>"
+                                                                    nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+                                </semantic-form-drag-and-drop-input>
+
+                            </div>
+                            <div class="dragAndDrop-input-container">
+                                <semantic-form-drag-and-drop-input  for='entity_image' 
+                                                                    label="More images"
+                                                                    placeholder-item-template="<div class='placeholder-item'>
+                                                                                                    <rs-icon icon-type='round' icon-name='file_upload' class='upload_icon'></rs-icon>
+                                                                                                    <div>
+                                                                                                        <div style='margin-bottom:3px;'>Drag image from </div>
+                                                                                                        <div style='margin-bottom:7px;'>
+                                                                                                            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames' 
+                                                                                                                            class='text-link' 
+                                                                                                                            urlqueryparam-view='resource-search'
+                                                                                                                            urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image'
+                                                                                                                            urlqueryparam-custom-label='Search Image'>
+                                                                                                                            Image Library
+                                                                                                            </semantic-link>
+                                                                                                        
+                                                                                                            <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                                                                                        urlqueryparam-view='resource-search' 
+                                                                                                                                        urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image'
+                                                                                                                                        urlqueryparam-open-as-drag-and-drop='true'
+                                                                                                                                        urlqueryparam-custom-label='Search Image'
+                                                                                                                                        >
+                                                                                                                <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding-left: 5px;' title='Open Image Library in new draggable tab'></rs-icon>
+                                                                                                            </semantic-link-container>
+                                                                                                    
+                                                                                                            <span padding: 0 3px> or </span>
+                                                                                                    
+                                                                                                            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames' 
+                                                                                                                            class='text-link' 
+                                                                                                                            urlqueryparam-view='resource-search'
+                                                                                                                            urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation'
+                                                                                                                            urlqueryparam-custom-label='Search image annotation'>
+                                                                                                                Image Annotation Library
+                                                                                                            </semantic-link>
+                                                                                                        
+                                                                                                            <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                                                                                        urlqueryparam-view='resource-search' 
+                                                                                                                                        urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation'
+                                                                                                                                        urlqueryparam-open-as-drag-and-drop='true'
+                                                                                                                                        urlqueryparam-custom-label='Search image annotation'
+                                                                                                                                        >
+                                                                                                                <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding-left: 5px;' title='Open Image Annotation Library in new draggable tab'></rs-icon>
+                                                                                                            </semantic-link-container>
+                                                                                                        </div>
+                                                                                                        <div>or click to upload</div>
+                                                                                                    </div>
+                                                                                                </div>"
+                                                                    nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+                                </semantic-form-drag-and-drop-input>
+                            </div>
+                        </div>
+                    </bs-tab-pane>
+
+                    <bs-tab-pane event-key="{{viewId}}-images-listView">
+                        <div class="tab-pane-content" style="padding-top: 0;">
+                        
+                            <semantic-form-autocomplete-input   for='entity_image_main_representation' 
+                                                                label="Main image"
+                                                                placeholder="Select image" 
+                                                                nested-form-templates='[ 
+                                                                    {
+                                                                        "label": "Image",
+                                                                        "nestedForm": "{{{{raw}}}}
+                                                                                        {{> \"http://www.researchspace.org/resource/system/forms/Image\" nested=true editable=true mode=\"new\"}}
+                                                                                    {{{{/raw}}}}"
+                                                                    }
+                                                                ]'> 
+                            </semantic-form-autocomplete-input>
+                    
+                            <semantic-form-autocomplete-input   for='entity_image' 
+                                                                label="More images"
+                                                                placeholder="Select image" 
+                                                                nested-form-templates='[ 
+                                                                    {
+                                                                        "label": "Image",
+                                                                        "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Image\" nested=true editable=true mode=\"new\" }}{{{{/raw}}}}"
+                                                                    }
+                                                                
+                                                                ]'> 
+                            </semantic-form-autocomplete-input>
+                        </div>
+                    </bs-tab-pane>
+                </bs-tab-content>
+            </div>
         </div>
-    </div>
-</bs-tab-container>
+    </bs-tab-container>
 [[else]]
     <bs-tab-container id="{{viewId}}-formResourceAsset-tabs" default-active-key="[[#if map]]{{viewId}}-resourceForm-map[[else]]{{viewId}}-resourceForm-images[[/if]]">
         <div class="formResourceAsset-tabs">
@@ -382,11 +420,8 @@
                                 <div style="display: flex;align-items: center;gap: 20px;">
                                     {{#if node}}
                                         <semantic-if    query='ASK { <{{node}}> crm:P138i_has_representation|rso:PX_has_main_representation ?image . 
-                                                                    ?image a rso:EX_Digital_Image .
-                                                                    ?image crm:P1_is_identified_by ?appellation .
-                                                                    ?appellation a crm:E41_Appellation .
-                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                    ?appellation crm:P190_has_symbolic_content ?label .
+                                                                     ?image a ?type .
+                                                                     FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
                                                                 }'
                                                         then='{{> then}}'>
 
@@ -444,24 +479,45 @@
                                                                                 placeholder-item-template="<div class='placeholder-item'>
                                                                                                                 <rs-icon icon-type='round' icon-name='file_upload' class='upload_icon'></rs-icon>
                                                                                                                 <div>
-                                                                                                                    <span>Drag main image from </span>
-                                                                                                                    <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames' 
-                                                                                                                                    class='text-link' 
-                                                                                                                                    urlqueryparam-view='resource-search'
-                                                                                                                                    urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image'
-                                                                                                                                    urlqueryparam-custom-label='Search Image'>
-                                                                                                                                    Image Library
-                                                                                                                    </semantic-link>
-                                                                                                                
-                                                                                                                    <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                                                                                                                urlqueryparam-view='resource-search' 
-                                                                                                                                                urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image'
-                                                                                                                                                urlqueryparam-open-as-drag-and-drop='true'
-                                                                                                                                                urlqueryparam-custom-label='Search Image'
-                                                                                                                                                >
-                                                                                                                        <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding:0 8px 0 5px;' title='Open Image Library in new draggable tab'></rs-icon>
-                                                                                                                    </semantic-link-container>
-                                                                                                                    <span>or click to upload</span>
+                                                                                                                    <div style='margin-bottom:3px;'>Drag main image from </div>
+                                                                                                                    <div style='margin-bottom:7px;'>
+                                                                                                                        <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames' 
+                                                                                                                                        class='text-link' 
+                                                                                                                                        urlqueryparam-view='resource-search'
+                                                                                                                                        urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image'
+                                                                                                                                        urlqueryparam-custom-label='Search Image'>
+                                                                                                                                        Image Library
+                                                                                                                        </semantic-link>
+                                                                                                                    
+                                                                                                                        <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                                                                                                    urlqueryparam-view='resource-search' 
+                                                                                                                                                    urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image'
+                                                                                                                                                    urlqueryparam-open-as-drag-and-drop='true'
+                                                                                                                                                    urlqueryparam-custom-label='Search Image'
+                                                                                                                                                    >
+                                                                                                                            <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding-left: 5px;' title='Open Image Library in new draggable tab'></rs-icon>
+                                                                                                                        </semantic-link-container>
+                                                                                                                  
+                                                                                                                        <span padding: 0 3px> or </span>
+                                                                                                                   
+                                                                                                                        <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames' 
+                                                                                                                                        class='text-link' 
+                                                                                                                                        urlqueryparam-view='resource-search'
+                                                                                                                                        urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation'
+                                                                                                                                        urlqueryparam-custom-label='Search image annotation'>
+                                                                                                                            Image Annotation Library
+                                                                                                                        </semantic-link>
+                                                                                                                    
+                                                                                                                        <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                                                                                                    urlqueryparam-view='resource-search' 
+                                                                                                                                                    urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation'
+                                                                                                                                                    urlqueryparam-open-as-drag-and-drop='true'
+                                                                                                                                                    urlqueryparam-custom-label='Search image annotation'
+                                                                                                                                                    >
+                                                                                                                            <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding-left: 5px;' title='Open Image Annotation Library in new draggable tab'></rs-icon>
+                                                                                                                        </semantic-link-container>
+                                                                                                                    </div>
+                                                                                                                    <div>or click to upload</div>
                                                                                                                 </div>
                                                                                                             </div>"
                                                                                 nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
@@ -474,24 +530,45 @@
                                                                                 placeholder-item-template="<div class='placeholder-item'>
                                                                                                                 <rs-icon icon-type='round' icon-name='file_upload' class='upload_icon'></rs-icon>
                                                                                                                 <div>
-                                                                                                                    <span>Drag image from </span>
-                                                                                                                    <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames' 
-                                                                                                                                    class='text-link' 
-                                                                                                                                    urlqueryparam-view='resource-search'
-                                                                                                                                    urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image'
-                                                                                                                                    urlqueryparam-custom-label='Search Image'>
-                                                                                                                                    Image Library
-                                                                                                                    </semantic-link>
+                                                                                                                    <div style='margin-bottom:3px;'>Drag image from </div>
+                                                                                                                    <div style='margin-bottom:7px;'>
+                                                                                                                        <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames' 
+                                                                                                                                        class='text-link' 
+                                                                                                                                        urlqueryparam-view='resource-search'
+                                                                                                                                        urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image'
+                                                                                                                                        urlqueryparam-custom-label='Search Image'>
+                                                                                                                                        Image Library
+                                                                                                                        </semantic-link>
+                                                                                                                    
+                                                                                                                        <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                                                                                                    urlqueryparam-view='resource-search' 
+                                                                                                                                                    urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image'
+                                                                                                                                                    urlqueryparam-open-as-drag-and-drop='true'
+                                                                                                                                                    urlqueryparam-custom-label='Search Image'
+                                                                                                                                                    >
+                                                                                                                            <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding-left: 5px;' title='Open Image Library in new draggable tab'></rs-icon>
+                                                                                                                        </semantic-link-container>
                                                                                                                 
-                                                                                                                    <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                                                                                                                urlqueryparam-view='resource-search' 
-                                                                                                                                                urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image'
-                                                                                                                                                urlqueryparam-open-as-drag-and-drop='true'
-                                                                                                                                                urlqueryparam-custom-label='Search Image'
-                                                                                                                                                >
-                                                                                                                        <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding:0 8px 0 5px;' title='Open Image Library in new draggable tab'></rs-icon>
-                                                                                                                    </semantic-link-container>
-                                                                                                                    <span>or click to upload</span>
+                                                                                                                        <span padding: 0 3px> or </span>
+                                                                                                                
+                                                                                                                        <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames' 
+                                                                                                                                        class='text-link' 
+                                                                                                                                        urlqueryparam-view='resource-search'
+                                                                                                                                        urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation'
+                                                                                                                                        urlqueryparam-custom-label='Search image annotation'>
+                                                                                                                            Image Annotation Library
+                                                                                                                        </semantic-link>
+                                                                                                                    
+                                                                                                                        <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                                                                                                    urlqueryparam-view='resource-search' 
+                                                                                                                                                    urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation'
+                                                                                                                                                    urlqueryparam-open-as-drag-and-drop='true'
+                                                                                                                                                    urlqueryparam-custom-label='Search image annotation'
+                                                                                                                                                    >
+                                                                                                                            <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding-left: 5px;' title='Open Image Annotation Library in new draggable tab'></rs-icon>
+                                                                                                                        </semantic-link-container>
+                                                                                                                    </div>
+                                                                                                                    <div>or click to upload</div>
                                                                                                                 </div>
                                                                                                             </div>"
                                                                                 nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
@@ -763,7 +840,8 @@
                                                                         ?mark crm:P2_has_type <http://www.researchspace.org/resource/vocab/mark_type/signature> .
                                                                         
                                                                         ?signature crm:P138i_has_representation ?signatureImage .
-                                                                        ?signatureImage a rs:EX_Digital_Image .
+                                                                        ?signatureImage a ?type .
+                                                                        FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
                                                                         ?signatureImage crm:P138_represents ?signature . 
                                                                     }'
 
@@ -823,28 +901,49 @@
                                                                                     label="Signature" 
                                                                                     render-header=false
                                                                                     placeholder-item-template="<div class='placeholder-item'>
-                                                                                                                <rs-icon icon-type='round' icon-name='file_upload' class='upload_icon'></rs-icon>
-                                                                                                                <div>
-                                                                                                                    <span>Drag image from </span>
-                                                                                                                    <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames' 
-                                                                                                                                    class='text-link' 
-                                                                                                                                    urlqueryparam-view='resource-search'
-                                                                                                                                    urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image'
-                                                                                                                                    urlqueryparam-custom-label='Search Image'>
-                                                                                                                                    Image Library
-                                                                                                                    </semantic-link>
-                                                                                                                
-                                                                                                                    <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                                                                                                                urlqueryparam-view='resource-search' 
-                                                                                                                                                urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image'
-                                                                                                                                                urlqueryparam-open-as-drag-and-drop='true'
-                                                                                                                                                urlqueryparam-custom-label='Search Image'
-                                                                                                                                                >
-                                                                                                                        <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding:0 8px 0 5px;' title='Open Image Library in new draggable tab'></rs-icon>
-                                                                                                                    </semantic-link-container>
-                                                                                                                    <span>or click to upload</span>
-                                                                                                                </div>
-                                                                                                            </div>"
+                                                                                                                    <rs-icon icon-type='round' icon-name='file_upload' class='upload_icon'></rs-icon>
+                                                                                                                    <div>
+                                                                                                                        <div style='margin-bottom:3px;'>Drag image from </div>
+                                                                                                                        <div style='margin-bottom:7px;'>
+                                                                                                                            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames' 
+                                                                                                                                            class='text-link' 
+                                                                                                                                            urlqueryparam-view='resource-search'
+                                                                                                                                            urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image'
+                                                                                                                                            urlqueryparam-custom-label='Search Image'>
+                                                                                                                                            Image Library
+                                                                                                                            </semantic-link>
+                                                                                                                        
+                                                                                                                            <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                                                                                                        urlqueryparam-view='resource-search' 
+                                                                                                                                                        urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image'
+                                                                                                                                                        urlqueryparam-open-as-drag-and-drop='true'
+                                                                                                                                                        urlqueryparam-custom-label='Search Image'
+                                                                                                                                                        >
+                                                                                                                                <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding-left: 5px;' title='Open Image Library in new draggable tab'></rs-icon>
+                                                                                                                            </semantic-link-container>
+                                                                                                                    
+                                                                                                                            <span padding: 0 3px> or </span>
+                                                                                                                    
+                                                                                                                            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames' 
+                                                                                                                                            class='text-link' 
+                                                                                                                                            urlqueryparam-view='resource-search'
+                                                                                                                                            urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation'
+                                                                                                                                            urlqueryparam-custom-label='Search image annotation'>
+                                                                                                                                Image Annotation Library
+                                                                                                                            </semantic-link>
+                                                                                                                        
+                                                                                                                            <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                                                                                                        urlqueryparam-view='resource-search' 
+                                                                                                                                                        urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation'
+                                                                                                                                                        urlqueryparam-open-as-drag-and-drop='true'
+                                                                                                                                                        urlqueryparam-custom-label='Search image annotation'
+                                                                                                                                                        >
+                                                                                                                                <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding-left: 5px;' title='Open Image Annotation Library in new draggable tab'></rs-icon>
+                                                                                                                            </semantic-link-container>
+                                                                                                                        </div>
+                                                                                                                        <div>or click to upload</div>
+                                                                                                                    </div>
+                                                                                                                </div>"
                                                                                     nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
                                                 </semantic-form-drag-and-drop-input>
                                             </div>

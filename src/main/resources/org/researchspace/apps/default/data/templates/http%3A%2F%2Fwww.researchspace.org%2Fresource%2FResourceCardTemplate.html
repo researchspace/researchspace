@@ -157,55 +157,11 @@
           {{/case}}  --]]
 
           {{#default}}
-            <semantic-query query='SELECT ?iri ?mainImage ?image ?mainImageOntologyClass ?imageOntologyClass WHERE  { 
-                                    BIND(<{{iri}}> as ?iri)
-                                    OPTIONAL { ?iri rs:PX_has_main_representation ?mainImage . ?mainImage a ?mainImageOntologyClass }  
-                                    OPTIONAL { ?iri crm:P138i_has_representation ?image . ?image a ?imageOntologyClass }
-                                  } LIMIT 1'
-                            template='{{> template}}'>
-
-              <template id='template'>
-            
-                  {{#if bindings.0.mainImage.value}}
-                    {{#if (eq bindings.0.mainImageOntologyClass.value "http://www.researchspace.org/ontology/EX_Digital_Image_Region")}}
-                      [[!-- when the resource has an annotation as image --]]
-                      <rs-iiif-image-thumbnail style='height: 100%; width: 100%;'
-                                              image-or-region='{{bindings.0.mainImage.value}}'      
-                                              [[> rsp:IIIFConfig]]>
-                      </rs-iiif-image-thumbnail>
-                    {{else}}
-                      <mp-resource-thumbnail iri='{{iri}}' class="resource-card__thumbnail">
-                        <mp-resource-thumbnail-fallback>
-                          [[> defaultCardIcon]]
-                        </mp-resource-thumbnail-fallback>
-                      </mp-resource-thumbnail>
-                    {{/if}}
-          
-                  {{else if bindings.0.image.value}}
-                    {{#if (eq bindings.0.imageOntologyClass.value "http://www.researchspace.org/ontology/EX_Digital_Image_Region")}}
-                      [[!-- when the resource has an annotation as image --]]
-                      <rs-iiif-image-thumbnail style='height: 100%; width: 100%;'
-                                              image-or-region='{{bindings.0.image.value}}'      
-                                              [[> rsp:IIIFConfig]]>
-                      </rs-iiif-image-thumbnail>
-                    {{else}}
-                      <mp-resource-thumbnail iri='{{iri}}' class="resource-card__thumbnail">
-                        <mp-resource-thumbnail-fallback>
-                          [[> defaultCardIcon]]
-                        </mp-resource-thumbnail-fallback>
-                      </mp-resource-thumbnail>
-                    {{/if}}
-
-                  {{else}}
-                    <mp-resource-thumbnail iri='{{iri}}' class="resource-card__thumbnail">
-                      <mp-resource-thumbnail-fallback>
-                        [[> defaultCardIcon]]
-                      </mp-resource-thumbnail-fallback>
-                    </mp-resource-thumbnail>
-                  {{/if}}
-    
-              </template>
-            </semantic-query>
+            <mp-resource-thumbnail iri='{{iri}}' class="resource-card__thumbnail">
+              <mp-resource-thumbnail-fallback>
+                [[> defaultCardIcon]]
+              </mp-resource-thumbnail-fallback>
+            </mp-resource-thumbnail>
           {{/default}}
 
         {{/switch}}

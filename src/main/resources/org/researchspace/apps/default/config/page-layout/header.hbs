@@ -575,7 +575,7 @@
           <mp-anonymous-hidden alt='<li><a href="/login" title="login"></a></li>'>
             <mp-event-target-template-render id='header-profile-dropdown' template='\{{> template}}'>
               <template id='template'>
-                <semantic-query query='SELECT DISTINCT ?systemUser ?systemUserName ?actorFullName ?mainImage ?mainImageClass ?group ?groupFullName { 
+                <semantic-query query='SELECT DISTINCT ?systemUser ?systemUserName ?actorFullName ?group ?groupFullName { 
                                         BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
                                         BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?systemUserName)
 
@@ -585,12 +585,6 @@
                                           ?actorName a crm:E41_Appellation .
                                           ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                                           ?actorName crm:P190_has_symbolic_content ?actorFullName .
-                                        }
-
-                                        OPTIONAL {
-                                          ?systemUser rs:PX_has_main_representation ?mainImage .
-                                          ?mainImage a ?mainImageClass .
-                                          FILTER(?mainImageClass in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
                                         }
 
                                         OPTIONAL {
@@ -612,19 +606,11 @@
                   <bs-dropdown id="navbar-dropdown" class="user-dropdown">
                     <bs-dropdown-toggle>
                       <div class="navDropdown-iconAndLabel"> 
-                        \{{#if (eq bindings.0.mainImageClass.value "http://www.researchspace.org/ontology/EX_Digital_Image_Region")}}
-                          <rs-iiif-image-thumbnail  height='25' width='25' style='width: 25px; height:25px; border-radius:1.5px; object-fit: cover; object-position: top;'
-                                                    image-or-region='\{{bindings.0.mainImage.value}}'
-                                                    image-id-pattern='OPTIONAL { ?imageIRI crmdig:L60i_is_documented_by/crmdig:L11_had_output/rs:PX_has_file_name ?carrierImageID. } BIND(COALESCE(?carrierImageID, ENCODE_FOR_URI(ENCODE_FOR_URI(REPLACE(STR(?imageIRI), "^.*/(.*)$", "$1")))) AS ?imageID) .'
-			                                              iiif-server-url='/proxy/IIIF'>
-                          </rs-iiif-image-thumbnail>
-                        \{{else}}
-                          <mp-resource-thumbnail iri='\{{bindings.0.systemUser.value}}' style="width: 25px; height:25px; border-radius:1.5px; object-fit: cover; object-position: top;">
-                            <mp-resource-thumbnail-fallback>
-                                <rs-icon icon-type="round" icon-name="account_box"></rs-icon>
-                            </mp-resource-thumbnail-fallback>
-                          </mp-resource-thumbnail>  
-                        \{{/if}}
+                        <mp-resource-thumbnail iri='\{{bindings.0.systemUser.value}}' style="width: 25px; height:25px; border-radius:1.5px; object-fit: cover; object-position: top;">
+                          <mp-resource-thumbnail-fallback>
+                              <rs-icon icon-type="round" icon-name="account_box"></rs-icon>
+                          </mp-resource-thumbnail-fallback>
+                        </mp-resource-thumbnail>  
                         \{{#if bindings.0.actorFullName.value}}
                           <div>\{{bindings.0.actorFullName.value}}</div>
                         \{{else}}

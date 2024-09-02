@@ -85,7 +85,7 @@
                                   fields='[{"iri": "http://www.researchspace.org/pattern/system/vocabularyLabel", "id": "label", "label": "Name", "xsdDatatype": "http://www.w3.org/2001/XMLSchema#string"}
                                   ]'>
                           
-          <div id="{{viewId}}-newAuthorityDocument-search-form" class="vocabulary-search-form">
+          <div id="{{viewId}}-newAuthorityDocument-search-form">
             <semantic-form-text-input for="label" placeholder="Enter authority document name" label="Authority document name" ></semantic-form-text-input>      
 
             <div class="btn-form-actions" style="margin-top: 20px;">
@@ -144,7 +144,7 @@
                     </div>
                   </div>
                 {{else}}
-                  <div id="{{bindings.0.viewId.value}}-newAuthorityDocument-semantic-form" class="newAuthorityDocument-semantic-form">
+                  <div id="{{bindings.0.viewId.value}}-newAuthorityDocument-semantic-form">
                     <semantic-form id='{{bindings.0.viewId.value}}-new-authorityDocument-form' 
                                   persistence='{"type": "sparql", "targetGraphIri": "{{bindings.0.vocabulary.value}}"}'
                                   new-subject-template='{{bindings.0.vocabulary.value}}'
@@ -159,7 +159,7 @@
                                             entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
                                           ]]'
                     >
-                      <div>
+                      <div style="margin-right: 4px;">
                         <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E32_Authority_Document"></semantic-form-hidden-input>
                         <semantic-form-hidden-input for="entity_primary_appellation" placeholder="Enter authority document name" label="Authority document name"
                                                     default-value='{{bindings.0.vocabularyLabel.value}}'>
@@ -194,7 +194,9 @@
                             </mp-popover>
                           </div>
                         </div>
-                        <semantic-form-select-input for="vocabulary_refersto_resourceConfig" render-header="false" placeholder='Select the type of the resources listed in the document' readonly-resource="true"></semantic-form-select-input>
+                        <div class="page__section-container" style="max-height: 20vh; overflow: auto;">
+                          <semantic-form-checklist-input for='vocabulary_refersto_resourceConfig' type="checkbox" label="Resource type" render-header="false"></semantic-form-checklist-input>
+                        </div>
 
                         <semantic-form-tree-picker-input  for='authority_document_type' 
                                                           default-values='[{{#if docType}}"{{docType}}"{{/if}}]' 

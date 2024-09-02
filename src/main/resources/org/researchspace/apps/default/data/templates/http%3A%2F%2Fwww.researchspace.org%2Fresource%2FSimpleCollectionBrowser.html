@@ -335,7 +335,7 @@
                       [[> rsp:ImportFromExternalSource]] 
                     {{/if}} 
 
-                    {{#if (not (eq mode "new"))}}
+                    {{#if (not (or (eq mode "new") (eq mode "deleted")))}}
                       {{#if (eq resourceConfiguration "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
                         <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
                                                   urlqueryparam-view='authority-list' 
@@ -366,8 +366,7 @@
                       </mp-event-trigger>
                     {{/if}}
 
-                    {{#if (or (eq mode "new") (eq mode "deleted") )}}
-                    {{else}}
+                    {{#if (not (or (eq mode "new") (eq mode "deleted")))}}
                       {{> rsp:ResourceDropdownActions viewId=viewId
                                                       iri=iri
                                                       resourceConfig=resourceConfiguration

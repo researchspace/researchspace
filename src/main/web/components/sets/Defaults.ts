@@ -77,14 +77,15 @@ export const SetListTemplate = `
   </div>
 
   <div class='set-management__item-actions' style='margin-left: auto;'>
-
-    {{> rsp:ResourceDropdownActions viewId="clipboard-set"
-                                    iri=iri.value
-                                    resourceConfig="http://www.researchspace.org/resource/system/resource_configurations_container/data/Set"
-                                    resourceLabel="Set"
-                                    resourceFormIRI="http://www.researchspace.org/resource/system/forms/Set"
-                                    setPage=true
-    }}
+    <rs-resource-dropdown id={{iri.value}} class-name="my-css-class">
+      {{> rsp:ResourceDropdownActionsItems viewId="clipboard-set"
+                                      iri=iri.value
+                                      resourceConfig="http://www.researchspace.org/resource/system/resource_configurations_container/data/Set"
+                                      resourceLabel="Set"
+                                      resourceFormIRI="http://www.researchspace.org/resource/system/forms/Set"
+                                      setPage=true
+      }}
+    </rs-resource-dropdown>
   </div>
 `
 

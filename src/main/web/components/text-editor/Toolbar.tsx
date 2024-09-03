@@ -80,7 +80,31 @@ export interface ToolbarProps {
   onRefresh?: () => void; 
 }
 
-export class Toolbar extends React.Component<ToolbarProps> {
+interface State {
+  customDropdownOpen: boolean;
+  customDropdownTemplate?: any
+}
+
+export class Toolbar extends React.Component<ToolbarProps, State> {
+
+  constructor(props: ToolbarProps, context: any) {
+    super(props, context);
+    this.state = {
+      customDropdownOpen: false,
+      customDropdownTemplate: null
+    };
+  }
+
+  onToggleCustomDropdown = (open: boolean) => {
+    if(open && !this.state.customDropdownTemplate) {
+      this.setState({
+        customDropdownTemplate: this.getTemplate('{{> semantic-narrative-dropdown}}')
+      })
+    }
+    this.setState({
+      customDropdownOpen: open,
+    });
+  }
 
   private getTemplate = (template: string): React.CElement<{}, TemplateItem> => {
     if(!template) return null;
@@ -225,7 +249,6 @@ export class Toolbar extends React.Component<ToolbarProps> {
 
   render() {
     const { saving, showDropdown, showRefresh, onRefresh } = this.props;
-    const dropdownTemplate = showDropdown ? this.getTemplate('{{> semantic-narrative-dropdown}}') : null
     return (
       <div className={styles.toolbar}>
 
@@ -287,7 +310,18 @@ export class Toolbar extends React.Component<ToolbarProps> {
           {showRefresh && <Button onClick={onRefresh} className='btn-textAndIcon' title='Refresh narrative'>
                             <Icon iconType='round' iconName='refresh' />
                           </Button>}
-          {dropdownTemplate}
+
+          {showDropdown && <Dropdown id='xxs' className='dropdown-no-caret' pullRight onToggle={this.onToggleCustomDropdown}>
+                      <Dropdown.Toggle>
+                        <Icon iconType='round' iconName='more_vert' />
+                      </Dropdown.Toggle>
+                      <Dropdown.Menu></Dropdown.Menu>
+                      {this.state.customDropdownTemplate }
+                    </Dropdown>
+          }
+          
+        
+
           <Button bsStyle='default' 
                   className='btn-action'
                   onClick={this.props.onDocumentSave} 

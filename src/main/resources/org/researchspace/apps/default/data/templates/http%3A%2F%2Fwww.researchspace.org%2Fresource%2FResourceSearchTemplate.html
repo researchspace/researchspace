@@ -1,6 +1,12 @@
 <mp-event-target-template-render id="[[urlParam 'resourceconfig' escape=false]]-resourceSearch-frame" template='{{> template}}'>
   <template id='template'>
 
+    <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-searchPage-on-form-actions'
+                    on-event-types='["Form.ResourceUpdated", "Form.ResourceRemoved"]'      
+                    proxy-event-type='Component.TemplateUpdate' 
+                    proxy-targets='["[[urlParam "resourceconfig" escape=false]]-resourceSearch-frame"]'>
+    ></mp-event-proxy>
+
     <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-searchPage-on-create-setWithSelection'
                     on-event-types='["Components.SetManagement.SetAdded"]'
                     on-event-source='[[urlParam "viewid" escape=false]]-new-set-with-selection'

@@ -160,20 +160,14 @@
 {{/if}}
 
 [[#*inline "deleteButton"]]
-  {{log this}}
-  {{#if (eq collectionResourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
-         <mp-event-proxy id='{{viewId}}-graph-update-form' 
-                             on-event-types='["GraphAction.Delete"]'
-                            proxy-event-type='Component.TemplateUpdate'
-                            proxy-targets='["{{viewId}}-term-forms", "{{viewId}}-resource-config-term-forms"]'
-            ></mp-event-proxy>
-     <mp-graph-store-action title="Delete" 
-                                      action="DELETE" 
-                                      graphuri="{{node}}" 
-                                      graph-description="{{label.value}}">
-                <span>Delete 3</span>          
-              </mp-graph-store-action>
-           
+
+  {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
+    <mp-graph-store-action  title="Delete" 
+                            action="DELETE" 
+                            graphuri="{{node}}" 
+                            graph-description="{{label.value}}">
+      <button name="delete" class="btn btn-default">Delete</button>     
+    </mp-graph-store-action>
   {{else}}      
     <mp-overlay-dialog show='{{#if delete}}true{{else}}false{{/if}}' 
                         id='{{viewId}}-item-remove-confirmation-dialog' 
@@ -185,7 +179,7 @@
         <div>
           <div>
             <p>
-              <span>Are you sure you want to delete '</span>
+              Are you sure you want to delete
               {{#if resourceLabelPattern}}
                 <semantic-query query="SELECT ?label WHERE {
                                         BIND(<{{node}}> as ?item) .
@@ -200,37 +194,40 @@
               {{else}}
                 <strong><mp-label iri='{{node}}' style="text-transform: capitalize;"></mp-label></strong>
               {{/if}}
-              <span>' ?</span>
+              ?
             </p>
-            <semantic-query 
-                            query='
-                              SELECT DISTINCT ?resource ?label  
-                              WHERE {
-                                ?resource ?p <{{node}}> .
-                                OPTIONAL {<{{node}}> skos:prefLabel ?nodeLabel .}
-                                OPTIONAL {<{{node}}> rdfs:label ?nodeLabel .}
-                
-                                OPTIONAL {
-                                  ?resource rdfs:label ?label .
+
+            <div>
+              <semantic-query 
+                              query='
+                                SELECT DISTINCT ?resource ?label  
+                                WHERE {
+                                  ?resource ?p <{{node}}> .
+                                  OPTIONAL {<{{node}}> skos:prefLabel ?nodeLabel .}
+                                  OPTIONAL {<{{node}}> rdfs:label ?nodeLabel .}
+                  
+                                  OPTIONAL {
+                                    ?resource rdfs:label ?label .
+                                  }
+                                  OPTIONAL {
+                                    ?resource skos:prefLabel ?label .
+                                  }
                                 }
-                                OPTIONAL {
-                                  ?resource skos:prefLabel ?label .
-                                }
-                              }
-                            '
-                            template='{{> referredByTemplate node=node}}'
-            >
-              <template id='referredByTemplate'>
-                Some resources in the system link to it:
-                <ul>
-                  {{#each bindings}}
-                    <li>
-                      <semantic-link iri='{{resource.value}}'>{{label.value}}</semantic-link>
-                    </li>
-                  {{/each}}
-                </ul>
-              </template>
-            </semantic-query>
+                              '
+                              template='{{> referredByTemplate node=node}}'
+              >
+                <template id='referredByTemplate'>
+                  Some resources in the system link to it:
+                  <ul>
+                    {{#each bindings}}
+                      <li>
+                        <semantic-link iri='{{resource.value}}'>{{label.value}}</semantic-link>
+                      </li>
+                    {{/each}}
+                  </ul>
+                </template>
+              </semantic-query>
+            </div>
           </div>
           <div class="form-btn-group">
             <mp-event-trigger id='{{viewId}}-cancel-modal' 
@@ -277,13 +274,7 @@
             [[/if]]            
             <mp-event-proxy id='{{viewId}}-update-form' 
                             on-event-source='{{#if iri}}{{iri}}-resource-form{{else}}{{viewId}}-resource-form{{/if}}' 
-                            on-event-types='["Form.ResourceRemoved","GraphAction.Delete"]'
-                            proxy-event-type='Component.TemplateUpdate'
-                            proxy-targets='["{{viewId}}-term-forms", "{{viewId}}-resource-config-term-forms"]'
-            ></mp-event-proxy>
-            <mp-event-proxy id='{{viewId}}-update-form' 
-                            on-event-source='{{#if iri}}{{iri}}-resource-form{{else}}{{viewId}}-resource-form{{/if}}' 
-                            on-event-type='Form.ResourceRemoved'
+                            on-event-types='["Form.ResourceRemoved"]'
                             proxy-event-type='Component.TemplateUpdate'
                             proxy-targets='["{{viewId}}-term-forms", "{{viewId}}-resource-config-term-forms"]'
             ></mp-event-proxy>

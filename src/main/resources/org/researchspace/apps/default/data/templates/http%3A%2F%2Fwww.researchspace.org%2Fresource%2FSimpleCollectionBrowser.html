@@ -11,506 +11,578 @@
     editable - false if collection is readonly one, true otherwise
 --]]
 
-
-<div class="resource-editView-container">
-
-{{#if collection}}
-  <mp-splitpane min-size=250 default-size=400 default-open=true always-render=true >
-    <div class="split-pane__sidebar split-pane__leftsidebar">
-      <mp-splitpane-toggle-on>
-        <button class="btn-toggle-on">
-          <div class="btn-toggle-on-content">
-            <h4 style="width: 100%; text-align: left;" class="text-first-letter-uppercase">
-              {{#if collectionLabel}}
-                {{collectionLabel}}
-              {{else}}
-                <mp-label iri='{{collection}}'></mp-label>
-              {{/if}}
-            </h4>
-            <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
-          </div>
-        </button>
-      </mp-splitpane-toggle-on>
-      <mp-splitpane-toggle-off>
-        <div class="split-pane__sidebar-header">
-          <button class="btn-toggle-off">
-            <h4 style="width: 100%; text-align: left;" class="text-first-letter-uppercase">
-              {{#if collectionLabel}}
-                {{collectionLabel}}
-              {{else}}
-                <mp-label iri='{{collection}}'></mp-label>
-              {{/if}}
-            </h4>
-            <rs-icon icon-type="round" icon-name="chevron_left"></rs-icon>
-          </button>
-        </div>
-      </mp-splitpane-toggle-off>
-      <mp-splitpane-sidebar-open style="flex: 1;">
-        <div class="split-pane__sidebar-open">
-          <div class="collection-terms-area">
-            {{#if editable}}
-              <mp-event-trigger id='{{viewId}}-form-new-trigger' 
-                                type='Component.TemplateUpdate' 
-                                data='{"mode": "new" }' 
-                                targets='["{{viewId}}-mytree", "{{viewId}}-term-forms"]'>
-                <button class="btn btn-action btn-textAndIcon" style="margin-bottom: 10px; justify-content: center;">
-                  <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
-                  <span>New 
-                    {{#if collectionLabel}}
-                      <span style="text-transform: lowercase;">{{collectionLabel}}</span>
-                    {{else}}
-                      <mp-label iri='{{collection}}' style="text-transform: lowercase;"></mp-label>
-                    {{/if}}
-                  </span>
-                </button>
-              </mp-event-trigger>
-            {{/if}}
-
-            <mp-event-target-template-render id='{{viewId}}-mytree'  template='{{> treeTemplate}}'>
-              <template id='treeTemplate'>
-                <semantic-lazy-tree id='{{viewId}}-scheme-tree' 
-                                    info-template='{{> template}}' 
-                                    input-placeholder='Select {{resourceName}}' 
-                                    type='simple'  
-                                    focused='{{#if (not (eq mode "deleted"))}}{{iri}}{{/if}}' 
-                                    page-size='10000'
-                                    config='{"scheme": "{{collection}}", 
-                                            {{#if resourceLabelPattern}}
-                                              "labelPattern": "{{resourceLabelPattern}}",
-                                            {{/if}}
-                                            {{#if resourceBroaderProperty}}
-                                              "relationPattern": "?item <{{resourceBroaderProperty}}> ?parent",
-                                            {{/if}}
-                                            {{#if resourceOrderPattern}}
-                                              "orderByPattern": "{{resourceOrderPattern}}",
-                                            {{else}}
-                                              "orderByPattern": "BIND(?label as ?order)",
-                                            {{/if}}
-                                            
-                                            "schemePattern": "{{#if resourceMembershipProperty}} ?item <{{resourceMembershipProperty}}> ?__scheme__.{{/if}} 
-                                                              {{#if resourceOntologyClass }} ?item a/rdfs:subClassOf* <{{resourceOntologyClass }}> .{{/if}} 
-                                                              {{#if resourceP2Type}} ?item crm:P2_has_type <{{resourceP2Type}}> .{{/if}} 
-                                                              {{#if resourceRestrictionPattern}}{{resourceRestrictionPattern}}{{/if}}"
-                                                              }'>
-                  <template id='template'>
-                    <span class="tree-item-actions-container">
-                      {{#if editable}}
-                        <mp-event-trigger id='{{viewId}}-form-edit-trigger--{{iri}}' 
-                                          type='Component.TemplateUpdate'
-                                          data='{"iri":"{{iri}}", 
-                                                "label": "{{label}}", 
-                                                "mode": "edit"
-                                                }' 
-                                          targets='["{{viewId}}-term-forms"]'>
-                          <span class='tree-item-action'>
-                            <rs-icon icon-type="rounded" icon-name="edit" title="Edit {{resourceName}}" symbol="true"></rs-icon>
-                          </span>
-                        </mp-event-trigger>
-                        <mp-event-proxy id='{{viewId}}-focus-tree-element' 
-                                        on-event-source='{{viewId}}-form-edit-trigger--{{iri}}' 
-                                        proxy-event-type='LazyTree.Focus' 
-                                        proxy-targets='["{{viewId}}-scheme-tree"]' 
-                                        data='{"iri":"{{iri}}"}'>
-                        </mp-event-proxy>
-                        {{#if resourceBroaderProperty}}
-                          <mp-event-trigger id='{{viewId}}-form-newNarrower-trigger--{{iri}}' 
-                                            type='Component.TemplateUpdate' 
-                                            data='{"broader": "{{iri}}", "mode": "new" }' 
-                                            targets='["{{viewId}}-term-forms"]'>
-                            <span class='tree-item-action'>
-                              <rs-icon icon-type="rounded" icon-name="add" title="Add narrower {{resourceName}}" symbol="true"></rs-icon>
-                            </span>
-                          </mp-event-trigger>
-                          <mp-event-proxy id='{{viewId}}-addNarrower-focus-tree-element' 
-                                          on-event-source='{{viewId}}-form-newNarrower-trigger--{{iri}}' 
-                                          proxy-event-type='Component.TemplateUpdate' 
-                                          proxy-targets='["{{viewId}}-mytree"]' 
-                                          >
-                          </mp-event-proxy>
-                        {{/if}}
-                      {{else}}
-                        <mp-event-trigger id='{{viewId}}-form-edit-trigger' 
-                                          type='Component.TemplateUpdate'
-                                          data='{"iri":"{{iri}}",  "mode": "view" }' 
-                                          targets='["{{viewId}}-term-forms"]'>
-                          <span class='tree-item-action' >
-                            <rs-icon icon-type="rounded" icon-name="article" title="View {{resourceName}}" symbol="true"></rs-icon>
-                          </span>
-                        </mp-event-trigger>
-                      {{/if}}
-                    </span>
-                  </template>
-                </semantic-lazy-tree> 
-              </template>
-            </mp-event-target-template-render>
-          </div>
-        </div>
-      </mp-splitpane-sidebar-open>
-    </div>
-{{/if}}
+<mp-event-target-template-render id="{{viewId}}-entity-editor-area" template='{{> template}}'>
+  <template id='template'>
+    {{#if collectionDeleted}}
       <div class="page__grid-container">
         <div class="page__content-container resource-editView-form-container">
-          <mp-event-target-template-render id='{{viewId}}-term-forms' template='{{> template}}'>
+          <mp-event-target-template-render id='{{viewId}}-deleted-collection' template='{{> template}}'>
             <template id='template'>
-              <div class='resource-editView-formHeader'>
-                <div class="{{#if (eq mode 'deleted')}}{{else}}resource-editView-formHeader-title-container{{/if}}" style="{{#if (eq mode 'deleted')}}width: 100%;{{/if}}">
-                  {{#switch mode}}
-                    {{#case "new" break=true}}
-                      {{#if broader}}
-                        <h2 class="resource-editView-formHeader-title">
-                          New 
-                          {{#if collectionLabel}}
-                            <span>{{collectionLabel}}</span>
-                          {{else}}
-                            <mp-label iri='{{collection}}' style="text-transform: lowercase;"></mp-label>
-                          {{/if}}
-                          {{#ifCond resourceP2Type '===' 'http://www.researchspace.org/resource/system/vocab/resource_type/user'}}
-                            member of
-                          {{else}}
-                            narrower to 
-                          {{/ifCond}}
-                          {{#if resourceLabelPattern}}
-                            <semantic-query query="SELECT ?label WHERE {
-                                                    BIND(<{{broader}}> as ?item) .
-                                                    {{resourceLabelPattern}}
-                                                  }"
-                                            template='{{> template}}'>
+              <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%;">
+                <div class="success-documentation-section-icon-container">
+                  <rs-icon icon-type="round" icon-name="done"></rs-icon>
+                </div>
 
-                              <template id='template'>
-                                  <span>{{bindings.0.label.value}}</span>
-                              </template>
-                            </semantic-query>
-                          {{else}}
-                            <mp-label iri='{{broader}}'></mp-label>
-                          {{/if}}
-                        </h2>
+                <div style="flex: 1;"> 
+                  <div class="success-documentation-section-title">Success!</div>
+                  <div class="success-documentation-section-content">
+                    <span style="text-transform: capitalize;">
+                      <mp-label iri='{{iri}}'></mp-label>
+                    </span>
+                    <span> has been deleted.</span>
+                  </div>
+                </div>
+                
+                <mp-event-trigger id='{{viewId}}-cancel-deleted-state-message-{{iri}}'
+                                  type='Component.TemplateUpdate'
+                                  data='{ "hideMessage": "true" }'
+                                  targets='["{{viewId}}-deleted-collection"]'
+                >
+                  <button class="btn btn-documentation">
+                    <rs-icon icon-type="round" icon-name="close"></rs-icon>
+                  </button>
+                </mp-event-trigger>
+              </div>
+            </template>
+          </mp-event-target-template-render>
+        </div>
+      </div>
+    {{else}}
+    <div class="resource-editView-container">
+
+    {{#if collection}}
+          <mp-splitpane min-size=250 default-size=400 default-open=true always-render=true >
+            <div class="split-pane__sidebar split-pane__leftsidebar">
+              <mp-splitpane-toggle-on>
+                <button class="btn-toggle-on">
+                  <div class="btn-toggle-on-content">
+                    <h4 style="width: 100%; text-align: left;" class="text-first-letter-uppercase">
+                      {{#if collectionLabel}}
+                        {{collectionLabel}}
                       {{else}}
-
-                        <h2 class="resource-editView-formHeader-title">New
-                          {{#if collection}}
+                        <mp-label iri='{{collection}}'></mp-label>
+                      {{/if}}
+                    </h4>
+                    <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
+                  </div>
+                </button>
+              </mp-splitpane-toggle-on>
+              <mp-splitpane-toggle-off>
+                <div class="split-pane__sidebar-header">
+                  <button class="btn-toggle-off">
+                    <h4 style="width: 100%; text-align: left;" class="text-first-letter-uppercase">
+                      {{#if collectionLabel}}
+                        {{collectionLabel}}
+                      {{else}}
+                        <mp-label iri='{{collection}}'></mp-label>
+                      {{/if}}
+                    </h4>
+                    <rs-icon icon-type="round" icon-name="chevron_left"></rs-icon>
+                  </button>
+                </div>
+              </mp-splitpane-toggle-off>
+              <mp-splitpane-sidebar-open style="flex: 1;">
+                <div class="split-pane__sidebar-open">
+                  <div class="collection-terms-area">
+                    {{#if editable}}
+                      <mp-event-trigger id='{{viewId}}-form-new-trigger' 
+                                        type='Component.TemplateUpdate' 
+                                        data='{"mode": "new" }' 
+                                        targets='["{{collection}}-mytree", "{{viewId}}-term-forms"]'>
+                        <button class="btn btn-action btn-textAndIcon" style="margin-bottom: 10px; justify-content: center;">
+                          <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                          <span>New 
                             {{#if collectionLabel}}
-                              <span>{{collectionLabel}}</span>
+                              <span style="text-transform: lowercase;">{{collectionLabel}}</span>
                             {{else}}
                               <mp-label iri='{{collection}}' style="text-transform: lowercase;"></mp-label>
                             {{/if}}
-                          {{else}}
-                            {{#if (eq resourceConfiguration "http://www.researchspace.org/resource/system/resource_configurations_container/data/User")}}
-                              <span>profile</span>
-                            {{else}}
-                              <span>{{resourceName}}</span>
-                            {{/if}}
-                          {{/if}}
-                        </h2>
-                      {{/if}}
-                    {{/case}}
-
-                    {{#case "edit" break=true}}
-                      <h2 class="resource-editView-formHeader-title">
-                        <div class="link-draggable">
-                        [[!--  <rs-icon icon-type="round" icon-name="drag_indicator"></rs-icon> --]]
-                        
-                          <mp-draggable iri='{{iri}}'>
-                            <div class="text-truncate">
-                              <mp-label iri='{{iri}}' class=""></mp-label>
-                              [[!--
-                              {{#if resourceLabelPattern}}
-                                  <semantic-query query="SELECT ?label WHERE {
-                                                          BIND(<{{iri}}> as ?item) .                                                        
-                                                          {{resourceLabelPattern}}
-                                                        }"
-                                                  template='{{> template}}'>
-
-                                    <template id='template'>
-                                        <div>{{bindings.0.label.value}}</div>
-                                    </template>
-                                  </semantic-query>
-                                {{else}}
-                                  <mp-label iri='{{iri}}'></mp-label>
-                                {{/if}} --]]</div>
-                          </mp-draggable>
-                        </div>
-                      </h2>
-                      {{#if resourceName}} 
-                        <div class="color-base" style="font-size: 21px; padding-bottom: 3px;">|</div>
-                        <semantic-query query='SELECT DISTINCT ?systemUser WHERE { 
-                                                BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
-                                              } LIMIT 1'>
-                          <template id='template'>
-                            {{#ifCond bindings.0.systemUser.value "===" iri}}
-                              <div class="text-type-subheader" style="margin-right: 30px;">
-                                <rs-icon icon-type="rounded" icon-name="{{resourceIcon}}" symbol=true></rs-icon>
-                                <div>My profile</div>
-                              </div>
-                            {{else}}
-                              <div class="text-type-subheader" style="margin-right: 30px;">
-                                {{#if resourceIcon}}
-                                  <rs-icon icon-type="rounded" icon-name="{{resourceIcon}}" symbol=true></rs-icon>
-                                {{else}}
-                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol=true></rs-icon>
-                                {{/if}}
-                                  <div>{{resourceName}}</div>
-                              </div>
-                            {{/ifCond}}
-                          </template>
-                        </semantic-query>
-                      {{/if}}
-                    {{/case}}
-
-                    {{#case "view" break=true}}
-                      <h2 class="resource-editView-formHeader-title">
-                        <div>
-                          <div class="link-draggable">
-                        [[!--    <rs-icon icon-type="round" icon-name="drag_indicator"></rs-icon> --]]
-                            <mp-draggable iri='{{iri}}'>
-                              <div>
-                                <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
-                                {{#if resourceLabelPattern}}
-                                    <semantic-query query="SELECT ?label ?labelElse WHERE {
-                                                            BIND(<{{iri}}> as ?item) .                                                         
-                                                            {{resourceLabelPattern}}
-                                                          }"
-                                                    template='{{> template}}'>
-
-                                      <template id='template'>
-                                          <div>{{bindings.0.label.value}}</div>
-                                      </template>
-                                    </semantic-query>
-                                  {{else}}
-                                    <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
-                                  {{/if}} --]]
-                                </div>
-                            </mp-draggable>
-                          </div>
-                          {{#if resourceName}}
-                            <div class="text-type-subheader" style="margin-left: 22px; margin-top: 5px;">
-                              {{resourceName}}
-                            </div>
-                          {{/if}}
-                        </div>
-                      </h2>
-                    {{/case}}
-                  
-                    {{#case "deleted" break=true}}
-                      <mp-event-target-template-render id='{{viewId}}-deleted-state' template='{{> template}}'>
-                        <template id='template'>
-                          <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%;">
-                            <div class="success-documentation-section-icon-container">
-                              <rs-icon icon-type="round" icon-name="done"></rs-icon>
-                            </div>
-
-                            <div style="flex: 1;"> 
-                              <div class="success-documentation-section-title">Success!</div>
-                              <div class="success-documentation-section-content">
-                                <span style="text-transform: capitalize;">
-                                  {{#if label}}
-                                    {{label}}
-                                  {{else}}
-                                    <mp-label iri='{{iri}}'></mp-label>
-                                  {{/if}}
-                                </span>
-                                <span> has been deleted.</span>
-                              </div>
-                            </div>
-                            
-                            <mp-event-trigger id='{{viewId}}-cancel-deleted-state-message-{{iri}}'
-                                              type='Component.TemplateUpdate'
-                                              data='{ "hideMessage": "true" }'
-                                              targets='["{{viewId}}-deleted-state"]'
-                            >
-                              <button class="btn btn-documentation">
-                                <rs-icon icon-type="round" icon-name="close"></rs-icon>
-                              </button>
-                            </mp-event-trigger>
-                          </div>
-                        </template>
-                      </mp-event-target-template-render>
-                    {{/case}}
-                  {{/switch}}
-                </div>
-
-                {{#if mode}}
-                  <div class="btn-inline-container">
-
-                    {{#if (eq mode "new")}}
-                      [[> rsp:ImportFromExternalSource]] 
-                    {{/if}} 
-
-                    {{#if (not (or (eq mode "new") (eq mode "deleted")))}}
-                      {{#if (eq resourceConfiguration "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
-                        <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                  urlqueryparam-view='authority-list' 
-                                                  urlqueryparam-resource='{{iri}}'>
-                            <button class="btn btn-action btn-textAndIcon">
-                              <rs-icon icon-type='round' icon-name='list'></rs-icon>
-                              <span>List of resources</span>
-                            </button>
-                        </semantic-link-container>
-                      {{/if}} 
-                    {{/if}}
-
-                    {{#if (not (eq mode "deleted"))}}
-                      <mp-event-trigger id='{{viewId}}-form-refresh-trigger' 
-                                        type='Component.TemplateUpdate' 
-                                        targets='["{{viewId}}-term-forms"]'
-                                        data='{ "mode": "{{mode}}",
-                                                "viewId": "{{viewId}}",
-                                                {{#ifCond mode "!==" "new"}}"iri": "{{iri}}",{{/ifCond}}
-                                                {{#if broader}}"broader": "{{broader}}",{{/if}}
-                                                "resourceBroaderProperty": {{#if resourceBroaderProperty}}"{{resourceBroaderProperty}}"{{else}}null{{/if}}
-                                              }' 
-                                        >
-                        <button class="btn btn-default btn-textAndIcon" title="Refresh form">
-                          <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
-                            Refresh
+                          </span>
                         </button>
                       </mp-event-trigger>
                     {{/if}}
 
-                    {{#if (not (or (eq mode "new") (eq mode "deleted")))}}
-                      {{> rsp:ResourceDropdownActions viewId=viewId
-                                                      iri=iri
-                                                      resourceConfig=resourceConfiguration
-                                                      resourceLabel=resourceName
-                                                      resourceEditorButton=true
-                                                      hidePreview=true
-                                                      headerButton=true
-                      }}
+                    <mp-event-target-template-render id='{{collection}}-mytree'  template='{{> treeTemplate}}'>
+                      <template id='treeTemplate'>
+                        <semantic-lazy-tree id='{{viewId}}-scheme-tree' 
+                                            info-template='{{> template}}' 
+                                            input-placeholder='Select {{resourceName}}' 
+                                            type='simple'  
+                                            focused='{{#if (not (eq mode "deleted"))}}{{iri}}{{/if}}' 
+                                            page-size='10000'
+                                            config='{"scheme": "{{collection}}", 
+                                                    {{#if resourceLabelPattern}}
+                                                      "labelPattern": "{{resourceLabelPattern}}",
+                                                    {{/if}}
+                                                    {{#if resourceBroaderProperty}}
+                                                      "relationPattern": "?item <{{resourceBroaderProperty}}> ?parent",
+                                                    {{/if}}
+                                                    {{#if resourceOrderPattern}}
+                                                      "orderByPattern": "{{resourceOrderPattern}}",
+                                                    {{else}}
+                                                      "orderByPattern": "BIND(?label as ?order)",
+                                                    {{/if}}
+                                                    
+                                                    "schemePattern": "{{#if resourceMembershipProperty}} ?item <{{resourceMembershipProperty}}> ?__scheme__.{{/if}} 
+                                                                      {{#if resourceOntologyClass }} ?item a/rdfs:subClassOf* <{{resourceOntologyClass }}> .{{/if}} 
+                                                                      {{#if resourceP2Type}} ?item crm:P2_has_type <{{resourceP2Type}}> .{{/if}} 
+                                                                      {{#if resourceRestrictionPattern}}{{resourceRestrictionPattern}}{{/if}}"
+                                                                      }'>
+                          <template id='template'>
+                            <span class="tree-item-actions-container">
+                              {{#if editable}}
+                                <mp-event-trigger id='{{viewId}}-form-edit-trigger--{{iri}}' 
+                                                  type='Component.TemplateUpdate'
+                                                  data='{"iri":"{{iri}}", 
+                                                        "label": "{{label}}", 
+                                                        "mode": "edit"
+                                                        }' 
+                                                  targets='["{{viewId}}-term-forms"]'>
+                                  <span class='tree-item-action'>
+                                    <rs-icon icon-type="rounded" icon-name="edit" title="Edit {{resourceName}}" symbol="true"></rs-icon>
+                                  </span>
+                                </mp-event-trigger>
+                                <mp-event-proxy id='{{viewId}}-focus-tree-element' 
+                                                on-event-source='{{viewId}}-form-edit-trigger--{{iri}}' 
+                                                proxy-event-type='LazyTree.Focus' 
+                                                proxy-targets='["{{viewId}}-scheme-tree"]' 
+                                                data='{"iri":"{{iri}}"}'>
+                                </mp-event-proxy>
+                                {{#if resourceBroaderProperty}}
+                                  <mp-event-trigger id='{{viewId}}-form-newNarrower-trigger--{{iri}}' 
+                                                    type='Component.TemplateUpdate' 
+                                                    data='{"broader": "{{iri}}", "mode": "new" }' 
+                                                    targets='["{{viewId}}-term-forms"]'>
+                                    <span class='tree-item-action'>
+                                      <rs-icon icon-type="rounded" icon-name="add" title="Add narrower {{resourceName}}" symbol="true"></rs-icon>
+                                    </span>
+                                  </mp-event-trigger>
+                                  
+                                  <mp-event-proxy id='{{viewId}}-addNarrower-focus-tree-element' 
+                                                  on-event-source='{{viewId}}-form-newNarrower-trigger--{{iri}}' 
+                                                  proxy-event-type='Component.TemplateUpdate' 
+                                                  proxy-targets='["{{collection}}-mytree"]' 
+                                                  >
+                                  </mp-event-proxy>
+                                {{/if}}
+                              {{else}}
+                                <mp-event-trigger id='{{viewId}}-form-edit-trigger' 
+                                                  type='Component.TemplateUpdate'
+                                                  data='{"iri":"{{iri}}",  "mode": "view" }' 
+                                                  targets='["{{viewId}}-term-forms"]'>
+                                  <span class='tree-item-action' >
+                                    <rs-icon icon-type="rounded" icon-name="article" title="View {{resourceName}}" symbol="true"></rs-icon>
+                                  </span>
+                                </mp-event-trigger>
+                              {{/if}}
+                            </span>
+                          </template>
+                        </semantic-lazy-tree> 
+                      </template>
+                    </mp-event-target-template-render>
+
+                    <mp-event-proxy id='{{viewId}}-update-tree-on-graph-action-delete' 
+                                    on-event-types='["GraphAction.Delete"]' 
+                                    proxy-event-type='Component.TemplateUpdate' 
+                                    proxy-targets='["{{viewId}}-entity-editor-area"]'
+                                    additional-data='{"collectionDeleted": "true"}'
+                    ></mp-event-proxy>
+                  </div>
+                </div>
+              </mp-splitpane-sidebar-open>
+            </div>
+    {{/if}}
+          <div class="page__grid-container">
+            <div class="page__content-container resource-editView-form-container">
+              <mp-event-target-template-render id='{{viewId}}-term-forms' template='{{> template}}'>
+                <template id='template'>
+                  <div class='resource-editView-formHeader'>
+                    <div class="{{#if (eq mode 'deleted')}}{{else}}resource-editView-formHeader-title-container{{/if}}" style="{{#if (eq mode 'deleted')}}width: 100%;{{/if}}">
+                      {{#switch mode}}
+                        {{#case "new" break=true}}
+                          {{#if broader}}
+                            <h2 class="resource-editView-formHeader-title">
+                              New 
+                              {{#if collectionLabel}}
+                                <span>{{collectionLabel}}</span>
+                              {{else}}
+                                <mp-label iri='{{collection}}' style="text-transform: lowercase;"></mp-label>
+                              {{/if}}
+                              {{#ifCond resourceP2Type '===' 'http://www.researchspace.org/resource/system/vocab/resource_type/user'}}
+                                member of
+                              {{else}}
+                                narrower to 
+                              {{/ifCond}}
+                              {{#if resourceLabelPattern}}
+                                <semantic-query query="SELECT ?label WHERE {
+                                                        BIND(<{{broader}}> as ?item) .
+                                                        {{resourceLabelPattern}}
+                                                      }"
+                                                template='{{> template}}'>
+
+                                  <template id='template'>
+                                      <span>{{bindings.0.label.value}}</span>
+                                  </template>
+                                </semantic-query>
+                              {{else}}
+                                <mp-label iri='{{broader}}'></mp-label>
+                              {{/if}}
+                            </h2>
+                          {{else}}
+
+                            <h2 class="resource-editView-formHeader-title">New
+                              {{#if collection}}
+                                {{#if collectionLabel}}
+                                  <span>{{collectionLabel}}</span>
+                                {{else}}
+                                  <mp-label iri='{{collection}}' style="text-transform: lowercase;"></mp-label>
+                                {{/if}}
+                              {{else}}
+                                {{#if (eq resourceConfiguration "http://www.researchspace.org/resource/system/resource_configurations_container/data/User")}}
+                                  <span>profile</span>
+                                {{else}}
+                                  <span>{{resourceName}}</span>
+                                {{/if}}
+                              {{/if}}
+                            </h2>
+                          {{/if}}
+                        {{/case}}
+
+                        {{#case "edit" break=true}}
+                          <h2 class="resource-editView-formHeader-title">
+                            <div class="link-draggable">
+                            [[!--  <rs-icon icon-type="round" icon-name="drag_indicator"></rs-icon> --]]
+                            
+                              <mp-draggable iri='{{iri}}'>
+                                <div class="text-truncate">
+                                  <mp-label iri='{{iri}}' class=""></mp-label>
+                                  [[!--
+                                  {{#if resourceLabelPattern}}
+                                      <semantic-query query="SELECT ?label WHERE {
+                                                              BIND(<{{iri}}> as ?item) .                                                        
+                                                              {{resourceLabelPattern}}
+                                                            }"
+                                                      template='{{> template}}'>
+
+                                        <template id='template'>
+                                            <div>{{bindings.0.label.value}}</div>
+                                        </template>
+                                      </semantic-query>
+                                    {{else}}
+                                      <mp-label iri='{{iri}}'></mp-label>
+                                    {{/if}} --]]</div>
+                              </mp-draggable>
+                            </div>
+                          </h2>
+                          {{#if resourceName}} 
+                            <div class="color-base" style="font-size: 21px; padding-bottom: 3px;">|</div>
+                            <semantic-query query='SELECT DISTINCT ?systemUser WHERE { 
+                                                    BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
+                                                  } LIMIT 1'>
+                              <template id='template'>
+                                {{#ifCond bindings.0.systemUser.value "===" iri}}
+                                  <div class="text-type-subheader" style="margin-right: 30px;">
+                                    <rs-icon icon-type="rounded" icon-name="{{resourceIcon}}" symbol=true></rs-icon>
+                                    <div>My profile</div>
+                                  </div>
+                                {{else}}
+                                  <div class="text-type-subheader" style="margin-right: 30px;">
+                                    {{#if resourceIcon}}
+                                      <rs-icon icon-type="rounded" icon-name="{{resourceIcon}}" symbol=true></rs-icon>
+                                    {{else}}
+                                      <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol=true></rs-icon>
+                                    {{/if}}
+                                      <div>{{resourceName}}</div>
+                                  </div>
+                                {{/ifCond}}
+                              </template>
+                            </semantic-query>
+                          {{/if}}
+                        {{/case}}
+
+                        {{#case "view" break=true}}
+                          <h2 class="resource-editView-formHeader-title">
+                            <div>
+                              <div class="link-draggable">
+                            [[!--    <rs-icon icon-type="round" icon-name="drag_indicator"></rs-icon> --]]
+                                <mp-draggable iri='{{iri}}'>
+                                  <div>
+                                    <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
+                                    {{#if resourceLabelPattern}}
+                                        <semantic-query query="SELECT ?label ?labelElse WHERE {
+                                                                BIND(<{{iri}}> as ?item) .                                                         
+                                                                {{resourceLabelPattern}}
+                                                              }"
+                                                        template='{{> template}}'>
+
+                                          <template id='template'>
+                                              <div>{{bindings.0.label.value}}</div>
+                                          </template>
+                                        </semantic-query>
+                                      {{else}}
+                                        <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
+                                      {{/if}} --]]
+                                    </div>
+                                </mp-draggable>
+                              </div>
+                              {{#if resourceName}}
+                                <div class="text-type-subheader" style="margin-left: 22px; margin-top: 5px;">
+                                  {{resourceName}}
+                                </div>
+                              {{/if}}
+                            </div>
+                          </h2>
+                        {{/case}}
+                      
+                        {{#case "deleted" break=true}}
+                          <mp-event-target-template-render id='{{viewId}}-deleted-state' template='{{> template}}'>
+                            <template id='template'>
+                              <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%;">
+                                <div class="success-documentation-section-icon-container">
+                                  <rs-icon icon-type="round" icon-name="done"></rs-icon>
+                                </div>
+
+                                <div style="flex: 1;"> 
+                                  <div class="success-documentation-section-title">Success!</div>
+                                  <div class="success-documentation-section-content">
+                                    <span style="text-transform: capitalize;">
+                                      {{#if label}}
+                                        {{label}}
+                                      {{else}}
+                                        <mp-label iri='{{iri}}'></mp-label>
+                                      {{/if}}
+                                    </span>
+                                    <span> has been deleted.</span>
+                                  </div>
+                                </div>
+                                
+                                <mp-event-trigger id='{{viewId}}-cancel-deleted-state-message-{{iri}}'
+                                                  type='Component.TemplateUpdate'
+                                                  data='{ "hideMessage": "true" }'
+                                                  targets='["{{viewId}}-deleted-state"]'
+                                >
+                                  <button class="btn btn-documentation">
+                                    <rs-icon icon-type="round" icon-name="close"></rs-icon>
+                                  </button>
+                                </mp-event-trigger>
+                              </div>
+                            </template>
+                          </mp-event-target-template-render>
+                        {{/case}}
+                      {{/switch}}
+                    </div>
+
+                    {{#if mode}}
+                      <div class="btn-inline-container">
+
+                        {{#if (eq mode "new")}}
+                          [[> rsp:ImportFromExternalSource]] 
+                        {{/if}} 
+
+                        {{#if (not (or (eq mode "new") (eq mode "deleted")))}}
+                          {{#if (eq resourceConfiguration "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
+                            <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                      urlqueryparam-view='authority-list' 
+                                                      urlqueryparam-resource='{{iri}}'>
+                                <button class="btn btn-action btn-textAndIcon">
+                                  <rs-icon icon-type='round' icon-name='list'></rs-icon>
+                                  <span>List of resources</span>
+                                </button>
+                            </semantic-link-container>
+                          {{/if}} 
+                        {{/if}}
+
+                        {{#if (not (eq mode "deleted"))}}
+                          <mp-event-trigger id='{{viewId}}-form-refresh-trigger' 
+                                            type='Component.TemplateUpdate' 
+                                            targets='["{{viewId}}-term-forms"]'
+                                            data='{ "mode": "{{mode}}",
+                                                    "viewId": "{{viewId}}",
+                                                    {{#ifCond mode "!==" "new"}}"iri": "{{iri}}",{{/ifCond}}
+                                                    {{#if broader}}"broader": "{{broader}}",{{/if}}
+                                                    "resourceBroaderProperty": {{#if resourceBroaderProperty}}"{{resourceBroaderProperty}}"{{else}}null{{/if}}
+                                                  }' 
+                                            >
+                            <button class="btn btn-default btn-textAndIcon" title="Refresh form">
+                              <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
+                                Refresh
+                            </button>
+                          </mp-event-trigger>
+                        {{/if}}
+
+                        {{#if (not (or (eq mode "new") (eq mode "deleted")))}}
+                          {{> rsp:ResourceDropdownActions viewId=viewId
+                                                          iri=iri
+                                                          resourceConfig=resourceConfiguration
+                                                          resourceLabel=resourceName
+                                                          resourceEditorButton=true
+                                                          hidePreview=true
+                                                          headerButton=true
+                          }}
+                        {{/if}}
+                      </div>
                     {{/if}}
                   </div>
-                {{/if}}
-              </div>
 
-              [[!-- Update Search page if a particular resource is created --]]
-              <mp-event-proxy id='{{viewId}}-update-ResourceSearchPage-on-form-actions'
-                              on-event-source='{{#if iri}}{{iri}}-resource-form{{else}}{{viewId}}-resource-form{{/if}}' 
-                              on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated", "Form.ResourceRemoved","GraphAction.Delete"]'      
-                              proxy-event-type='Component.TemplateUpdate' 
-                              proxy-targets='["{{resourceConfiguration}}-resourceSearch-frame"]'
-              ></mp-event-proxy>
-    
-              {{#if (not (eq mode "deleted"))}} 
-                {{#if (not collection)}}
-                  <mp-event-proxy id='{{viewId}}-tab-refresh-on-created' 
+                  [[!-- Update Search page if a particular resource is created --]]
+                  <mp-event-proxy id='{{viewId}}-update-ResourceSearchPage-on-form-creation'
                                   on-event-source='{{#if iri}}{{iri}}-resource-form{{else}}{{viewId}}-resource-form{{/if}}' 
-                                  on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
-                                  proxy-event-type='Dashboard.ResourceChanged' 
-                                  proxy-targets='["{{viewId}}"]'                                                          
+                                  on-event-types='["Form.ResourceCreated"]'      
+                                  proxy-event-type='Component.TemplateUpdate' 
+                                  proxy-targets='["{{resourceConfiguration}}-resourceSearch-frame"]'
                   ></mp-event-proxy>
-
-                  <mp-event-proxy id='{{viewId}}-tab-refresh-on-AuthorityDocumentForm-created' 
-                                  on-event-source='{{viewId}}-new-authorityDocument-form'
-                                  on-event-types='["Form.ResourceCreated"]'
-                                  proxy-event-type='Dashboard.ResourceChanged' 
-                                  proxy-targets='["{{viewId}}"]'                                                          
-                  ></mp-event-proxy>
-                {{/if}}
-
-                <mp-event-proxy id='{{viewId}}-view-update-on-created' 
-                                on-event-source='{{#if iri}}{{iri}}-resource-form{{else}}{{viewId}}-resource-form{{/if}}' 
-                                on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
-                                proxy-event-type='Component.TemplateUpdate' 
-                                proxy-targets='[{{#if collection}}"{{viewId}}-mytree",{{/if}} "{{viewId}}-term-forms"]'
-                                additional-data='{"mode": "edit"}'
-                ></mp-event-proxy>
-
-                {{#if iri}}
-                  <semantic-query query="SELECT ?label WHERE {
-                                          BIND(<{{iri}}> as ?item) .
-                                          {{resourceLabelPattern}}
-                                        }"
-                                  template='{{> template}}'
-                                  no-result-template='{{> noResults}}'>
-
-                    <template id='template'>
-                      <mp-event-proxy id='{{viewId}}-tree-refresh-on-delete' 
-                                      on-event-source='{{iri}}-resource-form' 
-                                      on-event-types='["Form.ResourceRemoved"]'
-                                      proxy-event-type='Component.TemplateUpdate' 
-                                      proxy-targets='[{{#if collection}}"{{viewId}}-mytree",{{/if}} "{{viewId}}-term-forms"]'
-                                      additional-data='{"mode": "deleted", 
-                                                        "label": "{{bindings.0.label.value}}" }'
+        
+                  {{#if (not (eq mode "deleted"))}} 
+                    {{#if (not collection)}}
+                      <mp-event-proxy id='{{viewId}}-tab-refresh-on-created' 
+                                      on-event-source='{{#if iri}}{{iri}}-resource-form{{else}}{{viewId}}-resource-form{{/if}}' 
+                                      on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
+                                      proxy-event-type='Dashboard.ResourceChanged' 
+                                      proxy-targets='["{{viewId}}"]'                                                          
                       ></mp-event-proxy>
-                    </template>
 
-                    <template id="noResults">
-                      <mp-event-proxy id='{{viewId}}-noResults-tree-refresh-on-delete' 
-                                      on-event-source='{{iri}}-resource-form' 
-                                      on-event-types='["Form.ResourceRemoved"]'
-                                      proxy-event-type='Component.TemplateUpdate' 
-                                      proxy-targets='[{{#if collection}}"{{viewId}}-mytree",{{/if}} "{{viewId}}-term-forms"]'
-                                      additional-data='{"mode": "deleted",
-                                                      "label": "{{label}}" }'
+                      <mp-event-proxy id='{{viewId}}-tab-refresh-on-AuthorityDocumentForm-created' 
+                                      on-event-source='{{viewId}}-new-authorityDocument-form'
+                                      on-event-types='["Form.ResourceCreated"]'
+                                      proxy-event-type='Dashboard.ResourceChanged' 
+                                      proxy-targets='["{{viewId}}"]'                                                          
                       ></mp-event-proxy>
-                    </template>
-                  </semantic-query>
-                {{/if}}
+                    {{/if}}
 
-                {{#if mode}}                 
-                  <inline-template template-iri='{{resourceForm}}' 
-                                    options='{
-                                            {{#if collection}}"scheme": "{{collection}}",{{/if}}
-                                            {{#ifCond mode "!==" "new"}}"node": "{{iri}}",{{/ifCond}}
-                                            "resourceConfig":"{{resourceConfiguration}}",
-                                            {{#if broader}}"broader": "{{broader}}",{{/if}}
-                                            {{#if data.additional_data}}"additional-data":{{{stringify data.additional_data}}},{{/if}}
-                                            "editable": {{editable}},
-                                            "mode": "{{mode}}",
-                                            "viewId": "{{#if iri}}{{iri}}{{else}}{{viewId}}{{/if}}",                                           
-                                            {{#if resourceLabelPattern}}"resourceLabelPattern": "{{resourceLabelPattern}}",{{/if}} 
-                                            {{#if selectedApiResource}}
-                                              {{#if apiResourceURI}}"apiResourceURI": "{{apiResourceURI}}",{{/if}}
-                                              {{#if apiResourceName}}"apiResourceName": "{{apiResourceName}}",{{/if}}
-                                              {{#if apiResourceLabel}}"apiResourceLabel": "{{apiResourceLabel}}",{{/if}}
-                                              {{#if apiResourceDescription}}"apiResourceDescription": "{{apiResourceDescription}}",{{/if}}
+                    <mp-event-proxy id='{{viewId}}-view-update-on-created' 
+                                    on-event-source='{{#if iri}}{{iri}}-resource-form{{else}}{{viewId}}-resource-form{{/if}}' 
+                                    on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
+                                    proxy-event-type='Component.TemplateUpdate' 
+                                    proxy-targets='[{{#if collection}}"{{collection}}-mytree",{{/if}} "{{viewId}}-term-forms"]'
+                                    additional-data='{"mode": "edit"}'
+                    ></mp-event-proxy>
 
-                                              {{#if apiResourceMuseumId}}"apiResourceMuseumId": "{{apiResourceMuseumId}}",{{/if}}
-                                              {{#if apiResourceMuseumIdType}}"apiResourceMuseumIdType": "{{apiResourceMuseumIdType}}",{{/if}}
-                                              {{#if apiResourceSystemId}}"apiResourceSystemId": "{{apiResourceSystemId}}",{{/if}}
-                                              
-                                              {{#if apiResourceArtistName}}"apiResourceArtistName": "{{apiResourceArtistName}}",{{/if}}
-                                              {{#if apiResourceArtistRole}}"apiResourceArtistRole": "{{apiResourceArtistRole}}",{{/if}}
+                    {{#if iri}}
+                      <semantic-query query="SELECT ?label WHERE {
+                                              BIND(<{{iri}}> as ?item) .
+                                              {{resourceLabelPattern}}
+                                            }"
+                                      template='{{> template}}'
+                                      no-result-template='{{> noResults}}'>
 
-                                              {{#if apiResourceosmGeoCoordinates}}"apiResourceosmGeoCoordinates": "{{apiResourceosmGeoCoordinates}}",{{/if}}
-                                            {{/if}}
-                                            "resourceBroaderProperty": {{#if resourceBroaderProperty}}"{{resourceBroaderProperty}}"{{else}}null{{/if}}
-                                    }'>
-                  </inline-template>
-                {{/if}}
-          
-              {{else}}
-                <div></div>
-              {{/if}}
-            </template>
-          </mp-event-target-template-render>
-          
-          <mp-event-proxy id='{{viewId}}-closeModal-onSelect-APIResource-proxy'
-                          on-event-source='{{viewId}}-select-api-resource-trigger' 
-                          on-event-type='apiResourceSelect'
-                          proxy-event-type='OverlayDialog.Close' 
-                          proxy-targets='["{{viewId}}-importResourceFromAPI-dialog"]'
-          ></mp-event-proxy>
+                        <template id='template'>
+                          <div>
+                            {{#if (eq resourceConfiguration "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
+                              <mp-event-proxy id='{{viewId}}-update-form-on-graph-action-delete' 
+                                              on-event-types='["GraphAction.Delete"]' 
+                                              proxy-event-type='Component.TemplateUpdate' 
+                                              proxy-targets='["{{viewId}}-term-forms"]'
+                                              additional-data='{"mode": "deleted", 
+                                                                "label": "{{bindings.0.label.value}}" }'
+                              ></mp-event-proxy>
+                            {{/if}}
+                            <mp-event-proxy id='{{viewId}}-tree-refresh-on-delete' 
+                                            on-event-source='{{iri}}-resource-form' 
+                                            on-event-types='["Form.ResourceRemoved"]'
+                                            proxy-event-type='Component.TemplateUpdate' 
+                                            proxy-targets='["{{viewId}}-term-forms"]'
+                                            additional-data='{"mode": "deleted", 
+                                                              "label": "{{bindings.0.label.value}}" }'
+                            ></mp-event-proxy>
+                          </div>
+                        </template>
 
-          <mp-event-proxy id='{{viewId}}-closeModal-onOpen-existing-place-proxy'
-                          on-event-source='{{viewId}}-openExistingRecord-in-new-frame-trigger' 
-                          on-event-type='Dashboard.AddFrame'
-                          proxy-event-type='OverlayDialog.Close' 
-                          proxy-targets='["{{viewId}}-importResourceFromAPI-dialog"]'
-          ></mp-event-proxy>
+                        <template id="noResults">
+                          <div>
+                            {{#if (eq resourceConfiguration "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
+                              <mp-event-proxy id='{{viewId}}-noResults-on-graph-action-delete' 
+                                              on-event-types='["GraphAction.Delete"]' 
+                                              proxy-event-type='Component.TemplateUpdate' 
+                                              proxy-targets='["{{viewId}}-term-forms"]'
+                                              additional-data='{"mode": "deleted", 
+                                                                "label": "{{label}}" }'
+                              ></mp-event-proxy>
+                            {{/if}}
 
-          <mp-event-proxy id='{{viewId}}-refreshForm-onSelect-apiResource-proxy'
-                          on-event-source='{{viewId}}-select-api-resource-trigger' 
-                          on-event-type='apiResourceSelect'
-                          proxy-event-type='Component.TemplateUpdate' 
-                          proxy-targets='["{{viewId}}-term-forms"]'
-                          additional-data='{"mode": "new", "selectedApiResource": "true"}'
-          ></mp-event-proxy>
+                            <mp-event-proxy id='{{viewId}}-noResults-tree-refresh-on-delete' 
+                                            on-event-source='{{iri}}-resource-form' 
+                                            on-event-types='["Form.ResourceRemoved"]'
+                                            proxy-event-type='Component.TemplateUpdate' 
+                                            proxy-targets='[{{#if collection}}"{{collection}}-mytree",{{/if}} "{{viewId}}-term-forms"]'
+                                            additional-data='{"mode": "deleted",
+                                                            "label": "{{label}}" }'
+                            ></mp-event-proxy>
+                          </div>
+                          
+                        </template>
+                      </semantic-query>
+                    {{/if}}
 
-        </div>
-      </div>
+                    {{#if mode}}                 
+                      <inline-template template-iri='{{resourceForm}}' 
+                                        options='{
+                                                {{#if collection}}"scheme": "{{collection}}",{{/if}}
+                                                {{#ifCond mode "!==" "new"}}"node": "{{iri}}",{{/ifCond}}
+                                                "resourceConfig":"{{resourceConfiguration}}",
+                                                {{#if broader}}"broader": "{{broader}}",{{/if}}
+                                                {{#if data.additional_data}}"additional-data":{{{stringify data.additional_data}}},{{/if}}
+                                                "editable": {{editable}},
+                                                "mode": "{{mode}}",
+                                                "viewId": "{{#if iri}}{{iri}}{{else}}{{viewId}}{{/if}}",                                           
+                                                {{#if resourceLabelPattern}}"resourceLabelPattern": "{{resourceLabelPattern}}",{{/if}} 
+                                                {{#if selectedApiResource}}
+                                                  {{#if apiResourceURI}}"apiResourceURI": "{{apiResourceURI}}",{{/if}}
+                                                  {{#if apiResourceName}}"apiResourceName": "{{apiResourceName}}",{{/if}}
+                                                  {{#if apiResourceLabel}}"apiResourceLabel": "{{apiResourceLabel}}",{{/if}}
+                                                  {{#if apiResourceDescription}}"apiResourceDescription": "{{apiResourceDescription}}",{{/if}}
 
-{{#if collection}}
-  </mp-splitpane>
-{{/if}}
+                                                  {{#if apiResourceMuseumId}}"apiResourceMuseumId": "{{apiResourceMuseumId}}",{{/if}}
+                                                  {{#if apiResourceMuseumIdType}}"apiResourceMuseumIdType": "{{apiResourceMuseumIdType}}",{{/if}}
+                                                  {{#if apiResourceSystemId}}"apiResourceSystemId": "{{apiResourceSystemId}}",{{/if}}
+                                                  
+                                                  {{#if apiResourceArtistName}}"apiResourceArtistName": "{{apiResourceArtistName}}",{{/if}}
+                                                  {{#if apiResourceArtistRole}}"apiResourceArtistRole": "{{apiResourceArtistRole}}",{{/if}}
 
-</div>
+                                                  {{#if apiResourceosmGeoCoordinates}}"apiResourceosmGeoCoordinates": "{{apiResourceosmGeoCoordinates}}",{{/if}}
+                                                {{/if}}
+                                                "resourceBroaderProperty": {{#if resourceBroaderProperty}}"{{resourceBroaderProperty}}"{{else}}null{{/if}}
+                                        }'>
+                      </inline-template>
+                    {{/if}}
+              
+                  {{else}}
+                    <div></div>
+                  {{/if}}
+                </template>
+              </mp-event-target-template-render>
+              
+              <mp-event-proxy id='{{viewId}}-closeModal-onSelect-APIResource-proxy'
+                              on-event-source='{{viewId}}-select-api-resource-trigger' 
+                              on-event-type='apiResourceSelect'
+                              proxy-event-type='OverlayDialog.Close' 
+                              proxy-targets='["{{viewId}}-importResourceFromAPI-dialog"]'
+              ></mp-event-proxy>
+
+              <mp-event-proxy id='{{viewId}}-closeModal-onOpen-existing-place-proxy'
+                              on-event-source='{{viewId}}-openExistingRecord-in-new-frame-trigger' 
+                              on-event-type='Dashboard.AddFrame'
+                              proxy-event-type='OverlayDialog.Close' 
+                              proxy-targets='["{{viewId}}-importResourceFromAPI-dialog"]'
+              ></mp-event-proxy>
+
+              <mp-event-proxy id='{{viewId}}-refreshForm-onSelect-apiResource-proxy'
+                              on-event-source='{{viewId}}-select-api-resource-trigger' 
+                              on-event-type='apiResourceSelect'
+                              proxy-event-type='Component.TemplateUpdate' 
+                              proxy-targets='["{{viewId}}-term-forms"]'
+                              additional-data='{"mode": "new", "selectedApiResource": "true"}'
+              ></mp-event-proxy>
+
+            </div>
+          </div>
+
+    {{#if collection}}
+          </mp-splitpane>
+    {{/if}}
+
+    </div>
+    {{/if}}
+  </template>
+</mp-event-target-template-render> 
+
 

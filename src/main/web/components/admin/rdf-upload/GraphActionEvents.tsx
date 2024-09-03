@@ -24,7 +24,7 @@ export interface GraphActionEventData {
    * Trigger when RDF file has been successfully uploaded
    */
   'GraphAction.Success': { }
-  'GraphAction.Delete': { }
+  'GraphAction.Delete': { iri: string };
   'GraphAction.Update': { }
 }
 const event: EventMaker<GraphActionEventData> = EventMaker;

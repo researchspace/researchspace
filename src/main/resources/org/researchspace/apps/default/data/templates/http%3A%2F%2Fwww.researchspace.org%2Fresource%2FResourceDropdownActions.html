@@ -503,23 +503,23 @@
     {{/if}}
 
    {{#if (or allowResourceDelete imageAnnotation)}} 
-      {{#if (and (not (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/User"))
-            (not (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")))}}
-
+      {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
         <hr>
-        [[> deleteButton resourceFormIRI=resourceFormIRI]]
-        {{else}}
-          {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
-            <bs-menu-item>
-              <rs-icon icon-type="rounded" icon-name="delete" class="icon-left" symbol="true"></rs-icon>            
-              <mp-graph-store-action title="Delete" 
-                                      action="DELETE" 
-                                      graphuri="{{iri}}" 
-                                      graph-description="{{label.value}}">
-                <span>Delete</span>          
-              </mp-graph-store-action>
-           </bs-menu-item>
-          {{/if}}
+
+        <bs-menu-item>
+          <rs-icon icon-type="rounded" icon-name="delete" class="icon-left" symbol="true"></rs-icon>            
+          <mp-graph-store-action title="Delete" 
+                                  action="DELETE" 
+                                  graphuri="{{iri}}" 
+                                  graph-description="{{label.value}}">
+            <span>Delete</span>          
+          </mp-graph-store-action>
+        </bs-menu-item>
+      {{else}}
+        {{#if (not (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/User"))}}
+          <hr>
+          [[> deleteButton resourceFormIRI=resourceFormIRI]]
+        {{/if}}
       {{/if}}
     {{/if}}
     
@@ -533,15 +533,15 @@
 
 [[!-- DELETE BUTTON TRIGGERS FORM AND LDP DELETE OF resourceIri --]]
 [[#*inline "deleteButton"]]
-{{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation")}}
-  <mp-event-proxy id='{{viewId}}-remove-image-region-{{iri}}' 
-                  on-event-source='{{iri}}-resource-form' 
-                  on-event-types='["Form.ResourceRemoved"]'
-                  proxy-event-type='IIIFViewer.RemoveRegion' 
-                  data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}", "resourceIri": "{{region.value}}"}'
-                  proxy-targets='["{{viewId}}-image-annotation"]'
-  ></mp-event-proxy>
-{{/if}} 
+  {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation")}}
+    <mp-event-proxy id='{{viewId}}-remove-image-region-{{iri}}' 
+                    on-event-source='{{iri}}-resource-form' 
+                    on-event-types='["Form.ResourceRemoved"]'
+                    proxy-event-type='IIIFViewer.RemoveRegion' 
+                    data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}", "resourceIri": "{{region.value}}"}'
+                    proxy-targets='["{{viewId}}-image-annotation"]'
+    ></mp-event-proxy>
+  {{/if}} 
 
   <mp-overlay-dialog show='{{#if delete}}true{{else}}false{{/if}}' 
                       id='{{viewId}}-delete-resource-dialog-{{iri}}' 
@@ -554,45 +554,47 @@
     </mp-overlay-dialog-trigger>
     <mp-overlay-dialog-content>
       <div>
-        <span>Are you sure you want to delete <strong><mp-label iri="{{iri}}"></mp-label></strong> ?</span>
+        <p>Are you sure you want to delete <strong><mp-label iri="{{iri}}"></mp-label></strong> ?</p>
       
-        <semantic-query query='SELECT DISTINCT ?resource ?label  
-                                WHERE {
-                                    <{{iri}}> ?p ?resource .
-                                  { 
-                                    ?resource crm:P1_is_identified_by ?appellation .
-                                    ?appellation a crm:E41_Appellation .
-                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                    ?appellation crm:P190_has_symbolic_content ?label .
-                                  } UNION {
-                                    ?resource crm:P170i_time_is_defined_by ?timePrimitive .
-                                    ?timePrimitive a crm:E61_Time_Primitive .
-                                    ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
-                                    ?timePrimitive crm:P190_has_symbolic_content ?label .
-                                  } UNION {
-                                    ?resource skos:prefLabel ?label .
-                                  } UNION {
-                                    ?resource crm:P190_has_symbolic_content ?label .
-                                  }
-                                }'
-                              template='{{> referredByTemplate}}'>
+        <div>
+          <semantic-query query='SELECT DISTINCT ?resource ?label  
+                                  WHERE {
+                                      <{{iri}}> ?p ?resource .
+                                    { 
+                                      ?resource crm:P1_is_identified_by ?appellation .
+                                      ?appellation a crm:E41_Appellation .
+                                      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                      ?appellation crm:P190_has_symbolic_content ?label .
+                                    } UNION {
+                                      ?resource crm:P170i_time_is_defined_by ?timePrimitive .
+                                      ?timePrimitive a crm:E61_Time_Primitive .
+                                      ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
+                                      ?timePrimitive crm:P190_has_symbolic_content ?label .
+                                    } UNION {
+                                      ?resource skos:prefLabel ?label .
+                                    } UNION {
+                                      ?resource crm:P190_has_symbolic_content ?label .
+                                    }
+                                  }'
+                                template='{{> referredByTemplate}}'>
 
-            <template id='referredByTemplate'>
-              Some resources in the system link to it:
-              <ul>
-                {{#each bindings}}
-                  <li>
-                    <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames" 
-                                    draggable="false"
-                                    urlqueryparam-view="resource-editor"
-                                    urlqueryparam-resource-iri="{{resource.value}}">
-                      <div class="text-link">{{label.value}}</div>
-                    </semantic-link>
-                  </li>
-                {{/each}}
-              </ul>
-            </template>
-        </semantic-query>
+              <template id='referredByTemplate'>
+                Some resources in the system link to it:
+                <ul>
+                  {{#each bindings}}
+                    <li>
+                      <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                      draggable="false"
+                                      urlqueryparam-view="resource-editor"
+                                      urlqueryparam-resource-iri="{{resource.value}}">
+                        <div class="text-link">{{label.value}}</div>
+                      </semantic-link>
+                    </li>
+                  {{/each}}
+                </ul>
+              </template>
+          </semantic-query>
+        </div>
       </div>
     
       <div style="visibility: hidden; height: 0px; width: 0; overflow: hidden;">

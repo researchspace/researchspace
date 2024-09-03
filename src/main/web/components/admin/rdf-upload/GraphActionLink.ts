@@ -26,7 +26,7 @@ import * as ReactBootstrap from 'react-bootstrap';
 
 import { Component } from 'platform/api/components';
 import { Rdf } from 'platform/api/rdf';
-import { refresh } from 'platform/api/navigation';
+import { navigateToResource, refresh } from 'platform/api/navigation';
 import { SparqlUtil } from 'platform/api/sparql';
 import { RDFGraphStoreService } from 'platform/api/services/rdf-graph-store';
 import { addNotification } from 'platform/components/ui/notification';
@@ -95,7 +95,7 @@ export class GraphActionLink extends Component<Props, State> {
         dialogRef,
         createElement(OverlayDialog, {
           show: true,
-          title: 'Delete graph',
+          title: 'Delete',
           bsSize: 'lg',
           onHide,
           children: D.div(
@@ -112,7 +112,7 @@ export class GraphActionLink extends Component<Props, State> {
             ButtonToolbar(
               { className: 'modal-btn-group' },
               Button({ bsStyle: 'default', onClick: onHide }, 'Cancel'),
-              Button({ bsStyle: 'default', className:'btn-action', onClick: onSubmit }, 'Delete graph')
+              Button({ bsStyle: 'default', className:'btn-action', onClick: onSubmit }, 'Delete')
             )
           ),
         })
@@ -181,7 +181,7 @@ export class GraphActionLink extends Component<Props, State> {
       targetGraph: Rdf.iri(this.props.graphuri),
       turtleString: turtleString,
       repository,
-    }).onValue((_) => {
+    }).onValue((_) => { 
       // FIRE EVENT
       trigger({
         eventType: GraphActionEvents.GraphActionSuccess,
@@ -218,14 +218,25 @@ export class GraphActionLink extends Component<Props, State> {
 
   private deleteGraph() {
     this.setState({ isInProcess: true });
+    /*
     addNotification({
       level: 'info',
       message: 'The delete command has been executed and is currently being processed by the database',
     });
+    */
 
     const { repository } = this.context.semanticContext;
     RDFGraphStoreService.deleteGraph({ targetGraph: Rdf.iri(this.props.graphuri), repository })
-      .onValue((_) => refresh())
+      .onValue((_) => {
+        // FIRE DELETE GRAPH EVENT
+        trigger({
+          eventType: GraphActionEvents.GraphActionDelete,
+          source: Math.random().toString(),
+          data:{"deleted graph":Rdf.iri(this.props.graphuri)}
+        });
+        //Disable the refresh
+        //refresh();
+      })
       .onError((error: string) => {
         this.setState({ isInProcess: false });
         addNotification({

@@ -1,5 +1,5 @@
 <semantic-form [[> rsp:FormDefaults]] 
-                persistence='{"type": "sparql", "targetInsertGraphIri": "{{node}}"}'
+                persistence='{"type": "sparql", "targetGraphIri": "{{node}}"}'
                 fields='[[fieldDefinitions
                           classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                           inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
@@ -14,7 +14,8 @@
                           entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
                           entity_represents_range="http://www.researchspace.org/pattern/system/entity/represents_range"
                           entity_web_URL="http://www.researchspace.org/pattern/system/entity/web_URL_embed"
-  
+                          authority_hasListedIn="http://www.researchspace.org/pattern/system/entity/has_listed_in"
+                        
                           entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
                           man-made_thing_title="http://www.researchspace.org/pattern/system/man-made_thing/PC102_has_title"
                           authority_document_type="http://www.researchspace.org/pattern/system/authority_document/type"
@@ -73,7 +74,8 @@
   <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
 
     <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E32_Authority_Document'> </semantic-form-hidden-input>
-    
+    <semantic-form-hidden-input for="authority_hasListedIn"></semantic-form-hidden-input>
+  
     {{#if scheme}}
       <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
     {{/if}}
@@ -1588,7 +1590,7 @@
   {{#ifCond mode "===" "new"}}
     [[> rsp:FormDefaultActions actionType='Upload' formEntity='{{#if entityType}}authority document{{entityType}}{{else}}{{/if}}' assetForm=true assetStorage='tmp']] 
   {{else}}
-    [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}authority document{{/if}}' assetForm=true assetStorage='tmp']] 
+    [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}authority document{{/if}}']] 
   {{/ifCond}}
 
 </semantic-form>

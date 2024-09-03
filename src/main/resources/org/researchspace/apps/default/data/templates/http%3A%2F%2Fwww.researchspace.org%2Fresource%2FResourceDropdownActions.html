@@ -502,13 +502,27 @@
       </semantic-link-container>
     {{/if}}
 
-    {{#if (or allowResourceDelete imageAnnotation)}} 
-      {{#if (not (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/User"))}}
+   {{#if (or allowResourceDelete imageAnnotation)}} 
+      {{#if (and (not (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/User"))
+            (not (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")))}}
+
         <hr>
         [[> deleteButton resourceFormIRI=resourceFormIRI]]
+        {{else}}
+          {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
+            <bs-menu-item>
+              <rs-icon icon-type="rounded" icon-name="delete" class="icon-left" symbol="true"></rs-icon>            
+              <mp-graph-store-action title="Delete" 
+                                      action="DELETE" 
+                                      graphuri="{{iri}}" 
+                                      graph-description="{{label.value}}">
+                <span>Delete</span>          
+              </mp-graph-store-action>
+           </bs-menu-item>
+          {{/if}}
       {{/if}}
     {{/if}}
-
+    
     [[#if customAction]]
       [[#block "customAction"]][[/block]]
     [[/if]]
@@ -596,7 +610,7 @@
         <template id='template'>
           {{#if resourceDeleting}}
             <div>
-              <bs-progress-bar active="true" min="0" now="100" max="100" label="Deliting resource" striped="true"></bs-progress-bar>
+              <bs-progress-bar active="true" min="0" now="100" max="100" label="Deleting resource" striped="true"></bs-progress-bar>
             </div>
           {{/if}}
         </template>

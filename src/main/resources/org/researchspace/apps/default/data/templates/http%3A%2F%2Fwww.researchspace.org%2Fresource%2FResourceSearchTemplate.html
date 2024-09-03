@@ -62,9 +62,19 @@
                       proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative-resourceSearch-frame"]'
       ></mp-event-proxy>
     {{/if}}
+  
+    {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
+      <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-AuthorityDocumentSearch-on-delete'
+                      on-event-types='["GraphAction.Delete"]'    
+                      proxy-event-type='Component.TemplateUpdate' 
+                      proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document-resourceSearch-frame"]'
+      ></mp-event-proxy>
+    {{/if}}
 
-    [[#if (urlParam "searchkpcategory")]]
-      <semantic-search config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . ?field <http://www.researchspace.org/resource/system/fields/category> ?category . }" category=(urlParam "searchkpcategory" escape=false))]]'>
+
+
+     [[#if (urlParam "searchkpcategory")]]
+      <semantic-search config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> . ?field <http://www.researchspace.org/resource/system/fields/category> ?category . }" category=(urlParam "searchkpcategory" escape=false))]]'>
     [[else]]    
       <semantic-search config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> .  ?field <http://www.researchspace.org/resource/system/fields/domain> ?domain . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . }" domain=(urlParam "resourceontologyclass" escape=false))]]'>      
     [[/if]]
@@ -1455,7 +1465,8 @@
             <mp-splitpane-sidebar-open style="flex: 1; overflow: hidden;">
               <div class="split-pane__sidebar-open">
                 <semantic-search-facet  id='[[urlParam "viewid" escape=false]]-semantic-search-facet'
-                                        open-by-default=false 
+                                        big-result-set=true
+                                        open-by-default=true
                                         hide-toggle-button=true>
                 </semantic-search-facet>
               </div>

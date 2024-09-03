@@ -482,7 +482,7 @@
                   [[/if]]
                 {{/ifCond}}
 
-        [[!--        <mp-anonymous-hidden>
+        [[!--    <mp-anonymous-hidden>
                   <semantic-search-action-save-search-result id='save-search-result-action' add-to-default-set=true>
                     <bs-menu-item>
                       <rs-icon icon-type="rounded" icon-name="save" class="icon-left" symbol="true"></rs-icon>
@@ -493,11 +493,81 @@
 
                 <mp-anonymous-hidden><hr></mp-anonymous-hidden>
          --]]       
-                <semantic-search-result>
+                <semantic-search-result> 
                   <mp-sparql-download id='csv-result' 
-                                      query="SELECT ?subject WHERE { }"
-                                      header="text/csv"
-                                      filename="[[urlParam 'resourcelabel' escape=false]]-csv-result.csv">
+                                      query='SELECT ?resourceName ?resourceType ?resourceDescription WHERE { 
+                                              BIND("[[urlParam "resourcelabel" escape=false]]" as ?resourceType)
+
+                                              { 
+                                                ?subject crm:P1_is_identified_by ?appellation .
+                                                ?appellation a crm:E41_Appellation .
+                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                ?appellation crm:P190_has_symbolic_content ?resourceName .
+                                              } UNION {
+                                                  ?subject crm:P170i_time_is_defined_by ?timePrimitive .
+                                                  ?timePrimitive a crm:E61_Time_Primitive .
+                                                  ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
+                                                  ?timePrimitive crm:P190_has_symbolic_content ?resourceName .
+                                              } UNION {
+                                                  ?subject skos:prefLabel ?resourceName .
+                                              } UNION {
+                                                  ?subject crm:P190_has_symbolic_content ?resourceName .
+                                              }
+
+                                              OPTIONAL {
+                                                  ?subject crm:P67i_is_referred_to_by ?information_object  .
+                                                  ?information_object a crm:E73_Information_Object .
+                                                  ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
+                                                  ?information_object crm:P1_is_identified_by ?descriptionAppellation . 
+                                                  ?descriptionAppellation a crm:E41_Appellation . 
+                                                  ?descriptionAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                  ?descriptionAppellation crm:P190_has_symbolic_content ?resourceDescription .
+                                              }
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Appellation")}}
+                                                MINUS { <http://www.researchspace.org/resource/system/ontodiaDiagramContainer> crm:P1_is_identified_by ?subject .}
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor")}}
+                                                MINUS {?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .}
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
+                                                MINUS { ?subject crm:P2_has_type Platform:System_Resource .}
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Entity")}}
+                                                MINUS { ?configuration <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_listView_column> ?subject .}
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Information_object")}}
+                                                MINUS { ?subject a Platform:resource_configuration .}
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Term")}}
+                                                MINUS { ?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/KP_category> .}
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Timespan")}}
+                                                MINUS { 
+                                                  ?entityFormRecordCreation crm:P4_has_time-span ?subject .
+                                                  ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+                                                }
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Type")}}
+                                                MINUS { 
+                                                  ?subject crm:P71i_is_listed_in ?vocabulary .
+                                                  ?vocabulary crm:P2_has_type Platform:System_Resource .
+                                                }
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
+                                                MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
+                                              {{/if}}
+                                            }'
+                                      header='text/csv'
+                                      filename='[[urlParam "resourcelabel" escape=false]]-csv-result.csv'>
                     <bs-menu-item>
                       <rs-icon icon-type="rounded" icon-name="file_download" class="icon-left" symbol="true"></rs-icon>
                       <span>Export as CSV</span>
@@ -507,10 +577,79 @@
                   
                 <semantic-search-result>
                   <mp-sparql-download id='json-result' 
-                                      query="SELECT ?subject WHERE { }"
-                                      header="application/sparql-results+json"
-                                      filename="[[urlParam 'resourcelabel' escape=false]]-json-result.json"
-                  >
+                                      query='SELECT ?resourceName ?resourceType ?resourceDescription WHERE { 
+                                              BIND("[[urlParam "resourcelabel" escape=false]]" as ?resourceType)
+
+                                              { 
+                                                ?subject crm:P1_is_identified_by ?appellation .
+                                                ?appellation a crm:E41_Appellation .
+                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                ?appellation crm:P190_has_symbolic_content ?resourceName .
+                                              } UNION {
+                                                  ?subject crm:P170i_time_is_defined_by ?timePrimitive .
+                                                  ?timePrimitive a crm:E61_Time_Primitive .
+                                                  ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
+                                                  ?timePrimitive crm:P190_has_symbolic_content ?resourceName .
+                                              } UNION {
+                                                  ?subject skos:prefLabel ?resourceName .
+                                              } UNION {
+                                                  ?subject crm:P190_has_symbolic_content ?resourceName .
+                                              }
+
+                                              OPTIONAL {
+                                                  ?subject crm:P67i_is_referred_to_by ?information_object  .
+                                                  ?information_object a crm:E73_Information_Object .
+                                                  ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
+                                                  ?information_object crm:P1_is_identified_by ?descriptionAppellation . 
+                                                  ?descriptionAppellation a crm:E41_Appellation . 
+                                                  ?descriptionAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                  ?descriptionAppellation crm:P190_has_symbolic_content ?resourceDescription .
+                                              }
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Appellation")}}
+                                                MINUS { <http://www.researchspace.org/resource/system/ontodiaDiagramContainer> crm:P1_is_identified_by ?subject .}
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor")}}
+                                                MINUS {?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .}
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
+                                                MINUS { ?subject crm:P2_has_type Platform:System_Resource .}
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Entity")}}
+                                                MINUS { ?configuration <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_listView_column> ?subject .}
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Information_object")}}
+                                                MINUS { ?subject a Platform:resource_configuration .}
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Term")}}
+                                                MINUS { ?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/KP_category> .}
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Timespan")}}
+                                                MINUS { 
+                                                  ?entityFormRecordCreation crm:P4_has_time-span ?subject .
+                                                  ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+                                                }
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Type")}}
+                                                MINUS { 
+                                                  ?subject crm:P71i_is_listed_in ?vocabulary .
+                                                  ?vocabulary crm:P2_has_type Platform:System_Resource .
+                                                }
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
+                                                MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
+                                              {{/if}}
+                                            }'
+                                      header='application/sparql-results+json'
+                                      filename='[[urlParam "resourcelabel" escape=false]]-json-result.json'>
                     <bs-menu-item>
                       <rs-icon icon-type="rounded" icon-name="file_download" class="icon-left" symbol="true"></rs-icon>
                       <span>Export as JSON</span>
@@ -810,7 +949,7 @@
                                             column-configuration='[
                                                                     {"variableName": "subject", "displayName": "", "cellTemplate": "{{> selectionCheckbox}}" },
                                                                     {"variableName": "subject", "displayName": "{{#if bindings.0.columnTitle1.value}}{{bindings.0.columnTitle1.value}}{{else}}[[urlParam "resourcelabel" escape=false]] name{{/if}}", "cellTemplate": "{{> column1}}" },
-                                                                    {"variableName": "", "displayName": "{{#if bindings.0.columnTitle2.value}}{{bindings.0.columnTitle2.value}}{{else}}Description{{/if}}", "cellTemplate": "{{> column2}}" },
+                                                                    {"variableName": "", "displayName": "{{#if bindings.0.columnTitle2.value}}{{bindings.0.columnTitle2.value}}{{else}}{{/if}}", "cellTemplate": "{{> column2}}" },
                                                                     {"variableName": "", "displayName": "{{#if bindings.0.columnTitle3.value}}{{bindings.0.columnTitle3.value}}{{else}}{{/if}}", "cellTemplate": "{{> column3}}" },
                                                                     {"variableName": "", "displayName": "{{#if bindings.0.columnTitle4.value}}{{bindings.0.columnTitle4.value}}{{else}}{{/if}}", "cellTemplate": "{{> column4}}" },
                                                                     {"variableName": "", "displayName": "more", "cellTemplate": "{{> actions}}" }
@@ -934,7 +1073,6 @@
                                                             {{bindings.0.columnContentSparqlPattern2.value}}
                                                           }'
                                                   template='{{> customColumnContent}}'
-                                                  no-result-template='{{> noResults}}'
                                     >
 
                                       <template id='customColumnContent'>
@@ -984,19 +1122,7 @@
                                           {{/if}}
                                         </div>
                                       </template>
-
-                                      <template id="noResults">
-                                        {{#if description.value}}
-                                          <mp-text-truncate lines=1 expand='<div class="text-link">Expand</div>' collapse='<div class="text-link">Collapse</div>'>
-                                          {{description.value}}
-                                          </mp-text-truncate>
-                                        {{/if}}
-                                      </template>
                                   </semantic-query>
-                                {{else}}
-                                  <div>
-                                    {{description.value}}
-                                  </div>
                                 {{/if}}
                               </template>
 

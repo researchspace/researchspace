@@ -16,18 +16,19 @@
     </div> 
     <div class="btn-form-actions"> 
       <button name="reset" class="btn btn-default">Reset</button>
+      
       {{#ifCond mode "===" "edit"}}
-        
         [[#if (hasPermission "services:*")]]
           [[#if hideDelete]]
           [[else]]
-            [[> deleteButton]]
+            {{#if (not nested)}}
+              [[> deleteButton]]
+            {{/if}}
           [[/if]]
           <button name="dry-run" class="btn btn-default">Debug</button>
         [[/if]]
-       
       {{/ifCond}}
-
+      
       {{#switch mode}}
         {{#case "new" break=true}}
           <button name="submit" class="btn btn-action">[[#if actionType]][[actionType]][[else]]Create[[/if]] [[#if formEntity]][[formEntity]][[/if]]</button>

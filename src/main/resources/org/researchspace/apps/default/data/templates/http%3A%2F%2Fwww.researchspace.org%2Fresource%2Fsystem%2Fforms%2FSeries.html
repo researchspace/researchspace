@@ -28,6 +28,8 @@
                             physical_thing_component="http://www.researchspace.org/pattern/system/physical_thing/composed_of_physical_thing"
                             physical_object_number_of_parts="http://www.researchspace.org/pattern/system/physical_object/number_of_parts"
 
+                            physical_object_type="http://www.researchspace.org/pattern/system/physical_object/type"
+                            physical_object_format="http://www.researchspace.org/pattern/system/physical_object/format"
                             thing_general_use="http://www.researchspace.org/pattern/system/thing/had_as_general_use"
                             thing_dimension="http://www.researchspace.org/pattern/system/thing/dimension"
                             physical_thing_material="http://www.researchspace.org/pattern/system/physical_thing/material"
@@ -393,6 +395,57 @@
                 </rs-tab>
 
                 <rs-tab event-key="type" title="Type/Dimensions/Materials">
+
+                    <semantic-form-tree-picker-input    for="physical_object_type" 
+                                                        label="Object type" 
+                                                        placeholder="Select type of object in the series" 
+                                                        close-dropdown-on-selection='false'
+                                                        tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/object_type>", 
+                                                                        "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/object_type>",
+                                                                        "relationPattern": "?item crm:P127_has_broader_term ?parent",
+                                                                        "labelPattern": "?item skos:prefLabel ?label"
+                                                                        }'
+
+                                                        scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                    "view": "authority-list",
+                                                                                    "scheme": "http://www.researchspace.org/resource/vocab/object_type",
+                                                                                    "tooltip": "Open list of object types"
+                                                                                    }'
+                                                        
+                                                        nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                        scheme="http://www.researchspace.org/resource/vocab/object_type"
+                                                                                                        entityType="object type" }}{{{{/raw}}}}'
+
+                                                        query-item-label='SELECT ?label WHERE {
+                                                                            ?item skos:prefLabel ?label .
+                                                        }'>
+                                                
+                    </semantic-form-tree-picker-input>
+
+                    <semantic-form-tree-picker-input    for="physical_object_format" 
+                                                        label="Object format" 
+                                                        placeholder="Select format of object in the series" 
+                                                        close-dropdown-on-selection='false'
+                                                        tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/object_format>", 
+                                                                        "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/object_format>",
+                                                                        "relationPattern": "?item crm:P127_has_broader_term ?parent",
+                                                                        "labelPattern": "?item skos:prefLabel ?label"
+                                                                        }'
+
+                                                        scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                    "view": "authority-list",
+                                                                                    "scheme": "http://www.researchspace.org/resource/vocab/object_format",
+                                                                                    "tooltip": "Open list of object format"
+                                                                                    }'
+                                                        
+                                                        nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                        scheme="http://www.researchspace.org/resource/vocab/object_format"
+                                                                                                        entityType="object format" }}{{{{/raw}}}}'
+
+                                                        query-item-label='SELECT ?label WHERE {
+                                                                            ?item skos:prefLabel ?label .
+                                                        }'>
+                    </semantic-form-tree-picker-input>
 
                     <semantic-form-autocomplete-input   for='thing_general_use' 
                                                         label="Had as general use" 

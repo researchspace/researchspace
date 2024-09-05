@@ -34,6 +34,7 @@ import { addToDefaultSet } from 'platform/api/services/ldp-set';
 import { Spinner } from 'platform/components/ui/spinner/Spinner';
 import { isValidChild } from 'platform/components/utils';
 import { ResourceLinkComponent } from 'platform/api/navigation/components/ResourceLinkComponent';
+import Icon from '../ui/icon/Icon';
 
 const Button = createFactory(ReactBootstrap.Button);
 const Modal = createFactory(ReactBootstrap.Modal);
@@ -172,7 +173,7 @@ export class ActionSaveComponent extends Component<Props, State> {
         title: 'Save into default set',
         onClick: this.state.show == 'hide' ? this.onClick : undefined,
       },
-      D.i({ className: 'fa fa-save' }),
+      D.i({ className: 'fa fa-save', style: { fontSize: '16px' } }),
       this.renderModal()
     );
   }

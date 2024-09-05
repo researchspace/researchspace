@@ -867,27 +867,24 @@
                       </div>
                     {{else if (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/chart")}}
                       [[!-- chart view --]]
-                      <semantic-search-result-context ranges='["http://www.w3.org/2004/02/skos/core#Concept", "http://www.cidoc-crm.org/cidoc-crm/E53_Place"]'>
-                        <semantic-search-result id='semantic-search-result-chart'>
+                      <semantic-search-result-context ranges='["http://www.w3.org/2004/02/skos/core#Concept","http://www.cidoc-crm.org/cidoc-crm/E55_Type","http://www.cidoc-crm.org/cidoc-crm/E53_Place"]'>
+                        <semantic-search-result id='[[urlParam "viewid" escape=false]]-semantic-search-result-chart'>
                           <mp-component-toolbar>
                               <mp-component-toolbar-actions>
-                                <semantic-chart-type-selector id='search-result-chart-type-selector' default="bar" types='["line", "bar", "radar", "pie", "donut"]'></semantic-chart-type-selector>
+                                <semantic-chart-type-selector id='[[urlParam "viewid" escape=false]]-search-result-chart-type-selector' default="bar" types='["line", "bar", "radar", "pie", "donut"]'></semantic-chart-type-selector>
                                   <mp-component-toolbar-action-download></mp-component-toolbar-action-download>
                                   <mp-component-toolbar-action-save id='persit-component-action' add-to-default-set=true></mp-component-toolbar-action-save>
                               </mp-component-toolbar-actions>
                               <mp-component-toolbar-component>
-                                <semantic-chart
-                                    id='search-result-chart'
-                                    query='
-                                      SELECT ?__value__ (COUNT(DISTINCT ?subject) as ?count) WHERE {
-                                        OPTIONAL { FILTER(?__contextRelationPattern__) }
-                                        BIND(IF(BOUND(?__value__), ?__value__, "Unknown") as ?__value__)
-                                      } GROUP BY ?__value__ ORDER BY DESC(?count)
-                                    '
-                                    sets='[{
-                                      "category": "__value__",
-                                      "value": "count"
-                                    }]'>
+                                <semantic-chart id='[[urlParam "viewid" escape=false]]-search-result-chart'
+                                                query='SELECT ?__value__ (COUNT(DISTINCT ?subject) as ?count) WHERE {
+                                                        OPTIONAL { FILTER(?__contextRelationPattern__) }
+                                                        BIND(IF(BOUND(?__value__), ?__value__, "Unknown") as ?__value__)
+                                                      } GROUP BY ?__value__ ORDER BY DESC(?count)'
+                                                sets='[{
+                                                        "category": "__value__",
+                                                        "value": "count"
+                                                      }]'>
                                 </semantic-chart>
                               </mp-component-toolbar-component>
                           </mp-component-toolbar>

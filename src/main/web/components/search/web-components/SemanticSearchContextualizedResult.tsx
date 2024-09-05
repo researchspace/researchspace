@@ -115,7 +115,7 @@ class SemanticSearchContextualizedResultInner extends React.Component<InnerProps
             <ControlLabel>Visualization Context</ControlLabel>
             {this.props.context.searchProfileStore.map(this.contextSelector).getOrElse(<span />)}
           </FormGroup>
-          {React.Children.only(this.props.children)}
+          <div style={{ flex: '1'}}>{React.Children.only(this.props.children)}</div>
         </div>
       </SemanticSearchContext.Provider>
     );

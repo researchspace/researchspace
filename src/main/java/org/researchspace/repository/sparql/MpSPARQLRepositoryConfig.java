@@ -45,6 +45,8 @@ public class MpSPARQLRepositoryConfig extends SPARQLRepositoryConfig {
     private boolean usingQuads = true;
     private boolean writable = true;
     private boolean silentMode = false;
+    private boolean defaultConfigurationsSystemKPsAndVocabularies = true;
+    private boolean crmOntologiesAndKPs = true;
 
     public MpSPARQLRepositoryConfig() {
         super();
@@ -84,12 +86,30 @@ public class MpSPARQLRepositoryConfig extends SPARQLRepositoryConfig {
         this.silentMode = silentMode;
     }
 
+    public boolean getDefaultConfigurationsSystemKPsAndVocabularies() {
+        return this.defaultConfigurationsSystemKPsAndVocabularies;
+    }
+
+    public void setDefaultVocabulariesConfigurationsAndSystemKPs(boolean flag) {
+        this.defaultConfigurationsSystemKPsAndVocabularies = flag;
+    }
+
+    public boolean getCRMOntologiesAndKPs() {
+        return this.crmOntologiesAndKPs;
+    }
+
+    public void setCRMOntologiesAndKPs(boolean flag) {
+        this.crmOntologiesAndKPs = flag;
+    }
+
     @Override
     public Resource export(Model model) {
         Resource implNode = super.export(model);
         model.add(implNode, MpRepositoryVocabulary.QUAD_MODE, vf.createLiteral(usingQuads));
         model.add(implNode, MpRepositoryVocabulary.WRITABLE, vf.createLiteral(writable));
         model.add(implNode, MpRepositoryVocabulary.SILENT_MODE, vf.createLiteral(silentMode));
+        model.add(implNode, MpRepositoryVocabulary.DEFAULT_CONFIGURATIONS_SYSTEM_KPS_AND_VOCABULARIES, vf.createLiteral(defaultConfigurationsSystemKPsAndVocabularies));
+        model.add(implNode, MpRepositoryVocabulary.CRM_ONTOLOGIES_AND_KPS, vf.createLiteral(crmOntologiesAndKPs));
         return implNode;
     }
 
@@ -104,6 +124,10 @@ public class MpSPARQLRepositoryConfig extends SPARQLRepositoryConfig {
                     .ifPresent(lit -> setWritable(lit.booleanValue()));
             Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.SILENT_MODE, null))
                     .ifPresent(lit -> setSilentMode(lit.booleanValue()));
+            Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.DEFAULT_CONFIGURATIONS_SYSTEM_KPS_AND_VOCABULARIES, null))
+                    .ifPresent(lit -> setDefaultVocabulariesConfigurationsAndSystemKPs(lit.booleanValue()));
+            Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.CRM_ONTOLOGIES_AND_KPS, null))
+                    .ifPresent(lit -> setCRMOntologiesAndKPs(lit.booleanValue()));
         } catch (ModelException e) {
             throw new SailConfigException(e.getMessage(), e);
         }

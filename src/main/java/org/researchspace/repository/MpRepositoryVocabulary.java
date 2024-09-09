@@ -102,6 +102,8 @@ public class MpRepositoryVocabulary {
     public static final IRI QUAD_MODE = VF.createIRI(NAMESPACE, "quadMode");
     public static final IRI WRITABLE = VF.createIRI(NAMESPACE, "writable");
     public static final IRI SILENT_MODE = VF.createIRI(NAMESPACE, "silentMode");
+    public static final IRI DEFAULT_CONFIGURATIONS_SYSTEM_KPS_AND_VOCABULARIES = VF.createIRI(NAMESPACE, "defaultConfigurationsSystemKPsAndVocabularies");
+    public static final IRI CRM_ONTOLOGIES_AND_KPS = VF.createIRI(NAMESPACE, "crmOntologiesAndKPs");
 
     public static final IRI USE_ASYNCHRONOUS_PARALLEL_JOIN = VF.createIRI(FEDERATION_NAMESPACE,
             "useAsynchronousParallelJoin");

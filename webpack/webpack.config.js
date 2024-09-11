@@ -24,8 +24,6 @@ const CircularDependencyPlugin = require('circular-dependency-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const defaults = require('./defaults')();
 
-const cesiumSource = 'node_modules/cesium/Build/Cesium/';
-// const webIfcSource = 'node_modules/web-ifc/';
 const CopyPlugin = require("copy-webpack-plugin");
 
 /**
@@ -275,7 +273,6 @@ module.exports = function(isProd) {
                     'basil.js': 'basil.js/src/basil.js',
                     'handlebars': 'handlebars/dist/handlebars.js',
                     'jsonld': path.join(ROOT_DIR, 'node_modules/jsonld/dist/jsonld.js'),
-                    'cesium': path.join(ROOT_DIR, 'node_modules/cesium/Build/Cesium/Cesium.js'),
                 },
             ),
             extensions: ['.ts', '.tsx', '.js']
@@ -289,23 +286,6 @@ module.exports = function(isProd) {
             'react/lib/ReactContext': true,            
         },
         plugins: [
-            //new WriteFilePlugin(),
-            // Copy Cesium Assets, Widget, Workers, and ThirdParty to a static directory
-            new CopyPlugin(
-                [
-                    { from: path.join(cesiumSource, 'Workers'), to: 'Workers' },
-                    { from: path.join(cesiumSource, 'Scene'), to: 'Scene' },
-                    { from: path.join(cesiumSource, 'Assets'), to: 'Assets' },
-                    { from: path.join(cesiumSource, 'Widgets'), to: 'Widgets' },
-                    { from: path.join(cesiumSource, 'ThirdParty'), to: 'ThirdParty' },
-                    { from: path.join(cesiumSource, 'ThirdParty/draco_decoder.wasm'), to: 'ThirdParty/draco_decoder.wasm' },
-                ], {debug: 'info'}
-            ),
-            // new CopyPlugin([
-            //     {
-            //       from: path.join(webIfcSource, 'web-ifc.wasm'), to: '.',
-            //     },
-            //   ], { debug: true }),
             new CircularDependencyPlugin({
                 // exclude detection of files based on a RegExp
                 exclude: /src\/main\/web\/ontodia|node_modules/,

@@ -68,11 +68,6 @@ import { Spinner } from 'platform/components/ui/spinner';
 import { TemplateItem } from 'platform/components/ui/template';
 
 
-import * as cesium from 'cesium';
-(<any>window).Cesium = cesium;
-(<any>window).CESIUM_BASE_URL = '/assets/no_auth/';
-import OLCesium from 'ol-cesium';
-
 import * as Popup from 'ol-popup';
 
 import 'ol/ol.css';
@@ -257,8 +252,6 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   private draw: Interaction;
   private snap: Interaction;
   private defaultFeaturesColor = "rgba(200,80,20,0.3)";
-
-  private ol3d: OLCesium;
 
   constructor(props: SemanticMapAdvancedProps, context: ComponentContext) {
     super(props, context);
@@ -1052,9 +1045,6 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
           this.startRegistrationProcess();
 
-          const ol3d = new OLCesium({ map: this.map, resolutionScale: 0.1 }); // ol2dMap is the ol.Map instance
-          this.ol3d = ol3d;
-
 
           /* Layer Spy functionality */
           node.addEventListener('mousemove', (event) => {
@@ -1475,8 +1465,6 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   /*** VISUALIZATIONS  */
 
   private toggle3d = (event: Event<any>) => {
-    this.ol3d.setEnabled(!this.ol3d.getEnabled())
-    const scene = this.ol3d.getCesiumScene();
   }
 
   private setOverlaySwipe = (event: Event<any>) => {

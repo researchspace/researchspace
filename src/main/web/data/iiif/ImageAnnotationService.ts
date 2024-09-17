@@ -40,7 +40,7 @@ export interface ImageOrRegionInfo {
   viewport?: ImageSubarea;
   svgContent?: { __html: string };
   imageIRI: Rdf.Iri;
-  carrierImageIRI: Rdf.Iri;
+  carrierImageIRI?: Rdf.Iri;
 }
 
 export type ExplicitRegion = {
@@ -57,7 +57,7 @@ const IMAGE_REGION_INFO_QUERY = SparqlUtil.Sparql`
     OPTIONAL {
       ?__iri__ a rs:EX_Digital_Image .
       BIND("image" AS ?type)
-      BIND(?__iri__ as ?image)
+      BIND(?__iri__ as ?imageIRI)
       OPTIONAL {
         ?__iri__ crmdig:L60i_is_documented_by/crmdig:L11_had_output ?carrierImageIRI.
       }
@@ -122,8 +122,7 @@ export function queryIIIFImageOrRegion(
           viewport: viewport.getOrElse(undefined),
           boundingBox: bbox.getOrElse(undefined),
           svgContent: svg.getOrElse(undefined),
-          imageIRI: imageIRI,
-          carrierImageIRI: carrierImageIRI.value
+          imageIRI: imageIRI          
         });
       }
     })

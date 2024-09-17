@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -71,7 +72,6 @@ public class OverlayImageProcessor {
      * @return
      */
     OverlayImageFileProcessor getOverlayImageFileProcessor() throws RepositoryException {
-
         if (overlayImageFileProcessor == null) {
             overlayImageFileProcessor = new OverlayImageFileProcessor(iiifFolder);
         }
@@ -117,30 +117,43 @@ public class OverlayImageProcessor {
                 vf.createIRI(overlayedImageUri.toString() + "/event"));
 
         // Get timespan of modification event
-        Resource timespanModificationEvent = Models.subject(model.filter(null, CidocCRM.P82A_BEGIN_OF_THE_BEGIN_PROPERTY, null))
-                .get();
-        ModelUtils.replaceSubjectAndObjects(model, timespanModificationEvent,
+        Resource timespanModificationEvent = null;
+
+        try {
+            timespanModificationEvent = Models.subject(model.filter(null, CidocCRM.P82A_BEGIN_OF_THE_BEGIN_PROPERTY, null)).get();
+            ModelUtils.replaceSubjectAndObjects(model, timespanModificationEvent,
                 vf.createIRI(overlayedImageUri.toString() + "/event/timespan"));
+        } catch (NoSuchElementException noSuchElementException) {}
 
         // Get digitisation process
-        Resource digitisationProcess = Models.subject(model.filter(null, RDF.TYPE, CRMdig.D2_DIGITIZATION_PROCESS_CLASS))
-                .get();
-        ModelUtils.replaceSubjectAndObjects(model, digitisationProcess,
+        Resource digitisationProcess = null;
+        try {
+            digitisationProcess = Models.subject(model.filter(null, RDF.TYPE, CRMdig.D2_DIGITIZATION_PROCESS_CLASS)).get();
+        
+            ModelUtils.replaceSubjectAndObjects(model, digitisationProcess,
                 vf.createIRI(overlayedImageUri.toString() + "/digitisation_process"));
+        } catch (NoSuchElementException noSuchElementException) {}
 
         // Get new file
-        Resource overlayFile = Models.subject(model.filter(null, RDF.TYPE, RSO.EX_FILE))
-                .get();
+        Resource overlayFile = null;
         String str = overlayedImageUri.toString();
 
-        ModelUtils.replaceSubjectAndObjects(model, overlayFile,
+        try {
+            overlayFile = Models.subject(model.filter(null, RDF.TYPE, RSO.EX_FILE)).get();
+            ModelUtils.replaceSubjectAndObjects(model, overlayFile,
                 vf.createIRI(overlayedImageUri.toString() + ".jpg"));
-        model.add(vf.createIRI(overlayedImageUri.toString() + ".jpg"), RSO.PX_HAS_FILE_NAME, vf.createLiteral(str.substring(str.lastIndexOf("/")+1,str.length()) + ".jpg"));  
-    
+            model.add(vf.createIRI(overlayedImageUri.toString() + ".jpg"), RSO.PX_HAS_FILE_NAME, vf.createLiteral(str.substring(str.lastIndexOf("/")+1,str.length()) + ".jpg"));  
+        } catch (NoSuchElementException noSuchElementException) {}
+
         // Create appellation for image overlay
-        Resource overlayImageAppellation = Models.subject(model.filter(null, RDF.TYPE, CidocCRM.E41_APPELLATION_CLASS)).get();
-        ModelUtils.replaceSubjectAndObjects(model, overlayImageAppellation,
+        Resource overlayImageAppellation = null;
+
+        try {
+            overlayImageAppellation = Models.subject(model.filter(null, RDF.TYPE, CidocCRM.E41_APPELLATION_CLASS)).get();
+        
+            ModelUtils.replaceSubjectAndObjects(model, overlayImageAppellation,
                 vf.createIRI(overlayedImageUri.toString() + "/primary_appellation"));
+        } catch (NoSuchElementException noSuchElementException) {}
     }
 
     void addMetadata(Model model, Resource modificationEvent) {       

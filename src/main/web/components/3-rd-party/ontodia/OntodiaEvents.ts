@@ -18,6 +18,7 @@
  */
 
 import { EventMaker } from 'platform/api/events';
+import Rdf = require('platform/api/rdf/core/Rdf');
 
 // Workaround: 'typescript-json-schema' doesn't support void type.
 export type OpaqueElementModel = {};
@@ -46,9 +47,10 @@ export interface OntodiaEventData {
 
    /**
    * Event which should be triggered when diagram has been changed.
+   * iris stores the iri of a resource in the system that has just been changed.
    */
   'Ontodia.DiagramDataPersisted': {
-    model: OpaqueDiagramModel;
+    iris: string[];
     
   };
   /**

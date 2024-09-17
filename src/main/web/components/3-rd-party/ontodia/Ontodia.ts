@@ -1081,7 +1081,8 @@ export class Ontodia extends Component<OntodiaProps, State> {
         model.removeElement(element.id);
       }
     }
-
+    
+    const changedResourcesIris = model.elements.map(el => el.data.id);
     for (const link of [...model.links]) {
       const event = editor.authoringState.links.get(link.data);
       if (event && event.deleted) {
@@ -1097,7 +1098,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
       source: this.props.id,
       eventType: OntodiaEvents.DiagramDataPersisted,
       data: {
-        model: model,
+        iris: changedResourcesIris
       },
     });
 

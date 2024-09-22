@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -115,7 +116,7 @@ class SemanticSearchContextualizedResultInner extends React.Component<InnerProps
             <ControlLabel>Visualization Context</ControlLabel>
             {this.props.context.searchProfileStore.map(this.contextSelector).getOrElse(<span />)}
           </FormGroup>
-          {React.Children.only(this.props.children)}
+          <div style={{ flex: '1'}}>{React.Children.only(this.props.children)}</div>
         </div>
       </SemanticSearchContext.Provider>
     );

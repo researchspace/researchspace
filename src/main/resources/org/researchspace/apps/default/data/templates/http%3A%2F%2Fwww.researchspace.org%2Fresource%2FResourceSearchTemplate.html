@@ -39,6 +39,14 @@
       </mp-event-proxy>
     {{/if}}
 
+    {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image")}}
+      <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-ImageSearch-on-OverlayComparison-created' 
+                      on-event-types='["OverlayComparison.Created"]'
+                      proxy-event-type='Component.TemplateUpdate' 
+                      proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Image-resourceSearch-frame"]'
+      ></mp-event-proxy>
+    {{/if}}
+
     {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation")}}
       <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-ImageAnnotationSearch-on-IIIFViewer-modification' 
                       on-event-types='["IIIFViewer.RegionCreated", "IIIFViewer.RegionUpdated", "IIIFViewer.RegionRemoved"]'
@@ -71,9 +79,8 @@
       ></mp-event-proxy>
     {{/if}}
 
-
-
-     [[#if (urlParam "searchkpcategory")]]
+    [[!-- WARNING: any KPs used for search has to have a domain matching the resource ontology class --]]
+    [[#if (urlParam "searchkpcategory")]]
       <semantic-search config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> . ?field <http://www.researchspace.org/resource/system/fields/category> ?category . }" category=(urlParam "searchkpcategory" escape=false))]]'>
     [[else]]    
       <semantic-search config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> .  ?field <http://www.researchspace.org/resource/system/fields/domain> ?domain . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . }" domain=(urlParam "resourceontologyclass" escape=false))]]'>      
@@ -199,7 +206,7 @@
             </semantic-switch>
 
             {{#ifCond "[[urlParam "resourceconfig" escape=false]]" "==" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document"}}
-              <mp-overlay-dialog  id='{{viewId}}-import-authorityDocument-dialog'
+              <mp-overlay-dialog  id='[[urlParam "viewid" escape=false]]-import-authorityDocument-dialog'
                                   title="Import authority document" 
                                   type="modal" 
                                   bs-size="large"
@@ -252,13 +259,13 @@
                 </mp-overlay-dialog-content>
               </mp-overlay-dialog>
 
-              <mp-event-proxy id='{{viewId}}-authorityDocument-import-closeModal-proxy' 
+              <mp-event-proxy id='[[urlParam "viewid" escape=false]]-authorityDocument-import-closeModal-proxy' 
                               on-event-type='RdfUpload.Success'
                               proxy-event-type='OverlayDialog.Close' 
-                              proxy-targets='["{{viewId}}-import-authorityDocument-dialog"]'
+                              proxy-targets='["[[urlParam "viewid" escape=false]]-import-authorityDocument-dialog"]'
               ></mp-event-proxy>
 
-              <mp-event-proxy id='{{viewId}}-authorityDocument-importSuccess-refreshSearch-proxy' 
+              <mp-event-proxy id='[[urlParam "viewid" escape=false]]-authorityDocument-importSuccess-refreshSearch-proxy' 
                               on-event-type='RdfUpload.Success'
                               proxy-event-type='Component.TemplateUpdate' 
                               proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document-resourceSearch-frame"]'>
@@ -460,6 +467,19 @@
                 <rs-icon icon-type="round" icon-name="more_vert"></rs-icon>
               </bs-dropdown-toggle>
               <bs-dropdown-menu>
+             
+                <mp-selection-action-choice id='[[urlParam "viewid" escape=false]]-image-side-by-side-action' selection='item-selection-aggregator'>
+                  <div>
+                    {{#each selection}}
+                    <div>{{tag}}</div>
+                    {{/each}}
+
+                  </div>
+
+                   
+                </mp-selection-action-choice>
+
+
 
                 {{#ifCond "[[urlParam "resourceconfig" escape=false]]" "==" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image"}}
                   [[!-- 
@@ -805,7 +825,7 @@
                     {{else if (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/map")}}
                       <div>no map results</div>
                     {{else if (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/timeline")}}
-                    [[!-- timeline view --]]
+                    [[!-- timeline view: currently enabled only for crm:E21_Person and rdfs:subClassOf* crm:E2_Temporal_Entity  --]]
                       <div>
                         <semantic-search-result>
                           <mp-sparql-result-counts id='timeline-search-result-count' query="SELECT DISTINCT ?subject {} LIMIT 100"
@@ -832,32 +852,150 @@
                                 <mp-component-toolbar-component>
                                     <semantic-timeline  id='search-result-timeline'
                                                         query='PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-                                                                SELECT DISTINCT ?start ?end ?iri WHERE {
-                                                                FILTER(?__contextRelationPattern__).
-                                                                ?__value__ crm:P82a_begin_of_the_begin ?start ;
-                                                                        crm:P82b_end_of_the_end ?end .
-                                                                
-                                                                BIND(?subject as ?iri) .
+                                                                SELECT DISTINCT ?iri ?timespan ?start ?end ?birthTimespan ?deathTimespan WHERE {
+                                                                  {
+                                                                    ?subject a ?ontologyClass .
+                                                                    ?ontologyClass rdfs:subClassOf* crm:E2_Temporal_Entity .
+                                                                    ?subject crm:P4_has_time-span ?__value__ .
+                                                                    ?__value__ crm:P82a_begin_of_the_begin ?start ;
+                                                                                crm:P82b_end_of_the_end ?end .
+                                                                    BIND(?__value__ as ?timespan)
+                                                                    BIND(?subject AS ?iri)
+                                                                    OPTIONAL { FILTER(?__contextRelationPattern__) }
+                                                                  } UNION
+                                                                  {
+                                                                    OPTIONAL {
+                                                                      ?subject a crm:E21_Person .
+                                                                      ?subject crm:P98i_was_born ?birth .
+                                                                      ?birth crm:P4_has_time-span ?birthTimespan .
+                                                                      OPTIONAL { ?birthTimespan crm:P82_at_some_time_within ?start . }
+                                                                      BIND(?subject AS ?iri)
+                                                                    }
+                                                                    OPTIONAL {
+                                                                      ?subject a crm:E21_Person .
+                                                                      ?subject crm:P100i_died_in ?death .
+                                                                      ?death crm:P4_has_time-span ?deathTimespan .
+                                                                      OPTIONAL { ?deathTimespan crm:P82_at_some_time_within ?end .}
+                                                                      BIND(?subject AS ?iri)
+                                                                    }
+                                                                    OPTIONAL { FILTER(?__contextRelationPattern__) }
+                                                                  } 
                                                                 }
-                                                                ORDER BY ?subject
+                                                                ORDER BY ?start ?end
                                                                 LIMIT 100'
                                                         tuple-template='{{> timelineItem}}'
-                                                        tuple-template-height=50>
+                                                        no-result-template='{{> noResults}}'
+                                                        tuple-template-height=auto>
 
                                       <template id='timelineItem'>
-                                          <mp-popover>
-                                            <mp-popover-trigger placement="top" trigger='["hover"]' root-close='false'>
-                                                <div data-flex-layout='column top-left'>
-                                                <p>{{start.value}} - {{end.value}}</p>
-                                                <semantic-link iri='{{iri.value}}'></semantic-link>
-                                                </div>
-                                            </mp-popover-trigger>
-                                            <mp-popover-content>
-                                              {{> rsp:ResourceCard  iri=iri.value
-                                                                    viewId="timeline"
-                                              }}
-                                            </mp-popover-content>
-                                          </mp-popover>
+                                        <div style='display:flex;'>
+                                          <div style='display:flex; gap: 12px; flex: 1;'>
+                                            <div>
+                                              <mp-resource-thumbnail iri='{{iri.value}}'
+                                                                    style="width: 55px; height: 55px; object-fit:cover; margin-top: 5px;">
+                                                <mp-resource-thumbnail-fallback>
+                                                  <span>Image not found!</span>
+                                                </mp-resource-thumbnail-fallback>
+                                              </mp-resource-thumbnail>
+                                            </div>
+                                            <div style='display:flex; flex-direction:column;align-items: flex-start; gap: 2px;'>
+                                              <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                              urlqueryparam-view='resource-editor' 
+                                                              urlqueryparam-resource-iri='{{iri.value}}'>
+                                                <mp-label iri='{{iri.value}}' class="text-link-action text-truncate-line1"></mp-label>
+                                              </semantic-link>
+                                              {{#if timespan}}
+                                                {{#if start.value}}<div>Start date: {{start.value}}</div>{{/if}}
+                                                {{#if end.value}}<div>End date: {{end.value}}</div>{{/if}}
+                                                <div style="display: flex; gap: 3px;">
+                                                  <span>View date:</span>
+                                                  <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                  urlqueryparam-view='resource-editor' 
+                                                                  urlqueryparam-resource-iri='{{timespan.value}}'>
+                                                      <span><mp-label iri='{{timespan.value}}' class="text-link text-truncate-line1"></mp-label></span>
+                                                  </semantic-link>
+                                                </div> 
+                                              {{/if}}
+                                              {{#if birthTimespan}}
+                                                <div style="display: flex; gap: 3px;">
+                                                  <div>Birth date: </div>
+                                                  {{#if start}}
+                                                    <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                    urlqueryparam-view='resource-editor' 
+                                                                    urlqueryparam-resource-iri='{{birthTimespan.value}}'
+                                                                    class="text-link-action text-truncate-line1">
+                                                        {{start.value}}
+                                                    </semantic-link>
+                                                  {{else}}
+                                                    <div>missing birth timespan - date value</div>
+                                                  {{/if}}
+                                                </div> 
+                                              {{/if}}
+                                              {{#if deathTimespan}}
+                                                <div style="display: flex; gap: 3px;">
+                                                  <div>Death date: </div>
+                                                  {{#if end}}
+                                                    <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                    urlqueryparam-view='resource-editor' 
+                                                                    urlqueryparam-resource-iri='{{deathTimespan.value}}'
+                                                                    class="text-link-action text-truncate-line1">
+                                                        {{end.value}}
+                                                    </semantic-link>
+                                                  {{else}}
+                                                    <div>missing death timespan - date value</div>
+                                                  {{/if}}
+                                                </div> 
+                                              {{/if}}
+                                            </div>
+                                          </div>
+                                          <div style="display:flex; gap: 3px;">
+                                            <mp-copy-to-default-set id="[[urlParam 'viewid' escape=false]]-copy-to-clipboard" resource="{{iri.value}}">
+                                              <button class="btn btn-default" style="height: 35px;">
+                                                <rs-icon icon-type="rounded" icon-name="inventory" symbol="true" title="Copy to clipboard"></rs-icon>
+                                              </button>
+                                            </mp-copy-to-default-set>
+                                            
+                                            <mp-overlay-dialog  id="[[urlParam 'viewid' escape=false]]-resource-preview-dialog"  
+                                                                type="modal" 
+                                                                class="modal-xlSize preview_modal"
+                                                                title="Preview">
+                                              <mp-overlay-dialog-trigger>
+                                                <button class="btn btn-default" style="height: 35px;">
+                                                  <rs-icon icon-type="rounded" icon-name="fullscreen" symbol="true" title="Preview"></rs-icon>
+                                                </button>
+                                              </mp-overlay-dialog-trigger>
+
+                                              <mp-overlay-dialog-content>
+                                                <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
+                                                                  options='{  "resource": "{{iri.value}}", 
+                                                                              "resourceConfig": "[[urlParam "resourceconfig" escape=false]]", 
+                                                                              "resourceConfigLabel": "[[urlParam "resourcelabel" escape=false]]",
+                                                                              "resourceOntologyClass": "[[urlParam "resourceontologyclass" escape=false]]",
+                                                                              "modalId": "[[urlParam "viewid" escape=false]]-resource-preview-dialog",
+                                                                              "resourceDetailSection": true
+                                                                            }' >
+                                                </inline-template> 
+                                              </mp-overlay-dialog-content>
+                                            </mp-overlay-dialog>
+                                          </div>
+                                        </div>
+                                      </template>
+
+                                      <template id='noResults'>
+                                        <div style="margin-bottom: 20px;">
+                                          <div class="documentation-section documentation-section-withIcon">
+                                            <div class="documentation-section-icon-container">
+                                              <i class="fa fa-info"></i>
+                                            </div>
+                          
+                                            <div style="flex: 1;"> 
+                                              <div class="documentation-section-title">No results available</div>
+                                              <div class="documentation-section-content">
+                                                To display a resource in the timeline it must have associated a Timespan with Start date and End date.
+                                              </div>
+                                            </div>
+                                          </div> 
+                                        </div>
                                       </template>
                                     </semantic-timeline>
                                 </mp-component-toolbar-component>
@@ -867,27 +1005,26 @@
                       </div>
                     {{else if (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/chart")}}
                       [[!-- chart view --]]
-                      <semantic-search-result-context ranges='["http://www.w3.org/2004/02/skos/core#Concept", "http://www.cidoc-crm.org/cidoc-crm/E53_Place"]'>
-                        <semantic-search-result id='semantic-search-result-chart'>
+                      <semantic-search-result-context ranges='["http://www.w3.org/2004/02/skos/core#Concept","http://www.cidoc-crm.org/cidoc-crm/E55_Type","http://www.cidoc-crm.org/cidoc-crm/E53_Place"]'>
+                        <semantic-search-result id='[[urlParam "viewid" escape=false]]-semantic-search-result-chart'>
                           <mp-component-toolbar>
                               <mp-component-toolbar-actions>
-                                <semantic-chart-type-selector id='search-result-chart-type-selector' default="bar" types='["line", "bar", "radar", "pie", "donut"]'></semantic-chart-type-selector>
+                                <semantic-chart-type-selector id='[[urlParam "viewid" escape=false]]-search-result-chart-type-selector' default="bar" types='["line", "bar", "radar", "pie", "donut"]'></semantic-chart-type-selector>
                                   <mp-component-toolbar-action-download></mp-component-toolbar-action-download>
                                   <mp-component-toolbar-action-save id='persit-component-action' add-to-default-set=true></mp-component-toolbar-action-save>
                               </mp-component-toolbar-actions>
                               <mp-component-toolbar-component>
-                                <semantic-chart
-                                    id='search-result-chart'
-                                    query='
-                                      SELECT ?__value__ (COUNT(DISTINCT ?subject) as ?count) WHERE {
-                                        OPTIONAL { FILTER(?__contextRelationPattern__) }
-                                        BIND(IF(BOUND(?__value__), ?__value__, "Unknown") as ?__value__)
-                                      } GROUP BY ?__value__ ORDER BY DESC(?count)
-                                    '
-                                    sets='[{
-                                      "category": "__value__",
-                                      "value": "count"
-                                    }]'>
+                                <semantic-chart id='[[urlParam "viewid" escape=false]]-search-result-chart'
+                                                query='SELECT ?__value__ (COUNT(DISTINCT ?subject) as ?count) WHERE {
+                                                        OPTIONAL { FILTER(?__contextRelationPattern__) }
+                                                        BIND(IF(BOUND(?__value__), ?__value__, "Unknown") as ?__value__)
+                                                      } GROUP BY ?__value__ 
+                                                        ORDER BY DESC(?count)'
+                                                sets='[{
+                                                        "dataSetName": "Number of values",
+                                                        "category": "__value__",
+                                                        "value": "count"
+                                                      }]'>
                                 </semantic-chart>
                               </mp-component-toolbar-component>
                           </mp-component-toolbar>

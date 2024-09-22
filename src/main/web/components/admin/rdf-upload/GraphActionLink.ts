@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -40,6 +41,7 @@ const ButtonToolbar = createFactory(ReactBootstrap.ButtonToolbar);
 
 import './GraphActionLink.scss';
 import { overlayMode } from 'codemirror';
+import Icon from 'platform/components/ui/icon/Icon';
 
 const CLASS = 'mp-rdf-graph-action';
 
@@ -106,8 +108,13 @@ export class GraphActionLink extends Component<Props, State> {
               D.span({}, '"?'),
             ),
             D.div(
-              {className: 'alert alert-info', style: { marginTop: '20px'}},
-              D.p({},'Please note that for larger named graphs (> 1 million statements), the deletion may typically take a few seconds (or even minutes) to be finally processed by the database.')
+              {className: 'documentation-section documentation-section-withIcon', style: { margin: '20px 0'}},
+              D.div({className:'documentation-section-icon-container'},
+                D.i({className:'fa fa-info'})),
+                D.div({style: { flex: '1'}}, 
+                  D.div({className:'documentation-section-title'}, 'Delete processing'),
+                  D.div({className:'documentation-section-content'}, 'For larger named graphs (> 1 million statements), the deletion may typically take a few seconds (or even minutes) to be finally processed by the database.')
+                    ) 
             ),
             ButtonToolbar(
               { className: 'modal-btn-group' },
@@ -232,7 +239,7 @@ export class GraphActionLink extends Component<Props, State> {
         trigger({
           eventType: GraphActionEvents.GraphActionDelete,
           source: Math.random().toString(),
-          data:{"deleted graph":Rdf.iri(this.props.graphuri)}
+          data:{"iri":this.props.graphuri}
         });
         //Disable the refresh
         //refresh();

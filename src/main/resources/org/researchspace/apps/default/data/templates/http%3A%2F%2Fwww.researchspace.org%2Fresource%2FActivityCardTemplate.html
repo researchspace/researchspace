@@ -1,31 +1,35 @@
-<semantic-query query='SELECT DISTINCT  ?subject ?resourceConfig ?resourceLabel ?resourceType ?date 
-                                        ?modifiedActor ?systemModifiedActorName ?modifiedActorFullName ?modifiedActorMainImage ?modifiedActorMainImageClass
-                                        ?creationActor ?systemCreationActorName ?creationActorFullName ?creationActorMainImage ?creationActorMainImageClass
+<semantic-query query='SELECT DISTINCT  ?subject ?resourceConfig ?resourceLabel ?resourceType ?resourceIcon ?date ?resourceOntologyClass
+                                        ?modifiedActor ?systemModifiedActorName ?modifiedActorFullName
+                                        ?creationActor ?systemCreationActorName ?creationActorFullName
                                  WHERE {
 
                         BIND(<{{iri}}> as ?subject)
                         BIND("{{date.value}}" as ?date)
 
-                        OPTIONAL {
-                          ?subject a ?resourceOntologyClass .
-                          ?resourceOntologyClass a owl:Class .
+                        ?subject a ?resourceOntologyClass .
+                        ?resourceOntologyClass a owl:Class .
+                        OPTIONAL {                            
                           ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
                           ?resourceConfigWithP2 a <http://www.researchspace.org/resource/system/resource_configuration> .
                           ?subject crm:P2_has_type ?resourceType . 
                           ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceType .
-                          ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceLabel .
+                          ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceConfigWithP2Label .
+                          OPTIONAL {?resourceConfigWithP2  <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceConfigWithP2Icon .}
                         }
-
-                        OPTIONAL {
-                          ?subject a ?resourceOntologyClass .
-                          ?resourceOntologyClass a owl:Class .
+                        OPTIONAL {                         
                           ?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
                           ?resourceConfigWithoutP2 a <http://www.researchspace.org/resource/system/resource_configuration> .
-                          ?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceLabel .
+                          ?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceConfigWithoutP2Label .
+                          FILTER NOT EXISTS {?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceType .}
+                          OPTIONAL{ ?resourceConfigWithoutP2  <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceConfigWithoutP2Icon .}
                         }
-
-                        BIND(COALESCE(?resourceConfigWithP2, ?resourceConfigWithP2, ?resourceConfigWithoutP2) AS ?resourceConfig)
-
+                        BIND((IF(BOUND(?resourceConfigWithP2), 
+                                ?resourceConfigWithP2, IF(BOUND(?resourceConfigWithoutP2),?resourceConfigWithoutP2,""))) AS ?resourceConfig)
+                        BIND((IF(BOUND(?resourceConfigWithP2Label), 
+                                ?resourceConfigWithP2Label, IF(BOUND(?resourceConfigWithoutP2Label),?resourceConfigWithoutP2Label,""))) AS ?resourceLabel)
+                        BIND((IF(BOUND(?resourceConfigWithP2Icon), 
+                              ?resourceConfigWithP2Icon, IF(BOUND(?resourceConfigWithoutP2Icon),?resourceConfigWithoutP2Icon,""))) AS ?resourceIcon)
+                        
                         OPTIONAL {
                           ?subject prov:wasAttributedTo ?modifiedActor .
                           BIND(REPLACE(REPLACE(STR(?modifiedActor), STR(User:), ""), "%40", "@") as ?systemModifiedActorName) 
@@ -36,12 +40,6 @@
                             ?actorName a crm:E41_Appellation .
                             ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                             ?actorName crm:P190_has_symbolic_content ?modifiedActorFullName .
-
-                            OPTIONAL {
-                              ?modifiedActor rs:PX_has_main_representation ?modifiedActorMainImage .
-                              ?modifiedActorMainImage a ?modifiedActorMainImageClass .
-                              FILTER(?modifiedActorMainImageClass in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
-                            }
                           }
                         }
 
@@ -61,17 +59,8 @@
                             ?creationActorName a crm:E41_Appellation .
                             ?creationActorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                             ?creationActorName crm:P190_has_symbolic_content ?creationActorFullName .
-
-                            OPTIONAL {
-                              ?creationActor rs:PX_has_main_representation ?creationActorMainImage .
-                              ?creationActorMainImage a ?creationActorMainImageClass .
-                              FILTER(?creationActorMainImageClass in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
-                            }
                           }
                         }
-
-
-
                       } LIMIT 1'
       
                 template='{{> template}}'
@@ -80,35 +69,43 @@
 
     <template id='template'>
       <div class="activity-card-content">
-        <div>
-          {{#if bindings.0.modifiedActor.value}}
-            {{#if (eq bindings.0.modifiedActorMainImageClass.value "http://www.researchspace.org/ontology/EX_Digital_Image_Region")}}
-              <rs-iiif-image-thumbnail  height='25' width='25' class="person-thumbnail"
-                                        image-or-region='{{bindings.0.modifiedActorMainImage.value}}'
-                                        [[> rsp:IIIFConfig]]>
-              </rs-iiif-image-thumbnail>
-            {{else}}
-              <mp-resource-thumbnail iri='{{bindings.0.modifiedActor.value}}' class="person-thumbnail">
-                <mp-resource-thumbnail-fallback>
-                    <rs-icon icon-type="round" icon-name="person" class="person-icon"></rs-icon>
-                </mp-resource-thumbnail-fallback>
-              </mp-resource-thumbnail>  
-            {{/if}}
-          {{else if bindings.0.creationActor.value}}
-            {{#if (eq bindings.0.creationActorMainImageClass.value "http://www.researchspace.org/ontology/EX_Digital_Image_Region")}}
-              <rs-iiif-image-thumbnail  height='25' width='25' class="person-thumbnail"
-                                        image-or-region='{{bindings.0.creationActorMainImage.value}}'
-                                        [[> rsp:IIIFConfig]]>
-              </rs-iiif-image-thumbnail>
-            {{else}}
-              <mp-resource-thumbnail iri='{{bindings.0.creationActor.value}}' class="person-thumbnail">
-                <mp-resource-thumbnail-fallback>
-                    <rs-icon icon-type="round" icon-name="person" class="person-icon"></rs-icon>
-                </mp-resource-thumbnail-fallback>
-              </mp-resource-thumbnail>  
-            {{/if}}
-          {{/if}}
-        </div>
+        <mp-draggable iri='{{bindings.0.subject.value}}'>
+          <mp-overlay-dialog  id="activityCard-resource-preview-dialog"  
+                              type="modal" 
+                              class="modal-xlSize preview_modal"
+                              title="Preview">
+            <mp-overlay-dialog-trigger>
+              <div class="resource-thumbnail-small-container">
+                <mp-resource-thumbnail iri='{{bindings.0.subject.value}}' class="resource-thumbnail-small">
+                  <mp-resource-thumbnail-fallback>
+                    {{#if bindings.0.resourceIcon.value}}
+                      <rs-icon icon-type="rounded" icon-name="{{bindings.0.resourceIcon.value}}" symbol=true class="resource-thumbnail-small-fallback-icon"></rs-icon>
+                    {{else}}
+                      <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol=true></rs-icon>
+                    {{/if}}
+                  </mp-resource-thumbnail-fallback>
+                </mp-resource-thumbnail>
+              </div>
+            </mp-overlay-dialog-trigger>
+            <mp-overlay-dialog-content>
+              <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
+                                options='{"resource": "{{bindings.0.subject.value}}", 
+                                            "resourceConfig": "{{bindings.0.resourceConfig.value}}", 
+                                            "resourceConfigLabel": "{{bindings.0.resourceLabel.value}}",
+                                            {{#if resourceOntologyClass}}"resourceOntologyClass": "{{resourceOntologyClass}}",{{/if}}
+                                            "modalId": "activityCard-resource-preview-dialog",
+                                            "resourceDetailSection": true
+                                          }' >
+              </inline-template> 
+            </mp-overlay-dialog-content>
+          </mp-overlay-dialog>
+        </mp-draggable>
+
+
+
+
+
+
         <div class="activity-card-data">
           <div style="display: flex; align-items: center; justify-content: space-between;">
             <div class="activity-card-actor-value text-truncate-line1">

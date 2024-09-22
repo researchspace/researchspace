@@ -15,13 +15,23 @@
                     iris='[ "{{resource}}" ]'
                     query="SELECT DISTINCT ?image WHERE {
                             {
-                                <{{resource}}> a ?type .
-                                FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
-                                BIND(<{{resource}}> as ?image)
-                            } UNION {
-                                <{{resource}}> (crm:P138i_has_representation|rs:PX_has_main_representation) ?image .
-                                ?image a ?type .
-                                FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+                              <{{resource}}> a rs:EX_Digital_Image .
+                              BIND(<{{resource}}> as ?image)
+                            } 
+                            UNION {
+                              <{{resource}}> a rs:EX_Digital_Image_Region .
+                              <{{resource}}> crmdig:L49_is_primary_area_of ?image .
+                              ?image a rs:EX_Digital_Image .                
+                            }
+                            UNION {
+                              <{{resource}}> (crm:P138i_has_representation|rs:PX_has_main_representation) ?image .
+                              ?image a rs:EX_Digital_Image .
+                            } 
+                            UNION {
+                              <{{resource}}> (crm:P138i_has_representation|rs:PX_has_main_representation) ?imageAnnotation .
+                              ?imageAnnotation a rs:EX_Digital_Image_Region .
+                              ?imageAnnotation crmdig:L49_is_primary_area_of ?image .
+                              ?image a rs:EX_Digital_Image .
                             }
                         }"     
                     [[> rsp:IIIFConfig]]>

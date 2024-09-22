@@ -170,7 +170,7 @@
                                                                                         "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
                             
                                                                         scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                                    "view": "vocabulary-content",
+                                                                                                    "view": "authority-list",
                                                                                                     "scheme": "http://www.researchspace.org/resource/vocab/title_type",
                                                                                                     "tooltip": "Open list of title types"
                                                                                                 }'
@@ -187,6 +187,33 @@
                             </div>
                             </semantic-form-composite-input>
                         </div>
+
+                        {{#if node}}
+                            <semantic-query query='SELECT ?authorityDocument ?authorityDocumentName WHERE {
+                                                    <{{node}}> crm:P71i_is_listed_in ?authorityDocument .
+                                                    ?authorityDocument a crm:E32_Authority_Document .
+                                                    ?authorityDocument crm:P1_is_identified_by ?appellation . 
+                                                    ?appellation a crm:E41_Appellation . 
+                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                    ?appellation crm:P190_has_symbolic_content ?authorityDocumentName .
+                                                } LIMIT 1'
+                                            template='{{> template}}'>
+                                            
+                                <template id='template'>
+                                    <div>
+                                        <div style="display: flex; gap: 3px; margin-top: 20px;">
+                                            <div>Listed in authority document: </div>
+                                            <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                            urlqueryparam-view='authority-list' 
+                                                            urlqueryparam-resource-iri='{{bindings.0.authorityDocument.value}}'
+                                                            class="text-link">
+                                            {{bindings.0.authorityDocumentName.value}}
+                                            </semantic-link>
+                                        </div>
+                                    </div>  
+                                </template>
+                            </semantic-query>
+                        {{/if}}
                         
                         {{#if apiResourceDescription}}
                             <div class="focused-input-container">
@@ -468,7 +495,7 @@
                                                                         }'
 
                                                         scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                    "view": "vocabulary-content",
+                                                                                    "view": "authority-list",
                                                                                     "scheme": "http://www.researchspace.org/resource/vocab/object_type",
                                                                                     "tooltip": "Open list of object types"
                                                                                     }'
@@ -494,7 +521,7 @@
                                                                         }'
 
                                                         scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                    "view": "vocabulary-content",
+                                                                                    "view": "authority-list",
                                                                                     "scheme": "http://www.researchspace.org/resource/vocab/object_format",
                                                                                     "tooltip": "Open list of object format"
                                                                                     }'
@@ -562,7 +589,7 @@
 
                     <div class="form-section-flexContainer">
                         <div style="flex: 1;">
-                            <h5 class="customFormHeader">Ownership</h5>
+                            <h5 class="customFormHeader" style="margin: 0;">Ownership</h5>
                             <div class="form-section">
                                 <div class="form-section-first-input">
                                     <semantic-form-autocomplete-input   for='physical_thing_current_owner'
@@ -580,7 +607,7 @@
                         </div>
 
                         <div style="flex: 1;">
-                            <h5 class="customFormHeader">Custody</h5>
+                            <h5 class="customFormHeader" style="margin: 0;">Custody</h5>
                             <div class="form-section">
                                 <div class="form-section-first-input">
                                     <semantic-form-autocomplete-input   for='physical_thing_current_keeper' 
@@ -688,7 +715,7 @@
                                                                                     "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
                         
                                                                     scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                                "view": "vocabulary-content",
+                                                                                                "view": "authority-list",
                                                                                                 "scheme": "http://www.researchspace.org/resource/vocab/mode_of_use",
                                                                                                 "tooltip": "Open list of modes of use"
                                                                                             }'
@@ -739,7 +766,7 @@
                                                                                 "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
             
                                                                 scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                            "view": "vocabulary-content",
+                                                                                            "view": "authority-list",
                                                                                             "scheme": "http://www.researchspace.org/resource/vocab/mode_of_use",
                                                                                             "tooltip": "Open list of modes of use"
                                                                                             }'
@@ -924,7 +951,7 @@
                                                                                 "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
             
                                                                 scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                            "view": "vocabulary-content",
+                                                                                            "view": "authority-list",
                                                                                             "scheme": "http://www.researchspace.org/resource/vocab/thing_kind_of_similarity",
                                                                                             "tooltip": "Open list of kind of similarities"
                                                                                         }'
@@ -973,7 +1000,7 @@
                                                                                 "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
             
                                                                 scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                            "view": "vocabulary-content",
+                                                                                            "view": "authority-list",
                                                                                             "scheme": "http://www.researchspace.org/resource/vocab/thing_kind_of_similarity",
                                                                                             "tooltip": "Open list of kind of similarities"
                                                                                         }'
@@ -1022,7 +1049,7 @@
                                                                             "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
             
                                                             scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                        "view": "vocabulary-content",
+                                                                                        "view": "authority-list",
                                                                                         "scheme": "http://www.researchspace.org/resource/vocab/mode_of_depiction",
                                                                                         "tooltip": "Open list of mode of depictions"
                                                                                         }'
@@ -1077,7 +1104,7 @@
                                                                                 "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
                 
                                                                 scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                            "view": "vocabulary-content",
+                                                                                            "view": "authority-list",
                                                                                             "scheme": "http://www.researchspace.org/resource/vocab/type_of_reference",
                                                                                             "tooltip": "Open list of type of references"
                                                                                             }'
@@ -1146,7 +1173,7 @@
                                                                                     "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
                     
                                                                     scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                                "view": "vocabulary-content",
+                                                                                                "view": "authority-list",
                                                                                                 "scheme": "http://www.researchspace.org/resource/vocab/mode_of_depiction",
                                                                                                 "tooltip": "Open list of mode of depictions"
                                                                                                 }'

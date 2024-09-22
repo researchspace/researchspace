@@ -111,30 +111,30 @@
     },
 
     {
-    	"id": "vocabulary",
-      "label": "Vocabularies / Authorities",
+    	"id": "authority",
+      "label": "Authority document",
       "iconClass": "iconmoon iconmoon-books",
-      "description": "Create, view and edit vocabulary / authority list of terms",
-      "template": "{{> vocabulary}}",
+      "description": "Create, view and edit authority list of terms",
+      "template": "{{> authority}}",
       "resourceNotRequired": true,
       "type": "hidden"
     }, 
 
     {
-    	"id": "system-vocabulary",
-      "label": "System vocabularies / authorities",
+    	"id": "system-authority",
+      "label": "System authority document",
       "iconClass": "iconmoon iconmoon-books",
-      "description": "Create, view and edit system vocabulary / authority list of terms",
-      "template": "{{> systemVocabulary}}",
+      "description": "Create, view and edit system authority list of terms",
+      "template": "{{> systemAuthority}}",
       "resourceNotRequired": true,
       "type": "hidden"
     }, 
 
     {
-    	"id": "vocabulary-content",
-      "label": "Vocabulary / Authority content",
+    	"id": "authority-list",
+      "label": "List of resources in authority",
       "iconClass": "iconmoon iconmoon-books",
-      "template": "{{> vocabularyContent}}",
+      "template": "{{> authorityList}}",
        "type": "hidden"
     },
 
@@ -217,24 +217,6 @@
       "dropAreaDescription": "Drag and drop a resource here to view and annotate its images",
       "iconName": "photo_size_select_large",
       "template": "{{> imageAnnotation}}",
-    [[!--  "checkQuery": "
-        PREFIX ontodia: <http://ontodia.org/schema/v1#>
-        PREFIX ldp: <http://www.w3.org/ns/ldp#>
-        ASK {
-          {
-            ?value a ontodia:Diagram .
-            ?value ontodia:layoutData/ontodia:hasElement/ontodia:resource ?resource .
-            { ?value crm:P138i_has_representation|rs:PX_has_main_representation ?image .} UNION { ?value a rs:EX_Digital_Image . }
-          } UNION {
-            ?value a Platform:Set .
-            ?value ldp:contains / Platform:setItem ?resource .
-            { ?value crm:P138i_has_representation|rs:PX_has_main_representation ?image .} UNION { ?value a rs:EX_Digital_Image . }
-          } UNION {
-            ?value crm:P138i_has_representation|rs:PX_has_main_representation ?image .
-          } UNION {
-            ?value a rs:EX_Digital_Image .
-          }
-      }", --]]
       "unique": false,
       "type": "authoring"
     } 
@@ -385,16 +367,16 @@
       [[> rsp:ResourceEditor]]
     </template>
 
-    <template id='vocabulary'>
-      [[> rsp:Vocabulary]]
+    <template id='authority'>
+      [[> rsp:AuthorityDocumentView]]
     </template>
 
-    <template id='systemVocabulary'>
-      [[> rsp:SystemVocabulary]]
+    <template id='systemAuthority'>
+      [[> rsp:AuthorityDocumentSystem]]
     </template>
 
-    <template id='vocabularyContent'>
-      [[> rsp:VocabularyContent iri=iri]]
+    <template id='authorityList'>
+      [[> rsp:AuthorityList iri=iri]]
     </template>
 
 [[!--     <template id='systemNarrativesTemplate'>

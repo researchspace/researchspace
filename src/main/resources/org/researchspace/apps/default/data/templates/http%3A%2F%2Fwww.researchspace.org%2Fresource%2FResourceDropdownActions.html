@@ -166,7 +166,7 @@
     {{#if (not resourceEditorButton)}}
       {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
         <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                  urlqueryparam-view='vocabulary-content' 
+                                  urlqueryparam-view='authority-list' 
                                   urlqueryparam-resource='{{iri}}'>
           <bs-menu-item>
             <rs-icon icon-type="rounded" icon-name="list" class="icon-left" symbol="true"></rs-icon>
@@ -216,8 +216,7 @@
       </semantic-if>
     {{/if}}
 
-    {{#if (or (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Document") 
-              (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document") 
+    {{#if (or (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Document")
               (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/3d_model"))}}
       <semantic-query query='SELECT ?file ?fileName ?fileMediaType WHERE {
                             BIND(<{{iri}}> as ?resource) .
@@ -246,6 +245,17 @@
             <hr>
           </template>
       </semantic-query>
+    {{/if}}
+
+    {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
+      <bs-menu-item>
+        <mp-graph-store-action title="Download" action="GET" graphuri="{{iri}}" file-ending="trig">
+          <rs-icon icon-type="rounded" icon-name="download" class="icon-left" symbol="true"></rs-icon>
+          <span>Download file</span>
+        </mp-graph-store-action> 
+      </bs-menu-item>
+
+      <hr>
     {{/if}}
 
     {{#if (or (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image") 
@@ -454,28 +464,30 @@
 
       </semantic-if>
     {{else}}
-      <semantic-query query='SELECT DISTINCT ?image WHERE {
-                              <{{iri}}> crmdig:L49_is_primary_area_of ?image .
-                              ?image a rs:EX_Digital_Image .
-                            
-                          }'
-                      template='{{> imageOfAnnotation}}'>
+      {{#if (not imageAnnotation)}}
+        <semantic-query query='SELECT DISTINCT ?image WHERE {
+                                <{{iri}}> crmdig:L49_is_primary_area_of ?image .
+                                ?image a rs:EX_Digital_Image .
+                              
+                            }'
+                        template='{{> imageOfAnnotation}}'>
 
-          <template id='imageOfAnnotation'>
-            <hr>
-            <mp-event-trigger id='{{viewId}}-image-annotation-add-frame-trigger' 
-                              type='Dashboard.AddFrame' 
-                              data='{"resourceIri": "{{bindings.0.image.value}}", 
-                                      "viewId": "image-annotation", 
-                                      "frameId": "{{viewId}}"}' 
-                              targets='["thinking-frames"]'>
-                <bs-menu-item>
-                  <rs-icon icon-type="rounded" icon-name="photo_size_select_large" class="icon-left" symbol="true"></rs-icon>
-                    <span>Open in image view / annotations</span>
-                </bs-menu-item>
-            </mp-event-trigger>
-          </template>
-      </semantic-query>
+            <template id='imageOfAnnotation'>
+              <hr>
+              <mp-event-trigger id='{{viewId}}-image-annotation-add-frame-trigger' 
+                                type='Dashboard.AddFrame' 
+                                data='{"resourceIri": "{{bindings.0.image.value}}", 
+                                        "viewId": "image-annotation", 
+                                        "frameId": "{{viewId}}"}' 
+                                targets='["thinking-frames"]'>
+                  <bs-menu-item>
+                    <rs-icon icon-type="rounded" icon-name="photo_size_select_large" class="icon-left" symbol="true"></rs-icon>
+                      <span>Open in image view / annotations</span>
+                  </bs-menu-item>
+              </mp-event-trigger>
+            </template>
+        </semantic-query>
+      {{/if}}
     {{/if}}
 
     {{#if (not (eq resourceLabel "Knowledge map"))}}
@@ -490,13 +502,27 @@
       </semantic-link-container>
     {{/if}}
 
-    {{#if (or searchCard imageAnnotation)}} 
-      {{#if (not (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/User"))}}
+   {{#if (or allowResourceDelete imageAnnotation)}} 
+      {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
         <hr>
-        [[> deleteButton resourceFormIRI=resourceFormIRI]]
+
+        <bs-menu-item>
+          <rs-icon icon-type="rounded" icon-name="delete" class="icon-left" symbol="true"></rs-icon>            
+          <mp-graph-store-action title="Delete" 
+                                  action="DELETE" 
+                                  graphuri="{{iri}}" 
+                                  graph-description="{{label.value}}">
+            <span>Delete</span>          
+          </mp-graph-store-action>
+        </bs-menu-item>
+      {{else}}
+        {{#if (not (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/User"))}}
+          <hr>
+          [[> deleteButton resourceFormIRI=resourceFormIRI]]
+        {{/if}}
       {{/if}}
     {{/if}}
-
+    
     [[#if customAction]]
       [[#block "customAction"]][[/block]]
     [[/if]]
@@ -507,15 +533,15 @@
 
 [[!-- DELETE BUTTON TRIGGERS FORM AND LDP DELETE OF resourceIri --]]
 [[#*inline "deleteButton"]]
-{{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation")}}
-  <mp-event-proxy id='{{viewId}}-remove-image-region-{{iri}}' 
-                  on-event-source='{{iri}}-resource-form' 
-                  on-event-types='["Form.ResourceRemoved"]'
-                  proxy-event-type='IIIFViewer.RemoveRegion' 
-                  data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}", "resourceIri": "{{region.value}}"}'
-                  proxy-targets='["{{viewId}}-image-annotation"]'
-  ></mp-event-proxy>
-{{/if}} 
+  {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation")}}
+    <mp-event-proxy id='{{viewId}}-remove-image-region-{{iri}}' 
+                    on-event-source='{{iri}}-resource-form' 
+                    on-event-types='["Form.ResourceRemoved"]'
+                    proxy-event-type='IIIFViewer.RemoveRegion' 
+                    data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}", "resourceIri": "{{region.value}}"}'
+                    proxy-targets='["{{viewId}}-image-annotation"]'
+    ></mp-event-proxy>
+  {{/if}} 
 
   <mp-overlay-dialog show='{{#if delete}}true{{else}}false{{/if}}' 
                       id='{{viewId}}-delete-resource-dialog-{{iri}}' 
@@ -528,45 +554,47 @@
     </mp-overlay-dialog-trigger>
     <mp-overlay-dialog-content>
       <div>
-        <span>Are you sure you want to delete <strong><mp-label iri="{{iri}}"></mp-label></strong> ?</span>
+        <p>Are you sure you want to delete <strong><mp-label iri="{{iri}}"></mp-label></strong> ?</p>
       
-        <semantic-query query='SELECT DISTINCT ?resource ?label  
-                                WHERE {
-                                    <{{iri}}> ?p ?resource .
-                                  { 
-                                    ?resource crm:P1_is_identified_by ?appellation .
-                                    ?appellation a crm:E41_Appellation .
-                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                    ?appellation crm:P190_has_symbolic_content ?label .
-                                  } UNION {
-                                    ?resource crm:P170i_time_is_defined_by ?timePrimitive .
-                                    ?timePrimitive a crm:E61_Time_Primitive .
-                                    ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
-                                    ?timePrimitive crm:P190_has_symbolic_content ?label .
-                                  } UNION {
-                                    ?resource skos:prefLabel ?label .
-                                  } UNION {
-                                    ?resource crm:P190_has_symbolic_content ?label .
-                                  }
-                                }'
-                              template='{{> referredByTemplate}}'>
+        <div>
+          <semantic-query query='SELECT DISTINCT ?resource ?label  
+                                  WHERE {
+                                      <{{iri}}> ?p ?resource .
+                                    { 
+                                      ?resource crm:P1_is_identified_by ?appellation .
+                                      ?appellation a crm:E41_Appellation .
+                                      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                      ?appellation crm:P190_has_symbolic_content ?label .
+                                    } UNION {
+                                      ?resource crm:P170i_time_is_defined_by ?timePrimitive .
+                                      ?timePrimitive a crm:E61_Time_Primitive .
+                                      ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
+                                      ?timePrimitive crm:P190_has_symbolic_content ?label .
+                                    } UNION {
+                                      ?resource skos:prefLabel ?label .
+                                    } UNION {
+                                      ?resource crm:P190_has_symbolic_content ?label .
+                                    }
+                                  }'
+                                template='{{> referredByTemplate}}'>
 
-            <template id='referredByTemplate'>
-              Some resources in the system link to it:
-              <ul>
-                {{#each bindings}}
-                  <li>
-                    <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames" 
-                                    draggable="false"
-                                    urlqueryparam-view="resource-editor"
-                                    urlqueryparam-resource-iri="{{resource.value}}">
-                      <div class="text-link">{{label.value}}</div>
-                    </semantic-link>
-                  </li>
-                {{/each}}
-              </ul>
-            </template>
-        </semantic-query>
+              <template id='referredByTemplate'>
+                Some resources in the system link to it:
+                <ul>
+                  {{#each bindings}}
+                    <li>
+                      <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                      draggable="false"
+                                      urlqueryparam-view="resource-editor"
+                                      urlqueryparam-resource-iri="{{resource.value}}">
+                        <div class="text-link">{{label.value}}</div>
+                      </semantic-link>
+                    </li>
+                  {{/each}}
+                </ul>
+              </template>
+          </semantic-query>
+        </div>
       </div>
     
       <div style="visibility: hidden; height: 0px; width: 0; overflow: hidden;">
@@ -584,7 +612,7 @@
         <template id='template'>
           {{#if resourceDeleting}}
             <div>
-              <bs-progress-bar active="true" min="0" now="100" max="100" label="Deliting resource" striped="true"></bs-progress-bar>
+              <bs-progress-bar active="true" min="0" now="100" max="100" label="Deleting resource" striped="true"></bs-progress-bar>
             </div>
           {{/if}}
         </template>

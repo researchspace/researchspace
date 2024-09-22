@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -29,7 +30,7 @@ import { getOverlaySystem } from 'platform/components/ui/overlay';
 import { ConfirmationDialog } from 'platform/components/ui/confirmation-dialog';
 
 import { DashboardItem, DashboardViewConfig } from './DashboardItem';
-import { DashboardEvents } from './DashboardEvents';
+import { DashboardEvents, LayoutChanged } from './DashboardEvents';
 import * as styles from './Dashboard.scss';
 import { Cancellation } from 'platform/api/async';
 import { listen, trigger } from 'platform/api/events';
@@ -350,16 +351,30 @@ export class DashboardComponent extends Component<Props, State> {
         });
         return true;
       } else if (!iri.value.startsWith('http://www.researchspace.org/resource/')) {
-        trigger({
-          eventType: 'Dashboard.AddFrame',
-          source: 'link',
-          targets: ['thinking-frames'],
-          data: {
-            resourceIri: iri.value,
-            viewId: 'resource',
-            ...props
-          }
-        });
+        /* Adding exception for OverlayImages to be opened with the image-annotation */
+        if (iri.value.includes("Overlay")) {
+          trigger({
+            eventType: 'Dashboard.AddFrame',
+            source: 'link',
+            targets: ['thinking-frames'],
+            data: {
+              resourceIri: iri.value,
+              viewId: 'image-annotation',
+              ...props
+            }          
+          });
+        }
+        else
+          trigger({
+            eventType: 'Dashboard.AddFrame',
+            source: 'link',
+            targets: ['thinking-frames'],
+            data: {
+              resourceIri: iri.value,
+              viewId: 'resource',
+              ...props
+            }
+          });
         return true;
       } else {
         return false;
@@ -772,13 +787,12 @@ export class DashboardComponent extends Component<Props, State> {
 
     images.forEach(image => iiifViewerDashboardItems.push(image.id+"-image-annotation"));
     console.log(action.type);
-    if (action.type === Actions.ADJUST_BORDER_SPLIT 
-          || action.type === Actions.ADJUST_SPLIT 
-          || action.type === Actions.SELECT_TAB
-          || action.type === Actions.DELETE_TAB)
+
+    const actions = [Actions.ADJUST_BORDER_SPLIT, Actions.ADJUST_SPLIT, Actions.MOVE_NODE, Actions.ADD_NODE, Actions.SELECT_TAB, Actions.DELETE_TAB]
+    if (actions.includes(action.type))
       trigger({
-        eventType: 'IIIFViewer.ResizeAll',
-        source: 'link',
+        eventType: LayoutChanged,
+        source: 'dashboard',
         targets: iiifViewerDashboardItems,
       });
     

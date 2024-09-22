@@ -14,13 +14,22 @@
 <semantic-query query='SELECT ?image ?video ?map WHERE {
                         OPTIONAL {
                           {
-                            <{{resource}}> a ?type .
-                            FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+                            <{{resource}}> a rs:EX_Digital_Image .
                             BIND(<{{resource}}> as ?image)
                           } UNION {
+                            <{{resource}}> a rs:EX_Digital_Image_Region .
+                            <{{resource}}> crmdig:L49_is_primary_area_of ?image .
+                            ?image a rs:EX_Digital_Image .                
+                          }
+                          UNION {
                             <{{resource}}> (crm:P138i_has_representation|rs:PX_has_main_representation) ?image .
-                            ?image a ?type .
-                            FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+                            ?image a rs:EX_Digital_Image .
+                          } 
+                          UNION {
+                            <{{resource}}> (crm:P138i_has_representation|rs:PX_has_main_representation) ?imageAnnotation .
+                            ?imageAnnotation a rs:EX_Digital_Image_Region .
+                            ?imageAnnotation crmdig:L49_is_primary_area_of ?image .
+                            ?image a rs:EX_Digital_Image .
                           }
                         }
                         OPTIONAL {
@@ -80,21 +89,42 @@
               {{#if bindings.0.image.value}}
                 <div class="modal-image-container">
                   <div class="modal-iiif-container">
+
+
+                {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation") }}
+
+                  <rs-iiif-image-thumbnail  height='180' width='auto' style='max-height: 180px; height: 180px; width: 100%; border-radius: 1.5px; object-fit: contain;'
+                                      image-or-region='{{resource}}'    
+                                      [[> rsp:IIIFConfig]]>
+                  </rs-iiif-image-thumbnail>
+          
+                {{else}}
                     <rs-iiif-viewer-panel id='mirador'
                                           iris='[ "{{resource}}" ]'
                                           query="SELECT DISTINCT ?image WHERE {
                                                   {
-                                                    <{{resource}}> a ?type .
-                                                    FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+                                                    <{{resource}}> a rs:EX_Digital_Image .
                                                     BIND(<{{resource}}> as ?image)
-                                                  } UNION {
+                                                  } 
+                                                  UNION {
+                                                    <{{resource}}> a rs:EX_Digital_Image_Region .
+                                                    <{{resource}}> crmdig:L49_is_primary_area_of ?image .
+                                                    ?image a rs:EX_Digital_Image .                
+                                                  }
+                                                  UNION {
                                                     <{{resource}}> (crm:P138i_has_representation|rs:PX_has_main_representation) ?image .
-                                                    ?image a ?type .
-                                                    FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+                                                    ?image a rs:EX_Digital_Image .
+                                                  } 
+                                                  UNION {
+                                                    <{{resource}}> (crm:P138i_has_representation|rs:PX_has_main_representation) ?imageAnnotation .
+                                                    ?imageAnnotation a rs:EX_Digital_Image_Region .
+                                                    ?imageAnnotation crmdig:L49_is_primary_area_of ?image .
+                                                    ?image a rs:EX_Digital_Image .
                                                   }
                                                 }"     
                                           [[> rsp:IIIFConfig]]>
                     </rs-iiif-viewer-panel>
+                  {{/if}} 
                   </div>
                   [[> resourceDetails]]
                 </div>
@@ -209,6 +239,14 @@
               {{/ifCond}}
             </template>
           </semantic-query>
+        {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")}}          
+            <div>
+              <mp-persisted-component iri='{{resource}}'></mp-persisted-component>
+            </div>
+        {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline")}}          
+            <div>
+              <mp-persisted-component iri='{{resource}}'></mp-persisted-component>
+            </div>  
         {{else}}
           {{#if resourceConfigLabel}}
             <p class="color-secondary-light">{{resourceConfigLabel}}</p>

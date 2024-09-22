@@ -6,16 +6,33 @@
                             {
                               <{{iri}}> a ontodia:Diagram .
                               <{{iri}}> ontodia:layoutData/ontodia:hasElement/ontodia:resource ?resource .
-                              { ?resource crm:P138i_has_representation|rs:PX_has_main_representation ?image .} UNION { ?resource a rs:EX_Digital_Image . }
+                              { 
+                                ?resource crm:P138i_has_representation|rs:PX_has_main_representation ?image . 
+                                ?image a ?type .
+                                FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+                              } UNION { 
+                                ?resource a ?ontologyClass . 
+                                FILTER(?ontologyClass in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+                              }
                             } UNION {
                               <{{iri}}> a Platform:Set .
                               <{{iri}}> ldp:contains / Platform:setItem ?resource .
-                              { ?resource crm:P138i_has_representation|rs:PX_has_main_representation ?image .} UNION { ?resource a rs:EX_Digital_Image . }
+                              { 
+                                ?resource crm:P138i_has_representation|rs:PX_has_main_representation ?image . 
+                                ?image a ?type .
+                                FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+                              } UNION { 
+                                ?resource a ?ontologyClass . 
+                                FILTER(?ontologyClass in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+                              }
                             } UNION {
                               <{{iri}}> crm:P138i_has_representation|rs:PX_has_main_representation ?image .
+                              ?image a ?type .
+                              FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
                               BIND(<{{iri}}> as ?resource) .
                             } UNION {
-                              <{{iri}}> a rs:EX_Digital_Image .
+                              <{{iri}}> a ?ontologyClass . 
+                              FILTER(?ontologyClass in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
                               BIND(<{{iri}}> as ?resource) .
                             }
                           }'
@@ -29,11 +46,19 @@
                                   query='SELECT DISTINCT ?image WHERE {
                                           {
                                             ?subject (crm:P138i_has_representation|rs:PX_has_main_representation) ?image .
-                                            ?image a ?type .
-                                            FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+                                            ?image a rs:EX_Digital_Image .
+                                          } UNION {
+                                            ?subject (crm:P138i_has_representation|rs:PX_has_main_representation) ?imageAnnotation .
+                                            ?imageAnnotation a rs:EX_Digital_Image_Region .
+                                            ?imageAnnotation crmdig:L49_is_primary_area_of ?image .
+                                            ?image a rs:EX_Digital_Image .                                        
                                           } UNION {
                                             ?subject a rs:EX_Digital_Image .
                                             BIND(?subject as ?image) .
+                                          } UNION {
+                                            ?subject a rs:EX_Digital_Image_Region .
+                                            ?subject crmdig:L49_is_primary_area_of ?image .
+                                            ?image a rs:EX_Digital_Image .                
                                           }
                                         }'
                                   [[> rsp:IIIFConfig]]

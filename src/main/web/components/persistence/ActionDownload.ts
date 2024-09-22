@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -85,7 +86,7 @@ export class ActionDownloadComponent extends Component<Props, State> {
     const child =
       Children.count(this.props.children) === 1
         ? Children.only(this.props.children)
-        : Button({ title: 'Download data' }, D.i({ className: 'fa fa-download' }));
+        : Button({ title: 'Download data' }, D.i({ className: 'fa fa-download', style: { fontSize: '16px' } }));
     return SparqlDownload({ query, header, filename }, child);
   }
 }

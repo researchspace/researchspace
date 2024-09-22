@@ -1,31 +1,267 @@
 {{#if node}}
-  <semantic-if query='ASK {<{{node}}> crm:P71_lists|^crm:P71i_is_listed_in ?resource }'
-               then='{{> then}}'
-               else='{{> else}}'>
-
-    <template id='then'>
-      {{> forms:AuthorityDocument_partial hasResource="true" }}
-    </template>
-
-    <template id='else'>
-      {{> forms:AuthorityDocument_partial hasResource="false" }}
-    </template>
-  </semantic-if>
-{{else}}
-  {{> forms:AuthorityDocument_partial}}
-{{/if}}
-
-[[!--
-  <semantic-query query='SELECT DISTINCT ?resourceTypeConfig ?resourceTypeConfigLabel ?resourceTypeConfigFormIRI WHERE { 
+  <semantic-query query='SELECT DISTINCT  ?resourceConfig ?listedResourceConfig ?resourceOntologyClass ?resourceConfigLabel ?resourceConfigFormIRI ?resourceIcon 
+                                          ?columnTitle1 ?columnTitle2 ?columnTitle3 ?columnTitle4
+                                          ?columnContentType2 ?columnContentType3 ?columnContentType4
+                                          ?columnContentSparqlPattern2 ?columnContentSparqlPattern3 ?columnContentSparqlPattern4 
+                        WHERE { 
     
-                          <{{node}}> crm:P67_refers_to ?resourceTypeConfig .
+                          BIND(<{{resourceConfig}}> as ?resourceConfig)
+                          <{{node}}> crm:P67_refers_to ?listedResourceConfig .
 
-                          ?resourceTypeConfig crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/resource_configurations_container> .
-                          ?resourceTypeConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceTypeConfigLabel .
-                          ?resourceTypeConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceTypeConfigFormIRI .
+                          ?listedResourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
+                          ?listedResourceConfig crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/resource_configurations_container> .
+                          ?listedResourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceConfigLabel .
+                          ?listedResourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceConfigFormIRI .
+
+                          OPTIONAL {
+                            ?listedResourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .
+                          }
+
+                          OPTIONAL {
+                            BIND(URI(CONCAT(STR(?listedResourceConfig),"/resource_search_listView_column/1")) as ?customListViewColumn1) .
+                            ?listedResourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_listView_column> ?customListViewColumn1 .
+                            ?customListViewColumn1 <http://www.researchspace.org/pattern/system/resource_search_listView_column/order> "1" ;
+                              <http://www.researchspace.org/pattern/system/resource_search_listView_column/title> ?columnTitle1 .
+                          }
+                          OPTIONAL {
+                            BIND(URI(CONCAT(STR(?listedResourceConfig),"/resource_search_listView_column/2")) as ?customListViewColumn2) .
+                            ?listedResourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_listView_column> ?customListViewColumn2 .
+                            ?customListViewColumn2 <http://www.researchspace.org/pattern/system/resource_search_listView_column/order> "2" ;
+                              <http://www.researchspace.org/pattern/system/resource_search_listView_column/title> ?columnTitle2 ;
+                              <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_type> ?columnContentType2 ;
+                              <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_sparql_pattern> ?columnContentSparqlPattern2 .
+                          }
+                          OPTIONAL {
+                            BIND(URI(CONCAT(STR(?listedResourceConfig),"/resource_search_listView_column/3")) as ?customListViewColumn3) .
+                            ?listedResourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_listView_column> ?customListViewColumn3 .
+                            ?customListViewColumn3 <http://www.researchspace.org/pattern/system/resource_search_listView_column/order> "3" ;
+                              <http://www.researchspace.org/pattern/system/resource_search_listView_column/title> ?columnTitle3 ;
+                              <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_type> ?columnContentType3 ;
+                              <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_sparql_pattern> ?columnContentSparqlPattern3 .
+                          }
+                          OPTIONAL {
+                            BIND(URI(CONCAT(STR(?listedResourceConfig),"/resource_search_listView_column/4")) as ?customListViewColumn4) .
+                            ?listedResourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_listView_column> ?customListViewColumn4 .
+                            ?customListViewColumn4 <http://www.researchspace.org/pattern/system/resource_search_listView_column/order> "4" ;
+                              <http://www.researchspace.org/pattern/system/resource_search_listView_column/title> ?columnTitle4 ;
+                              <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_type> ?columnContentType4 ;
+                              <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_sparql_pattern> ?columnContentSparqlPattern4 .
+                          }
                         } LIMIT 1'>
     <template id='template'>
-        {{> forms:AuthorityDocument_partial resource_type=bindings.0.resourceTypeConfig.value resource_type_label=bindings.0.resourceTypeConfigLabel.value resource_type_form=bindings.0.resourceTypeConfigFormIRI.value }}
+        {{> forms:AuthorityDocument_partial resourceConfig=bindings.0.resourceConfig.value
+                                            listedResourceConfig=bindings.0.listedResourceConfig.value 
+                                            resourceConfigLabel=bindings.0.resourceConfigLabel.value 
+                                            resourceOntologyClass=bindings.0.resourceOntologyClass.value 
+                                            resourceForm=bindings.0.resourceConfigFormIRI.value
+                                            resourceIcon=bindings.0.resourceIcon.value
+                                            
+                                            columnTitle1=bindings.0.columnTitle1.value
+                                            columnTitle2=bindings.0.columnTitle2.value
+                                            columnTitle3=bindings.0.columnTitle3.value
+                                            columnTitle4=bindings.0.columnTitle4.value
+
+                                            columnContentType2=bindings.0.columnContentType2.value
+                                            columnContentType3=bindings.0.columnContentType3.value
+                                            columnContentType4=bindings.0.columnContentType4.value
+
+                                            columnContentSparqlPattern2=bindings.0.columnContentSparqlPattern2.value
+                                            columnContentSparqlPattern3=bindings.0.columnContentSparqlPattern3.value
+                                            columnContentSparqlPattern4=bindings.0.columnContentSparqlPattern4.value
+        }}
     </template>
   </semantic-query>
-  --]]
+{{else}}
+  <div class="authority-listOfResourceSearch">
+    <semantic-search id="{{viewId}}-vocabulary-iri-selector">
+      <semantic-search-form-query id="{{viewId}}-newVocabulary-form"
+                                  element-id-to-hide-after-search="{{viewId}}-newAuthorityDocument-search-form"
+                                  query-template='{ "queryString": "SELECT $vocabularyLabel  { 
+                                                                      BIND($label as ?vocabularyLabel).
+                                                                    }",
+                                                  
+                                                      "arguments": { "label": {"type": "xsd:string"}
+                                                                    }
+                                                  }'
+
+                                  fields='[{"iri": "http://www.researchspace.org/pattern/system/vocabularyLabel", "id": "label", "label": "Name", "xsdDatatype": "http://www.w3.org/2001/XMLSchema#string"}
+                                  ]'>
+                          
+          <div id="{{viewId}}-newAuthorityDocument-search-form">
+            <semantic-form-text-input for="label" placeholder="Enter authority document name" label="Authority document name" ></semantic-form-text-input>      
+
+            <div class="btn-form-actions" style="margin-top: 20px;">
+              <div></div>
+              <button name='submit' type="submit" class='btn btn-action'>Next</button>
+            </div>
+          </div>
+      </semantic-search-form-query>
+
+      <semantic-search-result-holder>
+        <semantic-search-result>
+          <semantic-query id='new-vocabulary-query-form' 
+                          query='SELECT ?vocabularyLabel ?systemVocabulary ?vocabulary ?existsVocabulary ?existsSystemVocabulary ?viewId WHERE {
+                                    BIND("{{viewId}}" as ?viewId)
+                                    BIND(IRI(CONCAT(STR(Default:), "vocab/", ENCODE_FOR_URI(REPLACE(LCASE(?vocabularyLabel), "\\s", "_")))) AS ?vocabulary) .
+                                    BIND(IRI(CONCAT(STR(Platform:), "vocab/", ENCODE_FOR_URI(REPLACE(LCASE(?vocabularyLabel), "\\s", "_")))) AS ?systemVocabulary) .
+                                    
+                                    OPTIONAL {
+                                      ?vocabulary a crm:E32_Authority_Document .
+                                      BIND(true as ?existsVocabulary) .
+                                    }
+
+                                    OPTIONAL {
+                                      ?systemVocabulary a crm:E32_Authority_Document .
+                                      BIND(true as ?existsSystemVocabulary) .
+                                    }
+                                  }'
+
+                          template='{{> template}}'>
+
+            <template id='template'>
+                {{#if (or bindings.0.existsVocabulary bindings.0.existsSystemVocabulary)}}
+                  <div>
+                    <div id="{{bindings.0.viewId.value}}-newAuthorityDocument-query-form-error-alert">
+
+                      <div class="danger-documentation-section danger-documentation-section-withIcon">
+                        <div class="danger-documentation-section-icon-container">
+                          <rs-icon icon-type="round" icon-name="block"></rs-icon>
+                        </div>
+                
+                        <div> 
+                          <div class="danger-documentation-section-title">{{bindings.0.vocabularyLabel.value}} already exists{{#if bindings.0.existsSystemVocabulary.value}} as system authority document{{/if}}.</div>
+                          <div class="danger-documentation-section-content">An authority document with name <b>{{bindings.0.vocabularyLabel.value}}</b> 
+                            already exists{{#if bindings.0.existsSystemVocabulary.value}} as system authority document. Modify system authority document only for system configuration purposes{{/if}}.</div>
+                        </div>
+                      </div>
+
+                      <div class="btn-inline-container" style="justify-content: flex-end; margin-top: 20px;">
+                        <div></div>
+                        <rs-back-button  element-id-to-show="{{bindings.0.viewId.value}}-newAuthorityDocument-search-form" 
+                                        error-alert-id="{{bindings.0.viewId.value}}-newAuthorityDocument-query-form-error-alert"
+                                        class-name="btn btn-action">
+                          Back
+                        </rs-back-button>
+                      </div>
+                    </div>
+                  </div>
+                {{else}}
+                  <div id="{{bindings.0.viewId.value}}-newAuthorityDocument-semantic-form">
+                    <semantic-form id='{{bindings.0.viewId.value}}-new-authorityDocument-form' 
+                                  persistence='{"type": "sparql", "targetGraphIri": "{{bindings.0.vocabulary.value}}"}'
+                                  new-subject-template='{{bindings.0.vocabulary.value}}'
+                                  post-action="event"
+                                  fields='[[fieldDefinitions
+                                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                            entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
+                                            vocabulary_refersto_resourceConfig="http://www.researchspace.org/pattern/system/vocabulary/refers_to_resourceConfig"
+                                            authority_document_type="http://www.researchspace.org/pattern/system/authority_document/type"
+                                            document_abstract="http://www.researchspace.org/pattern/system/document/abstract"
+                                            entity_description="http://www.researchspace.org/pattern/system/entity/description"
+                                            entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
+                                          ]]'
+                    >
+                      <div style="margin-right: 4px;">
+                        <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E32_Authority_Document"></semantic-form-hidden-input>
+                        <semantic-form-hidden-input for="entity_primary_appellation" placeholder="Enter authority document name" label="Authority document name"
+                                                    default-value='{{bindings.0.vocabularyLabel.value}}'>
+                      
+                        </semantic-form-hidden-input>   
+                        <div>
+                          <span class="customFormHeader" style="padding-top: 0;">Authority document name<span style="margin-bottom: 2px; margin-left: 2px;">*</span></span>
+                          <span>{{bindings.0.vocabularyLabel.value}}</span>
+                        </div>
+
+                        <div style="display: flex; align-items: baseline; justify-content: space-between;">
+                          <div class="customFormHeader">Resource type<span style="margin-bottom: 2px; margin-left: 2px;">*</span></div>
+                          <div class="btn-inline-container">
+                            <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                                    urlqueryparam-view='resource-configuration'>
+                              <button class="btn btn-default btn-textAndIcon" style="padding: 4px 10px; font-size: 13px;">
+                                <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                                New resource type
+                              </button>
+                            </semantic-link-container>
+                            <mp-popover title="Resource type">
+                              <mp-popover-trigger placement="bottom" trigger='["hover", "click"]'>
+                                <div class="badge badge--default">
+                                  <rs-icon icon-type="round" icon-name="question_mark"></rs-icon>
+                                </div>
+                              </mp-popover-trigger>
+                              <mp-popover-content>
+                                <div>Resource types are defined in the Resource Configuration. Go to tab
+                                  <b>Resource in authority document</b>, enable <b>List in authority document</b> and enter a
+                                  <b>membership property</b> to list that type of resource in the authority document.
+                                </div>
+                              </mp-popover-content>
+                            </mp-popover>
+                          </div>
+                        </div>
+                        <div class="page__section-container" style="max-height: 20vh; overflow: auto;">
+                          <semantic-form-checklist-input for='vocabulary_refersto_resourceConfig' type="checkbox" label="Resource type" render-header="false"></semantic-form-checklist-input>
+                        </div>
+
+                        <semantic-form-tree-picker-input  for='authority_document_type' 
+                                                          default-values='[{{#if docType}}"{{docType}}"{{/if}}]' 
+                                                          label="Authority document type" 
+                                                          placeholder="Select document type" 
+                                                          close-dropdown-on-selection='true'
+                                                          tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/authority_document_type>", 
+                                                                          "schemePattern": "?item crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/authority_document_type>",
+                                                                          "relationPattern": "?item crm:P127_has_broader_term ?parent" }'
+
+                                                          scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                      "view": "authority-list",
+                                                                                      "scheme": "http://www.researchspace.org/resource/vocab/authority_document_type",
+                                                                                      "tooltip": "Open list of document types"
+                                                                                    }'
+
+                                                          nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                              scheme="http://www.researchspace.org/resource/vocab/authority_document_type"
+                                                                                              entityType="document type" }}
+                                                                                {{{{/raw}}}}'
+
+                                                          query-item-label='SELECT ?label WHERE {
+                                                                                  ?item skos:prefLabel ?label .
+                                                                            }'>
+                        </semantic-form-tree-picker-input>
+
+                        <semantic-form-text-input for="document_abstract" multiline='true' label="Authority document abstract" placeholder="Enter abstract"> </semantic-form-text-input>
+
+                        <semantic-form-text-input for="entity_description"  placeholder="Enter description/comment" label="Description" multiline='true'
+                                                    default-value='{{bindings.0.vocabularyDescription.value}}'>
+                        </semantic-form-text-input>
+
+                        [[> rsp:FormMetadataTab]]
+                      </div>
+
+                      <semantic-form-errors></semantic-form-errors>
+                      
+                      <div class="btn-form-actions" style="margin-top: 20px;">
+
+                        <rs-back-button element-id-to-hide="{{bindings.0.viewId.value}}-newAuthorityDocument-semantic-form" 
+                                        element-id-to-show="{{bindings.0.viewId.value}}-newAuthorityDocument-search-form">
+                          Back
+                        </rs-back-button>
+
+                        <button name="submit" class="btn btn-action">Create authority document</button>
+                      </div>
+
+                    </semantic-form>
+                  </div>
+                {{/if}}
+            </template>
+          </semantic-query>
+        </semantic-search-result>
+      </semantic-search-result-holder>
+    </semantic-search>
+  </div>
+{{/if}}
+
+  <mp-event-proxy id='{{viewId}}-update-AuthorityDocumentForm-on-creation' 
+                  on-event-source='{{viewId}}-new-authorityDocument-form'
+                  on-event-types='["Form.ResourceCreated"]'
+                  proxy-event-type='Component.TemplateUpdate'
+                  proxy-targets='["{{viewId}}-term-forms", "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document-resourceSearch-frame"]'
+                  additional-data='{"mode": "edit" }'
+  ></mp-event-proxy>

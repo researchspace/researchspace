@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -31,6 +32,11 @@ export interface TextEditorEventData {
    * Event which should be triggered when a narrative has been updated.
    */
   'Narrative.Updated': { iri: string };
+
+  /**
+   * Event which should be triggered when refresh button is clicked.
+   */
+  'Narrative.Refreshed': {};
   
 
 }
@@ -38,3 +44,4 @@ const event: EventMaker<TextEditorEventData> = EventMaker;
 
 export const NarrativeCreated = event('Narrative.Created');
 export const NarrativeUpdated = event('Narrative.Updated');
+export const NarrativeRefreshed = event('Narrative.Refreshed');

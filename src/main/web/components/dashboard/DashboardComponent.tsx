@@ -351,15 +351,15 @@ export class DashboardComponent extends Component<Props, State> {
         });
         return true;
       } else if (!iri.value.startsWith('http://www.researchspace.org/resource/')) {
-        /* Adding exception for OverlayImages to be opened with the image-annotation */
+        /* Set exception for OverlayImages to be opened with the image-annotation */
         if (iri.value.includes("Overlay")) {
           trigger({
             eventType: 'Dashboard.AddFrame',
             source: 'link',
             targets: ['thinking-frames'],
             data: {
-              resourceIri: iri.value,
-              viewId: 'image-annotation',
+              resourceIri: 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Image',
+              viewId: 'resource-search',
               ...props
             }          
           });

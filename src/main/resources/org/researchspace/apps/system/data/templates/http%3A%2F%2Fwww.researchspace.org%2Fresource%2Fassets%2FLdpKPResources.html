@@ -80,26 +80,39 @@
         >
           <template id='categoryLabel'>
             <div>
-              <div style="display: flex; gap:3px; flex-wrap: wrap;">
-                {{#each bindings}}
-                  <span class="badge badge--secondary" style="width: 100%; min-width: fit-content; max-width: fit-content;">{{categoryLabel.value}}</span>
-                {{/each}}
-              </div>
+              <mp-text-truncate lines=2 expand='<div class="text-link">Expand</div>' collapse='<div class="text-link">Collapse</div>'>
+                <div>
+                  {{#each bindings}}
+                    <span>{{categoryLabel.value}}</span>
+                    <span>{{#if @last}}{{else}}, {{/if}}</span>
+                  {{/each}}
+                </div>
+              </mp-text-truncate>
+
+              
             </div>
           </template>
       </semantic-query>
     </template>
 
     <template id='actions'>
-      <div style="display: flex;">
+      <div style="display: flex; gap:8px">
+
+        <mp-copy-to-clipboard text='{{subject.value}}' message='IRI has been copied'>
+          <button class="btn btn-default btn-textAndIcon" title="Copy IRI">
+            <rs-icon icon-type="round" icon-name="content_copy"></rs-icon>
+              Copy IRI
+          </button>
+        </mp-copy-to-clipboard>
+
         <mp-ldp-duplicate-resource-action iri="{{subject.value}}" container="[[container]]">
-          <button class="btn btn-default btn-textAndIcon" style="margin-right:8px;">
+          <button class="btn btn-default btn-textAndIcon">
             <rs-icon icon-type="round" icon-name="file_copy"></rs-icon>
             Duplicate</button>
         </mp-ldp-duplicate-resource-action>
 
         <mp-ldp-export-resource iri="{{subject.value}}">
-          <button class="btn btn-default btn-textAndIcon" style="margin-right: 8px">
+          <button class="btn btn-default btn-textAndIcon">
             <rs-icon icon-type="round" icon-name="file_download"></rs-icon> Download
           </button>
         </mp-ldp-export-resource>

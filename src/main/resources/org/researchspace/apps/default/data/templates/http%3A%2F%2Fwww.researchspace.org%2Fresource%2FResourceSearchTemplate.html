@@ -44,7 +44,8 @@
                       on-event-types='["OverlayComparison.Created"]'
                       proxy-event-type='Component.TemplateUpdate' 
                       proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Image-resourceSearch-frame"]'
-      ></mp-event-proxy>
+                      additional-data='{"imageOverlayCreated": true }'>
+      </mp-event-proxy>
     {{/if}}
 
     {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation")}}
@@ -699,35 +700,44 @@
           </div>
         </div>
 
-        <mp-event-target-template-render id='[[urlParam "viewid" escape=false]]-created-new-set-message' template='{{> template}}'>
+        <mp-event-target-template-render id='[[urlParam "viewid" escape=false]]-created-new-resource-message' template='{{> template}}'>
           <template id='template'>
             {{#if hideMessage}}
-            {{else if setCreated}}
+            {{else if (or setCreated imageOverlayCreated)}}
                 <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%; margin-top: 5px; margin-bottom: 10px;">
                   <div class="success-documentation-section-icon-container">
                     <rs-icon icon-type="round" icon-name="done"></rs-icon>
                   </div>
 
                   <div style="flex: 1;"> 
-                    <div class="success-documentation-section-title">New set created!</div>
+                    <div class="success-documentation-section-title">New {{#if setCreated}}set{{/if}}{{#if imageOverlayCreated}}overlay image{{/if}} created!</div>
                     <div class="success-documentation-section-content" style="display: flex; gap: 5px;">
                       <mp-draggable iri='{{containerIri}}'>
                         <div>
-                          <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                          urlqueryparam-view='single-set-management'
-                                          urlqueryparam-resource='{{containerIri}}'>
-                            <mp-label iri='{{containerIri}}' class="text-link color-success-text"></mp-label>
-                          </semantic-link>
+                          {{#if setCreated}}
+                            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                            urlqueryparam-view='single-set-management'
+                                            urlqueryparam-resource='{{containerIri}}'>
+                              <mp-label iri='{{containerIri}}' class="text-link color-success-text"></mp-label>
+                            </semantic-link>
+                          {{/if}}
+                          {{#if imageOverlayCreated}}
+                            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                            urlqueryparam-view='resource-editor' 
+                                            urlqueryparam-resource-iri='{{iri}}'>
+                              <mp-label iri='{{iri}}' class="text-link color-success-text"></mp-label>
+                            </semantic-link>
+                          {{/if}}
                         </div>
                       </mp-draggable>
                       <span> has been created.</span>
                     </div>
                   </div>
                   
-                  <mp-event-trigger id='[[urlParam "viewid" escape=false]]-created-set-close-message'
+                  <mp-event-trigger id='[[urlParam "viewid" escape=false]]-created-resource-close-message'
                                     type='Component.TemplateUpdate'
                                     data='{ "hideMessage": "true" }'
-                                    targets='["[[urlParam "viewid" escape=false]]-created-new-set-message"]'
+                                    targets='["[[urlParam "viewid" escape=false]]-created-new-resource-message"]'
                   >
                     <button class="btn btn-documentation">
                       <rs-icon icon-type="round" icon-name="close"></rs-icon>

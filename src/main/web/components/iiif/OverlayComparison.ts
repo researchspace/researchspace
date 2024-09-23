@@ -178,7 +178,7 @@ export class OverlayComparison extends KefirComponentBase<Props, State, LoadedSt
         trigger({
           eventType: OverlayComparisonCreated,
           source: res.value,
-          data: { iri: res },
+          data: { iri: res.value },
         });
         //return navigateToResource(res), {}, 'assets');
         return navigateToResource(res).onValue((v) => v);

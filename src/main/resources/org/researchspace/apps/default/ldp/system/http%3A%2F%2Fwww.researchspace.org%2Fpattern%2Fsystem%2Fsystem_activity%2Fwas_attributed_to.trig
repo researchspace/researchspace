@@ -17,8 +17,13 @@
     <http://www.w3.org/ns/prov#generatedAtTime> "2024-09-02T15:20:04.463+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
   
   _:genid-3358211a011b43ea8132ab0b2f918051-7ryw17 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
-  ?subject crm:P129i_is_subject_of/crmdig:L11i_was_output_of/crm:P14_carried_out_by|prov:wasAttributedTo ?value .
+    <http://spinrdf.org/sp#text> """SELECT ?value WHERE { {
+        ?subject prov:wasAttributedTo ?value .
+        } UNION {
+              ?subject  crm:P129i_is_subject_of ?subjectOf .
+            ?subjectOf crmdig:L11i_was_output_of ?output .
+            ?output crm:P14_carried_out_by ?value .
+        }
 }""" .
   
   _:genid-3358211a011b43ea8132ab0b2f918051-ye0t6 a <http://spinrdf.org/sp#Query>;

@@ -5,6 +5,7 @@
                   on-event-types='["Form.ResourceCreated", 
                                     "Form.ResourceUpdated", 
                                     "Form.ResourceRemoved",
+                                    "OverlayComparison.Created",
                                     "Components.SetManagement.SetAdded",
                                     "Components.SetManagement.SetRenamed",
                                     "Components.SetManagement.SetRemoved",
@@ -38,6 +39,9 @@
                                                                             ?subject crm:P2_has_type ?type .
                                                                             FILTER(?type IN (<http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative>, <http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map>, <http://www.researchspace.org/resource/system/vocab/resource_type/set>))
                                                                             ?subject crm:P190_has_symbolic_content ?label .
+                                                                          } UNION {
+                                                                            ?subject a rs:EX_Digital_Image .
+                                                                            ?subject prov:generatedAtTime ?date .
                                                                           } UNION {
                                                                             ?subject crm:P129i_is_subject_of ?entityFormRecord .
                                                                             ?entityFormRecord a crmdig:D1_Digital_Object .
@@ -75,6 +79,9 @@
                                                                                     ?subject crm:P2_has_type ?type .
                                                                                     FILTER(?type IN (<http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative>, <http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map>, <http://www.researchspace.org/resource/system/vocab/resource_type/set>))
                                                                                     MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
+                                                                                  } UNION {
+                                                                                    ?subject a rs:EX_Digital_Image .
+                                                                                    ?subject prov:generatedAtTime ?date .
                                                                                   } UNION {
                                                                                     ?subject crm:P129i_is_subject_of ?entityFormRecord .
                                                                                     ?entityFormRecord a crmdig:D1_Digital_Object .

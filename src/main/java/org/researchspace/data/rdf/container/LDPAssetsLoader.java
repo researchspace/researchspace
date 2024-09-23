@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -43,7 +44,9 @@ import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
+
 import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.Models;
@@ -168,7 +171,10 @@ public class LDPAssetsLoader {
         logger.info("All LDP assets loading finished");
 
         //generate KPs if they don't already exist
-        String checkIfKPsExistForPreloadedOntologies = "SELECT ?ontology (count(?prop) as ?propCount) (count(?kp) as ?kpCount) {" +
+        String checkIfKPsExistForPreloadedOntologies = "" +
+                        "PREFIX owl: <http://www.w3.org/2002/07/owl#>" +
+                        "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
+                        "SELECT ?ontology (count(?prop) as ?propCount) (count(?kp) as ?kpCount) {" +
                              "?ontology a owl:Ontology . " +
                              "BIND((IF((STRENDS(STR(?ontology),\"/\")),STR(?ontology),CONCAT(STR(?ontology),\"/\"))) as ?ontologyURI)" +
                              "BIND(IRI(CONCAT(STR(?ontologyURI),\"context\")) as ?ontologyContext)" +
@@ -180,19 +186,18 @@ public class LDPAssetsLoader {
                                 "}" +
                              "}" +
                              "UNION { " +
-                             "  ?kp <http://www.researchspace.org/resource/system/fields/ontology> ?ontology ." +
+                             "  ?kp a <http://www.researchspace.org/resource/system/fields/Field> ." +
                              "  ?kp a ?owlType ." +
-                             "  FILTER (?owlType IN (owl:DatatypeProperty,owl:ObjectProperty))" +
+                             "  VALUES ?owlType {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}" +
                             "}" +
                           "}" + 
                           "group by ?ontology";
- 
-       
+     
         Repository defaultRepository = repositoryManager.getDefault();
          
         // connection and to run the sparql query
         logger.trace(checkIfKPsExistForPreloadedOntologies);
-         try (RepositoryConnection con = defaultRepository.getConnection()) {
+        try (RepositoryConnection con = defaultRepository.getConnection()) {
             try (TupleQueryResult tqr = con.prepareTupleQuery(checkIfKPsExistForPreloadedOntologies).evaluate()) {
                 while (tqr.hasNext()) {
                     BindingSet bs = tqr.next();
@@ -266,6 +271,11 @@ public class LDPAssetsLoader {
                     for (Resource ctx : toLoad) {
                         logger.trace("Loading LDP asset context: " + ctx.stringValue());
                         Model currentAsset = loadedAssetsModel.filter(null, null, null, ctx);
+                        
+                        if (repositoryId.equals("system")) {                           
+                            if (ctx.isResource())   
+                                conn.clear(ctx);                                 
+                        }
                         conn.add(currentAsset);
                     }
                 }
@@ -332,6 +342,7 @@ public class LDPAssetsLoader {
         LinkedHashModel modelExisting;
         Set<Resource> inconsistentContexts = Sets.newHashSet();
         List<Resource> toLoad = Lists.newArrayList();
+        List<Resource> defaultToLoad = Lists.newArrayList();
         for (Resource ctx : contextsLoaded) {
             Model modelLoaded = loadedAssetsModel.filter(null, null, null, ctx);
             modelExisting = new LinkedHashModel();
@@ -346,6 +357,8 @@ public class LDPAssetsLoader {
             } 
             else if (!LDPAssetsLoader.compareModelsWithoutDates(modelExisting, modelLoaded)) {
                 inconsistentContexts.add(ctx);
+                //loadedAssetsModel.remove(ctx);
+                defaultToLoad.add(ctx);
             }
         }
 
@@ -356,6 +369,13 @@ public class LDPAssetsLoader {
             return toLoad;           
         }
 
+        if (!inconsistentContexts.isEmpty() && 
+                (repositoryId.equals("system"))) {
+            /* loading system repository and over-writing anything in the runtime repository */
+            //toLoad = Lists.newArrayList();
+            logger.debug("context"+defaultToLoad);
+            return defaultToLoad;           
+        }
         if (!inconsistentContexts.isEmpty()) {            
             String msg = "Inconsistent state of the LDP assets storage: the content of named graphs "
                     + inconsistentContexts.toString() + " in the \"" + repositoryId

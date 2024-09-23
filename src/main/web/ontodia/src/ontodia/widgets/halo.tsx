@@ -1,5 +1,23 @@
-import * as React from 'react';
+/**
+ * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
+ * Copyright (C) 2020, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, metaphacts GmbH
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+import * as React from 'react';
 import { MetadataApi } from '../data/metadataApi';
 
 import { Element as DiagramElement, ElementEvents, Element } from '../diagram/elements';
@@ -149,7 +167,7 @@ export class Halo extends React.Component<Props, State> {
               `${CLASS_NAME}__navigate ` + `${CLASS_NAME}__navigate--${navigationMenuOpened ? 'closed' : 'open'}`
             }
             role="button"
-            title="Open a dialog to navigate to connected elements"
+            title="Open a dialog to navigate to connected resources"
             onClick={onToggleNavigationMenu}
           />
         )}
@@ -166,7 +184,7 @@ export class Halo extends React.Component<Props, State> {
           <div
             className={`${CLASS_NAME}__add-to-filter`}
             role="button"
-            title="Search for connected elements"
+            title="Search connected resources in right sidebar"
             onClick={onAddToFilter}
           />
         )}
@@ -174,7 +192,7 @@ export class Halo extends React.Component<Props, State> {
           <div
             className={`${CLASS_NAME}__expand ` + `${CLASS_NAME}__expand--${target.isExpanded ? 'closed' : 'open'}`}
             role="button"
-            title={`Expand an element to reveal additional properties`}
+            title={`Expand resource`}
             onClick={onExpand}
           />
         )}
@@ -194,7 +212,7 @@ export class Halo extends React.Component<Props, State> {
       <div
         className={isNewElement ? `${CLASS_NAME}__delete` : `${CLASS_NAME}__remove`}
         role="button"
-        title={isNewElement ? 'Delete new element' : 'Remove from the map'}
+        title={isNewElement ? 'Delete new resource' : 'Remove from the map'}
         onClick={onRemove}
       ></div>
     );
@@ -213,7 +231,7 @@ export class Halo extends React.Component<Props, State> {
         </div>
       );
     }
-    const title = canLink ? 'Click or drag and drop to create a connection' : 'Connection is unavailable for the selected element';
+    const title = canLink ? 'Click or drag and drop to create a connection' : 'Connection is unavailable for the selected resource';
     return (
       <button
         className={`${CLASS_NAME}__establish-connection`}

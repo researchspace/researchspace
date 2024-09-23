@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -145,7 +146,7 @@ export class RepositoryConfigEditor extends Component<Props, State> {
                   placeholder="Please specify a new and unique repository id."
                 />
                 {this.getNewRepositoryIDValidation() && (
-                  <Alert bsStyle='info'>Repository ID must be a unique, alphanumeric string of length >= 5 characters.</Alert>
+                  <Alert bsStyle='info'>Repository ID must be a unique, alphanumeric string of length &gt; 5 characters.</Alert>
                 )}
               </FormGroup>
             </Form>
@@ -186,8 +187,8 @@ export class RepositoryConfigEditor extends Component<Props, State> {
             )}
 
             <Button
-              bsStyle="action"
-              className={styles.ActionButton}
+              bsStyle="default"
+              className={`${styles.ActionButton} btn-action`}
               disabled={!this.isEditMode() && this.getNewRepositoryIDValidation() !== 'success'}
               onClick={this.onSubmitConfig}
             >
@@ -307,6 +308,7 @@ export class RepositoryConfigEditor extends Component<Props, State> {
     const dialogRef = 'delete-repository-confirmation';
     const hideDialog = () => getOverlaySystem().hide(dialogRef);
     const props = {
+      title: 'Delete repository',
       message: `Do you want to delete the "${id}" repository?`,
       onHide: () => {
         hideDialog();

@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -155,9 +156,9 @@ export class SingleSet extends Component<Props, ViewState> {
         query={this.props.acceptResourceQuery}
         onDrop={(iri) => {
           const targetSet = ViewState.displayedSetIri(this.state);
-          this.model.onDropItemToSet(iri, targetSet);
+          this.model.onDropItemToSet(iri, targetSet,this.props.id);
         }}
-        dropMessage={<span>Drop items here to add to set "{<ResourceLabel iri={this.props.openedSet} />}"</span>}
+        dropMessage={<span>Drop resource here to add to set "{<ResourceLabel iri={this.props.openedSet} />}"</span>}
       >
         {this.renderHeader()}
         {this.renderItems()}

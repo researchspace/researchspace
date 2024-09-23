@@ -95,7 +95,7 @@ export class InstancesSearch extends React.Component<InstancesSearchProps, State
             />
             <span className="ontodia-input-group-btn">
               <button
-                className="btn btn-default btn-input-height"
+                className="btn btn-action btn-input-height"
                 type="button"
                 title="Search"
                 onClick={() => this.submitCriteriaUpdate()}

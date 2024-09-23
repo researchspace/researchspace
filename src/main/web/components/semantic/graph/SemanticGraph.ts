@@ -211,7 +211,7 @@ export class SemanticGraph extends Component<SemanticGraphProps, State> {
         new Promise((resolve, reject) => {
           const img = new Image();
           img.onload = () => {
-            resolve();
+            resolve(null);
           };
           img.onerror = () => {
             reject(

@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -29,7 +30,7 @@ import { getOverlaySystem } from 'platform/components/ui/overlay';
 import { ConfirmationDialog } from 'platform/components/ui/confirmation-dialog';
 
 import { DashboardItem, DashboardViewConfig } from './DashboardItem';
-
+import { DashboardEvents, LayoutChanged } from './DashboardEvents';
 import * as styles from './Dashboard.scss';
 import { Cancellation } from 'platform/api/async';
 import { listen, trigger } from 'platform/api/events';
@@ -40,6 +41,8 @@ const DEFAULT_ITEM_LABEL_TEMPLATE = `<mp-label iri='{{iri}}'></mp-label>`;
 import * as LabelsService from 'platform/api/services/resource-label';
 import * as Kefir from 'kefir';
 import Icon from '../ui/icon/Icon';
+
+import { BuiltInEvents,  registerEventSource, unregisterEventSource } from 'platform/api/events';
 
 export interface Item {
   readonly id: string;
@@ -55,6 +58,7 @@ export interface Item {
 
 
 export interface DashboardLinkedViewConfig {
+  
   /**
    * Unique identifier of the view.
    */
@@ -94,6 +98,8 @@ export interface DashboardLinkedViewConfig {
    * Allows initiating a component/template without a resource.
    */
   resourceNotRequired?: boolean;
+
+  unique: boolean;
 }
 
 export interface Props {
@@ -151,7 +157,7 @@ export interface State {
 
 export class DashboardComponent extends Component<Props, State> {
   static defaultProps: Partial<Props> = {
-    frameMinSize: 150,
+    frameMinSize: 260,
     linkedViews: [],
   };
 
@@ -175,7 +181,7 @@ export class DashboardComponent extends Component<Props, State> {
     
     this.onAddNewItem({
       ...this.frameLabel(label),
-      ...(data as AddFrameEventData),
+      ...(data),
       data,
     });
   }
@@ -245,23 +251,26 @@ export class DashboardComponent extends Component<Props, State> {
         )
         .observe({
           value: ({ data }) => {
-            const {viewId, resourceIri, resourceEditorLabel} = data as AddFrameEventData
-
-            if(resourceIri) {
+            const {viewId, resourceIri, customLabel} = data as AddFrameEventData
+            
+            if (customLabel) { 
+              this.onAddNewItemHandler(data, customLabel)
+            }
+            else if(resourceIri) {
               this.subscription = LabelsService.getLabel(Rdf.iri(resourceIri)).observe({
                 value: (label) => {
+                  
                   this.onAddNewItemHandler(data, label)
                 },
                 error: (error) => {
                   console.log('LABEL NOT FOUND ',error)
                   this.onAddNewItemHandler(data)
                 },
-              })
-            } else if (resourceEditorLabel) { 
-              this.onAddNewItemHandler(data, resourceEditorLabel)
-            } else {
-              const view = viewId ? this.props.views.find(({ id }) => id === viewId) : undefined;
-              this.onAddNewItemHandler(data, view?.label)
+              })           
+            } else {             
+                const view = viewId ? this.props.views.find(({ id }) => id === viewId) : undefined;
+                this.onAddNewItemHandler(data, view?.label)
+                           
             }
           },
         });
@@ -342,16 +351,30 @@ export class DashboardComponent extends Component<Props, State> {
         });
         return true;
       } else if (!iri.value.startsWith('http://www.researchspace.org/resource/')) {
-        trigger({
-          eventType: 'Dashboard.AddFrame',
-          source: 'link',
-          targets: ['thinking-frames'],
-          data: {
-            resourceIri: iri.value,
-            viewId: 'resource',
-            ...props
-          }
-        });
+        /* Adding exception for OverlayImages to be opened with the image-annotation */
+        if (iri.value.includes("Overlay")) {
+          trigger({
+            eventType: 'Dashboard.AddFrame',
+            source: 'link',
+            targets: ['thinking-frames'],
+            data: {
+              resourceIri: iri.value,
+              viewId: 'image-annotation',
+              ...props
+            }          
+          });
+        }
+        else
+          trigger({
+            eventType: 'Dashboard.AddFrame',
+            source: 'link',
+            targets: ['thinking-frames'],
+            data: {
+              resourceIri: iri.value,
+              viewId: 'resource',
+              ...props
+            }
+          });
         return true;
       } else {
         return false;
@@ -366,7 +389,24 @@ export class DashboardComponent extends Component<Props, State> {
   }
 
   private onAddNewItem = (item: Item = this.frameLabel()) => {
-    const viewConfig = this.props.views.find(({id}) => id === item.viewId);
+   
+    // check if an item with the same resourceIri is already in the tabset
+    const itemIsAlreadyOpen = this.state.items.filter((i) => item.resourceIri && i.resourceIri === item.resourceIri && i.viewId === item.viewId)
+    // if is already open, then select it and set to active, otherwise it will create a new tab with the selected item
+    if(itemIsAlreadyOpen.length > 0) { 
+      this.state.layout.doAction(FlexLayout.Actions.selectTab(item.resourceIri+item.viewId))
+      this.onSelectView({
+        itemId: item.id,
+        viewId: item.viewId,
+        resourceIri: item.resourceIri,
+      });
+      return
+    }
+    const itemViewConfig = this.props.views.find(({id}) => id === item.viewId);
+    const itemLinkedViewConfig = this.props.linkedViews.find(({id}) => id === item.viewId);
+    
+    const viewConfig = !itemViewConfig?itemLinkedViewConfig:itemViewConfig;
+
     if (viewConfig?.unique && this.state.items.find(i => i.viewId === item.viewId)) {
       return;
     } else {
@@ -377,12 +417,25 @@ export class DashboardComponent extends Component<Props, State> {
           return { items: newItems };
         },
         () => {
-          this.layoutRef.current.addTabToActiveTabSet(
-            {
-              'type': 'tab', 'name': item.label, 'component': "item", 'config': {'itemId': item.id},
-             'className': viewConfig?.iconName || viewConfig?.iconClass || 'no-icon-button', 'icon': 'add'
+            let newFrameId = item.id;
+            if (item.resourceIri && item.viewId)
+              newFrameId = item.resourceIri+item.viewId;
+
+            if(item.data?.openAsDragAndDrop) {
+              this.layoutRef.current.addTabWithDragAndDrop('Drag me where you want',
+                {
+                  'type': 'tab', 'id':newFrameId, 'name': item.label, 'component': "item", 'config': {'itemId': item.id},
+                 'className': viewConfig?.iconName || viewConfig?.iconClass || 'no-icon-button', 'icon': 'add'
+                }
+              );
+            } else {
+              this.layoutRef.current.addTabToActiveTabSet(
+                {
+                  'type': 'tab', 'id':newFrameId, 'name': item.label, 'component': "item", 'config': {'itemId': item.id},
+                  'className': viewConfig?.iconName || viewConfig?.iconClass || 'no-icon-button', 'icon': 'add'
+                }
+              );
             }
-          );
           this.onSelectView({
             itemId: item.id,
             viewId: item.viewId,
@@ -474,7 +527,8 @@ export class DashboardComponent extends Component<Props, State> {
       getOverlaySystem().show(
         dialogRef,
         <ConfirmationDialog
-          message={'Frame has unsaved changes. Are you sure you want to delete it?'}
+          title={'Close tab'}
+          message={'There are unsaved changes. Are you sure you want to close the tab?'}
           onHide={onHide}
           onConfirm={(confirm) => {
             onHide();
@@ -591,6 +645,20 @@ export class DashboardComponent extends Component<Props, State> {
   }
 
   private onResourceChange(itemId: string, resourceIri: string, data?: { [key: string]: string }) {
+    const changedItem = this.state.items.find(item => item.id ===itemId);
+    let changedItemId = itemId;
+
+    /* This check is needed as we modified the default naming of the frames for unique dashboard items,
+       with resource */
+    
+    if (changedItem.data?.mode !== "new" && changedItem["mode"]!=="new")     
+      if (changedItem.resourceIri && changedItem.viewId)
+          changedItemId = changedItem.resourceIri+changedItem.viewId;
+    
+    LabelsService.getLabel(Rdf.iri(resourceIri)).onValue((label) => {
+      this.state.layout.doAction(FlexLayout.Actions.renameTab(changedItemId, label));
+    });
+
     this.setState(
       (prevState): State => {
         const newItems = prevState.items.map((item) => {
@@ -713,6 +781,21 @@ export class DashboardComponent extends Component<Props, State> {
   }
 
   private onLayoutAction = (action: Action) => {
+    /* Identify DashboardItems that contain an image viewer based on viewId */
+    const images = this.state.items.filter((i) => i.viewId === "image-annotation");
+    const iiifViewerDashboardItems = []; 
+
+    images.forEach(image => iiifViewerDashboardItems.push(image.id+"-image-annotation"));
+    console.log(action.type);
+
+    const actions = [Actions.ADJUST_BORDER_SPLIT, Actions.ADJUST_SPLIT, Actions.MOVE_NODE, Actions.ADD_NODE, Actions.SELECT_TAB, Actions.DELETE_TAB]
+    if (actions.includes(action.type))
+      trigger({
+        eventType: LayoutChanged,
+        source: 'dashboard',
+        targets: iiifViewerDashboardItems,
+      });
+    
     if (action.type === Actions.DELETE_TAB) {
       const tab = this.state.layout.getNodeById(action.data.node) as TabNode;
       return this.onRemoveItem(action, tab.getConfig().itemId);

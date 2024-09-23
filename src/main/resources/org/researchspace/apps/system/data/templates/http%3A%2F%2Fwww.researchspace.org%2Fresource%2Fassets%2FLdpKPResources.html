@@ -17,9 +17,9 @@
           <mp-selection-toggle selection="resource-selection" tag="{{subject.value}}"></mp-selection-toggle>
           <semantic-context repository='assets'>
             {{#if label}}
-              <semantic-link uri='{{subject.value}}' title='{{label.value}}'>{{label.value}}</semantic-link>
+              <semantic-link iri='{{subject.value}}' title='{{label.value}}'>{{label.value}}</semantic-link>
             {{else}}
-              <semantic-link uri='{{subject.value}}'></semantic-link>
+              <semantic-link iri='{{subject.value}}'></semantic-link>
             {{/if}}
           </semantic-context>
         </span> 
@@ -28,14 +28,18 @@
 
     <template id='ontology'>
       <semantic-query query='SELECT ?ontology ?ontologyLabel WHERE {
-                            <{{subject.value}}> <http://www.researchspace.org/resource/system/fields/ontology> ?ontology .
+                              <{{subject.value}}> a <http://www.researchspace.org/resource/system/fields/Field> .
+                                graph ?g {
+                                           <{{subject.value}}> a ?type .
+                                            VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}
+                                }         
+                                BIND(IRI(REPLACE(STR(?g),"/context","/")) as ?ontology)
+                                ?ontology a owl:Ontology .
+                                ?ontology rdfs:label ?ontologyLabel .
+ 
+                                FILTER(langMatches(LANG(?ontologyLabel), "en") || lang(?ontologyLabel) = "") .
 
-                            ?ontology a owl:Ontology .
-                            ?ontology rdfs:label ?ontologyLabel .
-
-                            FILTER(langMatches(LANG(?ontologyLabel), "en") || lang(?ontologyLabel) = "") .
-
-                          } ORDER BY ASC(?ontologyLabel)'
+                            } ORDER BY ASC(?ontologyLabel)'
                       template='{{> ontology}}'
       >
         <template id='ontology'>
@@ -103,8 +107,16 @@
         <semantic-if query='ASK {
                               { <{{subject.value}}> <http://www.researchspace.org/resource/system/fields/type> <http://www.researchspace.org/resource/system/type/system> . }
                               UNION 
-                              {<{{subject.value}}> <http://www.researchspace.org/resource/system/fields/ontology> ?ontology .
-                                ?ontology a owl:Ontology . }
+                              {<{{subject.value}}> a <http://www.researchspace.org/resource/system/fields/Field> .
+                                graph ?g {
+                                           <{{subject.value}}> a ?type .
+                                            VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}
+                                }         
+                                BIND(IRI(REPLACE(STR(?g),"/context","/")) as ?ontology)
+                                ?ontology a owl:Ontology .
+                                ?ontology rdfs:label ?label .
+ 
+                              }
                             }'
                       then='{{> disableDelete}}'
                       else='{{> delete}}'>

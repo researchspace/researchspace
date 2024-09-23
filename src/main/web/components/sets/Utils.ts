@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -27,6 +28,6 @@ export function createNewSetFromItems(source: string, name: string, items: Rdf.I
   return getSetServiceForUser()
     .flatMap((service) => service.createSetAndAddItems(name, List(items)))
     .onValue((value) => {
-      trigger({ eventType: SetManagementEvents.SetAdded, source: source });
+      trigger({ eventType: SetManagementEvents.SetAdded, source: source, data: {containerIri: value[0].containerIri.value} });
     });
 }

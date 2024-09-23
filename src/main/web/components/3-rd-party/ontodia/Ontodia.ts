@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -339,7 +340,6 @@ export interface OntodiaConfig {
    */
   postSaving?: 'navigate' | 'none';
 
-
   /*
    * If true left panel is initially open.
    */
@@ -526,10 +526,10 @@ export class Ontodia extends Component<OntodiaProps, State> {
       if (fieldConfiguration) {
         if (fieldConfiguration.authoringMode) {
           this.metadataApi = new FieldBasedMetadataApi(fieldConfiguration.metadata);
-          this.validationApi =
-            new FieldBasedValidationApi(
-              fieldConfiguration.metadata, fieldConfiguration.enforceConstraints
-            );
+          this.validationApi = new FieldBasedValidationApi(
+            fieldConfiguration.metadata,
+            fieldConfiguration.enforceConstraints
+          );
         }
         this.setState({ fieldConfiguration });
       } else {
@@ -584,6 +584,8 @@ export class Ontodia extends Component<OntodiaProps, State> {
         getWorkspace: this.getWorkspace,
         onSaveDiagramAs: () => this.openSaveModal(),
         onPersistChangesAndSaveDiagram: () => this.onPersistChangesAndSaveDiagram(),
+        diagramIri: this.state.diagramIri,
+        dropdownTemplate: this.getTemplate('{{> knowledge-map-dropdown}}')
       }),
       metadataApi: this.metadataApi,
       validationApi: this.validationApi,
@@ -613,8 +615,9 @@ export class Ontodia extends Component<OntodiaProps, State> {
   }
 
   componentDidMount() {
-    this.loadFieldConfiguration(deriveCancellationToken(this.cancellation))
-      .then(() => this.setState({loading: false}));
+    this.loadFieldConfiguration(deriveCancellationToken(this.cancellation)).then(() =>
+      this.setState({ loading: false })
+    );
 
     this.parsedMetadata = this.parseMetadata();
     this.prepareElementTemplates();
@@ -997,6 +1000,11 @@ export class Ontodia extends Component<OntodiaProps, State> {
                 data: { resourceIri: this.state.diagramIri },
               });
               trigger({
+                eventType: 'Dashboard.ResourceChanged',
+                source: this.props.id,
+                data: { resourceIri: this.state.diagramIri },
+              });
+              trigger({
                 eventType: OntodiaEvents.DiagramIsDirty,
                 source: this.props.id,
                 data: { hasChanges: false },
@@ -1074,7 +1082,8 @@ export class Ontodia extends Component<OntodiaProps, State> {
         model.removeElement(element.id);
       }
     }
-
+    
+    const changedResourcesIris = model.elements.map(el => el.data.id);
     for (const link of [...model.links]) {
       const event = editor.authoringState.links.get(link.data);
       if (event && event.deleted) {
@@ -1085,6 +1094,14 @@ export class Ontodia extends Component<OntodiaProps, State> {
     editor.setAuthoringState(AuthoringState.empty);
     editor.cancelSelection();
     model.history.reset();
+
+    trigger({
+      source: this.props.id,
+      eventType: OntodiaEvents.DiagramDataPersisted,
+      data: {
+        iris: changedResourcesIris
+      },
+    });
 
     trigger({
       source: this.props.id,
@@ -1381,6 +1398,13 @@ export class Ontodia extends Component<OntodiaProps, State> {
       this.defaultNodeTemplate = this.getElementTemplate(defaultNodeTemplate);
     }
   };
+
+  private getTemplate = (template: string): React.CElement<{}, TemplateItem> => {
+    if(!template) return null;
+    return createElement(TemplateItem, {
+      template: { source: template },
+    })
+  }
 
   private getElementTemplate = (template: string): ElementTemplate => {
     const inAuthoringMode = () => this.state.fieldConfiguration.authoringMode;

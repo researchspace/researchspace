@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,6 +29,7 @@ import {
 import { ResourceTemplateConfig } from './Config';
 import * as styles from './TextEditor.scss';
 import Icon from '../ui/icon/Icon';
+import { TemplateItem } from '../ui/template';
 
 export const BLOCK_TO_ICON: { [block in Block]: string } = {
   [Block.empty]: 'fa-font',
@@ -74,9 +76,19 @@ export interface ToolbarProps {
   options?: { [objectIri: string]: ResourceTemplateConfig[] }
   onDocumentSave: () => void;
   saving?: boolean;
+  showDropdown?: boolean;
+  showRefresh?: boolean;
+  onRefresh?: () => void; 
 }
 
 export class Toolbar extends React.Component<ToolbarProps> {
+
+  private getTemplate = (template: string): React.CElement<{}, TemplateItem> => {
+    if(!template) return null;
+    return React.createElement(TemplateItem, {
+      template: { source: template },
+    })
+  }
 
   isTextSelectionActionDisabled = () =>
     !isTextBlock(this.props.anchorBlock) || this.props.value.selection.isCollapsed
@@ -213,7 +225,8 @@ export class Toolbar extends React.Component<ToolbarProps> {
   }
 
   render() {
-    const { saving } = this.props;
+    const { saving, showDropdown, showRefresh, onRefresh } = this.props;
+    const dropdownTemplate = showDropdown ? this.getTemplate('{{> semantic-narrative-dropdown}}') : null
     return (
       <div className={styles.toolbar}>
 
@@ -271,12 +284,21 @@ export class Toolbar extends React.Component<ToolbarProps> {
 
         </div>
         
-        <Button bsStyle='action' onClick={this.props.onDocumentSave} disabled={saving}>
-          <i className={saving ? 'fa fa-spinner fa-pulse fa-fw' : null }
-            aria-hidden='true'></i>
-           Save
-        </Button>
-        
+        <div className={styles.toolbarBtnGroup}>
+          {showRefresh && <Button onClick={onRefresh} className='btn-textAndIcon' title='Refresh narrative'>
+                            <Icon iconType='round' iconName='refresh' />
+                          </Button>}
+          {dropdownTemplate}
+          <Button bsStyle='default' 
+                  className='btn-action'
+                  onClick={this.props.onDocumentSave} 
+                  disabled={saving}>
+            <i className={saving ? 'fa fa-spinner fa-pulse fa-fw' : null }
+              aria-hidden='true'></i>
+            Save narrative
+          </Button>
+        </div>
+
       </div>
     );
   }

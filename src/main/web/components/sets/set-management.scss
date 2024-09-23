@@ -26,7 +26,7 @@ $dark-border: 1px solid #a2a2a2;
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: $color-set-management-bg;
+  background: $color-tf-dashboard-bg;
 
   :global(.DropArea--dropMessage) {
     position: absolute;
@@ -37,10 +37,21 @@ $dark-border: 1px solid #a2a2a2;
   .dropdown-menu {
     min-width: unset;
 
-    &-right {
-      right: -10px;
-      top: 20px;
-    }
+    & > li > a {
+      align-items: flex-start;
+      padding: 5px 10px;
+      font-size: 13px;
+      cursor: pointer;
+
+      span {
+          white-space: pre-wrap;
+          word-break: break-word;
+      }
+
+      i {
+          font-size: 18px;
+      }
+  }
   }
 
   &--readonly {
@@ -85,7 +96,7 @@ $dark-border: 1px solid #a2a2a2;
   }
 
   &__search-and-filters {
-    background-color: $color-set-management-bg;
+    background-color: $color-tf-dashboard-bg;
     z-index: 20;
     padding: 8px 20px;
 
@@ -124,7 +135,7 @@ $dark-border: 1px solid #a2a2a2;
     flex: auto;
     overflow-y: auto;
     height: 0;
-    background: $color-set-management-bg;
+    background: $color-tf-dashboard-bg;
     z-index: 10;
     padding: 5px 20px 8px;
   }
@@ -135,17 +146,22 @@ $dark-border: 1px solid #a2a2a2;
     flex-direction: column;
     justify-content: center;
     list-style-type: none;
-    background-color: $color-light;
+    background-color: $color-set-management-bg;
+    border: 1px solid $color-border;
+    border-radius: $border-radius;
 
     padding: 0 8px;
-    min-height: 33px;
-    height: 33px;
+    min-height: 37px;
+    height: 37px;
     margin-bottom: 5px;
-
-    border-radius: $border-radius;
 
     &:hover .set-management__item-actions {
       visibility: visible;
+    }
+
+    &:hover {
+  //    background: $color-light;
+      cursor: pointer;
     }
   }
 
@@ -153,12 +169,9 @@ $dark-border: 1px solid #a2a2a2;
     display: flex;
     align-items: center;
     transition: background 0.15s;
-    height: 33px;
+    height: 37px;
+    min-width: 100%;
     
-    &:hover {
-      background: $color-light;
-      cursor: pointer;
-    }
     > .system-spinner {
       position: static;
     }
@@ -174,13 +187,14 @@ $dark-border: 1px solid #a2a2a2;
 
   &__items-view {
     flex: 1;
-    padding-top: 5px;
   }
 
   &__set-item-count {
 
     flex-shrink: 0;
-    margin-left: 12px;
+    margin-left: 4px;
+    height: 28px;
+    min-width: 27px;
 
     &.badge {
 
@@ -188,6 +202,8 @@ $dark-border: 1px solid #a2a2a2;
   }
 
   &__set-template {
+
+    align-items: center;
     flex: auto;
     min-width: 0;
     font-size: $font-size-small;
@@ -238,9 +254,9 @@ $dark-border: 1px solid #a2a2a2;
     }
 
     & .set-management__set-items {
-      border-left: 5px solid $color-base;
+      border-left: 3px solid $color-action;
       padding: 0px 18px 0px 10px;
-      background-color: $color-light;
+      background-color: $color-set-management-bg;
     }
   }
 
@@ -248,14 +264,16 @@ $dark-border: 1px solid #a2a2a2;
     /* make only items scrollable when set is opened */
     overflow-y: auto;
     height: auto;
-    background-color: $color-light;
+    background-color: $color-set-management-bg;
+
+    border: none;
   }
 
   &__set-items {
 
     padding: 0;
     display: flex;
-    background: $color-set-management-bg;
+    background: $color-tf-dashboard-bg;
 
   }
 
@@ -263,32 +281,23 @@ $dark-border: 1px solid #a2a2a2;
 
     .set-management__set-items {
       flex-direction: column;
+      gap: 8px;
       height: 100%;
   
       .set-management__reordered-item {
-        margin-bottom: 8px;
+      //  margin-bottom: 8px;
+        
+        .ReorderableList--item-handle {
+          display: none;
+        }
       }
     }
 
     .set-management__set-item {
-      padding: 6px 4px;
-  
-      &:hover {
-        background: $color-light;
-      }
   
       & img {
         width: 12px;
         margin-left: 6.5px;
-      }
-  
-      a {
-        padding-left: 8px;
-      }
-  
-      .dropdown-menu {
-        right: 0;
-        left: unset;
       }
   
     }
@@ -310,7 +319,7 @@ $dark-border: 1px solid #a2a2a2;
   
         & .set-management__set-items {
   
-          padding: 7px 26px;
+          padding: 8px;
         }
       }
     }
@@ -319,40 +328,27 @@ $dark-border: 1px solid #a2a2a2;
   &--grid-view {
 
     .set-management__set-items {
-      flex-direction: row;
+
       flex-wrap: wrap;
       align-items: flex-start;
       align-content: flex-start;
+      gap: 8px;
+      height: 100%;
   
       .set-management__reordered-item {
-        margin-right: 8px;
-        margin-bottom: 8px;
+
+        
+
+        .ReorderableList--item-handle {
+          display: none;
+        }
       }
     }
 
     .set-management__set-item {
-
-      margin-right: 10px;
-      margin-bottom: 10px;
   
-      border: 1px solid transparent;
-  
-      &:hover,
-      &:focus {
-        border: 1px dashed $color-secondary;
-        background: transparent;
-        border-radius: $border-radius;
-      }
-  
-      .resource-card {
-        margin: 0;
-      }
       .rs-grid-element a i {
         color: $color-light;
-      }
-  
-      .dropdown-menu.dropdown-menu-right {
-        top: 20px;
       }
   
       .panel-footer {
@@ -365,30 +361,6 @@ $dark-border: 1px solid #a2a2a2;
         border-top: none;
         border-bottom-left-radius: 6px;
         border-bottom-right-radius: 6px;
-  
-        .resource-card--icon {
-          width: auto;
-          margin-top: 0px;
-          margin-left: 0px;
-          opacity: 1 !important;
-        }
-  
-        .resource-card--icon img {
-          width: 13px;
-          margin-top: 0px;
-          display: block;
-          -moz-box-sizing: border-box;
-          box-sizing: border-box;
-          padding-right: 0px !important;
-          margin-right: 5px;
-        }
-  
-        .rs-card-footer--text {
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          max-width: 77px !important;
-        }
   
         .set-management__item-actions {
           margin-left: 0px !important;
@@ -414,15 +386,14 @@ $dark-border: 1px solid #a2a2a2;
   
         & .set-management__set-items {
   
-          padding: 10px;
+          padding: 8px;
         }
       }
     }
   }
 
   &__reordered-item {
-    border: 1px dashed $color-action;
-    background-color: $color-action--op10;
+    border: 2px solid $color-action;
     border-radius: $border-radius;
 
     &[data-dragged] {
@@ -444,7 +415,7 @@ $dark-border: 1px solid #a2a2a2;
       }
     }
 
-    .dropdown-toggle.btn {
+/*     .dropdown-toggle.btn {
       padding-left: 8px;
       border: none;
       background-color: transparent;
@@ -468,7 +439,7 @@ $dark-border: 1px solid #a2a2a2;
         border: none;
         background-color: transparent;
       }
-    }
+    } */
 
     .panel {
       border-radius: 6px;
@@ -494,7 +465,7 @@ $dark-border: 1px solid #a2a2a2;
 
     .panel-footer input {
       flex-shrink: 0;
-      margin-right: $padding-base-horizontal / 2;
+      margin-right: calc($padding-base-horizontal / 2);
     }
   }
 
@@ -519,11 +490,13 @@ $dark-border: 1px solid #a2a2a2;
     align-items: center;
 
     padding: 0 8px;
-    height: 33px;
-    background-color: $color-light;
+    height: 37px;
+    background-color: $color-set-management-bg;
 
     border-top-left-radius: $border-radius;
     border-top-right-radius: $border-radius;
+    border: 1px solid $color-border;
+   // border-bottom: none;
 
     &:hover {
 
@@ -657,9 +630,11 @@ $dark-border: 1px solid #a2a2a2;
 
       & .set-management__set-items {
 
-        background-color: $color-light;
+        background-color: $color-set-management-bg;
         border-bottom-left-radius: $border-radius;
         border-bottom-right-radius: $border-radius;
+        border: 1px solid $color-border;
+        border-top: none;
       }
     }
   }
@@ -725,12 +700,11 @@ $dark-border: 1px solid #a2a2a2;
   }
 
   .ReorderableList--item-body {
-    margin: 10px;
+    margin: 0;
 
-    .set-management__set-item {
+    .resource-card {
 
-      margin: 0;
-      padding: 0;
+      border: none;
     }
   }
 

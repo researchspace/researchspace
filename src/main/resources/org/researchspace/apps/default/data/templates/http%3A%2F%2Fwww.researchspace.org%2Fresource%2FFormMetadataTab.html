@@ -2,7 +2,7 @@
 
 {{#ifCond mode "!==" "new"}}
     {{#if node}}
-        <bs-tab event-key="metadata" title="Metadata" tab-class-name="tab-right">
+        <bs-tab event-key="metadata" title="Metadata">
             <semantic-query query='SELECT ?entity ?entityFormRecordCreation ?actor ?creationDateValue ?importFromExternalSource ?sourceURI WHERE {
                                     BIND(<{{node}}> AS ?entity)
 
@@ -26,15 +26,15 @@
                                     }
 
                                 } limit 1'
-                                        template='{{> template}}'
-                            >
+                                        
+                                template='{{> template}}'>
                                 
                             <template id='template'>
                                 <div class="semantic-form-input-title">Record metadata</div>
                                 <div class="table-expanded">
                                     <table class="table metadata-table">
                                         <tbody>
-                                            <tr>
+                                            <tr class="standard-row">
                                                 <td class="table-title"><b>created</b></td>
                                                 <td class="table-description">
                                                     {{dateTimeFormat bindings.0.creationDateValue.value "DD/MM/YYYY, h:mm a"}}

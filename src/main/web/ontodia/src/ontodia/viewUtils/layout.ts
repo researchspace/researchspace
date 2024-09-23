@@ -333,7 +333,7 @@ export function placeElementsAround(params: {
         model,
         padding: { x: 15, y: 15 },
       });
-      resolve();
+      resolve(null);
     });
   });
 }

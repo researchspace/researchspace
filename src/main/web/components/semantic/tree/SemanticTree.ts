@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -73,7 +74,7 @@ export interface SemanticTreeConfig {
   query: string;
 
   /**
-   * <semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link>
+   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link>
    * which is used to render every tree node. Template has access to all projection
    * variables for a single result tuple.
    * By default `<semantic-link>` component is used for node visualization.
@@ -81,7 +82,7 @@ export interface SemanticTreeConfig {
   tupleTemplate?: string;
 
   /**
-   * <semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link>
+   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link>
    * which is applied when the query returns no results.
    */
   noResultTemplate?: string;

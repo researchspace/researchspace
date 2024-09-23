@@ -47,22 +47,22 @@
     rdfs:comment "Relationship that binds a person ." .
 
   rs:PX_is_bind_by a owl:ObjectProperty;
-    rdfs:label "bind"@en;
+    rdfs:label "Is bind by"@en;
     rdfs:domain crm:E21_Person;
     rdfs:range rs:Relationship;
     rdfs:comment "Person bound by the relationship." .
 
   rs:PX_to a owl:ObjectProperty;
-    rdfs:label "to"@en;
+    rdfs:label "Bound to"@en;
     rdfs:domain rs:Relationship;
     rdfs:range crm:E21_Person;
     rdfs:comment "Person the relationship is bound to. " .
 
-  rs:PX_pupil_of a owl:ObjectProperty;
-    rdfs:label "pupil of"@en ;
-    rdfs:domain crm:E21_Person;
-    rdfs:comment "This should be considered a shortcut for a CRM teaching activity";
-    rdfs:range crm:E39_Actor .
+ # rs:PX_pupil_of a owl:ObjectProperty;
+ #   rdfs:label "pupil of"@en ;
+ #   rdfs:domain crm:E21_Person;
+ #   rdfs:comment "This should be considered a shortcut for a CRM teaching activity";
+ #   rdfs:range crm:E39_Actor .
   
   rs:PX_field_of_activity_of_the_agent a owl:DatatypeProperty;
     rdfs:subPropertyOf crm:P3_has_note;
@@ -70,7 +70,7 @@
     rdfs:domain crm:E1_CRM_Entity;
     rdfs:seeAlso "http://rdvocab.info/ElementsGr2/fieldOfActivityOfTheCorporateBody";
     rdfs:label "field of activity of agent"@en;
-    rdfs:comment "This is similar to RDA Group 2 Elements properties 'Field of acttivity of the corporate body' and 'Field of acttivity of person' but instead allows just the agent to be expressed as BM bio records do not accurately distinguish between individuals & institutions." .
+    rdfs:comment "This is similar to RDA Group 2 Elements properties 'Field of activity of the corporate body' and 'Field of acttivity of person' but instead allows just the agent to be expressed as BM bio records do not accurately distinguish between individuals & institutions." .
   
   rs:PX_exhibition_history a owl:DatatypeProperty;
     rdfs:label "exhibition history"@en;
@@ -78,11 +78,6 @@
     rdfs:range xsd:string;
     rdfs:domain crm:E1_CRM_Entity;
     rdfs:comment "This is a sub-property of crm:P3_has_note, used to represent the exhibition history of an object" .
-  
-  rs:EX_Digital_Image_Region a owl:Class;
-    rdfs:label "Digital image region"@en;
-    rdfs:comment "Image regions are the direct result of a digital machine event on an digital image according to CRMdig.";
-    rdfs:subClassOf crm:E36_Visual_Item, crmdig:D9_Data_Object .
   
   rs:PX_display_wrap a owl:DatatypeProperty;
     rdfs:label "display wrap"@en;
@@ -96,9 +91,27 @@
     rdfs:label "has main representation"@en;
     rdfs:range rs:EX_Digital_Image;
     rdfs:comment "This is to identifier the primary representation an object may have";
-    rdfs:domain crm:E22_Man-Made_Object;
+    rdfs:domain crm:E1_CRM_Entity;
     owl:inverseOf rs:PX_main_represents .
-  
+
+  rs:PX_main_represents a owl:ObjectProperty;
+    rdfs:label "is main representation of"@en ;
+    owl:inverseOf rs:PX_has_main_representation;
+    rdfs:subPropertyOf crm:P138_represents;
+    rdfs:domain rs:EX_Digital_Image;
+    rdfs:range crm:E1_CRM_Entity;
+    rdfs:comment "This is to identifier the primary representation of an entity" .
+
+  rs:viewport a owl:DatatypeProperty;
+    rdfs:label "viewport"@en;
+    rdfs:range xsd:string;
+    rdfs:domain rs:EX_Digital_Image_Region .
+
+  rs:boundingBox a owl:DatatypeProperty;
+    rdfs:label "region bounding box"@en;
+    rdfs:range xsd:string;
+    rdfs:domain rs:EX_Digital_Image_Region .
+ 
   rs:PX_currency a owl:ObjectProperty;
     rdfs:label "currency"@en;
     rdfs:range crm:E55_Type;
@@ -110,23 +123,23 @@
     rdfs:label "Bibliographic Series"@en;
     rdfs:comment "This is a specific series which can comprise of many different documents which belong together as a specific series collection" .
   
-  rs:PX_condition a owl:DatatypeProperty;
-    rdfs:label "condition"@en;
-    rdfs:range xsd:string;
-    rdfs:domain crm:E1_CRM_Entity;
-    rdfs:subPropertyOf crm:P3_has_note .
+ # rs:PX_condition a owl:DatatypeProperty;
+ #   rdfs:label "condition"@en;
+ #   rdfs:range xsd:string;
+ #   rdfs:domain crm:E1_CRM_Entity;
+ #   rdfs:subPropertyOf crm:P3_has_note .
   
   rs:displayLabel a owl:DatatypeProperty;
     rdfs:comment ""@en;
     rdfs:range xsd:string;
     rdfs:label "display label"@en .
   
-  rs:PX_has_transliteration a owl:DatatypeProperty;
-    rdfs:subPropertyOf crm:P3_has_note;
-    rdfs:range xsd:string;
-    rdfs:domain crm:E1_CRM_Entity;
-    rdfs:label "has transliteration"@en;
-    rdfs:comment "This is a sub-property of crm:P3_has_note, used to represent a transliteration of an inscription" .
+ # rs:PX_has_transliteration a owl:DatatypeProperty;
+ #   rdfs:subPropertyOf crm:P3_has_note;
+ #   rdfs:range xsd:string;
+ #   rdfs:domain crm:E1_CRM_Entity;
+ #   rdfs:label "has transliteration"@en;
+ #   rdfs:comment "This is a sub-property of crm:P3_has_note, used to represent a transliteration of an inscription" .
   
   rs:PX_gender a owl:ObjectProperty;
     rdfs:label "gender"@en;
@@ -135,10 +148,20 @@
     rdfs:subPropertyOf crm:P2_has_type .
   
   rs:EX_Digital_Image a owl:Class;
-    rdfs:comment "Digital images are both CRM images and digital objects according to CRMdig.";
+    rdfs:comment "Digital images are both CRM visual items and digital objects according to CRMdig.";
     rdfs:subClassOf crm:E36_Visual_Item, crmdig:D1_Digital_Object;
-    rdfs:label "Digital Image"@en .
+    rdfs:label "Digital image"@en .
+
+  rs:EX_Digital_Image_Region a owl:Class;
+    rdfs:label "Digital image region"@en;
+    rdfs:comment "Image regions are the direct result of a digital machine event on an digital image according to CRMdig.";
+    rdfs:subClassOf crm:E36_Visual_Item, crmdig:D9_Data_Object . 
   
+  rs:EX_File a owl:Class;
+    rdfs:comment "Digital file is subclass of CRMdig digital object.";
+    rdfs:subClassOf crmdig:D1_Digital_Object;
+    rdfs:label "Digital file"@en .
+
   rs:PX_curatorial_comment a owl:DatatypeProperty;
     rdfs:subPropertyOf crm:P3_has_note;
     rdfs:range xsd:string;
@@ -179,38 +202,30 @@
     rdfs:domain crm:E89_Propositional_Object;
     rdfs:label "commemorates"@en .
   
-  rs:PX_inscription_script a owl:ObjectProperty;
-    rdfs:comment "This is a sub-property of crm:P2_has_type, This predicate is used to identify the type of script in which an inscription is written (eg Roman, Hieroglyphic, etc)";
-    rdfs:label "inscription script"@en ;
-    rdfs:range crm:E55_Type;
-    rdfs:domain crm:E1_CRM_Entity;
-    rdfs:subPropertyOf crm:P2_has_type .
+ # rs:PX_inscription_script a owl:ObjectProperty;
+ #   rdfs:comment "This is a sub-property of crm:P2_has_type, This predicate is used to identify the type of script in which an inscription is written (eg Roman, Hieroglyphic, etc)";
+ #   rdfs:label "inscription script"@en ;
+ #   rdfs:range crm:E55_Type;
+ #   rdfs:domain crm:E1_CRM_Entity;
+ #   rdfs:subPropertyOf crm:P2_has_type .
   
-  rs:PX_main_represents a owl:ObjectProperty;
-    rdfs:label "is main represetation of"@en ;
-    owl:inverseOf rs:PX_has_main_representation;
-    rdfs:subPropertyOf crm:P138_represents;
-    rdfs:domain rs:EX_Digital_Image;
-    rdfs:range crm:E22_Man-Made_Object;
-    rdfs:comment "This is to identifier the primary representation of an object" .
-  
-  rs:PX_has_copyright a owl:DatatypeProperty;
-    rdfs:comment "This is a sub-property of crm:P3_has_note, used to represent copyright information";
-    rdfs:label "has copyright"@en ;
-    rdfs:range xsd:string;
-    rdfs:domain crm:E1_CRM_Entity;
-    rdfs:subPropertyOf crm:P3_has_note .
+ # rs:PX_has_copyright a owl:DatatypeProperty;
+ #   rdfs:comment "This is a sub-property of crm:P3_has_note, used to represent copyright information";
+ #   rdfs:label "has copyright"@en ;
+ #   rdfs:range xsd:string;
+ #   rdfs:domain crm:E1_CRM_Entity;
+ #   rdfs:subPropertyOf crm:P3_has_note .
   
   rs:PX_asserts rdfs:domain rs:EX_Assertion;
     rdfs:range crminf:I2_Belief;
     rdfs:label "asserts"@en ;
     rdfs:type owl:ObjectProperty .
   
-  rs:PX_type_series a owl:ObjectProperty;
-    rdfs:label "type series"@en ;
-    rdfs:range crm:E55_Type;
-    rdfs:domain crm:E1_CRM_Entity;
-    rdfs:subPropertyOf crm:P2_has_type .
+#  rs:PX_type_series a owl:ObjectProperty;
+#    rdfs:label "type series"@en ;
+#    rdfs:range crm:E55_Type;
+#    rdfs:domain crm:E1_CRM_Entity;
+#    rdfs:subPropertyOf crm:P2_has_type .
   
   rs:PX_min_value a owl:DatatypeProperty;
     rdfs:label "min value"@en ;
@@ -232,12 +247,12 @@
     rdfs:domain crm:E1_CRM_Entity;
     rdfs:subPropertyOf crm:P3_has_note .
   
-  rs:PX_inscription_type a owl:ObjectProperty;
-    rdfs:subPropertyOf crm:P2_has_type;
-    rdfs:range crm:E55_Type;
-    rdfs:domain crm:E1_CRM_Entity;
-    rdfs:comment "This should be used with the thesauri/inscription thesauri";
-    rdfs:label "inscription type"@en .
+ # rs:PX_inscription_type a owl:ObjectProperty;
+ #   rdfs:subPropertyOf crm:P2_has_type;
+ #   rdfs:range crm:E55_Type;
+ #   rdfs:domain crm:E1_CRM_Entity;
+ #   rdfs:comment "This should be used with the thesauri/inscription thesauri";
+ #   rdfs:label "inscription type"@en .
   
   rs:PX_likelihood a owl:ObjectProperty;
     rdfs:comment "BM Likelihood";
@@ -301,21 +316,21 @@
     rdfs:domain crm:E1_CRM_Entity;
     rdfs:subPropertyOf crm:P2_has_type .
   
-  rs:PX_inscription_subject a owl:ObjectProperty;
-    rdfs:subPropertyOf crm:P2_has_type;
-    rdfs:range crm:E55_Type;
-    rdfs:domain crm:E1_CRM_Entity;
-    rdfs:comment "This should be used with the id/thesauri/inscription-subject thesaurus";
-    rdfs:label "inscription subject"@en .
+ # rs:PX_inscription_subject a owl:ObjectProperty;
+ #   rdfs:subPropertyOf crm:P2_has_type;
+ #   rdfs:range crm:E55_Type;
+ #   rdfs:domain crm:E1_CRM_Entity;
+ #   rdfs:comment "This should be used with the id/thesauri/inscription-subject thesaurus";
+ #   rdfs:label "inscription subject"@en .
   
   rs:targetsField a owl:ObjectProperty;
     rdfs:comment ""@en;
     rdfs:label "targets field"@en ;
     rdfs:domain crminf:I1_Argumentation .
   
-  rs:PX_ware a owl:ObjectProperty;
-    rdfs:range crm:E55_Type;
-    rdfs:domain crm:E1_CRM_Entity;
-    rdfs:subPropertyOf crm:P2_has_type;
-    rdfs:label "ware"@en .
+ # rs:PX_ware a owl:ObjectProperty;
+#    rdfs:range crm:E55_Type;
+ #   rdfs:domain crm:E1_CRM_Entity;
+ #   rdfs:subPropertyOf crm:P2_has_type;
+ #   rdfs:label "ware"@en .
 }

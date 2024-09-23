@@ -13,7 +13,8 @@
                                             ?subject wikidataentity:id ?wikidataId .
                                             ?subject wikidataentity:concepturi ?concepturi .
                                             ?subject wikidataentity:label ?wikidataEntityLabel .
-                                            ?subject wikidataentity:description ?description .
+                                            ?subject wikidataentity:description ?description_original .
+                                            BIND(REPLACE(?description_original,"\"","") as ?description)
                                           }'
   ></semantic-search-query-keyword>
   <!-- add label-->
@@ -187,7 +188,7 @@
                                         {{#if bindings.0.existingRecord.value}}
                                           <mp-event-trigger id='{{viewId}}-openExistingRecord-in-new-frame-trigger' 
                                                             type='Dashboard.AddFrame'
-                                                            data='{"viewId":"entity-editor", 
+                                                            data='{"viewId":"resource-editor", 
                                                                   "resourceIri":"{{bindings.0.existingRecord.value}}",
                                                                   "entityTypeConfig": "{{domainConfig}}",
                                                                   "editable": true,

@@ -22,28 +22,27 @@
     {{#if props.[http://www.researchspace.org/ontology/PX_has_video]}}
       <iframe src='{{props.[http://www.researchspace.org/ontology/PX_has_video].values.0.value}}' frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     
-      {{else if props.[http://www.ics.forth.gr/isl/CRMdig/L49_is_primary_area_of]}}
-        <rs-iiif-image-thumbnail height='480' width='640' style='height: 100%; width: 100%;'
-          image-or-region='{{props.[http://www.ics.forth.gr/isl/CRMdig/L49_is_primary_area_of].values.0.value}}' 
-          bbox='{{props.[http://www.researchspace.org/ontology/boundingBox].values.0.value}}'
-          viewport='{{props.[http://www.researchspace.org/ontology/viewport].values.0.value}}'
-          svg='{{props.[http://www.w3.org/1999/02/22-rdf-syntax-ns#value].values.0.value}}'
+    {{else if props.[http://www.researchspace.org/pattern/system/image_annotation/area_of_image]}}
+      <rs-iiif-image-thumbnail height='480' width='640' style='height: 100%; width: 100%;'
+        image-or-region='{{props.[http://www.researchspace.org/pattern/system/image_annotation/area_of_image].values.0.value}}' 
+        bbox='{{props.[http://www.researchspace.org/pattern/system/image_annotation/boundingBox].values.0.value}}'
+        viewport='{{props.[http://www.researchspace.org/pattern/system/image_annotation/viewport].values.0.value}}'
+        svg='{{props.[http://www.researchspace.org/pattern/system/image_annotation/value].values.0.value}}'
 
-          [[> rsp:IIIFConfig]]
-        >
-        </rs-iiif-image-thumbnail>
+        [[> rsp:IIIFConfig]]
+      >
+      </rs-iiif-image-thumbnail>
 
     {{else if imgUrl}}
-
-        <mp-resource-thumbnail fixed-key='image-{{imgUrl}}' iri='{{imgUrl}}' class='rs-default-card__img'>
-          <mp-resource-thumbnail-fallback>
-            <mp-resource-thumbnail iri='{{iri}}' class='rs-default-card__img'>
-                <mp-resource-thumbnail-fallback>
-                  <span class="rs-icon {{getValueByKey typeToImage allTypes 'rs-icon-entity_no-image'}} {{getValueByKey entityIconColor allTypes 'rs-icon-entity_no-image'}}"></span>
-                </mp-resource-thumbnail-fallback>
-            </mp-resource-thumbnail>
-          </mp-resource-thumbnail-fallback>
-        </mp-resource-thumbnail>
+      <mp-resource-thumbnail fixed-key='image-{{imgUrl}}' iri='{{imgUrl}}' class='rs-default-card__img'>
+        <mp-resource-thumbnail-fallback>
+          <mp-resource-thumbnail iri='{{iri}}' class='rs-default-card__img'>
+              <mp-resource-thumbnail-fallback>
+                <span class="rs-icon {{getValueByKey typeToImage allTypes 'rs-icon-entity_no-image'}} {{getValueByKey entityIconColor allTypes 'rs-icon-entity_no-image'}}"></span>
+              </mp-resource-thumbnail-fallback>
+          </mp-resource-thumbnail>
+        </mp-resource-thumbnail-fallback>
+      </mp-resource-thumbnail>
 
     {{else}}
 
@@ -55,14 +54,13 @@
         </rs-iiif-image-thumbnail>
 
       {{else if (hasKey allTypes "http://www.researchspace.org/ontology/EX_Digital_Image")}}
-            <mp-resource-thumbnail iri='{{iri}}' class='rs-default-card__img'>
-                <mp-resource-thumbnail-fallback>
-                  <span class="rs-icon {{getValueByKey typeToImage allTypes 'rs-icon-entity_no-image'}} {{getValueByKey entityIconColor allTypes 'rs-entity-icon-thing'}}"></span>
-                </mp-resource-thumbnail-fallback>
-            </mp-resource-thumbnail>
-
+        <mp-resource-thumbnail iri='{{iri}}' class='rs-default-card__img'>
+            <mp-resource-thumbnail-fallback>
+              <span class="rs-icon {{getValueByKey typeToImage allTypes 'rs-icon-entity_no-image'}} {{getValueByKey entityIconColor allTypes 'rs-entity-icon-thing'}}"></span>
+            </mp-resource-thumbnail-fallback>
+        </mp-resource-thumbnail>
       {{else}}
-      <span class="rs-icon {{getValueByKey typeToImage allTypes 'rs-icon-entity_no-image'}} {{getValueByKey entityIconColor allTypes 'rs-entity-icon-thing'}}"></span>
+        <span class="rs-icon {{getValueByKey typeToImage allTypes 'rs-icon-entity_no-image'}} {{getValueByKey entityIconColor allTypes 'rs-entity-icon-thing'}}"></span>
       {{/if}}
 
     {{/if}}
@@ -112,17 +110,17 @@
             </mp-event-trigger>
         </div>
 
-        [[!--       <div class="rs-default-card__hover-icon">
+               <div class="rs-default-card__hover-icon">
             <semantic-link-container uri="{{iri}}">
                 <button type="button" class="rs-button" title="Explore Resource">
                   <rs-icon icon-type="round" icon-name="insert_drive_file"></rs-icon>
                 </button>
             </semantic-link-container> 
-        </div> --]]
+        </div> 
 
         <div class="rs-default-card__hover-icon">
           <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                   urlqueryparam-view='entity-editor'
+                                   urlqueryparam-view='resource-editor'
                                    urlqueryparam-resource='{{iri}}'>
               <button type="button" class="rs-button" title="Author Resource in Form">
                 <rs-icon icon-type="round" icon-name="edit_note"></rs-icon>
@@ -221,7 +219,8 @@
 
           [[!-- is shown only when we are in the frames view, hidden by css --]]
           <div class="rs-default-card__hover-icon rs-default-card-action__image-add-frame">
-            <mp-event-trigger id='set-action__km-add-frame' type='Dashboard.AddFrame' 
+            <mp-event-trigger id='set-action__km-add-frame' 
+                              type='Dashboard.AddFrame' 
                               data='{"resourceIri": "{{iri}}", "viewId": "iiif"}'
                               targets='["thinking-frames"]'>
               <button type="button" class="rs-button" title="Explore Images in High Resolution Viewer">
@@ -251,7 +250,7 @@
                   [[!-- is shown only when we are not in the frames view, hidden by css --]]
                   <div class="rs-default-card__hover-icon rs-default-card-action__image-navigate">
                     <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                            urlqueryparam-view='objectImageObservation' 
+                                            urlqueryparam-view='image-annotation' 
                                             urlqueryparam-resource='{{iri}}'>
                       <button type="button" class="rs-button" title="Annotate Images">
                         <rs-icon icon-type="round" icon-name="photo_size_select_large"></rs-icon>
@@ -263,7 +262,7 @@
                   <div class="rs-default-card__hover-icon rs-default-card-action__image-add-frame">
                     <mp-event-trigger id='set-action__km-add-frame' 
                                       type='Dashboard.AddFrame' 
-                                      data='{"resourceIri": "{{iri}}", "viewId": "objectImageObservation", "objectIri": "{{iri}}"}' 
+                                      data='{"resourceIri": "{{iri}}", "viewId": "image-annotation", "objectIri": "{{iri}}"}' 
                                       targets='["thinking-frames"]'>
                       <button type="button" class="rs-button" title="Annotate Images">
                         <rs-icon icon-type="round" icon-name="photo_size_select_large"></rs-icon>

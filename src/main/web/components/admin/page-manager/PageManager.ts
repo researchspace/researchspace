@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -298,6 +299,7 @@ export class PageManager extends Component<{}, PageAdminState> {
     const dialogRef = 'deletion-confirmation';
     const onHide = () => getOverlaySystem().hide(dialogRef);
     const props = {
+      title: 'Delete template',
       message: 'Do you want to delete the selected templates?',
       onHide,
       onConfirm: (confirm) => {

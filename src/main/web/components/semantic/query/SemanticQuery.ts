@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -35,7 +36,7 @@ export interface SemanticQueryConfig {
   query: string;
 
   /**
-   * <semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link>, that gets a <a target='_blank' href='https://www.w3.org/TR/sparql11-results-json/#select-results'>bindings</a> object injected as template context i.e. the result binding to iterate over. [each helper](http://handlebarsjs.com/builtin_helpers.html#iteration) can be used to iterate over the bindings.
+   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link>, that gets a <a target='_blank' href='https://www.w3.org/TR/sparql11-results-json/#select-results'>bindings</a> object injected as template context i.e. the result binding to iterate over. [each helper](http://handlebarsjs.com/builtin_helpers.html#iteration) can be used to iterate over the bindings.
    * The template will only be rendered if and only if the result is not empty, so that one does not need to have additional if expressions around the component in order to hide it, for example, a list header if actually no result are to be displayed.
    * **Example:** `My Result: {{#each bindings}}{{bindingName.value}}{{/each}}` .
    * **Default:** If no template is provided, all tuples for the first projection variable will we rendered as a comma-separated list.
@@ -43,7 +44,7 @@ export interface SemanticQueryConfig {
   template?: string;
 
   /**
-   * <semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is applied when query returns no results.
+   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is applied when query returns no results.
    */
   noResultTemplate?: string;
 
@@ -100,7 +101,7 @@ interface SemanticQueryState {
  *    	data-template='
  *    		<ul>
  *    			{{#each bindings}}
- *    				<li><semantic-link data-uri="{{person.value}}">{{name.value}}</semantic-link></li>
+ *    				<li><semantic-link iri="{{person.value}}">{{name.value}}</semantic-link></li>
  *    		 	{{/each}}
  *    		</ul>
  *    	'>
@@ -188,7 +189,7 @@ export class SemanticQuery extends Component<SemanticQueryProps, SemanticQuerySt
       '{{#if (isIri ' +
       bindingVar +
       ')}}' +
-      '<semantic-link uri="{{' +
+      '<semantic-link iri="{{' +
       bindingVar +
       '.value}}"></semantic-link>' +
       '{{else}}' +

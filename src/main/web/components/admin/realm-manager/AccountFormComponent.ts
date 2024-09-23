@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -273,7 +274,8 @@ class AccountFormComponent extends Component<Props, State> {
             Btn(
               {
                 type: 'submit',
-                bsStyle: 'action',
+                bsStyle: 'default',
+                className: 'btn-action',
                 disabled: this.submitDisabled(),
               },
               create ? 'Create account' : 'Update account'
@@ -288,7 +290,8 @@ class AccountFormComponent extends Component<Props, State> {
                 {
                   key: 'delete-account-btn',
                   type: 'submit',
-                  bsStyle: 'action',
+                  bsStyle: 'default',
+                  className: 'btn-action',
                   onClick: this.onClickDeleteAccount,
                 },
                 'Delete account'

@@ -1,0 +1,64 @@
+
+<http://www.researchspace.org/pattern/system/appellation/type/context> {
+  <http://www.researchspace.org/pattern/system/appellation/type> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E55_Type>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/treePatterns> """{
+  \"type\": \"simple\",
+  \"schemePattern\": \"?item crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/appellation_type> .\"
+}"""^^<http://www.researchspace.org/resource/system/syntheticJson>;
+    <http://www.researchspace.org/resource/system/fields/category> 
+    <http://www.researchspace.org/resource/system/category/appellation>,
+    <http://www.researchspace.org/resource/system/category/appellation_search>;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-3b08b380f2b84d8fab04707f561f7481-geuvmj;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-3b08b380f2b84d8fab04707f561f7481-qerbb3;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Appellation type";
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-3b08b380f2b84d8fab04707f561f7481-jk1zf3;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E41_Appellation>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-3b08b380f2b84d8fab04707f561f7481-iwnb6t;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-3b08b380f2b84d8fab04707f561f7481-ofbjr;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-05-01T13:06:43.163+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-3b08b380f2b84d8fab04707f561f7481-geuvmj a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/appellation_type> .
+  ?value skos:prefLabel ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-3b08b380f2b84d8fab04707f561f7481-jk1zf3 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+  $subject crm:P2_has_type $value .
+  $value crm:P2i_is_type_of $subject .
+} WHERE { 
+  $subject crm:P2_has_type $value .
+  $value crm:P2i_is_type_of $subject .
+  ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/appellation_type> .
+}""" .
+  
+  _:genid-3b08b380f2b84d8fab04707f561f7481-iwnb6t a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P2_has_type $value .
+  $value crm:P2i_is_type_of $subject .
+} WHERE {}""" .
+  
+  _:genid-3b08b380f2b84d8fab04707f561f7481-ofbjr a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
+  $subject crm:P2_has_type $value .
+  ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/appellation_type> .
+}""" .
+  
+  _:genid-3b08b380f2b84d8fab04707f561f7481-qerbb3 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/appellation_type> .
+  ?value skos:prefLabel ?label .
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/appellation/type> .
+}

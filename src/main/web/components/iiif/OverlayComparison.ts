@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,9 +24,10 @@ import * as Immutable from 'immutable';
 import * as classNames from 'classnames';
 
 import { Rdf } from 'platform/api/rdf';
-import { navigateToResource } from 'platform/api/navigation';
+import { navigateToResource, refresh } from 'platform/api/navigation';
 import { getOverlaySystem } from 'platform/components/ui/overlay';
 import { CreateResourceDialog } from 'platform/components/ldp';
+import { OverlayComparisonCreated } from './OverlayComparisonEvents';
 
 // TODO: remove KefirComponent and replace it by utilizing Cancellation object
 import { KefirComponentBase } from 'platform/components/utils/KefirComponent';
@@ -37,6 +39,7 @@ import { OpenSeadragonOverlay } from './OpenSeadragonOverlay';
 
 import './image-overlay.scss';
 import * as block from 'bem-cn';
+import { trigger } from 'platform/api/events';
 
 const b = block('overlay-comparison');
 
@@ -65,7 +68,7 @@ interface LoadedState {
  * @example
  * <div style='width: 50%; height: 600px;'>
  *   <rs-iiif-overlay
- *     compared-images='["http://example.com/bar/image1", "http://example.com/bar/image2"]'
+ *     selection='["http://example.com/bar/image1", "http://example.com/bar/image2"]'
  *     image-id-pattern='BIND(REPLACE(?imageIRI, "^http://example.com/(.*)$", "$1") as ?imageID)'
  *     iiif-server-url='<iiif-server>'>
  *   </rs-iiif-overlay>
@@ -81,9 +84,9 @@ export class OverlayComparison extends KefirComponentBase<Props, State, LoadedSt
     repositories: ['default'],
   };
 
-  loadState(props: Props) {
+  loadState(props: Props) { 
     const tasks = props.selection
-      .map((iri) => (typeof iri === 'string' ? Rdf.iri(iri) : iri))
+      .map((iri) => (typeof iri === 'string' ? Rdf.iri(iri) : iri ))
       .map((iri) => queryIIIFImageOrRegion(iri, props.imageIdPattern, props.repositories));
     return Kefir.zip(tasks).map((metadata) => ({
       metadata: Immutable.List(metadata),
@@ -159,16 +162,26 @@ export class OverlayComparison extends KefirComponentBase<Props, State, LoadedSt
 
     this.setState(this.updateState({ creatingImage: true }));
 
+    const image1Iri = this.state.metadata.get(0).carrierImageIRI?this.state.metadata.get(0).carrierImageIRI:this.state.metadata.get(0).imageIRI;
+    const image2Iri = this.state.metadata.get(1).carrierImageIRI?this.state.metadata.get(1).carrierImageIRI:this.state.metadata.get(1).imageIRI;
+    
+    
     return LdpOverlayImageService.createOverlayImage(
       name,
-      this.state.metadata.get(0).iri,
+      Rdf.iri(""+image1Iri),
       this.state.firstImageWeight,
-      this.state.metadata.get(1).iri,
+      Rdf.iri(""+image2Iri),
       1 - this.state.firstImageWeight
     )
       .flatMap((res) => {
         this.setState(this.updateState({ creatingImage: false }));
-        return navigateToResource(res, {}, 'assets');
+        trigger({
+          eventType: OverlayComparisonCreated,
+          source: res.value,
+          data: { iri: res },
+        });
+        //return navigateToResource(res), {}, 'assets');
+        return navigateToResource(res).onValue((v) => v);
       })
       .toProperty();
   };

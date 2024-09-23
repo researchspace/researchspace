@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -249,7 +250,8 @@ class PageEditorComponent extends Component<PageEditorProps, PageEditorState> {
             
             Button(
               {
-                bsStyle: 'action',
+                bsStyle: 'default',
+                className: 'btn-action',
                 onClick: () => this.onSave({ action: ResourceLinkAction[ResourceLinkAction.edit] }),
                 disabled: this.state.saving,
               },
@@ -258,7 +260,8 @@ class PageEditorComponent extends Component<PageEditorProps, PageEditorState> {
 
             Button(
               {
-                bsStyle: 'action',
+                bsStyle: 'default',
+                className: 'btn-action',
                 onClick: () => this.onSave(),
                 disabled: this.state.saving,
               },
@@ -300,6 +303,7 @@ class PageEditorComponent extends Component<PageEditorProps, PageEditorState> {
     const dialogRef = 'deletion-confirmation';
     const onHide = () => getOverlaySystem().hide(dialogRef);
     const props = {
+      title: 'Delete template',
       message: 'Do you really want to delete this template?',
       onHide,
       onConfirm: (confirm) => {

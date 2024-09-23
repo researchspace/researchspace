@@ -51,19 +51,29 @@
 </ol>
 <div class='page rs-sparqlPage'>
   <mp-sparql-query-editor-context>
-      <mp-splitpane dock=true nav-height=92 min-size=42 default-size=360 default-open='false' persist-resize=true snap-threshold=165 fixed-key='querycatalog-sidebar'>
-        <div data-flex-layout='column top-stretch' class="sparqlSidebar">
+      <mp-splitpane dock=true nav-height=101 min-size=200 default-size=360 default-open=true snap-threshold=165 fixed-key='querycatalog-sidebar'>
+        <div class="split-pane__sidebar split-pane__leftsidebar sparqlSidebar">
             <mp-splitpane-toggle-on>
-                <button style="border: none; outline: none; width: 100%; position:absolute; top:40%; left: -53px;" 
-                class="rs-button rs-drawer-transparent">Query Catalog</button>
+              <button class="btn-toggle-on">
+                <div class="btn-toggle-on-content">
+                  <h4 style="width: 100%; text-align: left;">
+                    Query Catalog
+                  </h4>
+                  <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
+                </div>
+              </button>
             </mp-splitpane-toggle-on>
             <mp-splitpane-toggle-off>
-              <button data-flex-layout='row center-left' class="sparqlSidebar-header">
-                <h1>Query Catalog</h1>
-                <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
-              </button>
+              <div class="split-pane__sidebar-header">
+                <button class="btn-toggle-off" style="padding-bottom: 10px;">
+                  <h4 style="width: 100%; text-align: left;">
+                    Query Catalog
+                  </h4>
+                  <rs-icon icon-type="round" icon-name="chevron_left"></rs-icon>
+                </button>
+              </div>
             </mp-splitpane-toggle-off>
-            <mp-splitpane-sidebar-open class="open-sidebar">
+            <mp-splitpane-sidebar-open class="split-pane__sparqlSidebar-open">
               <bs-tabs default-active-key='[[#if (urlParam "tab")]] [[urlParam "tab"]][[else]]3[[/if]]'  id='queries' class='open-sidebar__tabs'>
                 <bs-tab title="Global Queries" event-key='1'>
                   <semantic-context repository='assets'>
@@ -218,9 +228,13 @@
                           <mp-ldp-remove-from-container-action container='http://www.researchspace.org/resource/system/queryTemplateContainer' iri='{{iri.value}}'>
                             <bs-menu-item event-key=remove><span style='height:20px;'>Remove</span></bs-menu-item>
                           </mp-ldp-remove-from-container-action>
-                          <bs-menu-item event-key=edit>
+                          
                             <mp-overlay-dialog title='Edit Query Template' type='modal' bs-size='large'>
-                              <mp-overlay-dialog-trigger><span style='display: block;height:20px;'>Edit</span></mp-overlay-dialog-trigger>
+                              <mp-overlay-dialog-trigger>
+                                <bs-menu-item event-key=edit>
+                                  <span style='display: block;height:20px;'>Edit</span>
+                                </bs-menu-item>
+                              </mp-overlay-dialog-trigger>
                               <mp-overlay-dialog-content>
                                 <div>
                                   <semantic-context repository='assets'>
@@ -229,7 +243,6 @@
                                 </div>
                               </mp-overlay-dialog-content>
                             </mp-overlay-dialog>
-                          </bs-menu-item>
                         [[/spinTemplate]]
                       </template>
                     </mp-set-management>
@@ -240,7 +253,6 @@
                 </bs-tab>
               </bs-tabs>
             </mp-splitpane-sidebar-open>
-
         </div>
 
         <div>

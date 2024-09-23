@@ -1,126 +1,180 @@
 {{#bind viewId=dashboardId}}
-  <mp-event-target-template-render id='{{viewId}}-entity-editor-frame' template='{{> template}}'>
+  <mp-event-target-template-render id='{{viewId}}-resource-editor-frame' template='{{> template}}'>
     <template id='template'>
       {{#if iri}}
-        <semantic-query 
-                      query='SELECT DISTINCT ?config ?resourceFormIRI ?resourceRestrictionPattern ?resourceMembershipProperty WHERE {
-                                {
-                                  <{{iri}}> a ?resourceOntologyClass  .
-                                  ?config a <http://www.researchspace.org/resource/system/resource_configuration> ;
+        <semantic-query query="SELECT (COUNT(?config1) as ?c1) (COUNT(?config2) as ?c2) { {
+                          <{{iri}}> a ?resourceOntologyClass  .
+                                    ?config1 a <http://www.researchspace.org/resource/system/resource_configuration> ;
+                                            <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
+
+                                FILTER(NOT EXISTS{?config1 <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .})
+                          } UNION {
+                            <{{iri}}> a ?resourceOntologyClass ; 
+                                      crm:P2_has_type ?resourceP2Type  .
+                            ?config2 a <http://www.researchspace.org/resource/system/resource_configuration> ;
                                           <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
+                            ?config2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .                           
+                          }                        
+                        }" 
 
-                                  FILTER NOT EXISTS {
-                                    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .
-                                  }
+                        template="{{> countAvailableConfigurationsTemplate}}">
+        
+            <template id="countAvailableConfigurationsTemplate">      
+                [[!-- Check for existing configurations available and when multiple direct the user to the Resource Config section --]]
+                {{#ifCond bindings.length "==" "0"}}
+                  <p>There is no configuration for the given entity. See <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames" 
+                              urlqueryparam-view="resource-configuration"
+                              title="Resource Configuration"> Resource Configuration</semantic-link> to add one.</p>
+                {{/ifCond}}
+                
+                {{#ifCond bindings.0.c1.value ">" 1 }}
+                    {{#ifCond bindings.0.c2.value "==" 0}}
+                      <div>This entity has multiple types. Please create a specific <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                  urlqueryparam-view="resource-configuration"
+                                  title="Resource Configuration"> Resource Configuration</semantic-link> for it.
+                      </div>
+                    {{else}}
+                        {{#ifCond bindings.0.c2.value ">" 1}}               
+                          <div>This entity has multiple types. Please create a specific <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                  urlqueryparam-view="resource-configuration"
+                                  title="Resource Configuration"> Resource Configuration</semantic-link> for it.
+                            </div>
+                        {{/ifCond}}
+                    {{/ifCond}}         
+                {{/ifCond}}
+              
+                <semantic-query 
+                              query='SELECT DISTINCT ?config ?resourceFormIRI ?resourceRestrictionPattern ?resourceMembershipProperty WHERE {
+                                  {{#ifCond bindings.0.c1.value "==" 1}}   
+                                    {{#ifCond bindings.0.c2.value "==" 0}}  
+                                      {
+                                          <{{iri}}> a ?resourceOntologyClass  .
+                                          ?config a <http://www.researchspace.org/resource/system/resource_configuration> ;
+                                                  <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
 
-                                  OPTIONAL {
-                                    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern .
-                                  }
-                                  OPTIONAL {
-                                    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty .
-                                  }   
-                                  
-                                  OPTIONAL {
-                                    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
-                                  }
+                                          FILTER NOT EXISTS {
+                                            ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .
+                                          }
+                                        
+                                          OPTIONAL {
+                                            ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern .
+                                          }
+                                          OPTIONAL {
+                                            ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty .
+                                          }   
+                                          
+                                          OPTIONAL {
+                                            ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
+                                          }                                
+                                        } 
+                                      {{/ifCond}}
+                                    {{/ifCond}}
+                                     
+                                    {{#ifCond bindings.0.c2.value "==" 1}}  
+                                      {
+                                        <{{iri}}> rdf:type ?resourceOntologyClass  ;
+                                                    crm:P2_has_type ?resourceP2Type .
 
-                                  
-                                } UNION {
-                                  <{{iri}}> rdf:type ?resourceOntologyClass  ;
-                                              crm:P2_has_type ?resourceP2Type .
+                                        ?config a <http://www.researchspace.org/resource/system/resource_configuration> ;
+                                                  <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  ;
+                                                  <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .
 
-                                  ?config a <http://www.researchspace.org/resource/system/resource_configuration> ;
-                                            <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  ;
-                                            <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .
-
-                                  OPTIONAL {
-                                    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern .
-                                  }                              
-                                  OPTIONAL {
-                                    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty .
-                                  }
-                                  OPTIONAL {
-                                    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
-                                  }
-                                } UNION {
-                                    ?config rdf:type Platform:resource_configuration;
-                                      <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>.
-                                    
-                                    OPTIONAL { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern. }
-                                    OPTIONAL { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty. }
-                                    OPTIONAL { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI. }
-                                }
-                              }'
-        >
-          <template id='template'>
-            {{#ifCond bindings.length "==" "0"}}
-              <p>There is no form configuration for the given entity. See "Entity Manager".</p>
-            {{/ifCond}}
-
-            {{#ifCond bindings.length ">" "0"}}
-              <semantic-query query='SELECT ?config ?collection WHERE {
-                                      {{#each bindings}}
-                                      { 
-                                        BIND(<{{../iri}}> as ?item) .
-                                        BIND(<{{config.value}}> as ?config) .
-                                        {{#if resourceRestrictionPattern.value}}
-                                          {{{resourceRestrictionPattern.value}}}
-                                        {{/if}} 
-
-                                        {{#if resourceMembershipProperty.value}}
-                                          OPTIONAL { ?item <{{{resourceMembershipProperty.value}}}> ?collection . }
-                                        {{/if}}
-
+                                        OPTIONAL {
+                                          ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern .
+                                        }                              
                                         OPTIONAL {
                                           ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty .
                                         }
                                         OPTIONAL {
-                                          ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property> ?resourceBroaderProperty .
-                                        }                                  
-                                      } {{#if @last}}{{else}}UNION{{/if}}  
-                                      {{/each}}
+                                          ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
+                                        }
+                                      } 
+                                    {{/ifCond}}
+                                    {{#ifCond bindings.0.c1.value "==" 0}}
+                                      {{#ifCond bindings.0.c2.value "==" 0}}
+                                        {
+                                          ?config rdf:type Platform:resource_configuration;
+                                            <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>.
+                                          
+                                          OPTIONAL { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern. }
+                                          OPTIONAL { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty. }
+                                          OPTIONAL { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI. }
+                                        }
+                                      {{/ifCond}}
+                                    {{/ifCond}}
                                     }'
-                              template='{{> nested}}'
-              >
-                <template id='nested'>
-                  {{#ifCond bindings.length "==" "0"}}
-                    <p>There is no form configuration for the given entity. See "Entity Manager".</p>
-                  {{/ifCond}}
+                >
+                  <template id='template'>
+                    {{#ifCond bindings.length "==" "0"}}
+                      <p>There is no configuration for the given entity. See "Resource Configuration".</p>
+                    {{/ifCond}}
 
-                  {{#ifCond bindings.length "==" "1"}}
-                    {{> rsp:CollectionBrowserContent viewId=viewId configOrScheme=bindings.0.config.value iri=iri mode="edit"}}
-                  {{/ifCond}}
+                    {{#ifCond bindings.length ">" "0"}}
+                      <semantic-query query='SELECT DISTINCT ?config ?collection WHERE {
+                                              {{#each bindings}}
+                                              { 
+                                                BIND(<{{../iri}}> as ?item) .
+                                                BIND(<{{config.value}}> as ?config) .
+                                                {{#if resourceRestrictionPattern.value}}
+                                                  {{{resourceRestrictionPattern.value}}}
+                                                {{/if}} 
 
-                  {{#ifCond bindings.length ">" "1"}}
-                    <two-side-panel id='entity-editor-config-list-{{iri}}'>
-                      <template id='front'>
-                        <p>There is more than one form that can be applicable to the given entity, please choose the one to use for editing:</p>
-                        <ul>
-                          {{#each bindings}}
-                          <li>
-                            {{resourceName.value}} Form 
-                            <mp-event-trigger id='form-event-trigger--{{../iri}}' 
-                                              type='TwoSidePanel.ShowBack' 
-                                              targets='["entity-editor-config-list-{{../iri}}"]'
-                                              data='{ 
-                                                      "node":"{{../iri}}",
-                                                      "resourceFormIRI": "{{resourceFormIRI.value}}"
-                                                    }'>
-                              <button class="btn btn-primary">Use</button>
-                            </mp-event-trigger>
-                          </li>
-                          {{/each}}
-                        </ul>
-                      </template>
-                      <template id='back'>
-                        {{> rsp:CollectionBrowserContent viewId=viewId configOrScheme=resourceFormIRI iri=node mode="edit"}}
-                      </template>
-                    </two-side-panel>
-                  {{/ifCond}}
-                </template>
-              </semantic-query>
-            {{/ifCond}}
-          </template>
+                                                {{#if resourceMembershipProperty.value}}
+                                                  OPTIONAL { ?item <{{{resourceMembershipProperty.value}}}> ?collection . }
+                                                {{/if}}
+
+                                                OPTIONAL {
+                                                  ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty .
+                                                }
+                                                OPTIONAL {
+                                                  ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property> ?resourceBroaderProperty .
+                                                }                                  
+                                              } {{#if @last}}{{else}}UNION{{/if}}  
+                                              {{/each}}
+                                            }'
+                                      template='{{> nested}}'
+                      >
+                        <template id='nested'>
+                          {{#ifCond bindings.length "==" "0"}}
+                            <p>There is no form configuration for the given entity. See "Entity Manager".</p>
+                          {{/ifCond}}
+
+                          {{#ifCond bindings.length "==" "1"}}
+                            {{> rsp:CollectionBrowserContent viewId=viewId configOrScheme=bindings.0.config.value iri=iri mode="edit"}}
+                          {{/ifCond}}
+
+                          {{#ifCond bindings.length ">" "1"}}
+                            <two-side-panel id='resource-editor-config-list-{{iri}}'>
+                              <template id='front'>
+                                <p>There is more than one form that can be applicable to the given entity, please choose the one to use for editing:</p>
+                                <ul>
+                                  {{#each bindings}}
+                                  <li>
+                                    {{resourceName.value}} Form 
+                                    <mp-event-trigger id='form-event-trigger--{{../iri}}' 
+                                                      type='TwoSidePanel.ShowBack' 
+                                                      targets='["resource-editor-config-list-{{../iri}}"]'
+                                                      data='{ 
+                                                              "node":"{{../iri}}",
+                                                              "resourceFormIRI": "{{resourceFormIRI.value}}"
+                                                            }'>
+                                      <button class="btn btn-primary">Use</button>
+                                    </mp-event-trigger>
+                                  </li>
+                                  {{/each}}
+                                </ul>
+                              </template>
+                              <template id='back'>
+                                {{> rsp:CollectionBrowserContent viewId=viewId configOrScheme=resourceFormIRI iri=node mode="edit"}}
+                              </template>
+                            </two-side-panel>
+                          {{/ifCond}}
+                        </template>
+                      </semantic-query>
+                    {{/ifCond}}
+                  </template>
+                </semantic-query>  
+            </template>
         </semantic-query>
       {{else}}
         {{#if data.entityTypeConfig}}

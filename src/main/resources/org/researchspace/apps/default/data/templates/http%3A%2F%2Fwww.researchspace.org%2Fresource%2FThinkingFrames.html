@@ -4,8 +4,18 @@
     if node-templates is defined. This is a bug in ontodia. */
 
   .ontodia-overlayed-element  {
-    min-height: 234px;
-    min-width: 185px;
+    min-height: 60px;
+    min-width: 155px;
+  }
+
+  .ontodia-overlayed-element > div {
+    min-height: 60px;
+    min-width: 155px;
+  }
+
+  .ontodia-overlayed-element .resource-card {
+    min-height: 60px;
+    min-width: 155px;
   }
 
   .component-page-toolbar.btn-toolbar {
@@ -14,28 +24,9 @@
   
 </style>
 
-<mp-event-proxy id='clipboard-update-on-create-set'
-                on-event-type='Components.SetManagement.SetAdded'
-                proxy-event-type='Component.Refresh'
-                proxy-targets='["clipboard"]'>
-</mp-event-proxy>
-
-<mp-event-proxy id='clipboard-update-on-save-search' 
-                on-event-source='save-search-result-action'
-                proxy-event-type='Component.Refresh' 
-                proxy-targets='["clipboard"]'
-></mp-event-proxy>
-
-<mp-event-proxy id='clipboard-update-on-persisted-component' 
-                on-event-source='persit-component-action'
-                proxy-event-type='Component.Refresh' 
-                proxy-targets='["clipboard"]'
-></mp-event-proxy>
-
-
 <div class='page_100vh thinking-frames-page'>
   <rs-dashboard
-  [[!-- home-page-iri="http://www.researchspace.org/resource/Start" --]]
+    home-page-iri="http://www.researchspace.org/resource/Start"
 
     [[#if (urlParam "view")]]
       initial-view='{"view": "[[urlParam "view"]]", 
@@ -51,21 +42,25 @@
     views='[
 
     {
+    	"id": "resource-search",
+      "label": "Resource search",
+      "iconName": "search",
+      "template": "{{> resourceSearch}}"
+    },
+
+    {
+    	"id": "all-resources-search",
+      "label": "All resources search",
+      "iconName": "search",
+      "template": "{{> allResourcesSearch}}"
+    },
+
+    {
     	"id": "simple-search",
       "label": "Search",
       "iconName": "search",
       "checkQuery": "ASK { ?value a rs:Semantic_Search . }",
-      "template": "{{> simpleSearchTemplate}}",
-      "resourceNotRequired": true,
-      "type": "view"
-    },
-
-    {
-    	"id": "entity-search",
-      "label": "Entity search",
-      "iconName": "search",
-      "checkQuery": "ASK { ?value a rs:Semantic_Search . }",
-      "template": "{{> entitySearchTemplate}}",
+      "template": "{{> simpleSearch}}",
       "resourceNotRequired": true,
       "type": "hidden"
     },
@@ -78,6 +73,16 @@
       "iconName": "insert_drive_file",
       "template": "{{> resourceTemplate}}",
       "type": "view"
+    },
+
+    {
+    	"id": "resource-editor",
+      "label": "Resource editor",
+      "description": "Creare and author an entity through custom forms",
+      "iconName": "edit_note",
+      "template": "{{> resourceEditor}}",
+      "resourceNotRequired": true,
+      "type": "hidden"
     },
 
     {
@@ -96,49 +101,40 @@
       "label": "Map",
       "description": "Drag and drop a place here to explore related geographic information",
       "dropAreaDescription": "Drag and drop here any entity of type PLACE (with associated geographic coordinates) to explore related geographic information",
-      "iconClass": "rs-icon rs-icon-map_location_grouped",
+      "iconName": "place",
       "checkQuery": "ASK { 
         ?value a crm:E53_Place . 
-        ?value <http://www.cidoc-crm.org/cidoc-crm/P168_place_is_defined_by> ?coordinates . }",
+        ?value <http://www.cidoc-crm.org/cidoc-crm/P168_place_is_defined_by> ?coordinates .
+        ?coordinates <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> . }",
       "template": "{{> mapTemplate}}",
       "type": "view"
     },
 
-   {
-    	"id": "entity-editor",
-      "label": "Resource editor",
-      "description": "Creare and author an entity through custom forms",
-      "iconName": "edit_note",
-      "template": "{{> resourceEditor}}",
-      "resourceNotRequired": true,
-      "type": "hidden"
-      
-    },
-   
-
     {
-    	"id": "vocabulary",
-      "label": "Vocabularies / Authorities",
-      "description": "Create, view and edit vocabulary / authority list of terms",
-      "template": "{{> vocabulary}}",
-      "resourceNotRequired": true,
-      "type": "hidden"
-    }, 
-
-    {
-    	"id": "system-vocabulary",
-      "label": "System vocabularies / authorities",
-      "description": "Create, view and edit system vocabulary / authority list of terms",
-      "template": "{{> systemVocabulary}}",
-      "resourceNotRequired": true,
-      "type": "hidden"
-    }, 
-
-    {
-    	"id": "vocabulary-content",
-      "label": "Vocabulary / Authority content",
+    	"id": "authority",
+      "label": "Authority document",
       "iconClass": "iconmoon iconmoon-books",
-      "template": "{{> vocabularyContent}}",
+      "description": "Create, view and edit authority list of terms",
+      "template": "{{> authority}}",
+      "resourceNotRequired": true,
+      "type": "hidden"
+    }, 
+
+    {
+    	"id": "system-authority",
+      "label": "System authority document",
+      "iconClass": "iconmoon iconmoon-books",
+      "description": "Create, view and edit system authority list of terms",
+      "template": "{{> systemAuthority}}",
+      "resourceNotRequired": true,
+      "type": "hidden"
+    }, 
+
+    {
+    	"id": "authority-list",
+      "label": "List of resources in authority",
+      "iconClass": "iconmoon iconmoon-books",
+      "template": "{{> authorityList}}",
        "type": "hidden"
     },
 
@@ -156,7 +152,7 @@
       "label": "Knowledge map",
       "description": "Express research thinking and processes as networks of relations",
       "iconName": "account_tree",
-      "template": "{{> ontodiaTemplate}}",
+      "template": "{{> knowledgeMapTemplate}}",
       "itemBodyTemplate": "{{> itemBodyTemplate}}",
       "resourceNotRequired": true,
       "frameVariable": "ontodiaVariable",
@@ -168,7 +164,7 @@
       "label": "Semantic narrative",
       "description": "Compose and share your research through an evolving narrative",
       "iconName": "description",
-      "template": "{{> semanticNarrativeTemplate}}",
+      "template": "{{> semanticNarrative}}",
       "itemBodyTemplate": "{{> itemBodyTemplate}}",
       "resourceNotRequired": true,
       "frameVariable": "narrativeVariable",
@@ -177,12 +173,61 @@
     },
 
     {
-    	"id": "objectImageObservation",
+    	"id": "semantic-narrative-resources",
+      "label": "Semantic narrative resources",
+      "description": "Resources in the semantic narrative",
+      "iconName": "burst_mode",
+      "template": "{{> semanticNarrativeResources}}",
+      "checkQuery": "ASK { ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative> . }",
+      "type": "view"
+    },
+
+    {
+    	"id": "single-set-management",
+      "label": "Set management",
+      "description": "Manage the resources in a set",
+      "iconName": "topic",
+      "template": "{{> SingleSetManagement}}",
+      "checkQuery": "ASK { ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/set> . }",
+      "type": "view"
+    },
+
+    {
+    	"id": "sets-management",
+      "label": "Sets management",
+      "description": "Manage sets",
+      "iconName": "topic",
+      "template": "{{> SetsManagement}}",
+      "type": "view"
+    },
+
+    {
+    	"id": "system-activity",
+      "label": "System activities",
+      "iconName": "history",
+      "template": "{{> systemActivityTemplate}}",
+      "resourceNotRequired": true,
+      "type": "view"
+    },
+
+    {
+    	"id": "image-annotation",
       "label": "Image annotations",
+      "description": "Drag and drop a resource here to view and annotate its images",
+      "dropAreaDescription": "Drag and drop a resource here to view and annotate its images",
+      "iconName": "photo_size_select_large",
+      "template": "{{> imageAnnotation}}",
+      "unique": false,
+      "type": "authoring"
+    } 
+
+    [[!--  {
+    	"id": "object-image-observation",
+      "label": "Object observation",
       "description": "Drag and drop an object here to combine image annotations with form authoring",
       "dropAreaDescription": "Drag and drop any entity of type MAN-MADE OBJECT here to combine image annotations with data authoring through forms",
       "iconName": "photo_size_select_large",
-      "template": "{{> objectImageObservationTemplate}}",
+      "template": "{{> objectImageObservation}}",
       "checkQuery": "
         PREFIX ontodia: <http://ontodia.org/schema/v1#>
         PREFIX ldp: <http://www.w3.org/ns/ldp#>
@@ -205,16 +250,16 @@
       }",
       "unique": true,
       "type": "authoring"
-    },
+    }
 
-[[!--     {
-    	"id": "featureSimilarityKm",
+   {
+    	"id": "feature-similarity-km",
       "label": "Exploring and comparing (visual) features",
       "template": "{{> featureSimilarityKm }}",
       "itemBodyTemplate": "{{> itemBodyTemplate}}",
       "frameVariable": "ontodiaVariable",
       "type": "authoring"
-    }, --]]
+    }, 
 
     {
     	"id": "system-narrative",
@@ -238,35 +283,29 @@
       "template": "{{> systemDigitalAssetsTemplate}}",
       "resourceNotRequired": true,
       "type": "view"
-    },
-    
-    {
-    	"id": "system-activity",
-      "label": "Dashboard",
-      "template": "{{> systemActivityTemplate}}",
-      "resourceNotRequired": true,
-      "type": "view"
-    },
+    }, 
 
     {
-    	"id": "mapEntitySearch",
+    	"id": "map-resource-search",
       "label": "Objects referred by place",
-      "template": "{{> mapEntitySearch}}",
+      "template": "{{> mapResourceSearch}}",
       "type": "view"
     }
+
+ --]]
     ]'
 
     [[#if (hasPermission "forms:ldp:*")]]
     linked-views='[{
-      "id": "image-graph-authoring",
-      "label": "Image graph authoring",
-      "description": "Drag and drop an entity here to combine image annotations with knowledge map authoring",
-      "dropAreaDescription": "Drag and drop an entity here to combine image annotations with data authoring through the knowledge map system",
-      "iconName": "wallpaper",
-      "viewIds": ["knowledge-map", "iiif"],
-      "resourceNotRequired": true,
-      "type": "authoring"
-    }
+        "id": "image-graph-authoring",
+        "label": "Image graph authoring",
+        "description": "Drag and drop an entity here to combine image annotations with knowledge map authoring",
+        "dropAreaDescription": "Drag and drop an entity here to combine image annotations with data authoring through the knowledge map system",
+        "iconName": "wallpaper",
+        "viewIds": ["iiif", "knowledge-map"],
+        "resourceNotRequired": true,
+        "type": "authoring"
+      }
     ]'
     [[/if]]
 
@@ -280,7 +319,24 @@
 
     <template id='finder'>[[> rsp:Finder]]</template>
 
-    <template id='details'>
+    <template id='resourceSearch'>
+      <div class='page__grid-container search-page-container'>
+         [[> rsp:ResourceSearchContent config='{{data.iri}}']] 
+    	</div>  
+    </template>
+
+    <template id='allResourcesSearch'>
+      [[> rsp:allResourcesSearchContent]] 
+    </template>
+
+    <template id='simpleSearch'>
+      <div class='page__grid-container search-page-container'>
+        <mp-page-loader urlqueryparam-frame=true iri='http://www.researchspace.org/resource/SearchContent'>
+        </mp-page-loader>
+    	</div>
+    </template>
+
+    [[!-- <template id='details'>
         <mp-event-target-template-render fixed-key='details-view' reparentable='true' id='details-view' template='{{> template}}'>
             <template id='template'>
                 {{#if iri}}
@@ -294,26 +350,13 @@
                 {{/if}}
             </template>
         </mp-event-target-template-render>
-    </template>
+    </template> --]]
 
     <template id='resourceTemplate'>
       <div style='flex: 1 1 0px; overflow: auto;'>
         <mp-page-loader urlqueryparam-frame=true iri='{{iri}}' context='{{iri}}'>
         </mp-page-loader>
     	</div>
-    </template>
-
-    <template id='simpleSearchTemplate'>
-      <div class='rs-search-container'>
-        <mp-page-loader urlqueryparam-frame=true iri='http://www.researchspace.org/resource/SearchContent'>
-        </mp-page-loader>
-    	</div>
-    </template>
-
-   <template id='entitySearchTemplate'>
-      <div class='rs-search-container' style='flex: 1 1 0px; overflow: auto; padding: 20px;'>
-         [[> rsp:EntitySearchContent config='{{iri}}']]
-    	</div> 
     </template>
 
     <template id='resourceConfiguration'>
@@ -324,52 +367,136 @@
       [[> rsp:ResourceEditor]]
     </template>
 
-    <template id='vocabulary'>
-      [[> rsp:Vocabulary]]
+    <template id='authority'>
+      [[> rsp:AuthorityDocumentView]]
     </template>
 
-    <template id='systemVocabulary'>
-      [[> rsp:SystemVocabulary]]
+    <template id='systemAuthority'>
+      [[> rsp:AuthorityDocumentSystem]]
     </template>
 
-    <template id='vocabularyContent'>
-      [[> rsp:VocabularyContent iri=iri]]
+    <template id='authorityList'>
+      [[> rsp:AuthorityList iri=iri]]
     </template>
 
-    <template id='systemNarrativesTemplate'>
+[[!--     <template id='systemNarrativesTemplate'>
       [[> rsp:SystemNarrativesFrame]]
-    </template>
+    </template> --]]
 
-    <template id='systemKnowledgeMapsTemplate'>
+[[!--    <template id='systemKnowledgeMapsTemplate'>
       [[> rsp:SystemKnowledgeMapsFrame]]
-    </template>
+    </template> --]]
 
-    <template id='systemDigitalAssetsTemplate'>
+[[!--  <template id='systemDigitalAssetsTemplate'>
       [[> rsp:SystemAssetsFrame]]
-    </template>
+    </template> --]]
 
     <template id='systemActivityTemplate'>
-      [[> rsp:SystemActivityFrame]]
+      <div class='page__grid-container search-page-container'>
+         <div id="template-content">
+          [[> rsp:SystemActivityFrame]]
+        </div>
+      </div>
     </template>
 
-    <template id='ontodiaTemplate'>
-      [[> rsp:ThinkingFramesKnowledgeMapTemplate]]
+    <template id='knowledgeMapTemplate'>
+      [[> rsp:KnowledgeMapTemplate]]
+    </template>
+
+    <template id='imageAnnotation'>
+      [[> rsp:ImageAnnotation]]
+    </template>
+
+    <template id='semanticNarrative'>
+      [[> rsp:SemanticNarrativeTemplate]]
+    </template>
+
+    <template id='semanticNarrativeResources'>
+      <div class='page__grid-container search-page-container'>
+        <div id="template-content">
+          [[> rsp:SemanticNarrativeResources]] 
+        </div> 
+      </div>
+    </template>
+
+    <template id='SingleSetManagement'>
+      [[> rsp:SingleSetManagement iri=iri]]
+    </template>
+
+    <template id='SetsManagement'>
+      [[> rsp:SetsManagement]]
+    </template>
+
+    <template id='mapTemplate'>
+      
+      <style>
+        .ol-popup-content {
+          max-height: 100% !important;
+        }
+      </style>
+      
+      <div style='flex: 1 1 0px; overflow: auto;'>
+        <semantic-map tuple-template='{{>popover}}'
+                      query='SELECT DISTINCT ?wkt ?place ?color WHERE {
+                              {
+                              <{{iri}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
+                                ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
+                                ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
+                                BIND(<{{iri}}> AS ?place) .
+                                BIND(0 as ?order)
+                              } UNION {
+                                ?place crm:P89_falls_within* <{{iri}}> .
+                                ?place crm:P168_place_is_defined_by ?osm_geoCoordinates .
+                                ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
+                                ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
+                                BIND(1 as ?order)
+                              } UNION {
+                                <{{iri}}> crm:P161i_is_spatial_projection_of/crm:P10i_contains/crm:P53i_is_former_or_current_location_of ?place .
+                                ?place crm:P168_place_is_defined_by ?osm_geoCoordinates .
+                                ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
+                                ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
+                                BIND(true AS ?isBuilding)
+                                BIND(2 as ?order)
+                              }
+                              BIND(IF(?isBuilding, "rgba(244, 224, 77, 0.7)", "rgba(56, 178, 194, 0.44)") AS ?color)
+                            } ORDER BY ASC(?order)'>
+
+            <template id='popover'>
+              <style>
+                .place-row {
+                  display: flex; 
+                  align-items: center;
+                  gap: 5px;
+                  flex-wrap: wrap;
+                  overflow: hidden;
+                }
+              </style>
+
+              <div style="min-width:250px; font-size: 13.5px; overflow: hidden;">
+                <div class="place-row">
+                  <div>Place:</div>
+                  <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                            urlqueryparam-view="resource-editor"
+                                            urlqueryparam-resource-iri='{{place.value}}'>
+                    <div><mp-label iri='{{place.value}}' style="text-decoration: underline; cursor: pointer; color:#396EFE;"></mp-label></div>
+                  </semantic-link-container>
+                </div>
+              </div>
+            </template>
+        </semantic-map>
+    	</div>
     </template>
 
     <template id='iiifTemplate'>
       [[> rsp:ThinkingFramesIIIFTemplate]]
     </template>
 
-    <template id='objectImageObservationTemplate'>
+    <template id='objectImageObservation'>
       [[> rsp:ThinkingFramesObjectThroughImageObservation]]
     </template>
 
     <template id='featureSimilarityKm'>
       [[> rsp:ThinkingFramesFeatureSimilarityKm]]
-    </template>
-
-    <template id='semanticNarrativeTemplate'>
-      [[> rsp:ThinkingFramesSemanticNarrativeTemplate]]
     </template>
 
     <template id='itemBodyTemplate'>
@@ -389,13 +516,17 @@
           {{#ifCond persisted "==" true}}
             <span class='set-management__set-item' style='padding: 10px'>
               {{#bind iri=iri.value}}
-              {{> rsp:itemCardTemplate width=135 height=175 footer-paddingY=7 footer-paddingX=8}}
+                {{> rsp:ResourceCard  iri=iri
+                                      viewId="setItem"
+                }}
               {{/bind}}
             </span>
             {{else}}
             <span class='set-management__set-item' style='opacity: 0.4; padding: 10px'>
               {{#bind iri=iri.value}}
-                {{> rsp:itemCardTemplate width=135 height=175 }}
+                {{> rsp:ResourceCard  iri=iri
+                                      viewId="setItem"
+                }}
               {{/bind}}          
             </span>
           {{/ifCond}}
@@ -403,109 +534,11 @@
       </ontodia-contents>
     </template>
 
-    <template id='mapTemplate'>
-      
-      <style>
-        .ol-popup-content {
-          max-height: 100% !important;
-        }
-      </style>
-      
-      <div style='flex: 1 1 0px; overflow: auto;'>
-        <semantic-map
-          tuple-template='{{>popover}}'
-          query='
-            SELECT DISTINCT ?wkt ?place ?color WHERE {
-              {
-               <{{iri}}> crm:P168_place_is_defined_by ?wkt .
-                BIND(<{{iri}}> AS ?place).
-                BIND(0 as ?order)
-              } UNION {
-                ?place crm:P89_falls_within* <{{iri}}> .
-                ?place crm:P168_place_is_defined_by ?wkt .
-                BIND(1 as ?order)
-              } UNION {
-                <{{iri}}> crm:P161i_is_spatial_projection_of/crm:P10i_contains/crm:P53i_is_former_or_current_location_of ?place .
-                ?place crm:P168_place_is_defined_by ?wkt .
-                BIND(true AS ?isBuilding)
-                BIND(2 as ?order)
-              }
-              BIND(IF(?isBuilding, "rgba(244, 224, 77, 0.7)", "rgba(56, 178, 194, 0.44)") AS ?color)
-            } ORDER BY ASC(?order)
-          '
-				>
 
-         <template id='popover'>
 
-          <style>
-
-            .place-row {
-              display: flex; 
-              align-items: center;
-              justify-content:space-between;
-              flex-wrap: wrap;
-              overflow: hidden;
-              margin-bottom: 10px;
-            }
-
-            .text-underline {
-              text-decoration: underline;
-              cursor: pointer;
-            }
-
-          </style>
-
-            <div style="min-width:250px; font-size: 14.5px; overflow: hidden;">
-
-              <div class="place-row">
-                <div>Place: <semantic-link iri='{{place.value}}'></semantic-link></div>
-                <mp-event-trigger id='details-view-trigger' type='Component.TemplateUpdate'
-                                  data='{"iri": "{{place.value}}"}' targets='["details-view", "open-details-sidebar"]'>
-                  <div class="text-underline">details</div>
-                </mp-event-trigger>
-              </div>
-
-              <semantic-query query='PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-                                      PREFIX rs: <http://www.researchspace.org/ontology/>
-                                      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-																			PREFIX crmsci: <http://www.cidoc-crm.org/cidoc-crm/CRMsci/>
-                                      SELECT ?place (count(?object) as ?count) WHERE {
-                                        BIND(<{{place.value}}> AS ?place)
-                                        ?object crmsci:O19i_was_object_found_by ?discovery.
-                                        ?discovery crmsci:O21_has_found_at ?place.
-                                        OPTIONAL {?object rs:PX_has_main_representation|crm:P138i_has_representation ?image.}
-                                        ?object rdfs:label ?objlabel.
-
-                                      } group by ?place'
-
-                                    template='{{> entitySearchforPlace}}'
-                >
-
-                        <template id="entitySearchforPlace">
-                          <div>
-                            {{#if bindings.0.place.value}}
-                              <mp-event-trigger id='set-action__reading-add-add-frame' type='Dashboard.AddFrame' 
-                                  data='{"resourceIri": "{{bindings.0.place.value}}", "viewId": "mapEntitySearch"}' 
-                                  targets='["thinking-frames"]'>
-                                <a class="text-underline">
-                                    Explore {{bindings.0.count.value}} related entities
-                                </a>
-                        		</mp-event-trigger>
-                            {{/if}}
-                          </div>
-                        </template>
-                </semantic-query>
-            </div>
-
-          </template>
-
-        </semantic-map>
-    	</div>
-    </template>
-
-    <template id='mapEntitySearch'>
-      [[> rsp:MapEntitySearch]]
-    </template>
+ [[!--   <template id='mapResourceSearch'>
+      [[> rsp:MapResourceSearch]]
+    </template> --]]
     
   </rs-dashboard>
 </div>

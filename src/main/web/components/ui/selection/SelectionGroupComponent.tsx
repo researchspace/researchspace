@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -27,8 +28,8 @@ export interface SelectionGroupContext {
 }
 
 export const SelectionGroupContextTypes = {
-  getSelectionValue: PropTypes.any.isRequired,
-  onChange: PropTypes.any.isRequired,
+  getSelectionValue: PropTypes.any,
+  onChange: PropTypes.any,
 };
 
 /**
@@ -38,7 +39,7 @@ export const SelectionGroupContextTypes = {
  * @example
  * <mp-selection-group>
  *     <div>
- *        <mp-selection-action-choice id='Action' title='With selected ...' selection='example'>
+ *        <mp-selection-action-choice id='Action' selection='example'>
  *            [[!-- Actions --]]
  *        </mp-selection-action-choice>
  *

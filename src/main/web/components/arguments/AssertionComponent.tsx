@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -80,7 +81,7 @@ const DEFAULT_VALUE_TEMPLATE = `<div>
     {{value.value.value}}
   {{/ifCond}}
   {{#ifCond field.xsdDatatype.value "=="  "http://www.w3.org/2001/XMLSchema#anyURI"}}
-    <semantic-link uri="{{value.value.value}}" guess-repository=true></semantic-link>
+    <semantic-link iri="{{value.value.value}}" guess-repository=true></semantic-link>
   {{/ifCond}}
 </div>`;
 

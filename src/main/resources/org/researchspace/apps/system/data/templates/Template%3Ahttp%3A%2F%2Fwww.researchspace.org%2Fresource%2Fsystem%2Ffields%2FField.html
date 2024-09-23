@@ -1,6 +1,6 @@
 [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/fieldDefinitionContainer>:read:any")]]
 
-<ol class="page-breadcrumb">
+<ol class="page-breadcrumb field-page-breadcrumb">
   <li>
     <mp-link title="Home" url="/">Home</mp-link>
   </li>
@@ -13,7 +13,7 @@
   
 <mp-event-target-template-render id='kp-form-page' template='{{> template}}'>
   <template id='template'>
-    <div class="page">
+    <div class="page field-page">
 
       <div class="container-fluid adminPage-header-container">
         <bs-row class="row-center">
@@ -63,8 +63,10 @@
                   <semantic-if query='ASK {
                                         { <[[this]]> <http://www.researchspace.org/resource/system/fields/type> <http://www.researchspace.org/resource/system/type/system> . }
                                         UNION 
-                                        { <[[this]]> <http://www.researchspace.org/resource/system/fields/ontology> ?ontology .
-                                          ?ontology a owl:Ontology . 
+                                        { graph ?g { 
+                                            <[[this]]> a ?type . 
+                                            VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}
+                                          } 
                                         }
                                       }'
                                 then='{{> disableDelete}}'
@@ -105,11 +107,13 @@
                                             }
 
                                             OPTIONAL {
-                                              ?kp <http://www.researchspace.org/resource/system/fields/ontology> ?ontology .
+                                              GRAPH ?g { 
+                                                ?kp a ?type . 
+                                                VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}
+                                              }
+                                              BIND(IRI(REPLACE(STR(?g),"/context","/")) as ?ontology)
                                               ?ontology a owl:Ontology .
                                               ?ontology rdfs:label ?ontologyLabel .
-                                              ?kp a ?owlType .
-                                              FILTER (?owlType IN (owl:DatatypeProperty,owl:ObjectProperty))
                                               BIND(true as ?ontologyKp)
                                             }
                                           }'
@@ -124,13 +128,13 @@
                             <field-editor field-iri='[[this]]' 
                                           hide-form-actions=true 
                                           badge-label="system" 
-                                          badge-tooltip="System knowledge patterns can't be edited">
+                                          badge-tooltip="System knowledge patterns cannot be edited. Create a duplicate with a new name to customise it.">
                             </field-editor>
                           {{else if ontologyKp.value}}
                             <field-editor field-iri='[[this]]' 
                                           hide-form-actions=true 
                                           badge-label="{{ontologyLabel.value}}" 
-                                          badge-tooltip="Ontology knowledge patterns can't be edited">
+                                          badge-tooltip="Ontology knowledge patterns cannot be edited. Create a duplicate with a new name to customise it.">
                             </field-editor>
                           {{else}}
                             <field-editor field-iri='[[this]]'></field-editor>

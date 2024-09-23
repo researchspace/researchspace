@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -44,6 +45,7 @@ import { Category, Relation } from 'platform/components/semantic/search/data/pro
 import { DateConverter, NumericConverter } from '../slider/FacetSlider';
 
 import * as styles from './FacetBreadcrumbs.scss';
+import Icon from 'platform/components/ui/icon/Icon';
 
 export interface FacetBreadcrumbsProps {
   ast: Ast;
@@ -82,15 +84,15 @@ export class FacetBreadcrumbsComponent extends Component<FacetBreadcrumbsProps, 
 
     return (
       <div className={styles.conjunct}>
-        <div className={classNames(styles.values, 'btn')} onClick={() => this.selectRelation(relation)}>
+        <div className={classNames(styles.values, 'btn')} onClick={() => this.selectRelation(relation)} title='Open in filter list'>
           <span className={styles.relation}>{relation.label}</span>
           {disjuncts}
         </div>
         <button
-          className={classNames(styles.cancelButton, 'btn btn-xs')}
+          className={classNames(styles.cancelButton, 'btn')}
           onClick={() => this.props.actions.removeConjunct(conjunct)}
         >
-          <i />
+          <Icon iconType='round' iconName='close'/>
         </button>
       </div>
     );

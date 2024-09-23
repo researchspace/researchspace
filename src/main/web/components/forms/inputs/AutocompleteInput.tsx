@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -50,8 +51,12 @@ export interface AutocompleteInputProps extends AtomicValueInputProps {
   placeholder?: string;
   nestedFormTemplate?: string;
   minimumInput?: number;
-  showLinkResourceButton?: boolean;
   nestedFormTemplates?: nestedFormEl[];
+  /**
+   * @default false
+   * If set to true, the resource can not be edited and the Edit button will not be shown and will not possible to open the resource in a new tab
+   */
+  readonlyResource?: boolean;
 }
 
 interface SelectValue {
@@ -212,11 +217,13 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
       typeof this.props.placeholder === 'undefined'
         ? this.createDefaultPlaceholder(definition)
         : this.props.placeholder;
-
-    const showLinkResourceButton = this.props.showLinkResourceButton ?? true
-    const showEditButton = this.state.activeForm !== undefined;
-    const showCreateNewDropdown = !_.isEmpty(this.state.nestedFormTemplates) && this.state.nestedFormTemplates.length > 1 && !this.state.valueSelectedWithoutEditForm && !showEditButton;
-    const showCreateNewButton = !_.isEmpty(this.state.nestedFormTemplates) && this.state.nestedFormTemplates.length === 1 && !this.state.valueSelectedWithoutEditForm && !showEditButton;
+    
+    const isFieldValueEmpty = FieldValue.isEmpty(this.props.value)
+    
+    const showLinkResourceButton = !isFieldValueEmpty && !this.props.readonlyResource
+    const showEditButton = !isFieldValueEmpty && !this.props.readonlyResource
+    const showCreateNewDropdown = !_.isEmpty(this.state.nestedFormTemplates) && this.state.nestedFormTemplates.length > 1 && !this.state.valueSelectedWithoutEditForm && isFieldValueEmpty
+    const showCreateNewButton = !_.isEmpty(this.state.nestedFormTemplates) && this.state.nestedFormTemplates.length === 1 && !this.state.valueSelectedWithoutEditForm && isFieldValueEmpty
 
     return (
       <div className={`${CLASS_NAME}__main-row`}>
@@ -263,20 +270,19 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
           </DropdownButton>
         )}
         { showEditButton && 
-          <Button className={`${CLASS_NAME}__create-button btn-textAndIcon`} onClick={() => {this.onEditHandler(value.value as Rdf.Iri)}}>
+          <Button className={`${CLASS_NAME}__create-button btn-textAndIcon`} title='Edit' onClick={() => {this.onEditHandler(value.value as Rdf.Iri)}}>
             <Icon iconType='round' iconName='edit'/>
-            <span>Edit</span>
           </Button>
         }
-        {showLinkResourceButton && !FieldValue.isEmpty(this.props.value) && 
+        {showLinkResourceButton && 
           <ResourceLinkContainer 
             uri="http://www.researchspace.org/resource/ThinkingFrames" 
             urlqueryparam-view="resource-editor"
             urlqueryparam-open-as-drag-and-drop="true"
             urlqueryparam-resource={(this.props.value.value as Rdf.Iri).value}
           >
-            <Button className={`${CLASS_NAME}__open-in-new-tab`} title='Open in new draggable tab'>
-              <Icon iconType='round' iconName='open_in_new' />
+            <Button className={`${CLASS_NAME}__open-in-new-tab`} title='Edit in new draggable tab'>
+              <Icon iconType='rounded' iconName='read_more' symbol={true} />
             </Button>
         </ResourceLinkContainer>
         }

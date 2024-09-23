@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -117,7 +118,8 @@ export class SparqlQueryEditor extends Component<SparqlQueryEditorProps, State> 
               </Button>
             </HasPermission>
             <Button
-              bsStyle="action"
+              bsStyle="default"
+              className='btn-action'
               disabled={this.state.isExecuting}
               onClick={() => this.executeQuery(this.state.query)}
             >

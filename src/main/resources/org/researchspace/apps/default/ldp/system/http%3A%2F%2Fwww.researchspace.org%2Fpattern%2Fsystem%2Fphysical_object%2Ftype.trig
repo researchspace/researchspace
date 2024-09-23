@@ -1,0 +1,75 @@
+
+<http://www.researchspace.org/pattern/system/physical_object/type/context> {
+  <http://www.researchspace.org/pattern/system/physical_object/type> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E55_Type>;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-41c565f6c98c42c18008814e0159fd1d-e08tto;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Object type";
+    <http://www.researchspace.org/resource/system/fields/treePatterns> """{
+  \"type\": \"simple\",
+  \"schemePattern\": \"?item crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/object_type> .\"
+}"""^^<http://www.researchspace.org/resource/system/syntheticJson>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-41c565f6c98c42c18008814e0159fd1d-7d0pi9;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-41c565f6c98c42c18008814e0159fd1d-j3k54n;
+    <http://www.researchspace.org/resource/system/fields/category>
+    <http://www.researchspace.org/resource/system/category/physical_object>,
+    <http://www.researchspace.org/resource/system/category/man_made_object_search>,
+    <http://www.researchspace.org/resource/system/category/physical_object_search>,
+    <http://www.researchspace.org/resource/system/category/series_search>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-41c565f6c98c42c18008814e0159fd1d-yfxmrdj;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-41c565f6c98c42c18008814e0159fd1d-lc558;
+    <http://www.researchspace.org/resource/system/fields/domain> 
+    <http://www.cidoc-crm.org/cidoc-crm/E19_Physical_Object>,
+    <http://www.cidoc-crm.org/cidoc-crm/E20_Biological_Object>,
+    <http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object>;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-22T19:34:05.371+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-41c565f6c98c42c18008814e0159fd1d-e08tto a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    ?value a crm:E55_Type .
+    ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/object_type> .
+    ?value skos:prefLabel ?label .
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-41c565f6c98c42c18008814e0159fd1d-lc558 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    ?value a crm:E55_Type .
+    ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/object_type> .
+    ?value skos:prefLabel ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-41c565f6c98c42c18008814e0159fd1d-yfxmrdj a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  $subject crm:P2_has_type $value .
+
+  ?value a crm:E55_Type .
+  ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/object_type> .
+  ?value skos:prefLabel ?label .
+}""" .
+  
+  _:genid-41c565f6c98c42c18008814e0159fd1d-7d0pi9 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+  $subject crm:P2_has_type $value .
+  $value crm:P2i_is_type_of $subject .
+} WHERE { 
+  $subject crm:P2_has_type $value .
+  $value crm:P2i_is_type_of $subject .
+      
+  ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/object_type> .
+}""" .
+  
+  _:genid-41c565f6c98c42c18008814e0159fd1d-j3k54n a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P2_has_type $value .
+  $value crm:P2i_is_type_of $subject .
+} WHERE {}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/physical_object/type> .
+}

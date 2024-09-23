@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -24,6 +25,7 @@ module crm {
   export const iri = (s: string) => Rdf.iri(_NAMESPACE + s);
 
   export const symbolic_content = iri('P190_has_symbolic_content');
+  export const P2_has_type = iri('P2_has_type');
 }
 
 export default crm;

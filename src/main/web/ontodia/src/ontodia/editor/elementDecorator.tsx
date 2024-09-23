@@ -1,5 +1,23 @@
-import * as React from 'react';
+/**
+ * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
+ * Copyright (C) 2020, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, metaphacts GmbH
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+import * as React from 'react';
 import { EventObserver } from '../viewUtils/events';
 import { HtmlSpinner } from '../viewUtils/spinner';
 
@@ -157,21 +175,21 @@ export class ElementDecorator extends React.Component<ElementDecoratorProps, Sta
 
       if (state.deleted) {
         statusText = 'Deleting';
-        title = 'Revert deletion of the element';
+        title = 'Cancel delete';
       } else if (!state.before) {
         statusText = 'Creating new';
-        title = 'Revert creation of the element';
+        title = 'Cancel create';
       } else {
         statusText = 'Change';
-        title = 'Revert all changes in properties of the element';
+        title = 'Cancel changes';
       }
 
       if (statusText && title) {
         renderedState = (
           <div style={{display:'flex', alignItems:'center'}}>
-            <span className={`${CLASS_NAME}__state-label`}>{statusText}</span>
-            <button className={`${CLASS_NAME}__state-cancel btn btn-default`} onClick={onCancel} title={title}>
-              Cancel
+            {/* <span className={`${CLASS_NAME}__state-label`}>{statusText}</span> */}
+            <button className={`${CLASS_NAME}__state-cancel btn btn-link text-underline`} onClick={onCancel}>
+              {title}
             </button>
           </div>
         );

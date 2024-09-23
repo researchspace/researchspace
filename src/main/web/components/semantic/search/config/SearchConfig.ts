@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -759,6 +760,13 @@ export interface SemanticFacetConfig {
    * @default false
    */
   listenToContextSwitch?: boolean;
+
+  /**
+   * Hide toggle button to show/hide filters
+   *
+   * @default false
+   */
+  hideToggleButton?: boolean;
 }
 
 /**

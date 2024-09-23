@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -135,6 +136,12 @@ export interface SetManagementProps {
    * Disallow addition, deletion or changes of sets and set items.
    */
   readonly?: boolean;
+
+  /**
+   * Manage a single set which is open by default
+   */
+  singleSetIri?: string;
+
   /**
    * Suffix for local storage ID.
    */

@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -118,7 +119,7 @@ export interface State {
  *             "order" : 0
  *           }, {
  *             "iri" : "http://www.example.com/fieldDefinition/region%20label",
- *             "selectPattern" : "SELECT ?value WHERE {\n  $subject <http://www.researchspace.org/ontology/displayLabel> ?value.\n}",
+ *             "selectPattern" : "SELECT ?value WHERE {\n  $subject <http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?value.\n}",
  *             "minOccurs" : "1",
  *             "xsdDatatype" : "http://www.w3.org/2001/XMLSchema#string",
  *             "domain" : [ "http://www.researchspace.org/ontology/EX_Digital_Image_Region" ],
@@ -127,7 +128,7 @@ export interface State {
  *             "maxOccurs" : "1",
  *             "id" : "label",
  *             "label" : "region label",
- *             "insertPattern" : "INSERT { $subject <http://www.researchspace.org/ontology/displayLabel> $value} WHERE {}",
+ *             "insertPattern" : "INSERT { $subject <http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> $value} WHERE {}",
  *             "order" : 0
  *           }, {
  *             "iri" : "http://www.example.com/fieldDefinition/region%20value",

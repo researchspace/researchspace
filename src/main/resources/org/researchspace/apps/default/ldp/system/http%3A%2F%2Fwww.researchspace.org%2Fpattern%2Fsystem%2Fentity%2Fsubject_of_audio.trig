@@ -1,0 +1,78 @@
+
+<http://www.researchspace.org/pattern/system/entity/subject_of_audio/context> {
+  <http://www.researchspace.org/pattern/system/entity/subject_of_audio> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-3a5bafe8d21e4cd78a2aaee5b20ca4ea-ywsfbt;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/entity>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-3a5bafe8d21e4cd78a2aaee5b20ca4ea-rxrbvuo;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.w3.org/2000/01/rdf-schema#label> "audio";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://iflastandards.info/ns/fr/frbr/frbroo/F26_Recording>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-3a5bafe8d21e4cd78a2aaee5b20ca4ea-icltrs;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-3a5bafe8d21e4cd78a2aaee5b20ca4ea-vvs1yg;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-3a5bafe8d21e4cd78a2aaee5b20ca4ea-scquzf;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-05-14T16:07:00.630+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-3a5bafe8d21e4cd78a2aaee5b20ca4ea-rxrbvuo a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+    $subject crm:P129i_is_subject_of $value . 
+    $value crm:P129_is_about $subject .
+} WHERE {
+    $subject crm:P129i_is_subject_of $value . 
+    $value crm:P129_is_about $subject .
+
+    ?value a frbroo:F26_Recording .
+	?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_audio> .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-3a5bafe8d21e4cd78a2aaee5b20ca4ea-vvs1yg a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    ?value a frbroo:F26_Recording .
+	?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_audio> .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-3a5bafe8d21e4cd78a2aaee5b20ca4ea-ywsfbt a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    ?value a frbroo:F26_Recording .
+	?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_audio> .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-3a5bafe8d21e4cd78a2aaee5b20ca4ea-icltrs a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+	$subject crm:P129i_is_subject_of $value . 
+  
+    ?value a frbroo:F26_Recording .
+	?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_audio> .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-3a5bafe8d21e4cd78a2aaee5b20ca4ea-scquzf a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+    $subject crm:P129i_is_subject_of $value . 
+    $value crm:P129_is_about $subject .
+} WHERE {}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/entity/subject_of_audio> .
+}

@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -98,7 +99,7 @@ export class CreateResourceDialog extends Component<CreateResourceDialogProps, C
               disabled: this.isLoading() || this.isSuccess(),
               onClick: this.onSaveBtn,
             },
-            this.isLoading() ? 'Saving...' : 'Create'
+            this.isLoading() ? 'Saving...' : 'Save'
           )
         )
       )
@@ -171,13 +172,13 @@ export class CreateResourceDialog extends Component<CreateResourceDialogProps, C
         return null;
       case States.LOADING:
         return createElement(Spinner);
-      case States.SUCCESS:
+/*       case States.SUCCESS:
         return D.div(
           {
             className: 'alert alert-success text-center',
           },
-          'New LDP resource has been created successfully!'
-        );
+          'Resource created'
+        ); */
       case States.ERROR:
         return D.div(
           {

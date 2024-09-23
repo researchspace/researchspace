@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -19,6 +20,7 @@
 
 import { Props, createElement } from 'react';
 import * as D from 'react-dom-factories';
+import * as classNames from 'classnames';
 import * as PropTypes from 'prop-types';
 import * as _ from 'lodash';
 import * as Either from 'data.either';
@@ -84,6 +86,8 @@ interface BaseConfig extends ControlledProps {
    */
   query: string;
 
+  className?: string;
+
   /**
    * Number of rows to show on the one page
    *
@@ -92,7 +96,7 @@ interface BaseConfig extends ControlledProps {
   numberOfDisplayedRows?: number;
 
   /**
-   * <semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is applied when the query returns no results
+   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is applied when the query returns no results
    */
   noResultTemplate?: string;
 
@@ -148,7 +152,7 @@ interface ColumnConfig extends BaseConfig {
  */
 interface RowConfig extends BaseConfig {
   /**
-   * <semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> for the whole table row. Can be used to have visualizations different from the standard, e.g grid of thumbnails.
+   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> for the whole table row. Can be used to have visualizations different from the standard, e.g grid of thumbnails.
    * The template has access to all projection variables for a single result tuple.
    *
    * In addition to data from the sparql results cell template has access to current row index with "__semanticTableIndex" property and total table size with "__semanticTableSize" property.
@@ -215,7 +219,9 @@ export class SemanticTable extends Component<SemanticTableProps, TableState> {
       return createElement(ErrorNotification, { errorMessage: this.state.error });
     } else {
       return D.div(
-        { className: 'semantic-table-holder' },
+        { 
+          className: classNames(this.props.className, 'semantic-table-holder')
+         },
         this.state.isLoading
           ? createElement(Spinner)
           : this.state.data && !SparqlUtil.isSelectResultEmpty(this.state.data)

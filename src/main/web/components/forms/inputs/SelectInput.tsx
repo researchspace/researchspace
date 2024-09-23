@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -53,8 +54,6 @@ export interface SelectInputProps extends AtomicValueInputProps {
   
   placeholder?: string;
   
-  showLinkResourceButton?: boolean;
-  
   /**
    * List of form templates used to create a new instance
    * Each form element needs to have a form template and a label
@@ -94,7 +93,12 @@ export interface SelectInputProps extends AtomicValueInputProps {
    *
    */
   nestedFormTemplates?: nestedFormEl[];
-  showEditButton?: boolean;
+  
+  /** 
+   * @default false
+   * If set to true, the resource can not be edited and the Edit button will not be shown and will not possible to open the resource in a new tab
+   */
+  readonlyResource?: boolean;
 }
 
 interface State {
@@ -324,11 +328,11 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
     const inputValue = this.props.value;
     const selectedValue = FieldValue.isAtomic(inputValue) ? inputValue : undefined;
 
-    const showLinkResourceButton = this.props.showLinkResourceButton ?? true
+    const showLinkResourceButton = !this.props.readonlyResource
 
-    const showEditButton = this.state.activeForm !== undefined;//selectedValue !== undefined && (this.props.showEditButton ?? true)
-    const showCreateNewDropdown = !_.isEmpty(this.state.nestedFormTemplates) && this.state.nestedFormTemplates.length > 1 && !this.state.valueSelectedWithoutEditForm && !showEditButton;
-    const showCreateNewButton = !_.isEmpty(this.state.nestedFormTemplates) && this.state.nestedFormTemplates.length === 1 && !this.state.valueSelectedWithoutEditForm && !showEditButton;
+    const showEditButton = selectedValue !== undefined && !this.props.readonlyResource // this.state.activeForm !== undefined && !this.props.readonlyResource;
+    const showCreateNewDropdown = !_.isEmpty(this.state.nestedFormTemplates) && this.state.nestedFormTemplates.length > 1 && !this.state.valueSelectedWithoutEditForm && !selectedValue;
+    const showCreateNewButton = !_.isEmpty(this.state.nestedFormTemplates) && this.state.nestedFormTemplates.length === 1 && !this.state.valueSelectedWithoutEditForm && !selectedValue;
 
     const placeholder =
       typeof this.props.placeholder === 'undefined'
@@ -363,9 +367,8 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
           </DropdownButton>
         )}
         { showEditButton && 
-          <Button className={`${SELECT_TEXT_CLASS}__create-button btn-textAndIcon`} onClick={() => {this.onEditHandler(selectedValue)}}>
+          <Button className={`${SELECT_TEXT_CLASS}__create-button btn-textAndIcon`} title='Edit' onClick={() => {this.onEditHandler(selectedValue)}}>
             <Icon iconType='round' iconName='edit'/>
-            <span>Edit</span>
           </Button>
         }
         {showLinkResourceButton && !FieldValue.isEmpty(this.props.value) && 
@@ -375,8 +378,8 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
               urlqueryparam-open-as-drag-and-drop="true"
               urlqueryparam-resource={(this.props.value.value as Rdf.Iri).value}
             >
-              <Button className={`${SELECT_TEXT_CLASS}__open-in-new-tab`} title='Open in new draggable tab'>
-                <Icon iconType='round' iconName='open_in_new' />
+              <Button className={`${SELECT_TEXT_CLASS}__open-in-new-tab`} title='Edit in new draggable tab'>
+                <Icon iconType='rounded' iconName='read_more' symbol={true} />
               </Button>
           </ResourceLinkContainer>
         }

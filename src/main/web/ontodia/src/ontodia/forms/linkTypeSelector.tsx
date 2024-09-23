@@ -1,5 +1,23 @@
-import * as React from 'react';
+/**
+ * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
+ * Copyright (C) 2020, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, metaphacts GmbH
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+import * as React from 'react';
 import { MetadataApi } from '../data/metadataApi';
 import { LinkModel, ElementModel, sameLink } from '../data/model';
 import { PLACEHOLDER_LINK_TYPE } from '../data/schema';
@@ -142,11 +160,11 @@ export class LinkTypeSelector extends React.Component<Props, State> {
     );
     return (
       <div className={`${CLASS_NAME}__control-row`}>
-        <label>Link Type</label>
+        <label>Connection type</label>
         {fatLinkTypes ? (
           <select className="ontodia-form-control" value={value} onChange={this.onChangeType} disabled={disabled}>
             <option value={-1} disabled={true}>
-              Select link type
+              Select connection type
             </option>
             {fatLinkTypes.map(this.renderPossibleLinkType)}
           </select>

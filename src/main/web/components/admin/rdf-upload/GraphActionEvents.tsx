@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -24,7 +25,7 @@ export interface GraphActionEventData {
    * Trigger when RDF file has been successfully uploaded
    */
   'GraphAction.Success': { }
-  'GraphAction.Delete': { }
+  'GraphAction.Delete': { iri: string };
   'GraphAction.Update': { }
 }
 const event: EventMaker<GraphActionEventData> = EventMaker;

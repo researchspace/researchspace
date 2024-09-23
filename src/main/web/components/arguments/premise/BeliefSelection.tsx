@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -168,7 +169,7 @@ export class BeliefSelection extends React.Component<BeliefSelectionProps, State
           'field-selection-overlay',
           <OverlayDialog onHide={this.onCancelBelief} title="Field Selection" type="modal" show={true}>
             <p>
-              Select Field for <ResourceLinkComponent uri={resource.value} guessRepository={true} />:
+              Select Field for <ResourceLinkComponent iri={resource.value} guessRepository={true} />:
             </p>
             {this.fieldSelection(belief)}
           </OverlayDialog>

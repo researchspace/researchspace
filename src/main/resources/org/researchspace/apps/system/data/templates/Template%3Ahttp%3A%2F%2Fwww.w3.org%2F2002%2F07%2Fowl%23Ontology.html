@@ -66,8 +66,14 @@
                             <b><semantic-link iri='{{bindings.0.subject.value}}' class="text-underline;"></semantic-link></b>?
                           </p>
                           <semantic-query query='SELECT (count(?kp) as ?count) WHERE {
-                                                    ?kp <http://www.researchspace.org/resource/system/fields/ontology> <{{bindings.0.subject.value}}> .
-                                                    ?kp a <http://www.researchspace.org/resource/system/fields/Field> .                                                 
+                                                    BIND(<{{bindings.0.subject.value}}> AS ?ontology)
+                                                                BIND(IF(STRENDS(STR(?ontology), "/"), STR(?ontology), CONCAT(STR(?ontology), "/")) AS ?ontologyURI)
+                                                                BIND(IRI(CONCAT(STR(?ontologyURI), "context")) AS ?ontologyContext)
+                                                                ?kp rdf:type <http://www.researchspace.org/resource/system/fields/Field> .
+                                                                graph ?ontologyContext { 
+                                                                    ?kp a ?type . 
+                                                                    VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}
+                                                                }                                             
                                                   }'
                                             template='{{> template}}'
                             >

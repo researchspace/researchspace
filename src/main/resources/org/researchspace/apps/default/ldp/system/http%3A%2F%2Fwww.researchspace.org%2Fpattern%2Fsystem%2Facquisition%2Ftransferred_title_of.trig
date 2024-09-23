@@ -1,0 +1,102 @@
+
+<http://www.researchspace.org/pattern/system/acquisition/transferred_title_of/context> {
+  <http://www.researchspace.org/pattern/system/acquisition/transferred_title_of> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-260f785f57634b0fa206eb6f685d8821-2ox4r;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-260f785f57634b0fa206eb6f685d8821-1u04c9;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/acquisition>;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-260f785f57634b0fa206eb6f685d8821-ul75wt;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Transferred title of";
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-260f785f57634b0fa206eb6f685d8821-f7mjsn;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E8_Acquisition>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E70_Thing>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-260f785f57634b0fa206eb6f685d8821-bw3bx;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-03T18:33:39.649+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-260f785f57634b0fa206eb6f685d8821-ul75wt a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E70_Thing .
+  { 
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+	} UNION {
+      ?value skos:prefLabel ?label .
+	} UNION {
+      ?value crm:P190_has_symbolic_content ?label .
+	}
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label) 
+  LIMIT 10 """ .
+  
+  _:genid-260f785f57634b0fa206eb6f685d8821-2ox4r a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E70_Thing .
+  { 
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+	} UNION {
+      ?value skos:prefLabel ?label .
+	} UNION {
+      ?value crm:P190_has_symbolic_content ?label .
+	}
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-260f785f57634b0fa206eb6f685d8821-1u04c9 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+	$subject crm:P24_transferred_title_of $value .
+    $value crm:P24i_changed_ownership_through $subject .
+} WHERE {
+	$subject crm:P24_transferred_title_of $value .
+    $value crm:P24i_changed_ownership_through $subject .
+      
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E70_Thing .
+  { 
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+	} UNION {
+      ?value skos:prefLabel ?label .
+	} UNION {
+      ?value crm:P190_has_symbolic_content ?label .
+	}
+}""" .
+  
+  _:genid-260f785f57634b0fa206eb6f685d8821-bw3bx a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+	$subject crm:P24_transferred_title_of $value .
+      
+   	?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E70_Thing .
+  { 
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+	} UNION {
+      ?value skos:prefLabel ?label .
+	} UNION {
+      ?value crm:P190_has_symbolic_content ?label .
+	}
+}""" .
+  
+  _:genid-260f785f57634b0fa206eb6f685d8821-f7mjsn a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+	$subject crm:P24_transferred_title_of $value .
+    $value crm:P24i_changed_ownership_through $subject .
+} WHERE {}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/acquisition/transferred_title_of> .
+}

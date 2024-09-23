@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -40,7 +41,7 @@ export class ConfirmationDialog extends React.Component<Props, {}> {
             <Button bsStyle="default" onClick={(e) => onConfirm(false)}>
               Cancel
             </Button>
-            <Button bsStyle="action" onClick={(e) => onConfirm(true)}>
+            <Button bsStyle="default" className='btn-action' onClick={(e) => onConfirm(true)}>
               Confirm
             </Button>
           </div>

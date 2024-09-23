@@ -1,3 +1,22 @@
+/**
+ * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
+ * Copyright (C) 2020, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, metaphacts GmbH
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 import * as React from 'react';
 
 import { MetadataApi } from '../data/metadataApi';
@@ -426,7 +445,7 @@ export class EditorController {
         suggestProperties={this.options.suggestProperties}
       />
     );
-    this.showDialog({ target, dialogType, content, onClose });
+    this.showDialog({ target, dialogType, caption: 'Resource connections', content, onClose });
   }
 
   showEditEntityForm(target: Element) {
@@ -453,7 +472,7 @@ export class EditorController {
     ) : (
       <EditEntityForm view={this.view} entity={modelToEdit} onApply={onSubmit} onCancel={onCancel} />
     );
-    this.showDialog({ target, dialogType, content, onClose: onCancel });
+    this.showDialog({ target, dialogType, content, caption: 'Edit resource', onClose: onCancel });
   }
 
   showEditElementTypeForm({
@@ -543,7 +562,7 @@ export class EditorController {
         onCancel={onCancel}
       />
     );
-    this.showDialog({ target, dialogType, content, caption: 'Create new connection', onClose: onCancel });
+    this.showDialog({ target, dialogType, content, size: { width: 300, height: 350 }, caption: 'Create new connection', onClose: onCancel });
   }
 
   showEditLinkForm(link: Link) {
@@ -584,12 +603,12 @@ export class EditorController {
         onCancel={onCancel}
       />
     );
-    const caption = this.temporaryState.links.has(link.data) ? 'Create new Connection' : 'Edit Connection';
+    const caption = this.temporaryState.links.has(link.data) ? 'Create new connection' : 'Edit connection type';
     this.showDialog({
       target: link,
       dialogType,
       content,
-      size: { width: 300, height: 160 },
+      size: { width: 300, height: 180 },
       caption,
       onClose: onCancel,
     });
@@ -616,7 +635,7 @@ export class EditorController {
         />
       ),
       size,
-      caption: 'Edit Link Label',
+       caption: 'Edit connection label',
       offset: { x: 25, y: -size.height / 2 },
       calculatePosition: () => {
         const { x, y, width, height } = link.labelBounds;

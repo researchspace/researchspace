@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -32,6 +33,9 @@ module crm {
   export const P82a_begin_of_the_begin = iri('P82a_begin_of_the_begin');
   export const P82a_end_of_the_end = iri('P82a_end_of_the_end');
   export const P138i_has_representation = iri('P138i_has_representation');
+  export const P2_has_type = iri('P2_has_type');
+  export const P1_is_identified_by = iri('P1_is_identified_by');
+  export const P190_has_symbolic_content = iri('P190_has_symbolic_content');
 }
 
 export default crm;

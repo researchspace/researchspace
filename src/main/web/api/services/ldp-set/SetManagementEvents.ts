@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -20,7 +21,7 @@
 import { EventMaker } from 'platform/api/events';
 
 export interface SetManagementEventData {
-  'Components.SetManagement.SetAdded': void;
+  'Components.SetManagement.SetAdded': {containerIri: string};
   'Components.SetManagement.SetRenamed': void;
   'Components.SetManagement.SetRemoved': void;
   'Components.SetManagement.SetRemovedFromView': void;

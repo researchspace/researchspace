@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -48,9 +49,16 @@ import { InternalLink } from './InternalLink';
 import * as styles from './TextEditor.scss';
 import { ResourceBlock } from './ResourceBlock';
 import Icon from '../ui/icon/Icon';
+import { trigger } from 'platform/api/events';
+import * as TextEditorEvents from './TextEditorEvents'
 
 
 interface TextEditorProps {
+  /**
+   * Used as source id for emitted events.
+   */
+  id?: string;
+
   /**
    * Text document IRI to load.
    */
@@ -147,6 +155,8 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
                 frbroo:F2_Expression.
         ?__resourceIri__ crm:P190_has_symbolic_content ?__label__ .
         ?__resourceIri__ crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative> .
+        ?__resourceIri__ mp:fileName ?__fileName__.
+        ?__resourceIri__ mp:mediaType "text/html".
       } WHERE {
       }
     `,
@@ -345,6 +355,13 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
   private onFocus = () => {
   }
 
+  private onRefresh = () => {
+    trigger({
+      eventType: TextEditorEvents.NarrativeRefreshed,
+      source: this.props.id
+    })
+  } 
+
   componentDidMount() {
     if (this.props.documentIri) {
       const documentIri = Rdf.iri(this.props.documentIri);
@@ -389,6 +406,9 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
                   editor={this.editorRef}
                   options={this.state.availableTemplates}
                   onDocumentSave={this.onDocumentSave}
+                  showDropdown={!!this.state.documentIri}
+                  showRefresh={!!this.state.documentIri}
+                  onRefresh={this.onRefresh}
           />
           }
             <div className={styles.sidebarAndEditorHolder}>
@@ -483,7 +503,8 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
   }
 
   private fetchDocument(documentIri: Rdf.Iri): Kefir.Property<[string, string]> {
-    return this.getFileManager().getFileResource(documentIri)
+    return this.getFileManager()
+      .getFileResource(documentIri)
       .flatMap(resource => {
         const fileUrl = FileManager.getFileUrl(resource.fileName, this.props.storage);
         return requestAsProperty(
@@ -525,7 +546,8 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
 
   private onDocumentSave = () => {
     this.setState({saving: true});
-    const { value, title } = this.state;
+    const { value, title, documentIri} = this.state;
+    const isEdit = !!documentIri
 
     const html = new Html({ rules: SLATE_RULES });
     const content =
@@ -563,7 +585,7 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
                                  '__file__':Rdf.iri(html_file) }
         )
       );
-    console.log(resourceQuery);
+    
     this.cancellation.map(
       this.getFileManager().uploadFileAsResource({
         file,
@@ -576,8 +598,15 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
     ).observe({
       value: resource => {
         this.setState({documentIri: resource.value, saving: false});
+        trigger({
+          eventType: isEdit ? TextEditorEvents.NarrativeUpdated : TextEditorEvents.NarrativeCreated,
+          source: this.props.id,
+          data: {
+            iri: this.state.documentIri
+          }
+        })
       },
-      error: error => { console.log('error'); console.log(error) },
+      error: error => { console.error(error) },
     });
   }
 }

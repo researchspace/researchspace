@@ -1,0 +1,75 @@
+
+<http://www.researchspace.org/pattern/system/actor/possesses_right/context> {
+  _:genid-3e580107f3e345dfb3e90d2b0e0c63cc-lh3c19 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    ?value a crm:E30_Right .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label) 
+  LIMIT 10 """ .
+  
+  <http://www.researchspace.org/pattern/system/actor/possesses_right> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/actor>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-3e580107f3e345dfb3e90d2b0e0c63cc-hj51nd;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E30_Right>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Possesses right";
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-3e580107f3e345dfb3e90d2b0e0c63cc-lh3c19;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E39_Actor>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-3e580107f3e345dfb3e90d2b0e0c63cc-2vkbq9;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-3e580107f3e345dfb3e90d2b0e0c63cc-y85et2;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-3e580107f3e345dfb3e90d2b0e0c63cc-i27yip;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-10T11:33:17.130+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-3e580107f3e345dfb3e90d2b0e0c63cc-2vkbq9 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+	$subject crm:P75_possesses $value . 
+      
+    ?value a crm:E30_Right .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+
+}""" .
+  
+  _:genid-3e580107f3e345dfb3e90d2b0e0c63cc-i27yip a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+	  $subject crm:P75_possesses $value . 
+    $value crm:P75i_is_possessed_by $subject .
+} WHERE {
+	  $subject crm:P75_possesses $value . 
+    $value crm:P75i_is_possessed_by $subject .
+     
+    ?value a crm:E30_Right .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-3e580107f3e345dfb3e90d2b0e0c63cc-hj51nd a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+	$subject crm:P75_possesses $value . 
+    $value crm:P75i_is_possessed_by $subject .
+} WHERE {}""" .
+  
+  _:genid-3e580107f3e345dfb3e90d2b0e0c63cc-y85et2 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    ?value a crm:E30_Right .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/actor/possesses_right> .
+}

@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -82,8 +83,8 @@ export class RepositoryManager extends Component<{}, State> {
           {this.renderRepositories()}
           {repositoryToEdit && (
             <Button
-              bsStyle="action btn-textAndIcon"
-              className={styles.RepositoryButton}
+              bsStyle="default"
+              className={`${styles.RepositoryButton} btn-action btn-textAndIcon`}
               onClick={() => this.setState({ repositoryToEdit: undefined })}
             >
               <Icon iconType='round' iconName='add_box' />

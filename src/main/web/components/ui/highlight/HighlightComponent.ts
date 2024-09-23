@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -51,7 +52,7 @@ export class HighlightComponent extends Component<Props, {}> {
     }
     const label = this.props.children;
     const { className, style } = this.props;
-    return D.span({ className, style }, ...highlight(label, this.props.highlight, this.props.highlightProps));
+    return D.span({ className, style, title:label }, ...highlight(label, this.props.highlight, this.props.highlightProps));
   }
 }
 

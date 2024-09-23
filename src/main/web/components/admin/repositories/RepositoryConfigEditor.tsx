@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -186,8 +187,8 @@ export class RepositoryConfigEditor extends Component<Props, State> {
             )}
 
             <Button
-              bsStyle="action"
-              className={styles.ActionButton}
+              bsStyle="default"
+              className={`${styles.ActionButton} btn-action`}
               disabled={!this.isEditMode() && this.getNewRepositoryIDValidation() !== 'success'}
               onClick={this.onSubmitConfig}
             >

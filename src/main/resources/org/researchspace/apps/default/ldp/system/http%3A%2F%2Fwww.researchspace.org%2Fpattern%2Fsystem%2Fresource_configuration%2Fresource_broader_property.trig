@@ -1,0 +1,41 @@
+
+<http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property/context> {
+  _:genid-44da63cad8be45de9b9ff838b773cc02-ksuek9 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
+  $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property> ?value.
+}""" .
+  
+  <http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property>
+    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
+      <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/resource_configuration> ;
+     
+    <http://www.researchspace.org/resource/system/fields/treePatterns> """{
+  \"type\": \"full\",
+  \"rootsQuery\": \"PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\\nPREFIX rs: <http://www.researchspace.org/ontology/>\\nPREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>\\nSELECT DISTINCT ?item ?label ?hasChildren WHERE {\\n  ?item a ?type .\\n  FILTER(?type in (rdf:Property, owl:ObjectProperty))\\n      \\n  FILTER(NOT EXISTS { ?item rdfs:subPropertyOf ?parent. })\\n \\n  ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.\\n  FILTER (lang(?label) = \\\"en\\\")\\n      \\n  OPTIONAL { ?child rdfs:subPropertyOf ?item. }\\n  BIND(BOUND(?child) AS ?hasChildren)\\n  OPTIONAL { BIND(?label AS ?order) }\\n}\\nORDER BY (?order) (?label)\",
+  \"childrenQuery\": \"PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\\nPREFIX rs: <http://www.researchspace.org/ontology/>\\nPREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>\\nSELECT DISTINCT ?item ?label ?hasChildren WHERE {\\n  ?item a ?type .\\n  FILTER(?type in (rdf:Property, owl:ObjectProperty)) .\\n  \\n ?item rdfs:subPropertyOf ?parent.\\n      \\n  ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.\\n    FILTER (lang(?label) = \\\"en\\\")\\n  \\n  OPTIONAL { ?child rdfs:subPropertyOf ?item. }\\n  BIND(BOUND(?child) AS ?hasChildren)\\n  OPTIONAL { BIND(?label AS ?order) }\\n}\\nORDER BY (?order) (?label)\",
+  \"parentsQuery\": \"PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\\nPREFIX rs: <http://www.researchspace.org/ontology/>\\nPREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>\\nSELECT DISTINCT ?item ?parent ?parentLabel WHERE {\\n  ?item a ?type .\\n  FILTER(?type in (rdf:Property, owl:ObjectProperty)) .\\n  \\n ?item rdfs:subPropertyOf ?parent.\\n  ?parent ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?parentLabel.\\n  FILTER (lang(?parentLabel) = \\\"en\\\")\\n}\",
+  \"searchQuery\": \"PREFIX bds: <http://www.bigdata.com/rdf/search#>\\nPREFIX skos: <http://www.w3.org/2004/02/skos/core#>\\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\\nPREFIX rs: <http://www.researchspace.org/ontology/>\\nPREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>\\nSELECT DISTINCT ?item ?label ?score ?hasChildren WHERE {\\n  ?item a ?type .\\n  FILTER(?type in (rdf:Property, owl:ObjectProperty)) .\\n      \\n  ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.\\n FILTER (lang(?label) = \\\"en\\\")\\n      \\n  ?label bds:search ?__token__;\\n    bds:minRelevance \\\"0.3\\\";\\n    bds:relevance ?score;\\n    bds:matchAllTerms \\\"true\\\".\\n  OPTIONAL { ?child rdfs:subPropertyOf ?item. }\\n  BIND(BOUND(?child) AS ?hasChildren)\\n  OPTIONAL { BIND(?label AS ?order) }\\n}\\nORDER BY DESC (?score) (?order) (?label)\\nLIMIT 200\"
+}"""^^<http://www.researchspace.org/resource/system/syntheticJson>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-44da63cad8be45de9b9ff838b773cc02-ldr77;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-44da63cad8be45de9b9ff838b773cc02-1n83v3;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property>;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.w3.org/2000/01/rdf-schema#comment> "Enter a property that define the relation with a broader resource (e.g. skos:broader, crm:P127_has_broader_term, crm:P89_falls_within, etc.)";
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-44da63cad8be45de9b9ff838b773cc02-ksuek9;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Broader resource property";
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2023-10-17T11:32:00.915+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-44da63cad8be45de9b9ff838b773cc02-ldr77 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> "DELETE { $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property> $value } WHERE { $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property> $value }" .
+  
+  _:genid-44da63cad8be45de9b9ff838b773cc02-1n83v3 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> "INSERT { $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property> $value} WHERE {}" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property> .
+}

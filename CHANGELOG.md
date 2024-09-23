@@ -1,0 +1,1227 @@
+- Merge remote-tracking branch 'refs/remotes/origin/rs-new-design' into rs-new-design
+- WIP search table view: custom column from Resource configuration
+- Merge branch 'build-docker/pre-release' into rs-new-design
+- Merge remote-tracking branch 'refs/remotes/origin/rs-new-design' into rs-new-design
+- Set search configuration to default when no search categories available
+- Merge pull request #337 from researchspace/build-docker/encode-fix
+- Fix webpack 5 regression with html-to-react module.
+- WIP search page
+- WIP search grid and list style
+- Added className prop to SemanticTable component
+- WIP search page design and style
+- New hideToggleButton prop in SemanticSearchFacet
+- modified style to search facets
+- SemanticTreeInput added css class for selection-empty or selection-full
+- WIP search page
+- fixed viewId in allResourcesSearchContent
+- added open-resource-on-click to <semantic-tree-input>
+- WIP new allResourceSearch view
+- small fixes
+- Modified UI of SelectionActionChoirceComponent to render the single actions without a dropdown container (with selected..)
+- added Permission restriction for System Vocabularies
+- Add trigger to notify the DashboardComponent when a KM is first created
+- Renaming of Frame Tabs when new resource is created
+- Undo edit global.prop
+- Merge branch 'rs-new-design' into build-docker/pre-release
+- Edit component documentation
+- Edit global.prop
+- Query fix for ontology labels
+- css fix
+- SASS - fixed deprecated / for division outside of calc()
+- WIP search page
+- Fixed Finder Preview view
+- Added new KP categories for search to ResourceConfig
+- Enable search facets based on a KP category specified in the Resource Configuration
+- Merge remote-tracking branch 'refs/remotes/origin/rs-new-design' into rs-new-design
+- Fix import of deprecated library that broke setBindings
+- New KP categories for search
+- KP cleaning
+- Fixed KP category mapping
+- WIP search
+- Added search links to drag and drops in rsp:FormAssetSidebar
+- Added class='upload_icon' to placeholder-item-template="<div class='placeholder-item'> upload icon
+- added new dashboard view "all-resources-search"
+- small fixes
+- Fixed ui for Open in new draggable tab
+- fixed sass warning for -calc()
+- Fixed table placeholder in new resource modal in header
+- modified modal for ConfirmationDialog.tsx
+- Merge rs-new-design
+- Change label pattern for Image Annotation
+- WIP for adding facets to search pages based on a Resource's configuration
+- Add support for sets to be added and removed from clipboard, but not deleted from the system
+- WIP to add more data when a SN is created/saved
+- Change mapping for SN and KM to F2_Expression
+- Modify data load in trigger for search pages
+- Fix queries to support both owl:Class and rdfs:Class
+- Add customLabel prop to enable better naming of the frametabs depending on the content and resourceIri
+- Add the image annotation KPs to the item card template
+- Add the image annotation KPs in all the relevant templates
+- KPs for image annotation using Image Graph Authoring
+- Merge pull request #336 from researchspace/gretty-reload-bugfix
+- Merge branch 'rs-new-design' into gretty-reload-bugfix
+- working on Search page
+- Review ThinkingFrames views
+- Fixed ORDER BY in QueryDefaults.ts for semantic-lazy-tree
+- Added dropdown with KP categories to ResourceConfigForm search
+- Updated system kp list
+- header cleaning
+- small KPs fixes
+- Added Publication form
+- Modified mapping for Audio/Video/3D from F21 to F26_Recording
+- test work on Search for Finder
+- Fix full redeploy on a default template edit.
+- Add support for ontologies in *.rdfs format
+- added search fields to Resource config form
+- added permission restriction to Resource config frame
+- Small ui fixes
+- small fixes on forms
+- Modified crm:P1_is_identified_by/rs:PX_has_file_name for images/docs with new mapping crmdig:L60i_is_documented_by/crmdig:L11_had_output/rs:PX_has_file_name
+- Modified mapping for EX_File in Image, Doc, Video, Audio, 3D
+- small fixes on forms
+- updated NestedFormTemplates
+- Added urlqueryparam-open-as-drag-and-drop="true" to autocomplete, select-input, treePickerInput resource link
+- small fixes
+- Fixed on form sidebar
+- Merge pull request #333 from researchspace/new-tab-with-drag-and-drop
+- Merge branch 'rs-new-design' into new-tab-with-drag-and-drop
+- FIxed sass deprecated warnings
+- Merge branch 'rs-new-design' into new-tab-with-drag-and-drop
+- created new sidebar for entity media in all forms
+- fixed splitpane style at component level to be coherent in the entire system
+- recompileOnSourceChange = false on build.gradle
+- Modified mapping for Video/Audio/3D from RSO classes to frbroo:F21_Recording_Work
+- Fixed style for ontology property search modals
+- Merge branch 'rs-new-design' into new-tab-with-drag-and-drop
+- Merge pull request #335 from researchspace/fix-style-bundle
+- Fix webpack style bundle optimization.
+- Add modal with class/properties ontology details
+- Merge remote-tracking branch 'refs/remotes/origin/rs-new-design' into rs-new-design
+- Fix for the typescript update in Helper function (removing this)
+- working on visual item forms
+- Fix + on the dashboard, unique id problem
+- Merge pull request #325 from aindlq/node-lts-support
+- Merge branch 'rs-new-design' into node-lts-support
+- Change id for the tabs in the DashboardComponent
+- Merge branch 'rs-new-design' into node-lts-support
+- Merge pull request #334 from researchspace/check-if-item-is-already-in-tabset
+- Merge branch 'rs-new-design' into check-if-item-is-already-in-tabset
+- Fix fallback scenarios for Autocomplete and SelectInput
+- Merge remote-tracking branch 'refs/remotes/origin/rs-new-design' into rs-new-design
+- Add Cidoc CRM properties
+- Align resource label KPs across the whole instance
+- working on visual item forms
+- working on Visual item forms
+- added viewId check
+- Check it a selected item is already in the tabset
+- Merge remote-tracking branch 'refs/remotes/origin/rs-new-design' into rs-new-design
+- Identify the scheme for an entity to pass a parameter to the Edit button
+- small style changes to form header
+- replace primary_title with primary_appellation in forms and KPs
+- Show Edit button when loading a value with Select/Autocomplete
+- Merge remote-tracking branch 'refs/remotes/origin/rs-new-design' into rs-new-design
+- Small changes to ResourceEditor
+- Fix edit button for Select/Autocomplete when the entity doesn't have a unique matching ResourceConfiguration
+- modified KPs with new appellations
+- Add tab with drag and drop
+- working on Form titles and appellations
+- Merge pull request #330 from researchspace/login-page-image-fix
+- Merge branch 'rs-new-design' into login-page-image-fix
+- working on appellation forms
+- working on identifier and appellations in forms
+- Move image that is used on login screen to /assets/no_auth.
+- Ignore resources that are included in css files that point to /assets.
+- working on Inf.Obj and subClasses forms
+- added Authority document form
+- removed skos:Concept from Type vocabularies
+- modified style for documents and resources tab in forms
+- fixes on Dashboard component gridView and hidden view types
+- Merge pull request #324 from aindlq/linked-viewes
+- latest system KPs list
+- working on Information object forms
+- working on Type/Material forms
+- Merge remote-tracking branch 'refs/remotes/origin/rs-new-design' into rs-new-design
+- Small changes to skos and organisation vocab
+- working on Type forms
+- working on Thing forms
+- Use the same css classname pattern that was used with webpack 4.
+- Merge
+- Don't reload jetty on every js/css change.
+- Small edit
+- Add label KPs and adjust the label service to include the new label KPs
+- Update webpack and related build dependencies.
+- Extend ontodia configurations for KM
+- Add a switch for Entity form to handle fallback from entities created via KM
+- Resetting to use label service
+- Support builds with nodejs 20 (current LTS verison).
+- working on thing forms
+- working on thing forms
+- Entity appellations refactoring
+- working on forms
+- Merge remote-tracking branch 'refs/remotes/origin/rs-new-design' into rs-new-design
+- WIP on KM configuration
+- Remove rdfs:subClassOf* and sparql pattern restrictions
+- Fix download file/image
+- added forms in NestedFormTemplates arrays
+- Fixed order in KPs Value Set Pattern to be not case sensitive
+- Autocomplete input - fix list order in KPs to be not case sensitive - added "i" parameter
+- Merge remote-tracking branch 'refs/remotes/origin/rs-new-design' into rs-new-design
+- Remove ?test projection
+- Change fallback entity to E1 when resource configuration does not exist
+- fixed Entity appellation KP
+- forms - small fixes
+- working on user form
+- working on user form
+- working on actor forms
+- added actor form KPs
+- working on actor forms
+- working on system forms
+- working on forms
+- Remove AW from ephedra
+- Merge from rs-new-design
+- Merge branch 'rs-new-design' of researchspace:researchspace/researchspace into rs-new-design
+- working on event forms
+- Merge with master
+- Add Secrets test
+- Restrict  upload/delete of ontologies for certain users
+- WIP federation to an RS repository
+- REST SAIL
+- working on event forms
+- working on forms
+- working on forms
+- added custom modalId for nestedForm modals in select and autocomplete
+- working on Place form
+- working on forms
+- Completed Entity - Timespan - Place forms
+- Entity form: fixed KPs select / added new design for resource tab
+- small template fixes
+- Merge pull request #320 from researchspace/sail
+- Merge pull request #319 from researchspace/secretResolver
+- Fix description field in TNA api import
+- Kps modified for new autocomplete
+- working on form image design
+- kp fix
+- updated autocomplete to show dropdown button and to accept nestedFormTemplates as prop
+- working on object import from API
+- working on object import from API
+- Add TNA API search without the actions
+- Re-enable linked viewes in the Thinking Frames.
+- Removed prefixes in query in SelectInput to test build
+- Add prefixes explicitly
+- working on resource Import from API
+- Add rdf prefix
+- updated SelectInput component to display dropdown
+- Resource Config: modified permissions for system configs
+- working on E1 form
+- Modified KP fro Image Name
+- Fixed ontology Class search: Influence trig and query for string ranges
+- working on entity form
+- Fixed KPs for object part/components
+- Fixed style on system configuration page
+- modified vocabulary scss to resourceEditView
+- added Timespan Label to ui.prop
+- Merge pull request #322 from researchspace/update-input-selector
+- Small fix, modify output parameter to get value of the sql db column
+- Added new prop nested-form-templates to semantic-form-select-input in forms
+- small fixes on SelectInput.tsx
+- semantic-form-select-input / nested-form-templates prop: label used as modal title, replacing label from KPdefinition
+- TNA API fix
+- Merge branch 'rs-new-design' into update-input-selector
+- fixed style for dropdown in semantic-form-select-input
+- added transformation config
+- Add services/descriptors for TNA API
+- Fix typo
+- Modify queries to include accession number
+- Add TNA API to the REST APIs
+- updated SelectInput component to display dropdown
+- Extend rest apis description for VAM and MET to include accessnumber
+- Merge remote-tracking branch 'refs/remotes/origin/rs-new-design' into rs-new-design
+- Fix language select for multilingual inputs
+- added material-symbols to header newResource view
+- added "material-symbols": "^0.16.0"
+- added missing system KPs
+- fix on resourceConfig icons
+- working on resource icons
+- latest system KPs list
+- modified newResource modal content fro header button
+- modified cidoc influence label
+- Add CRM Influence Ontology
+- Merge conflicts resolution
+- Add service configurations and templates for MET API and V&A API
+- new resource btn created in header
+- crm:E22_Human-Made_Object fix
+- added forms for object import from APIs
+- working on object import from APIs
+- ui.prop added preferredLabels for object title and preferred id
+- Added filter by Range in OntologyPropertiesSearch and fixed style
+- added form for Biological object
+- Add ontology property has ontology KP
+- completed titles for all cidoc events
+- working on events title
+- Merge of changes
+- Add facets and improvements to the Ontology Properties Search
+- Add sparql restriction patterns to Entity, Activity, etc
+- Small typo
+- Fix for ResourceEditor when resource configuration also has membership property enabled
+- Add V&A api services to ephedra
+- working on Event forms
+- working on Event forms
+- Add SQL Sail and refactor Abstract
+- Update SecretTests ti handle EnvironmentSecretResolver
+- Add secrets from environment + unit test
+- activity type KPs
+- working on Activity form
+- Working on Activity form
+- added handleClickOutside to SemanticTreeInput
+- removed close-dropdown-on-click-outside='true' in rsp:OntologyPropertiesSearch
+- modified CRMsci prefix in OntologyPropertiesSearch
+- working on event forms
+- small fix in OntologyPropertiesSearch
+- Fix treePatterns exists test
+- Merge remote-tracking branch 'refs/remotes/origin/rs-new-design' into rs-new-design
+- Improve selection and search of Ontology Properties Search
+- Enable ItemChangeSelected to be broadcast when more than one item selected, Enable event when an initialSelection of items exists
+- Modify namespace for crmsci across the whole system
+- Modify restrictionPattern for Actor and Entity
+- working on event forms
+- Fixed dateTime style
+- working on forms
+- working on object form
+- Working on Object/Collection/Series forms
+- Fixed collapsible render in object form
+- replaced tree-inputs in form with select-input when needed
+- testing on OntologyPropertySearch
+- Removed title from Resource config form tabs
+- Fixed E1 URI
+- Fixed rs-tabs default key
+- Modify component default query to work for P2_has_type
+- Remove custom owl:classes for semantic narrative, sets, kms, etc
+- Add a way to update the visibility data in the container of a given set
+- Change default modelling for Semantic Narrative and edit queries in templates where the old modelling was used
+- Change querying for sets visible in the Clipboard
+- Remove testing for child containers temporarily
+- working on OntologyPropertiesSearch
+- working on Forms
+- Added NEW button and linkResource btn to autocompleteInput, SemanticTreeInput and SelectInput
+- Fixed metadata in modal form
+- Fixed nested-form-template with {{{raw}}}}
+- removed btn-input-inline css class
+- fixed style for ErrorNotification
+- Merge branch 'rs-new-design' of researchspace:researchspace/researchspace into rs-new-design
+- small typo fix
+- Fix merge issues
+- Add remove from view action for a set
+- Error notification - fixed style
+- form style fixes
+- fixes on forms
+- Added composite inline style
+- modified style for "semantic-form-errors" component
+- changed style of cardinality support add button
+- Fixed appellation mappings to align to cidoc-cmr 7
+- Fixed style for header dropdown-menus
+- new collection form
+- working on object form
+- new css class  form-inline-inputs
+- working on object form
+- new style for collapsible in form
+- Fixed Place dropdowns to include organisations
+- new Object form created
+- fix in exhibition form
+- added css class to mp-collapsible-div
+- added switch to Group form
+- added switch relations across actors, activities and place
+- Fixed Finder preview refresh
+- small typo fixes
+- Fixed Tabs.tsx to include css class and default case when only 1 tab
+- updated forms with new rs-tabs
+- Fix Project form
+- Merge pull request #315 from researchspace/tab-form
+- Modify form to use {{navigationMenu}} graph only for inserts
+- testing switch for actors
+- Add custom prefLabel for RS entities
+- Fixed existing forms to work in Vocabularies
+- Merge branch 'rs-new-design' into tab-form
+- working on Actor forms
+- added tab source to the event and saved to the localStorage
+- working on Actor forms
+- Merge branch 'rs-new-design' into tab-form
+- working on actor forms
+- working on Actor, Group, Person forms
+- generalised rsp:FormEntityRecord to include wikidata import
+- added new mapping for Set, Semantic narrative and knowledge map
+- working on Person form
+- Fix check/unckeck sections error
+- Remove KPs generation from admin template
+- Add KPs generation to follow the LDP loading process
+- Adding Wikidata Entities Search to REST services
+- working on default system forms
+- moved localstorage logic into a separate class
+- select default tab on form save
+- working on forms: Person, Event, Activity
+- working on Person form
+- KPs fixes
+- modified upload icon to google material
+- fixed Timespan mapping in forms
+- working on Person form
+- fixed label in resourceConfiguration trig
+- small fixes on forms
+- added config for Object and Person
+- created Exhibition form
+- fix on nested-form-template mode=new
+- added btn to open PDF files in browser
+- fix in mergePrintSections to print sections by id
+- Fixed creation metadata entry in forms
+- Fixed sparqlLabel for image annotation form
+- Fixed style for nested forms
+- working on Default System Forms
+- created new Project form
+- modified EXDigitalImage mapping in rso
+- fix on forms:SemanticNarrative
+- fixes header of SimpleCollectionBrowser resource
+- fixed Organisation form
+- reinstated image fetch from URS in image form
+- small fixes
+- added image view to OSM results
+- Enable Entity Editor and typo fix
+- created forms:KnowledgeMap
+- added forms:SemanticNarrative
+- new ResourceConfig for semanticNarrative and KnowledgeMap
+- RS Ontology: added language @en to rdfs:label
+- RS ontology refactoring
+- small style fixes
+- Added description field in Resource Configuration Form to explain what the resource type is
+- modified 'vocabulary' labels to 'vocabulary / authority'
+- removed broader property from Finder form
+- cleaned preferredLabels in ui.prop
+- Modified design of semantic-form-file-input component to import docs/images
+- added advanced search btn to finder
+- Merge pull request #314 from researchspace/rs-new-design-lazy-tree-input-label-fix
+- Merge branch 'rs-new-design' into rs-new-design-lazy-tree-input-label-fix
+- added Refresh btn to Clipboard
+- working on Finder - activity example
+- use labelPattern, when defined, to retrieve label value
+- Fix finder container style
+- working on Finder
+- fixed error in KPCategory.trig
+- working on new Finder configuration
+- working on Finder setup in resourceConfig
+- added customSource to CheckboxInput
+- added new form for resource vocabulary config
+- working on ResourceConfigForm
+- Merge pull request #313 from researchspace/rs-new-design-tree-label-fix
+- Merge branch 'rs-new-design' into rs-new-design-tree-label-fix
+- fixed label on semantic tree input component
+- working on Resource Finder form
+- style fixes
+- working on new Finder
+- small css style fixes
+- working on new Finder and Resource Context page Sidebar
+- KP generator fix
+- KP generation checks to recreate kps automatically if deleted
+- Add domain and range to rso properties
+- REST API change to handle URI params not just query string
+- V&A general and object rest api services (draft 1)
+- added resourceLabelPattern option to be rendered instead of {{label}} in rsp:SimpleCollectionBrowser
+- working on Place form and Form metadata
+- working on Entity creation/modification/import from OSM
+- New Place Import from OSM (work in progress)
+- Added new system forms for Place and Organisation
+- fieldEditor style fix
+- added KPs generator to RS homepage
+- working on user form
+- small fixes on rsp:SimpleCollectionBrowser
+- test update label
+- working on User form
+- Small fix
+- Remove unnecessary code
+- small fixes LDPResource page
+- Add container checks to only show import patterns, delete container, or select patterns when relevant
+- Add delete KPs for delete ontology action, add ldp container creation for an uploaded ontology, provide info message when uploading an ontology, and fix keyword search
+- Remove saving of LDP assets
+- Extend delete functionality, so for a deleted ontology, its knowledge patterns are also deleted
+- Create LDP container for an uploaded ontology
+- Skip default loading ontologies, configurations and vocabularies when another version already exists
+- Remove references to ontologyContainer as this is automatically created when uploading an ontology
+- Add delete section to automatic KPs
+- Refresh tree on new item in rsp:SimpleCollectionBrowser
+- small fixes
+- fixed skos_related KP
+- Update README.md
+- Update README.md
+- Update README.md
+- Update README.md
+- Update README.md
+- Update README.md
+- Update README.md
+- Update README.md
+- Update README.md
+- Update README.md
+- Update README.md
+- Update README.md
+- Update README.md
+- Update README.md
+- small fixes
+- created User form
+- small fixes
+- modified use of P2type in default forms
+- Modified default forms to be used in scheme or as Entity editor
+- Namespace fix
+- Fixed spinner style
+- modified variable names in rsp:CollectionBrowserContent and all related templates - to make it coherent with ResourceConfigForm
+- replaced frameId variable with viewId
+- added check to membership for vocabulary in Resource Config
+- Forced 'use as vocabulary' insert/delete in membership KP
+- Added {{viewId}} to vocabulary Ids
+- Created new System Vocabulary page
+- modified URI namespace for System vocabularies
+- small fixes
+- added 'Membership warning message' in Resource config form
+- New design for import of vocabularies
+- Modify ontologies page and relevant components to support upload, delete and automatic Kps generation creation and removal
+- working on Vocabularies UI
+- working on Vocabularies
+- fixes buttons for LDPcontainer actions
+- Fixed layout and style for OntologySearch pages
+- added proxies for New ontology Upload
+- reinstated modified ontologies pages and fix of Print error
+- Fix broken PrintView by undoing changes
+- Add filter for duplicates created from an ontology KP, Add delete button to the ontologies page
+- Modify fields with system type
+- added default template for ontology json-renderer
+- modified ontologies pages
+- added missing labels in ontologies
+- added label to CRMinf CMRdig
+- removed Update btn and visualised badge for KP system and KP from Ontology
+- Removed DELETE btn for KPs from Ontologies
+- added label to RS ontology
+- Add autogeneration of KPs to the ontologies in the system
+- added new System vocabularies for:
+- small fixes
+- replaced deprecated 'mp-resource-link-container' with 'semantic-link-container'
+- added popover to system badges
+- modified design of KP page and form to allow visualisation of KP with type system (in ldp/asset)
+- added type <http://www.researchspace.org/resource/system/fields/type> <http://www.researchspace.org/resource/system/type/system> to KPs in ldp/asset folder
+- small css changes
+- Extend current kps generator to provide a count of kps generated
+- Merge remote-tracking branch 'refs/remotes/origin/rs-new-design' into rs-new-design
+- Edit Help:ComponentTutorial
+- modified documentation for KP page
+- Merge remote-tracking branch 'refs/remotes/origin/rs-new-design' into rs-new-design
+- Add new help pages
+- Add ontology filter to KPs page
+- modified UI of info messages in admin pages
+- style modified in KP page
+- fixed SimpleCollectionBrowser UI and Refresh button
+- added LDPLoad for configurations rep
+- added type <http://www.researchspace.org/resource/vocab/resource_type/KP_category> to KP categories
+- added new repository for system configuratins
+- added Category voc. link to Knowledge Pattern form
+- working on Resource Configuration form
+- 1. <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_type> modified into <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> 2. removed Type to Type and Term config
+- added new KPs for Resource Configuration form
+-  <http://www.researchspace.org/pattern/system/resource_configuration/resource_label> modified to <http://www.researchspace.org/pattern/system/resource_configuration/resource_name>
+- added style for documentation section
+- added image annotation form
+- small fixes on drop-area style
+- working on dropArea style
+- added category 'system' to all KPs in ldp/assets
+- added new image form
+- small fixes
+- added new forms:Type
+- added new forms:Term
+- removed existing entity forms
+- added new forms:Document
+- switch fix
+- Fixed error for close button in debug modal
+- Update README.md
+- working on system ontologies, resource configs, KPs and related forms
+- Add default ontologies
+- working on rsp:ResourceConfigForm
+- ldp/asset and ldp/ontology .trig file update
+- Update README.md
+- pull requests
+- merge fix
+- Merge branch 'master' into rs-new-design
+- Merge pull request #309 from researchspace/semantic-form-tree-picker-updated
+- reinstated default pull_request_template
+- pull request template test
+- Merge branch 'master' into semantic-form-tree-picker-updated
+- Merge pull request #311 from researchspace/add_pull_request_template
+- Create pull_request_template.md
+- #added scheme-page-button-config to in semantic-form-tree-picker-input
+- Add comment about vocabularies repository exception
+- Add KP Generator and exception for LDPAssetsLoader to skip vocabularies when already loaded
+- WIP on resource configurations, ontologies and vocabularies
+- Fixed skos KPs category
+- working on Authority page - forms and result table
+- new system KPs added in ldp/asset folder
+- removed console.log in html pages
+- removed console.log in html pages
+- css fixes on admin pages
+- css refinements to admin pages
+- small css fixes to admin pages
+- Icon migration: from .fa .iconmoon .rs-icon to Google Material Icons
+- fixed TemplateEndpoint.java
+- Merge branch 'master' into rs-new-design
+- Merge pull request #249 from DawsonMacPhee/multilingual-internationalization
+- Merge branch 'master' into multilingual-internationalization
+- icon css fixes
+- Installed material-icons as npm package
+- replaced material icon html with new Icon component
+- new Icon component
+- changed color to removable-badge
+- css button fixes
+- cleaning KPs in src/main/resources/org/researchspace/apps/default/ldp
+- modified css for Header and Dropzone area
+- fixed project table in HP
+- modified homepage link and style
+- new HomePage link
+- fixed flexlayout font-family
+- Fixed sass syntax error in flexlayout.scss
+- Merge branch 'master' into rs-new-design
+- reinstated authority manager KPs due to storage issue
+- Merge pull request #297 from researchspace/pull-request-template
+- Update pull_request_template.md
+- added pull_request_template
+- Merge pull request #290 from researchspace/frame-system-improvements
+- modified header links for new frame system homepage
+- added default home-page-iri to rsp:ThinkingFrames
+- rsp:ThinkingFrames modified with new icons
+- removed TNA API and connected files
+- Merge branch 'build-docker/conservation' into frame-system-improvements
+- Merge pull request #275 from fkraeutli/feature/split-helper
+- Merge pull request #264 from researchspace/repository
+- Fix event type
+- Remove test turtleString
+- fix on rdf-graph-store
+- Update README.md
+- Fix digilib library
+- Enable allowForceSuggestion prop available for the semantic tree picker
+- Added events to Authorities page for create new graph, import graph, delete graph
+- style fix for dropdown tree buttons
+- Merge with remote
+- Fix broken upload of rdf files for Authories
+- modified style on delete modal of GraphActionLink
+- fix on RdfUpload
+- dropzone component: moved inline style to css class
+- modified btn-grey button css
+- Enable custom delete overlay with custom trigger event on delete
+- mirador annotation-tooltip modified with buttons
+- css changes to mirador buttons
+- Modify RdfUpload to accept targetGraph prop without using the AdvancedOptions form, yet allowing User input via AdvancedOptions to overwrite a value set within a template
+- Modified DashboardComponent frame id to avoid format issues
+- small css fix
+- added gap to form action buttons
+- Update jgit.
+- SparqlDownloadComponent:
+- RdfUpload component:
+- digilib version update
+- Merge pull request #283 from researchspace/lib-update
+- Update Libraries
+- Update ResourceEditorForm.ts
+- imported and modified style for frames-flexlayout
+- added entity-editor frame label
+- entity editor fix
+- Frame label
+- modified style to Date facetSlider for search
+- renamed login username as Email
+- Add split helpepr
+- added homepage prop as main view for dashboard component
+- small css fix for dropdown nested modal
+- Merge pull request #274 from researchspace/bugfix/form-save-event
+- bugfix. Wrong function was triggered when form recieves Save event.
+- bugfix. Wrong function was triggered when form recieves Save event.
+- Update README.md
+- src/main/resources/org/researchspace/apps/default/data/templates/http%3A%2F%2Fwww.researchspace.org%2Fresource%2FAuthorityConfigForm.html
+- small design and style fixes for Admin pages
+- migration to material Icons
+- temp global.prop change
+- changed Table results for AuthorityEditor
+- working on project form
+- working on new Project form
+- replaced table btns with icons
+- fixed style for narrative toolbar
+- New style for Knowledge map toolbar
+- new KM toolbar testing
+- Fixed new authority modal
+- Imported KPs for Navigation menu/views/KPs in Authority config
+- small css changes for buttons
+- small dropdown fix
+- style/KPs changes for skos:Concept form and image upload
+- bugfix. Handlebars props were not properly propagated in nested input forms.
+- system KPs modified for authority manager
+- small css fixes
+- no-results style for Hp project table
+- working on hp projects
+- working on new homepage
+- Fixed style for Authority config from
+- modified info btn for semantic form inputs
+- clipboard style fixes
+- fixed style for table
+- fixed style for clipboard
+- new homepage
+- fixes on clipboard style
+- modified css class names for resourceManager (not rs-vocabulary- anymore)
+- testing for login and homepage
+- style changes for frames
+- testing style on flexlayout frames
+- modified Authority Config template from rsp:SimpleCollectionBrowser
+- working on authority manager style
+- testing style for vocabulary manager
+- ui changes for input placeholders
+- testing material-design icons
+- small css fixes
+- clipboard/details sidebar cleaning
+- modified header style
+- modified style for modals
+- added new finder
+- working on new RS navbar
+- small css fixes
+- WIP. Finder
+- WIP. Finder
+- css fix
+- css cleaning and fixes for new design
+- Merge branch 'new-entity-viewer' into rs-new-design
+- WIP. Properly handle P2 for entity configs.
+- error fixes
+- Merge branch 'new-entity-viewer' into rs-new-design
+- Merge branch 'rs-new-design' of github.com:researchspace/researchspace into rs-new-design
+- small ui changes
+- new header style
+- style changes
+- working on new style for navigation sidebar + frames
+- working on navigation sidebar style
+- created new sidebar.hbs for main template render
+- new color style fixes
+- testing new default color palette for ResearchSpace
+- working on new style fixes
+- modified resource template grid
+- modified style for DateFormatSelector
+- images cleaned and moved in folder webapp/assets/images/
+- modified search query builder style, to make template responsive in new frame layout
+- working on style for query builder in structured search
+- custom style for timeline
+- small css fixes
+- fixed style for open set
+- small changes for icon buttons
+- modified style for Search page, Facets, buttons, popover
+- working on search page style
+- working on new style for search page
+- fixed ontodia style for new frame layout
+- modified style for Semantic Narrative in new frame layout
+- modified mirador icons opacity
+- modified Mirador viewer style for new frame layout
+- small fixes for Resource page style
+- new style for Resource Page in new frame layout
+- clipboard fixes for open set
+- modified style for details sidebar in new frames layout
+- modified clipboard style for new frame layout
+- modified Clipboard style for new frame flexlayout
+- added new style for TF flexlayout frames
+- added frame system bottom bar
+- WIP. New layout for resource context page
+- Merge pull request #267 from researchspace/blazegraph-optimizer-fix
+- blazegraph optimization. move VALUES clause to the root of labels/thumbnails query.
+- Merge branch 'frame-system-style' into rs-new-design
+- Merge pull request #262 from DawsonMacPhee/add-autofocus-parameter
+- Merge pull request #261 from DawsonMacPhee/search-result-context-bug-fix
+- Merge branch 'blazegraph-optimizer-fix' into build-docker/conservation
+- Ignore test for now.
+- blazegraph optimization. move VALUES clause to the root of labels/thumbnails query.
+- Temporary disable managed file name validation.
+- New API WIP.
+- Fix #263.
+- Parameterized autofocus for simple-search component
+- Fixed semantic search result context bug
+- Ignore mabbox sail test, for now.
+- Merge pull request #258 from researchspace/log4j-rce-fix
+- Update log4j version to mitigate RCE. Fixes #257.
+- Merge pull request #254 from researchspace/build-docker/fix-timeline-group-template
+- Federation (#227)
+- S3 basic implementation with AWS SDK 1.x (version 2) (#256)
+- small ui changes
+- bugfix. semantic-timeline. Group template was not properly applied.
+- Added anonymous users for the keycloak sso (#248)
+- Added required getLang methods in template contexts
+- Added site language translation (i18n) support
+- new header style
+- style changes
+- working on new style for navigation sidebar + frames
+- working on navigation sidebar style
+- created new sidebar.hbs for main template render
+- new color style fixes
+- testing new default color palette for ResearchSpace
+- working on new style fixes
+- modified resource template grid
+- modified style for DateFormatSelector
+- images cleaned and moved in folder webapp/assets/images/
+- modified search query builder style, to make template responsive in new frame layout
+- working on style for query builder in structured search
+- custom style for timeline
+- small css fixes
+- fixed style for open set
+- small changes for icon buttons
+- modified style for Search page, Facets, buttons, popover
+- working on search page style
+- working on new style for search page
+- fixed ontodia style for new frame layout
+- modified style for Semantic Narrative in new frame layout
+- modified mirador icons opacity
+- modified Mirador viewer style for new frame layout
+- small fixes for Resource page style
+- new style for Resource Page in new frame layout
+- clipboard fixes for open set
+- modified style for details sidebar in new frames layout
+- modified clipboard style for new frame layout
+- modified Clipboard style for new frame flexlayout
+- added new style for TF flexlayout frames
+- added frame system bottom bar
+- Merge pull request #245 from researchspace/new-frames
+- New Thinking Frames component. WIP.
+- Merge pull request #244 from researchspace/ontodia-events
+- KM. Ontodia fix link options deserialization.
+- KM. Ontodia, add ability to highlight elements.
+- KM. Resize card only when template is rendered.
+- KM. bugfix. Propagate link-settings when creating KM from the query.
+- KM. Resize card only when type templates are loaded.
+- Merge pull request #243 from researchspace/ui-fixes
+- semantic-form. Ability to trigger form save with event.
+- semantic-table. Propagate __semanticTableIndex and __semanticTableSize properties to tuple-template.
+- handlebars. Add plus/minus helper functions.
+- Emmit events from semantic tree input.
+- semantic-table. properly reset current page when query is updated.
+- semantic-form. load default values even if selectPattern is not specified.
+- semantic-form. Ability to make inputs readonly.
+- Fix IIIF image id URL encoding.
+- OSM/PlaceForm small changes
+- Event fixes to work with Frames
+- Fix authority editor in frames.
+- Propagate item label in the lazy tree template.
+- Add handlebars not function.
+- Add more conditionals to handlebars functions.
+- Links fixes to open KMs and SNs in a frame
+- modified login error message
+- added css classes for tag
+- ?__useruri__ removed from header and dashboard queries
+- font comment
+- modified style for composite form without header
+- Add default query to form search component.
+- Add progress bar component from bootstrap.
+- Add helper class to form composite input when it's header is not rendered.
+- ui changes for item card, entity editor, details sidebar view and Assets page
+- fixed FacetBreadcrumbs style
+- added Entity Editor to admin page
+- modified header icon order
+- added btn style for tables
+- removed user page link from header
+- btn-grey for semantic form fix
+- new style for header dropdowns
+- fixed form actions
+- added tag style
+- modified detail sidebar style
+- style for header text dropdown
+- entity editor style fixes
+- List all projects.
+- form style fixes
+- added Project link + small css fixes
+- small style fixes on entity editor sidebar
+- Asset form upload.
+- small style fixes
+- small TF info text change
+- small ui fixes for observation, icons, buttons
+- created new design for Asset page
+- ui testing
+- testing new asset page
+- Configuring Map Entity Search (example)
+- Customised Entity Search to use Summary category and open in the TF
+- new templates for map search visualisation
+- small fix
+- small style fix
+- small fixes for documentation instance
+- small ui fixes
+- small ui fixes
+- ui changes for inputs and buttons
+- modified form style
+- new navbar and small ui fixes
+- small fixes at templates associated to new navbar
+- temp solution for dropdown with icon and label as title
+- modified navbar design, added new icons for navigation
+- fixed icon cards duplicates
+- removed breadcrumb from Thinking Frame
+- Typo
+- Fix to templates for SNs and KMs in TF
+- Group of files for a NavBar that opens everything in TFs
+- Merge pull request #242 from researchspace/build-docker/gradle-update
+- Update gretty to don't use jcenter.
+- Merge pull request #230 from researchspace/narratie-readonly-link-fix
+- Semantic Narrative. Fix links in readonly mode.
+- Merge pull request #228 from researchspace/ui-fixes
+- added new icons for citation and publication
+- Merge pull request #220 from researchspace/ui-changes
+- Change IIIF proxy configuration.
+- Ability to navigate to specific entity type in the thinking frames.
+- #removed 'configuration' in projectDashboard
+- Merge pull request #219 from researchspace/build-docker/storage-username-bugfix
+- Properly resolve username when creating storage object metadata.
+- Merge pull request #217 from researchspace/build-docker/git-clone-bugfix
+- Merge pull request #218 from researchspace/fix-colon-prefix
+- Fix prefixed IRI resolution in TemplateService when local name contains ":" symbol.
+- git storage. Set branch when clonning repository.
+- Merge pull request #216 from researchspace/build-docker/entity-editor
+- Merge pull request #192 from researchspace/build-docker/saved-search
+- Enabled Open in New Window for Downloading files
+- Added media-type i.e. content-type parameter
+- Added open file for download
+- Added open file mode to the file storage endpoint
+- Add rs-file-remove and rs-file-download components.
+- Add X-Forwarded-* headers in the proxy servlet.
+- Unify form config.
+- Fix delete button action
+- Fix ids in collection templates
+- Fix overflow for entity editor in thinking frames.
+- Ability to use EntityManager in thinking frames.
+- Restrict nested form modal dialog to the parent form container.
+- Authority/Entity Manager Breadcrumbs navigation small fix
+- Add default search template for EntityManager.
+- bugfix. Fix html-to-react to not parse empty string in the html attribute value as 0 number.
+- urlParam helper. add ability to get unescaped value with [[urlParam 'name' escape=false]]
+- When clicking on the label in the semantic-form open KP page in the new window.
+- Add ability to change label pattern in the entity manager config form.
+- Make labels in form clickable.
+- Entity Manager templates.
+- Make sure that mp-collapsible-div can be used in semantic-forms.
+- Adds ability to trigger event when mp-event-trigger component is mounted.
+- Ability to use nested form by reference.
+- Add debug output for semantic-form sparql persistence.
+- Add turtle/trig prettyPrint option to sparql servlet.
+- Merge pull request #215 from researchspace/git-storage-clone
+- git storage. Clone git repository if it is not present locally.
+- Exclude hamcrest from wiremock.
+- Merge pull request #211 from researchspace/federation
+- RESTSail refactoring. Allow optional bindings in the RESTSail.
+- Implement OSM Nominatim search using RESTSail.
+- RESTSail POST #199.
+- Merge pull request #213 from researchspace/migrate-from-jcenter
+- Use gretty overlay functionality for blazegraph custom vocabularies.
+- Migrate dependency resolution from JCenter/Bintray.
+- Merge pull request #187 from researchspace/federation
+- Generic RESTSail implementation.
+- Add parameter to specify initial state for semantic-search.
+- Merge pull request #185 from researchspace/openlayers_update
+- Merge pull request #186 from researchspace/readonly-repo
+- openlayers update first commit
+- Ability to connect to sparql repository in readonly mode.
+- Merge pull request #182 from researchspace/bugfix/number-highlight
+- Merge pull request #177 from researchspace/build-docker/oauth2
+- Use the same permission resolver for SSO, as we use for ini/ldap realm.
+- Merge pull request #179 from researchspace/language-switch
+- bugfix. mp-highlight was crashing on number highlight.
+- Add language switch to default templates.
+- Refactor implementation of the SSO with SAML2 and OIDC (Keycloak).
+- Merge pull request #170 from researchspace/geonames
+- Prevent default test query for SailRepositories
+- Merge pull request #158 from researchspace/build-docker/docker-branch-tag
+- Push stable docker tag for every branch.
+- Merge pull request #156 from researchspace/build-links
+- Add download links to readme.
+- Merge pull request #96 from researchspace/additional-subjects
+- Fixes #76. Additional subjects for mp-field-visualization component.
+- Merge pull request #151 from researchspace/set-animation
+- Fix reordering animation for sets.
+- Merge pull request #150 from researchspace/fix-set-reordering
+- Fixes #36. Fix set reordering.
+- Merge pull request #148 from researchspace/build-docker/fix-ci
+- Replace usage of deprecated set-env in github CI.
+- Merge pull request #134 from researchspace/css-small-fixes
+- small css fixes for help pages
+- css cleaning
+- removed #{$prefix} from css classes names
+- small fixes for Mirador viewer style
+- resource Page - small style fixes
+- added new css variables needed for RS app customisations
+- added TF Dashboard animation
+- css fixes
+- fixed TF Dashboard grid layout
+- Fix build.
+- Merge pull request #125 from researchspace/css-refactoring
+- converted Projects link in ProjectDashboard to 'Configuration'
+- Fixed scrolling behaviours in observations and vocabulary forms
+- Add missing KPs for image observation feature.
+- Add KPs for image observation and vocabulary manager.
+- bundles-manifest
+- working on documentation page layout
+- sass files cleaning
+- new documentationLayout template created
+- modified 'confirm' buttons style to btn-success
+- small css fixes
+- modal style cleaning
+- minor css cleaning
+- migrated style for Vocabulary manager
+- cleaned style for CodeMirror
+- migrated style for ImageAnnotationWorkspace
+- cleaned and merged style for page-editor and page-layout
+- minor sass files cleaning
+- resource Page - style cleaning and merge from app
+- help pages - minor fixes
+- merged style for objectRepresentationsWidget
+- merged style for: OntodiaContents, Dashboard, DateFormatSelector, Facet, FacetBreadcrumbs, ItemSelector, SearchSummary
+- migrating TF app style to ontodia component style
+- migrated style for Semantic Narrative from app to TextEditor.scss
+- migrated mirador style from app folder
+- migrated Project Dashboard style from app folder
+- small css fixes on admin pages
+- cleaned and migrated userPage style from app
+- fixed style for sidebar in sparqlEndpoint page
+- migrated and cleaned style from app sidebars to related components (split-pane, set-management)
+- migrated style from app for Sparql Endopoint page
+- help pages cleaning
+- Fixed breadcrumb links for all HELP pages
+- migrated style from app for Project pages (KM, images, Narrative)
+- migrated app style for all admin pages in related components
+- modified style for admin pages: dataImport, FileUpload, Fields, Ontologies
+- modified style for alert component
+- small css fixes
+- modified sass files import
+- admin pages - small style fives
+- working on admin pages style
+- cleaned and merged style for react-select and forms
+- working on .field-editor style
+- merged and cleaned style for clearable-input and removable-badge
+- merged and cleaned style for react-select control
+- merged style for .form-control
+- style cleaning
+- defined $font-family-base as css variable; replaced all font-family values with $font-family-base
+- Migrating and cleaning style from styling/app to styling folder
+- Migrating and cleaning style from styling/app to styling folder
+- #Moved fonts from styling/app to ~platform/styling/fonts.css
+- added inline style to dropArea message wrapper
+- Object Observations: added tutorial videos in info documentation modal
+- Drag and drop input: modified card dimensions and style
+- TF Dashboard: fixed responsive style for Drop resource icon
+- TF dashboard: modified views layout (Search, view and authoring sections), added help link and drop resource icon
+- fixed background color for KM collapsed sidebar
+- migrated style for KM toolbar from app to Toolbar.scss
+- migrated style for TF cards from app to Dashboard component style
+- Dashboard component (TF view):
+- cleaned and migrated ontodia style from app to component style src/main/web/ontodia
+- added css variables for PageSection
+- Vocabulary manager: fixed page responsive style
+- added variables for breadcrumb and header height
+- fixed dashboard activity table overflow
+- cleaned css variables
+- modified active resource image icon in ObservationWorkspace
+- added popover message to ObservationWorkspace - no image icon
+- fixed TF cards hover style
+- Fixed Dashboard semantic-link in header.hbs
+- fixed Project pages container padding
+- Merge pull request #129 from researchspace/wait-for-repository
+- Merge pull request #128 from researchspace/ldp-force
+- Merge pull request #127 from researchspace/inline-template-component
+- Merge pull request #126 from researchspace/tree-picker-improvements
+- tree input. Ability to override tree-patterns from the Knowledge Pattern.
+- Add inline-template component that can be used to load dynamic templates at runtime.
+- Ability to force LDP assets loading from the app.
+- Don't start the platform until all repositories are reachable.
+- Authority Manager and Image Observation templates.
+- Merge pull request #123 from researchspace/build-docker/observation-feature
+- Small fixes.
+- make mp-rdf-upload configurable, see RdfUpload.tsx.
+- Remove lags when editing templates with page editor.
+- Knowledge Map. Make sure that new element is not overlayed when put on canvas.
+- mp-overlay-dialog can now be opened and closed with events.
+- Style changes.
+- semantic-query. check for template named `template` in the inner scope, if template property is not defined.
+- IIIF viewer imporvements.
+- mp-event-trigger. Add ability to trigger event on mouse hover.
+- Make configuration for mp-event-proxy more flexible.
+- Add new <semantic-lazy-tree> component.
+- Add new <two-side-panel> UI component.
+- Add [[userUri]] template helper.
+- New `semantic-form-drag-and-drop-input` input component.
+- semantic-form improvements
+- Fix semantic-search generation from Knowledge Patterns.
+- Properly add RDF prefixes to graph-store endpoint output.
+- Merge pull request #107 from researchspace/semantic-form-diff-bug
+- Merge pull request #115 from researchspace/error-in-default-templates
+- Fix error in rdfs:Resource and owl:Class templates.
+- Merge pull request #114 from researchspace/zip-build
+- Add digilib log4j config file to reduce noice in the zip bundle logs.
+- Fix ZIP build.
+- Don't duplicate log4j config files, use the one that are already in classpath.
+- Update README.md
+- semantci-form. Allow to edit resources in autocomplete input with nested forms.
+- Fix semantic-form initialization.
+- Merge pull request #106 from researchspace/custom-apps-migration
+- * minor templates and css changes due to latehokusai custom-app cleaning * modified search-tabs order * fixed clipboard cards position * added container to EntityEditor buttons * moved Project Users from rsp:ProjectDashboard to a new template rsp:ProjectUsers * fixed login title position * added frame for Map visualisation in rsp:ThinkingFrames * modified login page design and style * check and replace colors in sass files to allow use of css variables in custom-app * fixed bootstrap row margins in resource header template * added login form min-width * Removed inline color style from SparlEndpoint.html * turn RS project .svg to webfont icons * removed image .svg links, replaced with rs-icons (webfonts) * disabled resource tabs not in use * updated RS webfonts to include entity placeholders * added noImageTemplate to ObjectRepresentationsWidget.ts * replaced .svg with icons in rsp:ResourceContent <rs-object-representations> * added css variable for footer background color * modified sidebar detail-type font * added backup copy of rs-icons-no-images .svg * added iconmoon style in adminPanel * Fixed header title max-width * fixed error in css variable name
+- Merge pull request #105 from researchspace/restyling
+- Add SPARQL migrations scritp for 4.0.0-saturn.
+- Fix reloading of templates.
+- Temp disable autoformatting in vscode.
+- Fixed small style errors
+- Rename Platform: and Field: namespaces.
+- modified/added admin templates from master custom-app
+- Add new researchspace styles.
+- Merge pull request #103 from researchspace/local-blazegraph
+- dev env. Use the same blazegraph as in docker-compose.
+- Merge pull request #100 from researchspace/ontodia-enforce-constraints
+- Update JSON Schemas for documentation pages.
+- Ability to enforce KPs constraints in Knowledge Map authoring mode.
+- Merge pull request #101 from researchspace/bugfix/relative-img-url
+- object-representation-widget. Fix loading of images with relative URL.
+- Merge pull request #99 from researchspace/ontodia-instance-search-ordering
+- Ontodia instance search. Order by localName if label is not defined.
+- Consistent orderding in ontodia instance search.
+- Merge pull request #93 from researchspace/blazegraph-docker
+- Properly set buildVersion in CI build.
+- Properly read build version from WAR manifest file.
+- Point to default initial instance configuration.
+- Merge pull request #95 from researchspace/update-mirador
+- Fix mirador init. Fix unsaved annotation dialog.
+- Improvo mirador usage in IGA.
+- Update mirador to 2.7
+- Update ImageRegionEditor to work with Mirador 2.4.0.
+- Update mirador to 2.4.0.
+- Add pointers to ZIP bundles and new researchspace-docker-compose repository.
+- Dockerfile for blazegraph build.
+- Merge pull request #91 from researchspace/ontodia-filter-bug
+- Use label properties from config in ontodia entity search.
+- Merge pull request #89 from researchspace/anonymous-user
+- Fix hack in ThinkingFrame navigation.
+- Improve handling of anonymous user.
+- Merge pull request #88 from researchspace/enable-drop-into-form
+- Merge pull request #87 from researchspace/css-fixes
+- semantic-form. Enable drag and drop into autocomplete input from clipboard.
+- ontodia. On export to svg/png, don't fetch images that are already in data-url format.
+- Minify css in production build.
+- Properly resolve images in css from mirador.
+- Merge pull request #86 from researchspace/mirador-multiple-instances
+- Fix mirador crash when many instances of it are initialized on the same page.
+- Merge pull request #85 from researchspace/sparql-mode-graph
+- Merge pull request #84 from researchspace/thinking-frames-empty
+- Experimental. Suport for target named graph in data authoring.
+- Thinking Frames. Don't show intermediate screen for noResource frames.
+- Revert wrongly commited local change to gradle.properties.
+- Merge pull request #83 from researchspace/namespace-handling
+- Add namespaces on RDF export.
+- Fix master build.
+- Merge pull request #82 from researchspace/build-master
+- Fix typo in github actions build for master.
+- Merge pull request #81 from researchspace/build-master
+- Merge pull request #80 from researchspace/apps-ordering-dev
+- Merge pull request #79 from researchspace/chart-resize
+- Build master on PR merge.
+- Fix default apps ordering issue in dev build.
+- Fix semantic-chart resize inside flexbox element.
+- Merge pull request #78 from researchspace/styling-build
+- Fix incorrect scss.d.ts file generation.
+- Improve styling build.
+- Merge pull request #75 from researchspace/backport
+- Bundle all css into a single file.
+- Ability to control default state of ontodia panels.
+- Add explicit noData flag to mp-field-visualization component.
+- Add proper long term browser caching for web assets.
+- semantic-search. Preserve facet ordering based on query order in searchConfigForFieldsFromQuery.
+- semantic-search. Properly cleanup facet breadcrumbs on value remove.
+- semantic narratives. WIP
+- Change file input to allow upload from URL.
+- Custom handling for navigation in ThinkingFrames.
+- Make new docker image based on debian backward compatible with the one that was based on alpine.
+- Fix relative path handling in NonVersionedFileStorage
+- Fix broken fieldDefinition helper after handlebars upgrade.
+- Don't expire field definition cache.
+- Fix error in the AssetFilter with latest jetty in dev mode.
+- Add helper functions for with-types component.
+- Expose SPARQL ready IRI in server-side handlebars, with [[this.iri]].
+- Ability to customize context in page-loader.
+- Add component that fetch types for the given resource.
+- Add ability to not re-render some components on navigation.
+- Fix react warning in thumbnail component.
+- Add ability to open sidebar with event.
+- Add className prop to popover component.
+- Visualization for not saved image regions.
+- Support knowledge maps in the Clipboard.
+- ontodia. Persistent resizable nodes.
+- Merge pull request #74 from researchspace/git-storage-pull
+- Pull git storage on startup.
+- Merge pull request #73 from researchspace/update-java-dependencies
+- Fix tests after upgrade of rdf4j to 3.2.0.
+- Fix compiler warning.
+- Enable passthrough perf improvement in rdf4j 3.2.0.
+- Update java dependencies.
+- Merge pull request #72 from researchspace/small-fixes
+- Don't scroll to the top when template is loaded with page-loader component.
+- Fix IRI prefixing logic in SparqlUtil.
+- Fix wrong build configuration for css module based styels.
+- Update typescript declarations for scss styles.
+- Fix edge-case in thumbnail resolution in ontodia component.
+- GH-42. Don't fail if client-side partial is not resolvable at compile-time.
+- Ability to set initial value for thinking frames component.
+- Format ontodia source code with prettier.
+- Propagate split pane content without modification.
+- Update react-bootstrap typings.
+- Merge pull request #70 from researchspace/update-json-schema
+- Merge pull request #69 from researchspace/template-item
+- Re-generate JSON Schemas.
+- Fix typescript issues that caused problem with JSON-Schema generation.
+- Create script for JSON schema generation.
+- Change TemplateItem to properly work without a single root.
+- Merge pull request #68 from researchspace/semantic-forms
+- Merge pull request #65 from researchspace/linked-data
+- Merge pull request #67 from researchspace/ontodia
+- Local name value helper for new-subject-template.
+- Resolve relative `new-subject-template` with `Default` namespace.
+- Copy ontodia library source code into ResearchSpace.
+- Merge commit '99cb43aaa7922f0b7f6f787a13b8d1c4565b3ca7' as 'src/main/web/ontodia'
+- Squashed 'src/main/web/ontodia/' content from commit 00e3452
+- Merge pull request #66 from researchspace/ts-update
+- Update typescript to 3.8.3.
+- Properly resolve nested context path against Default namespace.
+- Merge pull request #63 from researchspace/use-select-in-search
+- Merge pull request #64 from researchspace/remove-session-timeout
+- Remove default session timeout.
+- Use select pattern for search config generation.
+- Merge pull request #62 from researchspace/bugfix/events-in-webcomponents
+- Merge pull request #61 from researchspace/bugfix/forms-circular-dependency
+- Add workaround for the issue with react events inside custom HTML components.
+- Remove circular dependencies in semantic-form component.
+- Disable no-use-before-define in es-lint.
+- Merge pull request #23 from researchspace/proxy-encoding-bug
+- fixes #22. Don't url-decode URL path in MProxyServlet.
+- Merge pull request #60 from researchspace/github-actions
+- Update README for zip bundle build.
+- Use archiveProduct instead of productBuild for zip distribution.
+- Fix filename hashing for webpack production build.
+- Add docker build artefacts to gitignore
+- Update digilib for zip distribution.
+- Use jetty with java 11 for docker image.
+- Add CI build with github actions.
+- Merge pull request #53 from researchspace/refactoring
+- Major refactoring.
+- Merge pull request #51 from researchspace/knowledge-maps-improvements
+- Update to 3.3.2
+- Update to 3.3.1
+- Merge pull request #48 from researchspace/use-public-repos
+- Use public npm and maven repositories.
+- Publish 3.4 preview demo.
+- Update sample docker-compose file to 3.3.0
+- Update to 3.3.0
+- Revert "Fix regression in SemanticSearchContextualizedResult."
+- Add gitter badge.
+- README.md and docker-compose updates for 3.2.1 release.
+- Update docke-compose to use 3.2.1.
+- Update README.md.
+- Add simple docker-compose file for ResearchSpace setup.
+- Temporary disable failing test in DatePickerInput.test.ts.
+- Fix regression in SemanticSearchContextualizedResult.
+- Update node-sass to support build with NodeJs LTS v10 and v12.
+- Release 3.2.0.
+- Updated the location of the blazegraph docker image.
+- Updated the README.md with information about how to create docker images of the platform.
+- Updated the docker images’ names that are used for building a production instance of ResearchSpace.
+- Update README file
+- Update README file to include troubleshooting tips
+- Update Field Definitions and remove duplicates
+- Restructure app folders and update README instructions
+- Add browser compatibility info
+- Add timeline, alignment tool, events API
+- Initial commit

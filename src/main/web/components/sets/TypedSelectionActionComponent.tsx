@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -107,6 +108,7 @@ export class TypedSelectionActionComponent extends Component<Props, State> {
     return (
       <SelectionActionComponent
         disabled={disabled}
+        icon={this.props.icon}
         selection={this.props.selection}
         closeMenu={this.props.closeMenu}
         onAction={this.onAction}

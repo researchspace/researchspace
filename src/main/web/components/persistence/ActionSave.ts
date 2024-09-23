@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -34,6 +35,7 @@ import { addToDefaultSet } from 'platform/api/services/ldp-set';
 import { Spinner } from 'platform/components/ui/spinner/Spinner';
 import { isValidChild } from 'platform/components/utils';
 import { ResourceLinkComponent } from 'platform/api/navigation/components/ResourceLinkComponent';
+import Icon from '../ui/icon/Icon';
 
 const Button = createFactory(ReactBootstrap.Button);
 const Modal = createFactory(ReactBootstrap.Modal);
@@ -169,10 +171,11 @@ export class ActionSaveComponent extends Component<Props, State> {
     }
     return Button(
       {
-        title: 'Save into default set',
+        title: 'Copy to Clipboard',
         onClick: this.state.show == 'hide' ? this.onClick : undefined,
       },
-      D.i({ className: 'fa fa-save' }),
+      
+      D.i({ className: 'material-symbols-rounded icon-left'}, 'inventory'),
       this.renderModal()
     );
   }

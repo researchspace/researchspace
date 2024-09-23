@@ -1,0 +1,50 @@
+
+<http://www.researchspace.org/pattern/system/person/gender/context> {
+  <http://www.researchspace.org/pattern/system/person/gender> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E55_Type>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-a88a5ea169d04aea9789746cca02e633-dir69;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-a88a5ea169d04aea9789746cca02e633-ilvp68;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/person>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Gender";
+    <http://www.researchspace.org/resource/system/fields/treePatterns> """{
+  \"type\": \"simple\",
+  \"schemePattern\": \"?item crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/person_gender> .\"
+}"""^^<http://www.researchspace.org/resource/system/syntheticJson>;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-a88a5ea169d04aea9789746cca02e633-qi1ij;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-a88a5ea169d04aea9789746cca02e633-aq24je;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-11T11:59:13.681+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-a88a5ea169d04aea9789746cca02e633-qi1ij a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject <http://www.researchspace.org/ontology/PX_gender> $value . 
+} WHERE {}""" .
+  
+  _:genid-a88a5ea169d04aea9789746cca02e633-ilvp68 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/person_gender> .
+  ?value skos:prefLabel ?label
+} ORDER BY ASC(LCASE(STR(?label))) """ .
+  
+  _:genid-a88a5ea169d04aea9789746cca02e633-dir69 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
+  $subject <http://www.researchspace.org/ontology/PX_gender> ?value . 
+  ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/person_gender> .
+}""" .
+  
+  _:genid-a88a5ea169d04aea9789746cca02e633-aq24je a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {   
+  $subject <http://www.researchspace.org/ontology/PX_gender> ?value . 
+}  WHERE {
+  $subject <http://www.researchspace.org/ontology/PX_gender> ?value . 
+  ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/person_gender> .
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/person/gender> .
+}

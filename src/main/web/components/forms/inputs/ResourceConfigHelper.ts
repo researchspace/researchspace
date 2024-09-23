@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -92,7 +93,6 @@ export function buildResourceFormIriQuery(queryResultBindings: SparqlClient.Bind
         } `
       )
     })
-    console.log(`SELECT ?resourceFormIri ?scheme WHERE { ${UNION_QUERY.join('UNION')} }`);
     return `SELECT ?resourceFormIri ?scheme WHERE { ${UNION_QUERY.join('UNION')} } LIMIT 1 `
 }
 

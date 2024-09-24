@@ -1,0 +1,59 @@
+<semantic-query query='SELECT DISTINCT  ?subject ?viewId ?resourceConfig ?resourceLabel ?resourceType ?resourceFormIRI ?description WHERE {
+                        BIND(<{{iri}}> as ?subject)
+                        
+                        ?subject a ?resourceOntologyClass .
+                        ?resourceOntologyClass a owl:Class .
+
+                        ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
+                        ?resourceConfig a <http://www.researchspace.org/resource/system/resource_configuration> .
+                        ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceType .
+                        ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
+                        ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceLabel .
+                        ?subject crm:P2_has_type ?resourceType . 
+
+                        OPTIONAL {
+                          ?subject crm:P67i_is_referred_to_by ?information_object  .
+                          ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
+                          ?information_object crm:P1_is_identified_by ?descriptionAppellation . 
+                          ?descriptionAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                          ?descriptionAppellation crm:P190_has_symbolic_content ?description .
+                        }
+                        BIND(CONCAT(STR(?resourceConfig), "-resource-persisted-view") AS ?viewId) .
+
+                        } LIMIT 1'
+      
+                template='{{> template}}'
+        >
+
+    <template id='template'>
+      <div class="resource-persisted-container">
+        <div class="resource-persisted-visualisation">
+          <mp-persisted-component iri='{{iri}}'></mp-persisted-component>
+        </div>
+        <div class="resource-persisted-details">
+          <div style="display: flex; justify-content: space-between;">
+            <h3 style="margin-top: 0; margin-bottom: 5px; text-transform: capitalize; flex: 1;">
+              <mp-label iri='{{iri}}' class="text-truncate-line1"></mp-label>
+            </h3>
+            {{> rsp:ResourceDropdownActions viewId=viewId
+                iri=iri
+                resourceConfig=bindings.0.resourceConfig.value
+                resourceLabel=bindings.0.resourceLabel.value
+                resourceDescription=bindings.0.description.value
+                resourceFormIRI=bindings.0.resourceFormIRI.value
+                hidePreview=true
+                headerButton=true
+                resourcePersistedPage=true
+            }}
+          </div>
+          <p class="color-secondary-light">{{bindings.0.resourceLabel.value}}</p>
+          {{#if bindings.0.description.value}}
+            <p>{{bindings.0.description.value}}</p>
+          {{/if}}
+        </div>
+
+      </div>
+      
+    </template>
+
+</semantic-query>

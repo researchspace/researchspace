@@ -9,6 +9,35 @@
                           {{#if knowledgeMapCard}} resource-card__dropdown-km{{/if}}"
                     style="{{#if (or clipboardSet clipboardKm setPage)}}min-width: 180px;{{/if}}">
 
+    {{#if hidePreview}}
+    {{else}}
+      <mp-overlay-dialog  id="{{viewId}}-resource-preview-dialog"  
+                          type="modal" 
+                          class="modal-xlSize preview_modal"
+                          title="Preview">
+        <mp-overlay-dialog-trigger>
+          <bs-menu-item>
+            <rs-icon icon-type="rounded" icon-name="fullscreen" class="icon-left" symbol="true"></rs-icon>
+            <span>Preview</span>
+          </bs-menu-item>
+        </mp-overlay-dialog-trigger>
+
+        <mp-overlay-dialog-content>
+          <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
+                            options='{  "resource": "{{iri}}", 
+                                        "resourceConfig": "{{resourceConfig}}", 
+                                        "resourceConfigLabel": "{{resourceLabel}}",
+                                        {{#if resourceOntologyClass}}"resourceOntologyClass": "{{resourceOntologyClass}}",{{/if}}
+                                        {{#if resourceDescription}}"resourceDescription": "{{resourceDescription}}",{{/if}}
+                                        "modalId": "{{viewId}}-resource-preview-dialog",
+                                        "resourceDetailSection": true
+                                      }' >
+          </inline-template> 
+        </mp-overlay-dialog-content>
+      </mp-overlay-dialog>
+      <hr>
+    {{/if}}
+
     {{#switch resourceConfig}}
       {{#case "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative" break=true}}
         <mp-event-trigger id='{{viewId}}-open-narrative-trigger' 
@@ -74,6 +103,64 @@
         {{/if}}
       {{/case}}
 
+      {{#case "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart" break=true}}
+        {{#if (not resourcePersistedPage)}}
+          <mp-event-trigger id='{{viewId}}-open-chart-trigger' 
+                            type='Dashboard.AddFrame'
+                            data='{"viewId":"resource-persisted", 
+                                    "resourceIri": "{{iri}}"}' 
+                            targets='["thinking-frames"]'>
+            <bs-menu-item>
+              <rs-icon icon-type="rounded" icon-name="finance" class="icon-left" symbol="true"></rs-icon>
+              <span>Open chart</span>
+            </bs-menu-item>
+          </mp-event-trigger>
+
+          <mp-event-trigger id='{{viewId}}-open-chart-newTab-trigger' 
+                            type='Dashboard.AddFrame'
+                            data='{ "viewId":"resource-persisted", 
+                                    "resourceIri": "{{iri}}",
+                                    "openAsDragAndDrop":true
+                                  }' 
+                            targets='["thinking-frames"]'>
+            <bs-menu-item>
+              <rs-icon icon-type="rounded" icon-name="tab_move" class="icon-left" symbol="true"></rs-icon>
+              <span>Open chart in draggable tab</span>
+            </bs-menu-item>
+          </mp-event-trigger>
+          <hr>
+        {{/if}}
+      {{/case}}
+
+      {{#case "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline" break=true}}
+        {{#if (not resourcePersistedPage)}}
+          <mp-event-trigger id='{{viewId}}-open-timeline-trigger' 
+                            type='Dashboard.AddFrame'
+                            data='{"viewId":"resource-persisted", 
+                                    "resourceIri": "{{iri}}"}' 
+                            targets='["thinking-frames"]'>
+            <bs-menu-item>
+              <rs-icon icon-type="rounded" icon-name="timeline" class="icon-left" symbol="true"></rs-icon>
+              <span>Open timeline</span>
+            </bs-menu-item>
+          </mp-event-trigger>
+
+          <mp-event-trigger id='{{viewId}}-open-timeline-newTab-trigger' 
+                            type='Dashboard.AddFrame'
+                            data='{ "viewId":"resource-persisted", 
+                                    "resourceIri": "{{iri}}",
+                                    "openAsDragAndDrop":true
+                                  }' 
+                            targets='["thinking-frames"]'>
+            <bs-menu-item>
+              <rs-icon icon-type="rounded" icon-name="tab_move" class="icon-left" symbol="true"></rs-icon>
+              <span>Open timeline in draggable tab</span>
+            </bs-menu-item>
+          </mp-event-trigger>
+          <hr>
+        {{/if}}
+      {{/case}}
+
       {{#case "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set" break=true}}
         [[#if (hasPermission "forms:ldp:*")]]
 
@@ -132,34 +219,7 @@
       {{/case}}
 
       {{#default}}
-        {{#if hidePreview}}
-        {{else}}
-          <mp-overlay-dialog  id="{{viewId}}-resource-preview-dialog"  
-                              type="modal" 
-                              class="modal-xlSize preview_modal"
-                              title="Preview">
-            <mp-overlay-dialog-trigger>
-              <bs-menu-item>
-                <rs-icon icon-type="rounded" icon-name="fullscreen" class="icon-left" symbol="true"></rs-icon>
-                <span>Preview</span>
-              </bs-menu-item>
-            </mp-overlay-dialog-trigger>
-
-            <mp-overlay-dialog-content>
-              <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
-                                options='{  "resource": "{{iri}}", 
-                                            "resourceConfig": "{{resourceConfig}}", 
-                                            "resourceConfigLabel": "{{resourceLabel}}",
-                                            {{#if resourceOntologyClass}}"resourceOntologyClass": "{{resourceOntologyClass}}",{{/if}}
-                                            {{#if resourceDescription}}"resourceDescription": "{{resourceDescription}}",{{/if}}
-                                            "modalId": "{{viewId}}-resource-preview-dialog",
-                                            "resourceDetailSection": true
-                                          }' >
-              </inline-template> 
-            </mp-overlay-dialog-content>
-          </mp-overlay-dialog>
-          <hr>
-        {{/if}}
+        <div></div>
       {{/default}}
     {{/switch}}
 

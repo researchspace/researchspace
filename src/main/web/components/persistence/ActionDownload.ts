@@ -86,7 +86,7 @@ export class ActionDownloadComponent extends Component<Props, State> {
     const child =
       Children.count(this.props.children) === 1
         ? Children.only(this.props.children)
-        : Button({ title: 'Download data' }, D.i({ className: 'fa fa-download', style: { fontSize: '16px' } }));
+        : Button({ title: 'Download data', className: 'btn-textAndIcon' }, D.i({ className: 'fa fa-download' }));
     return SparqlDownload({ query, header, filename }, child);
   }
 }

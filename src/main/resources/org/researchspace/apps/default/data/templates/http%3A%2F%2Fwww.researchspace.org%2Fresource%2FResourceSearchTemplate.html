@@ -143,6 +143,14 @@
                 </div>  
               </template>
 
+              <template id='http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart'>
+                <div></div>
+              </template>
+
+              <template id='http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline'>
+                <div></div>
+              </template>
+
               <template id='http://www.researchspace.org/resource/system/resource_configurations_container/data/Set'>
                 <div></div>
               </template>
@@ -472,15 +480,10 @@
                 <mp-selection-action-choice id='[[urlParam "viewid" escape=false]]-image-side-by-side-action' selection='item-selection-aggregator'>
                   <div>
                     {{#each selection}}
-                    <div>{{tag}}</div>
+                      <div>{{tag}}</div>
                     {{/each}}
-
                   </div>
-
-                   
                 </mp-selection-action-choice>
-
-
 
                 {{#ifCond "[[urlParam "resourceconfig" escape=false]]" "==" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image"}}
                   [[!-- 
@@ -498,6 +501,8 @@
 
                 {{#ifCond "[[urlParam "resourceconfig" escape=false]]" "==" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set"}}
                 {{else ifCond "[[urlParam "resourceconfig" escape=false]]" "==" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map"}}
+                {{else ifCond "[[urlParam "resourceconfig" escape=false]]" "==" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart"}}
+                {{else ifCond "[[urlParam "resourceconfig" escape=false]]" "==" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline"}}
                 {{else}}
                   [[#if (hasPermission "forms:ldp:*")]]
                     <mp-selection-action-choice id='[[urlParam "viewid" escape=false]]-create-set-action' selection='item-selection-aggregator'>
@@ -798,7 +803,8 @@
               <template id='resultViews'>
                   <semantic-search-result-holder>
                     {{#if (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/grid")}}
-                      [[!-- grid view --]]
+                      
+                    [[!-- grid view --]]
                       <semantic-search-result>
                         <semantic-table id='semantic-search-result-grid'
                                         class-name="semantic-search-result-grid"
@@ -835,6 +841,7 @@
                     {{else if (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/map")}}
                       <div>no map results</div>
                     {{else if (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/timeline")}}
+                    
                     [[!-- timeline view: currently enabled only for crm:E21_Person and rdfs:subClassOf* crm:E2_Temporal_Entity  --]]
                       <div>
                         <semantic-search-result>
@@ -853,12 +860,11 @@
                         </semantic-search-result>
 
                         <semantic-search-result-context ranges='["http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span"]'>
-                          <semantic-search-result  id='semantic-search-result-timeline'>
+                          <semantic-search-result id='semantic-search-result-timeline'>
                               <mp-component-toolbar>
                                 <mp-component-toolbar-actions>
                                     <mp-component-toolbar-action-save id='persit-component-action' add-to-default-set=false></mp-component-toolbar-action-save>
                                 </mp-component-toolbar-actions>
-
                                 <mp-component-toolbar-component>
                                     <semantic-timeline  id='search-result-timeline'
                                                         query='PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
@@ -1014,32 +1020,34 @@
                         </semantic-search-result-context>
                       </div>
                     {{else if (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/chart")}}
+                      
                       [[!-- chart view --]]
                       <semantic-search-result-context ranges='["http://www.w3.org/2004/02/skos/core#Concept","http://www.cidoc-crm.org/cidoc-crm/E55_Type","http://www.cidoc-crm.org/cidoc-crm/E53_Place"]'>
                         <semantic-search-result id='[[urlParam "viewid" escape=false]]-semantic-search-result-chart'>
                           <mp-component-toolbar>
-                              <mp-component-toolbar-actions>
-                                <semantic-chart-type-selector id='[[urlParam "viewid" escape=false]]-search-result-chart-type-selector' default="bar" types='["line", "bar", "radar", "pie", "donut"]'></semantic-chart-type-selector>
-                                  <mp-component-toolbar-action-download></mp-component-toolbar-action-download>
-                                  <mp-component-toolbar-action-save id='persit-component-action' add-to-default-set=true></mp-component-toolbar-action-save>
-                              </mp-component-toolbar-actions>
-                              <mp-component-toolbar-component>
-                                <semantic-chart id='[[urlParam "viewid" escape=false]]-search-result-chart'
-                                                query='SELECT ?__value__ (COUNT(DISTINCT ?subject) as ?count) WHERE {
-                                                        OPTIONAL { FILTER(?__contextRelationPattern__) }
-                                                        BIND(IF(BOUND(?__value__), ?__value__, "Unknown") as ?__value__)
-                                                      } GROUP BY ?__value__ 
-                                                        ORDER BY DESC(?count)'
-                                                sets='[{
-                                                        "dataSetName": "Number of values",
-                                                        "category": "__value__",
-                                                        "value": "count"
-                                                      }]'>
-                                </semantic-chart>
-                              </mp-component-toolbar-component>
+                            <mp-component-toolbar-actions>
+                              <semantic-chart-type-selector id='[[urlParam "viewid" escape=false]]-search-result-chart-type-selector' default="bar" types='["line", "bar", "radar", "pie", "donut"]'></semantic-chart-type-selector>
+                                <mp-component-toolbar-action-download></mp-component-toolbar-action-download>
+                                <mp-component-toolbar-action-save id='persit-component-action' add-to-default-set=true></mp-component-toolbar-action-save>
+                            </mp-component-toolbar-actions>
+                            <mp-component-toolbar-component>
+                              <semantic-chart id='[[urlParam "viewid" escape=false]]-search-result-chart'
+                                              query='SELECT ?__value__ (COUNT(DISTINCT ?subject) as ?count) WHERE {
+                                                      OPTIONAL { FILTER(?__contextRelationPattern__) }
+                                                      BIND(IF(BOUND(?__value__), ?__value__, "Unknown") as ?__value__)
+                                                    } GROUP BY ?__value__ 
+                                                      ORDER BY DESC(?count)'
+                                              sets='[{
+                                                      "dataSetName": "Number of values",
+                                                      "category": "__value__",
+                                                      "value": "count"
+                                                    }]'>
+                              </semantic-chart>
+                            </mp-component-toolbar-component>
                           </mp-component-toolbar>
                         </semantic-search-result>
                       </semantic-search-result-context>
+                    
                     {{else}}
                       [[!-- list view --]]
                       <semantic-query query=' SELECT DISTINCT ?resourceConfig 
@@ -1088,7 +1096,11 @@
                         <template id='custom-list-view'>
                           <semantic-search-result>
                             <semantic-table id='semantic-search-result-list'
-                                            class-name="table-fixed-header table-scrollable-content table-expanded search-table-container {{#if (or (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Set')(eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map'))}}table-without-checkbox{{else}}table-with-checkbox{{/if}}"
+                                            class-name="table-fixed-header table-scrollable-content table-expanded search-table-container 
+                                            {{#if (or (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Set')
+                                                      (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map')
+                                                      (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart')
+                                                      (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline'))}}table-without-checkbox{{else}}table-with-checkbox{{/if}}"
                                             query='SELECT DISTINCT ?subject ?iri ?description WHERE {
                                                     BIND(?subject as ?iri) .
                                                     #?subject a ?type .
@@ -1121,7 +1133,11 @@
     
                               <template id='selectionCheckbox'>
                                 [[#if (hasPermission "forms:ldp:*")]]
-                                  {{#if (or (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map"))}}
+                                  {{#if (or (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") 
+                                            (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map")
+                                            (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")
+                                            (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline")
+                                        )}}
                                   {{else}}
                                     <div>
                                       <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
@@ -1182,6 +1198,22 @@
                                             <mp-event-trigger id='{{iri.value}}-open-km-title-trigger' 
                                                               type='Dashboard.AddFrame'
                                                               data='{"viewId":"knowledge-map", 
+                                                                      "resourceIri": "{{iri.value}}"}' 
+                                                              targets='["thinking-frames"]'>
+                                              <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
+                                            </mp-event-trigger>
+                                          {{else if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")}}
+                                            <mp-event-trigger id='{{iri.value}}-open-chart-title-trigger' 
+                                                              type='Dashboard.AddFrame'
+                                                              data='{"viewId":"resource-persisted", 
+                                                                      "resourceIri": "{{iri.value}}"}' 
+                                                              targets='["thinking-frames"]'>
+                                              <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
+                                            </mp-event-trigger>
+                                          {{else if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline")}}
+                                            <mp-event-trigger id='{{iri.value}}-open-timeline-title-trigger' 
+                                                              type='Dashboard.AddFrame'
+                                                              data='{"viewId":"resource-persisted", 
                                                                       "resourceIri": "{{iri.value}}"}' 
                                                               targets='["thinking-frames"]'>
                                               <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
@@ -1425,7 +1457,12 @@
                         <template id='default-list-view'>
                           <semantic-search-result>
                             <semantic-table id='semantic-search-result-list'
-                                            class-name="table-fixed-header table-scrollable-content table-expanded search-table-container {{#if (or (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Set')(eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map'))}}table-without-checkbox{{else}}table-with-checkbox{{/if}}"
+                                            class-name="table-fixed-header table-scrollable-content table-expanded search-table-container 
+                                            {{#if (or (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Set')
+                                                      (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map')
+                                                      (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart')
+                                                      (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline')
+                                            )}}table-without-checkbox{{else}}table-with-checkbox{{/if}}"
                                             query='SELECT DISTINCT ?subject ?iri ?description ?resourceConfig WHERE {
                                                     BIND(?subject as ?iri) .
                                                     BIND(<[[urlParam "resourceconfig" escape=false]]> as ?resourceConfig) .
@@ -1453,7 +1490,11 @@
     
                               <template id='selectionCheckbox'>
                                 [[#if (hasPermission "forms:ldp:*")]]
-                                  {{#if (or (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map"))}}
+                                  {{#if (or (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") 
+                                            (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map")
+                                            (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")
+                                            (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline")
+                                  )}}
                                   {{else}}
                                     <div>
                                       <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
@@ -1514,6 +1555,22 @@
                                             <mp-event-trigger id='{{iri.value}}-open-km-title-trigger' 
                                                               type='Dashboard.AddFrame'
                                                               data='{"viewId":"knowledge-map", 
+                                                                      "resourceIri": "{{iri.value}}"}' 
+                                                              targets='["thinking-frames"]'>
+                                              <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
+                                            </mp-event-trigger>
+                                          {{else if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")}}
+                                            <mp-event-trigger id='{{iri.value}}-open-chart-title-trigger' 
+                                                              type='Dashboard.AddFrame'
+                                                              data='{"viewId":"resource-persisted", 
+                                                                      "resourceIri": "{{iri.value}}"}' 
+                                                              targets='["thinking-frames"]'>
+                                              <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
+                                            </mp-event-trigger>
+                                          {{else if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline")}}
+                                            <mp-event-trigger id='{{iri.value}}-open-timeline-title-trigger' 
+                                                              type='Dashboard.AddFrame'
+                                                              data='{"viewId":"resource-persisted", 
                                                                       "resourceIri": "{{iri.value}}"}' 
                                                               targets='["thinking-frames"]'>
                                               <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>

@@ -145,7 +145,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
         <Dropdown.Toggle bsStyle="default" className="btn-action" />
         <Dropdown.Menu>
           <MenuItem href="#" onClick={onPersistChangesAndSaveDiagram}>
-            <Icon iconType="round" iconName="save" className="icon-left" />
+            <Icon iconType="rounded" iconName="save" symbol className="icon-left" />
             {persistChangesLabel} and map
           </MenuItem>
         </Dropdown.Menu>
@@ -168,7 +168,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
         className="btn-action btn-split"
       >
         <MenuItem href="#" onClick={onSaveDiagramAs}>
-          <Icon iconType="round" iconName="save" className="icon-left" />
+          <Icon iconType="rounded" iconName="save" symbol className="icon-left" />
           {saveDiagramLabel} as...
         </MenuItem>
       </SplitButton>
@@ -212,7 +212,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
                 disabled={!undo.enabled}
                 onClick={undo.invoke}
               >
-                <Icon iconType="round" iconName="undo" />
+                <Icon iconType="rounded" iconName="undo" symbol />
               </Button>
               <Button
                 className="ontodia-btn ontodia-btn-default"
@@ -220,18 +220,18 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
                 disabled={!redo.enabled}
                 onClick={redo.invoke}
               >
-                <Icon iconType="round" iconName="repeat" />
+                <Icon iconType="rounded" iconName="repeat" symbol />
               </Button>
             </ButtonGroup>
           ) : null}
 
           <ButtonGroup className={styles.groupButtons}>
             <Button bsStyle="default" className="btn-icon" onClick={this.props.onZoomIn}>
-              <Icon iconType="round" iconName="add_circle_outline" />
+              <Icon iconType="rounded" iconName="add_circle_outline" symbol />
             </Button>
 
             <Button bsStyle="default" className="btn-icon" onClick={this.props.onZoomOut}>
-              <Icon iconType="round" iconName="remove_circle_outline" />
+              <Icon iconType="rounded" iconName="remove_circle_outline" symbol />
             </Button>
 
             <OverlayTrigger
@@ -240,7 +240,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
               overlay={<Popover id="tooltip">Fit to screen</Popover>}
             >
               <Button bsStyle="default" className="btn-icon" onClick={this.props.onZoomToFit}>
-                <Icon iconType="round" iconName="zoom_out_map" />
+                <Icon iconType="rounded" iconName="zoom_out_map" symbol />
               </Button>
             </OverlayTrigger>
 
@@ -250,7 +250,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
               overlay={<Popover id="tooltip">Force layout</Popover>}
             >
               <Button bsStyle="default" className="btn-icon" onClick={this.props.onForceLayout}>
-                <Icon iconType="round" iconName="auto_awesome_mosaic" />
+                <Icon iconType="rounded" iconName="auto_awesome_mosaic" symbol />
               </Button>
             </OverlayTrigger>
 
@@ -261,7 +261,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
                 overlay={<Popover id="tooltip">Clear all</Popover>}
               >
                 <Button onClick={this.props.onClearAll} bsStyle="default" className="btn-icon">
-                  <Icon iconType="round" iconName="layers_clear" />
+                  <Icon iconType="rounded" iconName="layers_clear" symbol />
                 </Button>
               </OverlayTrigger>
             ) : null}
@@ -277,21 +277,21 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
                 onClick={this.props.onPrint}
                 style={{ marginLeft: '30px' }}
               >
-                <Icon iconType="round" iconName="print" />
+                <Icon iconType="rounded" iconName="print" symbol />
               </Button>
             </OverlayTrigger>
 
             <Dropdown id="export-diagram-button">
               <Dropdown.Toggle bsStyle="default" className="btn-textAndIcon btn-icon" style={{ marginRight: 20 }}>
-                <Icon iconType="round" iconName="download" />
+                <Icon iconType="rounded" iconName="download" symbol />
               </Dropdown.Toggle>
               <Dropdown.Menu>
                 <MenuItem href="#" onClick={this.onExportPng}>
-                  <Icon iconType="round" iconName="download" className="icon-left" />
+                  <Icon iconType="rounded" iconName="download" symbol className="icon-left" />
                   Export as PNG
                 </MenuItem>
                 <MenuItem href="#" onClick={this.onExportSvg}>
-                  <Icon iconType="round" iconName="download" className="icon-left" />
+                  <Icon iconType="rounded" iconName="download" symbol className="icon-left" />
                   Export as SVG
                 </MenuItem>
               </Dropdown.Menu>
@@ -302,7 +302,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
         <div className={styles.buttonsContainer}>
           {this.props.diagramIri && 
             <Button onClick={onRefreshButtonClicked} className='btn-textAndIcon' title='Refresh knowledge map'>
-              <Icon iconType='round' iconName='refresh' />
+              <Icon iconType="rounded" iconName='refresh' symbol />
             </Button>}
           {this.renderOptionDropdown()}
           <HasPermission

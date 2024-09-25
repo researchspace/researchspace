@@ -20,6 +20,7 @@
 import * as classNames from 'classnames';
 import { Component, CSSProperties, createFactory } from 'react';
 import * as D from 'react-dom-factories';
+import Icon from 'platform/components/ui/icon/Icon';
 
 export interface SpinnerProps {
   className?: string;

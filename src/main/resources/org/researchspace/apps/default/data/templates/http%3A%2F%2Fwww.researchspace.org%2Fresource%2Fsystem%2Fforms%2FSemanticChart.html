@@ -91,7 +91,7 @@
                                                 <semantic-table id='{{node}}-chart-values'
                                                                 query='{{bindings.0.query.value}}'
                                                     options='{  "showFilter":true, 
-                                                                "filterPlaceholderText":"Filter results by value",
+                                                                "filterPlaceholderText":"Filter by value",
                                                                 "resultsPerPage":300
                                                             }'
 
@@ -632,7 +632,7 @@
                                             <tr class="standard-row">
                                                 <td class="table-title"><b>created by</b></td>
                                                 <td class="table-description">
-                                                    <rs-icon icon-type="round" icon-name="account_box" class="table-icon"></rs-icon>
+                                                    <rs-icon icon-type="rounded" icon-name="account_box" class="table-icon" symbol="true"></rs-icon>
                                                     {{bindings.0.modifiedByUser.value}}
                                                 </td>
                                             </tr>
@@ -647,7 +647,7 @@
             </rs-tabs>
 
             [[#*inline "chartSection"]]
-                <div class="page__section-container" style="margin-top: 20px; width: 380px; padding-top: 0;">
+                <div class="page__section-container" style="margin-top: 20px; width: 380px; padding-top: 0; height: fit-content;">
                     <div style="display: flex; align-items: baseline; justify-content: space-between">
                         <div class="customFormHeader">Chart</div>
                         <div style="display: flex; align-items: center; column-gap: 3px;">
@@ -657,7 +657,7 @@
                                                 title="Chart preview">
                             <mp-overlay-dialog-trigger>
                                 <button class="btn btn-icon" title="Preview">
-                                    <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
+                                    <rs-icon icon-type="rounded" icon-name="fullscreen" symbol="true"></rs-icon>
                                 </button>
                             </mp-overlay-dialog-trigger>
             
@@ -673,9 +673,20 @@
                                 </inline-template> 
                             </mp-overlay-dialog-content>
                             </mp-overlay-dialog>
+
+                            <mp-event-trigger   id='{{viewId}}-chart-add-frame-trigger' 
+                                                type='Dashboard.AddFrame' 
+                                                data='{"resourceIri": "{{node}}", 
+                                                        "viewId": "chart", 
+                                                        "frameId": "{{viewId}}"}' 
+                                                targets='["thinking-frames"]'>
+                                <button class="btn btn-icon" title="Open chart">
+                                    <rs-icon icon-type="rounded" icon-name="finance" symbol="true"></rs-icon>
+                                </button>
+                            </mp-event-trigger>
                         </div>
                       </div>
-                      <div class="chart-container">
+                      <div class="form-chart-container">
                         <mp-persisted-component iri='{{node}}'></mp-persisted-component>
                       </div>
                     

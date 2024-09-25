@@ -58,7 +58,7 @@ export class FieldEditorLabel extends React.Component<Props, {}> {
             </div>
             {!isRequired ? (
               <Button className="field-editor__delete-label-button" onClick={() => onDeleteLabel()}>
-                <Icon iconType='round' iconName='close'/>
+                <Icon iconType='rounded' iconName='close' symbol />
               </Button>
             ) : null}
           </div>
@@ -66,7 +66,7 @@ export class FieldEditorLabel extends React.Component<Props, {}> {
         {value.error ? (
           <div className="field-editor__error">
             <div className="field-editor__error-icon">
-              <Icon iconType='round' iconName='priority_high' />
+              <Icon iconType='rounded' iconName='priority_high' symbol />
             </div>
             <div>
               <div className="field-editor__error-title">Error!</div>

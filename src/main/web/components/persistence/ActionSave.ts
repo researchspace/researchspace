@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { createFactory, cloneElement, Children } from 'react';
+import { createFactory, cloneElement, Children, createElement } from 'react';
 import * as D from 'react-dom-factories';
 import * as ReactBootstrap from 'react-bootstrap';
 import * as Kefir from 'kefir';
@@ -35,7 +35,7 @@ import { addToDefaultSet } from 'platform/api/services/ldp-set';
 import { Spinner } from 'platform/components/ui/spinner/Spinner';
 import { isValidChild } from 'platform/components/utils';
 import { ResourceLinkComponent } from 'platform/api/navigation/components/ResourceLinkComponent';
-import Icon from '../ui/icon/Icon';
+import Icon from 'platform/components/ui/icon/Icon';
 import * as LabelsService from 'platform/api/services/resource-label';
 import { getLabels, getLabel } from 'platform/api/services/resource-label';
 
@@ -212,8 +212,7 @@ export class ActionSaveComponent extends Component<Props, State> {
         className: 'btn-textAndIcon',
         onClick: this.state.show == 'hide' ? this.onClick : undefined,
       },
-      
-      D.i({ className: 'material-symbols-rounded icon-left'}, 'save'),
+      createElement(Icon, {iconType:'rounded', iconName: 'save', symbol: true}),
       this.renderModal()
     );
   }

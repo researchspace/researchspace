@@ -18,13 +18,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { createFactory, Children } from 'react';
+import { createFactory, Children, createElement } from 'react';
 import * as D from 'react-dom-factories';
 import * as ReactBootstrap from 'react-bootstrap';
 
 import { Component } from 'platform/api/components';
 import { SparqlUtil } from 'platform/api/sparql';
 import { factory as SparqlDownload } from 'platform/components/semantic/results/SparqlDownloadComponent';
+import Icon from 'platform/components/ui/icon/Icon';
 
 const Button = createFactory(ReactBootstrap.Button);
 
@@ -86,7 +87,10 @@ export class ActionDownloadComponent extends Component<Props, State> {
     const child =
       Children.count(this.props.children) === 1
         ? Children.only(this.props.children)
-        : Button({ title: 'Download data', className: 'btn-textAndIcon' }, D.i({ className: 'fa fa-download' }));
+        : Button({ title: 'Download data', className: 'btn-textAndIcon' }, 
+          createElement(Icon, {iconType:'rounded', iconName: 'download', symbol: true})
+        );
+
     return SparqlDownload({ query, header, filename }, child);
   }
 }

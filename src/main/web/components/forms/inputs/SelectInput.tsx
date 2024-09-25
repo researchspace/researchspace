@@ -368,7 +368,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
         )}
         { showEditButton && 
           <Button className={`${SELECT_TEXT_CLASS}__create-button btn-textAndIcon`} title='Edit' onClick={() => {this.onEditHandler(selectedValue)}}>
-            <Icon iconType='round' iconName='edit'/>
+            <Icon iconType='rounded' iconName='edit' symbol/>
           </Button>
         }
         {showLinkResourceButton && !FieldValue.isEmpty(this.props.value) && 

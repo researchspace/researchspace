@@ -103,7 +103,7 @@ export class Toolbar extends React.Component<ToolbarProps> {
     const iconName = `${MARK_TO_ICON[markType]}`;
     return <Button active={isActive} disabled={this.isTextSelectionActionDisabled()} className='btn-default-icon'
       onMouseDown={event => this.onMarkClick(event, markType)}>
-      <Icon iconType='round' iconName={iconName}/>
+      <Icon iconType='rounded' iconName={iconName} symbol />
     </Button>;
   }
 
@@ -117,7 +117,7 @@ export class Toolbar extends React.Component<ToolbarProps> {
     const iconName = `${TEXT_ALIGNMENT_TO_ICON[alignment]}`;
     return <Button active={isActive} disabled={!isTextBlock(this.props.anchorBlock)} className='btn-default-icon'
       onMouseDown={event => this.onAlignClick(event, alignment)}>
-      <Icon iconType='round' iconName={iconName}/>
+      <Icon iconType='rounded' iconName={iconName} symbol/>
     </Button>;
   }
 
@@ -159,7 +159,7 @@ export class Toolbar extends React.Component<ToolbarProps> {
       <Button onMouseDown={this.onExternalLinkClick}
         disabled={this.isTextSelectionActionDisabled()}
       >
-      <Icon iconType='round' iconName='open_in_new'/>
+      <Icon iconType='rounded' iconName='open_in_new' symbol/>
       </Button>
     );
   } */
@@ -266,16 +266,16 @@ export class Toolbar extends React.Component<ToolbarProps> {
 
           <Dropdown id='links' disabled={this.isTextSelectionActionDisabled()}>
             <Dropdown.Toggle>
-              <Icon iconType='round' iconName='add_link' className='icon-left'/>
+              <Icon iconType='rounded' iconName='add_link' symbol className='icon-left'/>
               Links
             </Dropdown.Toggle>
             <Dropdown.Menu>
             <MenuItem href="#" onMouseDown={this.onInternalLinkClick}>
-              <Icon iconType='round' iconName='insert_link' className='icon-left'/>
+              <Icon iconType='rounded' iconName='insert_link' symbol className='icon-left'/>
               Resource link
             </MenuItem>
             <MenuItem href="#" onMouseDown={this.onExternalLinkClick}>
-              <Icon iconType='round' iconName='public' className='icon-left'/>
+              <Icon iconType='rounded' iconName='public' symbol className='icon-left'/>
               External link
             </MenuItem>
               
@@ -286,7 +286,7 @@ export class Toolbar extends React.Component<ToolbarProps> {
         
         <div className={styles.toolbarBtnGroup}>
           {showRefresh && <Button onClick={onRefresh} className='btn-textAndIcon' title='Refresh narrative'>
-                            <Icon iconType='round' iconName='refresh' />
+                            <Icon iconType='rounded' iconName='refresh' symbol />
                           </Button>}
           {dropdownTemplate}
           <Button bsStyle='default' 

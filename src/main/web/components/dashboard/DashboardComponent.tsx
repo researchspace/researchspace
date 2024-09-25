@@ -474,7 +474,7 @@ export class DashboardComponent extends Component<Props, State> {
   //           className={`btn btn-xs pull-right ${styles.deleteItemButton}`}
   //           onClick={() => this.onRemoveItem(item)}
   //         >
-  //           <Icon iconType='round' iconName='close'/>
+  //           <Icon iconType='rounded' iconName='close' symbol />
   //         </button>
   //       </span>
   //     );
@@ -487,7 +487,7 @@ export class DashboardComponent extends Component<Props, State> {
   //         className={`btn btn-xs pull-right ${styles.deleteItemButton}`}
   //         onClick={() => this.onRemoveItem(item)}
   //       >
-  //         <Icon iconType='round' iconName='close'/>
+  //         <Icon iconType='rounded' iconName='close' symbol />
   //       </button>
   //     </span>
   //   );
@@ -723,10 +723,10 @@ export class DashboardComponent extends Component<Props, State> {
 
   private tabIcons = () =>
     ({
-      'close': <Icon iconType='round' iconName='close'/>,
-      'maximize': <Icon iconType='round' iconName='fullscreen'/>,
-      'restore': <Icon iconType='round' iconName='close_fullscreen'/>,
-      'more': <Icon iconType='round' iconName='arrow_drop_down'/>,
+      'close': <Icon iconType='rounded' iconName='close' symbol />,
+      'maximize': <Icon iconType='rounded' iconName='fullscreen' symbol />,
+      'restore': <Icon iconType='rounded' iconName='close_fullscreen' symbol />,
+      'more': <Icon iconType='rounded' iconName='arrow_drop_down' symbol/>,
     });
 
   private factory = (node: TabNode) => {
@@ -774,7 +774,7 @@ export class DashboardComponent extends Component<Props, State> {
           onClick={(event) => {
             this.onAddNewItem();
           }}>
-          <Icon iconType='round' iconName='add'/>
+          <Icon iconType='rounded' iconName='add' symbol/>
         </button>
       );
     }

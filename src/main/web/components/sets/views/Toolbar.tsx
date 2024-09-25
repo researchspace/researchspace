@@ -53,7 +53,7 @@ export class Toolbar extends React.Component<ToolbarProps, {}> {
                       source: 'btn-refresh-clipboard', });
                   }}
             >
-            <Icon iconType='round' iconName='refresh'/>
+            <Icon iconType='rounded ' iconName='refresh' symbol />
           </button> */}
           
         </div>
@@ -72,7 +72,7 @@ export class Toolbar extends React.Component<ToolbarProps, {}> {
             className="btn btn-default btn-default-icon"
             onClick={this.props.onPressCreateNewSet}
           >
-            <Icon iconType='round' iconName='create_new_folder'/>
+            <Icon iconType='rounded' iconName='create_new_folder' symbol/>
           </button>
         )}
       </div>
@@ -106,7 +106,7 @@ export class ReorderItemsButton extends React.Component<ReorderingProps, {}> {
           className={classnames({ 'btn btn-default btn-default-icon': true, active: isReordering })}
           onClick={onPressReorder}
         >
-          <Icon iconType='round' iconName='low_priority'/>
+          <Icon iconType='rounded' iconName='low_priority' symbol/>
         </button>
       </div>
     );

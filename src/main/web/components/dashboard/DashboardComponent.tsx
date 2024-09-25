@@ -168,7 +168,7 @@ export class DashboardComponent extends Component<Props, State> {
 
   private frameLabel = (label?: string) => {
     this.itemLabelCount = this.itemLabelCount + 1;
-    const displayLabel = label ?? 'New Tab'
+    const displayLabel = label ?? 'Homepage'
     return { 
       // id: uniqueId(displayLabel.replace(/\s/g, '')),
       id: uniqueId('frame'),
@@ -425,14 +425,14 @@ export class DashboardComponent extends Component<Props, State> {
               this.layoutRef.current.addTabWithDragAndDrop('Drag me where you want',
                 {
                   'type': 'tab', 'id':newFrameId, 'name': item.label, 'component': "item", 'config': {'itemId': item.id},
-                 'className': viewConfig?.iconName || viewConfig?.iconClass || 'no-icon-button', 'icon': 'add'
+                 'className': viewConfig?.iconName || viewConfig?.iconClass || 'homepage-button', 'icon': 'add'
                 }
               );
             } else {
               this.layoutRef.current.addTabToActiveTabSet(
                 {
                   'type': 'tab', 'id':newFrameId, 'name': item.label, 'component': "item", 'config': {'itemId': item.id},
-                  'className': viewConfig?.iconName || viewConfig?.iconClass || 'no-icon-button', 'icon': 'add'
+                  'className': viewConfig?.iconName || viewConfig?.iconClass || 'homepage-button', 'icon': 'add'
                 }
               );
             }

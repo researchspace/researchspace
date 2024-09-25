@@ -215,6 +215,24 @@
               
                 <div><mp-label iri='{{iri}}' class="text-link"></mp-label></div>
               </mp-event-trigger>
+            {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")}}
+              <mp-event-trigger id='{{iri}}-open-chart-title-trigger' 
+                              type='Dashboard.AddFrame'
+                              data='{"viewId":"chart", 
+                                      "resourceIri": "{{iri}}"}' 
+                              targets='["thinking-frames"]'>
+              
+                <div><mp-label iri='{{iri}}' class="text-link"></mp-label></div>
+              </mp-event-trigger>
+            {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline")}}
+              <mp-event-trigger id='{{iri}}-open-chart-title-trigger' 
+                              type='Dashboard.AddFrame'
+                              data='{"viewId":"timeline", 
+                                      "resourceIri": "{{iri}}"}' 
+                              targets='["thinking-frames"]'>
+              
+                <div><mp-label iri='{{iri}}' class="text-link"></mp-label></div>
+              </mp-event-trigger>
             {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
               <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
                               urlqueryparam-view='authority-list'
@@ -249,9 +267,9 @@
 [[#*inline "defaultCardIcon"]]
   <div class="h100 w100 resource-card__icon-container">
     {{#if resourceIcon}}
-      <rs-icon icon-type="rounded" icon-name="{{resourceIcon}}" symbol=true></rs-icon>
+      <rs-icon icon-type="rounded" icon-name="{{resourceIcon}}" symbol="true"></rs-icon>
     {{else}}
-      <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol=true></rs-icon>
+      <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol="true"></rs-icon>
     {{/if}}
 
     {{#if resourceLabel}}

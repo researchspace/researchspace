@@ -48,26 +48,29 @@
         <mp-splitpane id='{{viewId}}-entity-resource-sidebar' min-size=63 default-size=370 snap-threshold=200 default-open=true always-render=true primary='second' class="entity-resource-sidebar">
             <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
                 <rs-tab event-key="detail" title="Details">
-                    <div>   
-                        <semantic-form-text-input for="entity_description" multiline=true label="Description" placeholder="Enter description/comment"></semantic-form-text-input>
-    
-                        <semantic-form-autocomplete-input   for="entity_preferred_id" 
-                                                            label="Preferred identifier"
-                                                            placeholder="Select preferred identifier" 
-                                                            nested-form-templates='[ 
-                                                                {
-                                                                    "label": "Identifier",
-                                                                    "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Identifier\" nested=true editable=true mode=\"new\" }}
-                                                                                    {{{{/raw}}}}"
-                                                                }
-                                                            ]'>
-                        </semantic-form-autocomplete-input>
-            
-                        <semantic-form-autocomplete-input   for="entity_id" 
-                                                            label="Other identifier"
-                                                            placeholder="Select other identifier" 
-                                                            nested-form-templates='[[> Platform:NestedFormTemplates_appellations]]'>
-                        </semantic-form-autocomplete-input>                
+                    <div class="form-2column-flex" style="flex-direction: column;">
+                        [[> timelineSection ]]
+                        <div style="flex: 1;">
+                            <semantic-form-text-input for="entity_description" multiline=true label="Description" placeholder="Enter description/comment"></semantic-form-text-input>
+        
+                            <semantic-form-autocomplete-input   for="entity_preferred_id" 
+                                                                label="Preferred identifier"
+                                                                placeholder="Select preferred identifier" 
+                                                                nested-form-templates='[ 
+                                                                    {
+                                                                        "label": "Identifier",
+                                                                        "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Identifier\" nested=true editable=true mode=\"new\" }}
+                                                                                        {{{{/raw}}}}"
+                                                                    }
+                                                                ]'>
+                            </semantic-form-autocomplete-input>
+                
+                            <semantic-form-autocomplete-input   for="entity_id" 
+                                                                label="Other identifier"
+                                                                placeholder="Select other identifier" 
+                                                                nested-form-templates='[[> Platform:NestedFormTemplates_appellations]]'>
+                            </semantic-form-autocomplete-input>     
+                        </div>           
                     </div>
                 </rs-tab>
 
@@ -601,6 +604,53 @@
                 {{/if}}
       
             </rs-tabs>
+
+            [[#*inline "timelineSection"]]
+                <div class="page__section-container" style="margin: 20px 0 0; width: 100%; padding-top: 0; height: fit-content;">
+                    <div style="display: flex; align-items: baseline; justify-content: space-between">
+                        <div class="customFormHeader">Timeline</div>
+                        <div style="display: flex; align-items: center; column-gap: 3px;">
+                            <mp-overlay-dialog  id="{{viewId}}-resource-preview-dialog"  
+                                                type="modal" 
+                                                class="modal-xlSize preview_modal"
+                                                title="Timeline preview">
+                            <mp-overlay-dialog-trigger>
+                                <button class="btn btn-icon" title="Preview">
+                                    <rs-icon icon-type="rounded" icon-name="fullscreen" symbol="true"></rs-icon>
+                                </button>
+                            </mp-overlay-dialog-trigger>
+            
+                            <mp-overlay-dialog-content>
+                                <inline-template    template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
+                                                    options='{  "resource": "{{node}}", 
+                                                                "resourceConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline", 
+                                                                "resourceConfigLabel": "Timeline",
+                                                                "modalId": "{{viewId}}-resource-preview-dialog",
+                                                                "resourceDetailSection": false
+                                                            }'
+                                    >
+                                </inline-template> 
+                            </mp-overlay-dialog-content>
+                            </mp-overlay-dialog>
+
+                            <mp-event-trigger   id='{{viewId}}-timeline-add-frame-trigger' 
+                                                type='Dashboard.AddFrame' 
+                                                data='{"resourceIri": "{{node}}", 
+                                                        "viewId": "timeline", 
+                                                        "frameId": "{{viewId}}"}' 
+                                                targets='["thinking-frames"]'>
+                                <button class="btn btn-icon" title="Open timeline">
+                                    <rs-icon icon-type="rounded" icon-name="timeline" symbol="true"></rs-icon>
+                                </button>
+                            </mp-event-trigger>
+                        </div>
+                    </div>
+                    <div class="form-timeline-container">
+                        <mp-persisted-component iri='{{node}}'></mp-persisted-component>
+                    </div>
+                    
+                </div>
+            [[/inline]]
       
             [[> rsp:FormAssetSidebar imagesOnly=true]]
         </mp-splitpane>

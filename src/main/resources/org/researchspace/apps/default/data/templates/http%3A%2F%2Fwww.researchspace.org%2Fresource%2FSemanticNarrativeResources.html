@@ -410,7 +410,11 @@
                             
                                                         <template id='selectionCheckbox'>
                                                             [[#if (hasPermission "forms:ldp:*")]]
-                                                                {{#if (or (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map"))}}
+                                                                {{#if (or   (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") 
+                                                                            (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map")
+                                                                            (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")
+                                                                            (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline")
+                                                                )}}
                                                                 {{else}}
                                                                     <div>
                                                                         <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
@@ -471,6 +475,22 @@
                                                                             <mp-event-trigger id='{{iri.value}}-open-km-title-trigger' 
                                                                                                 type='Dashboard.AddFrame'
                                                                                                 data='{"viewId":"knowledge-map", 
+                                                                                                        "resourceIri": "{{iri.value}}"}' 
+                                                                                                targets='["thinking-frames"]'>
+                                                                                <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
+                                                                            </mp-event-trigger>
+                                                                        {{else if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")}}
+                                                                            <mp-event-trigger id='{{iri.value}}-open-chart-title-trigger' 
+                                                                                                type='Dashboard.AddFrame'
+                                                                                                data='{"viewId":"chart", 
+                                                                                                        "resourceIri": "{{iri.value}}"}' 
+                                                                                                targets='["thinking-frames"]'>
+                                                                                <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
+                                                                            </mp-event-trigger>
+                                                                        {{else if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")}}
+                                                                            <mp-event-trigger id='{{iri.value}}-open-timeline-title-trigger' 
+                                                                                                type='Dashboard.AddFrame'
+                                                                                                data='{"viewId":"timeline", 
                                                                                                         "resourceIri": "{{iri.value}}"}' 
                                                                                                 targets='["thinking-frames"]'>
                                                                                 <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>

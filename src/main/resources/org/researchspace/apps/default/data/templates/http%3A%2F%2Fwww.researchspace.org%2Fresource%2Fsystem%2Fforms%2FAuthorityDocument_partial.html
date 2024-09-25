@@ -412,12 +412,9 @@
                                         >
                                           <template id='selectionCheckbox'>
                                             [[#if (hasPermission "forms:ldp:*")]]
-                                              {{#if (or (eq listedResourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") (eq listedResourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map"))}}
-                                              {{else}}
-                                                <div>
-                                                  <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
-                                                </div>
-                                              {{/if}}
+                                              <div>
+                                                <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
+                                              </div>
                                             [[/if]]
                                           </template>
 
@@ -469,29 +466,15 @@
                                                 <div>
                                                   <mp-draggable iri='{{iri.value}}'>
                                                     <div>
-                                                      {{#if (eq listedResourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map")}}
-                                                        <mp-event-trigger id='{{iri.value}}-open-km-title-trigger' 
-                                                                          type='Dashboard.AddFrame'
-                                                                          data='{"viewId":"knowledge-map", 
-                                                                                  "resourceIri": "{{iri.value}}"}' 
-                                                                          targets='["thinking-frames"]'>
-                                                          <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
-                                                        </mp-event-trigger>
-                                                      {{else if (eq listedResourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
+                                                      {{#if (eq listedResourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
                                                         <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
                                                                         urlqueryparam-view='authority-list'
                                                                         urlqueryparam-resource='{{iri.value}}'>
                                                           <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
                                                         </semantic-link>
-                                                      {{else if (eq listedResourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
-                                                        <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                                        urlqueryparam-view='single-set-management'
-                                                                        urlqueryparam-resource='{{iri.value}}'>
-                                                          <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
-                                                        </semantic-link>
                                                       {{else}}
                                                         <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                                        urlqueryparam-view='{{#if (eq listedResourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}semantic-narrative{{else}}resource-editor{{/if}}'
+                                                                        urlqueryparam-view='resource-editor'
                                                                         urlqueryparam-resource='{{iri.value}}'>
                                                           <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
                                                         </semantic-link>

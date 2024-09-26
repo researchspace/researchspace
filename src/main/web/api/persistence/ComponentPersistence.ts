@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -24,9 +25,11 @@ import { ComponentProps, SemanticContext } from 'platform/api/components';
 import { serialize, deserialize } from 'platform/api/json';
 import { ComponentClassMetadata } from 'platform/api/module-loader';
 import { Rdf, ObjectGraph } from 'platform/api/rdf';
-import { rdf, persist } from 'platform/api/rdf/vocabularies';
+import { rdf, persist, crm } from 'platform/api/rdf/vocabularies';
 import { QueryContext } from 'platform/api/sparql';
 import { TemplateScope, TemplateScopeProps } from 'platform/api/services/template';
+import crmdig from 'platform/data/vocabularies/crmdig';
+import platform from '../rdf/vocabularies/platform';
 
 interface RawComponentContext {
   templateProps: TemplateScopeProps;
@@ -69,6 +72,7 @@ export function componentToGraph(params: {
   }
 
   const componentNamespace = Rdf.iri(persist.COMPONENT_TYPE_PREFIX + htmlTag);
+  const componentP2Type = Rdf.iri(platform._NAMESPACE_VOCABULARY_RESOURCE_TYPE + htmlTag.replace("-","_"));
   type CustomComponentProps = Props<any> & ComponentProps;
   const { markupTemplateScope, children, ...otherProps } = component.props as CustomComponentProps;
 
@@ -77,6 +81,8 @@ export function componentToGraph(params: {
   const propsGraph = ObjectGraph.serialize(otherProps, componentNamespace);
   const result = propsGraph.graph.triples.toArray();
   result.push(
+    Rdf.triple(componentRoot,rdf.type, crmdig.D1_Digital_Object),
+    Rdf.triple(componentRoot, crm.P2_has_type, componentP2Type),
     Rdf.triple(componentRoot, rdf.type, persist.PersistedComponent),
     Rdf.triple(componentRoot, persist.componentType, componentNamespace),
     Rdf.triple(componentRoot, persist.componentProps, propsGraph.pointer)

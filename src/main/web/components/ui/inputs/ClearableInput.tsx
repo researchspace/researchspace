@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -69,7 +70,7 @@ export class ClearableInput extends React.Component<ClearableInputProps, State> 
         <div className={`${CLASS_NAME}__input-with-clear`}>
           {showPlaceholderIcon &&
             <div className={`${CLASS_NAME}__icon`}>
-              <Icon iconType='round' iconName='search'/>
+              <Icon iconType='rounded' iconName='search' symbol/>
             </div>
           }
           <input
@@ -83,7 +84,7 @@ export class ClearableInput extends React.Component<ClearableInputProps, State> 
             onBlur={this.onBlur}
           />
           <div className={`${CLASS_NAME}__clear`} title={clearTitle} onClick={onClear}>
-            <Icon iconType='round' iconName='close'/>
+            <Icon iconType='rounded' iconName='close' symbol />
           </div>
         </div>
       </div>

@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -40,6 +41,7 @@ export interface ImageOrRegionInfo {
   viewport?: ImageSubarea;
   svgContent?: { __html: string };
   imageIRI: Rdf.Iri;
+  carrierImageIRI?: Rdf.Iri;
 }
 
 export type ExplicitRegion = {
@@ -52,12 +54,16 @@ const IMAGE_REGION_INFO_QUERY = SparqlUtil.Sparql`
   prefix rs: <http://www.researchspace.org/ontology/>
   prefix crmdig: <http://www.ics.forth.gr/isl/CRMdig/>
 
-  select ?type ?imageID ?area ?bbox ?viewport ?svg ?imageIRI {
+  select ?type ?imageID ?area ?bbox ?viewport ?svg ?imageIRI ?carrierImageIRI{
     OPTIONAL {
       ?__iri__ a rs:EX_Digital_Image .
       BIND("image" AS ?type)
       BIND(?__iri__ as ?imageIRI)
+      OPTIONAL {
+        ?__iri__ crmdig:L60i_is_documented_by/crmdig:L11_had_output ?carrierImageIRI.
+      }
     }
+    
     OPTIONAL {
       ?__iri__ a rs:EX_Digital_Image_Region;
             rdf:value ?svg.
@@ -72,7 +78,7 @@ const IMAGE_REGION_INFO_QUERY = SparqlUtil.Sparql`
 
 const INLINE_REGION_INFO_QUERY = SparqlUtil.Sparql`
 select ?type ?imageID ?area ?bbox ?viewport ?svg ?imageIRI {
-  BIND(?__iri__ as ?imageIRI) .
+  BIND(?__iri__ as ?image) .
   BIND("region" AS ?type)
   FILTER(?__imageIdPattern__)
 }
@@ -88,7 +94,8 @@ export function queryIIIFImageOrRegion(
   return searchRepositoriesForImage(imageOrRegion, imageIdPattern, repositories, region)
     .flatMap((bindings) => {
       const binding = bindings[0];
-      const { type, imageIRI, imageID } = binding;
+      const { type, imageIRI, imageID, carrierImageIRI } = binding;
+      
       if (!type || !imageIRI.isIri()) {
         return Kefir.constantError<any>(`Image or region ${imageOrRegion} not found.`);
       } else if (!imageID || imageID.value.indexOf('/') >= 0) {
@@ -103,6 +110,7 @@ export function queryIIIFImageOrRegion(
           imageId: imageID.value,
           isRegion: false,
           imageIRI: imageIRI,
+          carrierImageIRI: carrierImageIRI.value
         });
       } else if (type.value === 'region') {
         const viewport = maybe.fromNullable(binding['viewport']).chain((b) => parseImageSubarea(b.value));
@@ -115,7 +123,7 @@ export function queryIIIFImageOrRegion(
           viewport: viewport.getOrElse(undefined),
           boundingBox: bbox.getOrElse(undefined),
           svgContent: svg.getOrElse(undefined),
-          imageIRI: imageIRI,
+          imageIRI: imageIRI          
         });
       }
     })
@@ -171,7 +179,7 @@ function getImageBindings(
 
   new PatternBinder('__imageIdPattern__', imageIdPatterns).sparqlQuery(query);
   const parametrizedQuery = SparqlClient.setBindings(query, { __iri__: imageOrRegion });
-
+  
   return SparqlClient.select(parametrizedQuery, { context: { repository: repository } });
 }
 

@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -167,7 +168,7 @@ export class DashboardComponent extends Component<Props, State> {
 
   private frameLabel = (label?: string) => {
     this.itemLabelCount = this.itemLabelCount + 1;
-    const displayLabel = label ?? 'New Tab'
+    const displayLabel = label ?? 'Homepage'
     return { 
       // id: uniqueId(displayLabel.replace(/\s/g, '')),
       id: uniqueId('frame'),
@@ -350,16 +351,30 @@ export class DashboardComponent extends Component<Props, State> {
         });
         return true;
       } else if (!iri.value.startsWith('http://www.researchspace.org/resource/')) {
-        trigger({
-          eventType: 'Dashboard.AddFrame',
-          source: 'link',
-          targets: ['thinking-frames'],
-          data: {
-            resourceIri: iri.value,
-            viewId: 'resource',
-            ...props
-          }
-        });
+        /* Set exception for OverlayImages to be opened with the image-annotation */
+        if (iri.value.includes("Overlay")) {
+          trigger({
+            eventType: 'Dashboard.AddFrame',
+            source: 'link',
+            targets: ['thinking-frames'],
+            data: {
+              resourceIri: 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Image',
+              viewId: 'resource-search',
+              ...props
+            }          
+          });
+        }
+        else
+          trigger({
+            eventType: 'Dashboard.AddFrame',
+            source: 'link',
+            targets: ['thinking-frames'],
+            data: {
+              resourceIri: iri.value,
+              viewId: 'resource',
+              ...props
+            }
+          });
         return true;
       } else {
         return false;
@@ -410,14 +425,14 @@ export class DashboardComponent extends Component<Props, State> {
               this.layoutRef.current.addTabWithDragAndDrop('Drag me where you want',
                 {
                   'type': 'tab', 'id':newFrameId, 'name': item.label, 'component': "item", 'config': {'itemId': item.id},
-                 'className': viewConfig?.iconName || viewConfig?.iconClass || 'no-icon-button', 'icon': 'add'
+                 'className': viewConfig?.iconName || viewConfig?.iconClass || 'homepage-button', 'icon': 'add'
                 }
               );
             } else {
               this.layoutRef.current.addTabToActiveTabSet(
                 {
                   'type': 'tab', 'id':newFrameId, 'name': item.label, 'component': "item", 'config': {'itemId': item.id},
-                  'className': viewConfig?.iconName || viewConfig?.iconClass || 'no-icon-button', 'icon': 'add'
+                  'className': viewConfig?.iconName || viewConfig?.iconClass || 'homepage-button', 'icon': 'add'
                 }
               );
             }
@@ -459,7 +474,7 @@ export class DashboardComponent extends Component<Props, State> {
   //           className={`btn btn-xs pull-right ${styles.deleteItemButton}`}
   //           onClick={() => this.onRemoveItem(item)}
   //         >
-  //           <Icon iconType='round' iconName='close'/>
+  //           <Icon iconType='rounded' iconName='close' symbol />
   //         </button>
   //       </span>
   //     );
@@ -472,7 +487,7 @@ export class DashboardComponent extends Component<Props, State> {
   //         className={`btn btn-xs pull-right ${styles.deleteItemButton}`}
   //         onClick={() => this.onRemoveItem(item)}
   //       >
-  //         <Icon iconType='round' iconName='close'/>
+  //         <Icon iconType='rounded' iconName='close' symbol />
   //       </button>
   //     </span>
   //   );
@@ -708,10 +723,10 @@ export class DashboardComponent extends Component<Props, State> {
 
   private tabIcons = () =>
     ({
-      'close': <Icon iconType='round' iconName='close'/>,
-      'maximize': <Icon iconType='round' iconName='fullscreen'/>,
-      'restore': <Icon iconType='round' iconName='close_fullscreen'/>,
-      'more': <Icon iconType='round' iconName='arrow_drop_down'/>,
+      'close': <Icon iconType='rounded' iconName='close' symbol />,
+      'maximize': <Icon iconType='rounded' iconName='fullscreen' symbol />,
+      'restore': <Icon iconType='rounded' iconName='close_fullscreen' symbol />,
+      'more': <Icon iconType='rounded' iconName='arrow_drop_down' symbol/>,
     });
 
   private factory = (node: TabNode) => {
@@ -759,7 +774,7 @@ export class DashboardComponent extends Component<Props, State> {
           onClick={(event) => {
             this.onAddNewItem();
           }}>
-          <Icon iconType='round' iconName='add'/>
+          <Icon iconType='rounded' iconName='add' symbol/>
         </button>
       );
     }

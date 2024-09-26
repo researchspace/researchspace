@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -112,7 +113,7 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
     dropAreaTemplate: '<span>Drop resource here</span>',
     placeholderItemTemplate: `
       <div class='DragAndDropInput--placeholderContainer'>
-        <rs-icon icon-type="round" icon-name="upload_file"></rs-icon>
+        <rs-icon icon-type="rounded" icon-name="upload_file" symbol="true"></rs-icon>
         <div>Drag and drop here</div>
         {{#if canCreateNew}}
         <div>or click to Upload</div>

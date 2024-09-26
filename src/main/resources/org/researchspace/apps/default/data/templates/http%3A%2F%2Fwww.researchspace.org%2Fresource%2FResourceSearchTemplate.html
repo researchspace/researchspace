@@ -1,6 +1,12 @@
 <mp-event-target-template-render id="[[urlParam 'resourceconfig' escape=false]]-resourceSearch-frame" template='{{> template}}'>
   <template id='template'>
 
+    <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-searchPage-on-form-actions'
+                    on-event-types='["Form.ResourceUpdated", "Form.ResourceRemoved"]'      
+                    proxy-event-type='Component.TemplateUpdate' 
+                    proxy-targets='["[[urlParam "resourceconfig" escape=false]]-resourceSearch-frame"]'>
+    ></mp-event-proxy>
+
     <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-searchPage-on-create-setWithSelection'
                     on-event-types='["Components.SetManagement.SetAdded"]'
                     on-event-source='[[urlParam "viewid" escape=false]]-new-set-with-selection'
@@ -33,6 +39,15 @@
       </mp-event-proxy>
     {{/if}}
 
+    {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image")}}
+      <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-ImageSearch-on-OverlayComparison-created' 
+                      on-event-types='["OverlayComparison.Created"]'
+                      proxy-event-type='Component.TemplateUpdate' 
+                      proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Image-resourceSearch-frame"]'
+                      additional-data='{"imageOverlayCreated": true }'>
+      </mp-event-proxy>
+    {{/if}}
+
     {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation")}}
       <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-ImageAnnotationSearch-on-IIIFViewer-modification' 
                       on-event-types='["IIIFViewer.RegionCreated", "IIIFViewer.RegionUpdated", "IIIFViewer.RegionRemoved"]'
@@ -56,9 +71,18 @@
                       proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative-resourceSearch-frame"]'
       ></mp-event-proxy>
     {{/if}}
+  
+    {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
+      <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-AuthorityDocumentSearch-on-delete'
+                      on-event-types='["GraphAction.Delete"]'    
+                      proxy-event-type='Component.TemplateUpdate' 
+                      proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document-resourceSearch-frame"]'
+      ></mp-event-proxy>
+    {{/if}}
 
+    [[!-- WARNING: any KPs used for search has to have a domain matching the resource ontology class --]]
     [[#if (urlParam "searchkpcategory")]]
-      <semantic-search config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . ?field <http://www.researchspace.org/resource/system/fields/category> ?category . }" category=(urlParam "searchkpcategory" escape=false))]]'>
+      <semantic-search config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> . ?field <http://www.researchspace.org/resource/system/fields/category> ?category . }" category=(urlParam "searchkpcategory" escape=false))]]'>
     [[else]]    
       <semantic-search config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> .  ?field <http://www.researchspace.org/resource/system/fields/domain> ?domain . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . }" domain=(urlParam "resourceontologyclass" escape=false))]]'>      
     [[/if]]
@@ -117,6 +141,14 @@
                     </button>
                   </semantic-link-container>
                 </div>  
+              </template>
+
+              <template id='http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart'>
+                <div></div>
+              </template>
+
+              <template id='http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline'>
+                <div></div>
               </template>
 
               <template id='http://www.researchspace.org/resource/system/resource_configurations_container/data/Set'>
@@ -183,14 +215,14 @@
             </semantic-switch>
 
             {{#ifCond "[[urlParam "resourceconfig" escape=false]]" "==" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document"}}
-              <mp-overlay-dialog  id='{{viewId}}-import-authorityDocument-dialog'
+              <mp-overlay-dialog  id='[[urlParam "viewid" escape=false]]-import-authorityDocument-dialog'
                                   title="Import authority document" 
                                   type="modal" 
                                   bs-size="large"
                                   class="importVocabulary-modal">
                 <mp-overlay-dialog-trigger>
                   <button class="btn btn-default btn-textAndIcon">
-                    <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                    <rs-icon icon-type='rounded' icon-name='upload' symbol='true'></rs-icon>
                     <span>Import</span>
                   </button>
                 </mp-overlay-dialog-trigger>
@@ -211,7 +243,7 @@
                             Only *.trig or *.nq files are accepted.
                           {{else}}
                             <div class='placeholder-item'>
-                              <rs-icon icon-type='round' icon-name='file_upload' class='upload_icon'></rs-icon>
+                              <rs-icon icon-type='rounded' icon-name='upload' class='upload_icon' symbol='true'></rs-icon>
                               <div> 
                                 <p>Drag authority document as *.trig or *.nq RDF file(s) or click to upload</p>
                                 <div class="documentation-section documentation-section-withIcon" style="margin: 20px 0;">
@@ -236,13 +268,13 @@
                 </mp-overlay-dialog-content>
               </mp-overlay-dialog>
 
-              <mp-event-proxy id='{{viewId}}-authorityDocument-import-closeModal-proxy' 
+              <mp-event-proxy id='[[urlParam "viewid" escape=false]]-authorityDocument-import-closeModal-proxy' 
                               on-event-type='RdfUpload.Success'
                               proxy-event-type='OverlayDialog.Close' 
-                              proxy-targets='["{{viewId}}-import-authorityDocument-dialog"]'
+                              proxy-targets='["[[urlParam "viewid" escape=false]]-import-authorityDocument-dialog"]'
               ></mp-event-proxy>
 
-              <mp-event-proxy id='{{viewId}}-authorityDocument-importSuccess-refreshSearch-proxy' 
+              <mp-event-proxy id='[[urlParam "viewid" escape=false]]-authorityDocument-importSuccess-refreshSearch-proxy' 
                               on-event-type='RdfUpload.Success'
                               proxy-event-type='Component.TemplateUpdate' 
                               proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document-resourceSearch-frame"]'>
@@ -434,31 +466,43 @@
                                   targets='["[[urlParam "resourceconfig" escape=false]]-resourceSearch-frame"]'
                                   >
               <button class="btn btn-default btn-textAndIcon">
-                <rs-icon icon-type="round" icon-name="refresh" title="Refresh results"></rs-icon>
+                <rs-icon icon-type="rounded" icon-name="refresh" title="Refresh results" symbol="true"></rs-icon>
               </button>
             </mp-event-trigger>
 
             [[!-- More actions button --]]
             <bs-dropdown id="[[urlParam 'viewid' escape=false]]-search-actions-dropdown" pull-right=true class="dropdown-no-caret">
               <bs-dropdown-toggle>
-                <rs-icon icon-type="round" icon-name="more_vert"></rs-icon>
+                <rs-icon icon-type="rounded" icon-name="more_vert" symbol="true"></rs-icon>
               </bs-dropdown-toggle>
               <bs-dropdown-menu>
+             
+                <mp-selection-action-choice id='[[urlParam "viewid" escape=false]]-image-side-by-side-action' selection='item-selection-aggregator'>
+                  <div>
+                    {{#each selection}}
+                      <div>{{tag}}</div>
+                    {{/each}}
+                  </div>
+                </mp-selection-action-choice>
 
                 {{#ifCond "[[urlParam "resourceconfig" escape=false]]" "==" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image"}}
-                  <mp-selection-action-choice id='[[urlParam "viewid" escape=false]]-side-by-side-action' selection='item-selection-aggregator'>
-                    <rs-iiif-side-by-side-action icon="splitscreen_vertical_add" [[> rsp:IIIFConfig]] ></rs-iiif-side-by-side-action>
-                  </mp-selection-action-choice>
-          
+                  [[!-- 
+                    <mp-selection-action-choice id='[[urlParam "viewid" escape=false]]-side-by-side-action' selection='item-selection-aggregator'>
+                      <rs-iiif-side-by-side-action icon="splitscreen_vertical_add" [[> rsp:IIIFConfig]] ></rs-iiif-side-by-side-action>
+                    </mp-selection-action-choice>
+                  --]]
+                  
                   <mp-selection-action-choice id='[[urlParam "viewid" escape=false]]-overlay-action' selection='item-selection-aggregator'>
                     <rs-iiif-overlay-action icon="layers" [[> rsp:IIIFConfig]]></rs-iiif-overlay-action>
                   </mp-selection-action-choice>
-            
+                  
                   <hr>
                 {{/ifCond}}
 
                 {{#ifCond "[[urlParam "resourceconfig" escape=false]]" "==" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set"}}
                 {{else ifCond "[[urlParam "resourceconfig" escape=false]]" "==" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map"}}
+                {{else ifCond "[[urlParam "resourceconfig" escape=false]]" "==" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart"}}
+                {{else ifCond "[[urlParam "resourceconfig" escape=false]]" "==" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline"}}
                 {{else}}
                   [[#if (hasPermission "forms:ldp:*")]]
                     <mp-selection-action-choice id='[[urlParam "viewid" escape=false]]-create-set-action' selection='item-selection-aggregator'>
@@ -480,7 +524,7 @@
                   [[/if]]
                 {{/ifCond}}
 
-        [[!--        <mp-anonymous-hidden>
+        [[!--    <mp-anonymous-hidden>
                   <semantic-search-action-save-search-result id='save-search-result-action' add-to-default-set=true>
                     <bs-menu-item>
                       <rs-icon icon-type="rounded" icon-name="save" class="icon-left" symbol="true"></rs-icon>
@@ -491,11 +535,81 @@
 
                 <mp-anonymous-hidden><hr></mp-anonymous-hidden>
          --]]       
-                <semantic-search-result>
+                <semantic-search-result> 
                   <mp-sparql-download id='csv-result' 
-                                      query="SELECT ?subject WHERE { }"
-                                      header="text/csv"
-                                      filename="[[urlParam 'resourcelabel' escape=false]]-csv-result.csv">
+                                      query='SELECT ?resourceName ?resourceType ?resourceDescription WHERE { 
+                                              BIND("[[urlParam "resourcelabel" escape=false]]" as ?resourceType)
+
+                                              { 
+                                                ?subject crm:P1_is_identified_by ?appellation .
+                                                ?appellation a crm:E41_Appellation .
+                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                ?appellation crm:P190_has_symbolic_content ?resourceName .
+                                              } UNION {
+                                                  ?subject crm:P170i_time_is_defined_by ?timePrimitive .
+                                                  ?timePrimitive a crm:E61_Time_Primitive .
+                                                  ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
+                                                  ?timePrimitive crm:P190_has_symbolic_content ?resourceName .
+                                              } UNION {
+                                                  ?subject skos:prefLabel ?resourceName .
+                                              } UNION {
+                                                  ?subject crm:P190_has_symbolic_content ?resourceName .
+                                              }
+
+                                              OPTIONAL {
+                                                  ?subject crm:P67i_is_referred_to_by ?information_object  .
+                                                  ?information_object a crm:E73_Information_Object .
+                                                  ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
+                                                  ?information_object crm:P1_is_identified_by ?descriptionAppellation . 
+                                                  ?descriptionAppellation a crm:E41_Appellation . 
+                                                  ?descriptionAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                  ?descriptionAppellation crm:P190_has_symbolic_content ?resourceDescription .
+                                              }
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Appellation")}}
+                                                MINUS { <http://www.researchspace.org/resource/system/ontodiaDiagramContainer> crm:P1_is_identified_by ?subject .}
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor")}}
+                                                MINUS {?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .}
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
+                                                MINUS { ?subject crm:P2_has_type Platform:System_Resource .}
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Entity")}}
+                                                MINUS { ?configuration <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_listView_column> ?subject .}
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Information_object")}}
+                                                MINUS { ?subject a Platform:resource_configuration .}
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Term")}}
+                                                MINUS { ?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/KP_category> .}
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Timespan")}}
+                                                MINUS { 
+                                                  ?entityFormRecordCreation crm:P4_has_time-span ?subject .
+                                                  ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+                                                }
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Type")}}
+                                                MINUS { 
+                                                  ?subject crm:P71i_is_listed_in ?vocabulary .
+                                                  ?vocabulary crm:P2_has_type Platform:System_Resource .
+                                                }
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
+                                                MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
+                                              {{/if}}
+                                            }'
+                                      header='text/csv'
+                                      filename='[[urlParam "resourcelabel" escape=false]]-csv-result.csv'>
                     <bs-menu-item>
                       <rs-icon icon-type="rounded" icon-name="file_download" class="icon-left" symbol="true"></rs-icon>
                       <span>Export as CSV</span>
@@ -505,10 +619,79 @@
                   
                 <semantic-search-result>
                   <mp-sparql-download id='json-result' 
-                                      query="SELECT ?subject WHERE { }"
-                                      header="application/sparql-results+json"
-                                      filename="[[urlParam 'resourcelabel' escape=false]]-json-result.json"
-                  >
+                                      query='SELECT ?resourceName ?resourceType ?resourceDescription WHERE { 
+                                              BIND("[[urlParam "resourcelabel" escape=false]]" as ?resourceType)
+
+                                              { 
+                                                ?subject crm:P1_is_identified_by ?appellation .
+                                                ?appellation a crm:E41_Appellation .
+                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                ?appellation crm:P190_has_symbolic_content ?resourceName .
+                                              } UNION {
+                                                  ?subject crm:P170i_time_is_defined_by ?timePrimitive .
+                                                  ?timePrimitive a crm:E61_Time_Primitive .
+                                                  ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
+                                                  ?timePrimitive crm:P190_has_symbolic_content ?resourceName .
+                                              } UNION {
+                                                  ?subject skos:prefLabel ?resourceName .
+                                              } UNION {
+                                                  ?subject crm:P190_has_symbolic_content ?resourceName .
+                                              }
+
+                                              OPTIONAL {
+                                                  ?subject crm:P67i_is_referred_to_by ?information_object  .
+                                                  ?information_object a crm:E73_Information_Object .
+                                                  ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
+                                                  ?information_object crm:P1_is_identified_by ?descriptionAppellation . 
+                                                  ?descriptionAppellation a crm:E41_Appellation . 
+                                                  ?descriptionAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                  ?descriptionAppellation crm:P190_has_symbolic_content ?resourceDescription .
+                                              }
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Appellation")}}
+                                                MINUS { <http://www.researchspace.org/resource/system/ontodiaDiagramContainer> crm:P1_is_identified_by ?subject .}
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor")}}
+                                                MINUS {?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .}
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
+                                                MINUS { ?subject crm:P2_has_type Platform:System_Resource .}
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Entity")}}
+                                                MINUS { ?configuration <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_listView_column> ?subject .}
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Information_object")}}
+                                                MINUS { ?subject a Platform:resource_configuration .}
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Term")}}
+                                                MINUS { ?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/KP_category> .}
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Timespan")}}
+                                                MINUS { 
+                                                  ?entityFormRecordCreation crm:P4_has_time-span ?subject .
+                                                  ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+                                                }
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Type")}}
+                                                MINUS { 
+                                                  ?subject crm:P71i_is_listed_in ?vocabulary .
+                                                  ?vocabulary crm:P2_has_type Platform:System_Resource .
+                                                }
+                                              {{/if}}
+
+                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
+                                                MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
+                                              {{/if}}
+                                            }'
+                                      header='application/sparql-results+json'
+                                      filename='[[urlParam "resourcelabel" escape=false]]-json-result.json'>
                     <bs-menu-item>
                       <rs-icon icon-type="rounded" icon-name="file_download" class="icon-left" symbol="true"></rs-icon>
                       <span>Export as JSON</span>
@@ -522,38 +705,47 @@
           </div>
         </div>
 
-        <mp-event-target-template-render id='[[urlParam "viewid" escape=false]]-created-new-set-message' template='{{> template}}'>
+        <mp-event-target-template-render id='[[urlParam "viewid" escape=false]]-created-new-resource-message' template='{{> template}}'>
           <template id='template'>
             {{#if hideMessage}}
-            {{else if setCreated}}
+            {{else if (or setCreated imageOverlayCreated)}}
                 <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%; margin-top: 5px; margin-bottom: 10px;">
                   <div class="success-documentation-section-icon-container">
-                    <rs-icon icon-type="round" icon-name="done"></rs-icon>
+                    <rs-icon icon-type="rounded" icon-name="done" symbol="true"></rs-icon>
                   </div>
 
                   <div style="flex: 1;"> 
-                    <div class="success-documentation-section-title">New set created!</div>
+                    <div class="success-documentation-section-title">New {{#if setCreated}}set{{/if}}{{#if imageOverlayCreated}}overlay image{{/if}} created!</div>
                     <div class="success-documentation-section-content" style="display: flex; gap: 5px;">
                       <mp-draggable iri='{{containerIri}}'>
                         <div>
-                          <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                          urlqueryparam-view='single-set-management'
-                                          urlqueryparam-resource='{{containerIri}}'>
-                            <mp-label iri='{{containerIri}}' class="text-link color-success-text"></mp-label>
-                          </semantic-link>
+                          {{#if setCreated}}
+                            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                            urlqueryparam-view='single-set-management'
+                                            urlqueryparam-resource='{{containerIri}}'>
+                              <mp-label iri='{{containerIri}}' class="text-link color-success-text"></mp-label>
+                            </semantic-link>
+                          {{/if}}
+                          {{#if imageOverlayCreated}}
+                            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                            urlqueryparam-view='resource-editor' 
+                                            urlqueryparam-resource-iri='{{iri}}'>
+                              <mp-label iri='{{iri}}' class="text-link color-success-text"></mp-label>
+                            </semantic-link>
+                          {{/if}}
                         </div>
                       </mp-draggable>
                       <span> has been created.</span>
                     </div>
                   </div>
                   
-                  <mp-event-trigger id='[[urlParam "viewid" escape=false]]-created-set-close-message'
+                  <mp-event-trigger id='[[urlParam "viewid" escape=false]]-created-resource-close-message'
                                     type='Component.TemplateUpdate'
                                     data='{ "hideMessage": "true" }'
-                                    targets='["[[urlParam "viewid" escape=false]]-created-new-set-message"]'
+                                    targets='["[[urlParam "viewid" escape=false]]-created-new-resource-message"]'
                   >
                     <button class="btn btn-documentation">
-                      <rs-icon icon-type="round" icon-name="close"></rs-icon>
+                      <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
                     </button>
                   </mp-event-trigger>
                 </div>
@@ -580,7 +772,7 @@
               <div>
                 <div class="warning-documentation-section warning-documentation-section-withIcon" style="margin: 5px 0 10px;">
                   <div class="warning-documentation-section-icon-container">
-                    <rs-icon icon-type="round" icon-name="priority_high"></rs-icon>
+                    <rs-icon icon-type="rounded" icon-name="priority_high" symbol="true"></rs-icon>
                   </div>
           
                   <div> 
@@ -611,7 +803,8 @@
               <template id='resultViews'>
                   <semantic-search-result-holder>
                     {{#if (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/grid")}}
-                      [[!-- grid view --]]
+                      
+                    [[!-- grid view --]]
                       <semantic-search-result>
                         <semantic-table id='semantic-search-result-grid'
                                         class-name="semantic-search-result-grid"
@@ -635,7 +828,7 @@
                                                         resourceIcon="[[urlParam 'resourceicon' escape=true]]"  
                                                         resourceFormIRI="[[urlParam "resourceform" escape=false]]"
                                                         viewId=__semanticTableIndex.value
-                                                        searchCard=true
+                                                        allowResourceDelete=true
                                   }}
                                 {{/bind}}
                               </mp-draggable>
@@ -648,7 +841,8 @@
                     {{else if (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/map")}}
                       <div>no map results</div>
                     {{else if (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/timeline")}}
-                    [[!-- timeline view --]]
+                    
+                    [[!-- timeline view: currently enabled only for crm:E21_Person and rdfs:subClassOf* crm:E2_Temporal_Entity  --]]
                       <div>
                         <semantic-search-result>
                           <mp-sparql-result-counts id='timeline-search-result-count' query="SELECT DISTINCT ?subject {} LIMIT 100"
@@ -657,7 +851,7 @@
                               <template id='template'>
                                 {{#if hasLimit}}
                                   <bs-alert bs-style="warning" class="search-results__alert">
-                                    <rs-icon icon-type="round" icon-name="report_problem"></rs-icon>
+                                    <rs-icon icon-type="rounded" icon-name="report_problem" symbol="true"></rs-icon>
                                     <span class="num-results">There were {{totalNumberOfResults}} results. Only 100 can be visualised on the timeline at once!</span>
                                   </bs-alert>
                                 {{/if}}
@@ -666,41 +860,158 @@
                         </semantic-search-result>
 
                         <semantic-search-result-context ranges='["http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span"]'>
-                          <semantic-search-result  id='semantic-search-result-timeline'>
+                          <semantic-search-result id='semantic-search-result-timeline'>
                               <mp-component-toolbar>
                                 <mp-component-toolbar-actions>
-                                    <mp-component-toolbar-action-save id='persit-component-action' add-to-default-set=true></mp-component-toolbar-action-save>
+                                    <mp-component-toolbar-action-save id='persit-component-action' add-to-default-set=false></mp-component-toolbar-action-save>
                                 </mp-component-toolbar-actions>
-
                                 <mp-component-toolbar-component>
                                     <semantic-timeline  id='search-result-timeline'
                                                         query='PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-                                                                SELECT DISTINCT ?start ?end ?iri WHERE {
-                                                                FILTER(?__contextRelationPattern__).
-                                                                ?__value__ crm:P82a_begin_of_the_begin ?start ;
-                                                                        crm:P82b_end_of_the_end ?end .
-                                                                
-                                                                BIND(?subject as ?iri) .
+                                                                SELECT DISTINCT ?iri ?timespan ?start ?end ?birthTimespan ?deathTimespan WHERE {
+                                                                  {
+                                                                    ?subject a ?ontologyClass .
+                                                                    ?ontologyClass rdfs:subClassOf* crm:E2_Temporal_Entity .
+                                                                    ?subject crm:P4_has_time-span ?__value__ .
+                                                                    ?__value__ crm:P82a_begin_of_the_begin ?start ;
+                                                                                crm:P82b_end_of_the_end ?end .
+                                                                    BIND(?__value__ as ?timespan)
+                                                                    BIND(?subject AS ?iri)
+                                                                    OPTIONAL { FILTER(?__contextRelationPattern__) }
+                                                                  } UNION
+                                                                  {
+                                                                    OPTIONAL {
+                                                                      ?subject a crm:E21_Person .
+                                                                      ?subject crm:P98i_was_born ?birth .
+                                                                      ?birth crm:P4_has_time-span ?birthTimespan .
+                                                                      OPTIONAL { ?birthTimespan crm:P82_at_some_time_within ?start . }
+                                                                      BIND(?subject AS ?iri)
+                                                                    }
+                                                                    OPTIONAL {
+                                                                      ?subject a crm:E21_Person .
+                                                                      ?subject crm:P100i_died_in ?death .
+                                                                      ?death crm:P4_has_time-span ?deathTimespan .
+                                                                      OPTIONAL { ?deathTimespan crm:P82_at_some_time_within ?end .}
+                                                                      BIND(?subject AS ?iri)
+                                                                    }
+                                                                    OPTIONAL { FILTER(?__contextRelationPattern__) }
+                                                                  } 
                                                                 }
-                                                                ORDER BY ?subject
+                                                                ORDER BY ?start ?end
                                                                 LIMIT 100'
                                                         tuple-template='{{> timelineItem}}'
-                                                        tuple-template-height=50>
+                                                        no-result-template='{{> noResults}}'
+                                                        tuple-template-height=auto>
 
                                       <template id='timelineItem'>
-                                          <mp-popover>
-                                            <mp-popover-trigger placement="top" trigger='["hover"]' root-close='false'>
-                                                <div data-flex-layout='column top-left'>
-                                                <p>{{start.value}} - {{end.value}}</p>
-                                                <semantic-link iri='{{iri.value}}'></semantic-link>
-                                                </div>
-                                            </mp-popover-trigger>
-                                            <mp-popover-content>
-                                              {{> rsp:ResourceCard  iri=iri.value
-                                                                    viewId="timeline"
-                                              }}
-                                            </mp-popover-content>
-                                          </mp-popover>
+                                        <div style='display:flex;'>
+                                          <div style='display:flex; gap: 12px; flex: 1;'>
+                                            <div>
+                                              <mp-resource-thumbnail iri='{{iri.value}}'
+                                                                    style="width: 55px; height: 55px; object-fit:cover; margin-top: 5px;">
+                                                <mp-resource-thumbnail-fallback>
+                                                  <span>Image not found!</span>
+                                                </mp-resource-thumbnail-fallback>
+                                              </mp-resource-thumbnail>
+                                            </div>
+                                            <div style='display:flex; flex-direction:column;align-items: flex-start; gap: 2px;'>
+                                              <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                              urlqueryparam-view='resource-editor' 
+                                                              urlqueryparam-resource-iri='{{iri.value}}'>
+                                                <mp-label iri='{{iri.value}}' class="text-link-action text-truncate-line1"></mp-label>
+                                              </semantic-link>
+                                              {{#if timespan}}
+                                                {{#if start.value}}<div>Start date: {{start.value}}</div>{{/if}}
+                                                {{#if end.value}}<div>End date: {{end.value}}</div>{{/if}}
+                                                <div style="display: flex; gap: 3px;">
+                                                  <span>View date:</span>
+                                                  <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                  urlqueryparam-view='resource-editor' 
+                                                                  urlqueryparam-resource-iri='{{timespan.value}}'>
+                                                      <span><mp-label iri='{{timespan.value}}' class="text-link text-truncate-line1"></mp-label></span>
+                                                  </semantic-link>
+                                                </div> 
+                                              {{/if}}
+                                              {{#if birthTimespan}}
+                                                <div style="display: flex; gap: 3px;">
+                                                  <div>Birth date: </div>
+                                                  {{#if start}}
+                                                    <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                    urlqueryparam-view='resource-editor' 
+                                                                    urlqueryparam-resource-iri='{{birthTimespan.value}}'
+                                                                    class="text-link-action text-truncate-line1">
+                                                        {{start.value}}
+                                                    </semantic-link>
+                                                  {{else}}
+                                                    <div>missing birth timespan - date value</div>
+                                                  {{/if}}
+                                                </div> 
+                                              {{/if}}
+                                              {{#if deathTimespan}}
+                                                <div style="display: flex; gap: 3px;">
+                                                  <div>Death date: </div>
+                                                  {{#if end}}
+                                                    <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                    urlqueryparam-view='resource-editor' 
+                                                                    urlqueryparam-resource-iri='{{deathTimespan.value}}'
+                                                                    class="text-link-action text-truncate-line1">
+                                                        {{end.value}}
+                                                    </semantic-link>
+                                                  {{else}}
+                                                    <div>missing death timespan - date value</div>
+                                                  {{/if}}
+                                                </div> 
+                                              {{/if}}
+                                            </div>
+                                          </div>
+                                          <div style="display:flex; gap: 3px;">
+                                            <mp-copy-to-default-set id="[[urlParam 'viewid' escape=false]]-copy-to-clipboard" resource="{{iri.value}}">
+                                              <button class="btn btn-default" style="height: 35px;">
+                                                <rs-icon icon-type="rounded" icon-name="inventory" symbol="true" title="Copy to clipboard"></rs-icon>
+                                              </button>
+                                            </mp-copy-to-default-set>
+                                            
+                                            <mp-overlay-dialog  id="[[urlParam 'viewid' escape=false]]-resource-preview-dialog"  
+                                                                type="modal" 
+                                                                class="modal-xlSize preview_modal"
+                                                                title="Preview">
+                                              <mp-overlay-dialog-trigger>
+                                                <button class="btn btn-default" style="height: 35px;">
+                                                  <rs-icon icon-type="rounded" icon-name="fullscreen" symbol="true" title="Preview"></rs-icon>
+                                                </button>
+                                              </mp-overlay-dialog-trigger>
+
+                                              <mp-overlay-dialog-content>
+                                                <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
+                                                                  options='{  "resource": "{{iri.value}}", 
+                                                                              "resourceConfig": "[[urlParam "resourceconfig" escape=false]]", 
+                                                                              "resourceConfigLabel": "[[urlParam "resourcelabel" escape=false]]",
+                                                                              "resourceOntologyClass": "[[urlParam "resourceontologyclass" escape=false]]",
+                                                                              "modalId": "[[urlParam "viewid" escape=false]]-resource-preview-dialog",
+                                                                              "resourceDetailSection": true
+                                                                            }' >
+                                                </inline-template> 
+                                              </mp-overlay-dialog-content>
+                                            </mp-overlay-dialog>
+                                          </div>
+                                        </div>
+                                      </template>
+
+                                      <template id='noResults'>
+                                        <div style="margin-bottom: 20px;">
+                                          <div class="documentation-section documentation-section-withIcon">
+                                            <div class="documentation-section-icon-container">
+                                              <i class="fa fa-info"></i>
+                                            </div>
+                          
+                                            <div style="flex: 1;"> 
+                                              <div class="documentation-section-title">No results available</div>
+                                              <div class="documentation-section-content">
+                                                To display a resource in the timeline it must have associated a Timespan with Start date and End date.
+                                              </div>
+                                            </div>
+                                          </div> 
+                                        </div>
                                       </template>
                                     </semantic-timeline>
                                 </mp-component-toolbar-component>
@@ -709,33 +1020,34 @@
                         </semantic-search-result-context>
                       </div>
                     {{else if (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/chart")}}
+                      
                       [[!-- chart view --]]
-                      <semantic-search-result-context ranges='["http://www.w3.org/2004/02/skos/core#Concept", "http://www.cidoc-crm.org/cidoc-crm/E53_Place"]'>
-                        <semantic-search-result id='semantic-search-result-chart'>
+                      <semantic-search-result-context ranges='["http://www.w3.org/2004/02/skos/core#Concept","http://www.cidoc-crm.org/cidoc-crm/E55_Type","http://www.cidoc-crm.org/cidoc-crm/E53_Place"]'>
+                        <semantic-search-result id='[[urlParam "viewid" escape=false]]-semantic-search-result-chart'>
                           <mp-component-toolbar>
-                              <mp-component-toolbar-actions>
-                                <semantic-chart-type-selector id='search-result-chart-type-selector' default="bar" types='["line", "bar", "radar", "pie", "donut"]'></semantic-chart-type-selector>
-                                  <mp-component-toolbar-action-download></mp-component-toolbar-action-download>
-                                  <mp-component-toolbar-action-save id='persit-component-action' add-to-default-set=true></mp-component-toolbar-action-save>
-                              </mp-component-toolbar-actions>
-                              <mp-component-toolbar-component>
-                                <semantic-chart
-                                    id='search-result-chart'
-                                    query='
-                                      SELECT ?__value__ (COUNT(DISTINCT ?subject) as ?count) WHERE {
-                                        OPTIONAL { FILTER(?__contextRelationPattern__) }
-                                        BIND(IF(BOUND(?__value__), ?__value__, "Unknown") as ?__value__)
-                                      } GROUP BY ?__value__ ORDER BY DESC(?count)
-                                    '
-                                    sets='[{
-                                      "category": "__value__",
-                                      "value": "count"
-                                    }]'>
-                                </semantic-chart>
-                              </mp-component-toolbar-component>
+                            <mp-component-toolbar-actions>
+                              <semantic-chart-type-selector id='[[urlParam "viewid" escape=false]]-search-result-chart-type-selector' default="bar" types='["line", "bar", "radar", "pie", "donut"]'></semantic-chart-type-selector>
+                                <mp-component-toolbar-action-download></mp-component-toolbar-action-download>
+                                <mp-component-toolbar-action-save id='persit-component-action' add-to-default-set=true></mp-component-toolbar-action-save>
+                            </mp-component-toolbar-actions>
+                            <mp-component-toolbar-component>
+                              <semantic-chart id='[[urlParam "viewid" escape=false]]-search-result-chart'
+                                              query='SELECT ?__value__ (COUNT(DISTINCT ?subject) as ?count) WHERE {
+                                                      OPTIONAL { FILTER(?__contextRelationPattern__) }
+                                                      BIND(IF(BOUND(?__value__), ?__value__, "Unknown") as ?__value__)
+                                                    } GROUP BY ?__value__ 
+                                                      ORDER BY DESC(?count)'
+                                              sets='[{
+                                                      "dataSetName": "Number of values",
+                                                      "category": "__value__",
+                                                      "value": "count"
+                                                    }]'>
+                              </semantic-chart>
+                            </mp-component-toolbar-component>
                           </mp-component-toolbar>
                         </semantic-search-result>
                       </semantic-search-result-context>
+                    
                     {{else}}
                       [[!-- list view --]]
                       <semantic-query query=' SELECT DISTINCT ?resourceConfig 
@@ -784,7 +1096,11 @@
                         <template id='custom-list-view'>
                           <semantic-search-result>
                             <semantic-table id='semantic-search-result-list'
-                                            class-name="table-fixed-header table-scrollable-content table-expanded search-table-container {{#if (or (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Set')(eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map'))}}table-without-checkbox{{else}}table-with-checkbox{{/if}}"
+                                            class-name="table-fixed-header table-scrollable-content table-expanded search-table-container 
+                                            {{#if (or (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Set')
+                                                      (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map')
+                                                      (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart')
+                                                      (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline'))}}table-without-checkbox{{else}}table-with-checkbox{{/if}}"
                                             query='SELECT DISTINCT ?subject ?iri ?description WHERE {
                                                     BIND(?subject as ?iri) .
                                                     #?subject a ?type .
@@ -808,7 +1124,7 @@
                                             column-configuration='[
                                                                     {"variableName": "subject", "displayName": "", "cellTemplate": "{{> selectionCheckbox}}" },
                                                                     {"variableName": "subject", "displayName": "{{#if bindings.0.columnTitle1.value}}{{bindings.0.columnTitle1.value}}{{else}}[[urlParam "resourcelabel" escape=false]] name{{/if}}", "cellTemplate": "{{> column1}}" },
-                                                                    {"variableName": "", "displayName": "{{#if bindings.0.columnTitle2.value}}{{bindings.0.columnTitle2.value}}{{else}}Description{{/if}}", "cellTemplate": "{{> column2}}" },
+                                                                    {"variableName": "", "displayName": "{{#if bindings.0.columnTitle2.value}}{{bindings.0.columnTitle2.value}}{{else}}{{/if}}", "cellTemplate": "{{> column2}}" },
                                                                     {"variableName": "", "displayName": "{{#if bindings.0.columnTitle3.value}}{{bindings.0.columnTitle3.value}}{{else}}{{/if}}", "cellTemplate": "{{> column3}}" },
                                                                     {"variableName": "", "displayName": "{{#if bindings.0.columnTitle4.value}}{{bindings.0.columnTitle4.value}}{{else}}{{/if}}", "cellTemplate": "{{> column4}}" },
                                                                     {"variableName": "", "displayName": "more", "cellTemplate": "{{> actions}}" }
@@ -817,7 +1133,11 @@
     
                               <template id='selectionCheckbox'>
                                 [[#if (hasPermission "forms:ldp:*")]]
-                                  {{#if (or (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map"))}}
+                                  {{#if (or (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") 
+                                            (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map")
+                                            (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")
+                                            (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline")
+                                        )}}
                                   {{else}}
                                     <div>
                                       <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
@@ -835,7 +1155,7 @@
                                                           class="modal-xlSize preview_modal"
                                                           title="Preview">
                                         <mp-overlay-dialog-trigger>
-                                          <div class="table-image-container">
+                                          <div class="resource-thumbnail-small-container">
                                             {{#if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation")}}
                                               <rs-iiif-image-thumbnail  height='40' width='45' style='height: 100%; width: 100%;'
                                                                         image-or-region='{{iri.value}}'      
@@ -843,13 +1163,13 @@
                                                                       >
                                               </rs-iiif-image-thumbnail>
                                             {{else}}
-                                              <mp-resource-thumbnail iri='{{iri.value}}' class='table-thumbnail-container'>
+                                              <mp-resource-thumbnail iri='{{iri.value}}' class='resource-thumbnail-small'>
                                                   <mp-resource-thumbnail-fallback>
                                                     <mp-draggable iri='{{iri.value}}'>
                                                       [[#if (urlParam 'resourceicon') ]]
-                                                        <rs-icon icon-type="rounded" icon-name="[[urlParam 'resourceicon']]" symbol=true class='table-thumbnail-fallback-icon'></rs-icon>
+                                                        <rs-icon icon-type="rounded" icon-name="[[urlParam 'resourceicon']]" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
                                                       [[else]]
-                                                        <rs-icon icon-type="rounded" icon-name="image" symbol=true class='table-thumbnail-fallback-icon'></rs-icon>
+                                                        <rs-icon icon-type="rounded" icon-name="image" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
                                                       [[/if]]
                                                     </mp-draggable>
                                                   </mp-resource-thumbnail-fallback>
@@ -882,9 +1202,25 @@
                                                               targets='["thinking-frames"]'>
                                               <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
                                             </mp-event-trigger>
+                                          {{else if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")}}
+                                            <mp-event-trigger id='{{iri.value}}-open-chart-title-trigger' 
+                                                              type='Dashboard.AddFrame'
+                                                              data='{"viewId":"chart", 
+                                                                      "resourceIri": "{{iri.value}}"}' 
+                                                              targets='["thinking-frames"]'>
+                                              <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
+                                            </mp-event-trigger>
+                                          {{else if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline")}}
+                                            <mp-event-trigger id='{{iri.value}}-open-timeline-title-trigger' 
+                                                              type='Dashboard.AddFrame'
+                                                              data='{"viewId":"timeline", 
+                                                                      "resourceIri": "{{iri.value}}"}' 
+                                                              targets='["thinking-frames"]'>
+                                              <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
+                                            </mp-event-trigger>
                                           {{else if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
                                             <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                            urlqueryparam-view='vocabulary-content'
+                                                            urlqueryparam-view='authority-list'
                                                             urlqueryparam-resource='{{iri.value}}'>
                                               <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
                                             </semantic-link>
@@ -932,7 +1268,6 @@
                                                             {{bindings.0.columnContentSparqlPattern2.value}}
                                                           }'
                                                   template='{{> customColumnContent}}'
-                                                  no-result-template='{{> noResults}}'
                                     >
 
                                       <template id='customColumnContent'>
@@ -940,7 +1275,7 @@
                                           {{#if (eq bindings.0.columnContentType2.value "icon actor")}}
                                             <mp-popover>
                                               <mp-popover-trigger placement="bottom" trigger='["click", "focus"]'> 
-                                                <rs-icon icon-type="round" icon-name="people_alt" class="people-icon"></rs-icon>
+                                                <rs-icon icon-type="rounded" icon-name="people_alt" symbol="true" class="people-icon"></rs-icon>
                                               </mp-popover-trigger>
                                               <mp-popover-content>
                                                 <div style="display: flex; flex-direction: column; gap: 5px;">
@@ -982,19 +1317,7 @@
                                           {{/if}}
                                         </div>
                                       </template>
-
-                                      <template id="noResults">
-                                        {{#if description.value}}
-                                          <mp-text-truncate lines=1 expand='<div class="text-link">Expand</div>' collapse='<div class="text-link">Collapse</div>'>
-                                          {{description.value}}
-                                          </mp-text-truncate>
-                                        {{/if}}
-                                      </template>
                                   </semantic-query>
-                                {{else}}
-                                  <div>
-                                    {{description.value}}
-                                  </div>
                                 {{/if}}
                               </template>
 
@@ -1013,7 +1336,7 @@
                                           {{#if (eq bindings.0.columnContentType3.value "icon actor")}}
                                             <mp-popover>
                                               <mp-popover-trigger placement="bottom" trigger='["click", "focus"]'> 
-                                                <rs-icon icon-type="round" icon-name="people_alt" class="people-icon"></rs-icon>
+                                                <rs-icon icon-type="rounded" icon-name="people_alt" symbol="true" class="people-icon"></rs-icon>
                                               </mp-popover-trigger>
                                               <mp-popover-content>
                                                 <div style="display: flex; flex-direction: column; gap: 5px;">
@@ -1074,7 +1397,7 @@
                                           {{#if (eq bindings.0.columnContentType4.value "icon actor")}}
                                             <mp-popover>
                                               <mp-popover-trigger placement="bottom" trigger='["click", "focus"]'> 
-                                                <rs-icon icon-type="round" icon-name="people_alt" class="people-icon"></rs-icon>
+                                                <rs-icon icon-type="rounded" icon-name="people_alt" symbol="true" class="people-icon"></rs-icon>
                                               </mp-popover-trigger>
                                               <mp-popover-content>
                                                 <div style="display: flex; flex-direction: column; gap: 5px;">
@@ -1134,7 +1457,12 @@
                         <template id='default-list-view'>
                           <semantic-search-result>
                             <semantic-table id='semantic-search-result-list'
-                                            class-name="table-fixed-header table-scrollable-content table-expanded search-table-container {{#if (or (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Set')(eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map'))}}table-without-checkbox{{else}}table-with-checkbox{{/if}}"
+                                            class-name="table-fixed-header table-scrollable-content table-expanded search-table-container 
+                                            {{#if (or (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Set')
+                                                      (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map')
+                                                      (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart')
+                                                      (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline')
+                                            )}}table-without-checkbox{{else}}table-with-checkbox{{/if}}"
                                             query='SELECT DISTINCT ?subject ?iri ?description ?resourceConfig WHERE {
                                                     BIND(?subject as ?iri) .
                                                     BIND(<[[urlParam "resourceconfig" escape=false]]> as ?resourceConfig) .
@@ -1162,7 +1490,11 @@
     
                               <template id='selectionCheckbox'>
                                 [[#if (hasPermission "forms:ldp:*")]]
-                                  {{#if (or (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map"))}}
+                                  {{#if (or (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") 
+                                            (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map")
+                                            (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")
+                                            (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline")
+                                  )}}
                                   {{else}}
                                     <div>
                                       <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
@@ -1180,7 +1512,7 @@
                                                           class="modal-xlSize preview_modal"
                                                           title="Preview">
                                         <mp-overlay-dialog-trigger>
-                                          <div class="table-image-container">
+                                          <div class="resource-thumbnail-small-container">
                                             {{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation")}}
                                               <rs-iiif-image-thumbnail  height='40' width='45' style='height: 100%; width: 100%;'
                                                                         image-or-region='{{iri.value}}'      
@@ -1188,13 +1520,13 @@
                                                                       >
                                               </rs-iiif-image-thumbnail>
                                             {{else}}
-                                              <mp-resource-thumbnail iri='{{iri.value}}' class='table-thumbnail-container'>
+                                              <mp-resource-thumbnail iri='{{iri.value}}' class='resource-thumbnail-small'>
                                                   <mp-resource-thumbnail-fallback>
                                                     <mp-draggable iri='{{iri.value}}'>
                                                       [[#if (urlParam 'resourceicon') ]]
-                                                        <rs-icon icon-type="rounded" icon-name="[[urlParam 'resourceicon']]" symbol=true class='table-thumbnail-fallback-icon'></rs-icon>
+                                                        <rs-icon icon-type="rounded" icon-name="[[urlParam 'resourceicon']]" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
                                                       [[else]]
-                                                        <rs-icon icon-type="rounded" icon-name="image" symbol=true class='table-thumbnail-fallback-icon'></rs-icon>
+                                                        <rs-icon icon-type="rounded" icon-name="image" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
                                                       [[/if]]
                                                     </mp-draggable>
                                                   </mp-resource-thumbnail-fallback>
@@ -1227,9 +1559,25 @@
                                                               targets='["thinking-frames"]'>
                                               <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
                                             </mp-event-trigger>
+                                          {{else if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")}}
+                                            <mp-event-trigger id='{{iri.value}}-open-chart-title-trigger' 
+                                                              type='Dashboard.AddFrame'
+                                                              data='{"viewId":"chart", 
+                                                                      "resourceIri": "{{iri.value}}"}' 
+                                                              targets='["thinking-frames"]'>
+                                              <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
+                                            </mp-event-trigger>
+                                          {{else if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline")}}
+                                            <mp-event-trigger id='{{iri.value}}-open-timeline-title-trigger' 
+                                                              type='Dashboard.AddFrame'
+                                                              data='{"viewId":"timeline", 
+                                                                      "resourceIri": "{{iri.value}}"}' 
+                                                              targets='["thinking-frames"]'>
+                                              <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
+                                            </mp-event-trigger>
                                           {{else if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
                                             <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                            urlqueryparam-view='vocabulary-content'
+                                                            urlqueryparam-view='authority-list'
                                                             urlqueryparam-resource='{{iri.value}}'>
                                               <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
                                             </semantic-link>
@@ -1311,7 +1659,7 @@
                       <div style="display: flex; align-items: center; gap: 10px;">
                           <div class="customFormHeader" style="padding-top: 0;">Filter by</div>
                       </div> 
-                      <rs-icon icon-type="round" icon-name="keyboard_double_arrow_right" 
+                      <rs-icon icon-type="rounded" icon-name="keyboard_double_arrow_right" symbol="true"
                               style="font-size: 20px;">
                       </rs-icon>
                   </button>
@@ -1321,7 +1669,8 @@
             <mp-splitpane-sidebar-open style="flex: 1; overflow: hidden;">
               <div class="split-pane__sidebar-open">
                 <semantic-search-facet  id='[[urlParam "viewid" escape=false]]-semantic-search-facet'
-                                        open-by-default=false 
+                                        big-result-set=true
+                                        open-by-default=true
                                         hide-toggle-button=true>
                 </semantic-search-facet>
               </div>
@@ -1360,17 +1709,16 @@
         <rs-icon icon-type="rounded" icon-name="drag_pan" symbol="true"></rs-icon>
       </button>
     </mp-draggable>
-    <rs-resource-dropdown id={{iri.value}} class-name="my-css-class">
-        {{> rsp:ResourceDropdownActionsItems viewId=[[resourceConfig]]
-          iri=iri.value
-          resourceConfig=[[resourceConfig]]
-          resourceLabel="[[urlParam "resourcelabel" escape=false]]"
-          resourceOntologyClass="[[urlParam "resourceontologyclass" escape=false]]"
-          resourceDescription=description.value
-          resourceFormIRI="[[urlParam "resourceform" escape=false]]"
-          searchCard=true
-        }}
-    </rs-resource-dropdown>
+
+    {{> rsp:ResourceDropdownActions viewId=[[resourceConfig]]
+                                    iri=iri.value
+                                    resourceConfig=[[resourceConfig]]
+                                    resourceLabel="[[urlParam "resourcelabel" escape=false]]"
+                                    resourceOntologyClass="[[urlParam "resourceontologyclass" escape=false]]"
+                                    resourceDescription=description.value
+                                    resourceFormIRI="[[urlParam "resourceform" escape=false]]"
+                                    allowResourceDelete=true
+    }}
   </div>
   
 [[/inline ]]

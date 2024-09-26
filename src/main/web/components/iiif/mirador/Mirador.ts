@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -159,12 +160,12 @@ const defaultAnnotationViewerTemplate = globalHandlebars.compile(
 <div>
 {{#if showUpdate}}
   <a href="#edit" class="edit">
-    <rs-icon icon-type="round" icon-name="edit"></rs-icon>
+    <rs-icon icon-type="rounded" icon-name="edit" symbol="true"></rs-icon>
   </a>
 {{/if}}
 {{#if showDelete}}
   <a href="#delete" class="delete">
-  <rs-icon icon-type="round" icon-name="delete"></rs-icon>
+  <rs-icon icon-type="rounded" icon-name="delete" symbol="true"></rs-icon>
   </a>
 {{/if}}
 </div>  */

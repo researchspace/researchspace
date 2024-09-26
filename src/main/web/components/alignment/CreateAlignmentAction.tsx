@@ -113,7 +113,7 @@ class CreateAlignmentDialog extends React.Component<DialogProps, AlignmentMetada
                 title="Swap source and target terminologies"
                 onClick={this.swapTerminologies}
               >
-                <Icon iconType='round' iconName='sync_alt' className='fa-flip-vertical'/>
+                <Icon iconType='rounded' iconName='sync_alt' symbol className='fa-flip-vertical'/>
               </Button>
             </InputGroup.Button>
           </InputGroup>

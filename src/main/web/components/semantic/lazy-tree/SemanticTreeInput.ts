@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -48,6 +49,8 @@ import { navigateToResource } from 'platform/api/navigation';
 
 import * as styles from './SemanticTreeInput.scss';
 import {SelectLabel, SelectLabelProps} from "platform/components/ui/inputs/SelectLabel";
+
+import Icon from 'platform/components/ui/icon/Icon';
 
 const ITEM_INPUT_VARIABLE = 'item';
 const ITEM_OUTPUT_VARIABLE = 'label';

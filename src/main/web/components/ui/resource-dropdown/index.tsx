@@ -11,9 +11,8 @@ interface State {
 interface Props {
   id: string;
   className?: string;
+  toggleClassName?: string;
 }
-
-const CLASS_NAME='dropdown-no-caret'
 
 export class ResourceDropdown extends React.Component<Props, State> {
   constructor(props: Props, context: any) {
@@ -28,10 +27,10 @@ export class ResourceDropdown extends React.Component<Props, State> {
   }
 
   render() {
-    const {id, className, children} = this.props
+    const {id, className, toggleClassName, children} = this.props
     return (
-      <Dropdown id={id} className={classnames(CLASS_NAME, className)} pullRight onToggle={this.onToggle}>
-        <Dropdown.Toggle>
+      <Dropdown id={id} className={className} pullRight onToggle={this.onToggle}>
+        <Dropdown.Toggle className={toggleClassName}>
           <Icon iconType='round' iconName='more_vert' />
         </Dropdown.Toggle>
         {this.state.customDropdownOpen ? children : <Dropdown.Menu></Dropdown.Menu>}

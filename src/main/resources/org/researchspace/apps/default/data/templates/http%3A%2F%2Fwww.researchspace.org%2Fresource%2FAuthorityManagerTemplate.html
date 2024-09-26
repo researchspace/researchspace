@@ -1,13 +1,13 @@
 [[!-- 
-Uses inline templates and can be customised for presentation and editing of vocabularies / authorities and other list of terms
+Uses inline templates and can be customised for presentation and editing of authority document list of resources
 Incoming Parameters:
-  * title -- can be set to "Vocabulary/Project/Bibliography/etc."
+  * title -- page title"
   * addTitle
-  * customInsertVocabularyForm
-  * customVocabularyUploadDropzoneMessage
+  * customInsertAuthorityForm
+  * customAuthorityUploadDropzoneMessage
   * exceptionsCheck
-  * VocabularySearchResults
-The code for this inline template is defined in the application page using the rsp:VocabularyManagerTemplate
+  * AuthoritySearchResults
+The code for this inline template is defined in the application page using the rsp:AuthorityManagerTemplate
 --]]
 
 {{#bind viewId=dashboardId}}
@@ -31,7 +31,7 @@ The code for this inline template is defined in the application page using the r
             </mp-overlay-dialog-trigger>
             <mp-overlay-dialog-content>
               {{#bind viewId=viewId}}
-                [[#> customInsertVocabularyForm]] [[/customInsertVocabularyForm]]
+                [[#> customInsertAuthorityForm]] [[/customInsertAuthorityForm]]
               {{/bind}}
             </mp-overlay-dialog-content>
           </mp-overlay-dialog>
@@ -43,7 +43,7 @@ The code for this inline template is defined in the application page using the r
                               class="importVocabulary-modal">
             <mp-overlay-dialog-trigger>
               <button class="btn btn-default btn-textAndIcon" title="Import [[addTitle]]">
-                <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                <rs-icon icon-type='rounded' icon-name='upload' symbol='true'></rs-icon>
                 <span>Import [[addTitle]]</span>
               </button>
             </mp-overlay-dialog-trigger>
@@ -63,7 +63,7 @@ The code for this inline template is defined in the application page using the r
                       {{#if isDragReject}}
                     		Only *.trig or *.nq files are accepted.
                       {{else}}
-                        [[#> customVocabularyUploadDropzoneMessage]] [[/customVocabularyUploadDropzoneMessage]]
+                        [[#> customAuthorityUploadDropzoneMessage]] [[/customAuthorityUploadDropzoneMessage]]
                       {{/if}}
                     {{/if}}
                   </div>
@@ -161,7 +161,7 @@ The code for this inline template is defined in the application page using the r
               [[!-- the form send an iri in console with the subject of the resource created --]]
               <div class='success-documentation-section success-documentation-section-withIcon' style="margin-bottom: 20px;">
                 <div class="success-documentation-section-icon-container">
-                  <rs-icon icon-type="round" icon-name="done"></rs-icon>
+                  <rs-icon icon-type="rounded" icon-name="done" symbol="true"></rs-icon>
                 </div>
 
                 <div style="flex: 1;">
@@ -171,7 +171,7 @@ The code for this inline template is defined in the application page using the r
                     {{#if vocabularyUpdate}}Updated {{/if}}
                     :
                     <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                  urlqueryparam-view='vocabulary-content' 
+                                  urlqueryparam-view='authority-list' 
                                   urlqueryparam-resource='{{iri}}'
                                   urlqueryparam-mode='new'
                                 >
@@ -186,7 +186,7 @@ The code for this inline template is defined in the application page using the r
                                   targets='["{{viewId}}-vocabulary-save-state"]'
                 >
                   <button class="btn btn-documentation">
-                    <rs-icon icon-type="round" icon-name="close"></rs-icon>
+                    <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
                   </button>
                 </mp-event-trigger>
               </div>
@@ -197,7 +197,7 @@ The code for this inline template is defined in the application page using the r
 
       <mp-event-target-template-render id='{{viewId}}-vocabulary-table' template='{{> template}}'>
         <template id='template'>
-            [[#> VocabularySearchResults]][[/VocabularySearchResults]]
+            [[#> AuthoritySearchResults]][[/AuthoritySearchResults]]
         </template>
       </mp-event-target-template-render>
     </div>  

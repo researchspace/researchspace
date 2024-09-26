@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -112,6 +113,7 @@
 
             .modal-resource-details {
                 width: 100%;
+                height: auto;
             }
         }
 
@@ -142,19 +144,50 @@
             }
         }
 
-        .modal-image-container {
-
+        .modal-preview-container {
             height: 100%;
-            display: flex;
-            flex-direction: row;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 4fr minmax(0, 1fr);
             align-items: center;
             justify-content: center;
             gap: 5px;
 
             @media screen and (max-width: 1024px) {
+                display: flex;
                 flex-direction: column;
                 align-items: stretch;
             }
+
+            div:only-child {
+                grid-column: span 2;
+              }
+        }
+
+        .modal-image-thumbnail-container,
+        .modal-resource-persisted-container {
+            padding: 20px 30px;
+            border: 1px solid $color-border;
+            background-color: $color-white;
+            height: 100%;
+
+            & .semantic-chart,
+            & .semantic-chart__renderer {
+              height: 100% !important;
+            }
+
+            @media screen and (max-width: 1024px) {
+                height: 50vh;
+            }
+        }
+
+        .modal-image-thumbnail-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-image-container {
 
             img {
 
@@ -178,16 +211,8 @@
 
         .modal-video-container {
 
-         //   height: 100%;
-            display: flex;
-            flex-direction: row;
+            height: unset;
             align-items: stretch;
-            gap: 5px;
-
-            @media screen and (max-width: 1024px) {
-                flex-direction: column;
-                align-items: stretch;
-            }
 
             &.modal-single-video-container {
                 height: 100%;
@@ -251,18 +276,6 @@
 
         .modal-map-container {
 
-            height: 100%;
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-
-            @media screen and (max-width: 1024px) {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
             .modal-map {
                 border: 1px solid $color-border;
                 background-color: $color-white;
@@ -282,11 +295,8 @@
             padding: 20px 30px;
             border: 1px solid $color-border;
             background-color: $color-white;
-            width: 25vw;
 
             @media screen and (max-width: 1024px) {
-
-                width: 100%;
                 padding: 20px;
             }
         }

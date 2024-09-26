@@ -100,7 +100,7 @@
                                                                         "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
             
                                                         scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                    "view": "vocabulary-content",
+                                                                                    "view": "authority-list",
                                                                                     "scheme": "http://www.researchspace.org/resource/vocab/title_type",
                                                                                     "tooltip": "Open list of title types"
                                                                                     }'
@@ -127,7 +127,7 @@
                                                             "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
 
                                             scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                        "view": "vocabulary-content",
+                                                                        "view": "authority-list",
                                                                         "scheme": "http://www.researchspace.org/resource/vocab/image_annotation_type",
                                                                         "tooltip": "Open list of image annotation types"
                                                                         }'
@@ -276,7 +276,7 @@
                                                                           "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
               
                                                           scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                      "view": "vocabulary-content",
+                                                                                      "view": "authority-list",
                                                                                       "scheme": "http://www.researchspace.org/resource/vocab/mode_of_use",
                                                                                       "tooltip": "Open list of modes of use"
                                                                                       }'
@@ -340,7 +340,7 @@
                                                                               "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
           
                                                               scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                          "view": "vocabulary-content",
+                                                                                          "view": "authority-list",
                                                                                           "scheme": "http://www.researchspace.org/resource/vocab/mode_of_use",
                                                                                           "tooltip": "Open list of modes of use"
                                                                                       }'
@@ -477,7 +477,7 @@
                                                                             "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
             
                                                             scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                        "view": "vocabulary-content",
+                                                                                        "view": "authority-list",
                                                                                         "scheme": "http://www.researchspace.org/resource/vocab/thing_kind_of_similarity",
                                                                                         "tooltip": "Open list of kind of similarities"
                                                                                         }'
@@ -526,7 +526,7 @@
                                                                             "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
             
                                                             scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                        "view": "vocabulary-content",
+                                                                                        "view": "authority-list",
                                                                                         "scheme": "http://www.researchspace.org/resource/vocab/thing_kind_of_similarity",
                                                                                         "tooltip": "Open list of kind of similarities"
                                                                                         }'
@@ -575,7 +575,7 @@
                                                                       "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
       
                                                       scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                  "view": "vocabulary-content",
+                                                                                  "view": "authority-list",
                                                                                   "scheme": "http://www.researchspace.org/resource/vocab/mode_of_depiction",
                                                                                   "tooltip": "Open list of mode of depictions"
                                                                                   }'
@@ -630,7 +630,7 @@
                                                                               "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
               
                                                               scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                          "view": "vocabulary-content",
+                                                                                          "view": "authority-list",
                                                                                           "scheme": "http://www.researchspace.org/resource/vocab/type_of_reference",
                                                                                           "tooltip": "Open list of type of references"
                                                                                           }'
@@ -692,7 +692,7 @@
                                                                         "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
         
                                                         scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                    "view": "vocabulary-content",
+                                                                                    "view": "authority-list",
                                                                                     "scheme": "http://www.researchspace.org/resource/vocab/type_of_reference",
                                                                                     "tooltip": "Open list of type of references"
                                                                                 }'
@@ -724,16 +724,19 @@
                 <mp-overlay-dialog  id="{{viewId}}-resource-preview-dialog"  
                                     type="modal" 
                                     class="modal-xlSize preview_modal"
-                                    title="Image preview">
+                                    title="Image annotation preview">
                 <mp-overlay-dialog-trigger>
                     <button class="btn btn-icon" title="Preview">
-                        <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
+                        <rs-icon icon-type="rounded" icon-name="fullscreen" symbol="true"></rs-icon>
                     </button>
                 </mp-overlay-dialog-trigger>
 
                 <mp-overlay-dialog-content>
                     <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
                                      options='{"resource": "{{node}}",
+                                                "resourceConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation", 
+                                                "resourceConfigLabel": "Image annotation",
+                                                "modalId": "{{viewId}}-resource-preview-dialog",
                                                 "resourceDetailSection": false
                                               }' >
                     </inline-template> 
@@ -748,7 +751,6 @@
                                       [[> rsp:IIIFConfig]]>
             </rs-iiif-image-thumbnail>
           </div>
-
 
           <div style="display: flex; align-items: baseline; justify-content: space-between">
             <div class="customFormHeader" style="padding-bottom: 4px;">Annotation of image</div>
@@ -768,7 +770,7 @@
                                         title="Image preview">
                     <mp-overlay-dialog-trigger>
                         <button class="btn btn-icon" title="Preview">
-                            <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
+                            <rs-icon icon-type="rounded" icon-name="fullscreen" symbol="true"></rs-icon>
                         </button>
                     </mp-overlay-dialog-trigger>
     
@@ -788,7 +790,7 @@
                                                 "frameId": "{{viewId}}"}' 
                                         targets='["thinking-frames"]'>
                         <button class="btn btn-icon" title="Image view / annotations">
-                            <rs-icon icon-type="round" icon-name="photo_size_select_large"></rs-icon>
+                            <rs-icon icon-type="rounded" icon-name="photo_size_select_large" symbol="true"></rs-icon>
                         </button>
                     </mp-event-trigger>
     
@@ -805,7 +807,7 @@
                         <template id='template'>
                           <mp-file-download post-action="" download-url="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}">
                             <button class="btn btn-icon" title="Download">
-                                <rs-icon icon-type="round" icon-name="download"></rs-icon>
+                                <rs-icon icon-type="rounded" icon-name="download" symbol="true"></rs-icon>
                             </button>
                           </mp-file-download>
                           <hr>
@@ -830,7 +832,7 @@
 
               <template id='template'>
                 <div>       
-                  <div class="image-container" style="cursor: pointer;">
+                  <div class="image-container">
                     <rs-iiif-image-thumbnail  height='180' width='auto' style='max-height: 180px; height: 180px; width: 100%; border-radius: 1.5px; object-fit: contain;'
                                               image-or-region='{{bindings.0.image.value}}'      
                                               [[> rsp:IIIFConfig]]>
@@ -847,14 +849,39 @@
                   </div>
                 </div>
               </template>
-            </semantic-query>
+          </semantic-query>
 
+					<semantic-query query='SELECT ?image ?imageLabel ?file ?isResource WHERE {
+                                  BIND(<{{node}}> as ?image )
+                                  ?image a rs:EX_Digital_Image .
+                                  ?image crm:P1_is_identified_by ?appellation . 
+                                  ?appellation a crm:E41_Appellation . 
+                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                  ?appellation crm:P190_has_symbolic_content ?imageLabel .
+                                  OPTIONAL { ?image crmdig:L60i_is_documented_by ?digitizationProcess .
+                                                  ?digitizationProcess a crmdig:D2_Digitization_Process .    
+                                                  ?digitizationProcess crmdig:L11_had_output ?file .
+                                                  ?file a <http://www.w3.org/ns/ldp#Resource> .	
+                                                  BIND(true as ?isResource)  
+                                                 }
+                                } LIMIT 1'
 
+                          template='{{> template}}'>
 
+              <template id='template'>
+                {{#if node}}
+                  <div>       
+                    <div class="image-container" style="cursor: pointer;">
+                      <rs-iiif-image-thumbnail  height='180' width='auto' style='max-height: 180px; height: 180px; width: 100%; border-radius: 1.5px; object-fit: contain;'
+                                                image-or-region='{{bindings.0.image.value}}'      
+                                                [[> rsp:IIIFConfig]]>
+                      </rs-iiif-image-thumbnail>
+                    </div>                      
+                  </div>
+                {{/if}}
+              </template>
+          </semantic-query>
           
-          
-
-
           <div style="margin-top: 10px;">
             <semantic-form-text-input for='image_annotation_area_of_image' readonly='true' label='Area of image' placeholder='Enter area of image' render-header="false"></semantic-form-text-input>
           </div>

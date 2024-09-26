@@ -8,184 +8,447 @@
   .mirador .researchspace-mirador.mirador-container .mirador-viewer {
     top: 0;
   }
+
+  .TextEditor--toolbar,
+  .TextEditor--draggableGripper,
+  .ontodia__toolbar-widget .Toolbar--component div:nth-child(2) {
+    display: none;
+  }
+
+  .TextEditor--narrativeHolder {
+    grid-template-columns: 0 2fr 0;
+    grid-template-rows: 0 auto 0;
+
+  }
+
+  .TextEditor--titleHolder {
+    margin-bottom: 5px;
+  }
+
+  .ontodia,
+  .Toolbar--component {
+    background-color: white;
+  }
       
 </style>
-
-<semantic-query query='SELECT ?image ?video ?map WHERE {
-                        OPTIONAL {
-                          {
-                            <{{resource}}> a ?type .
-                            FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
-                            BIND(<{{resource}}> as ?image)
-                          } UNION {
-                            <{{resource}}> (crm:P138i_has_representation|rs:PX_has_main_representation) ?image .
-                            ?image a ?type .
-                            FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
-                          }
-                        }
-                        OPTIONAL {
-                          {
-                            <{{resource}}> a frbroo:F26_Recording .
-                            <{{resource}}> crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_video> .
-                            <{{resource}}> crm:P129i_is_subject_of ?digital_object .
-                            ?digital_object a crmdig:D1_Digital_Object .
-                            ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
-                            ?digital_object crm:P190_has_symbolic_content ?video .
-                          } UNION {
-                            <{{resource}}> crm:P129i_is_subject_of ?videoURI . 
-                            ?videoURI a frbroo:F26_Recording .
-                            ?videoURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_video> .
-                            ?videoURI crm:P129i_is_subject_of ?digital_object .
-                            ?digital_object a crmdig:D1_Digital_Object .
-                            ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
-                            ?digital_object crm:P190_has_symbolic_content ?video .
-                          }
-                        }
-                        OPTIONAL {
-                          <{{resource}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                          ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
-                          ?osm_geoCoordinates crm:P190_has_symbolic_content ?map .
-                        }
-                      } LIMIT 1'
-                
-              template='{{> template}}'
-              no-result-template='{{> noResults}}'>        
-
-    <template id='template'>
-      <bs-tab-container id="resource-preview-media-tabs"  
-                        default-active-key="{{#if bindings.0.image.value}}image{{else}}{{#if bindings.0.video.value}}{{#if (not bindings.0.image.value)}}video{{/if}}{{/if}}{{#if bindings.0.map.value}}{{#if (not bindings.0.image.value)}}{{#if (not bindings.0.video.value)}}map{{/if}}{{/if}}{{/if}}{{/if}}" 
-                        class="preview-media-tabs">
-        <div>
-          <bs-nav bs-style="tabs">
-            {{#if bindings.0.image.value}}
-              {{#if (or bindings.0.video.value bindings.0.map.value)}}
-                <bs-nav-item event-key="image">Image</bs-nav-item>
-              {{/if}}
-            {{/if}}
-
-            {{#if bindings.0.video.value}}
-              {{#if (or bindings.0.image.value bindings.0.map.value)}}
-                <bs-nav-item event-key="video">Video</bs-nav-item>
-              {{/if}}
-            {{/if}}
-
-            {{#if bindings.0.map.value}}
-              {{#if (or bindings.0.image.value bindings.0.video.value)}}
-                <bs-nav-item event-key="map">Map</bs-nav-item>
-              {{/if}}
-            {{/if}}
-          </bs-nav>
-          <bs-tab-content animation="true" mount-on-enter="true">
-            <bs-tab-pane event-key="image">
-              {{#if bindings.0.image.value}}
-                <div class="modal-image-container">
-                  <div class="modal-iiif-container">
-                    <rs-iiif-viewer-panel id='mirador'
-                                          iris='[ "{{resource}}" ]'
-                                          query="SELECT DISTINCT ?image WHERE {
-                                                  {
-                                                    <{{resource}}> a ?type .
-                                                    FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
-                                                    BIND(<{{resource}}> as ?image)
-                                                  } UNION {
-                                                    <{{resource}}> (crm:P138i_has_representation|rs:PX_has_main_representation) ?image .
-                                                    ?image a ?type .
-                                                    FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
-                                                  }
-                                                }"     
-                                          [[> rsp:IIIFConfig]]>
-                    </rs-iiif-viewer-panel>
-                  </div>
-                  [[> resourceDetails]]
-                </div>
-              {{/if}}
-              </semantic-if>
-            </bs-tab-pane>
-      
-            <bs-tab-pane event-key="video"> 
-              {{#if bindings.0.video.value}}
-                <semantic-query query='SELECT DISTINCT ?video WHERE { 
-                                        {
-                                          <{{resource}}> crm:P129i_is_subject_of ?videoURI . 
-                                          ?videoURI a frbroo:F26_Recording .
-                                          ?videoURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_video> .
-                                          ?videoURI crm:P129i_is_subject_of ?digital_object .
-                                          ?digital_object a crmdig:D1_Digital_Object .
-                                          ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
-                                          ?digital_object crm:P190_has_symbolic_content ?video .
-                                        } UNION {
-                                          <{{resource}}> crm:P129i_is_subject_of ?digital_object.
-                                          ?digital_object rdf:type crmdig:D1_Digital_Object .
-                                          ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
-                                          ?digital_object crm:P190_has_symbolic_content ?video .
+{{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map") }}
+  <div class="modal-preview-container">
+    <div class="modal-resource-persisted-container" style="padding: 0;">
+      <ontodia  id='ontodia' 
+                diagram='{{resource}}'
+                image-iris='["http://www.researchspace.org/ontology/PX_has_main_representation"]'
+                settings=nostats 
+                post-saving=none 
+                collapse-navigator=true
+                readonly=true
+                hide-panels=true 
+                hide-halo=true
+                default-node-template="{{> default}}"
+                provider-settings='{
+                                    "classTreeQuery": "
+                                      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                                      PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                                      PREFIX owl: <http://www.w3.org/2002/07/owl#>
+                                
+                                      SELECT ?class ?label ?parent WHERE {
+                                        GRAPH ?g {
+                                          ?ontology a owl:Ontology .
+                                          ?class a owl:Class .
+                                          OPTIONAL {
+                                            ?class rdfs:label ?label.
+                                          }
+                                
+                                          OPTIONAL {
+                                            ?class rdfs:subClassOf ?p.
+                                            ?p a owl:Class .
+                                          }
+                                          BIND(IF(BOUND(?p), ?p, ?ontology) AS ?parent)
                                         }
-                                      }'
-                                          
-                              template='{{> template}}'>
-            
-                  <template id='template'>
-                    {{#if bindings.1.video.value}}
-                      <div class="modal-video-container">
-                        <div class="modal-videos">
-                          {{#each bindings}}
-                            <div>
-                              <iframe src='{{video.value}}' 
-                                      frameborder="0" 
-                                      allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
-                                      width="358" height="230"
-                                      allowfullscreen>
-                              </iframe>
-                            </div>
-                          {{/each}}
-                        </div>
-                        [[> resourceDetails]]
-                      </div>
-                    {{else}}
-                      <div class="modal-video-container modal-single-video-container">
-                        <div class="modal-single-video">
-                          <iframe src='{{bindings.0.video.value}}' 
-                                  frameborder="0" 
-                                  allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
-                                  width="100%" height="100%"
-                                  allowfullscreen>
-                          </iframe>
-                        </div>
-                        [[> resourceDetails]]
-                      </div>
-                    {{/if}}
-                  </template>
-                </semantic-query>
+                                      }
+                                    "
+                                  }'
+            >
+
+      <ontodia-field-configuration  authoring-mode=false
+                                    type-iri='http://www.w3.org/1999/02/22-rdf-syntax-ns#type'
+                                    default-label-iri='http://www.researchspace.org/pattern/system/entity/primary_appellation'
+                                    default-image-iri='http://www.researchspace.org/pattern/system/entity/main_image'
+                                    default-subject-template='/{{{{raw}}}}{{FIELD_VALUE_LOCAL_NAME http://www.w3.org/1999/02/22-rdf-syntax-ns#type}}{{{{/raw}}}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
+                                    force-datatype-fields='["http://www.researchspace.org/ontology/PX_has_video"]'
+
+                                    persistence='{
+                                        "type": "sparql",
+                                        "targetInsertGraphIri": "http://www.researchspace.org/resource/g/data"
+                                    }'>
+
+        <rs-ontodia-metadata-from-fields
+            fields-query='PREFIX field: <http://www.researchspace.org/resource/system/fields/>
+                          SELECT DISTINCT ?field WHERE {
+                          {
+                            ?field a <http://www.researchspace.org/resource/system/fields/Field> .
+                            ?field  a ?type .
+                            VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}
+                            FILTER (!CONTAINS(STR(?field),"http://www.researchspace.org/ontology/"))
+                          } UNION
+                          {
+                            ?field a <http://www.researchspace.org/resource/system/fields/Field> .
+                            ?field  <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/image_annotation> .
+                            }
+                          UNION {
+                            VALUES (?value){(<http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation>)
+                                  (<http://www.researchspace.org/pattern/system/entity/primary_appellation>)
+                                  (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>)
+                                  (<http://www.researchspace.org/pattern/system/entity/main_image>)
+                                  (<http://www.ics.forth.gr/isl/CRMdig/L49_is_primary_area_of>)
+                                  (<http://www.researchspace.org/pattern/system/image_annotation/boundingBox>)
+                                  (<http://www.researchspace.org/pattern/system/image_annotation/value>)
+                                  (<http://www.researchspace.org/pattern/system/image_annotation/viewport>)
+                                  (<http://www.researchspace.org/pattern/system/image_annotation/area_of_image>)}
+
+                            BIND(?value as ?field)
+                          }
+                          MINUS {
+                            VALUES (?value) {
+                            (<http://www.ics.forth.gr/isl/CRMdig/L47_has_comment>)
+                            (<http://www.w3.org/2000/01/rdf-schema#label>)
+                            }
+                          }
+                        }'>
+        </rs-ontodia-metadata-from-fields>
+
+        <ontodia-field-input-override for-field="label">
+        <semantic-form-text-input></semantic-form-text-input>
+        </ontodia-field-input-override>
+
+        <ontodia-field-input-override for-field="http://www.researchspace.org/pattern/system/entity/main_image">
+          <div class="dragAndDrop-input-container">
+            <semantic-form-drag-and-drop-input  for='http://www.researchspace.org/pattern/system/entity/main_image' 
+                                                label="Main image" 
+                                                placeholder-item-template="<div class='placeholder-item'>
+                                                                            <rs-icon icon-type='rounded' icon-name='upload' class='upload_icon' symbol='true'></rs-icon>
+                                                                            <div>
+                                                                                <div style='margin-bottom:3px;'>Drag image from </div>
+                                                                                <div style='margin-bottom:7px;'>
+                                                                                    <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames' 
+                                                                                                    class='text-link' 
+                                                                                                    urlqueryparam-view='resource-search'
+                                                                                                    urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image'
+                                                                                                    urlqueryparam-custom-label='Search Image'>
+                                                                                                    Image Library
+                                                                                    </semantic-link>
+                                                                                
+                                                                                    <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                                                                urlqueryparam-view='resource-search' 
+                                                                                                                urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image'
+                                                                                                                urlqueryparam-open-as-drag-and-drop='true'
+                                                                                                                urlqueryparam-custom-label='Search Image'
+                                                                                                                >
+                                                                                        <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding-left: 5px;' title='Open Image Library in new draggable tab'></rs-icon>
+                                                                                    </semantic-link-container>
+                                                                              
+                                                                                    <span style='padding:0 3px;'> or </span>
+                                                                              
+                                                                                    <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames' 
+                                                                                                    class='text-link' 
+                                                                                                    urlqueryparam-view='resource-search'
+                                                                                                    urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation'
+                                                                                                    urlqueryparam-custom-label='Search image annotation'>
+                                                                                        Image Annotation Library
+                                                                                    </semantic-link>
+                                                                                
+                                                                                    <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                                                                urlqueryparam-view='resource-search' 
+                                                                                                                urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation'
+                                                                                                                urlqueryparam-open-as-drag-and-drop='true'
+                                                                                                                urlqueryparam-custom-label='Search image annotation'
+                                                                                                                >
+                                                                                        <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding-left: 5px;' title='Open Image Annotation Library in new draggable tab'></rs-icon>
+                                                                                    </semantic-link-container>
+                                                                                </div>
+                                                                                <div>or click to upload</div>
+                                                                            </div>
+                                                                        </div>"
+                                                nested-form-template='{{{{raw}}}}{{> forms:Image_minimal nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+            </semantic-form-drag-and-drop-input>
+          </div>
+        </ontodia-field-input-override>
+
+      </ontodia-field-configuration>
+
+      <template id="default">
+        [[!-- Don't add any other explicit style here, only width and height, style is overriden by the resizable component in the KM --]]
+        {{#if isExpanded }}
+          <div style="width: 270px; height:73px;">
+            <div class="resource-card__kmTopButtons">
+              <button name="edit" type="button" class="btn btn-default resource-card__button" title="Edit">
+                <rs-icon icon-type="rounded" icon-name="edit" symbol="true"></rs-icon>
+              </button>
+              <button name="delete" type="button" class="btn btn-default resource-card__button" title="Edit">
+                <rs-icon icon-type="rounded" icon-name="delete" symbol="true"></rs-icon>
+              </button>
+            </div>
+            {{> rsp:ResourceCard  iri=resource
+                                  viewId=ontodiaVariable
+                                  knowledgeMapCard=true
+                                  hideMediaSection=true
+                                  height=73
+                                  width=270
+                                  props=props
+                                  data=data
+            }}
+          </div>
+        {{else}}
+          <div style="width: 155px; height:200px">
+            <div class="resource-card__kmTopButtons">
+              <button name="edit" type="button" class="btn btn-default resource-card__button" title="Edit">
+                <rs-icon icon-type="rounded" icon-name="edit" symbol="true"></rs-icon>
+              </button>
+              <button name="delete" type="button" class="btn btn-default resource-card__button" title="Edit">
+                <rs-icon icon-type="rounded" icon-name="delete" symbol="true"></rs-icon>
+              </button>
+            </div>
+            {{> rsp:ResourceCard  iri=resource
+                                  viewId=ontodiaVariable
+                                  knowledgeMapCard=true
+                                  props=props
+                                  data=data
+            }}
+          </div>
+        {{/if}}
+      </template>
+
+      <template id="knowledge-map-dropdown">
+        {{> rsp:ResourceDropdownActions viewId=ontodiaVariable
+                                        iri=resource 
+                                        resourceLabel="Knowledge map"
+                                        resourceFormIRI="http://www.researchspace.org/resource/system/forms/KnowledgeMap"
+                                        hidePreview=true
+                                        headerButton=true
+        }}
+      </template>
+      </ontodia>
+    </div>
+    [[> resourceDetails]]
+  </div>
+{{else if (or (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart") (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline") )}}
+  <div class="modal-preview-container">
+    <div class="modal-resource-persisted-container">
+      <mp-persisted-component iri='{{resource}}'></mp-persisted-component>
+    </div>
+    [[> resourceDetails]]
+  </div>
+{{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative") }}
+  <div class="modal-preview-container">
+    <div style="height: 100%; overflow: hidden;">
+      {{> rsp:SemanticNarrativeTemplate iri=resource}}
+    </div>
+    [[> resourceDetails]]
+  </div>
+{{else}}
+  <semantic-query query='SELECT ?image ?video ?map WHERE {
+                          OPTIONAL {
+                            {
+                              <{{resource}}> a rs:EX_Digital_Image .
+                              BIND(<{{resource}}> as ?image)
+                            } UNION {
+                              <{{resource}}> a rs:EX_Digital_Image_Region .
+                              <{{resource}}> crmdig:L49_is_primary_area_of ?image .
+                              ?image a rs:EX_Digital_Image .                
+                            }
+                            UNION {
+                              <{{resource}}> (crm:P138i_has_representation|rs:PX_has_main_representation) ?image .
+                              ?image a rs:EX_Digital_Image .
+                            } 
+                            UNION {
+                              <{{resource}}> (crm:P138i_has_representation|rs:PX_has_main_representation) ?imageAnnotation .
+                              ?imageAnnotation a rs:EX_Digital_Image_Region .
+                              ?imageAnnotation crmdig:L49_is_primary_area_of ?image .
+                              ?image a rs:EX_Digital_Image .
+                            }
+                          }
+                          OPTIONAL {
+                            {
+                              <{{resource}}> a frbroo:F26_Recording .
+                              <{{resource}}> crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_video> .
+                              <{{resource}}> crm:P129i_is_subject_of ?digital_object .
+                              ?digital_object a crmdig:D1_Digital_Object .
+                              ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                              ?digital_object crm:P190_has_symbolic_content ?video .
+                            } UNION {
+                              <{{resource}}> crm:P129i_is_subject_of ?videoURI . 
+                              ?videoURI a frbroo:F26_Recording .
+                              ?videoURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_video> .
+                              ?videoURI crm:P129i_is_subject_of ?digital_object .
+                              ?digital_object a crmdig:D1_Digital_Object .
+                              ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                              ?digital_object crm:P190_has_symbolic_content ?video .
+                            }
+                          }
+                          OPTIONAL {
+                            <{{resource}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
+                            ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
+                            ?osm_geoCoordinates crm:P190_has_symbolic_content ?map .
+                          }
+                        } LIMIT 1'
+                  
+                template='{{> template}}'
+                no-result-template='{{> noResults}}'>        
+
+      <template id='template'>
+        <bs-tab-container id="resource-preview-media-tabs"  
+                          default-active-key="{{#if bindings.0.image.value}}image{{else}}{{#if bindings.0.video.value}}{{#if (not bindings.0.image.value)}}video{{/if}}{{/if}}{{#if bindings.0.map.value}}{{#if (not bindings.0.image.value)}}{{#if (not bindings.0.video.value)}}map{{/if}}{{/if}}{{/if}}{{/if}}" 
+                          class="preview-media-tabs">
+          <div>
+            <bs-nav bs-style="tabs">
+              {{#if bindings.0.image.value}}
+                {{#if (or bindings.0.video.value bindings.0.map.value)}}
+                  <bs-nav-item event-key="image">Image</bs-nav-item>
+                {{/if}}
               {{/if}}
-            </bs-tab-pane>
-      
-            <bs-tab-pane event-key="map">
+
+              {{#if bindings.0.video.value}}
+                {{#if (or bindings.0.image.value bindings.0.map.value)}}
+                  <bs-nav-item event-key="video">Video</bs-nav-item>
+                {{/if}}
+              {{/if}}
+
               {{#if bindings.0.map.value}}
-                <div class="modal-map-container">
-                  <div class="modal-map">
-                    <semantic-map query='SELECT ?wkt WHERE { 
-                                            <{{resource}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                                            ?osm_geoCoordinates a crm:E94_Space_Primitive .
-                                            ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
-                                            ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
-                                            } LIMIT 1'
-                                    tuple-template='<b style="color:#525156; padding-bottom:5px;"><mp-label iri="{{resource}}"></mp-label></b>'>
-                    </semantic-map>
-                  </div>
-                  [[> resourceDetails]]
-                </div>
+                {{#if (or bindings.0.image.value bindings.0.video.value)}}
+                  <bs-nav-item event-key="map">Map</bs-nav-item>
+                {{/if}}
               {{/if}}
-            </bs-tab-pane> 
-      
-          </bs-tab-content>
+            </bs-nav>
+            <bs-tab-content animation="true" mount-on-enter="true">
+              <bs-tab-pane event-key="image">
+                {{#if bindings.0.image.value}}
+                  <div class="modal-preview-container modal-image-container">
+                    <div class="modal-iiif-container">
+                      {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation") }}
+                        <div class="modal-image-thumbnail-container">
+                          <rs-iiif-image-thumbnail  height='100%' width='auto' style='height: 100%; width: auto; object-fit: contain;'
+                                                    image-or-region='{{resource}}'    
+                                                    [[> rsp:IIIFConfig]]>
+                          </rs-iiif-image-thumbnail>
+                        </div>
+                      {{else}}
+                        <rs-iiif-viewer-panel id='mirador'
+                                              iris='[ "{{resource}}" ]'
+                                              query="SELECT DISTINCT ?image WHERE {
+                                                      {
+                                                        <{{resource}}> a rs:EX_Digital_Image .
+                                                        BIND(<{{resource}}> as ?image)
+                                                      } 
+                                                      UNION {
+                                                        <{{resource}}> a rs:EX_Digital_Image_Region .
+                                                        <{{resource}}> crmdig:L49_is_primary_area_of ?image .
+                                                        ?image a rs:EX_Digital_Image .                
+                                                      }
+                                                      UNION {
+                                                        <{{resource}}> (crm:P138i_has_representation|rs:PX_has_main_representation) ?image .
+                                                        ?image a rs:EX_Digital_Image .
+                                                      } 
+                                                      UNION {
+                                                        <{{resource}}> (crm:P138i_has_representation|rs:PX_has_main_representation) ?imageAnnotation .
+                                                        ?imageAnnotation a rs:EX_Digital_Image_Region .
+                                                        ?imageAnnotation crmdig:L49_is_primary_area_of ?image .
+                                                        ?image a rs:EX_Digital_Image .
+                                                      }
+                                                    }"     
+                                              [[> rsp:IIIFConfig]]>
+                        </rs-iiif-viewer-panel>
+                      {{/if}} 
+                    </div>
+                    [[> resourceDetails]]
+                  </div>
+                {{/if}}
+                </semantic-if>
+              </bs-tab-pane>
+        
+              <bs-tab-pane event-key="video"> 
+                {{#if bindings.0.video.value}}
+                  <semantic-query query='SELECT DISTINCT ?video WHERE { 
+                                          {
+                                            <{{resource}}> crm:P129i_is_subject_of ?videoURI . 
+                                            ?videoURI a frbroo:F26_Recording .
+                                            ?videoURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_video> .
+                                            ?videoURI crm:P129i_is_subject_of ?digital_object .
+                                            ?digital_object a crmdig:D1_Digital_Object .
+                                            ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                                            ?digital_object crm:P190_has_symbolic_content ?video .
+                                          } UNION {
+                                            <{{resource}}> crm:P129i_is_subject_of ?digital_object.
+                                            ?digital_object rdf:type crmdig:D1_Digital_Object .
+                                            ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                                            ?digital_object crm:P190_has_symbolic_content ?video .
+                                          }
+                                        }'
+                                            
+                                template='{{> template}}'>
+              
+                    <template id='template'>
+                      {{#if bindings.1.video.value}}
+                        <div class="modal-preview-container modal-video-container">
+                          <div class="modal-videos">
+                            {{#each bindings}}
+                              <div>
+                                <iframe src='{{video.value}}' 
+                                        frameborder="0" 
+                                        allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
+                                        width="358" height="230"
+                                        allowfullscreen>
+                                </iframe>
+                              </div>
+                            {{/each}}
+                          </div>
+                          [[> resourceDetails]]
+                        </div>
+                      {{else}}
+                        <div class="modal-preview-container modal-video-container modal-single-video-container">
+                          <div class="modal-single-video">
+                            <iframe src='{{bindings.0.video.value}}' 
+                                    frameborder="0" 
+                                    allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
+                                    width="100%" height="100%"
+                                    allowfullscreen>
+                            </iframe>
+                          </div>
+                          [[> resourceDetails]]
+                        </div>
+                      {{/if}}
+                    </template>
+                  </semantic-query>
+                {{/if}}
+              </bs-tab-pane>
+        
+              <bs-tab-pane event-key="map">
+                {{#if bindings.0.map.value}}
+                  <div class="modal-preview-container modal-map-container">
+                    <div class="modal-map">
+                      <semantic-map query='SELECT ?wkt WHERE { 
+                                              <{{resource}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
+                                              ?osm_geoCoordinates a crm:E94_Space_Primitive .
+                                              ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
+                                              ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
+                                              } LIMIT 1'
+                                      tuple-template='<b style="color:#525156;"><mp-label iri="{{resource}}"></mp-label></b>'>
+                      </semantic-map>
+                    </div>
+                    [[> resourceDetails]]
+                  </div>
+                {{/if}}
+              </bs-tab-pane> 
+        
+            </bs-tab-content>
+          </div>
+        </bs-tab-container>
+      </template>
+      <template id='noResults'>
+        <div class="preview-media-noResults">
+          [[> resourceDetails]]
         </div>
-      </bs-tab-container>
-    </template>
-    <template id='noResults'>
-      <div class="preview-media-noResults">
-        [[> resourceDetails]]
-      </div>
-    </template>
-</semantic-query>
+      </template>
+  </semantic-query>
+{{/if}}
 
 [[#*inline "resourceDetails"]]
   {{#if resourceDetailSection}}
@@ -243,6 +506,27 @@
                           proxy-targets='["{{modalId}}"]'
           ></mp-event-proxy>
 
+          <mp-event-proxy id='{{resource}}-closeDialog-proxy'
+                          on-event-source='{{resource}}-open-chart-trigger'
+                          on-event-type='Dashboard.AddFrame'
+                          proxy-event-type='OverlayDialog.Close' 
+                          proxy-targets='["{{modalId}}"]'
+          ></mp-event-proxy>
+
+          <mp-event-proxy id='{{resource}}-closeDialog-proxy'
+                          on-event-source='{{resource}}-open-timeline-trigger'
+                          on-event-type='Dashboard.AddFrame'
+                          proxy-event-type='OverlayDialog.Close' 
+                          proxy-targets='["{{modalId}}"]'
+          ></mp-event-proxy>
+
+          <mp-event-proxy id='{{resource}}-closeDialog-proxy'
+                          on-event-source='{{resource}}-open-set-trigger'
+                          on-event-type='Dashboard.AddFrame'
+                          proxy-event-type='OverlayDialog.Close' 
+                          proxy-targets='["{{modalId}}"]'
+          ></mp-event-proxy>
+
           <div style="display: flex; align-items: center; gap: 10px;">
             
             {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative") }}
@@ -254,7 +538,7 @@
                                 targets='["thinking-frames"]'>
                 <button class="btn btn-primary btn-textAndIcon">
                   <span>Open narrative</span>
-                  <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
+                  <rs-icon icon-type="rounded" icon-name="chevron_right" symbol="true"></rs-icon>
                 </button>
               </mp-event-trigger>
             {{/if}}
@@ -268,10 +552,52 @@
                                 targets='["thinking-frames"]'>
                 <button class="btn btn-primary btn-textAndIcon">
                   <span>Open knowledge map</span>
-                  <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
+                  <rs-icon icon-type="rounded" icon-name="chevron_right" symbol="true"></rs-icon>
                 </button>
               </mp-event-trigger>
             {{/if}}
+
+            {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart") }}
+              <mp-event-trigger id='{{resource}}-open-chart-trigger' 
+                                type='Dashboard.AddFrame'
+                                data='{ "viewId":"chart", 
+                                        "resourceIri":"{{resource}}"
+                                      }' 
+                                targets='["thinking-frames"]'>
+                <button class="btn btn-primary btn-textAndIcon">
+                  <span>Open chart</span>
+                  <rs-icon icon-type="rounded" icon-name="chevron_right" symbol="true"></rs-icon>
+                </button>
+              </mp-event-trigger>
+            {{/if}}
+
+          {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline") }}
+            <mp-event-trigger id='{{resource}}-open-timeline-trigger' 
+                              type='Dashboard.AddFrame'
+                              data='{ "viewId":"timeline", 
+                                      "resourceIri":"{{resource}}"
+                                    }' 
+                              targets='["thinking-frames"]'>
+              <button class="btn btn-primary btn-textAndIcon">
+                <span>Open timeline</span>
+                <rs-icon icon-type="rounded" icon-name="chevron_right" symbol="true"></rs-icon>
+              </button>
+            </mp-event-trigger>
+          {{/if}}
+
+          {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") }}
+            <mp-event-trigger id='{{resource}}-open-set-trigger' 
+                              type='Dashboard.AddFrame'
+                              data='{ "viewId":"single-set-management", 
+                                      "resourceIri":"{{resource}}"
+                                    }' 
+                              targets='["thinking-frames"]'>
+              <button class="btn btn-primary btn-textAndIcon">
+                <span>Open set</span>
+                <rs-icon icon-type="rounded" icon-name="chevron_right" symbol="true"></rs-icon>
+              </button>
+            </mp-event-trigger>
+          {{/if}}
 
             {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/User") }}
               <semantic-query query='SELECT DISTINCT ?systemUser  { 
@@ -292,7 +618,7 @@
                       <span>
                         {{#ifCond bindings.0.systemUser.value "===" resource}}Edit{{else}}View{{/ifCond}}
                       </span>
-                      <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
+                      <rs-icon icon-type="rounded" icon-name="chevron_right" symbol="true"></rs-icon>
                     </button>
                   </mp-event-trigger>
                 </template>
@@ -308,7 +634,7 @@
                                 targets='["thinking-frames"]'>
                 <button class="btn btn-primary btn-textAndIcon">
                   <span>Edit</span>
-                  <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
+                  <rs-icon icon-type="rounded" icon-name="chevron_right" symbol="true"></rs-icon>
                 </button>
               </mp-event-trigger>
             {{/if}}

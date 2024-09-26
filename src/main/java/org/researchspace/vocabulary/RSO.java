@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,6 +20,7 @@
 package org.researchspace.vocabulary;
 
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
@@ -35,6 +37,7 @@ public class RSO {
     public static final IRI THING_CLASS;
     public static final IRI EX_Assertion;
     public static final IRI ALIGNMENT;
+    public static final IRI EX_FILE;
 
     /*
      * PROPERTIES
@@ -43,6 +46,8 @@ public class RSO {
     public static final IRI OVERLAY_IMAGESOURCE_PROPERTY;
     public static final IRI OVERLAY_ORDER_PROPERTY;
     public static final IRI OVERLAY_OPACITY_PROPERTY;
+    public static final IRI PX_HAS_FILE_NAME;
+
 
     static {
         ValueFactory f = SimpleValueFactory.getInstance();
@@ -50,6 +55,7 @@ public class RSO {
         THING_CLASS = f.createIRI(NAMESPACE, "Thing");
         EX_DIGITAL_IMAGE_REGION_CLASS = f.createIRI(NAMESPACE, "EX_Digital_Image_Region");
         EX_Assertion = f.createIRI(NAMESPACE, "EX_Assertion");
+        EX_FILE = f.createIRI(NAMESPACE, "EX_File");
         ALIGNMENT = f.createIRI(NAMESPACE, "Alignment");
 
         OVERLAY_IMAGESOURCE_PROPERTY = f.createIRI(NAMESPACE, "Overlay_Image_Source");
@@ -58,6 +64,7 @@ public class RSO {
 
         // properties
         DISPLAYLABEL_PROPERTY = f.createIRI(NAMESPACE, "displayLabel");
+        PX_HAS_FILE_NAME = f.createIRI(NAMESPACE,"PX_has_file_name");
     }
 
 }

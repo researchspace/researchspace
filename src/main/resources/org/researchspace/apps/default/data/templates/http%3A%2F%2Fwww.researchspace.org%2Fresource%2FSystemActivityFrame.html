@@ -5,11 +5,13 @@
                   on-event-types='["Form.ResourceCreated", 
                                     "Form.ResourceUpdated", 
                                     "Form.ResourceRemoved",
+                                    "OverlayComparison.Created",
                                     "Components.SetManagement.SetAdded",
                                     "Components.SetManagement.SetRenamed",
                                     "Components.SetManagement.SetRemoved",
                                     "Narrative.Created", 
                                     "Narrative.Updated",
+                                    "GraphAction.Delete",
                                     "Ontodia.DiagramSaved",
                                     "Ontodia.DiagramDataPersisted"
                                     ]'         
@@ -19,8 +21,7 @@
 
     <mp-event-target-template-render id="system-activities-render-area" template='{{> template}}'>
         <template id='template'>
-            [[!-- <semantic-search config='[[searchConfigForFieldsFromQuery "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> . ?field <http://www.researchspace.org/resource/system/fields/domain> ?domain . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . }"]]'> --]]
-                 <semantic-search>
+            <semantic-search config='[[searchConfigForFieldsFromQuery "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> . ?field <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/system_activity_search> .}"]]'>              
                     <div class="semantic-search-content">
                         <div class="semantic-search-header-content">
                             <div style="display: flex; align-items: center;column-gap: 30px;flex: 1;max-height: 35px;overflow: hidden;">
@@ -36,8 +37,17 @@
                                                                           {
                                                                             ?subject prov:generatedAtTime ?date .
                                                                             ?subject crm:P2_has_type ?type .
-                                                                            FILTER(?type IN (<http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative>, <http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map>, <http://www.researchspace.org/resource/system/vocab/resource_type/set>))
+                                                                            FILTER(?type IN (<http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map>, 
+                                                                                            <http://www.researchspace.org/resource/system/vocab/resource_type/set>,
+                                                                                            <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative>, 
+                                                                                            <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_chart>,
+                                                                                            <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_timeline>
+                                                                                  )
+                                                                            )
                                                                             ?subject crm:P190_has_symbolic_content ?label .
+                                                                          } UNION {
+                                                                            ?subject a rs:EX_Digital_Image .
+                                                                            ?subject prov:generatedAtTime ?date .
                                                                           } UNION {
                                                                             ?subject crm:P129i_is_subject_of ?entityFormRecord .
                                                                             ?entityFormRecord a crmdig:D1_Digital_Object .
@@ -73,8 +83,17 @@
                                                                                   {
                                                                                     ?subject prov:generatedAtTime ?date .
                                                                                     ?subject crm:P2_has_type ?type .
-                                                                                    FILTER(?type IN (<http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative>, <http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map>, <http://www.researchspace.org/resource/system/vocab/resource_type/set>))
+                                                                                    FILTER(?type IN (<http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map>, 
+                                                                                                    <http://www.researchspace.org/resource/system/vocab/resource_type/set>,
+                                                                                                    <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative>, 
+                                                                                                    <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_chart>,
+                                                                                                    <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_timeline>
+                                                                                          )
+                                                                                    )
                                                                                     MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
+                                                                                  } UNION {
+                                                                                    ?subject a rs:EX_Digital_Image .
+                                                                                    ?subject prov:generatedAtTime ?date .
                                                                                   } UNION {
                                                                                     ?subject crm:P129i_is_subject_of ?entityFormRecord .
                                                                                     ?entityFormRecord a crmdig:D1_Digital_Object .
@@ -96,44 +115,9 @@
                                                     targets='["system-activities-render-area"]'
                                                     >
                                     <button class="btn btn-default btn-textAndIcon">
-                                        <rs-icon icon-type="round" icon-name="refresh" title="Refresh results"></rs-icon>
+                                        <rs-icon icon-type="rounded" icon-name="refresh" title="Refresh results" symbol="true"></rs-icon>
                                     </button>
                                 </mp-event-trigger>
-
-                                [[!-- More actions button --]]
-                                <bs-dropdown id="{{viewId}}-search-actions-dropdown" pull-right=true class="dropdown-no-caret">
-                                    <bs-dropdown-toggle>
-                                        <rs-icon icon-type="round" icon-name="more_vert"></rs-icon>
-                                    </bs-dropdown-toggle>
-                                    <bs-dropdown-menu>
-        
-                                        <semantic-search-result>
-                                            <mp-sparql-download id='csv-result' 
-                                                                query="SELECT ?subject WHERE { }"
-                                                                header="text/csv"
-                                                                filename="{{viewId}}-csv-result.csv">
-                                                <bs-menu-item>
-                                                    <rs-icon icon-type="rounded" icon-name="file_download" class="icon-left" symbol="true"></rs-icon>
-                                                    <span>Export as CSV</span>
-                                                </bs-menu-item>
-                                            </mp-sparql-download>
-                                        </semantic-search-result>
-                                        
-                                        <semantic-search-result>
-                                            <mp-sparql-download id='json-result' 
-                                                                query="SELECT ?subject WHERE { }"
-                                                                header="application/sparql-results+json"
-                                                                filename="{{viewId}}-json-result.json"
-                                            >
-                                                <bs-menu-item>
-                                                    <rs-icon icon-type="rounded" icon-name="file_download" class="icon-left" symbol="true"></rs-icon>
-                                                    <span>Export as JSON</span>
-                                                </bs-menu-item>
-                                            </mp-sparql-download>
-                                        </semantic-search-result>
-                                        
-                                    </bs-dropdown-menu>
-                                </bs-dropdown>
                             </div>
                         </div>
 
@@ -189,7 +173,7 @@
                                         <div style="display: flex; align-items: center; gap: 10px;">
                                             <div class="customFormHeader" style="padding-top: 0;">Filter by</div>
                                         </div> 
-                                        <rs-icon icon-type="round" icon-name="keyboard_double_arrow_right" 
+                                        <rs-icon icon-type="rounded" icon-name="keyboard_double_arrow_right" symbol="true"
                                                 style="font-size: 20px;">
                                         </rs-icon>
                                     </button>
@@ -199,7 +183,7 @@
                             <mp-splitpane-sidebar-open style="flex: 1; overflow: hidden;">
                                 <div class="split-pane__sidebar-open">
                                 <semantic-search-facet  id='{{viewId}}-semantic-search-facet'
-                                                        open-by-default=false 
+                                                        open-by-default=true 
                                                         hide-toggle-button=true>
                                 </semantic-search-facet>
                                 </div>

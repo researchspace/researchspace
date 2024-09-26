@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -17,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { createFactory, cloneElement, Children } from 'react';
+import { createFactory, cloneElement, Children, createElement } from 'react';
 import * as D from 'react-dom-factories';
 import * as ReactBootstrap from 'react-bootstrap';
 import * as Kefir from 'kefir';
@@ -34,6 +35,9 @@ import { addToDefaultSet } from 'platform/api/services/ldp-set';
 import { Spinner } from 'platform/components/ui/spinner/Spinner';
 import { isValidChild } from 'platform/components/utils';
 import { ResourceLinkComponent } from 'platform/api/navigation/components/ResourceLinkComponent';
+import Icon from 'platform/components/ui/icon/Icon';
+import * as LabelsService from 'platform/api/services/resource-label';
+import { getLabels, getLabel } from 'platform/api/services/resource-label';
 
 const Button = createFactory(ReactBootstrap.Button);
 const Modal = createFactory(ReactBootstrap.Modal);
@@ -53,6 +57,12 @@ interface Props {
    * @default false
    */
   addToDefaultSet?: boolean;
+
+  /**
+   *
+   * @default false
+   */
+  showDescription?: boolean;
 }
 
 interface State {
@@ -65,6 +75,7 @@ interface State {
 export class ActionSaveComponent extends Component<Props, State> {
   static defaultProps: Partial<Props> = {
     addToDefaultSet: false,
+    showDescription: false
   };
 
   constructor(props: Props, context: any) {
@@ -108,50 +119,78 @@ export class ActionSaveComponent extends Component<Props, State> {
   }
 
   renderModal() {
+    console.log('description', this.props.showDescription)
     switch (this.state.show) {
       case 'editor':
         return Modal(
           { show: true, onHide: this.onCancel },
-          ModalHeader({}, 'Save visualization'),
-          ModalBody(
-            {},
-            'Label:',
-            FormControl({
-              value: this.state.label ? this.state.label : '',
-              onChange: (e) => {
-                const newValue = (e.target as any).value;
-                this.setState({ label: newValue });
-              },
-            }),
-            'Description:',
-            FormControl({
-              type: 'textarea',
-              value: this.state.description ? this.state.description : '',
-              onChange: (e) => {
-                const newValue = (e.target as any).value;
-                this.setState({ description: newValue });
-              },
-            })
+          ModalHeader({}, 
+            D.h4({ className: 'modal-title' }, 'Save visualization')
+          ),
+          ModalBody({},
+            
+              D.div({},
+              'Name:'
+              ),
+              FormControl({
+                value: this.state.label ? this.state.label : '',
+                onChange: (e) => {
+                  const newValue = (e.target as any).value;
+                  this.setState({ label: newValue });
+                },
+              })
+              
+/*               ,
+          
+              D.div({},
+              'Description:'
+              ),
+              FormControl({
+                type: 'textarea',
+                value: this.state.description ? this.state.description : '',
+                onChange: (e) => {
+                  const newValue = (e.target as any).value;
+                  this.setState({ description: newValue });
+                },
+              }), */
+            
           ),
           ModalFooter(
             {},
-            Button({ disabled: !this.state.label, onClick: this.onSave }, 'OK'),
-            Button({ onClick: this.onCancel }, 'Cancel')
+            Button({ onClick: this.onCancel }, 'Cancel'),
+            Button({ className:'btn-action', disabled: !this.state.label, onClick: this.onSave  }, 'Save')
           )
         );
       case 'saving':
         return Modal(
           { show: true, onHide: this.onCancel },
-          ModalHeader({}, 'Saving in progress'),
-          ModalBody({}, Spinner())
+          ModalHeader({}, 
+            D.h4({ className: 'modal-title' }, 'Save visualization')
+          ),
+          ModalBody({}, 
+            D.p({}, 'Saving in progress'),
+            D.div({}, Spinner())
+          )
         );
-      case 'success':
-        return Modal(
-          { show: true, onHide: this.onCancel },
-          ModalHeader({}, 'Success'),
-          ModalBody({}, 'Visualization ', ResourceLink({ uri: this.state.savedIri }), 'has been saved successfully!'),
-          ModalFooter({}, Button({ onClick: this.onCancel }, 'OK'))
-        );
+      case 'success': 
+
+      LabelsService.getLabel(Rdf.iri(this.state.savedIri)).onValue(
+           (label) => {
+            
+             Modal(
+              { show: true, onHide: this.onCancel },
+              ModalHeader({}, 
+                D.h4({ className: 'modal-title' }, 'Save visualization')
+              ),
+              ModalBody({}, 'Visualization ', 
+                            ResourceLink({ iri: 'http://www.researchspace.org/resource/ThinkingFrames', 
+                                          urlqueryparamView: 'resource-editor', 
+                                          urlqueryparamResourceIri:this.state.savedIri, 
+                                          className:'text-link' }, label ), 
+                            ' has been saved successfully!'),
+              ModalFooter({}, Button({ onClick: this.onCancel }, 'Close'))
+            );
+          })
       case 'hide':
         return null;
     }
@@ -169,10 +208,11 @@ export class ActionSaveComponent extends Component<Props, State> {
     }
     return Button(
       {
-        title: 'Save into default set',
+        title: 'Save visualisation',
+        className: 'btn-textAndIcon',
         onClick: this.state.show == 'hide' ? this.onClick : undefined,
       },
-      D.i({ className: 'fa fa-save' }),
+      createElement(Icon, {iconType:'rounded', iconName: 'save', symbol: true}),
       this.renderModal()
     );
   }

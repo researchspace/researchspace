@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -270,7 +271,7 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
         )}
         { showEditButton && 
           <Button className={`${CLASS_NAME}__create-button btn-textAndIcon`} title='Edit' onClick={() => {this.onEditHandler(value.value as Rdf.Iri)}}>
-            <Icon iconType='round' iconName='edit'/>
+            <Icon iconType='rounded' iconName='edit' symbol/>
           </Button>
         }
         {showLinkResourceButton && 

@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -367,7 +368,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
         )}
         { showEditButton && 
           <Button className={`${SELECT_TEXT_CLASS}__create-button btn-textAndIcon`} title='Edit' onClick={() => {this.onEditHandler(selectedValue)}}>
-            <Icon iconType='round' iconName='edit'/>
+            <Icon iconType='rounded' iconName='edit' symbol/>
           </Button>
         }
         {showLinkResourceButton && !FieldValue.isEmpty(this.props.value) && 

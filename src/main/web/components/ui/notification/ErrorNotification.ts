@@ -20,6 +20,7 @@
 import { Component, ReactNode, ReactElement, createElement, createFactory } from 'react';
 import * as D from 'react-dom-factories';
 import * as ReactBootstrap from 'react-bootstrap';
+import Icon from 'platform/components/ui/icon/Icon';
 
 import { ErrorPresenter } from './ErrorPresenter';
 
@@ -73,7 +74,7 @@ export class ErrorNotification extends Component<ErrorNotificationProps, {}> {
       errorMessage ? 
       D.div({ className: `${CLASS_NAME}__error`  }, 
             D.div({className: `${CLASS_NAME}__error-icon`}, 
-              D.i({ className: 'material-icons-round' }, 'priority_high')
+              createElement(Icon, {iconType:'rounded', iconName: 'priority_high', symbol: true})
             ),
             D.div({}, createElement(ErrorPresenter, { error: errorMessage }) )
             

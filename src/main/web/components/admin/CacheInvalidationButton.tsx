@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -99,7 +100,7 @@ class InvalidateCacheButton extends Component<{}, State> {
 
 /*   <mp-popover title="Cache Invalidation">
               <mp-popover-trigger placement="right"  trigger='["hover"]'> 
-                <rs-icon icon-type="round" icon-name="help" style="margin-left: 5px; font-size: 15px;"></rs-icon>
+                <rs-icon icon-type="rounded" icon-name="help" symbol="true" style="margin-left: 5px; font-size: 15px;"></rs-icon>
               </mp-popover-trigger>
               <mp-popover-content>
                 <div>

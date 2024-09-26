@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -278,8 +279,10 @@ export const DEFAULT_TOOLTIP_MARKUP = `<div>
     <div>
       {{> @marker style=category.markerStyle class=category.markerClass}}
       {{#if category.iri}}
-        <semantic-link iri='{{category.iri}}'>
-          {{category.label}}
+        <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                      urlqueryparam-view='resource-editor' 
+                      urlqueryparam-resource-iri='{{category.iri}}'>
+                          {{category.label}}
         </semantic-link>
       {{else}}
         {{category.label}}
@@ -291,7 +294,13 @@ export const DEFAULT_TOOLTIP_MARKUP = `<div>
       <li>
         {{> @marker style=markerStyle class=markerClass}}
         {{#if iri}}
-          <semantic-link iri="{{iri}}">{{label}}</semantic-link>: {{value}}
+          <div style="display:flex;">
+            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                          urlqueryparam-view='resource-editor' 
+                          urlqueryparam-resource-iri='{{iri}}'>
+                              {{label}}
+            </semantic-link>: {{value}}
+          </div>
         {{else}}
           {{label}}: {{value}}
         {{/if}}

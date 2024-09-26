@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -38,6 +39,7 @@ import { Error, Alert, AlertType, AlertConfig } from 'platform/components/ui/ale
 import { Spinner } from 'platform/components/ui/spinner';
 import { getOverlaySystem } from 'platform/components/ui/overlay';
 import { ConfirmationDialog } from 'platform/components/ui/confirmation-dialog';
+import Icon from 'platform/components/ui/icon/Icon';
 
 const ReactSelect = createFactory(ReactSelectComponent);
 const Button = createFactory(ReactBootstrap.Button);
@@ -259,7 +261,7 @@ export class PageManager extends Component<{}, PageAdminState> {
                 className: 'btn-textAndIcon',
                 onClick: this.onClickExportSelected,
               },
-              D.i({ className: 'material-icons-round' }, 'download'),
+              createElement(Icon, {iconType:'rounded', iconName: 'download', symbol: true}),
               D.span({ }, 'Download selected')
             ),
             Button(
@@ -270,7 +272,7 @@ export class PageManager extends Component<{}, PageAdminState> {
                 onClick: this.onClickDeleteSelected,
                 disabled: this.state.selectedPages.length === this.state.data.length,
               },
-              D.i({ className: 'material-icons-round' }, 'delete'),
+              createElement(Icon, {iconType:'rounded', iconName: 'delete', symbol: true}),
               D.span({ }, 'Delete selected')
             )
           ),

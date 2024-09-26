@@ -86,6 +86,36 @@
     },
 
     {
+    	"id": "resource-persisted",
+      "label": "Resource persisted",
+      "template": "{{> resourcePersisted}}",
+      "iconName": "finance",
+      "checkQuery": "ASK { 
+        ?value a <http://www.researchspace.org/ontologies/persist/PersistedComponent>. }",
+      "type": "view"
+    },
+
+    {
+    	"id": "chart",
+      "label": "Chart",
+      "template": "{{> resourcePersisted}}",
+      "iconName": "finance",
+      "checkQuery": "ASK { 
+        ?value a <http://www.researchspace.org/ontologies/persist/PersistedComponent>. }",
+      "type": "view"
+    },
+
+    {
+    	"id": "timeline",
+      "label": "Timeline",
+      "template": "{{> resourcePersisted}}",
+      "iconName": "timeline",
+      "checkQuery": "ASK { 
+        ?value a <http://www.researchspace.org/ontologies/persist/PersistedComponent>. }",
+      "type": "view"
+    },
+
+    {
     	"id": "iiif",
       "label": "Image viewer",
       "description": "Drag and drop an entity here to view and compare related high-resolution images",
@@ -111,30 +141,30 @@
     },
 
     {
-    	"id": "vocabulary",
-      "label": "Vocabularies / Authorities",
-      "iconClass": "iconmoon iconmoon-books",
-      "description": "Create, view and edit vocabulary / authority list of terms",
-      "template": "{{> vocabulary}}",
+    	"id": "authority",
+      "label": "Authority document",
+      "iconName": "dictionary",
+      "description": "Create, view and edit authority list of terms",
+      "template": "{{> authority}}",
       "resourceNotRequired": true,
       "type": "hidden"
     }, 
 
     {
-    	"id": "system-vocabulary",
-      "label": "System vocabularies / authorities",
-      "iconClass": "iconmoon iconmoon-books",
-      "description": "Create, view and edit system vocabulary / authority list of terms",
-      "template": "{{> systemVocabulary}}",
+    	"id": "system-authority",
+      "label": "System authority document",
+      "iconName": "dictionary",
+      "description": "Create, view and edit system authority list of terms",
+      "template": "{{> systemAuthority}}",
       "resourceNotRequired": true,
       "type": "hidden"
     }, 
 
     {
-    	"id": "vocabulary-content",
-      "label": "Vocabulary / Authority content",
-      "iconClass": "iconmoon iconmoon-books",
-      "template": "{{> vocabularyContent}}",
+    	"id": "authority-list",
+      "label": "List of resources in authority",
+      "iconName": "dictionary",
+      "template": "{{> authorityList}}",
        "type": "hidden"
     },
 
@@ -217,29 +247,11 @@
       "dropAreaDescription": "Drag and drop a resource here to view and annotate its images",
       "iconName": "photo_size_select_large",
       "template": "{{> imageAnnotation}}",
-    [[!--  "checkQuery": "
-        PREFIX ontodia: <http://ontodia.org/schema/v1#>
-        PREFIX ldp: <http://www.w3.org/ns/ldp#>
-        ASK {
-          {
-            ?value a ontodia:Diagram .
-            ?value ontodia:layoutData/ontodia:hasElement/ontodia:resource ?resource .
-            { ?value crm:P138i_has_representation|rs:PX_has_main_representation ?image .} UNION { ?value a rs:EX_Digital_Image . }
-          } UNION {
-            ?value a Platform:Set .
-            ?value ldp:contains / Platform:setItem ?resource .
-            { ?value crm:P138i_has_representation|rs:PX_has_main_representation ?image .} UNION { ?value a rs:EX_Digital_Image . }
-          } UNION {
-            ?value crm:P138i_has_representation|rs:PX_has_main_representation ?image .
-          } UNION {
-            ?value a rs:EX_Digital_Image .
-          }
-      }", --]]
       "unique": false,
       "type": "authoring"
     } 
 
-    [[!--  {
+[[!--  {
     	"id": "object-image-observation",
       "label": "Object observation",
       "description": "Drag and drop an object here to combine image annotations with form authoring",
@@ -274,38 +286,16 @@
     	"id": "feature-similarity-km",
       "label": "Exploring and comparing (visual) features",
       "template": "{{> featureSimilarityKm }}",
+      "iconName": "compare",
       "itemBodyTemplate": "{{> itemBodyTemplate}}",
       "frameVariable": "ontodiaVariable",
       "type": "authoring"
     }, 
 
     {
-    	"id": "system-narrative",
-      "label": "Semantic narratives",
-      "template": "{{> systemNarrativesTemplate}}",
-      "resourceNotRequired": true,
-      "type": "view"
-    },
-    
-    {
-    	"id": "system-knowledge-maps",
-      "label": "Knowledge maps",
-      "template": "{{> systemKnowledgeMapsTemplate}}",
-      "resourceNotRequired": true,
-      "type": "view"
-    },
-    
-    {
-    	"id": "system-assets",
-      "label": "Assets",
-      "template": "{{> systemDigitalAssetsTemplate}}",
-      "resourceNotRequired": true,
-      "type": "view"
-    }, 
-
-    {
     	"id": "map-resource-search",
       "label": "Objects referred by place",
+      "iconName": "place",
       "template": "{{> mapResourceSearch}}",
       "type": "view"
     }
@@ -377,6 +367,10 @@
     	</div>
     </template>
 
+    <template id='resourcePersisted'>
+      [[> rsp:ResourcePersistedView]]
+    </template>
+
     <template id='resourceConfiguration'>
       [[> rsp:ResourceConfiguration]]
     </template>
@@ -385,29 +379,17 @@
       [[> rsp:ResourceEditor]]
     </template>
 
-    <template id='vocabulary'>
-      [[> rsp:Vocabulary]]
+    <template id='authority'>
+      [[> rsp:AuthorityDocumentView]]
     </template>
 
-    <template id='systemVocabulary'>
-      [[> rsp:SystemVocabulary]]
+    <template id='systemAuthority'>
+      [[> rsp:AuthorityDocumentSystem]]
     </template>
 
-    <template id='vocabularyContent'>
-      [[> rsp:VocabularyContent iri=iri]]
+    <template id='authorityList'>
+      [[> rsp:AuthorityList iri=iri]]
     </template>
-
-[[!--     <template id='systemNarrativesTemplate'>
-      [[> rsp:SystemNarrativesFrame]]
-    </template> --]]
-
-[[!--    <template id='systemKnowledgeMapsTemplate'>
-      [[> rsp:SystemKnowledgeMapsFrame]]
-    </template> --]]
-
-[[!--  <template id='systemDigitalAssetsTemplate'>
-      [[> rsp:SystemAssetsFrame]]
-    </template> --]]
 
     <template id='systemActivityTemplate'>
       <div class='page__grid-container search-page-container'>
@@ -454,7 +436,7 @@
       </style>
       
       <div style='flex: 1 1 0px; overflow: auto;'>
-        <semantic-map tuple-template='{{>popover}}'
+        <semantic-map tuple-template='{{> popover}}'
                       query='SELECT DISTINCT ?wkt ?place ?color WHERE {
                               {
                               <{{iri}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
@@ -496,7 +478,7 @@
                   <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
                                             urlqueryparam-view="resource-editor"
                                             urlqueryparam-resource-iri='{{place.value}}'>
-                    <div><mp-label iri='{{place.value}}' style="text-decoration: underline; cursor: pointer; color:#396EFE;"></mp-label></div>
+                    <div><mp-label iri='{{place.value}}' style="text-decoration: underline; cursor: pointer; color:#396EFE; font-weight: 600;"></mp-label></div>
                   </semantic-link-container>
                 </div>
               </div>
@@ -525,7 +507,7 @@
           </button>&nbsp;
           <mp-popover>
             <mp-popover-trigger placement="right" trigger='["click","hover","focus"]' root-close='false'>
-              <small><rs-icon icon-type="round" icon-name="help"></rs-icon></small>
+              <small><rs-icon icon-type="rounded" icon-name="help" symbol="true"></rs-icon></small>
             </mp-popover-trigger>
             <mp-popover-content>Only persisted data will be saved to a set</mp-popover-content>
           </mp-popover>

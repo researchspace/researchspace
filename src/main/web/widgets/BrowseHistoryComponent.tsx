@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -153,7 +154,7 @@ export class BrowseHistoryComponent extends React.Component<Props, State> {
             onClick={this.goBack}
             href="#"
           >
-            <Icon iconType='round' iconName='arrow_left' />
+            <Icon iconType='rounded' iconName='arrow_left' symbol />
           </NavItem>
           <NavItem
             disabled={this.state.locIndex === this.state.links.length - 1}
@@ -161,7 +162,7 @@ export class BrowseHistoryComponent extends React.Component<Props, State> {
             onClick={this.goForward}
             href="#"
           >
-            <Icon iconType='round' iconName='arrow_right' />
+            <Icon iconType='rounded' iconName='arrow_right' symbol/>
           </NavItem>
         </Nav>
       </div>

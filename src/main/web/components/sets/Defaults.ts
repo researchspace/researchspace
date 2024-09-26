@@ -78,7 +78,7 @@ export const SetListTemplate = `
   </div>
 
   <div class='set-management__item-actions' style='margin-left: auto;'>
-    <rs-resource-dropdown id={{iri.value}} class-name="my-css-class">
+    <rs-resource-dropdown id="{{clipboard-set}}-{{iri.value}}-item-actions-dropdown" class-name="dropdown-no-caret" toggle-class-name="button-clipboard-folder-actions no-active-bg">
       {{> rsp:ResourceDropdownActions viewId="clipboard-set"
                                       iri=iri.value
                                       resourceConfig="http://www.researchspace.org/resource/system/resource_configurations_container/data/Set"

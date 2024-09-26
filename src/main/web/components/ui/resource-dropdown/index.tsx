@@ -31,7 +31,7 @@ export class ResourceDropdown extends React.Component<Props, State> {
     return (
       <Dropdown id={id} className={className} pullRight onToggle={this.onToggle}>
         <Dropdown.Toggle className={toggleClassName}>
-          <Icon iconType='round' iconName='more_vert' />
+          <Icon iconType='rounded' iconName='more_vert' symbol />
         </Dropdown.Toggle>
         {this.state.customDropdownOpen ? children : <Dropdown.Menu></Dropdown.Menu>}
       </Dropdown>)

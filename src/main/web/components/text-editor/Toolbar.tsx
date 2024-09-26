@@ -312,17 +312,15 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
                             <Icon iconType='rounded' iconName='refresh' symbol />
                           </Button>}
 
-          {showDropdown && <Dropdown id='xxs' className='dropdown-no-caret' pullRight onToggle={this.onToggleCustomDropdown}>
+          {showDropdown && <Dropdown id='semantic-narrative-resource-dropdwon' className='dropdown-no-caret' pullRight onToggle={this.onToggleCustomDropdown}>
                       <Dropdown.Toggle>
-                        <Icon iconType='round' iconName='more_vert' />
+                        <Icon iconType='rounded' iconName='more_vert' symbol />
                       </Dropdown.Toggle>
                       <Dropdown.Menu></Dropdown.Menu>
                       {this.state.customDropdownTemplate }
                     </Dropdown>
           }
           
-        
-
           <Button bsStyle='default' 
                   className='btn-action'
                   onClick={this.props.onDocumentSave} 

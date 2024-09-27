@@ -226,22 +226,6 @@
             <mp-event-target-template-render id="{{node}}-listOfResources-container" template='{{> template}}'>
                 <template id='template'>
 
-                    <mp-event-proxy id='{{node}}-update-listOfResources-on-create-setWithSelection'
-                                    on-event-types='["Components.SetManagement.SetAdded"]'
-                                    on-event-source='{{node}}-new-set-with-selection'
-                                    proxy-event-type='Component.TemplateUpdate' 
-                                    proxy-targets='["{{node}}-listOfResources-container"]'
-                                    additional-data='{"setCreated": true }' >
-                    </mp-event-proxy>
-                
-                    <mp-event-proxy id='{{node}}-update-listOfResources-on-create-setWithResults'
-                                    on-event-types='["Components.SetManagement.SetAdded"]'
-                                    on-event-source='{{node}}-new-set-with-results'
-                                    proxy-event-type='Component.TemplateUpdate' 
-                                    proxy-targets='["{{node}}-listOfResources-container"]'
-                                    additional-data='{"setCreated": true }' >
-                    </mp-event-proxy>
-
                     <semantic-search id="{{node}}-listOfResources-search">
                         <div class="semantic-search-header-actions">
                             <semantic-search-query-keyword  domain='<{{resourceOntologyClass}}>'
@@ -301,45 +285,6 @@
                                 </bs-dropdown>
                             [[/if]]
                         </div>
-
-                        <mp-event-target-template-render id='{{node}}--resource-created-new-set-message' template='{{> template}}'>
-                            <template id='template'>
-                              {{#if hideMessage}}
-                              {{else if setCreated}}
-                                  <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%; margin-top: 10px;">
-                                    <div class="success-documentation-section-icon-container">
-                                      <rs-icon icon-type="rounded" icon-name="done" symbol="true"></rs-icon>
-                                    </div>
-                  
-                                    <div style="flex: 1;"> 
-                                      <div class="success-documentation-section-title">New set created!</div>
-                                      <div class="success-documentation-section-content" style="display: flex; gap: 5px;">
-                                        <mp-draggable iri='{{containerIri}}'>
-                                          <div>
-                                            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                            urlqueryparam-view='single-set-management'
-                                                            urlqueryparam-resource='{{containerIri}}'>
-                                              <mp-label iri='{{containerIri}}' class="text-link color-success-text"></mp-label>
-                                            </semantic-link>
-                                          </div>
-                                        </mp-draggable>
-                                        <span> has been created.</span>
-                                      </div>
-                                    </div>
-                                    
-                                    <mp-event-trigger id='{{node}}-created-set-close-message'
-                                                      type='Component.TemplateUpdate'
-                                                      data='{ "hideMessage": "true" }'
-                                                      targets='["{{node}}--resource-created-new-set-message"]'
-                                    >
-                                      <button class="btn btn-documentation">
-                                        <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
-                                      </button>
-                                    </mp-event-trigger>
-                                  </div>
-                              {{/if}}
-                            </template>
-                          </mp-event-target-template-render>
                         
                         <div data-flex-layout="row stretch-stretch" class='search-results-area'>
                             <semantic-search-result-holder>

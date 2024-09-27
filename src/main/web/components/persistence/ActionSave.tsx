@@ -38,6 +38,8 @@ import { ResourceLinkComponent } from 'platform/api/navigation/components/Resour
 import Icon from 'platform/components/ui/icon/Icon';
 import * as LabelsService from 'platform/api/services/resource-label';
 import { getLabels, getLabel } from 'platform/api/services/resource-label';
+import { ErrorNotification, addNotification } from 'platform/components/ui/notification';
+import React = require('react');
 
 const Button = createFactory(ReactBootstrap.Button);
 const Modal = createFactory(ReactBootstrap.Modal);
@@ -104,7 +106,18 @@ export class ActionSaveComponent extends Component<Props, State> {
       .addResource(graph)
       .flatMap((res) => (this.props.addToDefaultSet ? addToDefaultSet(res, this.props.id) : Kefir.constant(res)))
       .onValue((resourceIri) => {
-        trigger({ eventType: SetManagementEvents.ItemAdded, source: this.props.id });
+        trigger({ eventType: SetManagementEvents.SetAdded, source: this.props.id, data: {containerIri: resourceIri.value } });
+        addNotification({
+          level: 'success',
+          autoDismiss: 1000,
+          title: 'Resource created!',
+          children: (
+            ResourceLink({ iri: 'http://www.researchspace.org/resource/ThinkingFrames', 
+              urlqueryparamView: 'resource-editor', 
+              urlqueryparamResourceIri: resourceIri.value, 
+              className:'text-link' }, label )
+          )
+        });
         this.setState({ show: 'success', savedIri: resourceIri.value });
       });
   }

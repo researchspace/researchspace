@@ -7,22 +7,6 @@
                     proxy-targets='["[[urlParam "resourceconfig" escape=false]]-resourceSearch-frame"]'>
     ></mp-event-proxy>
 
-    <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-searchPage-on-create-setWithSelection'
-                    on-event-types='["Components.SetManagement.SetAdded"]'
-                    on-event-source='[[urlParam "viewid" escape=false]]-new-set-with-selection'
-                    proxy-event-type='Component.TemplateUpdate' 
-                    proxy-targets='["[[urlParam "resourceconfig" escape=false]]-resourceSearch-frame"]'
-                    additional-data='{"setCreated": true }' >
-    </mp-event-proxy>
-
-    <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-searchPage-on-create-setWithResults'
-                    on-event-types='["Components.SetManagement.SetAdded"]'
-                    on-event-source='[[urlParam "viewid" escape=false]]-new-set-with-results'
-                    proxy-event-type='Component.TemplateUpdate' 
-                    proxy-targets='["[[urlParam "resourceconfig" escape=false]]-resourceSearch-frame"]'
-                    additional-data='{"setCreated": true }' >
-    </mp-event-proxy>
-
     <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-searchPage-on-ontodia-data-changed'
                     on-event-type='Ontodia.DiagramDataPersisted'
                     proxy-event-type='Component.TemplateUpdate' 
@@ -36,6 +20,22 @@
                                         "Components.SetManagement.SetRemoved"]'
                       proxy-event-type='Component.TemplateUpdate' 
                       proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Set-resourceSearch-frame"]'>
+      </mp-event-proxy>
+    {{/if}}
+
+    {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")}}
+      <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-semanticChartSearch-on-chart-creation'
+                      on-event-types='["Components.SetManagement.SetAdded"]'
+                      proxy-event-type='Component.TemplateUpdate' 
+                      proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart-resourceSearch-frame"]'>
+      </mp-event-proxy>
+    {{/if}}
+
+    {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline")}}
+      <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-semanticTimelineSearch-on-timeline-creation'
+                      on-event-types='["Components.SetManagement.SetAdded"]'
+                      proxy-event-type='Component.TemplateUpdate' 
+                      proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline-resourceSearch-frame"]'>
       </mp-event-proxy>
     {{/if}}
 
@@ -705,54 +705,6 @@
           </div>
         </div>
 
-        <mp-event-target-template-render id='[[urlParam "viewid" escape=false]]-created-new-resource-message' template='{{> template}}'>
-          <template id='template'>
-            {{#if hideMessage}}
-            {{else if (or setCreated imageOverlayCreated)}}
-                <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%; margin-top: 5px; margin-bottom: 10px;">
-                  <div class="success-documentation-section-icon-container">
-                    <rs-icon icon-type="rounded" icon-name="done" symbol="true"></rs-icon>
-                  </div>
-
-                  <div style="flex: 1;"> 
-                    <div class="success-documentation-section-title">New {{#if setCreated}}set{{/if}}{{#if imageOverlayCreated}}overlay image{{/if}} created!</div>
-                    <div class="success-documentation-section-content" style="display: flex; gap: 5px;">
-                      <mp-draggable iri='{{containerIri}}'>
-                        <div>
-                          {{#if setCreated}}
-                            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                            urlqueryparam-view='single-set-management'
-                                            urlqueryparam-resource='{{containerIri}}'>
-                              <mp-label iri='{{containerIri}}' class="text-link color-success-text"></mp-label>
-                            </semantic-link>
-                          {{/if}}
-                          {{#if imageOverlayCreated}}
-                            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                            urlqueryparam-view='resource-editor' 
-                                            urlqueryparam-resource-iri='{{iri}}'>
-                              <mp-label iri='{{iri}}' class="text-link color-success-text"></mp-label>
-                            </semantic-link>
-                          {{/if}}
-                        </div>
-                      </mp-draggable>
-                      <span> has been created.</span>
-                    </div>
-                  </div>
-                  
-                  <mp-event-trigger id='[[urlParam "viewid" escape=false]]-created-resource-close-message'
-                                    type='Component.TemplateUpdate'
-                                    data='{ "hideMessage": "true" }'
-                                    targets='["[[urlParam "viewid" escape=false]]-created-new-resource-message"]'
-                  >
-                    <button class="btn btn-documentation">
-                      <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
-                    </button>
-                  </mp-event-trigger>
-                </div>
-            {{/if}}
-          </template>
-        </mp-event-target-template-render>
-
         {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
           <semantic-query query='SELECT ?vocabulary ?vocabularyGraph WHERE { 
                                   
@@ -863,7 +815,7 @@
                           <semantic-search-result id='semantic-search-result-timeline'>
                               <mp-component-toolbar>
                                 <mp-component-toolbar-actions>
-                                    <mp-component-toolbar-action-save id='persit-component-action' add-to-default-set=false></mp-component-toolbar-action-save>
+                                    <mp-component-toolbar-action-save id='[[urlParam "viewid" escape=false]]-persist-component-action' add-to-default-set=false></mp-component-toolbar-action-save>
                                 </mp-component-toolbar-actions>
                                 <mp-component-toolbar-component>
                                     <semantic-timeline  id='search-result-timeline'
@@ -1020,15 +972,16 @@
                         </semantic-search-result-context>
                       </div>
                     {{else if (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/chart")}}
-                      
+
                       [[!-- chart view --]]
                       <semantic-search-result-context ranges='["http://www.w3.org/2004/02/skos/core#Concept","http://www.cidoc-crm.org/cidoc-crm/E55_Type","http://www.cidoc-crm.org/cidoc-crm/E53_Place"]'>
                         <semantic-search-result id='[[urlParam "viewid" escape=false]]-semantic-search-result-chart'>
+
                           <mp-component-toolbar>
                             <mp-component-toolbar-actions>
                               <semantic-chart-type-selector id='[[urlParam "viewid" escape=false]]-search-result-chart-type-selector' default="bar" types='["line", "bar", "radar", "pie", "donut"]'></semantic-chart-type-selector>
                                 <mp-component-toolbar-action-download></mp-component-toolbar-action-download>
-                                <mp-component-toolbar-action-save id='persit-component-action' add-to-default-set=true></mp-component-toolbar-action-save>
+                                <mp-component-toolbar-action-save id='[[urlParam "viewid" escape=false]]-persist-component-action' add-to-default-set=true></mp-component-toolbar-action-save>
                             </mp-component-toolbar-actions>
                             <mp-component-toolbar-component>
                               <semantic-chart id='[[urlParam "viewid" escape=false]]-search-result-chart'

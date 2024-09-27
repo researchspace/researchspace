@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-import { ReactNode } from 'react';
+import { createFactory, ReactNode } from 'react';
 
 import { Rdf } from 'platform/api/rdf';
 import { navigateToResource, refresh } from 'platform/api/navigation';
@@ -30,6 +30,7 @@ import { TriplestorePersistence } from './persistence/TriplestorePersistence';
 import { CompositeValue } from './FieldValues';
 import * as FormEvents from './FormEvents';
 import {localeStorageTabs} from '../../components/ui/tabs/LocalStorageTab'
+import { addNotification } from '../ui/notification';
 
 export type PostAction = 'none' | 'reload' | 'redirect' | 'event' | string | ((subject: Rdf.Iri) => void);
 
@@ -148,17 +149,29 @@ export function performFormPostAction(parameters: {
         source: eventProps.sourceId,
         data: { iri: subject.value },
       });
+      addNotification({
+        level: 'success',
+        message: 'Resource created',
+      });
     } else if (eventProps.isRemovedSubject) {
       trigger({
         eventType: FormEvents.FormResourceRemoved,
         source: eventProps.sourceId,
         data: { iri: subject.value },
       });
+      addNotification({
+        level: 'success',
+        message: 'Resource deleted',
+      });
     } else {
       trigger({
         eventType: FormEvents.FormResourceUpdated,
         source: eventProps.sourceId,
         data: { iri: subject.value },
+      });
+      addNotification({
+        level: 'success',
+        message: 'Resource saved',
       });
     }
     if(defaultTabKey) {

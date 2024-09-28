@@ -38,6 +38,7 @@ import { ResourceLinkComponent } from 'platform/api/navigation/components/Resour
 import Icon from 'platform/components/ui/icon/Icon';
 import * as LabelsService from 'platform/api/services/resource-label';
 import { getLabels, getLabel } from 'platform/api/services/resource-label';
+import crm from 'platform/data/vocabularies/crm';
 
 const Button = createFactory(ReactBootstrap.Button);
 const Modal = createFactory(ReactBootstrap.Modal);
@@ -119,7 +120,19 @@ export class ActionSaveComponent extends Component<Props, State> {
   }
 
   renderModal() {
-    console.log('description', this.props.showDescription)
+    const descriptionInputElement = D.div(
+                                  {},
+                                  'Description:',
+                                  FormControl({
+                                    type: 'textarea',
+                                    value: this.state.description ? this.state.description : '',
+                                    onChange: (e) => {
+                                      const newValue = (e.target as any).value;
+                                      this.setState({ description: newValue });
+                                    },
+                                  })
+                                );
+    const descriptionElement = this.props.showDescription?descriptionInputElement:D.div({});
     switch (this.state.show) {
       case 'editor':
         return Modal(
@@ -127,8 +140,7 @@ export class ActionSaveComponent extends Component<Props, State> {
           ModalHeader({}, 
             D.h4({ className: 'modal-title' }, 'Save visualization')
           ),
-          ModalBody({},
-            
+          ModalBody({},           
               D.div({},
               'Name:'
               ),
@@ -139,21 +151,8 @@ export class ActionSaveComponent extends Component<Props, State> {
                   this.setState({ label: newValue });
                 },
               })
-              
-/*               ,
-          
-              D.div({},
-              'Description:'
-              ),
-              FormControl({
-                type: 'textarea',
-                value: this.state.description ? this.state.description : '',
-                onChange: (e) => {
-                  const newValue = (e.target as any).value;
-                  this.setState({ description: newValue });
-                },
-              }), */
-            
+              ,
+              descriptionElement           
           ),
           ModalFooter(
             {},
@@ -172,25 +171,21 @@ export class ActionSaveComponent extends Component<Props, State> {
             D.div({}, Spinner())
           )
         );
-      case 'success': 
-
-      LabelsService.getLabel(Rdf.iri(this.state.savedIri)).onValue(
-           (label) => {
-            
-             Modal(
-              { show: true, onHide: this.onCancel },
-              ModalHeader({}, 
-                D.h4({ className: 'modal-title' }, 'Save visualization')
-              ),
-              ModalBody({}, 'Visualization ', 
-                            ResourceLink({ iri: 'http://www.researchspace.org/resource/ThinkingFrames', 
-                                          urlqueryparamView: 'resource-editor', 
-                                          urlqueryparamResourceIri:this.state.savedIri, 
-                                          className:'text-link' }, label ), 
-                            ' has been saved successfully!'),
-              ModalFooter({}, Button({ onClick: this.onCancel }, 'Close'))
-            );
-          })
+      case 'success':         
+        return  Modal(
+                { show: true, onHide: this.onCancel },
+                ModalHeader({}, 
+                  D.h4({ className: 'modal-title' }, 'Save visualization')
+                ),
+                ModalBody({}, 'Visualization ', 
+                              ResourceLink({ iri: 'http://www.researchspace.org/resource/ThinkingFrames', 
+                                            urlqueryparamView: 'resource-editor', 
+                                            urlqueryparamResourceIri:this.state.savedIri, 
+                                            className:'text-link' }, this.state?.label?this.state?.label:"New visualisation" ), 
+                              ' has been saved successfully!'),
+                ModalFooter({}, Button({ onClick: this.onCancel }, 'Close'))
+              );
+          
       case 'hide':
         return null;
     }
@@ -225,7 +220,8 @@ function addLabelAndDescription(
 ): Rdf.PointedGraph {
   let triples = graph.triples;
   if (label) {
-    triples = triples.add(Rdf.triple(pointer, rdfs.label, Rdf.literal(label)));
+    //triples = triples.add(Rdf.triple(pointer, rdfs.label, Rdf.literal(label)));
+    triples = triples.add(Rdf.triple(pointer, crm.P190_has_symbolic_content, Rdf.literal(label)));
   }
   if (description) {
     triples = triples.add(Rdf.triple(pointer, rdfs.comment, Rdf.literal(description)));

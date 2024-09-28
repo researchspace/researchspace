@@ -166,11 +166,11 @@ export class DashboardComponent extends Component<Props, State> {
   private subscription: Kefir.Subscription;
   private itemLabelCount = 0;
 
-  private frameLabel = (label?: string) => { console.log("framelabel");console.log(label); console.log(this.props.initialView);
+  private frameLabel = (label?: string) => {
     this.itemLabelCount = this.itemLabelCount + 1;
 
-    const displayLabel = label ?? 'Homepage'
-    const displayCustomLabel = this.props.initialView?.data ?(this.props.initialView.data["customLabel"]?this.props.initialView.data["customLabel"]:displayLabel):displayLabel;
+    const displayLabel = label ?? 'Homepage';
+    const displayCustomLabel = this.props.initialView?.data["customLabel"] && (this.state.items.length == 0) ?this.props.initialView.data["customLabel"]:displayLabel;
 
     return { 
       // id: uniqueId(displayLabel.replace(/\s/g, '')),
@@ -181,7 +181,6 @@ export class DashboardComponent extends Component<Props, State> {
   }
 
   private onAddNewItemHandler = (data: AddFrameEventData, label?: string) => {
-    console.log("new data"); console.log(data);
     this.onAddNewItem({
       ...this.frameLabel(label),
       ...(data),
@@ -255,14 +254,13 @@ export class DashboardComponent extends Component<Props, State> {
         .observe({
           value: ({ data }) => {
             const {viewId, resourceIri, customLabel} = data as AddFrameEventData
-            console.log("*");console.log(data);
+            
             if (customLabel) { 
               this.onAddNewItemHandler(data, customLabel)
             }
             else if(resourceIri) {
               this.subscription = LabelsService.getLabel(Rdf.iri(resourceIri)).observe({
-                value: (label) => {
-                  console.log("!");
+                value: (label) => {                 
                   this.onAddNewItemHandler(data, label)
                 },
                 error: (error) => {
@@ -394,8 +392,10 @@ export class DashboardComponent extends Component<Props, State> {
   }
 
   private onAddNewItem = (item: Item = this.frameLabel()) => {
-    console.log("item");
-    console.log(item);
+    // check if item.resourceIri exists and is an actual iri to prevent errors
+    if (item?.resourceIri && !(item?.resourceIri.startsWith("http://")))
+      return;
+  
     // check if an item with the same resourceIri is already in the tabset
     const itemIsAlreadyOpen = this.state.items.filter((i) => item.resourceIri && i.resourceIri === item.resourceIri && i.viewId === item.viewId)
     // if is already open, then select it and set to active, otherwise it will create a new tab with the selected item

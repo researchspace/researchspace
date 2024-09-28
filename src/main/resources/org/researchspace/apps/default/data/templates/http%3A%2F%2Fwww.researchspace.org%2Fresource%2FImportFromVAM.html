@@ -4,14 +4,14 @@
                                   min-search-term-length=4
                                   tokenize-lucene-query=false
                                   escape-lucene-syntax=false
-                                  debounce=1000
+                                  debounce=500
                                   debounce=500
                                   query='PREFIX vam: <http://www.researchspace.org/resource/system/service/vam/>
                                          SELECT ?subject ?objectid {
                                            service vam:vam {
                                              ?subject vam:hasQuery ?__token__.
                                              ?subject vam:hasPageSize "100" .
-                                             ?subject vam:hasPrimaryTitle ?title .
+                                             ?subject vam:hasPrimaryTitle ?rawTitle .
                                              ?subject vam:hasObjectType ?objectType .
                                              ?subject vam:hasSystemNumber ?objectid.
                                              ?subject vam:hasAccessionNumber ?accessionNumber .
@@ -20,8 +20,9 @@
                                              ?subject vam:hasPrimaryMaker ?artistName .
                                              ?subject vam:hasPrimaryMakerInTheRole ?artistRole .
                                               
+                                             BIND(REPLACE(STR(?rawTitle),"\"","") as ?title)
                                             } 
-                                         }'
+                                         } LIMIT 100'
   ></semantic-search-query-keyword>
   <!-- add label-->
   <semantic-search-result-holder>

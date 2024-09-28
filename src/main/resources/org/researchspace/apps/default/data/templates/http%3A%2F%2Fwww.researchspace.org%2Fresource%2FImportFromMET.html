@@ -4,7 +4,7 @@
                                   min-search-term-length=4
                                   tokenize-lucene-query=false
                                   escape-lucene-syntax=false
-                                  debounce=1000
+                                  debounce=500
                                   debounce=500
                                   query='PREFIX met: <http://www.researchspace.org/resource/system/services/metcollectiononline/>
                                          SELECT ?subject ?objectid WHERE { 
@@ -28,7 +28,7 @@
                                     service met:METObjectDescriptionService {                                           
                                         ?subject met:objectid ?id .
                                         ?subject met:objectName ?objectType .
-                                        ?subject met:title ?title .
+                                        ?subject met:title ?rawTitle .
                                         ?subject met:primaryImage ?primaryImage .
                                         ?subject met:primaryImageSmall ?primaryImageSmall .
                                         ?subject met:objectWikidata_URL ?objectWikidata_URL .
@@ -36,9 +36,9 @@
 
                                         ?subject met:artistDisplayName ?artistName .
                                         ?subject met:artistRole ?artistRole .
-                                         
+                                        BIND(REPLACE(STR(?rawTitle),"\"","") as ?title)
                                     }
-                                  } ORDER BY ?title ?id'
+                                  } ORDER BY ?title ?id  LIMIT 100'
 
                             options='{"showFilter":true, "resultsPerPage":10}' 
                             column-configuration='[

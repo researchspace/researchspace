@@ -22,22 +22,6 @@
                     proxy-targets='["{{iri}}-resources-in-narrative-frame"]'
     ></mp-event-proxy> 
 
-    <mp-event-proxy id='{{iri}}-update-searchPage-on-create-setWithSelection'
-                    on-event-types='["Components.SetManagement.SetAdded"]'
-                    on-event-source='{{iri}}-new-set-with-selection'
-                    proxy-event-type='Component.TemplateUpdate' 
-                    proxy-targets='["{{iri}}-resources-in-narrative-frame"]'
-                    additional-data='{"setCreated": true }' >
-    </mp-event-proxy>
-
-    <mp-event-proxy id='{{iri}}-update-searchPage-on-create-setWithResults'
-                    on-event-types='["Components.SetManagement.SetAdded"]'
-                    on-event-source='{{iri}}-new-set-with-results'
-                    proxy-event-type='Component.TemplateUpdate' 
-                    proxy-targets='["{{iri}}-resources-in-narrative-frame"]'
-                    additional-data='{"setCreated": true }' >
-    </mp-event-proxy>
-
     <mp-event-target-template-render id="{{iri}}-resources-in-narrative-frame" template='{{> template}}'>
         <template id='template'>
             {{#if resourceDeleted}}
@@ -271,45 +255,6 @@
                                 </bs-dropdown>
                             </div>
                         </div>
-
-                        <mp-event-target-template-render id='{{iri}}-created-new-set-message' template='{{> template}}'>
-                            <template id='template'>
-                              {{#if hideMessage}}
-                              {{else if setCreated}}
-                                  <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%; margin-top: 5px; margin-bottom: 10px;">
-                                    <div class="success-documentation-section-icon-container">
-                                      <rs-icon icon-type="rounded" icon-name="done" symbol="true"></rs-icon>
-                                    </div>
-                  
-                                    <div style="flex: 1;"> 
-                                      <div class="success-documentation-section-title">New set created!</div>
-                                      <div class="success-documentation-section-content" style="display: flex; gap: 5px;">
-                                        <mp-draggable iri='{{containerIri}}'>
-                                          <div>
-                                            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                            urlqueryparam-view='single-set-management'
-                                                            urlqueryparam-resource='{{containerIri}}'>
-                                              <mp-label iri='{{containerIri}}' class="text-link color-success-text"></mp-label>
-                                            </semantic-link>
-                                          </div>
-                                        </mp-draggable>
-                                        <span> has been created.</span>
-                                      </div>
-                                    </div>
-                                    
-                                    <mp-event-trigger id='{{iri}}-created-set-close-message'
-                                                      type='Component.TemplateUpdate'
-                                                      data='{ "hideMessage": "true" }'
-                                                      targets='["{{iri}}-created-new-set-message"]'
-                                    >
-                                      <button class="btn btn-documentation">
-                                        <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
-                                      </button>
-                                    </mp-event-trigger>
-                                  </div>
-                              {{/if}}
-                            </template>
-                          </mp-event-target-template-render>
 
                         <mp-splitpane id='{{viewId}}-search-filters-sidebar' min-size=43 default-size=230 snap-threshold=150 default-open=false always-render=true primary='second' class="search-filters-sidebar">
 

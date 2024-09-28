@@ -195,22 +195,6 @@
                         <mp-event-target-template-render id="{{node}}-imageForm-annotations-container" template='{{> template}}'>
                             <template id='template'>
 
-                                <mp-event-proxy id='{{viewId}}-update-imageForm-annotations-on-create-setWithSelection'
-                                                on-event-types='["Components.SetManagement.SetAdded"]'
-                                                on-event-source='{{viewId}}-new-set-with-selection'
-                                                proxy-event-type='Component.TemplateUpdate' 
-                                                proxy-targets='["{{node}}-imageForm-annotations-container"]'
-                                                additional-data='{"setCreated": true }' >
-                                </mp-event-proxy>
-                            
-                                <mp-event-proxy id='{{viewId}}-update-imageForm-annotations-on-create-setWithResults'
-                                                on-event-types='["Components.SetManagement.SetAdded"]'
-                                                on-event-source='{{viewId}}-new-set-with-results'
-                                                proxy-event-type='Component.TemplateUpdate' 
-                                                proxy-targets='["{{node}}-imageForm-annotations-container"]'
-                                                additional-data='{"setCreated": true }' >
-                                </mp-event-proxy>
-
                                 <semantic-search id="{{viewId}}-imageForm-annotations">
                                     <div class="semantic-search-header-actions" style="padding-top: 20px;">
                                         <semantic-search-query-keyword  domain='<http://www.researchspace.org/ontology/EX_Digital_Image_Region>'
@@ -256,45 +240,6 @@
                                             </bs-dropdown>
                                         [[/if]]
                                     </div>
-
-                                    <mp-event-target-template-render id='{{viewId}}--imageForm-annotations-created-new-set-message' template='{{> template}}'>
-                                        <template id='template'>
-                                          {{#if hideMessage}}
-                                          {{else if setCreated}}
-                                              <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%; margin-top: 10px;">
-                                                <div class="success-documentation-section-icon-container">
-                                                  <rs-icon icon-type="rounded" icon-name="done" symbol="true"></rs-icon>
-                                                </div>
-                              
-                                                <div style="flex: 1;"> 
-                                                  <div class="success-documentation-section-title">New set created!</div>
-                                                  <div class="success-documentation-section-content" style="display: flex; gap: 5px;">
-                                                    <mp-draggable iri='{{containerIri}}'>
-                                                      <div>
-                                                        <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                                        urlqueryparam-view='single-set-management'
-                                                                        urlqueryparam-resource='{{containerIri}}'>
-                                                          <mp-label iri='{{containerIri}}' class="text-link color-success-text"></mp-label>
-                                                        </semantic-link>
-                                                      </div>
-                                                    </mp-draggable>
-                                                    <span> has been created.</span>
-                                                  </div>
-                                                </div>
-                                                
-                                                <mp-event-trigger id='{{viewId}}-created-set-close-message'
-                                                                  type='Component.TemplateUpdate'
-                                                                  data='{ "hideMessage": "true" }'
-                                                                  targets='["{{viewId}}--imageForm-annotations-created-new-set-message"]'
-                                                >
-                                                  <button class="btn btn-documentation">
-                                                    <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
-                                                  </button>
-                                                </mp-event-trigger>
-                                              </div>
-                                          {{/if}}
-                                        </template>
-                                      </mp-event-target-template-render>
                                     
                                     <div data-flex-layout="row stretch-stretch" class='search-results-area'>
                                         <semantic-search-result-holder>

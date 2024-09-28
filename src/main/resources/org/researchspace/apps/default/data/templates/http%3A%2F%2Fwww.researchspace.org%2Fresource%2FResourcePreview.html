@@ -44,29 +44,6 @@
                 hide-panels=true 
                 hide-halo=true
                 default-node-template="{{> default}}"
-                provider-settings='{
-                                    "classTreeQuery": "
-                                      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-                                      PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-                                      PREFIX owl: <http://www.w3.org/2002/07/owl#>
-                                
-                                      SELECT ?class ?label ?parent WHERE {
-                                        GRAPH ?g {
-                                          ?ontology a owl:Ontology .
-                                          ?class a owl:Class .
-                                          OPTIONAL {
-                                            ?class rdfs:label ?label.
-                                          }
-                                
-                                          OPTIONAL {
-                                            ?class rdfs:subClassOf ?p.
-                                            ?p a owl:Class .
-                                          }
-                                          BIND(IF(BOUND(?p), ?p, ?ontology) AS ?parent)
-                                        }
-                                      }
-                                    "
-                                  }'
             >
 
         <ontodia-field-configuration  authoring-mode=false
@@ -176,21 +153,13 @@
         </ontodia-field-configuration>
 
         <template id="default">
-          [[!-- Don't add any other explicit style here, only width and height, style is overriden by the resizable component in the KM --]]
           {{#if isExpanded }}
             <div style="width: 270px; height:73px;">
-              <div class="resource-card__kmTopButtons">
-                <button name="edit" type="button" class="btn btn-default resource-card__button" title="Edit">
-                  <rs-icon icon-type="rounded" icon-name="edit" symbol="true"></rs-icon>
-                </button>
-                <button name="delete" type="button" class="btn btn-default resource-card__button" title="Edit">
-                  <rs-icon icon-type="rounded" icon-name="delete" symbol="true"></rs-icon>
-                </button>
-              </div>
-              {{> rsp:ResourceCard  iri=resource
-                                    viewId=ontodiaVariable
-                                    knowledgeMapCard=true
+              {{> rsp:ResourceCard  iri=iri
+                                    viewId='knowledge-map-preview'
+                                    knowledgeMapPreviewCard=true
                                     hideMediaSection=true
+                                    hidePreview=true
                                     height=73
                                     width=270
                                     props=props
@@ -199,17 +168,10 @@
             </div>
           {{else}}
             <div style="width: 155px; height:200px">
-              <div class="resource-card__kmTopButtons">
-                <button name="edit" type="button" class="btn btn-default resource-card__button" title="Edit">
-                  <rs-icon icon-type="rounded" icon-name="edit" symbol="true"></rs-icon>
-                </button>
-                <button name="delete" type="button" class="btn btn-default resource-card__button" title="Edit">
-                  <rs-icon icon-type="rounded" icon-name="delete" symbol="true"></rs-icon>
-                </button>
-              </div>
-              {{> rsp:ResourceCard  iri=resource
-                                    viewId=ontodiaVariable
-                                    knowledgeMapCard=true
+              {{> rsp:ResourceCard  iri=iri
+                                    viewId='knowledge-map-preview'
+                                    knowledgeMapPreviewCard=true
+                                    hidePreview=true
                                     props=props
                                     data=data
               }}
@@ -218,16 +180,9 @@
         </template>
 
         <template id="knowledge-map-dropdown">
-          <rs-resource-dropdown id="{{viewId}}-{{iri}}-item-actions-dropdown" class-name="dropdown-no-caret">
-            {{> rsp:ResourceDropdownActions viewId=ontodiaVariable
-                                            iri=resource 
-                                            resourceLabel="Knowledge map"
-                                            resourceFormIRI="http://www.researchspace.org/resource/system/forms/KnowledgeMap"
-                                            hidePreview=true
-                                            headerButton=true
-            }}
-          </rs-resource-dropdown>
+          <div></div>
         </template>
+
       </ontodia>
     </div>
     [[> resourceDetails]]
@@ -488,48 +443,12 @@
 
         {{#if resourceConfig}}
           <mp-event-proxy id='{{resource}}-closeDialog-proxy'
-                          on-event-source='{{resource}}-edit-btn-trigger'
                           on-event-type='Dashboard.AddFrame'
                           proxy-event-type='OverlayDialog.Close' 
                           proxy-targets='["{{modalId}}"]'
           ></mp-event-proxy>
 
-          <mp-event-proxy id='{{resource}}-closeDialog-proxy'
-                          on-event-source='{{resource}}-open-narrative-trigger'
-                          on-event-type='Dashboard.AddFrame'
-                          proxy-event-type='OverlayDialog.Close' 
-                          proxy-targets='["{{modalId}}"]'
-          ></mp-event-proxy>
-
-          <mp-event-proxy id='{{resource}}-closeDialog-proxy'
-                          on-event-source='{{resource}}-open-km-trigger'
-                          on-event-type='Dashboard.AddFrame'
-                          proxy-event-type='OverlayDialog.Close' 
-                          proxy-targets='["{{modalId}}"]'
-          ></mp-event-proxy>
-
-          <mp-event-proxy id='{{resource}}-closeDialog-proxy'
-                          on-event-source='{{resource}}-open-chart-trigger'
-                          on-event-type='Dashboard.AddFrame'
-                          proxy-event-type='OverlayDialog.Close' 
-                          proxy-targets='["{{modalId}}"]'
-          ></mp-event-proxy>
-
-          <mp-event-proxy id='{{resource}}-closeDialog-proxy'
-                          on-event-source='{{resource}}-open-timeline-trigger'
-                          on-event-type='Dashboard.AddFrame'
-                          proxy-event-type='OverlayDialog.Close' 
-                          proxy-targets='["{{modalId}}"]'
-          ></mp-event-proxy>
-
-          <mp-event-proxy id='{{resource}}-closeDialog-proxy'
-                          on-event-source='{{resource}}-open-set-trigger'
-                          on-event-type='Dashboard.AddFrame'
-                          proxy-event-type='OverlayDialog.Close' 
-                          proxy-targets='["{{modalId}}"]'
-          ></mp-event-proxy>
-
-          <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="display: flex; align-items: center; column-gap: 10px; row-gap: 5px; flex-wrap: wrap;">
             
             {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative") }}
               <mp-event-trigger id='{{resource}}-open-narrative-trigger' 

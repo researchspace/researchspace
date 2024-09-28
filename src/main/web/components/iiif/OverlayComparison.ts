@@ -40,6 +40,10 @@ import { OpenSeadragonOverlay } from './OpenSeadragonOverlay';
 import './image-overlay.scss';
 import * as block from 'bem-cn';
 import { trigger } from 'platform/api/events';
+import { addNotification } from '../ui/notification';
+import { ResourceLinkComponent } from 'platform/api/navigation/components/ResourceLinkComponent';
+
+const ResourceLink = createFactory(ResourceLinkComponent);
 
 const b = block('overlay-comparison');
 
@@ -179,6 +183,17 @@ export class OverlayComparison extends KefirComponentBase<Props, State, LoadedSt
           eventType: OverlayComparisonCreated,
           source: res.value,
           data: { iri: res.value },
+        });
+        addNotification({
+          level: 'success',
+          autoDismiss: 1000,
+          title: 'Image overlay created!',
+          children: (
+            ResourceLink({ iri: 'http://www.researchspace.org/resource/ThinkingFrames', 
+              urlqueryparamView: 'resource-editor', 
+              urlqueryparamResourceIri: res.value, 
+              className:'text-link' }, name )
+          )
         });
         //return navigateToResource(res), {}, 'assets');
         return navigateToResource(res).onValue((v) => v);

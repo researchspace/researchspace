@@ -23,7 +23,6 @@
     <div class="collapse navbar-collapse" id="rs-navbar">
 
       <ul class="nav navbar-nav navbar-left">
-        
         <mp-anonymous-hidden>
           <li>
             <bs-dropdown id="navbar-dropdown">
@@ -85,7 +84,7 @@
         <mp-anonymous-hidden>
           <li>
             <mp-event-proxy id='closeModal-onSelect-newResource-proxy'
-                          on-event-source='openResourceForm-in-new-frame-trigger' 
+                          on-event-source="link"
                           on-event-type='Dashboard.AddFrame'
                           proxy-event-type='OverlayDialog.Close' 
                           proxy-targets='["newResource-form-dialog"]'
@@ -99,10 +98,9 @@
                 </button>
               </mp-overlay-dialog-trigger>
               <mp-overlay-dialog-content>
-                <bs-tab-container id="new-resource-tab-container" default-active-key="all">
+                <bs-tab-container id="new-resource-tab-container" default-active-key="all" >
                   <bs-tabs mount-on-enter="true">
-
-                    <bs-tab event-key="all" title="All resources">
+                    <bs-tab event-key="all" title="All resources" mount-on-enter="true">
                       <div class="resources-tab-container">
                         <semantic-table  id='newResource-tab-results'
                                         query='SELECT ?resourceConfig ?resourceName ?resourceOntologyClass ?resourceFormIRI ?resourceIcon WHERE {
@@ -129,15 +127,12 @@
                                         options='{"showFilter":true, "filterPlaceholderText":"Filter results by ontological type", "resultsPerPage":100}'
                       >
                         <template id='newResourceCard'>
-                          <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
-                                            type='Dashboard.AddFrame'
-                                            data='{"viewId":"resource-editor", 
-                                                  "entityTypeConfig": "\{{resourceConfig.value}}", 
-                                                  "editable": true,
-                                                  "customLabel": "New \{{resourceName.value}}",
-                                                  "mode":"new"}' 
-                                            targets='["thinking-frames"]'>
 
+                           <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames"                                            
+                                            urlqueryparam-view='resource-editor'
+                                            urlqueryparam-entity-type-config='\{{resourceConfig.value}}'
+                                            urlqueryparam-mode="new"
+                                            urlqueryparam-custom-label='New \{{resourceName.value}}'>
                               <div class="new-resource-card">
                                 \{{#if resourceIcon}}
                                   <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol="true"></rs-icon>
@@ -146,13 +141,14 @@
                                 \{{/if}}
                                 <div class="color-secondary text-font-size__base">\{{resourceName.value}}</div>
                               </div>
-                          </mp-event-trigger>
+                          </semantic-link-container>
+                          
                         </template>
                         </semantic-table>
                       </div>
                     </bs-tab>
 
-                    <bs-tab event-key="general" title="Generic">
+                    <bs-tab event-key="general" title="Generic" mount-on-enter="true">
                       <div class="resources-tab-container">
                         <semantic-table id='newResource-tab-results'
                                         query='SELECT ?resourceConfig ?resourceName ?resourceOntologyClass ?resourceFormIRI ?resourceIcon WHERE {
@@ -183,15 +179,11 @@
                                         options='{"showFilter":true, "filterPlaceholderText":"Filter results by ontological type", "resultsPerPage":300}'
                       >
                         <template id='newResourceCard'>
-                          <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
-                                            type='Dashboard.AddFrame'
-                                            data='{"viewId":"resource-editor", 
-                                                  "entityTypeConfig": "\{{resourceConfig.value}}", 
-                                                  "editable": true,
-                                                  "customLabel": "New \{{resourceName.value}}",
-                                                  "mode":"new"}' 
-                                            targets='["thinking-frames"]'>
-
+                          <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames"                                            
+                                            urlqueryparam-view='resource-editor'
+                                            urlqueryparam-entity-type-config='\{{resourceConfig.value}}'
+                                            urlqueryparam-mode="new"
+                                            urlqueryparam-custom-label='New \{{resourceName.value}}'>
                               <div class="new-resource-card">
                                 \{{#if resourceIcon}}
                                   <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol="true"></rs-icon>
@@ -200,13 +192,13 @@
                                 \{{/if}}
                                 <div class="color-secondary text-font-size__base">\{{resourceName.value}}</div>
                               </div>
-                          </mp-event-trigger>
+                          </semantic-link-container>
                         </template>
                         </semantic-table>
                       </div>
                     </bs-tab>
 
-                    <bs-tab event-key="thing" title="Things">
+                    <bs-tab event-key="thing" title="Things" mount-on-enter="true">
                       <div class="resources-tab-container">
                         <semantic-table  id='newResource-tab-results'
                                         query='SELECT ?resourceConfig ?resourceName ?resourceOntologyClass ?resourceFormIRI ?resourceIcon WHERE {
@@ -240,15 +232,11 @@
                                         options='{"showFilter":true, "filterPlaceholderText":"Filter results by ontological type", "resultsPerPage":50}'
                       >
                         <template id='newResourceCard'>
-                          <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
-                                            type='Dashboard.AddFrame'
-                                            data='{"viewId":"resource-editor", 
-                                                  "entityTypeConfig": "\{{resourceConfig.value}}", 
-                                                  "editable": true,
-                                                  "customLabel": "New \{{resourceName.value}}",
-                                                  "mode":"new"}' 
-                                            targets='["thinking-frames"]'>
-
+                          <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames"                                            
+                                            urlqueryparam-view='resource-editor'
+                                            urlqueryparam-entity-type-config='\{{resourceConfig.value}}'
+                                            urlqueryparam-mode="new"
+                                            urlqueryparam-custom-label='New \{{resourceName.value}}'>
                               <div class="new-resource-card">
                                 \{{#if resourceIcon}}
                                   <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol="true"></rs-icon>
@@ -257,13 +245,13 @@
                                 \{{/if}}
                                 <div class="color-secondary text-font-size__base">\{{resourceName.value}}</div>
                               </div>
-                          </mp-event-trigger>
+                          </semantic-link-container>
                         </template>
                         </semantic-table>
                       </div>
                     </bs-tab>
 
-                    <bs-tab event-key="actor" title="Actors">
+                    <bs-tab event-key="actor" title="Actors" mount-on-enter="true">
                       <div class="resources-tab-container">
                         <semantic-table  id='newResource-tab-results'
                                         query='SELECT ?resourceConfig ?resourceName ?resourceOntologyClass ?resourceFormIRI ?resourceIcon WHERE {
@@ -294,15 +282,11 @@
                                         options='{"showFilter":true, "filterPlaceholderText":"Filter results by ontological type", "resultsPerPage":50}'
                       >
                         <template id='newResourceCard'>
-                          <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
-                                            type='Dashboard.AddFrame'
-                                            data='{"viewId":"resource-editor", 
-                                                  "entityTypeConfig": "\{{resourceConfig.value}}", 
-                                                  "editable": true,
-                                                  "customLabel": "New \{{resourceName.value}}",
-                                                  "mode":"new"}' 
-                                            targets='["thinking-frames"]'>
-
+                          <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames"                                            
+                                            urlqueryparam-view='resource-editor'
+                                            urlqueryparam-entity-type-config='\{{resourceConfig.value}}'
+                                            urlqueryparam-mode="new"
+                                            urlqueryparam-custom-label='New \{{resourceName.value}}'>
                               <div class="new-resource-card">
                                 \{{#if resourceIcon}}
                                   <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol="true"></rs-icon>
@@ -311,13 +295,13 @@
                                 \{{/if}}
                                 <div class="color-secondary text-font-size__base">\{{resourceName.value}}</div>
                               </div>
-                          </mp-event-trigger>
+                          </semantic-link-container>
                         </template>
                         </semantic-table>
                       </div>
                     </bs-tab>
 
-                    <bs-tab event-key="event" title="Events">
+                    <bs-tab event-key="event" title="Events" mount-on-enter="true">
                       <div class="resources-tab-container">
                         <semantic-table  id='newResource-tab-results'
                                         query='SELECT ?resourceConfig ?resourceName ?resourceOntologyClass ?resourceFormIRI ?resourceIcon WHERE {
@@ -347,15 +331,11 @@
                                         options='{"showFilter":true, "filterPlaceholderText":"Filter results by ontological type", "resultsPerPage":50}'
                       >
                         <template id='newResourceCard'>
-                          <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
-                                            type='Dashboard.AddFrame'
-                                            data='{"viewId":"resource-editor", 
-                                                  "entityTypeConfig": "\{{resourceConfig.value}}", 
-                                                  "editable": true,
-                                                  "customLabel": "New \{{resourceName.value}}",
-                                                  "mode":"new"}' 
-                                            targets='["thinking-frames"]'>
-
+                          <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames"                                            
+                                            urlqueryparam-view='resource-editor'
+                                            urlqueryparam-entity-type-config='\{{resourceConfig.value}}'
+                                            urlqueryparam-mode="new"
+                                            urlqueryparam-custom-label='New \{{resourceName.value}}'>
                               <div class="new-resource-card">
                                 \{{#if resourceIcon}}
                                   <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol="true"></rs-icon>
@@ -364,13 +344,13 @@
                                 \{{/if}}
                                 <div class="color-secondary text-font-size__base">\{{resourceName.value}}</div>
                               </div>
-                          </mp-event-trigger>
+                          </semantic-link-container>
                         </template>
                         </semantic-table>
                       </div>
                     </bs-tab>
 
-                    <bs-tab event-key="concepts" title="Conceptual objects">
+                    <bs-tab event-key="concepts" title="Conceptual objects" mount-on-enter="true">
                       <div class="resources-tab-container">
                         <semantic-table  id='newResource-tab-results'
                                         query='SELECT ?resourceConfig ?resourceName ?resourceOntologyClass ?resourceFormIRI ?resourceIcon WHERE {
@@ -411,15 +391,11 @@
                                         options='{"showFilter":true, "filterPlaceholderText":"Filter results by ontological type", "resultsPerPage":50}'
                       >
                         <template id='newResourceCard'>
-                          <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
-                                            type='Dashboard.AddFrame'
-                                            data='{"viewId":"resource-editor", 
-                                                  "entityTypeConfig": "\{{resourceConfig.value}}", 
-                                                  "editable": true,
-                                                  "customLabel": "New \{{resourceName.value}}",
-                                                  "mode":"new"}' 
-                                            targets='["thinking-frames"]'>
-
+                          <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames"                                            
+                                            urlqueryparam-view='resource-editor'
+                                            urlqueryparam-entity-type-config='\{{resourceConfig.value}}'
+                                            urlqueryparam-mode="new"
+                                            urlqueryparam-custom-label='New \{{resourceName.value}}'>
                               <div class="new-resource-card">
                                 \{{#if resourceIcon}}
                                   <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol="true"></rs-icon>
@@ -428,13 +404,13 @@
                                 \{{/if}}
                                 <div class="color-secondary text-font-size__base">\{{resourceName.value}}</div>
                               </div>
-                          </mp-event-trigger>
+                          </semantic-link-container>
                         </template>
                         </semantic-table>
                       </div>
                     </bs-tab>
 
-                    <bs-tab event-key="system" title="System resources">
+                    <bs-tab event-key="system" title="System resources" mount-on-enter="true">
                       <div class="resources-tab-container">
                         <semantic-table  id='newResource-tab-results'
                                         query='SELECT ?resourceConfig ?resourceName ?resourceFormIRI ?resourceIcon WHERE {
@@ -459,15 +435,11 @@
                                         options='{"showFilter":true, "filterPlaceholderText":"Filter results by ontological type", "resultsPerPage":50}'
                       >
                         <template id='newResourceCard'>
-                          <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
-                                            type='Dashboard.AddFrame'
-                                            data='{"viewId":"resource-editor", 
-                                                  "entityTypeConfig": "\{{resourceConfig.value}}", 
-                                                  "editable": true,
-                                                  "customLabel": "New \{{resourceName.value}}",
-                                                  "mode":"new"}' 
-                                            targets='["thinking-frames"]'>
-
+                          <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames"                                            
+                                            urlqueryparam-view='resource-editor'
+                                            urlqueryparam-entity-type-config='\{{resourceConfig.value}}'
+                                            urlqueryparam-mode="new"
+                                            urlqueryparam-custom-label='New \{{resourceName.value}}'>
                               <div class="new-resource-card">
                                 \{{#if resourceIcon}}
                                   <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol="true"></rs-icon>
@@ -476,7 +448,7 @@
                                 \{{/if}}
                                 <div class="color-secondary text-font-size__base">\{{resourceName.value}}</div>
                               </div>
-                          </mp-event-trigger>
+                          </semantic-link-container>
                         </template>
                         </semantic-table>
                       </div>
@@ -492,21 +464,15 @@
 
         <mp-anonymous-hidden>
           <li>
-            <mp-event-trigger id='openProjectForm-in-new-frame-trigger' 
-                              type='Dashboard.AddFrame'
-                              data='{"viewId":"resource-editor", 
-                                    "entityTypeConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Project", 
-                                    "editable": true,
-                                    "customLabel": "New project",
-                                    "mode":"new"}' 
-                              targets='["thinking-frames"]'>
-
-              <button class="btn btn-action btn-textAndIcon" >
-                <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
-                <span>New Project</span>
-              </button>
-            </mp-event-trigger>
-            
+              <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                            urlqueryparam-view='resource-editor'
+                                            urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Project'
+                                            urlqueryparam-custom-label='New Project'>
+                  <button class="btn btn-action btn-textAndIcon" >
+                    <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                    <span>New Project</span>
+                  </button>
+              </semantic-link-container>           
           </li>
         </mp-anonymous-hidden>
 

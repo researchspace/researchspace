@@ -30,10 +30,29 @@
 
     [[#if (urlParam "view")]]
       initial-view='{"view": "[[urlParam "view"]]", 
-                    "resource": "[[urlParam "resource"]]" 
-                    [[#if (urlParam "entityTypeConfig")]] , 
-                      "data": {"entityTypeConfig": "[[urlParam "entityTypeConfig"]]"} 
-                    [[/if]]}'
+                    "resource": "[[urlParam "resource"]]", 
+                    "data": {[[#if (urlParam "entityTypeConfig")]]
+                              [[#if (urlParam "mode")]]
+                                [[#if (urlParam "customLabel")]]
+                                  "entityTypeConfig": "[[urlParam "entityTypeConfig"]]",
+                                  "mode": "[[urlParam "mode"]]",
+                                  "customLabel": "[[urlParam "customLabel"]]"
+                                [[else]]
+                                  "entityTypeConfig": "[[urlParam "entityTypeConfig"]]",
+                                  "mode": "[[urlParam "mode"]]"
+                                [[/if]]
+                              [[else]]
+                                [[#if (urlParam "customLabel")]]
+                                  "entityTypeConfig": "[[urlParam "entityTypeConfig"]]",
+                                  "mode": "new",
+                                  "customLabel": "[[urlParam "customLabel"]]"
+                                [[else]]
+                                  "entityTypeConfig": "[[urlParam "entityTypeConfig"]]",
+                                  "mode": "new"  
+                                [[/if]]                             
+                              [[/if]]
+                            [[/if]]} 
+                    }'
     [[/if]] 
     [[#if view]]
       initial-view='{"view": "[[view]]", "resource": "[[resource]]"}'
@@ -78,11 +97,11 @@
     {
     	"id": "resource-editor",
       "label": "Resource editor",
-      "description": "Creare and author an entity through custom forms",
+      "description": "Create and author an entity through custom forms",
       "iconName": "edit_note",
       "template": "{{> resourceEditor}}",
       "resourceNotRequired": true,
-      "type": "hidden"
+      "type": "view"
     },
 
     {
@@ -376,7 +395,7 @@
     </template>
 
     <template id='resourceEditor'>
-      [[> rsp:ResourceEditor]]
+      [[> rsp:ResourceEditor iri=iri]]
     </template>
 
     <template id='authority'>

@@ -138,7 +138,7 @@ export interface Props {
     resource: string;
 
     /**
-     * Additional data that will be propagate to the template.
+     * Additional data that will be propagated to the template.
      */
     data: {};
   };
@@ -166,19 +166,22 @@ export class DashboardComponent extends Component<Props, State> {
   private subscription: Kefir.Subscription;
   private itemLabelCount = 0;
 
-  private frameLabel = (label?: string) => {
+  private frameLabel = (label?: string) => { console.log("framelabel");console.log(label); console.log(this.props.initialView);
     this.itemLabelCount = this.itemLabelCount + 1;
+
     const displayLabel = label ?? 'Homepage'
+    const displayCustomLabel = this.props.initialView?.data ?(this.props.initialView.data["customLabel"]?this.props.initialView.data["customLabel"]:displayLabel):displayLabel;
+
     return { 
       // id: uniqueId(displayLabel.replace(/\s/g, '')),
       id: uniqueId('frame'),
       index: this.itemLabelCount, 
-      label: displayLabel
+      label: displayCustomLabel
     }
   }
 
   private onAddNewItemHandler = (data: AddFrameEventData, label?: string) => {
-    
+    console.log("new data"); console.log(data);
     this.onAddNewItem({
       ...this.frameLabel(label),
       ...(data),
@@ -252,14 +255,14 @@ export class DashboardComponent extends Component<Props, State> {
         .observe({
           value: ({ data }) => {
             const {viewId, resourceIri, customLabel} = data as AddFrameEventData
-            
+            console.log("*");console.log(data);
             if (customLabel) { 
               this.onAddNewItemHandler(data, customLabel)
             }
             else if(resourceIri) {
               this.subscription = LabelsService.getLabel(Rdf.iri(resourceIri)).observe({
                 value: (label) => {
-                  
+                  console.log("!");
                   this.onAddNewItemHandler(data, label)
                 },
                 error: (error) => {
@@ -267,7 +270,8 @@ export class DashboardComponent extends Component<Props, State> {
                   this.onAddNewItemHandler(data)
                 },
               })           
-            } else {             
+            } else {      
+                      
                 const view = viewId ? this.props.views.find(({ id }) => id === viewId) : undefined;
                 this.onAddNewItemHandler(data, view?.label)
                            
@@ -275,13 +279,13 @@ export class DashboardComponent extends Component<Props, State> {
           },
         });
 
-    if (this.props.initialView) {
+    if (this.props.initialView) { console.log(this.props.initialView);
       const item = {
         ...this.frameLabel(),
         resourceIri: this.props.initialView.resource,
         viewId: this.props.initialView.view,
         data: this.props.initialView.data,
-      };
+      }; 
       this.onAddNewItem(item);
     } else {
       this.onAddNewItem();
@@ -314,6 +318,7 @@ export class DashboardComponent extends Component<Props, State> {
       );
     }
 
+   
     // That is ugly hack for in frame navigation until we find a better way to do this
     setFrameNavigation(true, (iri: Rdf.Iri, props?: {}): boolean => {
       if (iri.value.startsWith('http://www.researchspace.org/instances/narratives')) {
@@ -389,7 +394,8 @@ export class DashboardComponent extends Component<Props, State> {
   }
 
   private onAddNewItem = (item: Item = this.frameLabel()) => {
-   
+    console.log("item");
+    console.log(item);
     // check if an item with the same resourceIri is already in the tabset
     const itemIsAlreadyOpen = this.state.items.filter((i) => item.resourceIri && i.resourceIri === item.resourceIri && i.viewId === item.viewId)
     // if is already open, then select it and set to active, otherwise it will create a new tab with the selected item
@@ -786,7 +792,6 @@ export class DashboardComponent extends Component<Props, State> {
     const iiifViewerDashboardItems = []; 
 
     images.forEach(image => iiifViewerDashboardItems.push(image.id+"-image-annotation"));
-    console.log(action.type);
 
     const actions = [Actions.ADJUST_BORDER_SPLIT, Actions.ADJUST_SPLIT, Actions.MOVE_NODE, Actions.ADD_NODE, Actions.SELECT_TAB, Actions.DELETE_TAB]
     if (actions.includes(action.type))

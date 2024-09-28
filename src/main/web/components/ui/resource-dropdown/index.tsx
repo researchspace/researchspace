@@ -20,12 +20,27 @@ export class ResourceDropdown extends React.Component<Props, State> {
     this.state = {
       customDropdownOpen: false,
     };
+    this.onToggle = this.onToggle.bind(this); // Binding once in the constructor
   }
 
-  onToggle = (open: boolean) => {
-    this.setState({customDropdownOpen: open})
+  onToggle(open: boolean) {
+    this.setState({ customDropdownOpen: open });
   }
 
+  onClick() {
+    this.setState({ customDropdownOpen: false });
+  }
+ 
+  /* Prevent unnecessary re-renders by checking state and props */
+  shouldComponentUpdate(nextProps: Props, nextState: State) {
+    return (
+      nextProps.id !== this.props.id ||
+      nextProps.className !== this.props.className ||
+      nextProps.toggleClassName !== this.props.toggleClassName ||
+      nextState.customDropdownOpen !== this.state.customDropdownOpen
+    );
+  }
+ 
   render() {
     const {id, className, toggleClassName, children} = this.props
     return (
@@ -35,8 +50,7 @@ export class ResourceDropdown extends React.Component<Props, State> {
         </Dropdown.Toggle>
         {this.state.customDropdownOpen ? children : <Dropdown.Menu></Dropdown.Menu>}
       </Dropdown>)
-  }
-  
+  } 
 }
 
 export default ResourceDropdown

@@ -94,6 +94,10 @@ uses client-side templates:
                         ?field  <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/image_annotation> .
                         }
                       UNION {
+                         ?field <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.researchspace.org/resource/system/fields/Field>;
+                         <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/knowledge_map> .  
+                      }
+                      UNION {
                         VALUES (?value){(<http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation>)
                               (<http://www.researchspace.org/pattern/system/entity/primary_appellation>)
                               (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>)
@@ -106,12 +110,8 @@ uses client-side templates:
 
                         BIND(?value as ?field)
                       }
-                      MINUS {
-                        VALUES (?value) {
-                        (<http://www.ics.forth.gr/isl/CRMdig/L47_has_comment>)
-                        (<http://www.w3.org/2000/01/rdf-schema#label>)
-                        }
-                      }
+                      FILTER (!CONTAINS(STR(?field),"http://www.ics.forth.gr/isl/CRMdig/L47_has_comment"))
+                      FILTER (!CONTAINS(STR(?field),"http://www.w3.org/2000/01/rdf-schema#label"))
                     }'>
     </rs-ontodia-metadata-from-fields>
     [[#> ontodia-entity-metadata ]][[/ontodia-entity-metadata]]

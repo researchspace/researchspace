@@ -31,6 +31,7 @@ export interface Props {
    * @default 'The content has been copied!'
    */
   message?: string;
+  isUrl?: boolean;
 }
 
 /**
@@ -44,6 +45,7 @@ export interface Props {
 export class CopyToClipboardComponent extends React.Component<Props, {}> {
   static defaultProps = {
     message: 'The content has been copied!',
+    isUrl: false
   };
 
   private onCopy = () => {
@@ -53,12 +55,16 @@ export class CopyToClipboardComponent extends React.Component<Props, {}> {
     });
   };
 
-  render() {
+  render() { 
+    const url = this.props.isUrl?window.location.href+"?"+this.props.text:"";
+    const editedText = url?url:this.props.text;
+    
     return (
-      <CopyToClipboard text={this.props.text} onCopy={this.onCopy}>
+      <CopyToClipboard text={editedText} onCopy={this.onCopy}>
         {this.props.children}
       </CopyToClipboard>
     );
+   
   }
 }
 

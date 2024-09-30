@@ -377,9 +377,10 @@
 
   {{#if resourceEditorButton}}
   {{else}}
-    <hr>
+    
 
     {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/User")}}
+      <hr>
       <semantic-query query='SELECT DISTINCT ?systemUser WHERE { 
                               BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
                             } LIMIT 1'>
@@ -425,7 +426,9 @@
           {{/ifCond}}
         </template>
       </semantic-query>
+    {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item")}}
     {{else}}
+      <hr>
       <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
                                 urlqueryparam-view="resource-editor"
                                 urlqueryparam-resource-iri='{{iri}}'>

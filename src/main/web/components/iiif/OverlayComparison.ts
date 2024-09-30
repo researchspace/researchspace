@@ -186,7 +186,7 @@ export class OverlayComparison extends KefirComponentBase<Props, State, LoadedSt
         });
         addNotification({
           level: 'success',
-          autoDismiss: 1000,
+          autoDismiss: 5000,
           title: 'Image overlay created!',
           children: (
             ResourceLink({ iri: 'http://www.researchspace.org/resource/ThinkingFrames', 

@@ -228,6 +228,9 @@
                                                         } UNION {
                                                           ?subject a rs:EX_Digital_Image .
                                                           ?subject prov:generatedAtTime ?date .
+                                                          ?subject crm:P1_is_identified_by ?imageAppellation . 
+                                                          ?imageAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                          ?imageAppellation crm:P190_has_symbolic_content ?label .
                                                         } UNION {
                                                           ?subject crm:P129i_is_subject_of ?entityFormRecord .
                                                           ?entityFormRecord a crmdig:D1_Digital_Object .
@@ -238,12 +241,10 @@
                                                           ?creation crm:P82_at_some_time_within ?date .
                                                           { 
                                                             ?subject crm:P1_is_identified_by ?appellation .
-                                                            ?appellation a crm:E41_Appellation .
                                                             ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                                             ?appellation crm:P190_has_symbolic_content ?label .
                                                           } UNION {
                                                             ?subject crm:P170i_time_is_defined_by ?timePrimitive .
-                                                            ?timePrimitive a crm:E61_Time_Primitive .
                                                             ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
                                                             ?timePrimitive crm:P190_has_symbolic_content ?label .
                                                           } UNION {
@@ -253,12 +254,12 @@
                                                           }
                                                         }
                                                           
-                                                          SERVICE <http://www.bigdata.com/rdf/search#search> {
-                                                                    ?label bds:search ?__token__ ;
-                                                                    bds:minRelevance "0.3" ;
-                                                                    bds:matchAllTerms "true"  .
-                                                          }
-                                                        } ORDER BY DESC(?date)'
+                                                        SERVICE <http://www.bigdata.com/rdf/search#search> {
+                                                                  ?label bds:search ?__token__ ;
+                                                                  bds:minRelevance "0.3" ;
+                                                                  bds:matchAllTerms "true"  .
+                                                        }
+                                                      } ORDER BY DESC(?date)'
                                                 default-query='SELECT ?subject WHERE {
                                                                 {
                                                                   ?subject prov:generatedAtTime ?date .

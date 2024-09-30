@@ -34,44 +34,45 @@
                                 <div class="search-results-header-keyword">
                                   <semantic-search-query-keyword  domain='<http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>'
                                                                   query='SELECT ?subject WHERE { 
-                                                                          {
-                                                                            ?subject prov:generatedAtTime ?date .
-                                                                            ?subject crm:P2_has_type ?type .
-                                                                            FILTER(?type IN (<http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map>, 
-                                                                                            <http://www.researchspace.org/resource/system/vocab/resource_type/set>,
-                                                                                            <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative>, 
-                                                                                            <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_chart>,
-                                                                                            <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_timeline>
-                                                                                  )
-                                                                            )
-                                                                            ?subject crm:P190_has_symbolic_content ?label .
-                                                                          } UNION {
-                                                                            ?subject a rs:EX_Digital_Image .
-                                                                            ?subject prov:generatedAtTime ?date .
-                                                                          } UNION {
-                                                                            ?subject crm:P129i_is_subject_of ?entityFormRecord .
-                                                                            ?entityFormRecord a crmdig:D1_Digital_Object .
-                                                                            ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
-                                                                            ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
-                                                                            ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
-                                                                            ?entityFormRecordCreation crm:P4_has_time-span ?creation .
-                                                                            ?creation crm:P82_at_some_time_within ?date .
-                                                                            { 
-                                                                              ?subject crm:P1_is_identified_by ?appellation .
-                                                                              ?appellation a crm:E41_Appellation .
-                                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                              ?appellation crm:P190_has_symbolic_content ?label .
-                                                                            } UNION {
-                                                                              ?subject crm:P170i_time_is_defined_by ?timePrimitive .
-                                                                              ?timePrimitive a crm:E61_Time_Primitive .
-                                                                              ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
-                                                                              ?timePrimitive crm:P190_has_symbolic_content ?label .
-                                                                            } UNION {
-                                                                              ?subject skos:prefLabel ?label .
-                                                                            } UNION {
+                                                                            {
+                                                                              ?subject prov:generatedAtTime ?date .
+                                                                              ?subject crm:P2_has_type ?type .
+                                                                              FILTER(?type IN (<http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map>, 
+                                                                                              <http://www.researchspace.org/resource/system/vocab/resource_type/set>,
+                                                                                              <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative>, 
+                                                                                              <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_chart>,
+                                                                                              <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_timeline>
+                                                                                    )
+                                                                              )
                                                                               ?subject crm:P190_has_symbolic_content ?label .
+                                                                            } UNION {
+                                                                              ?subject a rs:EX_Digital_Image .
+                                                                              ?subject prov:generatedAtTime ?date .
+                                                                              ?subject crm:P1_is_identified_by ?imageAppellation . 
+                                                                              ?imageAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                              ?imageAppellation crm:P190_has_symbolic_content ?label .
+                                                                            } UNION {
+                                                                              ?subject crm:P129i_is_subject_of ?entityFormRecord .
+                                                                              ?entityFormRecord a crmdig:D1_Digital_Object .
+                                                                              ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                                                              ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
+                                                                              ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+                                                                              ?entityFormRecordCreation crm:P4_has_time-span ?creation .
+                                                                              ?creation crm:P82_at_some_time_within ?date .
+                                                                              { 
+                                                                                ?subject crm:P1_is_identified_by ?appellation .
+                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                                ?appellation crm:P190_has_symbolic_content ?label .
+                                                                              } UNION {
+                                                                                ?subject crm:P170i_time_is_defined_by ?timePrimitive .
+                                                                                ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
+                                                                                ?timePrimitive crm:P190_has_symbolic_content ?label .
+                                                                              } UNION {
+                                                                                ?subject skos:prefLabel ?label .
+                                                                              } UNION {
+                                                                                ?subject crm:P190_has_symbolic_content ?label .
+                                                                              }
                                                                             }
-                                                                          }
                                                                             
                                                                             SERVICE <http://www.bigdata.com/rdf/search#search> {
                                                                                       ?label bds:search ?__token__ ;

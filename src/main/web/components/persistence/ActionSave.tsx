@@ -63,7 +63,8 @@ interface Props {
   addToDefaultSet?: boolean;
 
   /**
-   *
+   * when 'true' the modal will contain an input field to add the visualisation description
+   * 
    * @default false
    */
   showDescription?: boolean;
@@ -185,8 +186,9 @@ export class ActionSaveComponent extends Component<Props, State> {
             D.div({}, Spinner())
           )
         );
-      case 'success':         
-        return  Modal(
+      case 'success': 
+      return;     
+/*         return  Modal(
                 { show: true, onHide: this.onCancel },
                 ModalHeader({}, 
                   D.h4({ className: 'modal-title' }, 'Save visualization')
@@ -198,7 +200,7 @@ export class ActionSaveComponent extends Component<Props, State> {
                                             className:'text-link' }, this.state?.label?this.state?.label:"New visualisation" ), 
                               ' has been saved successfully!'),
                 ModalFooter({}, Button({ onClick: this.onCancel }, 'Close'))
-              );
+              ); */
           
       case 'hide':
         return null;

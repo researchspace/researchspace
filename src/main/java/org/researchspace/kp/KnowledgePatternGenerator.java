@@ -90,7 +90,7 @@ public class KnowledgePatternGenerator {
         /**
          * Ontologies Repo just proxies to default
          */
-        boolean enableCRMOntologiesAndKPs = config.getCRMOntologiesAndKPs();
+        boolean enableCRMOntologiesAndKPs = true;//config.getCRMOntologiesAndKPs();
 
         if (defaultRepoWritable && enableCRMOntologiesAndKPs) {
             try(conn) {

@@ -51,17 +51,6 @@ public class CustomSPARQLRepository extends org.eclipse.rdf4j.repository.sparql.
      */
     private boolean isSilentMode;
 
-    /**
-     * True if default vocabularies, configurations, and system KPs should be loaded in the repository
-     * 
-     */
-    private boolean defaultConfigurationsSystemKPsAndVocabularies;
-
-    /**
-     * True if the default cidoc ontologies should be loaded together, with the generation of KPs
-     */
-    private boolean crmOntologiesAndKPs;
-
     public CustomSPARQLRepository(String endpointUrl) {
         super(endpointUrl);
     }
@@ -91,22 +80,6 @@ public class CustomSPARQLRepository extends org.eclipse.rdf4j.repository.sparql.
 
     public void setSilentMode(boolean isSilentMode) {
         this.isSilentMode = isSilentMode;
-    }
-
-    public boolean getDefaultConfigurationsSystemKPsAndVocabularies() {
-        return this.defaultConfigurationsSystemKPsAndVocabularies;
-    }
-
-    public void setDefaultVocabulariesConfigurationsAndSystemKPs(boolean flag) {
-        this.defaultConfigurationsSystemKPsAndVocabularies = flag;
-    }
-
-    public boolean getCRMOntologiesAndKPs() {
-        return crmOntologiesAndKPs;
-    }
-
-    public void setCRMOntologiesAndKPs(boolean flag) {
-        this.crmOntologiesAndKPs = flag;
     }
 
     @Override

@@ -22,6 +22,7 @@ package org.researchspace.data.rdf.container;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -136,28 +137,46 @@ public class LDPAssetsLoader {
         Map<String, Map<String, Map<StoragePath, FindResult>>> mapResultsByRepositoryIdAndStorageId = Maps.newHashMap();
         logger.info("Loading LDP assets...");
 
-        MpSPARQLRepositoryConfig config = (MpSPARQLRepositoryConfig)repositoryManager
-                                                    .getRepositoryConfig(repositoryManager.DEFAULT_REPOSITORY_ID)
-                                                    .getRepositoryImplConfig();
-        logger.info("class"+config.getClass());
+        //MpSPARQLRepositoryConfig config = (MpSPARQLRepositoryConfig)repositoryManager
+          //                                          .getRepositoryConfig(repositoryManager.DEFAULT_REPOSITORY_ID)
+            //                                        .getRepositoryImplConfig();
+        //logger.info("class"+config.getClass());
         /**
          * Determine if default repository is writable
          */          
-        boolean defaultRepoWritable = config.isWritable();
+        //boolean defaultRepoWritable = config.isWritable();
 
         /**
          * Determine if configurations, system KPs and vocabularies should be added to the default repository 
         */
-        boolean enableDefaultConfigurationsSystemKPsAndVocabularies = config.getDefaultConfigurationsSystemKPsAndVocabularies();
+        //boolean enableDefaultConfigurationsSystemKPsAndVocabularies = config.getDefaultConfigurationsSystemKPsAndVocabularies();
 
         /**
          * Determine if ontologies and KPs for the crm ontologies shoudl be added to the default repository
          */
-        boolean enableCRMOntologiesAndKPs = config.getCRMOntologiesAndKPs();
+        //boolean enableCRMOntologiesAndKPs = config.getCRMOntologiesAndKPs();
 
-        logger.info("DefaultConfigurationsSystemKPsAndVocabularies: " + enableDefaultConfigurationsSystemKPsAndVocabularies);
-        logger.info("CRMOntologiesAndKPs: " + enableCRMOntologiesAndKPs);
-                   
+        //logger.info("DefaultConfigurationsSystemKPsAndVocabularies: " + enableDefaultConfigurationsSystemKPsAndVocabularies);
+        //logger.info("CRMOntologiesAndKPs: " + enableCRMOntologiesAndKPs);
+
+
+        Integer loadDefaultConfig;
+        List<String> defaultRepositoriesList = Arrays.asList("configurations", "system", "ontologies", "vocabularies");
+
+        String checkIfDefaultRepoHasData =                                 
+                    "SELECT ?counter WHERE {?s a ?o . BIND(1 as ?counter)} limit 1";
+
+        if (hasDefaultAlreadyLoaded(checkIfDefaultRepoHasData, "counter")) {
+            /* repository has data and the loadDefaultConfig flag needs to be setup */ 
+            /* show a message and ask for it to be setup */
+            if ((loadDefaultConfig=configuration.getGlobalConfig().getLoadDefaultConfig()) == -1)
+                logger.info("defaultLoadConfig needs to be set in your global.prop");
+        }
+        else {
+            if ((loadDefaultConfig=configuration.getGlobalConfig().getLoadDefaultConfig()) != 0)
+                loadDefaultConfig = 1;
+        }      
+        
         // Distribute the results by target repository and source storage
         for (Entry<StoragePath, FindResult> entry : mapResults.entrySet()) {
             String repositoryId = getRepositoryIdFromObjectId(entry.getKey());
@@ -177,42 +196,55 @@ public class LDPAssetsLoader {
 
             currentStorageMap.put(entry.getKey(), entry.getValue());
         }
-
+ 
         // Load each batch separately into the corresponding repository
         for (Entry<String, Map<String, Map<StoragePath, FindResult>>> entry : mapResultsByRepositoryIdAndStorageId
                 .entrySet()) {
-            if (isLoadableFromStorage(entry.getKey())) {
+            if (isLoadableFromStorage(entry.getKey()) || defaultRepositoriesList.contains(entry.getKey())) {
                 boolean isWritable = repositoryManager.getRepository(entry.getKey()).isWritable();
-                if (entry.getKey().equals("configurations")) {
-                    if (defaultRepoWritable && enableDefaultConfigurationsSystemKPsAndVocabularies) {
-                        boolean hasDefaultResourceConfigurations = hasDefaultResourceConfigurationsAlreadyLoaded(); 
-                        if (!hasDefaultResourceConfigurations)
+                if (isWritable) { 
+                                                 
+                    if ((loadDefaultConfig == 1) && defaultRepositoriesList.contains(entry.getKey())) {
+                        if (entry.getKey().equals("configurations")) {
+                            String checkIfResourceConfigurationsExists = 
+                                "SELECT (count(?resource_configuration) as ?counter) " +
+                                "WHERE { graph <http://www.researchspace.org/resource/system/resource_configurations_container> " + 
+                                    "{ ?resource_configuration a <http://www.researchspace.org/resource/system/resource_configuration> .} "+ 
+                                "}";
+
+
+                            if (!hasDefaultAlreadyLoaded(checkIfResourceConfigurationsExists,"counter"))
+                                loadAllToRepository(entry.getKey(), entry.getValue());    
+                        } 
+                        else if (entry.getKey().equals("vocabularies")) {
+                            String checkIfVocabulariesExist = 
+                                        "PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>\n" + 
+                                        "SELECT (COUNT(?a) as ?counter) WHERE { " + 
+                                            "?a a crm:E32_Authority_Document . " +
+                                        "FILTER((CONTAINS(STR(?a),\"http://www.researchspace.org/resource/vocab/\")) "+
+                                                "|| (CONTAINS(STR(?a),\"http://www.researchspace.org/resource/system/vocab/\"))) " +
+                                        "}";
+                            if (!hasDefaultAlreadyLoaded(checkIfVocabulariesExist, "counter"))
+                                loadAllToRepository(entry.getKey(), entry.getValue());    
+                        }
+                        else if (entry.getKey().equals("system")) {
                             loadAllToRepository(entry.getKey(), entry.getValue());
-                    }
-                } else if (entry.getKey().equals("vocabularies")) {
-                    if (defaultRepoWritable && enableDefaultConfigurationsSystemKPsAndVocabularies) {
-                        boolean hasDefaultVocabulariesLoaded = hasDefaultVocabulariesAlreadyLoaded(); 
-                        if (!hasDefaultVocabulariesLoaded)
+                        }
+                        else if (entry.getKey().equals("ontologies")) {
+                            String checkIfOntologiesExist = 
+                                    "PREFIX owl: <http://www.w3.org/2002/07/owl#>\n" +                    
+                                    "SELECT (count(?ontology) as ?counter) WHERE {" +
+                                                "?ontology a owl:Ontology . " +
+                                    "}";
+                            if (!hasDefaultAlreadyLoaded(checkIfOntologiesExist, "counter")) {
+                                loadAllToRepository(entry.getKey(), entry.getValue());
+                                checkIfKPsExistForPreloadedOntologiesAndLoad();
+                            }
+                        }
+                        else {
                             loadAllToRepository(entry.getKey(), entry.getValue());
-                    }
-                } else if (entry.getKey().equals("system")) {
-                    if (defaultRepoWritable && enableDefaultConfigurationsSystemKPsAndVocabularies) {                  
-                        loadAllToRepository(entry.getKey(), entry.getValue());
-                    }
-                }
-                else if (entry.getKey().equals("ontologies")) {
-                    //boolean isDefaultResourceConfigurations = isDefaultResourceConfigurationsAlreadyLoaded(); 
-                    //if (!isDefaultResourceConfigurations)
-                    // if ontologies loaded already don't load the ontologies repo
-                    if (defaultRepoWritable && enableCRMOntologiesAndKPs) {
-                        if (!hasDefaultOntologiesAlreadyLoaded()) {
-                            loadAllToRepository(entry.getKey(), entry.getValue());
-                            checkIfKPsExistForPreloadedOntologiesAndLoad();
                         }
                     }
-                } 
-                else if (isWritable) {                   
-                    loadAllToRepository(entry.getKey(), entry.getValue());
                 } else {
                     logger.warn("Skipping loading of LDP assets into the " + entry.getKey()
                             + " repository, because it is not writable!");
@@ -228,30 +260,23 @@ public class LDPAssetsLoader {
         
     }
 
-    private boolean hasDefaultResourceConfigurationsAlreadyLoaded() {
-        String checkIfResourceConfigurationsExists = 
-                    "SELECT (count(?resource_configuration) as ?resourceConfigurationsCount) " +
-                    "{ graph <http://www.researchspace.org/resource/system/resource_configurations_container> " + 
-                        "{ ?resource_configuration a <http://www.researchspace.org/resource/system/resource_configuration> .} "+ 
-                    "}";
- 
+    private boolean hasDefaultAlreadyLoaded(String checkIfConfigurationsExists, String counterBindingName) {
         Repository defaultRepository = repositoryManager.getDefault();
          
         // connection and to run the sparql query
-        logger.trace(checkIfResourceConfigurationsExists);
+        logger.trace(checkIfConfigurationsExists);
         try (RepositoryConnection con = defaultRepository.getConnection()) {
-            try (TupleQueryResult tqr = con.prepareTupleQuery(checkIfResourceConfigurationsExists).evaluate()) {
+            try (TupleQueryResult tqr = con.prepareTupleQuery(checkIfConfigurationsExists).evaluate()) {
                 while (tqr.hasNext()) {
                     BindingSet bs = tqr.next();
 
-                    int resourceConfigurationsCount = Integer.parseInt(bs.getBinding("resourceConfigurationsCount").getValue().stringValue());
-                    logger.info("counter"+resourceConfigurationsCount);
-                    if (resourceConfigurationsCount > 0) {
+                    int count = Integer.parseInt(bs.getBinding(counterBindingName).getValue().stringValue());
+                    logger.info("counter: "+count);
+                    if (count > 0) {
                         // skip loading the configurations     
-                        logger.trace("skip loading the configurations!!! ");
+                        logger.trace("skip loading these defaults!!! ");
                         return true;                       
                     } 
-
                 }
             }
         } catch (Exception e) {
@@ -261,47 +286,12 @@ public class LDPAssetsLoader {
         return false;
     }
 
-    private boolean hasDefaultVocabulariesAlreadyLoaded() {
-      String checkIfResourceConfigurationsExists = 
-                    "PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>\n" + 
-                    "SELECT (COUNT(?a) as ?countRSVocabularies) { " + 
-                        "?a a crm:E32_Authority_Document . " +
-                    "FILTER((CONTAINS(STR(?a),\"http://www.researchspace.org/resource/vocab/\")) "+
-                            "|| (CONTAINS(STR(?a),\"http://www.researchspace.org/resource/system/vocab/\"))) " +
-                    "}";
- 
-        Repository defaultRepository = repositoryManager.getDefault();
-         
-        // connection and to run the sparql query
-        logger.trace(checkIfResourceConfigurationsExists);
-        try (RepositoryConnection con = defaultRepository.getConnection()) {
-            try (TupleQueryResult tqr = con.prepareTupleQuery(checkIfResourceConfigurationsExists).evaluate()) {
-                while (tqr.hasNext()) {
-                    BindingSet bs = tqr.next();
-
-                    int vocabulariesCount = Integer.parseInt(bs.getBinding("countRSVocabularies").getValue().stringValue());
-                    logger.info("counter" + vocabulariesCount);
-                    if (vocabulariesCount > 0) {
-                        // skip loading the vocabularies     
-                        logger.trace("skip loading the vocabularies!!! ");
-                        return true;                       
-                    } 
-
-                }
-            }
-        } catch (Exception e) {
-            logger.error("Failed to .... \n");
-            logger.error(e.getMessage());           
-        }
-        return false;
-    }
-
-    private boolean hasDefaultOntologiesAlreadyLoaded() {
+    private boolean isEmptyRepository() {
         String checkIfResourceConfigurationsExists = 
-                "PREFIX owl: <http://www.w3.org/2002/07/owl#>\n" +                    
-                "SELECT (count(?ontology) as ?ontologiesCount) {" +
-                            "?ontology a owl:Ontology . " +
-                "}";           
+                                
+                "SELECT (count(?s) as ?count) {" +
+                            "?s ?p ?o . " +
+                "} limit 1";           
 
         Repository defaultRepository = repositoryManager.getDefault();
             
@@ -312,7 +302,7 @@ public class LDPAssetsLoader {
                 while (tqr.hasNext()) {
                     BindingSet bs = tqr.next();
 
-                    int ontologiesCount = Integer.parseInt(bs.getBinding("ontologiesCount").getValue().stringValue());
+                    int ontologiesCount = Integer.parseInt(bs.getBinding("count").getValue().stringValue());
                     logger.info("counter" + ontologiesCount);
                     if (ontologiesCount > 0) {
                         // skip loading the ontologies     
@@ -327,7 +317,6 @@ public class LDPAssetsLoader {
         }
         return false;
     }
-
     private void checkIfKPsExistForPreloadedOntologiesAndLoad() {
         //generate KPs if they don't already exist
         String checkIfKPsExistForPreloadedOntologies = "" +

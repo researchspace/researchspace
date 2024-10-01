@@ -567,16 +567,142 @@
   <rs-share-link relative-path='/resource/ThinkingFrames' 
                  urlqueryparam-resource="{{iri}}" 
                  urlqueryparam-view="resource-editor" 
-                 urlqueryparam-custom-label="ResourcePreview" 
+                 urlqueryparam-custom-label="{{resourceLabel}} link" 
                  message='Share link has been copied'>
-        <button class="btn btn-default btn-textAndIcon" title="Copy IRI">
-          <rs-icon icon-type="rounded" icon-name="content_copy" symbol="true"></rs-icon>
-              Share Link to Resource View
-        </button>
+    <bs-menu-item>
+      <rs-icon icon-type="rounded" icon-name="share_windows" class="icon-left" symbol="true"></rs-icon>
+      <span>Share edit</span>
+    </bs-menu-item>
   </rs-share-link>
+
+  {{#switch resourceConfig}}
+    {{#case "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document" break=true}}
+      <rs-share-link relative-path='/resource/ThinkingFrames' 
+                      urlqueryparam-resource="{{iri}}" 
+                      urlqueryparam-view="authority-list" 
+                      urlqueryparam-custom-label="{{resourceLabel}} link" 
+                      message='Share link has been copied'>
+        <bs-menu-item>
+          <rs-icon icon-type="rounded" icon-name="share_windows" class="icon-left" symbol="true"></rs-icon>
+          <span>Share list of resources</span>
+        </bs-menu-item>
+      </rs-share-link>
+    {{/case}}
+    {{#case "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map" break=true}}
+      <rs-share-link relative-path='/resource/ThinkingFrames' 
+                      urlqueryparam-resource="{{iri}}" 
+                      urlqueryparam-view="knowledge-map" 
+                      urlqueryparam-custom-label="{{resourceLabel}} link" 
+                      message='Share link has been copied'>
+        <bs-menu-item>
+          <rs-icon icon-type="rounded" icon-name="share_windows" class="icon-left" symbol="true"></rs-icon>
+          <span>Share knowledge map</span>
+        </bs-menu-item>
+      </rs-share-link>
+    {{/case}}
+    {{#case "http://www.researchspace.org/resource/system/resource_configurations_container/data/Organisation" break=true}}
+      <semantic-if query='ASK { <{{iri}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
+                              ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
+                              ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt . }'>
+        <template id='then'>
+          <rs-share-link relative-path='/resource/ThinkingFrames' 
+                          urlqueryparam-resource="{{iri}}" 
+                          urlqueryparam-view="map" 
+                          urlqueryparam-custom-label="{{resourceLabel}} link" 
+                          message='Share link has been copied'>
+            <bs-menu-item>
+              <rs-icon icon-type="rounded" icon-name="share_windows" class="icon-left" symbol="true"></rs-icon>
+              <span>Share map</span>
+            </bs-menu-item>
+          </rs-share-link>
+        </template>
+      </semantic-if>
+    {{/case}}
+    {{#case "http://www.researchspace.org/resource/system/resource_configurations_container/data/Place" break=true}}
+      <semantic-if query='ASK { <{{iri}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
+                              ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
+                              ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt . }'>
+        <template id='then'>
+          <rs-share-link relative-path='/resource/ThinkingFrames' 
+                          urlqueryparam-resource="{{iri}}" 
+                          urlqueryparam-view="map" 
+                          urlqueryparam-custom-label="{{resourceLabel}} link" 
+                          message='Share link has been copied'>
+            <bs-menu-item>
+              <rs-icon icon-type="rounded" icon-name="share_windows" class="icon-left" symbol="true"></rs-icon>
+              <span>Share map</span>
+            </bs-menu-item>
+          </rs-share-link>
+        </template>
+      </semantic-if>
+    {{/case}}
+    {{#case "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart" break=true}}
+      <rs-share-link relative-path='/resource/ThinkingFrames' 
+                      urlqueryparam-resource="{{iri}}" 
+                      urlqueryparam-view="chart" 
+                      urlqueryparam-custom-label="{{resourceLabel}} link" 
+                      message='Share link has been copied'>
+        <bs-menu-item>
+          <rs-icon icon-type="rounded" icon-name="share_windows" class="icon-left" symbol="true"></rs-icon>
+          <span>Share chart</span>
+        </bs-menu-item>
+      </rs-share-link>
+    {{/case}}
+    {{#case "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative" break=true}}
+      <rs-share-link relative-path='/resource/ThinkingFrames' 
+                      urlqueryparam-resource="{{iri}}" 
+                      urlqueryparam-view="semantic-narrative" 
+                      urlqueryparam-custom-label="{{resourceLabel}} link" 
+                      message='Share link has been copied'>
+        <bs-menu-item>
+          <rs-icon icon-type="rounded" icon-name="share_windows" class="icon-left" symbol="true"></rs-icon>
+          <span>Share semantic narrative</span>
+        </bs-menu-item>
+      </rs-share-link>
+      <rs-share-link relative-path='/resource/ThinkingFrames' 
+                      urlqueryparam-resource="{{iri}}" 
+                      urlqueryparam-view="semantic-narrative-resources" 
+                      urlqueryparam-custom-label="{{resourceLabel}} link" 
+                      message='Share link has been copied'>
+        <bs-menu-item>
+          <rs-icon icon-type="rounded" icon-name="share_windows" class="icon-left" symbol="true"></rs-icon>
+          <span>Share resources in narrative</span>
+        </bs-menu-item>
+      </rs-share-link>
+    {{/case}}
+    {{#case "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline" break=true}}
+      <rs-share-link relative-path='/resource/ThinkingFrames' 
+                      urlqueryparam-resource="{{iri}}" 
+                      urlqueryparam-view="timeline" 
+                      urlqueryparam-custom-label="{{resourceLabel}} link" 
+                      message='Share link has been copied'>
+        <bs-menu-item>
+          <rs-icon icon-type="rounded" icon-name="share_windows" class="icon-left" symbol="true"></rs-icon>
+          <span>Share timeline</span>
+        </bs-menu-item>
+      </rs-share-link>
+    {{/case}}
+    {{#case "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set" break=true}}
+      <rs-share-link relative-path='/resource/ThinkingFrames' 
+                      urlqueryparam-resource="{{iri}}" 
+                      urlqueryparam-view="single-set-management" 
+                      urlqueryparam-custom-label="{{resourceLabel}} link" 
+                      message='Share link has been copied'>
+        <bs-menu-item>
+          <rs-icon icon-type="rounded" icon-name="share_windows" class="icon-left" symbol="true"></rs-icon>
+          <span>Share set</span>
+        </bs-menu-item>
+      </rs-share-link>
+    {{/case}}
+    {{#default}}
+        <div></div>
+    {{/default}}
+  {{/switch}}
 
   {{#if (or allowResourceDelete imageAnnotation)}} 
     {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
+
+      <hr>
       <bs-menu-item>
         <rs-icon icon-type="rounded" icon-name="delete" class="icon-left" symbol="true"></rs-icon>            
         <mp-graph-store-action title="Delete" 
@@ -588,6 +714,7 @@
       </bs-menu-item>
     {{else}}
       {{#if (not (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/User"))}}
+        <hr>
         [[> deleteButton resourceFormIRI=resourceFormIRI]]
       {{/if}}
     {{/if}}

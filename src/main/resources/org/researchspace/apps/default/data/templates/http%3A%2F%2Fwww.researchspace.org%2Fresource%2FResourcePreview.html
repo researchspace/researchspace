@@ -31,6 +31,13 @@
   }
       
 </style>
+
+<mp-event-proxy id='{{resource}}-closePreviewDialog-proxy'
+                on-event-type='Dashboard.AddFrame'
+                proxy-event-type='OverlayDialog.Close' 
+                proxy-targets='["{{resource}}-resource-preview-dialog"]'
+></mp-event-proxy>
+
 {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map") }}
   <div class="modal-preview-container">
     <div class="modal-resource-persisted-container" style="padding: 0;">
@@ -442,11 +449,6 @@
         {{/if}}
 
         {{#if resourceConfig}}
-          <mp-event-proxy id='{{resource}}-closeDialog-proxy'
-                          on-event-type='Dashboard.AddFrame'
-                          proxy-event-type='OverlayDialog.Close' 
-                          proxy-targets='["{{modalId}}"]'
-          ></mp-event-proxy>
 
           <div style="display: flex; align-items: center; column-gap: 10px; row-gap: 5px; flex-wrap: wrap;">
             

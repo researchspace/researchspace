@@ -737,7 +737,7 @@ export class SemanticTimeline extends Component<SemanticTimelineProps, SemanticT
     }
 
     return (
-      <button className={`btn btn-primary ${styles.fitButton}`} onClick={() => this.timeline.fit()}>
+      <button className={`btn btn-secondary ${styles.fitButton}`} onClick={() => this.timeline.fit()}>
         <Icon iconType='rounded' iconName='open_in_full' symbol />
       </button>
     );

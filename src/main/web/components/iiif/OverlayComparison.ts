@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,6 +27,7 @@ import { Rdf } from 'platform/api/rdf';
 import { navigateToResource, refresh } from 'platform/api/navigation';
 import { getOverlaySystem } from 'platform/components/ui/overlay';
 import { CreateResourceDialog } from 'platform/components/ldp';
+import { OverlayComparisonCreated } from './OverlayComparisonEvents';
 
 // TODO: remove KefirComponent and replace it by utilizing Cancellation object
 import { KefirComponentBase } from 'platform/components/utils/KefirComponent';
@@ -37,6 +39,7 @@ import { OpenSeadragonOverlay } from './OpenSeadragonOverlay';
 
 import './image-overlay.scss';
 import * as block from 'bem-cn';
+import { trigger } from 'platform/api/events';
 
 const b = block('overlay-comparison');
 
@@ -162,6 +165,7 @@ export class OverlayComparison extends KefirComponentBase<Props, State, LoadedSt
     const image1Iri = this.state.metadata.get(0).carrierImageIRI?this.state.metadata.get(0).carrierImageIRI:this.state.metadata.get(0).imageIRI;
     const image2Iri = this.state.metadata.get(1).carrierImageIRI?this.state.metadata.get(1).carrierImageIRI:this.state.metadata.get(1).imageIRI;
     
+    
     return LdpOverlayImageService.createOverlayImage(
       name,
       Rdf.iri(""+image1Iri),
@@ -171,7 +175,11 @@ export class OverlayComparison extends KefirComponentBase<Props, State, LoadedSt
     )
       .flatMap((res) => {
         this.setState(this.updateState({ creatingImage: false }));
-        
+        trigger({
+          eventType: OverlayComparisonCreated,
+          source: res.value,
+          data: { iri: res },
+        });
         //return navigateToResource(res), {}, 'assets');
         return navigateToResource(res).onValue((v) => v);
       })

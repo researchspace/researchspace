@@ -623,16 +623,17 @@
                                                     ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
                                                     ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
                                                     ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
-            
-                                                    ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
-                                                    # ?importFromExternalSource a crmdig:D12_Data_Transfer_Event .
-                                                    ?importFromExternalSource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source> .
-            
-                                                    ?importFromExternalSource crmdig:L14_transferred ?osmURI .
-                    
-                                                    # ?osmURI a crmdig:D1_Digital_Object .
-                                                    ?osmURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
-            
+                                                    
+                                                    OPTIONAL {
+                                                        ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
+                                                        #?importFromExternalSource a crmdig:D12_Data_Transfer_Event .
+                                                        ?importFromExternalSource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source> .
+                
+                                                        ?importFromExternalSource crmdig:L14_transferred ?osmURI .
+                        
+                                                        # ?osmURI a crmdig:D1_Digital_Object .
+                                                        ?osmURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                                                    }
                                                     ?place crm:P1_is_identified_by ?appellation . 
                                                     # ?appellation a crm:E41_Appellation . 
                                                     ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
@@ -698,16 +699,18 @@
                                                                             </div>'>
                                             </semantic-map>
                                         </div>
+                                        {{#if bindings.0.osmURI}}
                                         <div style="padding-top: 5px;">
                                             <span>Imported from: </span>
                                             <a class="text-link-action" target="_blank" href="{{bindings.0.osmURI.value}}" title="{{bindings.0.osmURI.value}}">{{bindings.0.osmURI.value}}</a>
                                         </div>
+                                        {{/if}}
                                     </div>
                                 </template>
 
                                 <template id="noResults">
                                     <div class="form-tabs-subtabs-content--title">
-                                        <h4>Map</h4>
+                                        <h4>Map25</h4>
                                     </div>
                                     <div class="page__section-container-whiteBg" style="margin-top: 10px; font-size: 12.5px;">Enter the geographic coordinates (OpenStreetMap) to display the place map.</div>
                                 </template>

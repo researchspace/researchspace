@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -170,10 +171,11 @@ export class ActionSaveComponent extends Component<Props, State> {
     }
     return Button(
       {
-        title: 'Save into default set',
+        title: 'Copy to Clipboard',
         onClick: this.state.show == 'hide' ? this.onClick : undefined,
       },
-      D.i({ className: 'fa fa-save', style: { fontSize: '16px' } }),
+      
+      D.i({ className: 'material-symbols-rounded icon-left'}, 'inventory'),
       this.renderModal()
     );
   }

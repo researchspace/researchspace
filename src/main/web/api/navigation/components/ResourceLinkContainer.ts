@@ -24,6 +24,7 @@ import { navigateToResource, NavigationUtils, openResourceInNewWindow } from 'pl
 import { Draggable } from 'platform/components/dnd';
 import { Component } from 'platform/api/components';
 import { isSimpleClick } from './ResourceLink';
+import { BuiltInEvents, trigger } from 'platform/api/events';
 
 /**
  * See 'Link'.
@@ -68,12 +69,15 @@ export class ResourceLinkContainer extends Component<ResourceLinkContainerProps,
     const params = NavigationUtils.extractParams(this.props);
 
     if (isSimpleClick(event) && this.props.target === '_self') {
-      navigateToResource(iri, params, repository).onValue(() => {
+      if ((params?.viewId) && (window.location.href.indexOf(iri.toString(),0) != -1))
+          trigger({ eventType: "Dashboard.AddFrame", source: "link" , data: params});
+      else 
+        navigateToResource(iri, params, repository).onValue(() => {
         /**/
       });
     } else {
       openResourceInNewWindow(iri, params, repository);
-    }
+    }   
   };
 
   render() {

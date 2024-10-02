@@ -71,7 +71,7 @@ export class MatchList extends Component<MatchListProps, {}> {
           title="Scroll to aligned terms"
           onClick={() => this.scrollToItem(entry)}
         >
-          <Icon iconType='round' iconName='arrow_right_alt'/>
+          <Icon iconType='rounded' iconName='arrow_right_alt' symbol />
         </Button>
       </li>
     );

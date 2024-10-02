@@ -42,7 +42,7 @@ export class FormErrors extends StaticComponent<FormErrorsProps, {}> {
       return (
         <div className={`${CLASSNAME}__container`}>
           <div className={`${CLASSNAME}__icon-container`}>
-            <Icon iconType='round' iconName='priority_high' />
+            <Icon iconType='rounded' iconName='priority_high' symbol />
           </div>
           <div>
             <div className={`${CLASSNAME}__error-title`}>Errors</div>

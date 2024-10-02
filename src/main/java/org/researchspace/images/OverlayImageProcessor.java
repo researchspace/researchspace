@@ -1,6 +1,6 @@
 /**
  * ResearchSpace
- * Copyright (C) 2024, © Kartography Community Interest Company
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify

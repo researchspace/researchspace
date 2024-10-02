@@ -138,7 +138,7 @@ export interface Props {
     resource: string;
 
     /**
-     * Additional data that will be propagate to the template.
+     * Additional data that will be propagated to the template.
      */
     data: {};
   };
@@ -168,17 +168,19 @@ export class DashboardComponent extends Component<Props, State> {
 
   private frameLabel = (label?: string) => {
     this.itemLabelCount = this.itemLabelCount + 1;
-    const displayLabel = label ?? 'New Tab'
+
+    const displayLabel = label ?? 'Homepage';
+    const displayCustomLabel = this.props.initialView?.data["customLabel"] && (this.state.items.length == 0) ?this.props.initialView.data["customLabel"]:displayLabel;
+
     return { 
       // id: uniqueId(displayLabel.replace(/\s/g, '')),
       id: uniqueId('frame'),
       index: this.itemLabelCount, 
-      label: displayLabel
+      label: displayCustomLabel
     }
   }
 
   private onAddNewItemHandler = (data: AddFrameEventData, label?: string) => {
-    
     this.onAddNewItem({
       ...this.frameLabel(label),
       ...(data),
@@ -258,8 +260,7 @@ export class DashboardComponent extends Component<Props, State> {
             }
             else if(resourceIri) {
               this.subscription = LabelsService.getLabel(Rdf.iri(resourceIri)).observe({
-                value: (label) => {
-                  
+                value: (label) => {                 
                   this.onAddNewItemHandler(data, label)
                 },
                 error: (error) => {
@@ -267,7 +268,8 @@ export class DashboardComponent extends Component<Props, State> {
                   this.onAddNewItemHandler(data)
                 },
               })           
-            } else {             
+            } else {      
+                      
                 const view = viewId ? this.props.views.find(({ id }) => id === viewId) : undefined;
                 this.onAddNewItemHandler(data, view?.label)
                            
@@ -275,13 +277,13 @@ export class DashboardComponent extends Component<Props, State> {
           },
         });
 
-    if (this.props.initialView) {
+    if (this.props.initialView) { console.log(this.props.initialView);
       const item = {
         ...this.frameLabel(),
         resourceIri: this.props.initialView.resource,
         viewId: this.props.initialView.view,
         data: this.props.initialView.data,
-      };
+      }; 
       this.onAddNewItem(item);
     } else {
       this.onAddNewItem();
@@ -314,6 +316,7 @@ export class DashboardComponent extends Component<Props, State> {
       );
     }
 
+   
     // That is ugly hack for in frame navigation until we find a better way to do this
     setFrameNavigation(true, (iri: Rdf.Iri, props?: {}): boolean => {
       if (iri.value.startsWith('http://www.researchspace.org/instances/narratives')) {
@@ -351,15 +354,15 @@ export class DashboardComponent extends Component<Props, State> {
         });
         return true;
       } else if (!iri.value.startsWith('http://www.researchspace.org/resource/')) {
-        /* Adding exception for OverlayImages to be opened with the image-annotation */
+        /* Set exception for OverlayImages to be opened with the image-annotation */
         if (iri.value.includes("Overlay")) {
           trigger({
             eventType: 'Dashboard.AddFrame',
             source: 'link',
             targets: ['thinking-frames'],
             data: {
-              resourceIri: iri.value,
-              viewId: 'image-annotation',
+              resourceIri: 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Image',
+              viewId: 'resource-search',
               ...props
             }          
           });
@@ -389,7 +392,10 @@ export class DashboardComponent extends Component<Props, State> {
   }
 
   private onAddNewItem = (item: Item = this.frameLabel()) => {
-   
+    // check if item.resourceIri exists and is an actual iri to prevent errors
+    if (item?.resourceIri && !(item?.resourceIri.startsWith("http://")))
+      return;
+  
     // check if an item with the same resourceIri is already in the tabset
     const itemIsAlreadyOpen = this.state.items.filter((i) => item.resourceIri && i.resourceIri === item.resourceIri && i.viewId === item.viewId)
     // if is already open, then select it and set to active, otherwise it will create a new tab with the selected item
@@ -425,14 +431,14 @@ export class DashboardComponent extends Component<Props, State> {
               this.layoutRef.current.addTabWithDragAndDrop('Drag me where you want',
                 {
                   'type': 'tab', 'id':newFrameId, 'name': item.label, 'component': "item", 'config': {'itemId': item.id},
-                 'className': viewConfig?.iconName || viewConfig?.iconClass || 'no-icon-button', 'icon': 'add'
+                 'className': viewConfig?.iconName || viewConfig?.iconClass || 'homepage-button', 'icon': 'add'
                 }
               );
             } else {
               this.layoutRef.current.addTabToActiveTabSet(
                 {
                   'type': 'tab', 'id':newFrameId, 'name': item.label, 'component': "item", 'config': {'itemId': item.id},
-                  'className': viewConfig?.iconName || viewConfig?.iconClass || 'no-icon-button', 'icon': 'add'
+                  'className': viewConfig?.iconName || viewConfig?.iconClass || 'homepage-button', 'icon': 'add'
                 }
               );
             }
@@ -474,7 +480,7 @@ export class DashboardComponent extends Component<Props, State> {
   //           className={`btn btn-xs pull-right ${styles.deleteItemButton}`}
   //           onClick={() => this.onRemoveItem(item)}
   //         >
-  //           <Icon iconType='round' iconName='close'/>
+  //           <Icon iconType='rounded' iconName='close' symbol />
   //         </button>
   //       </span>
   //     );
@@ -487,7 +493,7 @@ export class DashboardComponent extends Component<Props, State> {
   //         className={`btn btn-xs pull-right ${styles.deleteItemButton}`}
   //         onClick={() => this.onRemoveItem(item)}
   //       >
-  //         <Icon iconType='round' iconName='close'/>
+  //         <Icon iconType='rounded' iconName='close' symbol />
   //       </button>
   //     </span>
   //   );
@@ -723,10 +729,10 @@ export class DashboardComponent extends Component<Props, State> {
 
   private tabIcons = () =>
     ({
-      'close': <Icon iconType='round' iconName='close'/>,
-      'maximize': <Icon iconType='round' iconName='fullscreen'/>,
-      'restore': <Icon iconType='round' iconName='close_fullscreen'/>,
-      'more': <Icon iconType='round' iconName='arrow_drop_down'/>,
+      'close': <Icon iconType='rounded' iconName='close' symbol />,
+      'maximize': <Icon iconType='rounded' iconName='fullscreen' symbol />,
+      'restore': <Icon iconType='rounded' iconName='close_fullscreen' symbol />,
+      'more': <Icon iconType='rounded' iconName='arrow_drop_down' symbol/>,
     });
 
   private factory = (node: TabNode) => {
@@ -774,7 +780,7 @@ export class DashboardComponent extends Component<Props, State> {
           onClick={(event) => {
             this.onAddNewItem();
           }}>
-          <Icon iconType='round' iconName='add'/>
+          <Icon iconType='rounded' iconName='add' symbol/>
         </button>
       );
     }
@@ -786,7 +792,6 @@ export class DashboardComponent extends Component<Props, State> {
     const iiifViewerDashboardItems = []; 
 
     images.forEach(image => iiifViewerDashboardItems.push(image.id+"-image-annotation"));
-    console.log(action.type);
 
     const actions = [Actions.ADJUST_BORDER_SPLIT, Actions.ADJUST_SPLIT, Actions.MOVE_NODE, Actions.ADD_NODE, Actions.SELECT_TAB, Actions.DELETE_TAB]
     if (actions.includes(action.type))

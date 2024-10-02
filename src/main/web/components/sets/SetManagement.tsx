@@ -327,7 +327,7 @@ export class SetManagement extends Component<Props, ViewState> {
           })
         }
       >
-        <Icon iconType='round' iconName='arrow_back'/>
+        <Icon iconType='rounded' iconName='arrow_back' symbol/>
         Back
       </div>
     );

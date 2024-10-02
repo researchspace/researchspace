@@ -23,12 +23,8 @@ export class ResourceDropdown extends React.Component<Props, State> {
     this.onToggle = this.onToggle.bind(this); // Binding once in the constructor
   }
 
-  onToggle(open: boolean) {
-    this.setState({ customDropdownOpen: open });
-  }
-
-  onClick() {
-    this.setState({ customDropdownOpen: false });
+  onToggle() {
+    this.setState({ customDropdownOpen: true });
   }
  
   /* Prevent unnecessary re-renders by checking state and props */

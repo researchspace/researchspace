@@ -14,7 +14,7 @@
 - **Resource Configuration**
 
   ***System Resources***
-  KP Category, Image Annotation, Knowledge Map, Semantic Narrative, Set, Set Item, User
+  KP Category, Char, Timeline, Image Annotation, Knowledge Map, Semantic Narrative, Set, Set Item, User
 
   ***CIDOC CRM Related Resource Configurations***
   Type, Group, Organisation, Material, Model 3D, Acquisition, Activity, Actor, Appellation, Attribute assignment, Audio, Authority document, Beginning of existence, Biological object, Birth, Conceptual object, Condition assessment, Condition state, Creation, Curated collection, Curation activity, Death, Design or procedure, Destruction, Dimension, Dissolution, Document, End of existence, Entity, Event, Exhibition, Formation, Identifier, Identifier assignment, Image, Information object, Inscription, Joining, Language, Leaving, Linguistic object, Man-made feature, Man-made object, Mark, Measurement, Modification, Move, Part addition, Part removal, Period, Persistent item, Person, Physical feature, Physical man-made thing, Physical object, Physical thing, Place, Production, Project, Propositional object, Publication, Research question, Right, Series, Site, Symbolic object, Term, Timespan, Title, Transfer of custody, Transformation, Type assignment, Type creation, Video, Visual item
@@ -32,7 +32,7 @@
 
   {Feature description}
 
-- **Search**
+- **Default Resources Search**
 
   {Feature description}
 

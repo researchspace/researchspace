@@ -50,6 +50,8 @@ import { navigateToResource } from 'platform/api/navigation';
 import * as styles from './SemanticTreeInput.scss';
 import {SelectLabel, SelectLabelProps} from "platform/components/ui/inputs/SelectLabel";
 
+import Icon from 'platform/components/ui/icon/Icon';
+
 const ITEM_INPUT_VARIABLE = 'item';
 const ITEM_OUTPUT_VARIABLE = 'label';
 

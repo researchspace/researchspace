@@ -70,7 +70,7 @@
     <template id='template'>
       <div class="activity-card-content">
         <mp-draggable iri='{{bindings.0.subject.value}}'>
-          <mp-overlay-dialog  id="activityCard-resource-preview-dialog"  
+          <mp-overlay-dialog  id="{{bindings.0.subject.value}}-resource-preview-dialog"  
                               type="modal" 
                               class="modal-xlSize preview_modal"
                               title="Preview">
@@ -79,9 +79,9 @@
                 <mp-resource-thumbnail iri='{{bindings.0.subject.value}}' class="resource-thumbnail-small">
                   <mp-resource-thumbnail-fallback>
                     {{#if bindings.0.resourceIcon.value}}
-                      <rs-icon icon-type="rounded" icon-name="{{bindings.0.resourceIcon.value}}" symbol=true class="resource-thumbnail-small-fallback-icon"></rs-icon>
+                      <rs-icon icon-type="rounded" icon-name="{{bindings.0.resourceIcon.value}}" symbol="true" class="resource-thumbnail-small-fallback-icon"></rs-icon>
                     {{else}}
-                      <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol=true></rs-icon>
+                      <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol="true"></rs-icon>
                     {{/if}}
                   </mp-resource-thumbnail-fallback>
                 </mp-resource-thumbnail>
@@ -93,7 +93,7 @@
                                             "resourceConfig": "{{bindings.0.resourceConfig.value}}", 
                                             "resourceConfigLabel": "{{bindings.0.resourceLabel.value}}",
                                             {{#if resourceOntologyClass}}"resourceOntologyClass": "{{resourceOntologyClass}}",{{/if}}
-                                            "modalId": "activityCard-resource-preview-dialog",
+                                            "modalId": "{{bindings.0.subject.value}}-resource-preview-dialog",
                                             "resourceDetailSection": true
                                           }' >
               </inline-template> 
@@ -138,6 +138,22 @@
                                         "resourceIri": "{{iri}}"}' 
                                 targets='["thinking-frames"]'>
                 
+                  <div><mp-label iri='{{iri}}' class="text-link text-truncate-line1"></mp-label></div>
+                </mp-event-trigger>
+              {{else if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")}}
+                <mp-event-trigger id='{{iri}}-homepageActivity-open-chart-title-trigger' 
+                                  type='Dashboard.AddFrame'
+                                  data='{"viewId":"chart", 
+                                          "resourceIri": "{{iri}}"}' 
+                                  targets='["thinking-frames"]'>
+                  <div><mp-label iri='{{iri}}' class="text-link text-truncate-line1"></mp-label></div>
+                </mp-event-trigger>
+              {{else if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline")}}
+                <mp-event-trigger id='{{iri}}-homepageActivity-open-timeline-title-trigger' 
+                                  type='Dashboard.AddFrame'
+                                  data='{"viewId":"timeline", 
+                                          "resourceIri": "{{iri}}"}' 
+                                  targets='["thinking-frames"]'>
                   <div><mp-label iri='{{iri}}' class="text-link text-truncate-line1"></mp-label></div>
                 </mp-event-trigger>
               {{else if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}

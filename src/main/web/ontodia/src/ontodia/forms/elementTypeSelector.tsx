@@ -217,7 +217,7 @@ export class ElementTypeSelector extends React.Component<Props, State> {
     return (
       <div className={`${CLASS_NAME}__form-row ${CLASS_NAME}__element-selector`}>
         <div className={`${CLASS_NAME}__search`}>
-          <Icon iconType='round' iconName='search' className={`${CLASS_NAME}__search-icon`}/>
+          <Icon iconType='rounded' iconName='search' symbol className={`${CLASS_NAME}__search-icon`}/>
           <input
             value={searchString}
             onChange={(e) => this.setState({ searchString: (e.target as HTMLInputElement).value })}

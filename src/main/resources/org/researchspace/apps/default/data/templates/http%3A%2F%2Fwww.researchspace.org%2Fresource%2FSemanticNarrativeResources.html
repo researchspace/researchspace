@@ -22,28 +22,12 @@
                     proxy-targets='["{{iri}}-resources-in-narrative-frame"]'
     ></mp-event-proxy> 
 
-    <mp-event-proxy id='{{iri}}-update-searchPage-on-create-setWithSelection'
-                    on-event-types='["Components.SetManagement.SetAdded"]'
-                    on-event-source='{{iri}}-new-set-with-selection'
-                    proxy-event-type='Component.TemplateUpdate' 
-                    proxy-targets='["{{iri}}-resources-in-narrative-frame"]'
-                    additional-data='{"setCreated": true }' >
-    </mp-event-proxy>
-
-    <mp-event-proxy id='{{iri}}-update-searchPage-on-create-setWithResults'
-                    on-event-types='["Components.SetManagement.SetAdded"]'
-                    on-event-source='{{iri}}-new-set-with-results'
-                    proxy-event-type='Component.TemplateUpdate' 
-                    proxy-targets='["{{iri}}-resources-in-narrative-frame"]'
-                    additional-data='{"setCreated": true }' >
-    </mp-event-proxy>
-
     <mp-event-target-template-render id="{{iri}}-resources-in-narrative-frame" template='{{> template}}'>
         <template id='template'>
             {{#if resourceDeleted}}
                 <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%; height: fit-content;">
                 <div class="success-documentation-section-icon-container">
-                    <rs-icon icon-type="round" icon-name="done"></rs-icon>
+                    <rs-icon icon-type="rounded" icon-name="done" symbol="true"></rs-icon>
                 </div>
 
                 <div style="flex: 1;"> 
@@ -63,7 +47,7 @@
                                 </h3>
                                 <div class="color-base" style="font-size: 21px; padding-bottom: 3px;">|</div>
                                 <div class="text-type-subheader" style="margin-right: 30px; display: flex; align-items: center; column-gap: 8px;">
-                                    <rs-icon icon-type="rounded" icon-name="gallery_thumbnail" symbol=true></rs-icon>
+                                    <rs-icon icon-type="rounded" icon-name="gallery_thumbnail" symbol="true"></rs-icon>
                                     <div>resources in narrative</div>
                                 </div>
                             </div>
@@ -161,14 +145,14 @@
                                                     targets='["{{iri}}-resources-in-narrative-frame"]'
                                                     >
                                     <button class="btn btn-default btn-textAndIcon">
-                                        <rs-icon icon-type="round" icon-name="refresh" title="Refresh results"></rs-icon>
+                                        <rs-icon icon-type="rounded" icon-name="refresh" title="Refresh results" symbol="true"></rs-icon>
                                     </button>
                                 </mp-event-trigger>
 
                                 [[!-- More actions button --]]
                                 <bs-dropdown id="{{viewId}}-search-actions-dropdown" pull-right=true class="dropdown-no-caret">
                                     <bs-dropdown-toggle>
-                                        <rs-icon icon-type="round" icon-name="more_vert"></rs-icon>
+                                        <rs-icon icon-type="rounded" icon-name="more_vert" symbol="true"></rs-icon>
                                     </bs-dropdown-toggle>
                                     <bs-dropdown-menu>
 
@@ -272,45 +256,6 @@
                             </div>
                         </div>
 
-                        <mp-event-target-template-render id='{{iri}}-created-new-set-message' template='{{> template}}'>
-                            <template id='template'>
-                              {{#if hideMessage}}
-                              {{else if setCreated}}
-                                  <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%; margin-top: 5px; margin-bottom: 10px;">
-                                    <div class="success-documentation-section-icon-container">
-                                      <rs-icon icon-type="round" icon-name="done"></rs-icon>
-                                    </div>
-                  
-                                    <div style="flex: 1;"> 
-                                      <div class="success-documentation-section-title">New set created!</div>
-                                      <div class="success-documentation-section-content" style="display: flex; gap: 5px;">
-                                        <mp-draggable iri='{{containerIri}}'>
-                                          <div>
-                                            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                            urlqueryparam-view='single-set-management'
-                                                            urlqueryparam-resource='{{containerIri}}'>
-                                              <mp-label iri='{{containerIri}}' class="text-link color-success-text"></mp-label>
-                                            </semantic-link>
-                                          </div>
-                                        </mp-draggable>
-                                        <span> has been created.</span>
-                                      </div>
-                                    </div>
-                                    
-                                    <mp-event-trigger id='{{iri}}-created-set-close-message'
-                                                      type='Component.TemplateUpdate'
-                                                      data='{ "hideMessage": "true" }'
-                                                      targets='["{{iri}}-created-new-set-message"]'
-                                    >
-                                      <button class="btn btn-documentation">
-                                        <rs-icon icon-type="round" icon-name="close"></rs-icon>
-                                      </button>
-                                    </mp-event-trigger>
-                                  </div>
-                              {{/if}}
-                            </template>
-                          </mp-event-target-template-render>
-
                         <mp-splitpane id='{{viewId}}-search-filters-sidebar' min-size=43 default-size=230 snap-threshold=150 default-open=false always-render=true primary='second' class="search-filters-sidebar">
 
                             <div class="search-results-area page__section-container">
@@ -410,7 +355,11 @@
                             
                                                         <template id='selectionCheckbox'>
                                                             [[#if (hasPermission "forms:ldp:*")]]
-                                                                {{#if (or (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map"))}}
+                                                                {{#if (or   (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") 
+                                                                            (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map")
+                                                                            (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")
+                                                                            (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline")
+                                                                )}}
                                                                 {{else}}
                                                                     <div>
                                                                         <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
@@ -423,7 +372,7 @@
                                                         <div>
                                                             <div style="display: flex; align-items: center; gap: 15px;">                                 
                                                             <mp-draggable iri='{{iri.value}}'>
-                                                                <mp-overlay-dialog  id="{{viewId}}-resource-preview-dialog"  
+                                                                <mp-overlay-dialog  id="{{iri.value}}-resource-preview-dialog"  
                                                                                     type="modal" 
                                                                                     class="modal-xlSize preview_modal"
                                                                                     title="Preview">
@@ -440,9 +389,9 @@
                                                                                     <mp-resource-thumbnail-fallback>
                                                                                         <mp-draggable iri='{{iri.value}}'>
                                                                                             {{#if resourceIcon}}
-                                                                                                <rs-icon icon-type="rounded" icon-name="{{resourceIcon.value}}" symbol=true class='resource-thumbnail-small-fallback-icon'></rs-icon>
+                                                                                                <rs-icon icon-type="rounded" icon-name="{{resourceIcon.value}}" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
                                                                                             {{else}}
-                                                                                                <rs-icon icon-type="rounded" icon-name="image" symbol=true class='resource-thumbnail-small-fallback-icon'></rs-icon>
+                                                                                                <rs-icon icon-type="rounded" icon-name="image" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
                                                                                             {{/if}}
                                                                                         </mp-draggable>
                                                                                     </mp-resource-thumbnail-fallback>
@@ -456,7 +405,7 @@
                                                                                                     "resourceConfig": "{{resourceConfig.value}}", 
                                                                                                     "resourceConfigLabel": "{{resourceLabel.value}}",
                                                                                                     "resourceDescription": "{{description.value}}",
-                                                                                                    "modalId": "{{viewId}}-resource-preview-dialog",
+                                                                                                    "modalId": "{{iri.value}}-resource-preview-dialog",
                                                                                                     "resourceDetailSection": true
                                                                                                 }'>
                                                                         </inline-template> 
@@ -471,6 +420,22 @@
                                                                             <mp-event-trigger id='{{iri.value}}-open-km-title-trigger' 
                                                                                                 type='Dashboard.AddFrame'
                                                                                                 data='{"viewId":"knowledge-map", 
+                                                                                                        "resourceIri": "{{iri.value}}"}' 
+                                                                                                targets='["thinking-frames"]'>
+                                                                                <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
+                                                                            </mp-event-trigger>
+                                                                        {{else if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")}}
+                                                                            <mp-event-trigger id='{{iri.value}}-open-chart-title-trigger' 
+                                                                                                type='Dashboard.AddFrame'
+                                                                                                data='{"viewId":"chart", 
+                                                                                                        "resourceIri": "{{iri.value}}"}' 
+                                                                                                targets='["thinking-frames"]'>
+                                                                                <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
+                                                                            </mp-event-trigger>
+                                                                        {{else if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")}}
+                                                                            <mp-event-trigger id='{{iri.value}}-open-timeline-title-trigger' 
+                                                                                                type='Dashboard.AddFrame'
+                                                                                                data='{"viewId":"timeline", 
                                                                                                         "resourceIri": "{{iri.value}}"}' 
                                                                                                 targets='["thinking-frames"]'>
                                                                                 <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
@@ -549,7 +514,7 @@
                                         <div style="display: flex; align-items: center; gap: 10px;">
                                             <div class="customFormHeader" style="padding-top: 0;">Filter by</div>
                                         </div> 
-                                        <rs-icon icon-type="round" icon-name="keyboard_double_arrow_right" 
+                                        <rs-icon icon-type="rounded" icon-name="keyboard_double_arrow_right" symbol="true"
                                                 style="font-size: 20px;">
                                         </rs-icon>
                                     </button>
@@ -602,13 +567,15 @@
             </button>
         </mp-draggable>
 
-        {{> rsp:ResourceDropdownActions viewId=resourceConfig.value
-                                        iri=iri.value
-                                        resourceConfig=resourceConfig.value
-                                        resourceLabel=resourceLabel.value
-                                        resourceOntologyClass=resourceOntologyClass.value
-                                        resourceDescription=description.value
-                                        resourceFormIRI=resourceFormIRI.value
-        }}
+        <rs-resource-dropdown id="{{viewId}}-{{iri}}-item-actions-dropdown" class-name="dropdown-no-caret" toggle-class-name="border-none">
+            {{> rsp:ResourceDropdownActions viewId=resourceConfig.value
+                                            iri=iri.value
+                                            resourceConfig=resourceConfig.value
+                                            resourceLabel=resourceLabel.value
+                                            resourceOntologyClass=resourceOntologyClass.value
+                                            resourceDescription=description.value
+                                            resourceFormIRI=resourceFormIRI.value
+            }}
+        </rs-resource-dropdown>
     </div>
 [[/inline ]]

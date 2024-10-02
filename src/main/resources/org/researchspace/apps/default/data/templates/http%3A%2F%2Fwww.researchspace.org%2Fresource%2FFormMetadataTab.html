@@ -43,7 +43,7 @@
                                             <tr class="standard-row">
                                                 <td class="table-title"><b>created by</b></td>
                                                 <td class="table-description">
-                                                    <rs-icon icon-type="round" icon-name="account_box" class="table-icon"></rs-icon>
+                                                    <rs-icon icon-type="rounded" icon-name="account_box" class="table-icon" symbol="true"></rs-icon>
                                                     {{bindings.0.actor.value}}
                                                 </td>
                                             </tr>
@@ -60,6 +60,53 @@
                                 </div>
                             </template>
             </semantic-query>
+
+            [[#if imageOverlay]]
+                <semantic-query  query='SELECT ?overlayImage ?modifiedByUser ?modifiedAtTime WHERE {
+                                                    BIND(<{{node}}> AS ?overlayImage)
+
+                                                    ?overlayImage a crmdig:D9_Data_Object .
+                                                    ?overlayImage crmdig:L60i_is_documented_by ?digitizationProcess .
+                                                    ?digitizationProcess a crmdig:D2_Digitization_Process .
+                    
+                                                    ?overlayImage <http://www.w3.org/ns/prov#generatedAtTime> ?modifiedAtTime .
+                    
+                                                    [[#if (hasPermission "forms:ldp:*")]]
+                                                        ?overlayImage <http://www.w3.org/ns/prov#wasAttributedTo> ?modifiedByUser .
+                                                    [[else]]
+                                                        ?overlayImage <http://www.w3.org/ns/prov#wasAttributedTo> ?modifiedByUser .
+                                                        FILTER(?modifiedByUser = <http://www.researchspace.org/resource/system/anonymousUser> )
+                                                    [[/if]]
+                                                }'
+                                                template='{{> template}}'
+                                        >
+                                            
+                            <template id='template'>
+                                <div>
+                                    <div class="semantic-form-input-title">Image overlay metadata</div>
+                                    <div class="table-expanded">
+                                        <table class="table metadata-table">
+                                            <tbody>
+                                                <tr class="standard-row">
+                                                    <td class="table-title"><b>created at</b></td>
+                                                    <td class="table-description">
+                                                        {{dateTimeFormat bindings.0.modifiedAtTime.value "DD/MM/YYYY, h:mm a"}}
+                                                    </td>
+                                                </tr>
+                                                <tr class="standard-row">
+                                                    <td class="table-title"><b>created by</b></td>
+                                                    <td class="table-description">
+                                                        <rs-icon icon-type="rounded" icon-name="account_box" class="table-icon" symbol="true"></rs-icon>
+                                                        {{bindings.0.modifiedByUser.value}}
+                                                    </td>
+                                                </tr>
+                                            </tbody>   
+                                        </table>
+                                    </div>
+                                </div>
+                            </template>
+                </semantic-query>
+            [[/if]]
         </bs-tab>
     {{/if}}
 {{/ifCond}}

@@ -118,7 +118,7 @@ export class InternalLink extends React.Component<InternalLinkProps, InternalLin
                   }
                 </DropArea>
                 <Button bsClass='btn-default' className='btn-default-icon' onMouseDown={this.onUnlink}>
-                  <Icon iconType='round' iconName='link_off'/>
+                  <Icon iconType='rounded' iconName='link_off' symbol/>
                 </Button>
               </div>
             </Popover>

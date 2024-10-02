@@ -1,6 +1,12 @@
-{{#if resourceConfig}}
-  {{> rsp:resourceCardTemplate}} 
+{{#if knowledgeMapPreviewCard}}
+  [[> resourceCardQuery]]
+{{else if resourceConfig}}
+  <div>{{> rsp:resourceCardTemplate}}</div>
 {{else}}
+  [[> resourceCardQuery]]
+{{/if}}
+
+[[#*inline "resourceCardQuery"]]
   <semantic-query query='SELECT ?iri ?resourceOntologyClass ?resourceConfig ?resourceLabel ?resourceIcon WHERE {
                           BIND(<{{iri}}> as ?iri)
                           
@@ -65,4 +71,4 @@
     </template>
 
   </semantic-query>
-{{/if}}
+[[/inline]]

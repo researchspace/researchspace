@@ -18,3 +18,4 @@
  */
 
 export { CopyToClipboardComponent } from './CopyToClipboardComponent';
+export {ShareLinkComponent} from './ShareLinkComponent';

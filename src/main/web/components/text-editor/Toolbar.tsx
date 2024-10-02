@@ -81,7 +81,31 @@ export interface ToolbarProps {
   onRefresh?: () => void; 
 }
 
-export class Toolbar extends React.Component<ToolbarProps> {
+interface State {
+  customDropdownOpen: boolean;
+  customDropdownTemplate?: any
+}
+
+export class Toolbar extends React.Component<ToolbarProps, State> {
+
+  constructor(props: ToolbarProps, context: any) {
+    super(props, context);
+    this.state = {
+      customDropdownOpen: false,
+      customDropdownTemplate: null
+    };
+  }
+
+  onToggleCustomDropdown = (open: boolean) => {
+    if(open && !this.state.customDropdownTemplate) {
+      this.setState({
+        customDropdownTemplate: this.getTemplate('{{> semantic-narrative-dropdown}}')
+      })
+    }
+    this.setState({
+      customDropdownOpen: open,
+    });
+  }
 
   private getTemplate = (template: string): React.CElement<{}, TemplateItem> => {
     if(!template) return null;
@@ -103,7 +127,7 @@ export class Toolbar extends React.Component<ToolbarProps> {
     const iconName = `${MARK_TO_ICON[markType]}`;
     return <Button active={isActive} disabled={this.isTextSelectionActionDisabled()} className='btn-default-icon'
       onMouseDown={event => this.onMarkClick(event, markType)}>
-      <Icon iconType='round' iconName={iconName}/>
+      <Icon iconType='rounded' iconName={iconName} symbol />
     </Button>;
   }
 
@@ -117,7 +141,7 @@ export class Toolbar extends React.Component<ToolbarProps> {
     const iconName = `${TEXT_ALIGNMENT_TO_ICON[alignment]}`;
     return <Button active={isActive} disabled={!isTextBlock(this.props.anchorBlock)} className='btn-default-icon'
       onMouseDown={event => this.onAlignClick(event, alignment)}>
-      <Icon iconType='round' iconName={iconName}/>
+      <Icon iconType='rounded' iconName={iconName} symbol/>
     </Button>;
   }
 
@@ -159,7 +183,7 @@ export class Toolbar extends React.Component<ToolbarProps> {
       <Button onMouseDown={this.onExternalLinkClick}
         disabled={this.isTextSelectionActionDisabled()}
       >
-      <Icon iconType='round' iconName='open_in_new'/>
+      <Icon iconType='rounded' iconName='open_in_new' symbol/>
       </Button>
     );
   } */
@@ -226,7 +250,6 @@ export class Toolbar extends React.Component<ToolbarProps> {
 
   render() {
     const { saving, showDropdown, showRefresh, onRefresh } = this.props;
-    const dropdownTemplate = showDropdown ? this.getTemplate('{{> semantic-narrative-dropdown}}') : null
     return (
       <div className={styles.toolbar}>
 
@@ -266,16 +289,16 @@ export class Toolbar extends React.Component<ToolbarProps> {
 
           <Dropdown id='links' disabled={this.isTextSelectionActionDisabled()}>
             <Dropdown.Toggle>
-              <Icon iconType='round' iconName='add_link' className='icon-left'/>
+              <Icon iconType='rounded' iconName='add_link' symbol className='icon-left'/>
               Links
             </Dropdown.Toggle>
             <Dropdown.Menu>
             <MenuItem href="#" onMouseDown={this.onInternalLinkClick}>
-              <Icon iconType='round' iconName='insert_link' className='icon-left'/>
+              <Icon iconType='rounded' iconName='insert_link' symbol className='icon-left'/>
               Resource link
             </MenuItem>
             <MenuItem href="#" onMouseDown={this.onExternalLinkClick}>
-              <Icon iconType='round' iconName='public' className='icon-left'/>
+              <Icon iconType='rounded' iconName='public' symbol className='icon-left'/>
               External link
             </MenuItem>
               
@@ -286,9 +309,18 @@ export class Toolbar extends React.Component<ToolbarProps> {
         
         <div className={styles.toolbarBtnGroup}>
           {showRefresh && <Button onClick={onRefresh} className='btn-textAndIcon' title='Refresh narrative'>
-                            <Icon iconType='round' iconName='refresh' />
+                            <Icon iconType='rounded' iconName='refresh' symbol />
                           </Button>}
-          {dropdownTemplate}
+
+          {showDropdown && <Dropdown id='semantic-narrative-resource-dropdwon' className='dropdown-no-caret' pullRight onToggle={this.onToggleCustomDropdown}>
+                      <Dropdown.Toggle>
+                        <Icon iconType='rounded' iconName='more_vert' symbol />
+                      </Dropdown.Toggle>
+                      <Dropdown.Menu></Dropdown.Menu>
+                      {this.state.customDropdownTemplate }
+                    </Dropdown>
+          }
+          
           <Button bsStyle='default' 
                   className='btn-action'
                   onClick={this.props.onDocumentSave} 

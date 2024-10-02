@@ -20,6 +20,7 @@
 import { createFactory, CSSProperties } from 'react';
 import * as D from 'react-dom-factories';
 import * as assign from 'object-assign';
+import Icon from 'platform/components/ui/icon/Icon';
 
 import { StaticComponent, StaticFieldProps } from './StaticComponent';
 

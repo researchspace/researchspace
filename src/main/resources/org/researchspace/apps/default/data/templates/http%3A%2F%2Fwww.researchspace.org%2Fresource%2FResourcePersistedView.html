@@ -52,7 +52,46 @@
           {{#if bindings.0.description.value}}
             <p>{{bindings.0.description.value}}</p>
           {{/if}}
+          {{#if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")}}
+            <semantic-query query='SELECT ?query WHERE {
+                                                        <{{bindings.0.subject.value}}> <http://www.researchspace.org/ontologies/persist/componentProps> ?prop .
+                                                        ?prop <http://www.researchspace.org/ontologies/persist/components/semantic-chart/query> ?query .
+                                                }'
+                            template='{{> template}}'>
+                                
+                <template id='template'>
+                  <div class="overflow-y-auto">
+                    <semantic-table id='{{bindings.0.subject.value}}-chart-values'
+                                    query='{{bindings.0.query.value}}'
+                                    options='{  "showFilter":true, 
+                                                "filterPlaceholderText":"Filter by value",
+                                                "resultsPerPage":300
+                                            }'
+
+                                    column-configuration='[
+                                                            {"variableName": "__value__", "displayName": "Value", "cellTemplate": "{{> value}}" },
+                                                            {"variableName": "count", "displayName": "Count" }
+                                                        ]'  
+                    >
+                        <template id='value'>
+                            {{#ifCond __value__.value "==" "Unknown"}}
+                                {{__value__.value}}
+                            {{else}}
+                                <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                urlqueryparam-view='resource-editor' 
+                                                urlqueryparam-resource-iri='{{__value__.value}}'
+                                >
+                                    <mp-label iri='{{__value__.value}}' class="text-link text-truncate-line1"></mp-label>
+                                </semantic-link>
+                            {{/ifCond}}
+                        </template>
+                    </semantic-table>
+                  </div>
+                </template>
+            </semantic-query>
+          {{/if}}
         </div>
+        
 
       </div>
       

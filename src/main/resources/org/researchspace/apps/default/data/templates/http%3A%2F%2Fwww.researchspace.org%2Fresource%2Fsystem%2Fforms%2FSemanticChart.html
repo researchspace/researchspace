@@ -45,11 +45,11 @@
         <semantic-form-hidden-input for="classtype" default-value='http://www.ics.forth.gr/isl/CRMdig/D1_Digital_Object'> </semantic-form-hidden-input>
         <semantic-form-hidden-input for="entity_resource_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/semantic_chart'> </semantic-form-hidden-input>
 
-        <mp-splitpane id='{{viewId}}-entity-resource-sidebar' min-size=63 default-size=370 snap-threshold=200 default-open=true always-render=true primary='second' class="entity-resource-sidebar">
             <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
                 <rs-tab event-key="detail" title="Details">
                     <div class="form-2column-flex">
                         [[> chartSection ]]
+
                         <div style="flex: 1;">
                             <semantic-form-text-input for="entity_description" multiline=true label="Description" placeholder="Enter description/comment"></semantic-form-text-input>
         
@@ -69,7 +69,8 @@
                                                                 label="Other identifier"
                                                                 placeholder="Select other identifier" 
                                                                 nested-form-templates='[[> Platform:NestedFormTemplates_appellations]]'>
-                            </semantic-form-autocomplete-input>               
+                            </semantic-form-autocomplete-input>
+                            [[> rsp:FormAssetSidebar imagesOnly=true]]
                         </div>
                     </div>
                 </rs-tab>
@@ -90,15 +91,15 @@
                                             <div style="padding-top: 20px;">
                                                 <semantic-table id='{{node}}-chart-values'
                                                                 query='{{bindings.0.query.value}}'
-                                                    options='{  "showFilter":true, 
-                                                                "filterPlaceholderText":"Filter by value",
-                                                                "resultsPerPage":300
-                                                            }'
+                                                                options='{  "showFilter":true, 
+                                                                            "filterPlaceholderText":"Filter by value",
+                                                                            "resultsPerPage":300
+                                                                        }'
 
-                                                    column-configuration='[
-                                                                            {"variableName": "__value__", "displayName": "Value", "cellTemplate": "{{> value}}" },
-                                                                            {"variableName": "count", "displayName": "Count" }
-                                                                        ]'  
+                                                                column-configuration='[
+                                                                                        {"variableName": "__value__", "displayName": "Value", "cellTemplate": "{{> value}}" },
+                                                                                        {"variableName": "count", "displayName": "Count" }
+                                                                                    ]'  
                                                 >
                                                     <template id='value'>
                                                         {{#ifCond __value__.value "==" "Unknown"}}
@@ -647,7 +648,7 @@
             </rs-tabs>
 
             [[#*inline "chartSection"]]
-                <div class="page__section-container" style="margin-top: 20px; width: 380px; padding-top: 0; height: fit-content;">
+                <div class="page__section-container" style="margin-top: 20px; width: 300px; padding-top: 0; height: fit-content; flex: 1;">
                     <div style="display: flex; align-items: baseline; justify-content: space-between">
                         <div class="customFormHeader">Chart</div>
                         <div style="display: flex; align-items: center; column-gap: 3px;">
@@ -691,9 +692,6 @@
                     
                 </div>
             [[/inline]]
-      
-            [[> rsp:FormAssetSidebar imagesOnly=true]]
-        </mp-splitpane>
 
     </div>
   

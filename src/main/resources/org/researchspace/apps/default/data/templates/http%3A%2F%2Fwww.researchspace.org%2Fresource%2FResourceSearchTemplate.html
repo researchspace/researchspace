@@ -746,7 +746,20 @@
           </semantic-query>
         {{/if}}
 
-        <mp-splitpane id='[[urlParam "viewid" escape=false]]-search-filters-sidebar' min-size=43 default-size=230 snap-threshold=150 default-open=false always-render=true primary='second' class="search-filters-sidebar">
+  [[!-- With persist-resize=false when the sidebar re-rendered it doesn't 
+        look at the local storage for size and it's always close (as default-open=false). 
+        If persist-resize=true don't use id including 'viewId' as the same sidebar 
+        will have different keys in local storage, creating problems  
+  --]]
+        <mp-splitpane id='[[urlParam "resourcelabel" escape=false]]-search-filters-sidebar' 
+                      min-size=43 
+                      default-size=297 
+                      snap-threshold=150 
+                      default-open=false
+                      persist-resize=false 
+                      always-render=true 
+                      primary='second' 
+                      class="search-filters-sidebar">
 
           <div class="search-results-area page__section-container">
             <semantic-search-facet-breadcrumbs></semantic-search-facet-breadcrumbs>

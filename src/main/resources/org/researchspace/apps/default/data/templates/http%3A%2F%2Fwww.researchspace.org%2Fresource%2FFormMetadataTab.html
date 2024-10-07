@@ -3,7 +3,7 @@
 {{#ifCond mode "!==" "new"}}
     {{#if node}}
         <bs-tab event-key="metadata" title="Metadata">
-            <semantic-query query='SELECT ?entity ?entityFormRecordCreation ?actor ?creationDateValue ?importFromExternalSource ?sourceURI WHERE {
+            <semantic-query query='SELECT ?entity ?entityFormRecordCreation ?actor ?actorFullName ?creationDateValue ?importFromExternalSource ?sourceURI WHERE {
                                     BIND(<{{node}}> AS ?entity)
 
                                     ?entity crm:P129i_is_subject_of ?entityFormRecord .
@@ -13,6 +13,15 @@
                                     ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
 
                                     ?entityFormRecordCreation crm:P14_carried_out_by ?actor .
+
+                                    OPTIONAL {
+                                        ?actor crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                        ?actor crm:P1_is_identified_by ?actorName .
+                                        ?actorName a crm:E41_Appellation .
+                                        ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                        ?actorName crm:P190_has_symbolic_content ?actorFullName .
+                                    }
+
                                     ?entityFormRecordCreation crm:P4_has_time-span ?creationDate .
                                     ?creationDate crm:P82_at_some_time_within ?creationDateValue .
 
@@ -27,7 +36,7 @@
 
                                 } limit 1'
                                         
-                                template='{{> template}}'>
+                            template='{{> template}}'>
                                 
                             <template id='template'>
                                 <div class="semantic-form-input-title">Record metadata</div>
@@ -44,7 +53,17 @@
                                                 <td class="table-title"><b>created by</b></td>
                                                 <td class="table-description">
                                                     <rs-icon icon-type="rounded" icon-name="account_box" class="table-icon" symbol="true"></rs-icon>
-                                                    {{bindings.0.actor.value}}
+                                                    {{#if bindings.0.actorFullName.value}}
+                                                        <semantic-link-container    uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                    urlqueryparam-view='resource-editor' 
+                                                                                    urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                                                                    urlqueryparam-resource-iri="{{bindings.0.actor.value}}"
+                                                                                    urlqueryparam-mode='edit'>
+                                                            <div style="text-decoration: underline; cursor: pointer;">{{bindings.0.actorFullName.value}}</div>
+                                                        </semantic-link-container>
+                                                    {{else}}
+                                                        <mp-label iri='{{bindings.0.actor.value}}'></mp-label>
+                                                    {{/if}}
                                                 </td>
                                             </tr>
                                             {{#if bindings.0.importFromExternalSource.value}}
@@ -62,7 +81,7 @@
             </semantic-query>
 
             [[#if imageOverlay]]
-                <semantic-query  query='SELECT ?overlayImage ?modifiedByUser ?modifiedAtTime WHERE {
+                <semantic-query  query='SELECT ?overlayImage ?modifiedByUser ?modifiedByUserFullName ?modifiedAtTime WHERE {
                                                     BIND(<{{node}}> AS ?overlayImage)
 
                                                     ?overlayImage a crmdig:D9_Data_Object .
@@ -77,8 +96,16 @@
                                                         ?overlayImage <http://www.w3.org/ns/prov#wasAttributedTo> ?modifiedByUser .
                                                         FILTER(?modifiedByUser = <http://www.researchspace.org/resource/system/anonymousUser> )
                                                     [[/if]]
+
+                                                    OPTIONAL {
+                                                        ?modifiedByUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                                        ?modifiedByUser crm:P1_is_identified_by ?actorName .
+                                                        ?actorName a crm:E41_Appellation .
+                                                        ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                                        ?actorName crm:P190_has_symbolic_content ?modifiedByUserFullName .
+                                                    }
                                                 }'
-                                                template='{{> template}}'
+                                            template='{{> template}}'
                                         >
                                             
                             <template id='template'>
@@ -97,7 +124,17 @@
                                                     <td class="table-title"><b>created by</b></td>
                                                     <td class="table-description">
                                                         <rs-icon icon-type="rounded" icon-name="account_box" class="table-icon" symbol="true"></rs-icon>
-                                                        {{bindings.0.modifiedByUser.value}}
+                                                        {{#if bindings.0.modifiedByUserFullName.value}}
+                                                            <semantic-link-container    uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                        urlqueryparam-view='resource-editor' 
+                                                                                        urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                                                                        urlqueryparam-resource-iri="{{bindings.0.modifiedByUser.value}}"
+                                                                                        urlqueryparam-mode='edit'>
+                                                                <div style="text-decoration: underline; cursor: pointer;">{{bindings.0.modifiedByUserFullName.value}}</div>
+                                                            </semantic-link-container>
+                                                        {{else}}
+                                                            <mp-label iri='{{bindings.0.modifiedByUser.value}}'></mp-label>
+                                                        {{/if}}
                                                     </td>
                                                 </tr>
                                             </tbody>   

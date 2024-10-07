@@ -171,11 +171,11 @@ export class ActionSaveComponent extends Component<Props, State> {
     }
     return Button(
       {
-        title: 'Copy to Clipboard',
+        title: 'Save Visualisation',
         onClick: this.state.show == 'hide' ? this.onClick : undefined,
       },
       
-      D.i({ className: 'material-symbols-rounded icon-left'}, 'inventory'),
+      D.i({ className: 'material-symbols-rounded icon-left'}, 'save'),
       this.renderModal()
     );
   }

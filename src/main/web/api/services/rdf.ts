@@ -24,7 +24,6 @@ import * as _ from 'lodash';
 import { Rdf } from 'platform/api/rdf';
 import { SparqlClient } from 'platform/api/sparql';
 
-module RdfService {
   export function getRdfTypes(resource: Rdf.Iri): Kefir.Property<Immutable.List<Rdf.Iri>> {
     const bindingName = 'type';
     const query = 'SELECT ?type WHERE { <' + resource.value + '> a ?type}';
@@ -40,6 +39,3 @@ module RdfService {
       return Immutable.List<Rdf.Iri>(list);
     });
   }
-}
-
-export = RdfService;

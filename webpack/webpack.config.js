@@ -23,7 +23,26 @@ const AssetsPlugin = require('assets-webpack-plugin');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const { ModuleFederationPlugin } = require('@module-federation/enhanced');
+
 const defaults = require('./defaults')();
+
+const { sharedDependencies } = require('./sharedDependencies');
+
+const platformApiPackages = [
+    'api/rdf',
+    'api/sparql',
+    'api/events',
+    'api/components',
+    'api/async',
+
+    'components/forms',
+    'components/forms/inputs',
+
+    'components/semantic/query',
+    
+    'components/ui/spinner'
+];
 
 /**
  * @param {ReturnType<import('./defaults')>} defaults
@@ -39,6 +58,29 @@ module.exports = function(isProd) {
     } = defaults;
 
     const publicPath = '/assets/no_auth/';
+
+
+    const platformExposes =
+          platformApiPackages.reduce((acc, package) => {
+              let relativePackage = './' + package;
+              acc[relativePackage] = path.join(SRC, package);
+              return acc;
+          }, {});
+
+    const federationConfig =  {
+        name: 'platform',
+        filename: 'remoteEntry.js',
+        remotes: {},
+        exposes: platformExposes,
+        shared: sharedDependencies,
+
+        // because we always have an access to platform source code when building plugins,
+        // we don't want to do type check as part of MF plugin.
+        // We simply generate d.ts files as part of normal build using ForkTsCheckerWebpackPlugin
+        dts: false,
+
+        tsConfigPath: path.resolve(__dirname, '../tsconfig.json'),
+    };
 
     const config = {
         // we want source maps for prod and dev builds
@@ -65,7 +107,6 @@ module.exports = function(isProd) {
             publicPath
         },
         optimization: {
-            runtimeChunk: 'single',
             moduleIds: 'named',
             chunkIds: 'named',
             emitOnErrors: true,
@@ -112,6 +153,15 @@ module.exports = function(isProd) {
             },
         },
         module: {
+            parser: {
+                javascript: {
+                    // to suppress webpack warning related to re-export of compile only types
+                    // in typescript.
+                    // for more background see https://github.com/webpack/webpack/issues/7378
+                    reexportExportsPresence: false,
+                },
+            },
+
             /** @type {any[]} */
             rules: [
                 // order of ts and scss loader matters, we detect it by id in webpack.dev file
@@ -288,9 +338,10 @@ module.exports = function(isProd) {
         plugins: [
             new ForkTsCheckerWebpackPlugin({
                 typescript: {
-                  config: path.resolve(__dirname, '../tsconfig.json'),
+                    configFile: path.resolve(__dirname, '../tsconfig.json'),
+                    mode: 'write-dts'
                 }
-            }),    
+            }),
             new CircularDependencyPlugin({
                 // exclude detection of files based on a RegExp
                 exclude: /src\/main\/web\/ontodia|node_modules/,
@@ -334,8 +385,10 @@ module.exports = function(isProd) {
             new webpack.NormalModuleReplacementPlugin(
                 /^punycode$/,
                 path.join(ROOT_DIR, 'webpack/punycode-module.js')
-            )
+            ),
 
+            // it should always be the last plugin, because we remove it in karma config for unit tests
+            new ModuleFederationPlugin(federationConfig),
         ]
     };
 

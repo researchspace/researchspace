@@ -18,6 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 import { createFactory, createElement, FormEvent, ReactElement } from 'react';
+import * as React from 'react';
 import * as D from 'react-dom-factories';
 import { Component } from 'platform/api/components';
 import * as ReactBootstrap from 'react-bootstrap';
@@ -43,7 +44,6 @@ import { AutoCompletionInput } from 'platform/components/ui/inputs';
 import { Template, Argument, Value } from './QueryTemplateTypes';
 import { QueryValidatorComponent } from './QueryValidatorComponent';
 import * as QueryTemplateArgumentsComponent from './QueryTemplateArgumentsComponent';
-import React = require('react');
 
 const Well = createFactory(ReactBootstrap.Well);
 const FormGroup = createFactory(ReactBootstrap.FormGroup);

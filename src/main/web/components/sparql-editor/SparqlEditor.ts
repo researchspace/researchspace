@@ -21,6 +21,8 @@ import { Props as ReactProps, Component, createElement } from 'react';
 import * as D from 'react-dom-factories';
 import { findDOMNode } from 'react-dom';
 import * as YASQE from 'yasgui-yasqe';
+import 'codemirror/addon/runmode/runmode';
+
 import { isUndefined, debounce, findKey } from 'lodash';
 import { Overlay } from 'react-bootstrap';
 
@@ -112,7 +114,7 @@ export class SparqlEditor extends Component<SparqlEditorProps, State> {
         // Workaround for disabling caching of prefixes
         // YASQE doesn't support overriding the persistent option
         const _prefixes = YASQE['Autocompleters'].prefixes;
-        YASQE['Autocompleters'].prefixes = (yasqe, completerName) => {
+        YASQE['Autocompleters'].prefixes = function(yasqe, completerName) {
           const completer = _prefixes(yasqe, completerName);
           completer.persistent = null;
           return completer;

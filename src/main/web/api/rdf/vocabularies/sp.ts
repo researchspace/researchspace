@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import RDF = require('../core/Rdf');
+import * as RDF from '../core/Rdf';
 
 module sp {
   export var _NAMESPACE = 'http://spinrdf.org/sp#';

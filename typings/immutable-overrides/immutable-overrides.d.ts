@@ -1,4 +1,4 @@
-/// <reference path='../../node_modules/immutable/dist/immutable.d.ts'/>
+/// <reference path='immutable'/>
 
 declare module Immutable {
 

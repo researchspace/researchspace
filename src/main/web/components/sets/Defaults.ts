@@ -103,7 +103,7 @@ export const ItemListTemplate = `
 
 export const KeywordSearch: KeywordFilter = {
   placeholder: 'Search in clipboard...',
-  placeholderInSet: 'Search in the set...',
+  placeholderInSet: 'Search in set',
   queryPattern: `
     ?itemHolder ?__preferredLabel__ ?itemLabel .
     FILTER REGEX(STR(?itemLabel), "(.*?)?__token__", "i")`,

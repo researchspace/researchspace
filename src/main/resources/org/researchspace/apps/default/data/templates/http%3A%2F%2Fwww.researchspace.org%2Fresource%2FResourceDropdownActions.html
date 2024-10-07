@@ -561,18 +561,19 @@
     </bs-menu-item>
   </mp-copy-to-clipboard>
 
+  {{#if (not (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item"))}}
   <hr>
-
-  <rs-share-link relative-path='/resource/ThinkingFrames' 
-                 urlqueryparam-resource="{{iri}}" 
-                 urlqueryparam-view="resource-editor" 
-                 urlqueryparam-custom-label="{{resourceLabel}} link" 
-                 message='Share link has been copied'>
-    <bs-menu-item>
-      <rs-icon icon-type="rounded" icon-name="share_windows" class="icon-left" symbol="true"></rs-icon>
-      <span>Share edit</span>
-    </bs-menu-item>
-  </rs-share-link>
+    <rs-share-link relative-path='/resource/ThinkingFrames' 
+                  urlqueryparam-resource="{{iri}}" 
+                  urlqueryparam-view="resource-editor" 
+                  urlqueryparam-custom-label="{{resourceLabel}} link" 
+                  message='Share link has been copied'>
+      <bs-menu-item>
+        <rs-icon icon-type="rounded" icon-name="share_windows" class="icon-left" symbol="true"></rs-icon>
+        <span>Share edit</span>
+      </bs-menu-item>
+    </rs-share-link>
+  {{/if}}
 
   {{#switch resourceConfig}}
     {{#case "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document" break=true}}
@@ -700,7 +701,6 @@
 
   {{#if (or allowResourceDelete imageAnnotation)}} 
     {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
-
       <hr>
       <bs-menu-item>
         <rs-icon icon-type="rounded" icon-name="delete" class="icon-left" symbol="true"></rs-icon>            

@@ -87,16 +87,16 @@
     <http://www.w3.org/ns/prov#generatedAtTime> "2024-10-03T11:19:47.367+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
   
   _:genid-c7ae5f84b45a4163a50575d599795f99-7bzty a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
-  ?subject crm:P129i_is_subject_of/crmdig:L11i_was_output_of/crm:P14_carried_out_by|prov:wasAttributedTo ?actor .
-  ?subject a ?ontologyClass .
-  OPTIONAL {
-     ?subject crm:P2_has_type ?type .
-     ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/resource_type> .
-  }
-  MINUS {?subject a <http://www.researchspace.org/resource/system/fields/Field> .}
-  BIND(IF(BOUND(?type), ?type, ?ontologyClass) as ?value)
-}""" .
+    <http://spinrdf.org/sp#text> """SELECT distinct ?value WHERE { 
+  ?subject rdf:type ?class .
+    ?class a ?ontologyClass .
+    FILTER(?ontologyClass in (rdfs:Class, owl:Class)).
+    OPTIONAL {
+      ?subject crm:P2_has_type ?type .
+      ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/resource_type> .
+    }
+   BIND(IF(BOUND(?type), ?type, ?ontologyClass) as ?value)
+  }""" .
   
   _:genid-c7ae5f84b45a4163a50575d599795f99-in4ut a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """INSERT { ?subject prov:wasAttributedTo ?value .} 

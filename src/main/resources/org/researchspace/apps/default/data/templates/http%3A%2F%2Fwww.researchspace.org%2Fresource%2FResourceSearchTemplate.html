@@ -746,7 +746,20 @@
           </semantic-query>
         {{/if}}
 
-        <mp-splitpane id='[[urlParam "viewid" escape=false]]-search-filters-sidebar' min-size=43 default-size=230 snap-threshold=150 default-open=false always-render=true primary='second' class="search-filters-sidebar">
+  [[!-- With persist-resize=false when the sidebar re-rendered it doesn't 
+        look at the local storage for size and it's always close (as default-open=false). 
+        If persist-resize=true don't use id including 'viewId' as the same sidebar 
+        will have different keys in local storage, creating problems  
+  --]]
+        <mp-splitpane id='[[urlParam "resourcelabel" escape=false]]-search-filters-sidebar' 
+                      min-size=43 
+                      default-size=297 
+                      snap-threshold=150 
+                      default-open=false
+                      persist-resize=false 
+                      always-render=true 
+                      primary='second' 
+                      class="search-filters-sidebar">
 
           <div class="search-results-area page__section-container">
             <semantic-search-facet-breadcrumbs></semantic-search-facet-breadcrumbs>
@@ -1072,9 +1085,9 @@
                                             column-configuration='[
                                                                     {"variableName": "subject", "displayName": "", "cellTemplate": "{{> selectionCheckbox}}" },
                                                                     {"variableName": "subject", "displayName": "{{#if bindings.0.columnTitle1.value}}{{bindings.0.columnTitle1.value}}{{else}}[[urlParam "resourcelabel" escape=false]] name{{/if}}", "cellTemplate": "{{> column1}}" },
-                                                                    {"variableName": "", "displayName": "{{#if bindings.0.columnTitle2.value}}{{bindings.0.columnTitle2.value}}{{else}}{{/if}}", "cellTemplate": "{{> column2}}" },
-                                                                    {"variableName": "", "displayName": "{{#if bindings.0.columnTitle3.value}}{{bindings.0.columnTitle3.value}}{{else}}{{/if}}", "cellTemplate": "{{> column3}}" },
-                                                                    {"variableName": "", "displayName": "{{#if bindings.0.columnTitle4.value}}{{bindings.0.columnTitle4.value}}{{else}}{{/if}}", "cellTemplate": "{{> column4}}" },
+                                                                    {{#if bindings.0.columnTitle2.value}} {"variableName": "", "displayName": "{{bindings.0.columnTitle2.value}}", "cellTemplate": "{{> column2}}" },{{/if}}
+                                                                    {{#if bindings.0.columnTitle3.value}} {"variableName": "", "displayName": "{{bindings.0.columnTitle3.value}}", "cellTemplate": "{{> column3}}" },{{/if}}
+                                                                    {{#if bindings.0.columnTitle4.value}} {"variableName": "", "displayName": "{{bindings.0.columnTitle4.value}}", "cellTemplate": "{{> column4}}" },{{/if}}
                                                                     {"variableName": "", "displayName": "more", "cellTemplate": "{{> actions}}" }
                                                                   ]'   
                             >
@@ -1096,48 +1109,49 @@
     
                               <template id='column1'>
                                 <div>
-                                  <div style="display: flex; align-items: center; gap: 15px;">                               
-                                    <mp-draggable iri='{{iri.value}}'>
-                                      <mp-overlay-dialog  id="{{iri.value}}-resource-preview-dialog"  
-                                                          type="modal" 
-                                                          class="modal-xlSize preview_modal"
-                                                          title="Preview">
-                                        <mp-overlay-dialog-trigger>
-                                          <div class="resource-thumbnail-small-container">
+                                  <div style="display: flex; align-items: center; gap: 15px;"> 
+                                    <mp-overlay-dialog  id="{{iri.value}}-resource-preview-dialog"  
+                                                        type="modal" 
+                                                        class="modal-xlSize preview_modal"
+                                                        title="Preview">
+                                      <mp-overlay-dialog-trigger>
+                                        <div class="resource-thumbnail-small-container">
+                                          <mp-draggable iri='{{iri.value}}'>
                                             {{#if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation")}}
-                                              <rs-iiif-image-thumbnail  height='40' width='45' style='height: 100%; width: 100%;'
-                                                                        image-or-region='{{iri.value}}'      
-                                                                        [[> rsp:IIIFConfig]]
-                                                                      >
-                                              </rs-iiif-image-thumbnail>
+                                              <div>
+                                                <rs-iiif-image-thumbnail  height='40' width='45' style='height: 100%; width: 100%;'
+                                                                          image-or-region='{{iri.value}}'      
+                                                                          [[> rsp:IIIFConfig]]
+                                                                        >
+                                                </rs-iiif-image-thumbnail>
+                                              </div>
                                             {{else}}
-                                              <mp-resource-thumbnail iri='{{iri.value}}' class='resource-thumbnail-small'>
-                                                  <mp-resource-thumbnail-fallback>
-                                                    <mp-draggable iri='{{iri.value}}'>
+                                              <div>
+                                                <mp-resource-thumbnail iri='{{iri.value}}' class='resource-thumbnail-small'>
+                                                    <mp-resource-thumbnail-fallback>
                                                       [[#if (urlParam 'resourceicon') ]]
                                                         <rs-icon icon-type="rounded" icon-name="[[urlParam 'resourceicon']]" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
                                                       [[else]]
                                                         <rs-icon icon-type="rounded" icon-name="image" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
                                                       [[/if]]
-                                                    </mp-draggable>
-                                                  </mp-resource-thumbnail-fallback>
-                                              </mp-resource-thumbnail>
-                                            {{/if}}         
-                                          </div>
-                                        </mp-overlay-dialog-trigger>
-                                        <mp-overlay-dialog-content>
-                                          <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
-                                                          options='{"resource": "{{iri.value}}", 
-                                                                      "resourceConfig": "{{bindings.0.resourceConfig.value}}", 
-                                                                      "resourceConfigLabel": "[[urlParam "resourcelabel" escape=false]]",
-                                                                      "resourceDescription": "{{description.value}}",
-                                                                      "resourceDetailSection": true
-                                                                      }' >
-                                          </inline-template> 
-                                        </mp-overlay-dialog-content>
-                                      </mp-overlay-dialog>
-                                    </mp-draggable>
-
+                                                    </mp-resource-thumbnail-fallback>
+                                                </mp-resource-thumbnail>
+                                              </div>
+                                            {{/if}}    
+                                          </mp-draggable>     
+                                        </div>
+                                      </mp-overlay-dialog-trigger>
+                                      <mp-overlay-dialog-content>
+                                        <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
+                                                        options='{"resource": "{{iri.value}}", 
+                                                                    "resourceConfig": "{{bindings.0.resourceConfig.value}}", 
+                                                                    "resourceConfigLabel": "[[urlParam "resourcelabel" escape=false]]",
+                                                                    "resourceDescription": "{{description.value}}",
+                                                                    "resourceDetailSection": true
+                                                                    }' >
+                                        </inline-template> 
+                                      </mp-overlay-dialog-content>
+                                    </mp-overlay-dialog>
                                     <div>
                                       <mp-draggable iri='{{iri.value}}'>
                                         <div>
@@ -1453,47 +1467,49 @@
                               <template id='column1'>
                                 <div>
                                   <div style="display: flex; align-items: center; gap: 15px;">                                 
-                                    <mp-draggable iri='{{iri.value}}'>
-                                      <mp-overlay-dialog  id="{{iri.value}}-resource-preview-dialog"  
-                                                          type="modal" 
-                                                          class="modal-xlSize preview_modal"
-                                                          title="Preview">
-                                        <mp-overlay-dialog-trigger>
-                                          <div class="resource-thumbnail-small-container">
+                                    
+                                    <mp-overlay-dialog  id="{{iri.value}}-resource-preview-dialog"  
+                                                        type="modal" 
+                                                        class="modal-xlSize preview_modal"
+                                                        title="Preview">
+                                      <mp-overlay-dialog-trigger>
+                                        <div class="resource-thumbnail-small-container">
+                                          <mp-draggable iri='{{iri.value}}'>
                                             {{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation")}}
-                                              <rs-iiif-image-thumbnail  height='40' width='45' style='height: 100%; width: 100%;'
-                                                                        image-or-region='{{iri.value}}'      
-                                                                        [[> rsp:IIIFConfig]]
-                                                                      >
-                                              </rs-iiif-image-thumbnail>
+                                              <div>
+                                                <rs-iiif-image-thumbnail  height='40' width='45' style='height: 100%; width: 100%;'
+                                                                          image-or-region='{{iri.value}}'      
+                                                                          [[> rsp:IIIFConfig]]
+                                                                        >
+                                                </rs-iiif-image-thumbnail>
+                                              </div>
                                             {{else}}
-                                              <mp-resource-thumbnail iri='{{iri.value}}' class='resource-thumbnail-small'>
-                                                  <mp-resource-thumbnail-fallback>
-                                                    <mp-draggable iri='{{iri.value}}'>
+                                              <div>
+                                                <mp-resource-thumbnail iri='{{iri.value}}' class='resource-thumbnail-small'>
+                                                    <mp-resource-thumbnail-fallback>
                                                       [[#if (urlParam 'resourceicon') ]]
                                                         <rs-icon icon-type="rounded" icon-name="[[urlParam 'resourceicon']]" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
                                                       [[else]]
                                                         <rs-icon icon-type="rounded" icon-name="image" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
                                                       [[/if]]
-                                                    </mp-draggable>
-                                                  </mp-resource-thumbnail-fallback>
-                                              </mp-resource-thumbnail>
+                                                    </mp-resource-thumbnail-fallback>
+                                                </mp-resource-thumbnail>
+                                              </div>
                                             {{/if}}         
-                                          </div>
-                                        </mp-overlay-dialog-trigger>
-                                        <mp-overlay-dialog-content>
-                                          <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
-                                                          options='{"resource": "{{iri.value}}", 
-                                                                      "resourceConfig": "{{resourceConfig.value}}", 
-                                                                      "resourceConfigLabel": "[[urlParam "resourcelabel" escape=false]]",
-                                                                      "resourceDescription": "{{description.value}}",
-                                                                      "resourceDetailSection": true
-                                                                      }' >
-                                          </inline-template> 
-                                        </mp-overlay-dialog-content>
-                                      </mp-overlay-dialog>
-                                    </mp-draggable>
-
+                                          </mp-draggable>
+                                        </div>
+                                      </mp-overlay-dialog-trigger>
+                                      <mp-overlay-dialog-content>
+                                        <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
+                                                        options='{"resource": "{{iri.value}}", 
+                                                                    "resourceConfig": "{{resourceConfig.value}}", 
+                                                                    "resourceConfigLabel": "[[urlParam "resourcelabel" escape=false]]",
+                                                                    "resourceDescription": "{{description.value}}",
+                                                                    "resourceDetailSection": true
+                                                                    }' >
+                                        </inline-template> 
+                                      </mp-overlay-dialog-content>
+                                    </mp-overlay-dialog>
                                     <div>
                                       <mp-draggable iri='{{iri.value}}'>
                                         <div>

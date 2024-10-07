@@ -178,10 +178,9 @@ export class ResourceLinkComponent extends Component<ResourceLinkProps, State> {
     return this.state.label.map(this.renderLink).getOrElse(null);
   }
 
-  private renderLink = (label: string) => {
+  private renderLink = () => {
     const iri = this.getIri();
     let props = _.clone(this.props) as any;
-    props.title = label;
     return createElement(
       InternalResourceLink,
       _.assign(

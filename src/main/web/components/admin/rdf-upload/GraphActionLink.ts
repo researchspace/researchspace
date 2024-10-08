@@ -241,6 +241,10 @@ export class GraphActionLink extends Component<Props, State> {
           source: Math.random().toString(),
           data:{"iri":this.props.graphuri}
         });
+        addNotification({
+          level: 'success',
+          message: 'Resource deleted',
+        });
         //Disable the refresh
         //refresh();
       })

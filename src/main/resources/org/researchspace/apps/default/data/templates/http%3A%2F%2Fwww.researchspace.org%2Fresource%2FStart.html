@@ -5,6 +5,7 @@
                 on-event-types='[ "Form.ResourceCreated", 
                                   "Form.ResourceUpdated", 
                                   "Form.ResourceRemoved",
+                                  "OverlayComparison.Created",
                                   "Components.SetManagement.SetAdded",
                                   "Components.SetManagement.SetRenamed",
                                   "Components.SetManagement.SetRemoved",
@@ -162,11 +163,11 @@
                     <bs-tab event-key="ongoing" title="Ongoing">
                       [[> projectSearch label="ongoing" status="ongoing" statusIRI="http://www.researchspace.org/resource/vocab/status/ongoing"]]
                     </bs-tab>
-                    <bs-tab event-key="completed" title="Completed">
-                      [[> projectSearch label="completed" status="completed" statusIRI="http://www.researchspace.org/resource/vocab/status/completed"]]
-                    </bs-tab>
                     <bs-tab event-key="proposed" title="Proposed">
                       [[> projectSearch label="proposed" status="proposed" statusIRI="http://www.researchspace.org/resource/vocab/status/proposed"]]
+                    </bs-tab>
+                    <bs-tab event-key="completed" title="Completed">
+                      [[> projectSearch label="completed" status="completed" statusIRI="http://www.researchspace.org/resource/vocab/status/completed"]]
                     </bs-tab>
                     {{#if (eq bindings.0.hasTeamProject.value 'true')}}
                       <bs-tab event-key="myTeamProjects" title="My Team Projects" tab-class-name="tab-right pr-0">
@@ -194,7 +195,7 @@
                                             urlqueryparam-custom-label="Search project">
                     <div>
                       <span class="text-link">all projects</span>
-                      <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
+                      <rs-icon icon-type="rounded" icon-name="chevron_right" symbol="true"></rs-icon>
                     </div>
                   </semantic-link-container>
                 </div>
@@ -217,8 +218,19 @@
                                                         {
                                                           ?subject prov:generatedAtTime ?date .
                                                           ?subject crm:P2_has_type ?type .
-                                                          FILTER(?type IN (<http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative>, <http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map>, <http://www.researchspace.org/resource/system/vocab/resource_type/set>))
+                                                          FILTER(?type IN (<http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map>, 
+                                                                            <http://www.researchspace.org/resource/system/vocab/resource_type/set>,
+                                                                            <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative>, 
+                                                                            <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_chart>,
+                                                                            <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_timeline>
+                                                                          ))
                                                           ?subject crm:P190_has_symbolic_content ?label .
+                                                        } UNION {
+                                                          ?subject a rs:EX_Digital_Image .
+                                                          ?subject prov:generatedAtTime ?date .
+                                                          ?subject crm:P1_is_identified_by ?imageAppellation . 
+                                                          ?imageAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                          ?imageAppellation crm:P190_has_symbolic_content ?label .
                                                         } UNION {
                                                           ?subject crm:P129i_is_subject_of ?entityFormRecord .
                                                           ?entityFormRecord a crmdig:D1_Digital_Object .
@@ -229,12 +241,10 @@
                                                           ?creation crm:P82_at_some_time_within ?date .
                                                           { 
                                                             ?subject crm:P1_is_identified_by ?appellation .
-                                                            ?appellation a crm:E41_Appellation .
                                                             ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                                             ?appellation crm:P190_has_symbolic_content ?label .
                                                           } UNION {
                                                             ?subject crm:P170i_time_is_defined_by ?timePrimitive .
-                                                            ?timePrimitive a crm:E61_Time_Primitive .
                                                             ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
                                                             ?timePrimitive crm:P190_has_symbolic_content ?label .
                                                           } UNION {
@@ -244,18 +254,27 @@
                                                           }
                                                         }
                                                           
-                                                          SERVICE <http://www.bigdata.com/rdf/search#search> {
-                                                                    ?label bds:search ?__token__ ;
-                                                                    bds:minRelevance "0.3" ;
-                                                                    bds:matchAllTerms "true"  .
-                                                          }
-                                                        } ORDER BY DESC(?date)'
+                                                        SERVICE <http://www.bigdata.com/rdf/search#search> {
+                                                                  ?label bds:search ?__token__ ;
+                                                                  bds:minRelevance "0.3" ;
+                                                                  bds:matchAllTerms "true"  .
+                                                        }
+                                                      } ORDER BY DESC(?date)'
                                                 default-query='SELECT ?subject WHERE {
                                                                 {
                                                                   ?subject prov:generatedAtTime ?date .
                                                                   ?subject crm:P2_has_type ?type .
-                                                                  FILTER(?type IN (<http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative>, <http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map>, <http://www.researchspace.org/resource/system/vocab/resource_type/set>))
+                                                                  FILTER(?type IN (<http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map>, 
+                                                                                    <http://www.researchspace.org/resource/system/vocab/resource_type/set>,
+                                                                                    <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative>, 
+                                                                                    <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_chart>,
+                                                                                    <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_timeline>
+                                                                                  )
+                                                                    )
                                                                   MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
+                                                                } UNION {
+                                                                  ?subject a rs:EX_Digital_Image .
+                                                                  ?subject prov:generatedAtTime ?date .
                                                                 } UNION {
                                                                   ?subject crm:P129i_is_subject_of ?entityFormRecord .
                                                                   ?entityFormRecord a crmdig:D1_Digital_Object .
@@ -270,10 +289,10 @@
                                                 placeholder="Search resource"
                 ></semantic-search-query-keyword> 
            [[!--     <button class="btn btn-default btn-textAndIcon">
-                  <rs-icon icon-type="round" icon-name="people_alt"></rs-icon>
+                  <rs-icon icon-type="rounded" icon-name="people_alt" symbol="true"></rs-icon>
                 </button>
                 <button class="btn btn-default btn-textAndIcon">
-                  <rs-icon icon-type="round" icon-name="calendar_month"></rs-icon>
+                  <rs-icon icon-type="rounded" icon-name="calendar_month" symbol="true"></rs-icon>
                 </button>
           --]]
               </div>
@@ -289,10 +308,10 @@
                                       query='SELECT DISTINCT ?subject ?iri ?date WHERE {
                                                   BIND(?subject as ?iri) .
                                               } ORDER BY DESC(?date)
-                                              LIMIT 100'
+                                              LIMIT 30'
                                       tuple-template='{{> gridItem }}'
                                       options='{"showFilter":false,
-                                                "resultsPerPage":100
+                                                "resultsPerPage":30
                                               }'
                       >
                         <template id='gridItem'>
@@ -313,7 +332,13 @@
                                       {
                                         ?subject prov:generatedAtTime ?date .
                                         ?subject crm:P2_has_type ?type .
-                                        FILTER(?type IN (<http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative>, <http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map>, <http://www.researchspace.org/resource/system/vocab/resource_type/set>))
+                                        FILTER(?type IN (<http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map>, 
+                                                        <http://www.researchspace.org/resource/system/vocab/resource_type/set>,
+                                                        <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative>, 
+                                                        <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_chart>,
+                                                        <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_timeline>
+                                              )
+                                        )
                                         MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
                                       } UNION {
                                         ?subject crm:P129i_is_subject_of ?entityFormRecord .
@@ -333,7 +358,7 @@
                                 urlqueryparam-view='system-activity'
                                 getlabel=false> 
                     <span class="text-link">all activities</span>
-                    <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
+                    <rs-icon icon-type="rounded" icon-name="chevron_right" symbol="true"></rs-icon>
                   </semantic-link>
                 </div>
               </template>
@@ -379,11 +404,11 @@
         ></semantic-search-query-keyword> 
       [[!--  
         <button class="btn btn-default btn-textAndIcon">
-          <rs-icon icon-type="round" icon-name="people_alt"></rs-icon>
+          <rs-icon icon-type="rounded" icon-name="people_alt" symbol="true"></rs-icon>
         </button>
 
         <button class="btn btn-default btn-textAndIcon">
-          <rs-icon icon-type="round" icon-name="calendar_month"></rs-icon>
+          <rs-icon icon-type="rounded" icon-name="calendar_month" symbol="true"></rs-icon>
         </button>
 
         <semantic-search-facet id='person-semantic-search-facet'
@@ -431,11 +456,10 @@
         ></semantic-search-facet>
       --]]
 
-        
         <semantic-search-result>
           <bs-dropdown id='Export' pull-right=true>
             <bs-dropdown-toggle class="btn-textAndIcon">
-              <rs-icon icon-type="round" icon-name="download"></rs-icon> Export
+              <rs-icon icon-type="rounded" icon-name="download" symbol="true"></rs-icon> Export
             </bs-dropdown-toggle>
             <bs-dropdown-menu>
               <mp-sparql-download id='csv-result' 
@@ -599,7 +623,7 @@
 
                               no-result-template='<div class="table-no-results">
                                                     <div class="no-results-container">
-                                                      <rs-icon icon-type="round" icon-name="search_off" class="no-results-icon"></rs-icon>
+                                                      <rs-icon icon-type="rounded" icon-name="search_off" symbol="true" class="no-results-icon"></rs-icon>
                                                       <div class="no-results-text">No [[#if status]][[status]] [[/if]]projects found</div>
                                                     </div>
                                                       <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
@@ -628,7 +652,7 @@
                   <div>
                     <div style="display: flex; align-items: center; gap: 15px;">                                 
                       <mp-draggable iri='{{subject.value}}'>
-                        <mp-overlay-dialog  id="homepage-resource-preview-dialog"  
+                        <mp-overlay-dialog  id="{{subject.value}}-resource-preview-dialog"  
                                             type="modal" 
                                             class="modal-xlSize preview_modal"
                                             title="Preview">
@@ -637,7 +661,7 @@
                                 <mp-resource-thumbnail iri='{{subject.value}}' class='resource-thumbnail-small'>
                                     <mp-resource-thumbnail-fallback>
                                       <mp-draggable iri='{{subject.value}}'>
-                                        <rs-icon icon-type="rounded" icon-name="work_outline" symbol=true class='resource-thumbnail-small-fallback-icon'></rs-icon>
+                                        <rs-icon icon-type="rounded" icon-name="work_outline" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
                                       </mp-draggable>
                                     </mp-resource-thumbnail-fallback>
                                 </mp-resource-thumbnail>      
@@ -649,7 +673,6 @@
                                                         "resourceConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Project", 
                                                         "resourceConfigLabel": "Project",
                                                         "resourceDescription": "{{description.value}}",
-                                                        "modalId": "homepage-resource-preview-dialog",
                                                         "resourceDetailSection": true
                                                       }' >
                             </inline-template> 
@@ -718,7 +741,7 @@
                       <div>
                         <mp-popover>
                           <mp-popover-trigger placement="bottom" trigger='["click", "focus"]'> 
-                            <rs-icon icon-type="round" icon-name="people_alt" class="people-icon"></rs-icon>
+                            <rs-icon icon-type="rounded" icon-name="people_alt" class="people-icon" symbol="true"></rs-icon>
                           </mp-popover-trigger>
                           <mp-popover-content>
                             <div style="display: flex; flex-direction: column; gap: 5px;">
@@ -807,15 +830,16 @@
                           <rs-icon icon-type="rounded" icon-name="drag_pan" symbol="true"></rs-icon>
                         </button>
                       </mp-draggable>
-                  
-                      {{> rsp:ResourceDropdownActions viewId="homepage"
-                                                      iri=subject.value
-                                                      resourceConfig="http://www.researchspace.org/resource/system/resource_configurations_container/data/Project"
-                                                      resourceLabel="Project"
-                                                      resourceDescription=description.value
-                                                      resourceFormIRI="http://www.researchspace.org/resource/system/forms/Project"
-                                                      allowResourceDelete=true
-                      }}
+                      <rs-resource-dropdown id="homepage-{{subject.value}}-item-actions-dropdown" class-name="dropdown-no-caret" toggle-class-name="border-none">
+                        {{> rsp:ResourceDropdownActions viewId="homepage"
+                                                        iri=subject.value
+                                                        resourceConfig="http://www.researchspace.org/resource/system/resource_configurations_container/data/Project"
+                                                        resourceLabel="Project"
+                                                        resourceDescription=description.value
+                                                        resourceFormIRI="http://www.researchspace.org/resource/system/forms/Project"
+                                                        allowResourceDelete=true
+                        }}
+                    </rs-resource-dropdown>
                     </div>
                   </div>
                 </template>

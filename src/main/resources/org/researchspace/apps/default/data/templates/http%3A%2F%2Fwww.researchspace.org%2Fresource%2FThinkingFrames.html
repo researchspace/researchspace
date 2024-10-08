@@ -30,16 +30,51 @@
 
     [[#if (urlParam "view")]]
       initial-view='{"view": "[[urlParam "view"]]", 
-                    "resource": "[[urlParam "resource"]]" 
-                    [[#if (urlParam "entityTypeConfig")]] , 
-                      "data": {"entityTypeConfig": "[[urlParam "entityTypeConfig"]]"} 
-                    [[/if]]}'
+                    "resource": "[[urlParam "resource"]]", 
+                    "data": {[[#if (urlParam "entityTypeConfig")]]
+                              [[#if (urlParam "mode")]]
+                                [[#if (urlParam "customLabel")]]
+                                  "entityTypeConfig": "[[urlParam "entityTypeConfig"]]",
+                                  "mode": "[[urlParam "mode"]]",
+                                  "customLabel": "[[urlParam "customLabel"]]"
+                                [[else]]
+                                  "entityTypeConfig": "[[urlParam "entityTypeConfig"]]",
+                                  "mode": "[[urlParam "mode"]]"
+                                [[/if]]
+                              [[else]]
+                                [[#if (urlParam "customLabel")]]
+                                  "entityTypeConfig": "[[urlParam "entityTypeConfig"]]",
+                                  "mode": "new",
+                                  "customLabel": "[[urlParam "customLabel"]]"
+                                [[else]]
+                                  "entityTypeConfig": "[[urlParam "entityTypeConfig"]]",
+                                  "mode": "new"  
+                                [[/if]]                             
+                              [[/if]]
+                            
+                            [[else]]
+                              [[#if (urlParam "resource")]]
+                                  [[#if (urlParam "customLabel")]]
+                                    "customLabel": "[[urlParam "customLabel"]]"
+                                  [[/if]]
+                              [[/if]]
+                            [[/if]]
+
+                            } 
+                    }'
     [[/if]] 
     [[#if view]]
       initial-view='{"view": "[[view]]", "resource": "[[resource]]"}'
     [[/if]] 
 
     views='[
+
+    {
+    	"id": "homepage",
+      "label": "Homepage",
+      "iconName": "homepage-button",
+      "template": "{{> homepage}}"
+    },
 
     {
     	"id": "resource-search",
@@ -78,11 +113,41 @@
     {
     	"id": "resource-editor",
       "label": "Resource editor",
-      "description": "Creare and author an entity through custom forms",
+      "description": "Create and author an entity through custom forms",
       "iconName": "edit_note",
       "template": "{{> resourceEditor}}",
       "resourceNotRequired": true,
-      "type": "hidden"
+      "type": "view"
+    },
+
+    {
+    	"id": "resource-persisted",
+      "label": "Resource persisted",
+      "template": "{{> resourcePersisted}}",
+      "iconName": "finance",
+      "checkQuery": "ASK { 
+        ?value a <http://www.researchspace.org/ontologies/persist/PersistedComponent>. }",
+      "type": "view"
+    },
+
+    {
+    	"id": "chart",
+      "label": "Chart",
+      "template": "{{> resourcePersisted}}",
+      "iconName": "finance",
+      "checkQuery": "ASK { 
+        ?value a <http://www.researchspace.org/ontologies/persist/PersistedComponent>. }",
+      "type": "view"
+    },
+
+    {
+    	"id": "timeline",
+      "label": "Timeline",
+      "template": "{{> resourcePersisted}}",
+      "iconName": "timeline",
+      "checkQuery": "ASK { 
+        ?value a <http://www.researchspace.org/ontologies/persist/PersistedComponent>. }",
+      "type": "view"
     },
 
     {
@@ -113,7 +178,7 @@
     {
     	"id": "authority",
       "label": "Authority document",
-      "iconClass": "iconmoon iconmoon-books",
+      "iconName": "dictionary",
       "description": "Create, view and edit authority list of terms",
       "template": "{{> authority}}",
       "resourceNotRequired": true,
@@ -123,7 +188,7 @@
     {
     	"id": "system-authority",
       "label": "System authority document",
-      "iconClass": "iconmoon iconmoon-books",
+      "iconName": "dictionary",
       "description": "Create, view and edit system authority list of terms",
       "template": "{{> systemAuthority}}",
       "resourceNotRequired": true,
@@ -133,7 +198,7 @@
     {
     	"id": "authority-list",
       "label": "List of resources in authority",
-      "iconClass": "iconmoon iconmoon-books",
+      "iconName": "dictionary",
       "template": "{{> authorityList}}",
        "type": "hidden"
     },
@@ -221,7 +286,7 @@
       "type": "authoring"
     } 
 
-    [[!--  {
+[[!--  {
     	"id": "object-image-observation",
       "label": "Object observation",
       "description": "Drag and drop an object here to combine image annotations with form authoring",
@@ -256,38 +321,16 @@
     	"id": "feature-similarity-km",
       "label": "Exploring and comparing (visual) features",
       "template": "{{> featureSimilarityKm }}",
+      "iconName": "compare",
       "itemBodyTemplate": "{{> itemBodyTemplate}}",
       "frameVariable": "ontodiaVariable",
       "type": "authoring"
     }, 
 
     {
-    	"id": "system-narrative",
-      "label": "Semantic narratives",
-      "template": "{{> systemNarrativesTemplate}}",
-      "resourceNotRequired": true,
-      "type": "view"
-    },
-    
-    {
-    	"id": "system-knowledge-maps",
-      "label": "Knowledge maps",
-      "template": "{{> systemKnowledgeMapsTemplate}}",
-      "resourceNotRequired": true,
-      "type": "view"
-    },
-    
-    {
-    	"id": "system-assets",
-      "label": "Assets",
-      "template": "{{> systemDigitalAssetsTemplate}}",
-      "resourceNotRequired": true,
-      "type": "view"
-    }, 
-
-    {
     	"id": "map-resource-search",
       "label": "Objects referred by place",
+      "iconName": "place",
       "template": "{{> mapResourceSearch}}",
       "type": "view"
     }
@@ -318,6 +361,10 @@
     </template>
 
     <template id='finder'>[[> rsp:Finder]]</template>
+
+    <template id='homepage'>
+      [[> rsp:Start]] 
+    </template>
 
     <template id='resourceSearch'>
       <div class='page__grid-container search-page-container'>
@@ -359,12 +406,16 @@
     	</div>
     </template>
 
+    <template id='resourcePersisted'>
+      [[> rsp:ResourcePersistedView]]
+    </template>
+
     <template id='resourceConfiguration'>
       [[> rsp:ResourceConfiguration]]
     </template>
 
     <template id='resourceEditor'>
-      [[> rsp:ResourceEditor]]
+      [[> rsp:ResourceEditor iri=iri]]
     </template>
 
     <template id='authority'>
@@ -378,18 +429,6 @@
     <template id='authorityList'>
       [[> rsp:AuthorityList iri=iri]]
     </template>
-
-[[!--     <template id='systemNarrativesTemplate'>
-      [[> rsp:SystemNarrativesFrame]]
-    </template> --]]
-
-[[!--    <template id='systemKnowledgeMapsTemplate'>
-      [[> rsp:SystemKnowledgeMapsFrame]]
-    </template> --]]
-
-[[!--  <template id='systemDigitalAssetsTemplate'>
-      [[> rsp:SystemAssetsFrame]]
-    </template> --]]
 
     <template id='systemActivityTemplate'>
       <div class='page__grid-container search-page-container'>
@@ -436,7 +475,7 @@
       </style>
       
       <div style='flex: 1 1 0px; overflow: auto;'>
-        <semantic-map tuple-template='{{>popover}}'
+        <semantic-map tuple-template='{{> popover}}'
                       query='SELECT DISTINCT ?wkt ?place ?color WHERE {
                               {
                               <{{iri}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
@@ -478,7 +517,7 @@
                   <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
                                             urlqueryparam-view="resource-editor"
                                             urlqueryparam-resource-iri='{{place.value}}'>
-                    <div><mp-label iri='{{place.value}}' style="text-decoration: underline; cursor: pointer; color:#396EFE;"></mp-label></div>
+                    <div><mp-label iri='{{place.value}}' style="text-decoration: underline; cursor: pointer; color:#396EFE; font-weight: 600;"></mp-label></div>
                   </semantic-link-container>
                 </div>
               </div>
@@ -507,7 +546,7 @@
           </button>&nbsp;
           <mp-popover>
             <mp-popover-trigger placement="right" trigger='["click","hover","focus"]' root-close='false'>
-              <small><rs-icon icon-type="round" icon-name="help"></rs-icon></small>
+              <small><rs-icon icon-type="rounded" icon-name="help" symbol="true"></rs-icon></small>
             </mp-popover-trigger>
             <mp-popover-content>Only persisted data will be saved to a set</mp-popover-content>
           </mp-popover>
@@ -533,8 +572,6 @@
         </template>
       </ontodia-contents>
     </template>
-
-
 
  [[!--   <template id='mapResourceSearch'>
       [[> rsp:MapResourceSearch]]

@@ -29,7 +29,7 @@ export interface OverlayComparisonEventData {
     /**
      * Saved overlay image IRI.
      */
-    iri: Rdf.Iri;
+    iri: string;
   };
   
   /**

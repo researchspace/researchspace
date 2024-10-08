@@ -217,7 +217,7 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
             </div>
           ) : resourceIri ? (
             <div className={`${styles.uploadedImageIri} alert-component alert-component__success`} title="File loaded">
-              <Icon iconType='round' iconName='done' className='icon-left'/>
+              <Icon iconType='rounded' iconName='done' symbol className='icon-left'/>
               File <span>{resourceIri.value}</span> loaded.
             </div>
           ) */ : null}
@@ -285,7 +285,7 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
         >
           {(this.props.children as JSX.Element | JSX.Element[]) || (
             <div className='placeholder-item'>
-              <Icon iconType='round' iconName='file_upload' className='upload_icon'/>
+              <Icon iconType='rounded' iconName='upload' symbol className='upload_icon'/>
               <div>{placeholder}</div>
             </div>
           )}

@@ -101,7 +101,7 @@ export class SearchAndFilters extends React.Component<Props, {}> {
             }
           }}
         >
-          <Icon iconType='round' iconName='filter_alt' title="Show additional filters"/>
+          <Icon iconType='rounded' iconName='filter_alt' symbol title="Show additional filters"/>
         </button>
       </div>
     );

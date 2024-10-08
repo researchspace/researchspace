@@ -944,11 +944,11 @@ class QueryBuilderInner extends React.Component<InnerProps, State> {
           onClick={this.state.store.selectSubSearchTerm}
         >
           {/* <span style={{ position: category.thumbnail ? 'absolute' : 'relative' }} className={styles.magnifierIcon}>
-            <Icon iconType='round' iconName='search'/>
+            <Icon iconType='rounded ' iconName='search' symbol />
           </span>
            {category.thumbnail ? <img src={category.thumbnail} /> : null} */}
            <span className={styles.magnifierIcon}>
-           <Icon iconType='round' iconName='search'/>
+           <Icon iconType='rounded ' iconName='search' symbol />
           </span>
           
         </button>

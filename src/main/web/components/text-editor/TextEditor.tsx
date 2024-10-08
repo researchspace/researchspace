@@ -416,7 +416,7 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
                 {this.state.documentIri ? (
                 <Draggable iri={this.state.documentIri}>
                   <span className={styles.draggableGripper} title='drag narrative'>
-                    <Icon iconType='round' iconName='drag_indicator'/>
+                    <Icon iconType='rounded' iconName='drag_indicator' symbol/>
                   </span>
                 </Draggable>
               ) : null}

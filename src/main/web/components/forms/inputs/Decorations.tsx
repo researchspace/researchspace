@@ -100,7 +100,7 @@ export class InputDecorator extends Component<MultipleValuesProps, {}> {
             overlay={<Popover id="tooltip">{definition.description}</Popover>}
           >
             <span className={`${DECORATOR_CLASS}__description-icon`}>
-              <Icon iconType='round' iconName='question_mark'/>
+              <Icon iconType='rounded' iconName='question_mark' symbol/>
             </span>
           </OverlayTrigger>
         ) : null} */}
@@ -120,7 +120,7 @@ export class InputDecorator extends Component<MultipleValuesProps, {}> {
             overlay={<Popover id="tooltip">{definition.description}</Popover>}
           >
             <div className={`${DECORATOR_CLASS}__description-icon btn btn-default`}>
-              <Icon iconType='round' iconName='question_mark'/>
+              <Icon iconType='rounded' iconName='question_mark' symbol/>
             </div>
       </OverlayTrigger>
     );

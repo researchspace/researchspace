@@ -10,6 +10,13 @@
                   proxy-targets='["{{iri}}-set"]'>
   </mp-event-proxy>
 
+  <mp-event-proxy id='{{viewId}}-refresh-setPage-on-setPreview-ItemsReordered'
+                  on-event-types='["Components.SetManagement.ItemsReordered"]'
+                  on-event-source='{{iri}}-set-preview'
+                  proxy-event-type='Component.Refresh'
+                  proxy-targets='["{{iri}}-set"]'>
+  </mp-event-proxy>
+
   <mp-event-proxy id='{{viewId}}-refresh-setPage-on-resourceForm-actions'
                   on-event-types='["Form.ResourceUpdated", "Form.ResourceRemoved"]'     
                   proxy-event-type='Component.Refresh'
@@ -61,7 +68,7 @@
           <template id='template'>
             {{#if setRemoved}}
             {{else}}
-              <mp-set-management  id="{{iri}}-set"
+              <mp-set-management  id="{{#if setPreview}}{{iri}}-set-preview{{else}}{{iri}}-set{{/if}}"
                                   [[#if (hasPermission "forms:ldp:*")]] 
                                     readonly='false'
                                   [[else]]
@@ -206,7 +213,7 @@
             {{#if setRemoved}}
               <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%;">
                 <div class="success-documentation-section-icon-container">
-                  <rs-icon icon-type="round" icon-name="done"></rs-icon>
+                  <rs-icon icon-type="rounded" icon-name="done" symbol="true"></rs-icon>
                 </div>
 
                 <div style="flex: 1;"> 

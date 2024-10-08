@@ -1,4 +1,4 @@
-<div  class="resource-card {{#if (or narrativeCard knowledgeMapCard)}}resource-card__no-hover{{/if}}"
+<div  class="resource-card {{#if (or narrativeCard knowledgeMapCard knowledgeMapPreviewCard)}}resource-card__no-hover{{/if}}"
       style="{{#if autosize}}{{else if clipboardList}}width:100%; height:{{#if height}}{{height}}{{else}}200{{/if}}px;
               {{else}}width:{{#if width}}{{width}}{{else}}155{{/if}}px; 
                       height:{{#if height}}{{height}}{{else}}200{{/if}}px; 
@@ -26,15 +26,16 @@
             </button>
           </mp-draggable>
         {{/if}}
-
-        {{> rsp:ResourceDropdownActions viewId=viewId
-                                        iri=iri
-                                        resourceConfig=resourceConfig
-                                        resourceLabel=resourceLabel
-                                        resourceFormIRI=resourceFormIRI
-                                        resourceOntologyClass=resourceOntologyClass
-                                        cardButton=true
-        }}
+        
+        <rs-resource-dropdown id="{{viewId}}-{{iri}}-item-actions-dropdown" class-name="dropdown-no-caret" toggle-class-name="border-none resource-card__button">
+          {{> rsp:ResourceDropdownActions viewId=viewId
+                                          iri=iri
+                                          resourceConfig=resourceConfig
+                                          resourceLabel=resourceLabel
+                                          resourceFormIRI=resourceFormIRI
+                                          resourceOntologyClass=resourceOntologyClass
+          }}
+        </rs-resource-dropdown>
 
         {{#if (or clipboardCard clipboardList)}}
           {{#if isSetItem}}
@@ -215,6 +216,24 @@
               
                 <div><mp-label iri='{{iri}}' class="text-link"></mp-label></div>
               </mp-event-trigger>
+            {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")}}
+              <mp-event-trigger id='{{iri}}-open-chart-title-trigger' 
+                              type='Dashboard.AddFrame'
+                              data='{"viewId":"chart", 
+                                      "resourceIri": "{{iri}}"}' 
+                              targets='["thinking-frames"]'>
+              
+                <div><mp-label iri='{{iri}}' class="text-link"></mp-label></div>
+              </mp-event-trigger>
+            {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline")}}
+              <mp-event-trigger id='{{iri}}-open-chart-title-trigger' 
+                              type='Dashboard.AddFrame'
+                              data='{"viewId":"timeline", 
+                                      "resourceIri": "{{iri}}"}' 
+                              targets='["thinking-frames"]'>
+              
+                <div><mp-label iri='{{iri}}' class="text-link"></mp-label></div>
+              </mp-event-trigger>
             {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
               <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
                               urlqueryparam-view='authority-list'
@@ -227,6 +246,8 @@
                               urlqueryparam-resource='{{iri}}'>
                 <mp-label iri='{{iri}}' class="text-link"></mp-label>
               </semantic-link>
+            {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item")}}
+              <mp-label iri='{{iri}}' class="text-link" style="text-decoration: none; cursor: initial;"></mp-label>
             {{else}}
               <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
                               urlqueryparam-view='{{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}semantic-narrative{{else}}resource-editor{{/if}}'
@@ -249,9 +270,9 @@
 [[#*inline "defaultCardIcon"]]
   <div class="h100 w100 resource-card__icon-container">
     {{#if resourceIcon}}
-      <rs-icon icon-type="rounded" icon-name="{{resourceIcon}}" symbol=true></rs-icon>
+      <rs-icon icon-type="rounded" icon-name="{{resourceIcon}}" symbol="true"></rs-icon>
     {{else}}
-      <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol=true></rs-icon>
+      <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol="true"></rs-icon>
     {{/if}}
 
     {{#if resourceLabel}}

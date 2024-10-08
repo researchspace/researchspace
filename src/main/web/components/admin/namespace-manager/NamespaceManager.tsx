@@ -301,7 +301,7 @@ function createActionsCellRenderer(params: { onDelete: (record: PrefixRecord) =>
       } else {
         return (
           <Button className="btn btn-default btn-textAndIcon" onClick={this.onDeleteClick}>
-            <Icon iconType='round' iconName='delete'/>
+            <Icon iconType='rounded' iconName='delete' symbol/>
             Delete
           </Button>
         );

@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { createFactory, cloneElement, Children } from 'react';
+import { createFactory, cloneElement, Children, createElement } from 'react';
 import * as D from 'react-dom-factories';
 import * as ReactBootstrap from 'react-bootstrap';
 import * as Kefir from 'kefir';
@@ -35,7 +35,13 @@ import { addToDefaultSet } from 'platform/api/services/ldp-set';
 import { Spinner } from 'platform/components/ui/spinner/Spinner';
 import { isValidChild } from 'platform/components/utils';
 import { ResourceLinkComponent } from 'platform/api/navigation/components/ResourceLinkComponent';
-import Icon from '../ui/icon/Icon';
+import Icon from 'platform/components/ui/icon/Icon';
+import * as LabelsService from 'platform/api/services/resource-label';
+import { getLabels, getLabel } from 'platform/api/services/resource-label';
+import crm from 'platform/data/vocabularies/crm';
+
+import { ErrorNotification, addNotification } from 'platform/components/ui/notification';
+import React = require('react');
 
 const Button = createFactory(ReactBootstrap.Button);
 const Modal = createFactory(ReactBootstrap.Modal);
@@ -55,6 +61,13 @@ interface Props {
    * @default false
    */
   addToDefaultSet?: boolean;
+
+  /**
+   * when 'true' the modal will contain an input field to add the visualisation description
+   * 
+   * @default false
+   */
+  showDescription?: boolean;
 }
 
 interface State {
@@ -67,6 +80,7 @@ interface State {
 export class ActionSaveComponent extends Component<Props, State> {
   static defaultProps: Partial<Props> = {
     addToDefaultSet: false,
+    showDescription: false
   };
 
   constructor(props: Props, context: any) {
@@ -95,7 +109,18 @@ export class ActionSaveComponent extends Component<Props, State> {
       .addResource(graph)
       .flatMap((res) => (this.props.addToDefaultSet ? addToDefaultSet(res, this.props.id) : Kefir.constant(res)))
       .onValue((resourceIri) => {
-        trigger({ eventType: SetManagementEvents.ItemAdded, source: this.props.id });
+        trigger({ eventType: SetManagementEvents.SetAdded, source: this.props.id, data: {containerIri: resourceIri.value } });
+        addNotification({
+          level: 'success',
+          autoDismiss: 1000,
+          title: 'Resource created!',
+          children: (
+            ResourceLink({ iri: 'http://www.researchspace.org/resource/ThinkingFrames', 
+              urlqueryparamView: 'resource-editor', 
+              urlqueryparamResourceIri: resourceIri.value, 
+              className:'text-link' }, label )
+          )
+        });
         this.setState({ show: 'success', savedIri: resourceIri.value });
       });
   }
@@ -110,50 +135,73 @@ export class ActionSaveComponent extends Component<Props, State> {
   }
 
   renderModal() {
+    const descriptionInputElement = D.div(
+                                  {},
+                                  'Description:',
+                                  FormControl({
+                                    type: 'textarea',
+                                    value: this.state.description ? this.state.description : '',
+                                    onChange: (e) => {
+                                      const newValue = (e.target as any).value;
+                                      this.setState({ description: newValue });
+                                    },
+                                  })
+                                );
+    const descriptionElement = this.props.showDescription?descriptionInputElement:D.div({});
     switch (this.state.show) {
       case 'editor':
         return Modal(
           { show: true, onHide: this.onCancel },
-          ModalHeader({}, 'Save visualization'),
-          ModalBody(
-            {},
-            'Label:',
-            FormControl({
-              value: this.state.label ? this.state.label : '',
-              onChange: (e) => {
-                const newValue = (e.target as any).value;
-                this.setState({ label: newValue });
-              },
-            }),
-            'Description:',
-            FormControl({
-              type: 'textarea',
-              value: this.state.description ? this.state.description : '',
-              onChange: (e) => {
-                const newValue = (e.target as any).value;
-                this.setState({ description: newValue });
-              },
-            })
+          ModalHeader({}, 
+            D.h4({ className: 'modal-title' }, 'Save visualization')
+          ),
+          ModalBody({},           
+              D.div({},
+              'Name:'
+              ),
+              FormControl({
+                value: this.state.label ? this.state.label : '',
+                onChange: (e) => {
+                  const newValue = (e.target as any).value;
+                  this.setState({ label: newValue });
+                },
+              })
+              ,
+              descriptionElement           
           ),
           ModalFooter(
             {},
-            Button({ disabled: !this.state.label, onClick: this.onSave }, 'OK'),
-            Button({ onClick: this.onCancel }, 'Cancel')
+            Button({ onClick: this.onCancel }, 'Cancel'),
+            Button({ className:'btn-action', disabled: !this.state.label, onClick: this.onSave  }, 'Save')
           )
         );
       case 'saving':
         return Modal(
           { show: true, onHide: this.onCancel },
-          ModalHeader({}, 'Saving in progress'),
-          ModalBody({}, Spinner())
+          ModalHeader({}, 
+            D.h4({ className: 'modal-title' }, 'Save visualization')
+          ),
+          ModalBody({}, 
+            D.p({}, 'Saving in progress'),
+            D.div({}, Spinner())
+          )
         );
-      case 'success':
-        return Modal(
-          { show: true, onHide: this.onCancel },
-          ModalHeader({}, 'Success'),
-          ModalBody({}, 'Visualization ', ResourceLink({ uri: this.state.savedIri }), 'has been saved successfully!'),
-          ModalFooter({}, Button({ onClick: this.onCancel }, 'OK'))
-        );
+      case 'success': 
+      return;     
+/*         return  Modal(
+                { show: true, onHide: this.onCancel },
+                ModalHeader({}, 
+                  D.h4({ className: 'modal-title' }, 'Save visualization')
+                ),
+                ModalBody({}, 'Visualization ', 
+                              ResourceLink({ iri: 'http://www.researchspace.org/resource/ThinkingFrames', 
+                                            urlqueryparamView: 'resource-editor', 
+                                            urlqueryparamResourceIri:this.state.savedIri, 
+                                            className:'text-link' }, this.state?.label?this.state?.label:"New visualisation" ), 
+                              ' has been saved successfully!'),
+                ModalFooter({}, Button({ onClick: this.onCancel }, 'Close'))
+              ); */
+          
       case 'hide':
         return null;
     }
@@ -171,11 +219,11 @@ export class ActionSaveComponent extends Component<Props, State> {
     }
     return Button(
       {
-        title: 'Copy to Clipboard',
+        title: 'Save visualisation',
+        className: 'btn-textAndIcon',
         onClick: this.state.show == 'hide' ? this.onClick : undefined,
       },
-      
-      D.i({ className: 'material-symbols-rounded icon-left'}, 'inventory'),
+      createElement(Icon, {iconType:'rounded', iconName: 'save', symbol: true}),
       this.renderModal()
     );
   }
@@ -188,7 +236,8 @@ function addLabelAndDescription(
 ): Rdf.PointedGraph {
   let triples = graph.triples;
   if (label) {
-    triples = triples.add(Rdf.triple(pointer, rdfs.label, Rdf.literal(label)));
+    //triples = triples.add(Rdf.triple(pointer, rdfs.label, Rdf.literal(label)));
+    triples = triples.add(Rdf.triple(pointer, crm.P190_has_symbolic_content, Rdf.literal(label)));
   }
   if (description) {
     triples = triples.add(Rdf.triple(pointer, rdfs.comment, Rdf.literal(description)));

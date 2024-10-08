@@ -54,63 +54,65 @@
     
     {{#if scheme}}<semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>{{/if}}
 
-    <mp-splitpane id='{{viewId}}-entity-resource-sidebar' min-size=63 default-size=370 snap-threshold=200 default-open=true always-render=true primary='second' class="entity-resource-sidebar">
       <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs"> 
         <rs-tab event-key="detail" title="Details">
-          <div>
-            <semantic-form-text-input for="entity_primary_appellation" label="Destruction name" placeholder="Enter destruction name"></semantic-form-text-input>
+          <div class="form-details-container">
+            <div style="overflow-x: auto;">
+              <semantic-form-text-input for="entity_primary_appellation" label="Destruction name" placeholder="Enter destruction name"></semantic-form-text-input>
 
-            <semantic-form-text-input for="entity_description" multiline="true" label="Description" placeholder="Enter description/comment"></semantic-form-text-input>
+              <semantic-form-text-input for="entity_description" multiline="true" label="Description" placeholder="Enter description/comment"></semantic-form-text-input>
 
-            <semantic-form-autocomplete-input for='temporal_entity_date' 
-                                              label="Timespan/date" 
-                                              placeholder="Select timespan" 
-                                              nested-form-templates='[ 
-                                                {
-                                                  "label": "Timespan",
-                                                  "nestedForm": "{{{{raw}}}}
-                                                                    {{> \"http://www.researchspace.org/resource/system/forms/Timespan\" nested=true editable=true mode=\"new\"}}
-                                                                {{{{/raw}}}}"
-                                                }
-                                              ]'>  
-            </semantic-form-autocomplete-input> 
-
-            {{#if node}}
-              [[> Platform:formTimespanTable]]
-            {{/if}}
-
-            <semantic-form-autocomplete-input for="period_place" 
-                                              label="Place" 
-                                              placeholder="Select place"
-                                              nested-form-templates='[ 
-                                                {
-                                                    "label": "Place",
-                                                    "nestedForm": "{{{{raw}}}}
-                                                                    {{> \"http://www.researchspace.org/resource/system/forms/Place\" nested=true editable=true mode=\"new\"
-                                                                    apiResourceURI=false apiResourceName=false apiResourceLabel=false apiResourceDescription=false apiResourceosmGeoCoordinates=false}}
-                                                                {{{{/raw}}}}"
-                                                }
-                                              ]'>
-            </semantic-form-autocomplete-input>
-
-            <semantic-form-autocomplete-input   for="entity_preferred_id" 
-                                                label="Preferred identifier"
-                                                placeholder="Select preferred identifier" 
+              <semantic-form-autocomplete-input for='temporal_entity_date' 
+                                                label="Timespan/date" 
+                                                placeholder="Select timespan" 
                                                 nested-form-templates='[ 
-                                                    {
-                                                        "label": "Identifier",
-                                                        "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Identifier\" nested=true editable=true mode=\"new\" }}
-                                                                        {{{{/raw}}}}"
-                                                    }
+                                                  {
+                                                    "label": "Timespan",
+                                                    "nestedForm": "{{{{raw}}}}
+                                                                      {{> \"http://www.researchspace.org/resource/system/forms/Timespan\" nested=true editable=true mode=\"new\"}}
+                                                                  {{{{/raw}}}}"
+                                                  }
+                                                ]'>  
+              </semantic-form-autocomplete-input> 
+
+              {{#if node}}
+                [[> Platform:formTimespanTable]]
+              {{/if}}
+
+              <semantic-form-autocomplete-input for="period_place" 
+                                                label="Place" 
+                                                placeholder="Select place"
+                                                nested-form-templates='[ 
+                                                  {
+                                                      "label": "Place",
+                                                      "nestedForm": "{{{{raw}}}}
+                                                                      {{> \"http://www.researchspace.org/resource/system/forms/Place\" nested=true editable=true mode=\"new\"
+                                                                      apiResourceURI=false apiResourceName=false apiResourceLabel=false apiResourceDescription=false apiResourceosmGeoCoordinates=false}}
+                                                                  {{{{/raw}}}}"
+                                                  }
                                                 ]'>
-            </semantic-form-autocomplete-input>
+              </semantic-form-autocomplete-input>
 
-            <semantic-form-autocomplete-input   for="entity_id" 
-                                                label="Other identifier"
-                                                placeholder="Select other identifier" 
-                                                nested-form-templates='[[> Platform:NestedFormTemplates_appellations]]'>
-            </semantic-form-autocomplete-input>
+              <semantic-form-autocomplete-input   for="entity_preferred_id" 
+                                                  label="Preferred identifier"
+                                                  placeholder="Select preferred identifier" 
+                                                  nested-form-templates='[ 
+                                                      {
+                                                          "label": "Identifier",
+                                                          "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Identifier\" nested=true editable=true mode=\"new\" }}
+                                                                          {{{{/raw}}}}"
+                                                      }
+                                                  ]'>
+              </semantic-form-autocomplete-input>
 
+              <semantic-form-autocomplete-input   for="entity_id" 
+                                                  label="Other identifier"
+                                                  placeholder="Select other identifier" 
+                                                  nested-form-templates='[[> Platform:NestedFormTemplates_appellations]]'>
+              </semantic-form-autocomplete-input>
+
+            </div>
+            [[> rsp:FormAssetSidebar]]
           </div>
         </rs-tab>
 
@@ -168,7 +170,7 @@
                                                       targets='["{{viewId}}-period-componentsView"]'
                                                       >
                                       <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
-                                      <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
+                                      <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
                                           Refresh
                                       </button>
                                   </mp-event-trigger>
@@ -506,9 +508,6 @@
         [[> rsp:FormMetadataTab]]
         
       </rs-tabs>
-
-      [[> rsp:FormAssetSidebar]]
-    </mp-splitpane>
     
   </div>
 

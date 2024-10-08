@@ -42,6 +42,7 @@ import crm from 'platform/data/vocabularies/crm';
 
 import { ErrorNotification, addNotification } from 'platform/components/ui/notification';
 import React = require('react');
+import { ConfigHolder } from 'platform/api/services/config-holder';
 
 const Button = createFactory(ReactBootstrap.Button);
 const Modal = createFactory(ReactBootstrap.Modal);
@@ -115,7 +116,7 @@ export class ActionSaveComponent extends Component<Props, State> {
           autoDismiss: 1000,
           title: 'Resource created!',
           children: (
-            ResourceLink({ iri: 'http://www.researchspace.org/resource/ThinkingFrames', 
+            ResourceLink({ iri: ConfigHolder.getDashboard().value, 
               urlqueryparamView: 'resource-editor', 
               urlqueryparamResourceIri: resourceIri.value, 
               className:'text-link' }, label )

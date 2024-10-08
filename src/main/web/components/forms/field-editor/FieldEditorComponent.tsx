@@ -350,7 +350,7 @@ class FieldEditorComponent extends Component<Props, State> {
           } as SemanticTreeInputProps),           
           createElement(ResourceLinkComponent, {
             "target": "_blank",
-            "uri": "http://www.researchspace.org/resource/ThinkingFrames",
+            "uri": ConfigHolder.getDashboard().value,
             "urlqueryparam-view": "authority-list",
             "urlqueryparam-resource": "http://www.researchspace.org/resource/system/FieldCategories"
           } as ResourceLinkProps, btn(

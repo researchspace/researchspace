@@ -42,6 +42,7 @@ import Icon from 'platform/components/ui/icon/Icon';
 import ResourceLinkContainer from 'platform/api/navigation/components/ResourceLinkContainer';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 import {getResourceConfigurationEditForm} from './ResourceConfigHelper';
+import { ConfigHolder } from 'platform/api/services/config-holder';
 
 type nestedFormEl = {
   label?: string,
@@ -373,7 +374,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
         }
         {showLinkResourceButton && !FieldValue.isEmpty(this.props.value) && 
             <ResourceLinkContainer 
-              uri="http://www.researchspace.org/resource/ThinkingFrames" 
+              uri={ConfigHolder.getDashboard().value} 
               urlqueryparam-view="resource-editor"
               urlqueryparam-open-as-drag-and-drop="true"
               urlqueryparam-resource={(this.props.value.value as Rdf.Iri).value}

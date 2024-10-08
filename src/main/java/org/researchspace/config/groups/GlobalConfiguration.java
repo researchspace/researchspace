@@ -65,10 +65,6 @@ public class GlobalConfiguration extends ConfigurationGroupBase {
         return getString("homePage", ":Start");
     }
 
-    @ConfigurationParameter
-    public String getDashboard() {
-        return getString("dashboard", ":ThinkingFrames");
-    }
 
     /****************************** VALIDATION ********************************/
     @Override

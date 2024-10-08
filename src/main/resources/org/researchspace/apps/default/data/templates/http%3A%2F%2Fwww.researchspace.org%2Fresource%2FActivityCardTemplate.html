@@ -93,7 +93,6 @@
                                             "resourceConfig": "{{bindings.0.resourceConfig.value}}", 
                                             "resourceConfigLabel": "{{bindings.0.resourceLabel.value}}",
                                             {{#if resourceOntologyClass}}"resourceOntologyClass": "{{resourceOntologyClass}}",{{/if}}
-                                            "modalId": "{{bindings.0.subject.value}}-resource-preview-dialog",
                                             "resourceDetailSection": true
                                           }' >
               </inline-template> 
@@ -101,26 +100,22 @@
           </mp-overlay-dialog>
         </mp-draggable>
 
-
-
-
-
-
         <div class="activity-card-data">
-          <div style="display: flex; align-items: center; justify-content: space-between;">
-            <div class="activity-card-actor-value text-truncate-line1">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+            {{#if bindings.0.systemModifiedActorName.value}}
               {{#if bindings.0.modifiedActorFullName.value}}
-                {{bindings.0.modifiedActorFullName.value}}
+                <div class="activity-card-actor-value text-truncate-line1">{{bindings.0.modifiedActorFullName.value}}</div>
               {{else}}
-                {{bindings.0.systemModifiedActorName.value}}
+                <div class="activity-card-actor-value text-truncate-line1">{{bindings.0.systemModifiedActorName.value}}</div>
               {{/if}}
-
+            {{else if bindings.0.systemCreationActorName.value}}
               {{#if bindings.0.creationActorFullName.value}}
-                {{bindings.0.creationActorFullName.value}}
+                <div class="activity-card-actor-value text-truncate-line1">{{bindings.0.creationActorFullName.value}}</div>
               {{else}}
-                {{bindings.0.systemCreationActorName.value}}
+                <div class="activity-card-actor-value text-truncate-line1">{{bindings.0.systemCreationActorName.value}}</div>
               {{/if}}
-            </div>
+            {{/if}}
+            
             <div class="activity-card-date-value text-truncate-line1">{{dateTimeFormat bindings.0.date.value "LLL"}}</div>
           </div>
 

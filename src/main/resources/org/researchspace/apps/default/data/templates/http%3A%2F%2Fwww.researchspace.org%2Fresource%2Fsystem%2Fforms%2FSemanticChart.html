@@ -45,11 +45,11 @@
         <semantic-form-hidden-input for="classtype" default-value='http://www.ics.forth.gr/isl/CRMdig/D1_Digital_Object'> </semantic-form-hidden-input>
         <semantic-form-hidden-input for="entity_resource_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/semantic_chart'> </semantic-form-hidden-input>
 
-        <mp-splitpane id='{{viewId}}-entity-resource-sidebar' min-size=63 default-size=370 snap-threshold=200 default-open=true always-render=true primary='second' class="entity-resource-sidebar">
             <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
                 <rs-tab event-key="detail" title="Details">
                     <div class="form-2column-flex">
                         [[> chartSection ]]
+
                         <div style="flex: 1;">
                             <semantic-form-text-input for="entity_description" multiline=true label="Description" placeholder="Enter description/comment"></semantic-form-text-input>
         
@@ -69,7 +69,8 @@
                                                                 label="Other identifier"
                                                                 placeholder="Select other identifier" 
                                                                 nested-form-templates='[[> Platform:NestedFormTemplates_appellations]]'>
-                            </semantic-form-autocomplete-input>               
+                            </semantic-form-autocomplete-input>
+                            [[> rsp:FormAssetSidebar imagesOnly=true]]
                         </div>
                     </div>
                 </rs-tab>
@@ -90,15 +91,15 @@
                                             <div style="padding-top: 20px;">
                                                 <semantic-table id='{{node}}-chart-values'
                                                                 query='{{bindings.0.query.value}}'
-                                                    options='{  "showFilter":true, 
-                                                                "filterPlaceholderText":"Filter by value",
-                                                                "resultsPerPage":300
-                                                            }'
+                                                                options='{  "showFilter":true, 
+                                                                            "filterPlaceholderText":"Filter by value",
+                                                                            "resultsPerPage":300
+                                                                        }'
 
-                                                    column-configuration='[
-                                                                            {"variableName": "__value__", "displayName": "Value", "cellTemplate": "{{> value}}" },
-                                                                            {"variableName": "count", "displayName": "Count" }
-                                                                        ]'  
+                                                                column-configuration='[
+                                                                                        {"variableName": "__value__", "displayName": "Value", "cellTemplate": "{{> value}}" },
+                                                                                        {"variableName": "count", "displayName": "Count" }
+                                                                                    ]'  
                                                 >
                                                     <template id='value'>
                                                         {{#ifCond __value__.value "==" "Unknown"}}
@@ -603,7 +604,7 @@
 
                 {{#if node}}
                     <rs-tab event-key="metadata" title="Metadata">
-                        <semantic-query  query='SELECT ?chart ?modifiedByUser ?modifiedAtTime WHERE {
+                        <semantic-query  query='SELECT ?chart ?modifiedByUser ?modifiedByUserFullName ?modifiedAtTime WHERE {
                                                     BIND(<{{node}}> AS ?chart)
                     
                                                     ?chart <http://www.w3.org/ns/prov#generatedAtTime> ?modifiedAtTime .
@@ -614,6 +615,14 @@
                                                         ?chart <http://www.w3.org/ns/prov#wasAttributedTo> ?modifiedByUser .
                                                         FILTER(?modifiedByUser = <http://www.researchspace.org/resource/system/anonymousUser> )
                                                     [[/if]]
+
+                                                    OPTIONAL {
+                                                        ?modifiedByUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                                        ?modifiedByUser crm:P1_is_identified_by ?actorName .
+                                                        ?actorName a crm:E41_Appellation .
+                                                        ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                                        ?actorName crm:P190_has_symbolic_content ?modifiedByUserFullName .
+                                                    }
                                                 }'
                                                 template='{{> template}}'
                                         >
@@ -633,7 +642,17 @@
                                                 <td class="table-title"><b>created by</b></td>
                                                 <td class="table-description">
                                                     <rs-icon icon-type="rounded" icon-name="account_box" class="table-icon" symbol="true"></rs-icon>
-                                                    {{bindings.0.modifiedByUser.value}}
+                                                    {{#if bindings.0.modifiedByUserFullName.value}}
+                                                        <semantic-link-container    uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                    urlqueryparam-view='resource-editor' 
+                                                                                    urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                                                                    urlqueryparam-resource-iri="{{bindings.0.modifiedByUser.value}}"
+                                                                                    urlqueryparam-mode='edit'>
+                                                            <div style="text-decoration: underline; cursor: pointer;">{{bindings.0.modifiedByUserFullName.value}}</div>
+                                                        </semantic-link-container>
+                                                    {{else}}
+                                                        <mp-label iri='{{bindings.0.modifiedByUser.value}}'></mp-label>
+                                                    {{/if}}
                                                 </td>
                                             </tr>
                                         </tbody>   
@@ -647,7 +666,7 @@
             </rs-tabs>
 
             [[#*inline "chartSection"]]
-                <div class="page__section-container" style="margin-top: 20px; width: 380px; padding-top: 0; height: fit-content;">
+                <div class="page__section-container" style="margin-top: 20px; width: 300px; padding-top: 0; height: fit-content; flex: 1;">
                     <div style="display: flex; align-items: baseline; justify-content: space-between">
                         <div class="customFormHeader">Chart</div>
                         <div style="display: flex; align-items: center; column-gap: 3px;">
@@ -666,7 +685,6 @@
                                                     options='{  "resource": "{{node}}", 
                                                                 "resourceConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart", 
                                                                 "resourceConfigLabel": "Chart",
-                                                                "modalId": "{{node}}-resource-preview-dialog",
                                                                 "resourceDetailSection": false
                                                             }'
                                        >
@@ -692,9 +710,6 @@
                     
                 </div>
             [[/inline]]
-      
-            [[> rsp:FormAssetSidebar imagesOnly=true]]
-        </mp-splitpane>
 
     </div>
   

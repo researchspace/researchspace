@@ -33,6 +33,15 @@
   .vis-item-content .btn-default {
     display: none;
   }
+
+  .single-set-management-container {
+    grid-template-columns: 0 100% 0;
+    grid-template-rows: 0 100% 0;
+  }
+
+  .single-set-management-container .set-management__item-actions .dropdown-toggle.btn.button-clipboard-folder-actions.btn-default {
+    display: none;
+  }
       
 </style>
 
@@ -209,6 +218,13 @@
   <div class="modal-preview-container">
     <div style="height: 100%; overflow: hidden;">
       {{> rsp:SemanticNarrativeTemplate iri=resource}}
+    </div>
+    [[> resourceDetails]]
+  </div>
+{{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") }}
+  <div class="modal-preview-container">
+    <div style="height: 100%; overflow: hidden;">
+      {{> rsp:SingleSetManagement iri=resource setPreview=true}}
     </div>
     [[> resourceDetails]]
   </div>

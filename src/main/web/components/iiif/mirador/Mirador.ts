@@ -30,6 +30,7 @@ import { researchspaceAnnotationBodyEditor } from './AnnotationBodyEditor';
 
 import 'script-loader!../../../lib/mirador/mirador.js';
 import '../../../lib/mirador/css/mirador.scss';
+import { ConfigHolder } from 'platform/api/services/config-holder';
 
 interface EmitterMixin extends Mirador.EventEmitter {
   bus?: JQuery;
@@ -134,7 +135,7 @@ const defaultAnnotationViewerTemplate = globalHandlebars.compile(
         <div class="button-container">
           {{#if id}}
             <mp-template-item>
-              <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames" 
+              <semantic-link iri="`+ConfigHolder.getDashboard().value+`" 
                             draggable="false"
                             urlqueryparam-view="resource-editor"
                             urlqueryparam-resource-iri="{{id}}"

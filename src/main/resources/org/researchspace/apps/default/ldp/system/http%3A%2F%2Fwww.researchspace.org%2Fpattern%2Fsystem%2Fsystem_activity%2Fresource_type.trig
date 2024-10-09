@@ -88,15 +88,19 @@
   
   _:genid-c7ae5f84b45a4163a50575d599795f99-7bzty a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT distinct ?value WHERE { 
-  ?subject rdf:type ?class .
-    ?class a ?ontologyClass .
+  { ?subject rdf:type ?value .
+    ?value a ?ontologyClass .
     FILTER(?ontologyClass in (rdfs:Class, owl:Class)).
-    OPTIONAL {
+    FILTER NOT EXISTS {
       ?subject crm:P2_has_type ?type .
       ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/resource_type> .
     }
-   BIND(IF(BOUND(?type), ?type, ?ontologyClass) as ?value)
-  }""" .
+  } 
+   UNION {     
+      ?subject crm:P2_has_type ?value .
+      ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/resource_type> .    
+  } 
+}""" .
   
   _:genid-c7ae5f84b45a4163a50575d599795f99-in4ut a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """INSERT { ?subject prov:wasAttributedTo ?value .} 

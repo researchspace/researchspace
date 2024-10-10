@@ -2,19 +2,24 @@
   <div class="rs-header">
     <!-- Logo and toggle get grouped for better mobile display -->
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#rs-navbar"
-        aria-expanded="false" aria-controls="rs-navbar" aria-label="Toggle navigation">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-        <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames" 
-                                  urlqueryparam-view='homepage'>
-          <div class="rs-header-logo">
-            <img src="/assets/images/logos/researchspace_symbol_white.svg">
-          </div>
-        </semantic-link-container>
+      
+      <div class="navbar-toggle collapsed" data-toggle="collapse" data-target="#rs-navbar"
+                aria-expanded="false" aria-controls="rs-navbar" aria-label="Toggle navigation">
+      <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                urlqueryparam-view='homepage'>
+          <img src="/assets/images/logos/researchspace_symbol_white.svg">
+        
+      </semantic-link-container>
+
+      {{> navbarRight }}
+      </div>
+
+      <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                urlqueryparam-view='homepage'>
+        <div class="rs-header-logo">
+          <img src="/assets/images/logos/researchspace_symbol_white.svg">
+        </div>
+      </semantic-link-container>
     </div>
 
     <!-- Collect the nav links, forms, and other content for toggling -->
@@ -477,246 +482,248 @@
 
       </ul>
 
-      <ul class="nav navbar-nav navbar-right">
-        {{!-- Update profile-dropdown on resourceForm actions --}}
-        <semantic-query query='SELECT ?systemUser WHERE {
-                                BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
-                              }'
-                        template='\{{> template}}'>
-            <template id='template'>
-              <div>
-                <mp-event-proxy id='update-profile-dropdown-on-resourceForm-actions2'
-                                on-event-source='\{{bindings.0.systemUser.value}}-resource-form'
-                                on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated", "Form.ResourceRemoved"]'         
-                                proxy-event-type='Component.TemplateUpdate' 
-                                proxy-targets='["header-profile-dropdown"]'
-                ></mp-event-proxy> 
-              </div>
-            </template>
-        </semantic-query>
-
-        <mp-user-language-switch></mp-user-language-switch>
-        <li>
-          <mp-anonymous-hidden alt='<li><a href="/login" title="login"></a></li>'>
-            <mp-event-target-template-render id='header-profile-dropdown' template='\{{> template}}'>
-              <template id='template'>
-                <semantic-query query='SELECT DISTINCT ?systemUser ?systemUserName ?actorFullName ?group ?groupFullName { 
-                                        BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
-                                        BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?systemUserName)
-
-                                        OPTIONAL {
-                                          ?systemUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
-                                          ?systemUser crm:P1_is_identified_by ?actorName .
-                                          ?actorName a crm:E41_Appellation .
-                                          ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
-                                          ?actorName crm:P190_has_symbolic_content ?actorFullName .
-                                        }
-
-                                        OPTIONAL {
-                                          ?systemUser crm:P02i_is_range_of ?pc107 .
-                                          ?pc107 rdf:type crm:PC107_has_current_or_former_member .
-                                          ?pc107 crm:P01_has_domain ?group .
-                                          ?group crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
-                                          ?group a crm:E74_Group .
-                                          ?group crm:P1_is_identified_by ?groupName .
-                                          ?groupName a crm:E41_Appellation .
-                                          ?groupName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
-                                          ?groupName crm:P190_has_symbolic_content ?groupFullName .
-                                        }
-                                      }'
-                              template='\{{> template}}'>
-
-                <template id='template'>
-
-                  <bs-dropdown id="navbar-dropdown" class="user-dropdown">
-                    <bs-dropdown-toggle>
-                      <div class="navDropdown-iconAndLabel"> 
-                        <mp-resource-thumbnail iri='\{{bindings.0.systemUser.value}}' style="width: 25px; height:25px; border-radius:1.5px; object-fit: cover; object-position: top;">
-                          <mp-resource-thumbnail-fallback>
-                              <rs-icon icon-type="round" icon-name="account_box"></rs-icon>
-                          </mp-resource-thumbnail-fallback>
-                        </mp-resource-thumbnail>  
-                        \{{#if bindings.0.actorFullName.value}}
-                          <div>\{{bindings.0.actorFullName.value}}</div>
-                        \{{else}}
-                          <div>\{{bindings.0.systemUserName.value}}</div>
-                        \{{/if}}
-                      </div>
-                    </bs-dropdown-toggle>
-                    <bs-dropdown-menu>
-                      \{{#if bindings.0.actorFullName.value}}
-                        <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                  urlqueryparam-view='resource-editor' 
-                                                  urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
-                                                  urlqueryparam-resource-iri="\{{bindings.0.systemUser.value}}"
-                                                  urlqueryparam-mode='edit'>
-                          <bs-menu-item>
-                            <rs-icon icon-type="rounded" icon-name="account_box" class="icon-left" symbol="true"></rs-icon>
-                            <span>My profile</span> 
-                          </bs-menu-item>
-                        </semantic-link-container>
-                      \{{else}}
-                        <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                urlqueryparam-view='resource-editor' 
-                                                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
-                                                urlqueryparam-custom-label='New profile'
-                                                urlqueryparam-mode='new'>
-                          <bs-menu-item>
-                            <rs-icon icon-type="rounded" icon-name="account_box" class="icon-left" symbol="true"></rs-icon>
-                            <span>My profile (not registered user)</span>  
-                          </bs-menu-item>
-                        </semantic-link-container>
-                      \{{/if}}
-                      
-                      \{{#if bindings.0.group.value}}
-                        \{{#each bindings}}
-                          <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                    urlqueryparam-view='resource-editor' 
-                                                    urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
-                                                    urlqueryparam-resource-iri="\{{group.value}}"
-                                                    urlqueryparam-mode='edit'>
-                            <bs-menu-item>
-                              <rs-icon icon-type="rounded" icon-name="groups" class="icon-left" symbol="true"></rs-icon>
-                              <span>My team - \{{groupFullName.value}}</span>
-                            </bs-menu-item>
-                          </semantic-link-container>
-                        \{{/each}}
-                      \{{/if}}
-
-                      <bs-menu-item divider="true"></bs-menu-item>
-
-                      <bs-menu-item href="/logout" title='logout'>
-                        <rs-icon icon-type="rounded" icon-name="logout" class="icon-left" symbol="true"></rs-icon>
-                        <span>Logout</span>
-                      </bs-menu-item>
-                    </bs-dropdown-menu>
-                  </bs-dropdown>
-                </template>
-                </semantic-query>
-              </template>
-            </mp-event-target-template-render>
-          </mp-anonymous-hidden>
-        </li>
-
-        <li>
-            <mp-overlay-dialog id="header-contact-modal" type="modal" bs-size="large" class="header-contact-modal">
-              <mp-overlay-dialog-trigger>
-                <button class="btn btn-icon" title="Contact & support">
-                  <rs-icon icon-type="round" icon-name="forum"></rs-icon>
-                </button>
-              </mp-overlay-dialog-trigger>
-
-              <mp-overlay-dialog-content>
-                   <div class="contact-container">
-                    <div class="contact-motif"></div>
-                    <div class="contact-header">
-                      <div class="title">Contact & Support</div>
-                      <div class="contact-icons-container">
-                          <a href="https://www.researchspace.org/" title="Researchspace website" target="_blank">
-                            <i class="rs-icon rs-icon-researchspace"></i>
-                          </a>
-                          <a href="mailto:info@kartography.org" title="mailto:info@kartography.org" target="_blank">
-                            <i class="rs-icon rs-icon-mail_send"></i>
-                          </a>
-                          <a href="https://www.youtube.com/channel/UCtUOzTB2vBG9ZimeDVrlULQ/featured" title="Youtube researchspace" target="_blank">
-                            <i class="rs-icon rs-icon-youtube"></i>
-                          </a>
-                          <a href="https://x.com/researchspace" title="X researchspace" target="_blank">
-                            <img src="/assets/images/logos/x-social-media-logo.svg">
-                          </a>
-
-                          <a href="https://github.com/researchspace/researchspace" title="Github researchspace" target="_blank">
-                            <i class="fa fa-github-square"></i>
-                          </a>
-                      </div>
-                    </div>
-
-                    <div class="contact-content">
-                      <div>This version of ResearchSpace is released and supported by <a href="https://kartography.org/" title="Kartography" target="_blank" class="text-link-action">Kartography CIC</a>.</div>
-                      <div style="padding: 10px 0 10px 0;">Kartography offers:</div>
-                      <div class="contact-card-container">
-                       
-                        <div class="contact-card"> 
-                          <rs-icon icon-type="rounded" icon-name="biotech" symbol="true"></rs-icon>
-                          <div>
-                            <div class="card-title">Consultancy</div>
-                            <div class="card-content">We offer comprehensive consultancy services — including process analysis, data strategies, and ResearchSpace-related software development.</div>
-                          </div>
-                        </div>
-                        <div class="contact-card"> 
-                          <rs-icon icon-type="rounded" icon-name="display_settings" symbol="true"></rs-icon>
-                          <div>
-                            <div class="card-title">Customisations of ResearchSpace</div>
-                            <div class="card-content">We design and develop bespoke UI/UX interactions, visualisations and workflows using ResearchSpace functionalities.</div>
-                          </div>
-                        </div>
-                        <div class="contact-card"> 
-                          <rs-icon icon-type="rounded" icon-name="data_exploration" symbol="true"></rs-icon>
-                          <div>
-                            <div class="card-title">Diversity and inclusion in data</div>
-                            <div class="card-content">Our expertise lies in bringing together diverse disciplines through the use of semantic data and interactive environments. This approach enhances collaboration and ensures that a wide array of perspectives, especially those that are usually underrepresented in data, are captured and valued in any project.</div>
-                          </div>
-                        </div>
-                        <div class="contact-card"> 
-                          <rs-icon icon-type="rounded" icon-name="linked_services" symbol="true"></rs-icon>
-                          <div>
-                            <div class="card-title">Knowledge representation using Linked Data</div>
-                            <div class="card-content">We use CIDOC CRM real world ontologies for data modelling with context, preserving meaning and relationships.</div>
-                          </div>
-                        </div>
-                                             
-                        <div class="contact-card"> 
-                          <rs-icon icon-type="rounded" icon-name="school" symbol="true"></rs-icon>
-                          <div>
-                            <div class="card-title">Training</div>
-                            <div class="card-content">
-                              We organize workshops and personalized training sessions to help with the use of ResearchSpace. These are available periodically and upon request.
-                            </div>
-                          </div>
-                        </div>
-                        <div class="contact-card"> 
-                          <rs-icon icon-type="rounded" icon-name="live_help" symbol="true"></rs-icon>
-                          <div>
-                            <div class="card-title">Technical support</div>
-                            <div class="card-content">We can assist in setting up, maintaining, and developing your ResearchSpace instance, whether for local deployment or integration into existing infrastructures.</div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="contact-content-buttons">
-                        <mp-event-trigger id='header-close-header-contact-modal' 
-                                          type='OverlayDialog.Close' 
-                                          targets='["header-contact-modal"]'>
-                          <button class="btn btn-default">Close</button>
-                        </mp-event-trigger>
-                      </div>
-                    </div>
-                  </div>               
-              </mp-overlay-dialog-content>
-          </mp-overlay-dialog>
-          
-        </li>
-
-        <li>
-          <button class="btn btn-icon">
-            <a href="https://documentation.researchspace.org/resource/rsp:Start" title="Help center" target="_blank">
-              <rs-icon icon-type="round" icon-name="help_center"></rs-icon>
-            </a>
-          </button>
-        </li>
-
-        <mp-anonymous-hidden>
-          <li>
-            <button class="btn btn-icon">
-              <semantic-link iri="http://www.researchspace.org/resource/admin" title="System settings" target="_blank">
-                <rs-icon icon-type="round" icon-name="settings"></rs-icon>
-              </semantic-link>
-            </button>
-          </li>
-        </mp-anonymous-hidden>
-
-      </ul>
+      {{> navbarRight }}
     </div>
   </div>
 </nav>
 
+{{#*inline "navbarRight"}}
+  <ul class="nav navbar-nav navbar-right">
+    {{!-- Update profile-dropdown on resourceForm actions --}}
+    <semantic-query query='SELECT ?systemUser WHERE {
+                            BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
+                          }'
+                    template='\{{> template}}'>
+        <template id='template'>
+          <div>
+            <mp-event-proxy id='update-profile-dropdown-on-resourceForm-actions2'
+                            on-event-source='\{{bindings.0.systemUser.value}}-resource-form'
+                            on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated", "Form.ResourceRemoved"]'         
+                            proxy-event-type='Component.TemplateUpdate' 
+                            proxy-targets='["header-profile-dropdown"]'
+            ></mp-event-proxy> 
+          </div>
+        </template>
+    </semantic-query>
 
+    <mp-user-language-switch></mp-user-language-switch>
+    <li>
+      <mp-anonymous-hidden alt='<li><a href="/login" title="login"></a></li>'>
+        <mp-event-target-template-render id='header-profile-dropdown' template='\{{> template}}'>
+          <template id='template'>
+            <semantic-query query='SELECT DISTINCT ?systemUser ?systemUserName ?actorFullName ?group ?groupFullName { 
+                                    BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
+                                    BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?systemUserName)
+
+                                    OPTIONAL {
+                                      ?systemUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                      ?systemUser crm:P1_is_identified_by ?actorName .
+                                      ?actorName a crm:E41_Appellation .
+                                      ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                      ?actorName crm:P190_has_symbolic_content ?actorFullName .
+                                    }
+
+                                    OPTIONAL {
+                                      ?systemUser crm:P02i_is_range_of ?pc107 .
+                                      ?pc107 rdf:type crm:PC107_has_current_or_former_member .
+                                      ?pc107 crm:P01_has_domain ?group .
+                                      ?group crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                      ?group a crm:E74_Group .
+                                      ?group crm:P1_is_identified_by ?groupName .
+                                      ?groupName a crm:E41_Appellation .
+                                      ?groupName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                      ?groupName crm:P190_has_symbolic_content ?groupFullName .
+                                    }
+                                  }'
+                          template='\{{> template}}'>
+
+            <template id='template'>
+
+              <bs-dropdown id="navbar-dropdown" class="user-dropdown">
+                <bs-dropdown-toggle>
+                  <div class="navDropdown-iconAndLabel"> 
+                    <mp-resource-thumbnail iri='\{{bindings.0.systemUser.value}}' style="width: 25px; height:25px; border-radius:1.5px; object-fit: cover; object-position: top;">
+                      <mp-resource-thumbnail-fallback>
+                          <rs-icon icon-type="round" icon-name="account_box"></rs-icon>
+                      </mp-resource-thumbnail-fallback>
+                    </mp-resource-thumbnail>  
+                    \{{#if bindings.0.actorFullName.value}}
+                      <div>\{{bindings.0.actorFullName.value}}</div>
+                    \{{else}}
+                      <div>\{{bindings.0.systemUserName.value}}</div>
+                    \{{/if}}
+                  </div>
+                </bs-dropdown-toggle>
+                <bs-dropdown-menu>
+                  \{{#if bindings.0.actorFullName.value}}
+                    <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                              urlqueryparam-view='resource-editor' 
+                                              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                              urlqueryparam-resource-iri="\{{bindings.0.systemUser.value}}"
+                                              urlqueryparam-mode='edit'>
+                      <bs-menu-item>
+                        <rs-icon icon-type="rounded" icon-name="account_box" class="icon-left" symbol="true"></rs-icon>
+                        <span>My profile</span> 
+                      </bs-menu-item>
+                    </semantic-link-container>
+                  \{{else}}
+                    <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                            urlqueryparam-view='resource-editor' 
+                                            urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                            urlqueryparam-custom-label='New profile'
+                                            urlqueryparam-mode='new'>
+                      <bs-menu-item>
+                        <rs-icon icon-type="rounded" icon-name="account_box" class="icon-left" symbol="true"></rs-icon>
+                        <span>My profile (not registered user)</span>  
+                      </bs-menu-item>
+                    </semantic-link-container>
+                  \{{/if}}
+                  
+                  \{{#if bindings.0.group.value}}
+                    \{{#each bindings}}
+                      <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                urlqueryparam-view='resource-editor' 
+                                                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                                urlqueryparam-resource-iri="\{{group.value}}"
+                                                urlqueryparam-mode='edit'>
+                        <bs-menu-item>
+                          <rs-icon icon-type="rounded" icon-name="groups" class="icon-left" symbol="true"></rs-icon>
+                          <span>My team - \{{groupFullName.value}}</span>
+                        </bs-menu-item>
+                      </semantic-link-container>
+                    \{{/each}}
+                  \{{/if}}
+
+                  <bs-menu-item divider="true"></bs-menu-item>
+
+                  <bs-menu-item href="/logout" title='logout'>
+                    <rs-icon icon-type="rounded" icon-name="logout" class="icon-left" symbol="true"></rs-icon>
+                    <span>Logout</span>
+                  </bs-menu-item>
+                </bs-dropdown-menu>
+              </bs-dropdown>
+            </template>
+            </semantic-query>
+          </template>
+        </mp-event-target-template-render>
+      </mp-anonymous-hidden>
+    </li>
+
+    <li>
+        <mp-overlay-dialog id="header-contact-modal" type="modal" bs-size="large" class="header-contact-modal">
+          <mp-overlay-dialog-trigger>
+            <button class="btn btn-icon" title="Contact & support">
+              <rs-icon icon-type="round" icon-name="forum"></rs-icon>
+            </button>
+          </mp-overlay-dialog-trigger>
+
+          <mp-overlay-dialog-content>
+                <div class="contact-container">
+                <div class="contact-motif"></div>
+                <div class="contact-header">
+                  <div class="title">Contact & Support</div>
+                  <div class="contact-icons-container">
+                      <a href="https://www.researchspace.org/" title="Researchspace website" target="_blank">
+                        <i class="rs-icon rs-icon-researchspace"></i>
+                      </a>
+                      <a href="mailto:info@kartography.org" title="mailto:info@kartography.org" target="_blank">
+                        <i class="rs-icon rs-icon-mail_send"></i>
+                      </a>
+                      <a href="https://www.youtube.com/channel/UCtUOzTB2vBG9ZimeDVrlULQ/featured" title="Youtube researchspace" target="_blank">
+                        <i class="rs-icon rs-icon-youtube"></i>
+                      </a>
+                      <a href="https://x.com/researchspace" title="X researchspace" target="_blank">
+                        <img src="/assets/images/logos/x-social-media-logo.svg">
+                      </a>
+
+                      <a href="https://github.com/researchspace/researchspace" title="Github researchspace" target="_blank">
+                        <i class="fa fa-github-square"></i>
+                      </a>
+                  </div>
+                </div>
+
+                <div class="contact-content">
+                  <div>This version of ResearchSpace is released and supported by <a href="https://kartography.org/" title="Kartography" target="_blank" class="text-link-action">Kartography CIC</a>.</div>
+                  <div style="padding: 10px 0 10px 0;">Kartography offers:</div>
+                  <div class="contact-card-container">
+                    
+                    <div class="contact-card"> 
+                      <rs-icon icon-type="rounded" icon-name="biotech" symbol="true"></rs-icon>
+                      <div>
+                        <div class="card-title">Consultancy</div>
+                        <div class="card-content">We offer comprehensive consultancy services — including process analysis, data strategies, and ResearchSpace-related software development.</div>
+                      </div>
+                    </div>
+                    <div class="contact-card"> 
+                      <rs-icon icon-type="rounded" icon-name="display_settings" symbol="true"></rs-icon>
+                      <div>
+                        <div class="card-title">Customisations of ResearchSpace</div>
+                        <div class="card-content">We design and develop bespoke UI/UX interactions, visualisations and workflows using ResearchSpace functionalities.</div>
+                      </div>
+                    </div>
+                    <div class="contact-card"> 
+                      <rs-icon icon-type="rounded" icon-name="data_exploration" symbol="true"></rs-icon>
+                      <div>
+                        <div class="card-title">Diversity and inclusion in data</div>
+                        <div class="card-content">Our expertise lies in bringing together diverse disciplines through the use of semantic data and interactive environments. This approach enhances collaboration and ensures that a wide array of perspectives, especially those that are usually underrepresented in data, are captured and valued in any project.</div>
+                      </div>
+                    </div>
+                    <div class="contact-card"> 
+                      <rs-icon icon-type="rounded" icon-name="linked_services" symbol="true"></rs-icon>
+                      <div>
+                        <div class="card-title">Knowledge representation using Linked Data</div>
+                        <div class="card-content">We use CIDOC CRM real world ontologies for data modelling with context, preserving meaning and relationships.</div>
+                      </div>
+                    </div>
+                                          
+                    <div class="contact-card"> 
+                      <rs-icon icon-type="rounded" icon-name="school" symbol="true"></rs-icon>
+                      <div>
+                        <div class="card-title">Training</div>
+                        <div class="card-content">
+                          We organize workshops and personalized training sessions to help with the use of ResearchSpace. These are available periodically and upon request.
+                        </div>
+                      </div>
+                    </div>
+                    <div class="contact-card"> 
+                      <rs-icon icon-type="rounded" icon-name="live_help" symbol="true"></rs-icon>
+                      <div>
+                        <div class="card-title">Technical support</div>
+                        <div class="card-content">We can assist in setting up, maintaining, and developing your ResearchSpace instance, whether for local deployment or integration into existing infrastructures.</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="contact-content-buttons">
+                    <mp-event-trigger id='header-close-header-contact-modal' 
+                                      type='OverlayDialog.Close' 
+                                      targets='["header-contact-modal"]'>
+                      <button class="btn btn-default">Close</button>
+                    </mp-event-trigger>
+                  </div>
+                </div>
+              </div>               
+          </mp-overlay-dialog-content>
+      </mp-overlay-dialog>
+      
+    </li>
+
+    <li>
+      <button class="btn btn-icon">
+        <a href="https://documentation.researchspace.org/resource/rsp:Start" title="Help center" target="_blank">
+          <rs-icon icon-type="round" icon-name="help_center"></rs-icon>
+        </a>
+      </button>
+    </li>
+
+    <mp-anonymous-hidden>
+      <li>
+        <button class="btn btn-icon">
+          <semantic-link iri="http://www.researchspace.org/resource/admin" title="System settings" target="_blank">
+            <rs-icon icon-type="round" icon-name="settings"></rs-icon>
+          </semantic-link>
+        </button>
+      </li>
+    </mp-anonymous-hidden>
+
+  </ul>
+{{/inline}}

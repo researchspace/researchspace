@@ -52,6 +52,7 @@ export const MARK_TAGS: { [tagName: string]: string | boolean } = {
   i: true,
   strong: true,
   u: true,
+  s: true,
 };
 
 const SLATE_RULES: Rule[] = [

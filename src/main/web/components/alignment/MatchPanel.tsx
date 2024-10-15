@@ -327,7 +327,7 @@ export class MatchPanel extends Component<MatchPanelProps, {}> {
         overlay={overlay}
       >
         <Button bsSize="xsmall" className={styles.nodeInfoButton} onClick={this.onShowNodeInfoClick}>
-          <Icon iconType='round' iconName='info' />
+          <Icon iconType='rounded' iconName='info' symbol />
         </Button>
       </OverlayTrigger>
     );
@@ -378,7 +378,7 @@ export class MatchPanel extends Component<MatchPanelProps, {}> {
           onFindAligned(Node.keyOf(node.matchedTargetNode));
         }}
       >
-        <Icon iconType='round' iconName='arrow_right_alt'/>
+        <Icon iconType='rounded' iconName='arrow_right_alt' symbol />
       </Button>
     );
   }

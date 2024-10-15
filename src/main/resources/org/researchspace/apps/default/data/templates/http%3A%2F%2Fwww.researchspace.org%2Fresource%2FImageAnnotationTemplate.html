@@ -23,10 +23,15 @@
     <mp-event-target-template-render id='{{viewId}}-image-upload-area' template='{{> newImage}}'>
       <template id='newImage'>
         <div class="imageAnnotation__viewer-customActions"> 
-          <semantic-query query='SELECT ?ontologyClass ?type WHERE {
+          <semantic-query query='PREFIX ldp: <http://www.w3.org/ns/ldp#>
+                                 SELECT ?ontologyClass ?type ?imageOverlay WHERE {
                                   <{{iri}}> a ?ontologyClass .
                                   OPTIONAL {
                                     <{{iri}}> crm:P2_has_type ?type .
+                                  }
+                                  OPTIONAL {
+                                    rso:OverlayImage.Container ldp:contains <{{iri}}> .
+                                    BIND("true" as ?imageOverlay) 
                                   }
                                 }'
                           template='{{> template}}'>
@@ -137,6 +142,7 @@
                 </semantic-if>
               {{else if (eq bindings.0.ontologyClass.value "http://www.researchspace.org/ontology/EX_Digital_Image")}}
               {{else if (eq bindings.0.ontologyClass.value "http://www.researchspace.org/ontology/EX_Digital_Image_Region")}}
+              {{else if bindings.0.imageOverlay.value}}
               {{else}}
                 <mp-overlay-dialog id='{{viewId}}-newImage-dialog' type="modal" class="modal-xlSize newImageModal" title="New image">
                   <mp-overlay-dialog-trigger>
@@ -207,8 +213,6 @@
                   </mp-overlay-dialog-content>
                 </mp-overlay-dialog>
               {{/if}}
-              <div>
-              </div>
             </template>
          </semantic-query>
 
@@ -216,12 +220,21 @@
                             type='Component.TemplateUpdate' 
                             targets='["{{viewId}}-image-viewer-render-area"]'>
             <div> 
-              <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
+              <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
               <span>Refresh</span>
             </div>
           </mp-event-trigger>
 
-
+          <rs-share-link relative-path='/resource/ThinkingFrames' 
+                        urlqueryparam-resource="{{iri}}" 
+                        urlqueryparam-view="image-annotation" 
+                        urlqueryparam-custom-label="Share link" 
+                        message='Share link has been copied'>
+            <div>
+              <rs-icon icon-type="rounded" icon-name="share_windows" symbol="true"></rs-icon>
+              <span>Share</span>
+            </div>
+          </rs-share-link>
         </div>
       </template>
     </mp-event-target-template-render>
@@ -254,7 +267,7 @@
                                         type='IIIFViewer.AddImagesForResource' 
                                         targets='["{{viewId}}-image-annotation"]'
                                         data='{ "resourceIri": "{{resourceIri}}" }'>
-                        <rs-icon icon-type="round" icon-name="image" title="View resource images in the viewer"></rs-icon>
+                        <rs-icon icon-type="rounded" icon-name="image" title="View resource images in the viewer" symbol="true"></rs-icon>
                       </mp-event-trigger>
                     </bs-nav-item>
                   {{/bind}}
@@ -389,13 +402,15 @@
                                             </button>
                                           </mp-event-trigger>
 
-                                          {{> rsp:ResourceDropdownActions viewId=viewId
-                                                                          iri=region.value
-                                                                          resourceConfig="http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation"
-                                                                          resourceLabel="Image annotation"
-                                                                          resourceFormIRI="http://www.researchspace.org/resource/system/forms/ImageAnnotation"
-                                                                          imageAnnotation="true"
-                                          }}
+                                          <rs-resource-dropdown id="{{viewId}}-{{region.value}}-item-actions-dropdown" class-name="dropdown-no-caret" toggle-class-name="border-none">
+                                            {{> rsp:ResourceDropdownActions viewId=viewId
+                                                                            iri=region.value
+                                                                            resourceConfig="http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation"
+                                                                            resourceLabel="Image annotation"
+                                                                            resourceFormIRI="http://www.researchspace.org/resource/system/forms/ImageAnnotation"
+                                                                            imageAnnotation="true"
+                                            }}
+                                          </rs-resource-dropdown>
             
                                           [[!-- Old Delete image annotation --]]
                                           [[!-- <mp-overlay-dialog id='{{viewId}}-region-remove-confirmation-dialog--{{region.value}}' title="Delete image annotation" type="modal">

@@ -179,7 +179,7 @@ export class FileVisualizer extends Component<FileVisualizerProps, FileVisualize
     // );
     return (
       <div className={`${styles.fileNameContent} text-flex`}>
-        <Icon iconType='round' iconName={icon}/>
+        <Icon iconType='rounded' symbol iconName={icon}/>
         <div>{resource.fileName}</div>
       </div>
     )

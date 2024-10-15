@@ -79,166 +79,166 @@
       <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
     {{/if}}
 
-    <mp-splitpane id='{{viewId}}-entity-resource-sidebar' min-size=63 default-size=370 snap-threshold=200 default-open=true always-render=true primary='second' class="entity-resource-sidebar">
       <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
           <rs-tab event-key="detail" title="Details">
-            <div>
-                  {{#if apiResourceName}}
-                      <div class="focused-input-container">
-                          <semantic-form-text-input for="entity_primary_appellation" label="Full name" placeholder="Enter person full name / known as" default-value="{{apiResourceName}}" force-defaults=true> </semantic-form-text-input>
-                      </div>
-                  {{else}}
-                      <semantic-form-text-input for="entity_primary_appellation" label="Full name" placeholder="Enter person full name / known as"> </semantic-form-text-input>
-                  {{/if}}
-
-                  {{#if apiResourceURI}}
-                    <div style="padding-top: 20px;">
-                      <span>Imported from: </span>
-                      <a class="text-link-action" target="_blank" href="{{apiResourceURI}}" title="{{apiResourceURI}}">{{apiResourceURI}}</a>
+            <div class="form-details-container">
+              <div style="overflow-x: auto;">
+                {{#if apiResourceName}}
+                    <div class="focused-input-container">
+                        <semantic-form-text-input for="entity_primary_appellation" label="Full name" placeholder="Enter person full name / known as" default-value="{{apiResourceName}}" force-defaults=true> </semantic-form-text-input>
                     </div>
-                  {{else}}
-                    {{#if node}}
-                      <semantic-query query='SELECT ?resource ?sourceURI WHERE {
-                                              BIND(<{{node}}> AS ?resource)
+                {{else}}
+                    <semantic-form-text-input for="entity_primary_appellation" label="Full name" placeholder="Enter person full name / known as"> </semantic-form-text-input>
+                {{/if}}
 
-                                              ?resource crm:P129i_is_subject_of ?entityFormRecord .
-                                              ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
-                                              ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
-                                              ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
-
-                                              ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
-                                              ?importFromExternalSource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source> .
-                                              ?importFromExternalSource crmdig:L14_transferred ?sourceURI .
-                                              ?sourceURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
-                                          }'
-                                  template='{{> template}}'
-                      >
-                          
-                          <template id='template'>
-                              <div>
-                                  <div style="padding-top: 20px;">
-                                      <span>Imported from: </span>
-                                      <a class="text-link-action" target="_blank" href="{{bindings.0.sourceURI.value}}" title="{{bindings.0.sourceURI.value}}">{{bindings.0.sourceURI.value}}</a>
-                                  </div>
-                              </div>
-                          </template>
-                      </semantic-query>
-                    {{/if}}
-                  {{/if}}
-
-                  <semantic-form-text-input for="actor_alsoKnownAs" label="Also known as" placeholder="Enter person additional name / also known as"> </semantic-form-text-input>
-                  <semantic-form-text-input for="person_name_native_language" label="Name in native language" placeholder="Enter person name in native language" languages='["ar","de","el","es","fr","ga","it","ja","ko","nl","zh","zh-CN","zh-TW"]' require-language=true> </semantic-form-text-input>
-                  <semantic-form-text-input for="person_family_name" label="Family name" placeholder="Enter person family name"> </semantic-form-text-input>
-                  
+                {{#if apiResourceURI}}
+                  <div style="padding-top: 20px;">
+                    <span>Imported from: </span>
+                    <a class="text-link-action" target="_blank" href="{{apiResourceURI}}" title="{{apiResourceURI}}">{{apiResourceURI}}</a>
+                  </div>
+                {{else}}
                   {{#if node}}
-                    <semantic-query query='SELECT ?authorityDocument ?authorityDocumentName WHERE {
-                                            <{{node}}> crm:P71i_is_listed_in ?authorityDocument .
-                                            ?authorityDocument a crm:E32_Authority_Document .
-                                            ?authorityDocument crm:P1_is_identified_by ?appellation . 
-                                            ?appellation a crm:E41_Appellation . 
-                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                            ?appellation crm:P190_has_symbolic_content ?authorityDocumentName .
-                                        } LIMIT 1'
-                                    template='{{> template}}'>
-                                    
+                    <semantic-query query='SELECT ?resource ?sourceURI WHERE {
+                                            BIND(<{{node}}> AS ?resource)
+
+                                            ?resource crm:P129i_is_subject_of ?entityFormRecord .
+                                            ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                            ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
+                                            ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+
+                                            ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
+                                            ?importFromExternalSource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source> .
+                                            ?importFromExternalSource crmdig:L14_transferred ?sourceURI .
+                                            ?sourceURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                                        }'
+                                template='{{> template}}'
+                    >
+                        
                         <template id='template'>
                             <div>
-                                <div style="display: flex; gap: 3px; margin-top: 20px;">
-                                    <div>Listed in authority document: </div>
-                                    <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                    urlqueryparam-view='authority-list' 
-                                                    urlqueryparam-resource-iri='{{bindings.0.authorityDocument.value}}'
-                                                    class="text-link">
-                                    {{bindings.0.authorityDocumentName.value}}
-                                    </semantic-link>
+                                <div style="padding-top: 20px;">
+                                    <span>Imported from: </span>
+                                    <a class="text-link-action" target="_blank" href="{{bindings.0.sourceURI.value}}" title="{{bindings.0.sourceURI.value}}">{{bindings.0.sourceURI.value}}</a>
                                 </div>
-                            </div>  
+                            </div>
                         </template>
                     </semantic-query>
                   {{/if}}
+                {{/if}}
 
-                  {{#if apiResourceDescription}}
-                      <div class="focused-input-container">
-                          <semantic-form-text-input for="entity_description" label="Description" placeholder="Enter description/comment" multiline='true' default-value="{{apiResourceDescription}}"> </semantic-form-text-input>
-                      </div>
-                  {{else}}
-                      <semantic-form-text-input for="entity_description" label="Description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
-                  {{/if}}
+                <semantic-form-text-input for="actor_alsoKnownAs" label="Also known as" placeholder="Enter person additional name / also known as"> </semantic-form-text-input>
+                <semantic-form-text-input for="person_name_native_language" label="Name in native language" placeholder="Enter person name in native language" languages='["ar","de","el","es","fr","ga","it","ja","ko","nl","zh","zh-CN","zh-TW"]' require-language=true> </semantic-form-text-input>
+                <semantic-form-text-input for="person_family_name" label="Family name" placeholder="Enter person family name"> </semantic-form-text-input>
+                
+                {{#if node}}
+                  <semantic-query query='SELECT ?authorityDocument ?authorityDocumentName WHERE {
+                                          <{{node}}> crm:P71i_is_listed_in ?authorityDocument .
+                                          ?authorityDocument a crm:E32_Authority_Document .
+                                          ?authorityDocument crm:P1_is_identified_by ?appellation . 
+                                          ?appellation a crm:E41_Appellation . 
+                                          ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                          ?appellation crm:P190_has_symbolic_content ?authorityDocumentName .
+                                      } LIMIT 1'
+                                  template='{{> template}}'>
+                                  
+                      <template id='template'>
+                          <div>
+                              <div style="display: flex; gap: 3px; margin-top: 20px;">
+                                  <div>Listed in authority document: </div>
+                                  <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                  urlqueryparam-view='authority-list' 
+                                                  urlqueryparam-resource-iri='{{bindings.0.authorityDocument.value}}'
+                                                  class="text-link">
+                                  {{bindings.0.authorityDocumentName.value}}
+                                  </semantic-link>
+                              </div>
+                          </div>  
+                      </template>
+                  </semantic-query>
+                {{/if}}
 
-                  <semantic-form-tree-picker-input    for='person_profession' 
-                                                      label="Profession" 
-                                                      close-dropdown-on-selection='false'
-                                                      placeholder="Select profession" 
-                                                      tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/profession>", 
-                                                                      "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/profession>",
-                                                                      "relationPattern": "?item crm:P107i_is_current_or_former_member_of ?parent",
-                                                                      "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
-                                                                                      ?appellation a crm:E41_Appellation . 
-                                                                                      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                                      ?appellation crm:P190_has_symbolic_content ?label ." }'
-                                                  
-                                                      nested-form-template='{{{{raw}}}}{{> forms:Group nested=true editable=true mode="new"
-                                                                                          scheme="http://www.researchspace.org/resource/vocab/profession"
-                                                                                          entityType="profession" }}{{{{/raw}}}}'
+                {{#if apiResourceDescription}}
+                    <div class="focused-input-container">
+                        <semantic-form-text-input for="entity_description" label="Description" placeholder="Enter description/comment" multiline='true' default-value="{{apiResourceDescription}}"> </semantic-form-text-input>
+                    </div>
+                {{else}}
+                    <semantic-form-text-input for="entity_description" label="Description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
+                {{/if}}
 
-                                                      scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                  "view": "authority-list",
-                                                                                  "scheme": "http://www.researchspace.org/resource/vocab/profession",
-                                                                                  "tooltip": "Open list of professions"
-                                                                              }'
+                <semantic-form-tree-picker-input    for='person_profession' 
+                                                    label="Profession" 
+                                                    close-dropdown-on-selection='false'
+                                                    placeholder="Select profession" 
+                                                    tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/profession>", 
+                                                                    "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/profession>",
+                                                                    "relationPattern": "?item crm:P107i_is_current_or_former_member_of ?parent",
+                                                                    "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
+                                                                                    ?appellation a crm:E41_Appellation . 
+                                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                                    ?appellation crm:P190_has_symbolic_content ?label ." }'
+                                                
+                                                    nested-form-template='{{{{raw}}}}{{> forms:Group nested=true editable=true mode="new"
+                                                                                        scheme="http://www.researchspace.org/resource/vocab/profession"
+                                                                                        entityType="profession" }}{{{{/raw}}}}'
 
-                                                      query-item-label='SELECT ?label WHERE {
-                                                                          ?item crm:P1_is_identified_by ?appellation . 
-                                                                          ?appellation a crm:E41_Appellation . 
-                                                                          ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                          ?appellation crm:P190_has_symbolic_content ?label .
-                                                                      }'
-                  ></semantic-form-tree-picker-input>
+                                                    scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                "view": "authority-list",
+                                                                                "scheme": "http://www.researchspace.org/resource/vocab/profession",
+                                                                                "tooltip": "Open list of professions"
+                                                                            }'
 
-                  <semantic-form-select-input for='person_gender' 
-                                              label="Gender"
-                                              placeholder="Select gender"
-                                              nested-form-templates='[ 
-                                                  {
-                                                      "label": "Gender",
-                                                      "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
-                                                                                      scheme=\"http://www.researchspace.org/resource/vocab/person_gender\"
-                                                                                      entityType=\"gender\" }}
-                                                                  {{{{/raw}}}}"
-                                                  }
-                                                  ]'>
-                  </semantic-form-select-input>
-                  
-                  <semantic-form-tree-picker-input    for="actor_nationality" 
-                                                      label="Nationality"
-                                                      placeholder="Select nationality"
-                                                      tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/nationality>", 
-                                                                      "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/nationality>",
-                                                                      "relationPattern": "?item crm:P107i_is_current_or_former_member_of ?parent",
-                                                                      "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
-                                                                                      ?appellation a crm:E41_Appellation . 
-                                                                                      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                                      ?appellation crm:P190_has_symbolic_content ?label ." }'
+                                                    query-item-label='SELECT ?label WHERE {
+                                                                        ?item crm:P1_is_identified_by ?appellation . 
+                                                                        ?appellation a crm:E41_Appellation . 
+                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                        ?appellation crm:P190_has_symbolic_content ?label .
+                                                                    }'
+                ></semantic-form-tree-picker-input>
 
-                                                      nested-form-template='{{{{raw}}}}{{> forms:Group nested=true editable=true mode="new"
-                                                                                              scheme="http://www.researchspace.org/resource/vocab/nationality"
-                                                                                              entityType="nationality" }}{{{{/raw}}}}'
-                                                                                              
-                                                      scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                  "view": "authority-list",
-                                                                                  "scheme": "http://www.researchspace.org/resource/vocab/nationality",
-                                                                                  "tooltip": "Open list of nationalities"
-                                                                                  }'
+                <semantic-form-select-input for='person_gender' 
+                                            label="Gender"
+                                            placeholder="Select gender"
+                                            nested-form-templates='[ 
+                                                {
+                                                    "label": "Gender",
+                                                    "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
+                                                                                    scheme=\"http://www.researchspace.org/resource/vocab/person_gender\"
+                                                                                    entityType=\"gender\" }}
+                                                                {{{{/raw}}}}"
+                                                }
+                                                ]'>
+                </semantic-form-select-input>
+                
+                <semantic-form-tree-picker-input    for="actor_nationality" 
+                                                    label="Nationality"
+                                                    placeholder="Select nationality"
+                                                    tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/nationality>", 
+                                                                    "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/nationality>",
+                                                                    "relationPattern": "?item crm:P107i_is_current_or_former_member_of ?parent",
+                                                                    "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
+                                                                                    ?appellation a crm:E41_Appellation . 
+                                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                                    ?appellation crm:P190_has_symbolic_content ?label ." }'
 
-                                                      query-item-label='SELECT ?label WHERE {
-                                                                          ?item crm:P1_is_identified_by ?appellation . 
-                                                                          ?appellation a crm:E41_Appellation . 
-                                                                          ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                          ?appellation crm:P190_has_symbolic_content ?label .
-                                                                      }'
-                  ></semantic-form-tree-picker-input> 
+                                                    nested-form-template='{{{{raw}}}}{{> forms:Group nested=true editable=true mode="new"
+                                                                                            scheme="http://www.researchspace.org/resource/vocab/nationality"
+                                                                                            entityType="nationality" }}{{{{/raw}}}}'
+                                                                                            
+                                                    scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                "view": "authority-list",
+                                                                                "scheme": "http://www.researchspace.org/resource/vocab/nationality",
+                                                                                "tooltip": "Open list of nationalities"
+                                                                                }'
 
-                  <div class="inline-composite-container">
+                                                    query-item-label='SELECT ?label WHERE {
+                                                                        ?item crm:P1_is_identified_by ?appellation . 
+                                                                        ?appellation a crm:E41_Appellation . 
+                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                        ?appellation crm:P190_has_symbolic_content ?label .
+                                                                    }'
+                ></semantic-form-tree-picker-input> 
+
+                <div class="inline-composite-container">
                   <semantic-form-composite-input  for="actor_contact_point" 
                                                   label="Contact detail"
                                                   new-subject-template="/contact_point/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
@@ -276,32 +276,34 @@
                       </div>
                       
                   </semantic-form-composite-input>
-                  </div>
+                </div>
 
-                  <semantic-form-autocomplete-input for='actor_residence' 
-                                                  label="Residence" 
-                                                  placeholder="Select current or former residence" 
-                                                  nested-form-templates='[[> Platform:NestedFormTemplates_places]]'>  
-                  </semantic-form-autocomplete-input> 
+                <semantic-form-autocomplete-input for='actor_residence' 
+                                                label="Residence" 
+                                                placeholder="Select current or former residence" 
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_places]]'>  
+                </semantic-form-autocomplete-input> 
 
-                  <semantic-form-autocomplete-input   for="entity_preferred_id" 
-                                                      label="Preferred identifier"
-                                                      placeholder="Select preferred identifier" 
-                                                      nested-form-templates='[ 
-                                                          {
-                                                              "label": "Identifier",
-                                                              "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Identifier\" nested=true editable=true mode=\"new\" }}
-                                                                              {{{{/raw}}}}"
-                                                          }
-                                                      ]'>
-                  </semantic-form-autocomplete-input>
+                <semantic-form-autocomplete-input   for="entity_preferred_id" 
+                                                    label="Preferred identifier"
+                                                    placeholder="Select preferred identifier" 
+                                                    nested-form-templates='[ 
+                                                        {
+                                                            "label": "Identifier",
+                                                            "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Identifier\" nested=true editable=true mode=\"new\" }}
+                                                                            {{{{/raw}}}}"
+                                                        }
+                                                    ]'>
+                </semantic-form-autocomplete-input>
 
-                  <semantic-form-autocomplete-input   for="entity_id" 
-                                                      label="Other identifier"
-                                                      placeholder="Select other identifier" 
-                                                      nested-form-templates='[[> Platform:NestedFormTemplates_appellations]]'>
-                  </semantic-form-autocomplete-input>
+                <semantic-form-autocomplete-input   for="entity_id" 
+                                                    label="Other identifier"
+                                                    placeholder="Select other identifier" 
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_appellations]]'>
+                </semantic-form-autocomplete-input>
 
+              </div>
+              [[> rsp:FormAssetSidebar signature=true]]
             </div>
           </rs-tab>
 
@@ -1002,9 +1004,6 @@
               [[> rsp:FormMetadataTab]]
         
       </rs-tabs>
-
-      [[> rsp:FormAssetSidebar signature=true]]
-    </mp-splitpane>
    
   </div>
 

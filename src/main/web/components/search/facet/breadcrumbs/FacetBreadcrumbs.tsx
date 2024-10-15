@@ -92,7 +92,7 @@ export class FacetBreadcrumbsComponent extends Component<FacetBreadcrumbsProps, 
           className={classNames(styles.cancelButton, 'btn')}
           onClick={() => this.props.actions.removeConjunct(conjunct)}
         >
-          <Icon iconType='round' iconName='close'/>
+          <Icon iconType='rounded' iconName='close' symbol />
         </button>
       </div>
     );

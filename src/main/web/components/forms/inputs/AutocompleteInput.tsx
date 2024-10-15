@@ -38,6 +38,7 @@ import ResourceLinkContainer from 'platform/api/navigation/components/ResourceLi
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 import { DropdownButton, MenuItem } from 'react-bootstrap';
 import { RdfLiteral } from 'platform/ontodia/src/ontodia';
+import { ConfigHolder } from 'platform/api/services/config-holder';
 
 
 type nestedFormEl = {
@@ -271,12 +272,12 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
         )}
         { showEditButton && 
           <Button className={`${CLASS_NAME}__create-button btn-textAndIcon`} title='Edit' onClick={() => {this.onEditHandler(value.value as Rdf.Iri)}}>
-            <Icon iconType='round' iconName='edit'/>
+            <Icon iconType='rounded' iconName='edit' symbol/>
           </Button>
         }
         {showLinkResourceButton && 
           <ResourceLinkContainer 
-            uri="http://www.researchspace.org/resource/ThinkingFrames" 
+            uri={ConfigHolder.getDashboard().value} 
             urlqueryparam-view="resource-editor"
             urlqueryparam-open-as-drag-and-drop="true"
             urlqueryparam-resource={(this.props.value.value as Rdf.Iri).value}

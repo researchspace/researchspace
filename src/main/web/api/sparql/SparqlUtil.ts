@@ -154,7 +154,11 @@ export function parseQuerySync<T extends SparqlJs.SparqlQuery>(query: string): T
 }
 
 export function serializeQuery(query: SparqlJs.SparqlQuery): string {
-  return decodeLegacyVars(Generator.stringify(query));
+  return implicitXsdString(decodeLegacyVars(Generator.stringify(query)));
+}
+
+function implicitXsdString(query: string): string {
+  return query.replace(/\^\^xsd:string/g, '');
 }
 
 export function validateSelectQuery(query: SparqlJs.Query): Kefir.Property<SparqlJs.SelectQuery> {

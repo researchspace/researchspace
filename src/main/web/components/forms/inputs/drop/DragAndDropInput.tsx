@@ -113,7 +113,7 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
     dropAreaTemplate: '<span>Drop resource here</span>',
     placeholderItemTemplate: `
       <div class='DragAndDropInput--placeholderContainer'>
-        <rs-icon icon-type="round" icon-name="upload_file"></rs-icon>
+        <rs-icon icon-type="rounded" icon-name="upload_file" symbol="true"></rs-icon>
         <div>Drag and drop here</div>
         {{#if canCreateNew}}
         <div>or click to Upload</div>
@@ -124,6 +124,8 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
       {{> rsp:ResourceCard  iri=iri
                             viewId="setItem"
                             dragAndDropInputCard=true
+                            height=150
+                            width=120
       }}
     `
   }

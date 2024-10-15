@@ -158,7 +158,7 @@ export class ConfigManager extends Component<ConfigManagerProps, State> {
                     disabled={!editable || savingProperty}
                     onClick={() => setEditedProperty(record.name)}
                   >
-                    <Icon iconType='round' iconName='edit' />
+                    <Icon iconType='rounded' iconName='edit' symbol />
                     Edit
                   </Button>
                 </div>

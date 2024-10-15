@@ -24,6 +24,7 @@ import * as _ from 'lodash';
 
 import { Rdf } from 'platform/api/rdf';
 import { SparqlClient } from 'platform/api/sparql';
+import { ConfigHolder } from 'platform/api/services/config-holder';
 
 export interface DataSetMappings {
   /** Query variable to pivot on. */
@@ -279,11 +280,15 @@ export const DEFAULT_TOOLTIP_MARKUP = `<div>
     <div>
       {{> @marker style=category.markerStyle class=category.markerClass}}
       {{#if category.iri}}
-        <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+        {{#ifCond category.label "==" "Unknown"}}
+          <span>{{category.label}}</span>
+        {{else}}
+          <semantic-link iri="`+ConfigHolder.getDashboard().value+`"
                       urlqueryparam-view='resource-editor' 
-                      urlqueryparam-resource-iri='{{category.iri}}'>
-                          {{category.label}}
-        </semantic-link>
+                      urlqueryparam-resource-iri='{{category.iri}}'
+                      style="text-decoration:underline;">{{category.label}}
+          </semantic-link>
+        {{/ifCond}}
       {{else}}
         {{category.label}}
       {{/if}}
@@ -295,12 +300,10 @@ export const DEFAULT_TOOLTIP_MARKUP = `<div>
         {{> @marker style=markerStyle class=markerClass}}
         {{#if iri}}
           <div style="display:flex;">
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+            <semantic-link iri="`+ConfigHolder.getDashboard().value+`"
                           urlqueryparam-view='resource-editor' 
-                          urlqueryparam-resource-iri='{{iri}}'>
-                              {{label}}
-            </semantic-link>: {{value}}
-          </div>
+                          urlqueryparam-resource-iri='{{iri}}'>{{label}}</semantic-link>: {{value}}
+            </div>
         {{else}}
           {{label}}: {{value}}
         {{/if}}

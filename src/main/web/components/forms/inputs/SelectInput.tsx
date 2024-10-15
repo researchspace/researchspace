@@ -340,6 +340,8 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
         ? this.createDefaultPlaceholder(definition)
         : this.props.placeholder;
 
+    const dashboard = ConfigHolder.getDashboard()?ConfigHolder.getDashboard().value:"http://www.researchspace.org/resource/ThinkingFrames";
+
     return (
       <div className={SELECT_TEXT_CLASS} ref={this.htmlElement}>
         <ReactSelect 
@@ -374,7 +376,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
         }
         {showLinkResourceButton && !FieldValue.isEmpty(this.props.value) && 
             <ResourceLinkContainer 
-              uri={ConfigHolder.getDashboard().value} 
+              uri={dashboard} 
               urlqueryparam-view="resource-editor"
               urlqueryparam-open-as-drag-and-drop="true"
               urlqueryparam-resource={(this.props.value.value as Rdf.Iri).value}

@@ -1,6 +1,8 @@
 {{#if node}}
-  <semantic-query query='SELECT ?resourceConfiguration ?systemConfig ?listInAuthorityDocument ?displayInFinder ?navigationMenuItem WHERE { 
+  <semantic-query query='SELECT ?resourceConfiguration ?resourceOntologyClass ?systemConfig ?listInAuthorityDocument ?displayInFinder ?navigationMenuItem WHERE { 
                           BIND(<{{node}}> as ?resourceConfiguration)
+
+                          ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass .
                           OPTIONAL {
                             ?resourceConfiguration crm:P2_has_type <http://www.researchspace.org/pattern/system/resource_configuration/configuration_type/system> .
                             BIND(true as ?systemConfig)
@@ -17,6 +19,7 @@
                         }'>
     <template id='template'>
       {{> rsp:ResourceConfigFormPartial resourceConfiguration=bindings.0.resourceConfiguration.value
+                                        resource_ontology_class=bindings.0.resourceOntologyClass.value
                                         system_resource_config=bindings.0.systemConfig.value
                                         list_in_authority_document=bindings.0.listInAuthorityDocument.value 
                                         display_in_finder=bindings.0.displayInFinder.value 

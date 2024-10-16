@@ -176,14 +176,14 @@
             <div class="select-input-disabled-container">
               <semantic-form-select-input for='resource_ontology_class' 
                                           label="Ontology class (CIDOC-CRM, Skos, etc.)" 
-                                          placeholder="Select the ontology class (e.g. CIDOC-CRM Man-Made object, Place, etc.)"  
+                                          placeholder="Select the ontology class (e.g. CIDOC-CRM  object, Place, etc.)"  
                                           readonly="true"> 
               </semantic-form-select-input>
             </div>
           {{else}}
             <semantic-form-tree-picker-input for="resource_ontology_class" 
                                             label="Ontology class (CIDOC-CRM, Skos, etc.)"
-                                            placeholder="Select the ontology class (e.g. CIDOC-CRM Man-Made object, Place, etc.)" 
+                                            placeholder="Select the ontology class (e.g. CIDOC-CRM  object, Place, etc.)" 
                                             close-dropdown-on-selection='true'
                                             query-item-label='SELECT ?label WHERE {
                                                 ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.
@@ -191,6 +191,35 @@
                                               }'
                                               
             ></semantic-form-tree-picker-input>
+          {{/if}}
+
+          {{#if node}}
+            {{#if (not system_resource_config)}}
+              <semantic-query query='SELECT ?resourceConfiguration ?resourceConfigurationName WHERE { 
+                                        ?resourceConfiguration crm:P2_has_type <http://www.researchspace.org/pattern/system/resource_configuration/configuration_type/system> . 
+                                        ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceConfigurationName .
+                                        ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> <{{resource_ontology_class}}> . 
+                                        FILTER(NOT EXISTS{ ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .})
+                                      }'
+                              template='{{> template}}'>
+
+                <template id='template'>
+                  <div>
+                    <div class="danger-documentation-section danger-documentation-section-withIcon" style="margin-top: 5px;">
+                      <div class="danger-documentation-section-icon-container">
+                        <rs-icon icon-type="rounded" icon-name="block" symbol="true"></rs-icon>
+                      </div>
+              
+                      <div> 
+                        <div class="danger-documentation-section-title">A configuration for <mp-label iri='{{resource_ontology_class}}' style="text-transform: uppercase;"></mp-label> already exists!</div>
+                        <div class="danger- documentation-section-content">Don't create a new configuration for ontology class <mp-label iri='{{resource_ontology_class}}'></mp-label>, but just 
+                          modify the existing <span style="text-transform: uppercase;">{{bindings.0.resourceConfigurationName.value}}</span> system configuration. Otherwise a custom configuration can be created adding a configuration Type below.</div>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </semantic-query>
+            {{/if}}
           {{/if}}
 
           {{#if system_resource_config}}

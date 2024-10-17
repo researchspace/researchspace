@@ -27,6 +27,8 @@ import { SparqlUtil } from 'platform/api/sparql';
 import { CompositeValue, EmptyValue, FieldValue } from '../FieldValues';
 import { RawSparqlPersistence } from './RawSparqlPersistence';
 import { TriplestorePersistence } from './TriplestorePersistence';
+import { LdpService } from 'platform/api/services/ldp';
+import { Rdf, turtle, vocabularies } from 'platform/api/rdf';
 
 export interface SparqlPersistenceConfig {
   type?: 'sparql';
@@ -49,13 +51,53 @@ export class SparqlPersistence implements TriplestorePersistence {
       .map(SparqlUtil.serializeQuery)
       .flatten();
 
+    const graph = targetGraphIri?targetGraphIri:targetInsertGraphIri?targetInsertGraphIri:"";
+
     const req = request
       .post('/form-persistence/sparql')
       .type('application/json')
-      .query({ repository })
+      .query({ repository, "graph":graph })
       .send(stringQueries);
     return Kefir.fromNodeCallback<void>((cb) => req.end((err, res) => cb(err, res.body))).toProperty();
   }
+
+/*
+public update(resourceIri: Rdf.Iri, resource: Rdf.Graph): Kefir.Property<Rdf.Iri> { console.log("serialize graph");
+    return turtle.serialize
+      .serializeGraph(resource)
+      .flatMap((turtle) => this.sendUpdateResourceRequest(resourceIri, { data: turtle, format: 'text/turtle' }))
+     .toProperty();
+  }  
+
+  private onSaveOrUpdate = (navigateTo?: string) => {
+    const finalGraph = tryCreateFinalGraph(this.state);
+    if (finalGraph.isNothing) {
+      return;
+    }
+
+    const graph = finalGraph.get();
+    const ldp = new LdpService(vocabularies.VocabPlatform.FieldDefinitionContainer.value);
+
+    if (this.isEditMode()) {
+      ldp.update(Rdf.iri(this.state.id.get().value), graph).onValue(() => {
+        if (navigateTo) {
+          navigateToResource(Rdf.iri(navigateTo), {}, 'assets').onValue((v) => v);
+        } else {
+          window.location.reload();
+        }
+      });
+    } else {
+      return ldp
+        .addResource(graph, Just(this.state.id.get().value))
+        .flatMap((newResourceIri) => {
+          const resourceIri = navigateTo ? Rdf.iri(navigateTo) : newResourceIri;
+          return navigateToResource(resourceIri, {}, 'assets');
+        })
+        .onValue((v) => v);
+    }
+  };
+}*/
+
 
   remove(model: CompositeValue): Kefir.Property<void> {
     return this.persist(model, FieldValue.empty);

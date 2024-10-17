@@ -64,6 +64,7 @@ import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParseException;
 import org.eclipse.rdf4j.rio.Rio;
 import org.researchspace.config.Configuration;
+import org.researchspace.config.UnknownConfigurationException;
 import org.researchspace.data.rdf.PointedGraph;
 import org.researchspace.kp.KnowledgePatternGenerator;
 import org.researchspace.repository.MpRepositoryProvider;
@@ -133,7 +134,7 @@ public class LDPAssetsLoader {
         return configuration.getGlobalConfig().getForceLDPLoadFromStorages().contains(storageId);
     }
 
-    public void load() throws StorageException, IOException {
+    public void load() throws StorageException, IOException, UnknownConfigurationException {
         Map<StoragePath, FindResult> mapResults = platformStorage.findAll(ObjectKind.LDP);
         Map<String, Map<String, Map<StoragePath, FindResult>>> mapResultsByRepositoryIdAndStorageId = Maps.newHashMap();
         logger.info("Loading LDP assets...");
@@ -170,8 +171,13 @@ public class LDPAssetsLoader {
         if (hasDefaultAlreadyLoaded(checkIfDefaultRepoHasData, "counter")) {
             /* repository has data and the loadDefaultConfig flag needs to be setup */ 
             /* show a message and ask for it to be setup */
-            if ((loadDefaultConfig=configuration.getGlobalConfig().getLoadDefaultConfig()) == -1)
-                logger.info("defaultLoadConfig needs to be set in your global.prop");
+            if ((loadDefaultConfig=configuration.getGlobalConfig().getLoadDefaultConfig()) == -1) {
+                logger.fatal(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"); 
+                logger.fatal(">>>> loadDefaultConfig needs to be set to 0 or 1 in your runtime-data/config/global.prop <<<");
+                logger.fatal(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"); 
+                
+                throw new UnknownConfigurationException();
+            }
         }
         else {
             if ((loadDefaultConfig=configuration.getGlobalConfig().getLoadDefaultConfig()) != 0)
@@ -213,8 +219,8 @@ public class LDPAssetsLoader {
                                     "{ ?resource_configuration a <http://www.researchspace.org/resource/system/resource_configuration> .} "+ 
                                 "}";
 
-
-                            if (!hasDefaultAlreadyLoaded(checkIfResourceConfigurationsExists,"counter"))
+                            logger.info("loading configurations");
+                            //if (!hasDefaultAlreadyLoaded(checkIfResourceConfigurationsExists,"counter"))
                                 loadAllToRepository(entry.getKey(), entry.getValue());    
                         } 
                         else if (entry.getKey().equals("vocabularies")) {
@@ -225,7 +231,7 @@ public class LDPAssetsLoader {
                                         "FILTER((CONTAINS(STR(?a),\"http://www.researchspace.org/resource/vocab/\")) "+
                                                 "|| (CONTAINS(STR(?a),\"http://www.researchspace.org/resource/system/vocab/\"))) " +
                                         "}";
-                            if (!hasDefaultAlreadyLoaded(checkIfVocabulariesExist, "counter"))
+                            //if (!hasDefaultAlreadyLoaded(checkIfVocabulariesExist, "counter"))
                                 loadAllToRepository(entry.getKey(), entry.getValue());    
                         }
                         else if (entry.getKey().equals("system")) {
@@ -429,7 +435,6 @@ public class LDPAssetsLoader {
                     List<Resource> toLoad = selectContentToLoad(repositoryId, loadedAssetsModel, conn);
                     
                     ldpContainersConsistencyCheck(repositoryId, loadedAssetsModel, conn);
-                    
                     for (Resource ctx : toLoad) {
                         logger.trace("Loading LDP asset context: " + ctx.stringValue());
                         Model currentAsset = loadedAssetsModel.filter(null, null, null, ctx);
@@ -438,13 +443,18 @@ public class LDPAssetsLoader {
                             if (ctx.isResource())   
                                 conn.clear(ctx);                                 
                         }
-                       /*logger.info("Repository id"+repositoryId);
-                        if (repositoryId.equals("configurations") && !isDefaultResourceConfigurationsAlreadyLoaded())
-                            conn.add(currentAsset);
-                        if (repositoryId.equals("vocabularies") && !isDefaultVocabulariesAlreadyLoaded())
-                            conn.add(currentAsset); 
-                        if (!repositoryId.equals("configurations") || !repositoryId.equals("vocabularies"))*/
-                            conn.add(currentAsset);
+
+                        if (repositoryId.equals("configurations")) {                             
+                            logger.info(ctx);
+                            conn.clear(ctx);                                 
+                        }
+
+                        if (repositoryId.equals("vocabularies")) {                             
+                            logger.info(ctx);
+                            conn.clear(ctx);                                 
+                        }
+                       
+                        conn.add(currentAsset);
                     }
                 }
             }
@@ -531,14 +541,14 @@ public class LDPAssetsLoader {
         }
 
         if (!inconsistentContexts.isEmpty() && 
-                (repositoryId.equals("ontologies") ||repositoryId.equals("vocabularies") || repositoryId.equals("configurations"))) {
+                (repositoryId.equals("ontologies") ||repositoryId.equals("vocabularies"))) {
             /* loading nothing, using what is in the ontologies, vocabularies, or configurations repository at runtime */
             toLoad = Lists.newArrayList();
             return toLoad;           
         }
 
         if (!inconsistentContexts.isEmpty() && 
-                (repositoryId.equals("system"))) {
+                ((repositoryId.equals("system"))||(repositoryId.equals("configurations")))) {
             /* loading system repository and over-writing anything in the runtime repository */
             //toLoad = Lists.newArrayList();
             logger.debug("context"+defaultToLoad);

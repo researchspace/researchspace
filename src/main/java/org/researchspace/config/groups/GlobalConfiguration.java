@@ -65,6 +65,11 @@ public class GlobalConfiguration extends ConfigurationGroupBase {
         return getString("homePage", ":Start");
     }
 
+    @ConfigurationParameter
+    public String getDashboard() {
+        // TODO: reconsider start page once we have /page servlet in place
+        return getString("dashboard", ":ThinkingFrames");
+    }
 
     /****************************** VALIDATION ********************************/
     @Override

@@ -412,7 +412,7 @@ const DEBOUNCE_DELAY = 300;
  *
  * Display diagram with only one element to start with
  * ```
- * <ontodia iri="http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object"></ontodia>
+ * <ontodia iri="http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object"></ontodia>
  * ```
  *
  * Specify a property to display image for elements:
@@ -422,7 +422,7 @@ const DEBOUNCE_DELAY = 300;
  *   CONSTRUCT {
  *     ?inst ?propType1 ?propValue1.
  *   } WHERE {
- *     BIND (<http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object> as ?inst)
+ *     BIND (<http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object> as ?inst)
  *     OPTIONAL {?propValue1 ?propType1 ?inst.  FILTER(isURI(?propValue1)). }
  *   } LIMIT 100
  * ' image-iris='["http://collection.britishmuseum.org/id/ontology/PX_has_main_representation"]'>
@@ -436,7 +436,7 @@ const DEBOUNCE_DELAY = 300;
  *   CONSTRUCT {
  *     ?inst ?propType1 ?propValue1.
  *   } WHERE {
- *     BIND (<http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object> as ?inst)
+ *     BIND (<http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object> as ?inst)
  *     OPTIONAL {?propValue1 ?propType1 ?inst.  FILTER(isURI(?propValue1)). }
  *   } LIMIT 100
  * '

@@ -193,7 +193,7 @@ const FORM_FIELDS: FieldDefinitionProp[] = [
     SELECT DISTINCT ?value ?label ?type WHERE {
       ?value rs:displayLabel ?label .
       ?value rdf:type ?type .
-      ?type rdfs:subClassOf* crm:E24_Physical_Man-Made_Thing .
+      ?type rdfs:subClassOf* crm:E24_Physical_Human-Made_Thing .
       SERVICE <http://www.bigdata.com/rdf/search#search> {
         ?label bds:search '*?token*' ;
           bds:relevance ?score .

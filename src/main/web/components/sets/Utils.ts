@@ -26,10 +26,11 @@ import { SetManagementEvents } from 'platform/api/services/ldp-set/SetManagement
 import { List } from 'immutable';
 import { addNotification } from '../ui/notification';
 import { ResourceLinkComponent } from 'platform/api/navigation/components/ResourceLinkComponent';
+import { ConfigHolder } from 'platform/api/services/config-holder';
 
 const ResourceLink = createFactory(ResourceLinkComponent);
 
-export function createNewSetFromItems(source: string, name: string, items: Rdf.Iri[]) {
+export function createNewSetFromItems(source: string, name: string, items: Rdf.Iri[]) {  
   return getSetServiceForUser()
     .flatMap((service) => service.createSetAndAddItems(name, List(items)))
     .onValue((value) => {
@@ -39,7 +40,7 @@ export function createNewSetFromItems(source: string, name: string, items: Rdf.I
         autoDismiss: 1000,
         title: 'Set created!',
         children: (
-          ResourceLink({ iri: 'http://www.researchspace.org/resource/ThinkingFrames', 
+          ResourceLink({ iri: ConfigHolder.getDashboard().value, 
             urlqueryparamView: 'single-set-management', 
             urlqueryparamResourceIri: value[0].containerIri.value, 
             className:'text-link' }, name )

@@ -24,6 +24,7 @@ import * as _ from 'lodash';
 
 import { Rdf } from 'platform/api/rdf';
 import { SparqlClient } from 'platform/api/sparql';
+import { ConfigHolder } from 'platform/api/services/config-holder';
 
 export interface DataSetMappings {
   /** Query variable to pivot on. */
@@ -261,6 +262,7 @@ export interface ChartTooltipPoint {
    */
   markerClass?: string;
 }
+const dashboard = ConfigHolder.getDashboard()?ConfigHolder.getDashboard().value:"http://www.researchspace.org/resource/ThinkingFrames";
 
 export const TOOLTIP_ID = 'mp-semantic-chart-tooltip';
 export const DEFAULT_TOOLTIP_MARKUP = `<div>
@@ -282,7 +284,7 @@ export const DEFAULT_TOOLTIP_MARKUP = `<div>
         {{#ifCond category.label "==" "Unknown"}}
           <span>{{category.label}}</span>
         {{else}}
-          <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+          <semantic-link iri="`+dashboard+`"
                       urlqueryparam-view='resource-editor' 
                       urlqueryparam-resource-iri='{{category.iri}}'
                       style="text-decoration:underline;">{{category.label}}
@@ -299,7 +301,7 @@ export const DEFAULT_TOOLTIP_MARKUP = `<div>
         {{> @marker style=markerStyle class=markerClass}}
         {{#if iri}}
           <div style="display:flex;">
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+            <semantic-link iri="`+dashboard+`"
                           urlqueryparam-view='resource-editor' 
                           urlqueryparam-resource-iri='{{iri}}'>{{label}}</semantic-link>: {{value}}
             </div>

@@ -43,6 +43,7 @@ import * as Kefir from 'kefir';
 import Icon from '../ui/icon/Icon';
 
 import { BuiltInEvents,  registerEventSource, unregisterEventSource } from 'platform/api/events';
+import { ConfigHolder } from 'platform/api/services/config-holder';
 
 export interface Item {
   readonly id: string;
@@ -147,6 +148,8 @@ export interface Props {
   rightPanels?: {template: string, label: string, class?: string}[];
 
   homePageIri?: string;
+  dashboardIri: Rdf.Iri;
+    
 }
 
 export interface State {
@@ -159,6 +162,7 @@ export class DashboardComponent extends Component<Props, State> {
   static defaultProps: Partial<Props> = {
     frameMinSize: 260,
     linkedViews: [],
+    dashboardIri: ConfigHolder.getDashboard()
   };
 
   private readonly cancellation = new Cancellation();
@@ -241,6 +245,7 @@ export class DashboardComponent extends Component<Props, State> {
         }
       }),
     };
+ 
   }
 
   componentDidMount() {
@@ -316,7 +321,7 @@ export class DashboardComponent extends Component<Props, State> {
       );
     }
 
-   
+    
     // That is ugly hack for in frame navigation until we find a better way to do this
     setFrameNavigation(true, (iri: Rdf.Iri, props?: {}): boolean => {
       if (iri.value.startsWith('http://www.researchspace.org/instances/narratives')) {
@@ -331,7 +336,7 @@ export class DashboardComponent extends Component<Props, State> {
           }
         });
         return true;
-      } else if (iri.value === 'http://www.researchspace.org/resource/ThinkingFrames' && props && props['view']) {
+      } else if (iri.value === this.props.dashboardIri.value && props && props['view']) {
         trigger({
           eventType: 'Dashboard.AddFrame',
           source: 'link',
@@ -343,7 +348,7 @@ export class DashboardComponent extends Component<Props, State> {
           }
         });
         return true;
-      } else if (iri.value === 'http://www.researchspace.org/resource/ThinkingFrames') {
+      } else if (iri.value === this.props.dashboardIri.value) {
         trigger({
           eventType: 'Dashboard.AddFrame',
           source: 'link',

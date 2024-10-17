@@ -124,6 +124,8 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
       {{> rsp:ResourceCard  iri=iri
                             viewId="setItem"
                             dragAndDropInputCard=true
+                            height=150
+                            width=120
       }}
     `
   }

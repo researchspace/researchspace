@@ -93,9 +93,44 @@
 
                            <semantic-if query='ASK { <{{iri}}> crm:P2_has_type <http://www.researchspace.org/pattern/system/resource_configuration/configuration_type/system> . }'
                                           then='{{> system}}'
+                                          else='{{>else}}'
                             >
                                 <template id='system'>
                                   <span class="badge badge--secondary" style="height: 28px; width: 54px;">System</span>
+                                </template>
+
+                                <template id='else'>
+                                  <semantic-query query='SELECT ?resourceConfiguration ?resourceConfigurationName ?iriOntologyClass ?iriType WHERE { 
+                                                          <{{iri}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?iriOntologyClass .
+                                                          ?resourceConfiguration crm:P2_has_type <http://www.researchspace.org/pattern/system/resource_configuration/configuration_type/system> . 
+                                                          ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceConfigurationName .
+                                                          ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?iriOntologyClass . 
+
+                                                          OPTIONAL {
+                                                            <{{iri}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?iriP2Type .
+                                                            BIND(true as ?iriType)
+                                                          }
+                                                          FILTER(NOT EXISTS{ ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .})
+                                                        }'
+                                                template='{{> template}}'>
+
+                                    <template id='template'>
+                                      {{#if (not bindings.0.iriType.value)}}
+                                        <mp-popover title="Error">
+                                          <mp-popover-trigger placement="right" trigger='["click","hover","focus"]'> 
+                                            <div class="badge badge--danger" style="height: 28px; width: 54px;">
+                                              <rs-icon icon-type="rounded" icon-name="block" symbol="true" style="font-size: 20px;"></rs-icon>
+                                            </div>
+                                          </mp-popover-trigger>
+                                          <mp-popover-content>
+                                            <b>A configuration for <mp-label iri='{{bindings.0.iriOntologyClass.value}}' style="text-transform: uppercase;"></mp-label> already exists!</b>
+                                            <div>Don't create a new configuration for ontology class <mp-label iri='{{bindings.0.iriOntologyClass.value}}'></mp-label>, but just 
+                                              modify the existing <span style="text-transform: uppercase;">{{bindings.0.resourceConfigurationName.value}}</span> system configuration. Otherwise a custom configuration can be created adding a configuration Type.</div>
+                                          </mp-popover-content>
+                                        </mp-popover>
+                                      {{/if}}
+                                    </template>
+                                  </semantic-query>
                                 </template>
                             </semantic-if> 
 

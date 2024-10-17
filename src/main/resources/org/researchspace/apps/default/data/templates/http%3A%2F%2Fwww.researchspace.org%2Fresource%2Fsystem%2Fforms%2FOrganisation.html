@@ -28,9 +28,14 @@
                             place_postcode="http://www.researchspace.org/pattern/system/place/postcode" 
                             place_overlaps_with_place="http://www.researchspace.org/pattern/system/place/overlaps_with_place"
                             place_borders_with_place="http://www.researchspace.org/pattern/system/place/borders_with_place"
+                            place_approximates_place="http://www.researchspace.org/pattern/system/place/approximates_place"
+                            place_approximated_by_place="http://www.researchspace.org/pattern/system/place/approximated_by_place"
                             entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
                             entity_id="http://www.researchspace.org/pattern/system/entity/identifier"
+
                             place_geo_coordinates="http://www.researchspace.org/pattern/system/place/osm_geo_coordinates"
+                            place_within_geo_coordinates="http://www.researchspace.org/pattern/system/place/within_geo_coordinates"
+                            place_contains_geo_coordinates="http://www.researchspace.org/pattern/system/place/contains_geo_coordinates"
 
                             actor_nationality="http://www.researchspace.org/pattern/system/actor/nationality"
                             actor_contact_point="http://www.researchspace.org/pattern/system/actor/contact_point"
@@ -294,6 +299,20 @@
                                                 ]'>
                 </semantic-form-autocomplete-input>
 
+                <semantic-form-autocomplete-input   for="place_approximates_place" 
+                                                    label="Approximates place" 
+                                                    placeholder="Enter place name"
+                                                    nested-form-templates='[ 
+                                                        {
+                                                            "label": "Place",
+                                                            "nestedForm": "{{{{raw}}}}
+                                                                            {{> \"http://www.researchspace.org/resource/system/forms/Place\" nested=true editable=true mode=\"new\"
+                                                                            apiResourceURI=false apiResourceName=false apiResourceLabel=false apiResourceDescription=false apiResourceosmGeoCoordinates=false}}
+                                                                        {{{{/raw}}}}"
+                                                        }
+                                                    ]'>
+                </semantic-form-autocomplete-input>
+
                 <semantic-form-autocomplete-input for='actor_residence' 
                                                 label="Residence" 
                                                 placeholder="Select current or former residence" 
@@ -310,7 +329,21 @@
 
             </rs-tab>
 
-            <rs-tab event-key="component" title="Components">
+            <rs-tab event-key="geoCoordinates" title="Location geographic coordinates">
+                {{#if apiResourceosmGeoCoordinates}}
+                    <div class="focused-input-container">
+                    <semantic-form-text-input for="place_geo_coordinates" default-value='{{apiResourceosmGeoCoordinates}}' label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true></semantic-form-text-input>
+                    </div>
+                {{else}}
+                    <semantic-form-text-input for="place_geo_coordinates" label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input>
+                {{/if}}
+
+                <semantic-form-text-input for="place_within_geo_coordinates" label="Within geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input>
+
+        <semantic-form-text-input for="place_contains_geo_coordinates" label="Contains geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input>
+            </rs-tab>
+
+            <rs-tab event-key="component" title="Location components">
                 {{#if scheme}}
                 <semantic-form-tree-picker-input  for="place_falls_within_place" 
                                                     label="Falls within place" 
@@ -1067,7 +1100,7 @@
                     <semantic-form-autocomplete-input for='depicts_thing_domain' 
                                                         render-header="false"
                                                         placeholder="Select what depicts the organisation"
-                                                        nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'>
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_physicalHumanMadeThings]]'>
                     </semantic-form-autocomplete-input>
                     </div>
                     <div style="flex: 1;">

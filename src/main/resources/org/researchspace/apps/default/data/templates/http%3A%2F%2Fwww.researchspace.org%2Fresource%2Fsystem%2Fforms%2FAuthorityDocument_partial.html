@@ -16,7 +16,7 @@
                           entity_web_URL="http://www.researchspace.org/pattern/system/entity/web_URL_embed"
                         
                           entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
-                          man-made_thing_title="http://www.researchspace.org/pattern/system/man-made_thing/PC102_has_title"
+                          human-made_thing_title="http://www.researchspace.org/pattern/system/human-made_thing/PC102_has_title"
                           authority_document_type="http://www.researchspace.org/pattern/system/authority_document/type"
                           document_abstract="http://www.researchspace.org/pattern/system/document/abstract"
                           entity_description="http://www.researchspace.org/pattern/system/entity/description"
@@ -37,7 +37,7 @@
                           symbolic_object_part_of="http://www.researchspace.org/pattern/system/symbolic_object/part_of"
                           symbolic_object_composed_of="http://www.researchspace.org/pattern/system/symbolic_object/composed_of"
 
-                          man-made_thing_was_intended_for="http://www.researchspace.org/pattern/system/man-made_thing/was_intended_for"
+                          human-made_thing_was_intended_for="http://www.researchspace.org/pattern/system/human-made_thing/was_intended_for"
                           thing_general_use="http://www.researchspace.org/pattern/system/thing/had_as_general_use"
                           thing_dimension="http://www.researchspace.org/pattern/system/thing/dimension"
 
@@ -46,7 +46,7 @@
 
                           symbolic_object_used_in="http://www.researchspace.org/pattern/system/symbolic_object/used_in"
                           conceptual_object_created_by="http://www.researchspace.org/pattern/system/conceptual_object/created_by"
-                          man-made_thing_was_intended_use_of_range="http://www.researchspace.org/pattern/system/man-made_thing/was_intended_use_of_range"
+                          human-made_thing_was_intended_use_of_range="http://www.researchspace.org/pattern/system/human-made_thing/was_intended_use_of_range"
                           thing_used_specific_object_range="http://www.researchspace.org/pattern/system/thing/used_specific_object_range"
                           persistent_item_present_at="http://www.researchspace.org/pattern/system/persistent_item/present_at"
                           persistent_item_brought_into_existence_by="http://www.researchspace.org/pattern/system/persistent_item/brought_into_existence_by"
@@ -84,7 +84,7 @@
         <semantic-form-text-input for="entity_primary_appellation" label="Authority document name" placeholder="Enter authority document name"></semantic-form-text-input>
       
         <div class="inline-composite-container">
-          <semantic-form-composite-input  for="man-made_thing_title" 
+          <semantic-form-composite-input  for="human-made_thing_title" 
                                           label="Title"
                                           new-subject-template="/PC102_has_title/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
                                           fields='[[fieldDefinitions
@@ -190,7 +190,7 @@
             
       </rs-tab>
 
-      <rs-tab event-key="lists" title="List of resources" class-name="tab_overflow_hidden">
+      <rs-tab event-key="lists" title="List of resources" class="tab_height-auto">
 
           <div style="display: flex; align-items: baseline; justify-content: space-between;">
             <div class="customFormHeader">Resource type<span style="margin-bottom: 2px; margin-left: 2px;">*</span></div>
@@ -205,7 +205,7 @@
               <mp-popover title="Resource type">
                 <mp-popover-trigger placement="bottom" trigger='["hover", "click"]'>
                   <div class="badge badge--default">
-                    <rs-icon icon-type="round" icon-name="question_mark"></rs-icon>
+                    <rs-icon icon-type="rounded" icon-name="question_mark" symbol="true"></rs-icon>
                   </div>
                 </mp-popover-trigger>
                 <mp-popover-content>
@@ -225,22 +225,6 @@
                           
             <mp-event-target-template-render id="{{node}}-listOfResources-container" template='{{> template}}'>
                 <template id='template'>
-
-                    <mp-event-proxy id='{{node}}-update-listOfResources-on-create-setWithSelection'
-                                    on-event-types='["Components.SetManagement.SetAdded"]'
-                                    on-event-source='{{node}}-new-set-with-selection'
-                                    proxy-event-type='Component.TemplateUpdate' 
-                                    proxy-targets='["{{node}}-listOfResources-container"]'
-                                    additional-data='{"setCreated": true }' >
-                    </mp-event-proxy>
-                
-                    <mp-event-proxy id='{{node}}-update-listOfResources-on-create-setWithResults'
-                                    on-event-types='["Components.SetManagement.SetAdded"]'
-                                    on-event-source='{{node}}-new-set-with-results'
-                                    proxy-event-type='Component.TemplateUpdate' 
-                                    proxy-targets='["{{node}}-listOfResources-container"]'
-                                    additional-data='{"setCreated": true }' >
-                    </mp-event-proxy>
 
                     <semantic-search id="{{node}}-listOfResources-search">
                         <div class="semantic-search-header-actions">
@@ -283,7 +267,7 @@
                             [[#if (hasPermission "forms:ldp:*")]]
                                 <bs-dropdown id="{{node}}-search-actions-dropdown" pull-right=true class="dropdown-no-caret">
                                     <bs-dropdown-toggle>
-                                        <rs-icon icon-type="round" icon-name="more_vert"></rs-icon>
+                                        <rs-icon icon-type="rounded" icon-name="more_vert" symbol="true"></rs-icon>
                                     </bs-dropdown-toggle>
 
                                     <bs-dropdown-menu>
@@ -301,45 +285,6 @@
                                 </bs-dropdown>
                             [[/if]]
                         </div>
-
-                        <mp-event-target-template-render id='{{node}}--resource-created-new-set-message' template='{{> template}}'>
-                            <template id='template'>
-                              {{#if hideMessage}}
-                              {{else if setCreated}}
-                                  <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%; margin-top: 10px;">
-                                    <div class="success-documentation-section-icon-container">
-                                      <rs-icon icon-type="round" icon-name="done"></rs-icon>
-                                    </div>
-                  
-                                    <div style="flex: 1;"> 
-                                      <div class="success-documentation-section-title">New set created!</div>
-                                      <div class="success-documentation-section-content" style="display: flex; gap: 5px;">
-                                        <mp-draggable iri='{{containerIri}}'>
-                                          <div>
-                                            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                            urlqueryparam-view='single-set-management'
-                                                            urlqueryparam-resource='{{containerIri}}'>
-                                              <mp-label iri='{{containerIri}}' class="text-link color-success-text"></mp-label>
-                                            </semantic-link>
-                                          </div>
-                                        </mp-draggable>
-                                        <span> has been created.</span>
-                                      </div>
-                                    </div>
-                                    
-                                    <mp-event-trigger id='{{node}}-created-set-close-message'
-                                                      type='Component.TemplateUpdate'
-                                                      data='{ "hideMessage": "true" }'
-                                                      targets='["{{node}}--resource-created-new-set-message"]'
-                                    >
-                                      <button class="btn btn-documentation">
-                                        <rs-icon icon-type="round" icon-name="close"></rs-icon>
-                                      </button>
-                                    </mp-event-trigger>
-                                  </div>
-                              {{/if}}
-                            </template>
-                          </mp-event-target-template-render>
                         
                         <div data-flex-layout="row stretch-stretch" class='search-results-area'>
                             <semantic-search-result-holder>
@@ -386,7 +331,7 @@
                             
                                                         no-result-template='<div class="table-no-results">
                                                                                 <div class="no-results-container">
-                                                                                  <rs-icon icon-type="round" icon-name="search_off" class="no-results-icon"></rs-icon>
+                                                                                  <rs-icon icon-type="rounded" icon-name="search_off" symbol="true" class="no-results-icon"></rs-icon>
                                                                                   <div class="no-results-text">No resource found</div>
                                                                                 </div>
                                                                                 <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
@@ -412,12 +357,9 @@
                                         >
                                           <template id='selectionCheckbox'>
                                             [[#if (hasPermission "forms:ldp:*")]]
-                                              {{#if (or (eq listedResourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") (eq listedResourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map"))}}
-                                              {{else}}
-                                                <div>
-                                                  <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
-                                                </div>
-                                              {{/if}}
+                                              <div>
+                                                <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
+                                              </div>
                                             [[/if]]
                                           </template>
 
@@ -442,9 +384,9 @@
                                                               <mp-resource-thumbnail-fallback>
                                                                 <mp-draggable iri='{{iri.value}}'>
                                                                   {{#if resourceIcon}}
-                                                                    <rs-icon icon-type="rounded" icon-name="{{resourceIcon}}" symbol=true class='resource-thumbnail-small-fallback-icon'></rs-icon>
+                                                                    <rs-icon icon-type="rounded" icon-name="{{resourceIcon}}" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
                                                                   {{else}}
-                                                                    <rs-icon icon-type="rounded" icon-name="image" symbol=true class='resource-thumbnail-small-fallback-icon'></rs-icon>
+                                                                    <rs-icon icon-type="rounded" icon-name="image" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
                                                                   {{/if}}
                                                                 </mp-draggable>
                                                               </mp-resource-thumbnail-fallback>
@@ -458,7 +400,6 @@
                                                                                   "listedResourceConfig": "{{listedResourceConfig.value}}", 
                                                                                   "resourceConfigLabel": "{{resourceConfigLabel}}",
                                                                                   "resourceDescription": "{{description.value}}",
-                                                                                  "modalId": "{{iri.value}}-resource-preview-dialog",
                                                                                   "resourceDetailSection": true
                                                                                   }' >
                                                       </inline-template> 
@@ -469,29 +410,15 @@
                                                 <div>
                                                   <mp-draggable iri='{{iri.value}}'>
                                                     <div>
-                                                      {{#if (eq listedResourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map")}}
-                                                        <mp-event-trigger id='{{iri.value}}-open-km-title-trigger' 
-                                                                          type='Dashboard.AddFrame'
-                                                                          data='{"viewId":"knowledge-map", 
-                                                                                  "resourceIri": "{{iri.value}}"}' 
-                                                                          targets='["thinking-frames"]'>
-                                                          <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
-                                                        </mp-event-trigger>
-                                                      {{else if (eq listedResourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
+                                                      {{#if (eq listedResourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
                                                         <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
                                                                         urlqueryparam-view='authority-list'
                                                                         urlqueryparam-resource='{{iri.value}}'>
                                                           <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
                                                         </semantic-link>
-                                                      {{else if (eq listedResourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
-                                                        <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                                        urlqueryparam-view='single-set-management'
-                                                                        urlqueryparam-resource='{{iri.value}}'>
-                                                          <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
-                                                        </semantic-link>
                                                       {{else}}
                                                         <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                                        urlqueryparam-view='{{#if (eq listedResourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}semantic-narrative{{else}}resource-editor{{/if}}'
+                                                                        urlqueryparam-view='resource-editor'
                                                                         urlqueryparam-resource='{{iri.value}}'>
                                                           <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
                                                         </semantic-link>
@@ -533,7 +460,7 @@
                                                       {{#if (eq bindings.0.columnContentType2.value "icon actor")}}
                                                         <mp-popover>
                                                           <mp-popover-trigger placement="bottom" trigger='["click", "focus"]'> 
-                                                            <rs-icon icon-type="round" icon-name="people_alt" class="people-icon"></rs-icon>
+                                                            <rs-icon icon-type="rounded" icon-name="people_alt" class="people-icon" symbol="true"></rs-icon>
                                                           </mp-popover-trigger>
                                                           <mp-popover-content>
                                                             <div style="display: flex; flex-direction: column; gap: 5px;">
@@ -598,7 +525,7 @@
                                                       {{#if (eq bindings.0.columnContentType3.value "icon actor")}}
                                                         <mp-popover>
                                                           <mp-popover-trigger placement="bottom" trigger='["click", "focus"]'> 
-                                                            <rs-icon icon-type="round" icon-name="people_alt" class="people-icon"></rs-icon>
+                                                            <rs-icon icon-type="rounded" icon-name="people_alt" class="people-icon" symbol="true"></rs-icon>
                                                           </mp-popover-trigger>
                                                           <mp-popover-content>
                                                             <div style="display: flex; flex-direction: column; gap: 5px;">
@@ -659,7 +586,7 @@
                                                       {{#if (eq bindings.0.columnContentType4.value "icon actor")}}
                                                         <mp-popover>
                                                           <mp-popover-trigger placement="bottom" trigger='["click", "focus"]'> 
-                                                            <rs-icon icon-type="round" icon-name="people_alt" class="people-icon"></rs-icon>
+                                                            <rs-icon icon-type="rounded" icon-name="people_alt" class="people-icon" symbol="true"></rs-icon>
                                                           </mp-popover-trigger>
                                                           <mp-popover-content>
                                                             <div style="display: flex; flex-direction: column; gap: 5px;">
@@ -715,14 +642,16 @@
                                                 </button>
                                               </mp-draggable>
                                           
-                                              {{> rsp:ResourceDropdownActions viewId=viewId
-                                                                              iri=iri.value
-                                                                              resourceConfig=listedResourceConfig
-                                                                              resourceLabel=resourceConfigLabel
-                                                                              resourceOntologyClass=resourceOntologyClass
-                                                                              resourceDescription=description.value
-                                                                              resourceFormIRI=resourceConfigFormIRI
-                                              }}
+                                              <rs-resource-dropdown id="{{viewId}}-{{iri.value}}-item-actions-dropdown" class-name="dropdown-no-caret" toggle-class-name="border-none">
+                                                {{> rsp:ResourceDropdownActions viewId=viewId
+                                                                                iri=iri.value
+                                                                                resourceConfig=listedResourceConfig
+                                                                                resourceLabel=resourceConfigLabel
+                                                                                resourceOntologyClass=resourceOntologyClass
+                                                                                resourceDescription=description.value
+                                                                                resourceFormIRI=resourceConfigFormIRI
+                                                }}
+                                              </rs-resource-dropdown>
                                             </div>
                                           </template>
                                 
@@ -745,7 +674,6 @@
       </rs-tab>
 
       <rs-tab event-key="documents" title="Resource documented">
-
         <div class="formWholePageSection-container">
           <div class="page__section-container formWholePageSection">
             <bs-tab-container id="{{viewId}}-documentForm-resources-tabs" default-active-key="listView" class="form-assetView-tabs">
@@ -754,10 +682,10 @@
                       <h4>Resource documented</h4>
                       <bs-nav class="icon-tabs">
                           <bs-nav-item event-key="thumbnailView" title="thumbnail view">
-                              <rs-icon icon-type="round" icon-name="view_module"></rs-icon>
+                              <rs-icon icon-type="sharp" icon-name="view_module"></rs-icon>
                           </bs-nav-item>
                           <bs-nav-item event-key="listView" title="list view">
-                              <rs-icon icon-type="round" icon-name="view_list"></rs-icon>
+                              <rs-icon icon-type="sharp" icon-name="view_list"></rs-icon>
                           </bs-nav-item>
                       </bs-nav>
                     </div>
@@ -1066,7 +994,7 @@
       
       <rs-tab event-key="type" title="Type/Dimensions">
     
-        <semantic-form-autocomplete-input   for='man-made_thing_was_intended_for' 
+        <semantic-form-autocomplete-input   for='human-made_thing_was_intended_for' 
                                             label="Was intended for" 
                                             placeholder="Select the type describing the intended usage of the authority document" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_types]]'>
@@ -1086,6 +1014,11 @@
                                                     "label": "Dimension",
                                                     "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Dimension\" nested=true editable=true mode=\"new\"}}
                                                                 {{{{/raw}}}}"
+                                                },
+                                                {
+                                                  "label": "Monetary amount",
+                                                  "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/MonetaryAmount\" nested=true editable=true mode=\"new\"}}
+                                                              {{{{/raw}}}}"
                                                 }
                                             ]'> 
         </semantic-form-autocomplete-input>
@@ -1124,7 +1057,7 @@
         </semantic-form-autocomplete-input> 
 
         <div class="inline-composite-container">
-            <semantic-form-composite-input  for="man-made_thing_was_intended_use_of_range"
+            <semantic-form-composite-input  for="human-made_thing_was_intended_use_of_range"
                                             label="Made for"
                                             new-subject-template="/PC19_was_intended_use_of/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
                                             fields='[[fieldDefinitions
@@ -1431,7 +1364,7 @@
               <semantic-form-autocomplete-input for='depicts_thing_domain' 
                                                 render-header="false"
                                                 placeholder="Select what depicts the authority document"
-                                                nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'>
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_physicalHumanMadeThings]]'>
               </semantic-form-autocomplete-input>
             </div>
             <div style="flex: 1;">

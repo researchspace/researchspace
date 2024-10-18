@@ -240,7 +240,7 @@ class FieldEditorComponent extends Component<Props, State> {
             placement="bottom"
             overlay={<Popover id="tooltip">{tooltip}</Popover>}
           >
-            <Icon iconType='round' iconName='help' style={ {position:'absolute', top: '-5px', right: '-6px', fontSize: '20px'} }/>
+            <Icon iconType='rounded' iconName='help' symbol style={ {position:'absolute', top: '-5px', right: '-6px', fontSize: '20px'} }/>
           </OverlayTrigger>
         </div>
     )
@@ -350,7 +350,7 @@ class FieldEditorComponent extends Component<Props, State> {
           } as SemanticTreeInputProps),           
           createElement(ResourceLinkComponent, {
             "target": "_blank",
-            "uri": "http://www.researchspace.org/resource/ThinkingFrames",
+            "uri": ConfigHolder.getDashboard().value,
             "urlqueryparam-view": "authority-list",
             "urlqueryparam-resource": "http://www.researchspace.org/resource/system/FieldCategories"
           } as ResourceLinkProps, btn(

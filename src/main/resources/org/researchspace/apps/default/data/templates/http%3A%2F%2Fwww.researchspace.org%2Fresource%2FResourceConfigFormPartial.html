@@ -96,9 +96,36 @@
       </div>
       <div class="btn-inline-container">
         {{#ifCond mode "!==" "new"}}
+          {{#if (not system_resource_config)}}
+            <semantic-query query='SELECT ?resourceConfiguration ?resourceConfigurationName WHERE { 
+                                    ?resourceConfiguration crm:P2_has_type <http://www.researchspace.org/pattern/system/resource_configuration/configuration_type/system> . 
+                                    ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceConfigurationName .
+                                    ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> <{{resource_ontology_class}}> . 
+                                    FILTER(NOT EXISTS{ ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .})
+                                  }'
+                          template='{{> template}}'>
+
+              <template id='template'>
+                {{#if (not resource_type)}}
+                  <mp-popover title="Error">
+                    <mp-popover-trigger placement="bottom" trigger='["click","hover","focus"]'> 
+                      <div class="badge badge--danger" style="width: 36px; height: 36px;">
+                        <rs-icon icon-type="rounded" icon-name="block" symbol="true" style="font-size: 20px;"></rs-icon>
+                      </div>
+                    </mp-popover-trigger>
+                    <mp-popover-content>
+                      <b>A configuration for <mp-label iri='{{resource_ontology_class}}' style="text-transform: uppercase;"></mp-label> already exists!</b>
+                      <div>Don't create a new configuration for ontology class <mp-label iri='{{resource_ontology_class}}'></mp-label>, but just 
+                        modify the existing <span style="text-transform: uppercase;">{{bindings.0.resourceConfigurationName.value}}</span> system configuration. Otherwise a custom configuration can be created adding a configuration Type.</div>
+                    </mp-popover-content>
+                  </mp-popover>
+                {{/if}}
+              </template>
+            </semantic-query>
+          {{/if}}
           <mp-copy-to-clipboard text='{{node}}' message='IRI has been copied'>
             <button class="btn btn-default btn-textAndIcon" title="Copy IRI">
-              <rs-icon icon-type="round" icon-name="content_copy"></rs-icon>
+              <rs-icon icon-type="rounded" icon-name="content_copy" symbol="true"></rs-icon>
               Copy IRI
             </button>
           </mp-copy-to-clipboard>
@@ -112,7 +139,7 @@
                                 {{#if resourceBroaderProperty}}"resourceBroaderProperty":"{{resourceBroaderProperty}}",{{/if}} 
                                 "iri": "{{node}}"}' >
           <button class="btn btn-default btn-textAndIcon" title="Refresh form">
-            <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
+            <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
               Refresh
           </button>
         </mp-event-trigger>
@@ -176,14 +203,14 @@
             <div class="select-input-disabled-container">
               <semantic-form-select-input for='resource_ontology_class' 
                                           label="Ontology class (CIDOC-CRM, Skos, etc.)" 
-                                          placeholder="Select the ontology class (e.g. CIDOC-CRM Man-Made object, Place, etc.)"  
+                                          placeholder="Select the ontology class (e.g. CIDOC-CRM  object, Place, etc.)"  
                                           readonly="true"> 
               </semantic-form-select-input>
             </div>
           {{else}}
             <semantic-form-tree-picker-input for="resource_ontology_class" 
                                             label="Ontology class (CIDOC-CRM, Skos, etc.)"
-                                            placeholder="Select the ontology class (e.g. CIDOC-CRM Man-Made object, Place, etc.)" 
+                                            placeholder="Select the ontology class (e.g. CIDOC-CRM  object, Place, etc.)" 
                                             close-dropdown-on-selection='true'
                                             query-item-label='SELECT ?label WHERE {
                                                 ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.
@@ -191,6 +218,43 @@
                                               }'
                                               
             ></semantic-form-tree-picker-input>
+          {{/if}}
+
+          {{#if node}}
+            {{#if (not system_resource_config)}}
+              <semantic-query query='SELECT ?resourceConfiguration ?resourceConfigurationName WHERE { 
+                                        ?resourceConfiguration crm:P2_has_type <http://www.researchspace.org/pattern/system/resource_configuration/configuration_type/system> . 
+                                        ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceConfigurationName .
+                                        ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> <{{resource_ontology_class}}> . 
+
+                                        OPTIONAL {
+                                          ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .
+                                          BIND(true as ?resourceType)
+                                        }
+                                        
+                                        FILTER(NOT EXISTS{ ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .})
+                                      }'
+                              template='{{> template}}'>
+
+                <template id='template'>
+                  {{#if (not resource_type)}}
+                    <div>
+                      <div class="danger-documentation-section danger-documentation-section-withIcon" style="margin-top: 5px;">
+                        <div class="danger-documentation-section-icon-container">
+                          <rs-icon icon-type="rounded" icon-name="block" symbol="true"></rs-icon>
+                        </div>
+                
+                        <div> 
+                          <div class="danger-documentation-section-title">A configuration for <mp-label iri='{{resource_ontology_class}}' style="text-transform: uppercase;"></mp-label> already exists!</div>
+                          <div class="danger- documentation-section-content">Don't create a new configuration for ontology class <mp-label iri='{{resource_ontology_class}}'></mp-label>, but just 
+                            modify the existing <span style="text-transform: uppercase;">{{bindings.0.resourceConfigurationName.value}}</span> system configuration. Otherwise a custom configuration can be created adding a configuration Type below.</div>
+                        </div>
+                      </div>
+                    </div>
+                  {{/if}}
+                </template>
+              </semantic-query>
+            {{/if}}
           {{/if}}
 
           {{#if system_resource_config}}
@@ -251,8 +315,8 @@
                   <semantic-query query='SELECT ?form WHERE { <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?form}'>
                     <template id='template'>
                       <semantic-link-container uri='{{bindings.0.form.value}}' urlqueryparam-action='edit' target='_blank'>
-                          <button class="btn btn-primary btn-textAndIcon">
-                            <rs-icon icon-type="round" icon-name="edit" title="Edit form"></rs-icon>
+                          <button class="btn btn-default btn-textAndIcon" style="height: 38px;">
+                            <rs-icon icon-type="rounded" icon-name="edit" title="Edit form" symbol="true" symbol="true"></rs-icon>
                             Edit form
                           </button>
                       </semantic-link-container>
@@ -275,14 +339,14 @@
                       target="_blank" 
                       href="https://fonts.google.com/icons?icon.set=Material+Icons"
                       title="Google material icons">
-                      <rs-icon icon-type="round" icon-name="search" class="icon-left"></rs-icon>
+                      <rs-icon icon-type="rounded" icon-name="search" class="icon-left" symbol="true"></rs-icon>
                       <span>Search icon</span> 
                   </a>
                 </span>
                 <mp-popover title="Resource icon">
                   <mp-popover-trigger placement="bottom" trigger='["hover", "click"]'>
                     <div class="badge">
-                      <rs-icon icon-type="round" icon-name="question_mark"></rs-icon>
+                      <rs-icon icon-type="rounded" icon-name="question_mark" symbol="true"></rs-icon>
                     </div>
                   </mp-popover-trigger>
                   <mp-popover-content>
@@ -331,14 +395,14 @@
                         target="_blank" 
                         href="https://fonts.google.com/icons?icon.set=Material+Icons"
                         title="Google material icons">
-                        <rs-icon icon-type="round" icon-name="search" class="icon-left"></rs-icon>
+                        <rs-icon icon-type="rounded" icon-name="search" class="icon-left" symbol="true"></rs-icon>
                         <span>Search icon</span> 
                     </a>
                   </span>
                   <mp-popover title="Resource icon">
                     <mp-popover-trigger placement="bottom" trigger='["hover", "click"]'>
                       <div class="badge">
-                        <rs-icon icon-type="round" icon-name="question_mark"></rs-icon>
+                        <rs-icon icon-type="rounded" icon-name="question_mark" symbol="true"></rs-icon>
                       </div>
                     </mp-popover-trigger>
                     <mp-popover-content>
@@ -360,7 +424,7 @@
       </rs-tab>
       --]]
       [[!--
-      <rs-tab event-key="context" title="Resource context page" class-name="tab_overflow_hidden" disabled="{{#if node}}false{{else}}true{{/if}}">
+      <rs-tab event-key="context" title="Resource context page" class-name="" disabled="{{#if node}}false{{else}}true{{/if}}">
         <div class="form-section-header">
           <div>Enter the context page configurations for: Navigation menu, Views and Filters.</div>
         </div>
@@ -433,7 +497,9 @@
       --]]
 
       {{#if (or (eq resourceConfiguration "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map")
+                (eq resourceConfiguration "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")
                 (eq resourceConfiguration "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")
+                (eq resourceConfiguration "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline")
                 (eq resourceConfiguration "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")
                 (eq resourceConfiguration "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item")
       )}}
@@ -531,7 +597,7 @@
                       {{#if value}}
                         <div class="warning-documentation-section warning-documentation-section-withIcon" style="margin-top: 5px;">
                           <div class="warning-documentation-section-icon-container">
-                            <rs-icon icon-type="round" icon-name="priority_high"></rs-icon>
+                            <rs-icon icon-type="rounded" icon-name="priority_high" symbol="true"></rs-icon>
                           </div>
                   
                           <div> 
@@ -551,7 +617,7 @@
                           <template id='then'>
                             <div class="danger-documentation-section danger-documentation-section-withIcon" style="margin-top: 5px;">
                               <div class="danger-documentation-section-icon-container">
-                                <rs-icon icon-type="round" icon-name="block"></rs-icon>
+                                <rs-icon icon-type="rounded" icon-name="block" symbol="true"></rs-icon>
                               </div>
                       
                               <div> 
@@ -832,7 +898,7 @@
                                         targets='["{{viewId}}-resourceFinder-finderPreviewContainer"]'
                                         >
                         <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh finder">
-                          <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
+                          <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
                             Refresh
                         </button>
                       </mp-event-trigger>

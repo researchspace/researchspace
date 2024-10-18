@@ -94,6 +94,10 @@ uses client-side templates:
                         ?field  <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/image_annotation> .
                         }
                       UNION {
+                         ?field <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.researchspace.org/resource/system/fields/Field>;
+                         <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/knowledge_map> .  
+                      }
+                      UNION {
                         VALUES (?value){(<http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation>)
                               (<http://www.researchspace.org/pattern/system/entity/primary_appellation>)
                               (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>)
@@ -106,12 +110,12 @@ uses client-side templates:
 
                         BIND(?value as ?field)
                       }
-                      MINUS {
-                        VALUES (?value) {
-                        (<http://www.ics.forth.gr/isl/CRMdig/L47_has_comment>)
-                        (<http://www.w3.org/2000/01/rdf-schema#label>)
-                        }
-                      }
+                      FILTER (!CONTAINS(STR(?field),"http://www.ics.forth.gr/isl/CRMdig/L47_has_comment"))
+                      FILTER (!CONTAINS(STR(?field),"http://www.w3.org/2000/01/rdf-schema#label"))
+                      FILTER (!CONTAINS(STR(?field),"http://www.ics.forth.gr/isl/CRMdig/L53_is_not_uniquely_identified_by"))
+                      FILTER (!CONTAINS(STR(?field),"http://www.ics.forth.gr/isl/CRMdig/L55_has_inventory_no"))
+                      FILTER (!CONTAINS(STR(?field),"http://www.ics.forth.gr/isl/CRMdig/L4_has_preferred_label"))
+                      FILTER (!CONTAINS(STR(?field),"http://www.cidoc-crm.org/cidoc-crm/P3_has_note"))
                     }'>
     </rs-ontodia-metadata-from-fields>
     [[#> ontodia-entity-metadata ]][[/ontodia-entity-metadata]]
@@ -125,7 +129,7 @@ uses client-side templates:
         <semantic-form-drag-and-drop-input  for='http://www.researchspace.org/pattern/system/entity/main_image' 
                                             label="Main image" 
                                             placeholder-item-template="<div class='placeholder-item'>
-                                                                        <rs-icon icon-type='round' icon-name='file_upload' class='upload_icon'></rs-icon>
+                                                                        <rs-icon icon-type='rounded' icon-name='upload' class='upload_icon' symbol='true'></rs-icon>
                                                                         <div>
                                                                             <div style='margin-bottom:3px;'>Drag image from </div>
                                                                             <div style='margin-bottom:7px;'>
@@ -146,7 +150,7 @@ uses client-side templates:
                                                                                     <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding-left: 5px;' title='Open Image Library in new draggable tab'></rs-icon>
                                                                                 </semantic-link-container>
                                                                           
-                                                                                <span padding: 0 3px> or </span>
+                                                                                <span style='padding:0 3px;'> or </span>
                                                                           
                                                                                 <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames' 
                                                                                                 class='text-link' 
@@ -181,7 +185,7 @@ uses client-side templates:
       <template id='scopeNote'>
         <mp-popover title="Scope Note">
           <mp-popover-trigger placement="right" trigger='["click"]'>
-            <rs-icon icon-type="round" icon-name="help" style='margin-left: 10px;'></rs-icon>
+            <rs-icon icon-type="rounded" icon-name="help" symbol="true" style='margin-left: 10px;'></rs-icon>
           </mp-popover-trigger>
           <mp-popover-content>
             <div style='height: 200px; width: 250px; overflow: auto;'>
@@ -237,13 +241,15 @@ uses client-side templates:
   </template>
 
   <template id="knowledge-map-dropdown">
-    {{> rsp:ResourceDropdownActions viewId=ontodiaVariable
-                                    iri=iri 
-                                    resourceLabel="Knowledge map"
-                                    resourceFormIRI="http://www.researchspace.org/resource/system/forms/KnowledgeMap"
-                                    hidePreview=true
-                                    headerButton=true
-    }}
+    <rs-resource-dropdown id="{{ontodiaVariable}}-{{iri}}-item-actions-dropdown" class-name="dropdown-no-caret">
+      {{> rsp:ResourceDropdownActions viewId=ontodiaVariable
+                                      iri=iri 
+                                      resourceLabel="Knowledge map"
+                                      resourceFormIRI="http://www.researchspace.org/resource/system/forms/KnowledgeMap"
+                                      hidePreview=true
+                                      headerButton=true
+      }}
+    </rs-resource-dropdown>
   </template>
 
 </[[#if standalone]]ontodia[[else]]rs-ontodia-panel[[/if]]>

@@ -77,7 +77,7 @@ class LinkInToolBox extends React.Component<LinkInToolBoxProps, {}> {
               title="Hide links and labels"
               onClick={() => this.changeState('invisible')}
             >
-              <Icon iconType='round' iconName='hide_source' />
+              <Icon iconType='rounded' iconName='hide_source' symbol/>
             </button>
             <button
               className={'btn btn-default btn-default-icon' + (this.isChecked('withoutLabels') ? ' active' : '')}
@@ -85,7 +85,7 @@ class LinkInToolBox extends React.Component<LinkInToolBoxProps, {}> {
               title="Show links without labels"
               onClick={() => this.changeState('withoutLabels')}
             >
-              <Icon iconType='round' iconName='keyboard_return' />
+              <Icon iconType='rounded' iconName='keyboard_return' symbol/>
             </button>
             <button
               className={'btn btn-default btn-default-icon' + (this.isChecked('allVisible') ? ' active' : '')}
@@ -93,7 +93,7 @@ class LinkInToolBox extends React.Component<LinkInToolBoxProps, {}> {
               title="Show links with labels"
               onClick={() => this.changeState('allVisible')}
             >
-              <Icon iconType='round' iconName='text_rotation_none' />
+              <Icon iconType='rounded' iconName='text_rotation_none' symbol/>
             </button>
           </span>
           <span className="link-title">{this.getText()}</span>
@@ -102,7 +102,7 @@ class LinkInToolBox extends React.Component<LinkInToolBoxProps, {}> {
         <div>
           <span>{badgeContainer}</span>
           <span className="linkInToolBox__filter-button" onClick={this.onPressFilter} >
-            <Icon iconType='round' iconName='filter_alt' />
+            <Icon iconType='rounded' iconName='filter_alt' symbol/>
           </span>
         </div>
         
@@ -192,7 +192,7 @@ class LinkTypesToolboxView extends React.Component<LinkTypesToolboxViewProps, { 
     if (this.state.filterKey) {
       dropButton = (
         <button type="button" className={`${className}__clearSearch`} onClick={this.onDropFilter}>
-          <Icon iconType='round' iconName='close' />
+          <Icon iconType='rounded' iconName='close' symbol />
         </button>
       );
     }
@@ -216,21 +216,21 @@ class LinkTypesToolboxView extends React.Component<LinkTypesToolboxViewProps, { 
                 title="Hide links and labels"
                 onClick={() => changeLinkTypeState(history, 'invisible', links)}
               >
-                <Icon iconType='round' iconName='hide_source' />
+                <Icon iconType='rounded' iconName='hide_source' symbol/>
               </button>
               <button
                 className="btn btn-default btn-default-icon"
                 title="Show links without labels"
                 onClick={() => changeLinkTypeState(history, 'withoutLabels', links)}
               >
-                <Icon iconType='round' iconName='keyboard_return' />
+                <Icon iconType='rounded' iconName='keyboard_return' symbol/>
               </button>
               <button
                 className="btn btn-default btn-default-icon"
                 title="Show links with labels"
                 onClick={() => changeLinkTypeState(history, 'allVisible', links)}
               >
-                <Icon iconType='round' iconName='text_rotation_none' />
+                <Icon iconType='rounded' iconName='text_rotation_none' symbol/>
               </button>
               <span>&nbsp;Switch all</span>
           </div>

@@ -226,7 +226,7 @@ export class SingleSet extends Component<Props, ViewState> {
     return (
       <div className={`${CLASS_NAME}__single-set-caption`}>
         <div className={`${CLASS_NAME}__single-set-icon`}>
-          <Icon iconType='round' iconName='folder_open'/>
+          <Icon iconType='rounded' iconName='folder_open' symbol/>
         </div>
         {isEditing ? (
           <EditableLabel
@@ -244,7 +244,7 @@ export class SingleSet extends Component<Props, ViewState> {
             className={`${CLASS_NAME}__single-set-rename-button`}
             onClick={() => this.model.startRenamingSet(set.iri)}
           >
-            <Icon iconType='round' iconName='edit' />
+            <Icon iconType='rounded' iconName='edit' symbol />
           </button>
         ) : null}
       </div>

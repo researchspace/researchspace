@@ -18,7 +18,7 @@
   
                           entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
                           entity_file_identifier="http://www.researchspace.org/pattern/system/entity/file_identifier"
-                          man-made_thing_title="http://www.researchspace.org/pattern/system/man-made_thing/PC102_has_title"
+                          human-made_thing_title="http://www.researchspace.org/pattern/system/human-made_thing/PC102_has_title"
                           document_type="http://www.researchspace.org/pattern/system/document/type"
                           document_abstract="http://www.researchspace.org/pattern/system/document/abstract"
                           entity_description="http://www.researchspace.org/pattern/system/entity/description"
@@ -36,7 +36,7 @@
                           symbolic_object_part_of="http://www.researchspace.org/pattern/system/symbolic_object/part_of"
                           symbolic_object_composed_of="http://www.researchspace.org/pattern/system/symbolic_object/composed_of"
 
-                          man-made_thing_was_intended_for="http://www.researchspace.org/pattern/system/man-made_thing/was_intended_for"
+                          human-made_thing_was_intended_for="http://www.researchspace.org/pattern/system/human-made_thing/was_intended_for"
                           thing_general_use="http://www.researchspace.org/pattern/system/thing/had_as_general_use"
                           thing_dimension="http://www.researchspace.org/pattern/system/thing/dimension"
 
@@ -45,7 +45,7 @@
 
                           symbolic_object_used_in="http://www.researchspace.org/pattern/system/symbolic_object/used_in"
                           conceptual_object_created_by="http://www.researchspace.org/pattern/system/conceptual_object/created_by"
-                          man-made_thing_was_intended_use_of_range="http://www.researchspace.org/pattern/system/man-made_thing/was_intended_use_of_range"
+                          human-made_thing_was_intended_use_of_range="http://www.researchspace.org/pattern/system/human-made_thing/was_intended_use_of_range"
                           thing_used_specific_object_range="http://www.researchspace.org/pattern/system/thing/used_specific_object_range"
                           persistent_item_present_at="http://www.researchspace.org/pattern/system/persistent_item/present_at"
                           persistent_item_brought_into_existence_by="http://www.researchspace.org/pattern/system/persistent_item/brought_into_existence_by"
@@ -105,7 +105,7 @@
                                                           }'
             >
                 <div className='placeholder-item'>
-                  <rs-icon icon-type='round' icon-name='file_upload' class='upload_icon'></rs-icon>
+                  <rs-icon icon-type='rounded' icon-name='upload' class='upload_icon' symbol='true'></rs-icon>
                   <p>Drag file or click to upload</p>
                   <div>Supported format: .pdf .doc .xml .ppt .pptx .json .rdf .html .rtf .ics .md .zip</div>
                 </div>
@@ -173,7 +173,7 @@
         {{/if}}
       
         <div class="inline-composite-container">
-          <semantic-form-composite-input  for="man-made_thing_title" 
+          <semantic-form-composite-input  for="human-made_thing_title" 
                                           label="Title"
                                           new-subject-template="/PC102_has_title/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
                                           fields='[[fieldDefinitions
@@ -289,10 +289,10 @@
                       <h4>Resource documented</h4>
                       <bs-nav class="icon-tabs">
                           <bs-nav-item event-key="thumbnailView" title="thumbnail view">
-                              <rs-icon icon-type="round" icon-name="view_module"></rs-icon>
+                              <rs-icon icon-type="sharp" icon-name="view_module"></rs-icon>
                           </bs-nav-item>
                           <bs-nav-item event-key="listView" title="list view">
-                              <rs-icon icon-type="round" icon-name="view_list"></rs-icon>
+                              <rs-icon icon-type="sharp" icon-name="view_list"></rs-icon>
                           </bs-nav-item>
                       </bs-nav>
                     </div>
@@ -601,7 +601,7 @@
       
       <rs-tab event-key="type" title="Type/Dimensions">
     
-        <semantic-form-autocomplete-input   for='man-made_thing_was_intended_for' 
+        <semantic-form-autocomplete-input   for='human-made_thing_was_intended_for' 
                                             label="Was intended for" 
                                             placeholder="Select the type describing the intended usage of the document" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_types]]'>
@@ -621,6 +621,11 @@
                                                     "label": "Dimension",
                                                     "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Dimension\" nested=true editable=true mode=\"new\"}}
                                                                 {{{{/raw}}}}"
+                                                },
+                                                {
+                                                  "label": "Monetary amount",
+                                                  "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/MonetaryAmount\" nested=true editable=true mode=\"new\"}}
+                                                              {{{{/raw}}}}"
                                                 }
                                             ]'> 
         </semantic-form-autocomplete-input>
@@ -659,7 +664,7 @@
         </semantic-form-autocomplete-input> 
 
         <div class="inline-composite-container">
-            <semantic-form-composite-input  for="man-made_thing_was_intended_use_of_range"
+            <semantic-form-composite-input  for="human-made_thing_was_intended_use_of_range"
                                             label="Made for"
                                             new-subject-template="/PC19_was_intended_use_of/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
                                             fields='[[fieldDefinitions
@@ -966,7 +971,7 @@
               <semantic-form-autocomplete-input for='depicts_thing_domain' 
                                                 render-header="false"
                                                 placeholder="Select what depicts the document"
-                                                nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'>
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_physicalHumanMadeThings]]'>
               </semantic-form-autocomplete-input>
             </div>
             <div style="flex: 1;">

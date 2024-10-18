@@ -21,6 +21,7 @@ import { createFactory, createElement, Component, ReactNode } from 'react';
 import * as D from 'react-dom-factories';
 import { Row, Col, Button } from 'react-bootstrap';
 import * as bem from 'bem-cn';
+import Icon from 'platform/components/ui/icon/Icon';
 
 const row = createFactory(Row);
 const col = createFactory(Col);
@@ -77,7 +78,7 @@ export class FieldEditorRow extends Component<Props, {}> {
           error ? 
           D.div({ className: block('error').toString() }, 
             D.div({className:"field-editor__error-icon"}, 
-              D.i({ className: 'material-icons-round' }, 'priority_high')
+              createElement(Icon, {iconType:'rounded', iconName: 'priority_high', symbol: true})
             ),
             D.div({}, 
               D.div({className:"field-editor__error-title"}, "Error!"),
@@ -94,7 +95,7 @@ export class FieldEditorRow extends Component<Props, {}> {
               className: block('collapse').toString(),
               onClick: () => this.toggle({ expand: false }),
             },
-            D.span({className: 'material-icons-round'}, 'close')
+            createElement(Icon, {iconType:'rounded', iconName: 'close', symbol: true})
           )
         )
       )

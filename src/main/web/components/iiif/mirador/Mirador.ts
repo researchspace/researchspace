@@ -30,6 +30,7 @@ import { researchspaceAnnotationBodyEditor } from './AnnotationBodyEditor';
 
 import 'script-loader!../../../lib/mirador/mirador.js';
 import '../../../lib/mirador/css/mirador.scss';
+import { ConfigHolder } from 'platform/api/services/config-holder';
 
 interface EmitterMixin extends Mirador.EventEmitter {
   bus?: JQuery;
@@ -134,7 +135,7 @@ const defaultAnnotationViewerTemplate = globalHandlebars.compile(
         <div class="button-container">
           {{#if id}}
             <mp-template-item>
-              <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames" 
+              <semantic-link iri="`+ConfigHolder.getDashboard().value+`" 
                             draggable="false"
                             urlqueryparam-view="resource-editor"
                             urlqueryparam-resource-iri="{{id}}"
@@ -160,12 +161,12 @@ const defaultAnnotationViewerTemplate = globalHandlebars.compile(
 <div>
 {{#if showUpdate}}
   <a href="#edit" class="edit">
-    <rs-icon icon-type="round" icon-name="edit"></rs-icon>
+    <rs-icon icon-type="rounded" icon-name="edit" symbol="true"></rs-icon>
   </a>
 {{/if}}
 {{#if showDelete}}
   <a href="#delete" class="delete">
-  <rs-icon icon-type="round" icon-name="delete"></rs-icon>
+  <rs-icon icon-type="rounded" icon-name="delete" symbol="true"></rs-icon>
   </a>
 {{/if}}
 </div>  */

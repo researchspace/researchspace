@@ -49,7 +49,7 @@ interface State {
  * @example
    <mp-collapsible-div expanded='true' class-name='custom-class'>
       <mp-collapsible-div-trigger expanded-class="x" collapsed-class="y">
-          <rs-icon icon-type="round" icon-name="help"></rs-icon>
+          <rs-icon icon-type="rounded" icon-name="help" symbol="true"></rs-icon>
       </mp-collapsible-div-trigger>
       <mp-collapsible-div-content>Content</mp-collapsible-div-content>
   </mp-collapsible-div>

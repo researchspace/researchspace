@@ -25,6 +25,7 @@ import { ReactNode, Children, createElement, cloneElement, ReactElement, ClassAt
 import * as D from 'react-dom-factories';
 import * as classnames from 'classnames';
 import { Button } from 'react-bootstrap';
+import Icon from 'platform/components/ui/icon/Icon';
 
 import {
   isValidChild,
@@ -134,7 +135,7 @@ export class CardinalitySupport extends MultipleValuesInput<CardinalitySupportPr
               onClick: this.addNewValue,
             },
             D.button ({className:`btn btn-secondary btn-textAndIcon ${COMPONENT_NAME}__add-value-btn`},
-              D.i ({className: 'material-icons-round'}, 'add_box'),
+              createElement(Icon, {iconType:'round', iconName: 'add_box'}),
               D.span ({}, fieldLabel)
             )
           )
@@ -185,7 +186,7 @@ export class CardinalitySupport extends MultipleValuesInput<CardinalitySupportPr
                 className: COMPONENT_NAME + '__remove-value',
                 onClick: () => this.removeValue(index),
               },
-              D.span({className: 'material-icons-round'}, 'close')
+              createElement(Icon, {iconType:'rounded', iconName: 'close', symbol: true})
             )
           : undefined
       )

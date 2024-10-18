@@ -1,29 +1,31 @@
 <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="rs-header">
-    <!-- Brand and toggle get grouped for better mobile display -->
+    <!-- Logo and toggle get grouped for better mobile display -->
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#rs-navbar"
-        aria-expanded="false" aria-controls="rs-navbar" aria-label="Toggle navigation">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-     <a class="rs-header-logo" href="/">
-        <img src="/assets/images/logos/researchspace_symbol_white.svg">
-      </a>
-{{!--      <a href="/">
-        <div class='rs-header-title'>
-          ResearchSpace
+      
+      <div class="navbar-toggle collapsed" data-toggle="collapse" data-target="#rs-navbar"
+                aria-expanded="false" aria-controls="rs-navbar" aria-label="Toggle navigation">
+      <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                urlqueryparam-view='homepage'>
+          <img src="/assets/images/logos/researchspace_symbol_white.svg">
+        
+      </semantic-link-container>
+
+      {{> navbarRight }}
+      </div>
+
+      <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                urlqueryparam-view='homepage'>
+        <div class="rs-header-logo">
+          <img src="/assets/images/logos/researchspace_symbol_white.svg">
         </div>
-      </a> --}}
+      </semantic-link-container>
     </div>
 
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="rs-navbar">
 
       <ul class="nav navbar-nav navbar-left">
-        
         <mp-anonymous-hidden>
           <li>
             <bs-dropdown id="navbar-dropdown">
@@ -39,7 +41,7 @@
                                             urlqueryparam-view='semantic-narrative'>
                     <bs-menu-item>
                       <div class="dropdown-item-iconContainer">
-                        <rs-icon icon-type="round" icon-name="description" style="color: #ffb450;"></rs-icon>
+                        <rs-icon icon-type="rounded" icon-name="description" style="color: #ffb450;" symbol="true"></rs-icon>
                       </div>
                       <div>
                         <div class="dropdown-item-title">Semantic narrative</div>
@@ -52,7 +54,7 @@
                                             urlqueryparam-view='knowledge-map'>
                     <bs-menu-item>
                       <div class="dropdown-item-iconContainer">
-                        <rs-icon icon-type="round" icon-name="account_tree" style="color: #ff7f66;"></rs-icon>
+                        <rs-icon icon-type="rounded" icon-name="account_tree" style="color: #ff7f66;" symbol="true"></rs-icon>
                       </div>
                       <div>
                         <div class="dropdown-item-title">Knowledge Map</div>
@@ -67,7 +69,7 @@
                                             urlqueryparam-custom-label='Search Authority document'>
                     <bs-menu-item>
                       <div class="dropdown-item-iconContainer">
-                        <i class="iconmoon iconmoon-books" style="color: #10BC7A;"></i>
+                        <rs-icon icon-type="rounded" icon-name="dictionary" style="color: #10BC7A;" symbol="true"></rs-icon>
                       </div>
                       <div>
                         <div class="dropdown-item-title">Authority document</div>
@@ -75,19 +77,6 @@
                       </div>
                     </bs-menu-item>
                   </semantic-link-container>
-
-             {{!--     <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames" 
-                                            urlqueryparam-view='authority'>
-                    <bs-menu-item>
-                      <div class="dropdown-item-iconContainer">
-                        <rs-icon icon-type="round" icon-name="image" style="color: #55A6FF;"></rs-icon>
-                      </div>
-                      <div>
-                        <div class="dropdown-item-title">Image view and annotation</div>
-                        <div class="dropdown-item-description">View, compare and annotate high-resolution images.</div>
-                      </div>
-                    </bs-menu-item>
-                  </semantic-link-container>   --}}
 
                 </div>
               </bs-dropdown-menu>
@@ -98,7 +87,7 @@
         <mp-anonymous-hidden>
           <li>
             <mp-event-proxy id='closeModal-onSelect-newResource-proxy'
-                          on-event-source='openResourceForm-in-new-frame-trigger' 
+                          on-event-source="link"
                           on-event-type='Dashboard.AddFrame'
                           proxy-event-type='OverlayDialog.Close' 
                           proxy-targets='["newResource-form-dialog"]'
@@ -106,16 +95,15 @@
 
             <mp-overlay-dialog title="New resource" type="lightbox" id="newResource-form-dialog">
               <mp-overlay-dialog-trigger>
-                <button class="btn btn-default btn-textAndIcon" style="margin-left: 30px;">
+                <button class="btn btn-default btn-textAndIcon">
                   <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
                   <span>New resource</span>
                 </button>
               </mp-overlay-dialog-trigger>
               <mp-overlay-dialog-content>
-                <bs-tab-container id="new-resource-tab-container" default-active-key="all">
+                <bs-tab-container id="new-resource-tab-container" default-active-key="all" >
                   <bs-tabs mount-on-enter="true">
-
-                    <bs-tab event-key="all" title="All resources">
+                    <bs-tab event-key="all" title="All resources" mount-on-enter="true">
                       <div class="resources-tab-container">
                         <semantic-table  id='newResource-tab-results'
                                         query='SELECT ?resourceConfig ?resourceName ?resourceOntologyClass ?resourceFormIRI ?resourceIcon WHERE {
@@ -130,7 +118,9 @@
                                                 FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>)
                                                 FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation>)
                                                 FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>)
+                                                FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart>)
                                                 FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>)
+                                                FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline>)
                                                 FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>)
                                                 FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item>)
                                                 FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/User>)
@@ -140,30 +130,28 @@
                                         options='{"showFilter":true, "filterPlaceholderText":"Filter results by ontological type", "resultsPerPage":100}'
                       >
                         <template id='newResourceCard'>
-                          <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
-                                            type='Dashboard.AddFrame'
-                                            data='{"viewId":"resource-editor", 
-                                                  "entityTypeConfig": "\{{resourceConfig.value}}", 
-                                                  "editable": true,
-                                                  "customLabel": "New \{{resourceName.value}}",
-                                                  "mode":"new"}' 
-                                            targets='["thinking-frames"]'>
 
+                           <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames"                                            
+                                            urlqueryparam-view='resource-editor'
+                                            urlqueryparam-entity-type-config='\{{resourceConfig.value}}'
+                                            urlqueryparam-mode="new"
+                                            urlqueryparam-custom-label='New \{{resourceName.value}}'>
                               <div class="new-resource-card">
                                 \{{#if resourceIcon}}
-                                  <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol=true></rs-icon>
+                                  <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol="true"></rs-icon>
                                 \{{else}}
-                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol=true></rs-icon>
+                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol="true"></rs-icon>
                                 \{{/if}}
                                 <div class="color-secondary text-font-size__base">\{{resourceName.value}}</div>
                               </div>
-                          </mp-event-trigger>
+                          </semantic-link-container>
+                          
                         </template>
                         </semantic-table>
                       </div>
                     </bs-tab>
 
-                    <bs-tab event-key="general" title="Generic">
+                    <bs-tab event-key="general" title="Generic" mount-on-enter="true">
                       <div class="resources-tab-container">
                         <semantic-table id='newResource-tab-results'
                                         query='SELECT ?resourceConfig ?resourceName ?resourceOntologyClass ?resourceFormIRI ?resourceIcon WHERE {
@@ -179,7 +167,9 @@
                                                 FILTER (?resourceConfig NOT IN (
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>)
                                                 )
@@ -192,30 +182,26 @@
                                         options='{"showFilter":true, "filterPlaceholderText":"Filter results by ontological type", "resultsPerPage":300}'
                       >
                         <template id='newResourceCard'>
-                          <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
-                                            type='Dashboard.AddFrame'
-                                            data='{"viewId":"resource-editor", 
-                                                  "entityTypeConfig": "\{{resourceConfig.value}}", 
-                                                  "editable": true,
-                                                  "customLabel": "New \{{resourceName.value}}",
-                                                  "mode":"new"}' 
-                                            targets='["thinking-frames"]'>
-
+                          <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames"                                            
+                                            urlqueryparam-view='resource-editor'
+                                            urlqueryparam-entity-type-config='\{{resourceConfig.value}}'
+                                            urlqueryparam-mode="new"
+                                            urlqueryparam-custom-label='New \{{resourceName.value}}'>
                               <div class="new-resource-card">
                                 \{{#if resourceIcon}}
-                                  <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol=true></rs-icon>
+                                  <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol="true"></rs-icon>
                                 \{{else}}
-                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol=true></rs-icon>
+                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol="true"></rs-icon>
                                 \{{/if}}
                                 <div class="color-secondary text-font-size__base">\{{resourceName.value}}</div>
                               </div>
-                          </mp-event-trigger>
+                          </semantic-link-container>
                         </template>
                         </semantic-table>
                       </div>
                     </bs-tab>
 
-                    <bs-tab event-key="thing" title="Things">
+                    <bs-tab event-key="thing" title="Things" mount-on-enter="true">
                       <div class="resources-tab-container">
                         <semantic-table  id='newResource-tab-results'
                                         query='SELECT ?resourceConfig ?resourceName ?resourceOntologyClass ?resourceFormIRI ?resourceIcon WHERE {
@@ -231,7 +217,9 @@
                                                 FILTER (?resourceConfig NOT IN (
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>,
 
@@ -239,7 +227,8 @@
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Person>)
                                                 )
 
-                                                FILTER EXISTS {?resourceOntologyClass rdfs:subClassOf* crm:E18_Physical_Thing} 
+                                                FILTER (EXISTS {?resourceOntologyClass rdfs:subClassOf* crm:E18_Physical_Thing} || (?resourceOntologyClass = crm:E70_Thing) || (?resourceOntologyClass = crm:E71_Human-Made_Thing) || (?resourceOntologyClass = crm:E72_Legal_Object) )
+
 
                                               } ORDER BY (LCASE(STR(?resourceName)))'
 
@@ -247,30 +236,26 @@
                                         options='{"showFilter":true, "filterPlaceholderText":"Filter results by ontological type", "resultsPerPage":50}'
                       >
                         <template id='newResourceCard'>
-                          <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
-                                            type='Dashboard.AddFrame'
-                                            data='{"viewId":"resource-editor", 
-                                                  "entityTypeConfig": "\{{resourceConfig.value}}", 
-                                                  "editable": true,
-                                                  "customLabel": "New \{{resourceName.value}}",
-                                                  "mode":"new"}' 
-                                            targets='["thinking-frames"]'>
-
+                          <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames"                                            
+                                            urlqueryparam-view='resource-editor'
+                                            urlqueryparam-entity-type-config='\{{resourceConfig.value}}'
+                                            urlqueryparam-mode="new"
+                                            urlqueryparam-custom-label='New \{{resourceName.value}}'>
                               <div class="new-resource-card">
                                 \{{#if resourceIcon}}
-                                  <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol=true></rs-icon>
+                                  <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol="true"></rs-icon>
                                 \{{else}}
-                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol=true></rs-icon>
+                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol="true"></rs-icon>
                                 \{{/if}}
                                 <div class="color-secondary text-font-size__base">\{{resourceName.value}}</div>
                               </div>
-                          </mp-event-trigger>
+                          </semantic-link-container>
                         </template>
                         </semantic-table>
                       </div>
                     </bs-tab>
 
-                    <bs-tab event-key="actor" title="Actors">
+                    <bs-tab event-key="actor" title="Actors" mount-on-enter="true">
                       <div class="resources-tab-container">
                         <semantic-table  id='newResource-tab-results'
                                         query='SELECT ?resourceConfig ?resourceName ?resourceOntologyClass ?resourceFormIRI ?resourceIcon WHERE {
@@ -285,7 +270,9 @@
                                                 FILTER (?resourceConfig NOT IN (
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/User>)
@@ -299,30 +286,26 @@
                                         options='{"showFilter":true, "filterPlaceholderText":"Filter results by ontological type", "resultsPerPage":50}'
                       >
                         <template id='newResourceCard'>
-                          <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
-                                            type='Dashboard.AddFrame'
-                                            data='{"viewId":"resource-editor", 
-                                                  "entityTypeConfig": "\{{resourceConfig.value}}", 
-                                                  "editable": true,
-                                                  "customLabel": "New \{{resourceName.value}}",
-                                                  "mode":"new"}' 
-                                            targets='["thinking-frames"]'>
-
+                          <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames"                                            
+                                            urlqueryparam-view='resource-editor'
+                                            urlqueryparam-entity-type-config='\{{resourceConfig.value}}'
+                                            urlqueryparam-mode="new"
+                                            urlqueryparam-custom-label='New \{{resourceName.value}}'>
                               <div class="new-resource-card">
                                 \{{#if resourceIcon}}
-                                  <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol=true></rs-icon>
+                                  <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol="true"></rs-icon>
                                 \{{else}}
-                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol=true></rs-icon>
+                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol="true"></rs-icon>
                                 \{{/if}}
                                 <div class="color-secondary text-font-size__base">\{{resourceName.value}}</div>
                               </div>
-                          </mp-event-trigger>
+                          </semantic-link-container>
                         </template>
                         </semantic-table>
                       </div>
                     </bs-tab>
 
-                    <bs-tab event-key="event" title="Events">
+                    <bs-tab event-key="event" title="Events" mount-on-enter="true">
                       <div class="resources-tab-container">
                         <semantic-table  id='newResource-tab-results'
                                         query='SELECT ?resourceConfig ?resourceName ?resourceOntologyClass ?resourceFormIRI ?resourceIcon WHERE {
@@ -337,7 +320,9 @@
                                                 FILTER (?resourceConfig NOT IN (
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>)
                                                 )
@@ -350,30 +335,26 @@
                                         options='{"showFilter":true, "filterPlaceholderText":"Filter results by ontological type", "resultsPerPage":50}'
                       >
                         <template id='newResourceCard'>
-                          <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
-                                            type='Dashboard.AddFrame'
-                                            data='{"viewId":"resource-editor", 
-                                                  "entityTypeConfig": "\{{resourceConfig.value}}", 
-                                                  "editable": true,
-                                                  "customLabel": "New \{{resourceName.value}}",
-                                                  "mode":"new"}' 
-                                            targets='["thinking-frames"]'>
-
+                          <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames"                                            
+                                            urlqueryparam-view='resource-editor'
+                                            urlqueryparam-entity-type-config='\{{resourceConfig.value}}'
+                                            urlqueryparam-mode="new"
+                                            urlqueryparam-custom-label='New \{{resourceName.value}}'>
                               <div class="new-resource-card">
                                 \{{#if resourceIcon}}
-                                  <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol=true></rs-icon>
+                                  <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol="true"></rs-icon>
                                 \{{else}}
-                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol=true></rs-icon>
+                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol="true"></rs-icon>
                                 \{{/if}}
                                 <div class="color-secondary text-font-size__base">\{{resourceName.value}}</div>
                               </div>
-                          </mp-event-trigger>
+                          </semantic-link-container>
                         </template>
                         </semantic-table>
                       </div>
                     </bs-tab>
 
-                    <bs-tab event-key="concepts" title="Conceptual objects">
+                    <bs-tab event-key="concepts" title="Conceptual objects" mount-on-enter="true">
                       <div class="resources-tab-container">
                         <semantic-table  id='newResource-tab-results'
                                         query='SELECT ?resourceConfig ?resourceName ?resourceOntologyClass ?resourceFormIRI ?resourceIcon WHERE {
@@ -389,7 +370,9 @@
                                                 FILTER (?resourceConfig NOT IN (
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>,
 
@@ -412,30 +395,26 @@
                                         options='{"showFilter":true, "filterPlaceholderText":"Filter results by ontological type", "resultsPerPage":50}'
                       >
                         <template id='newResourceCard'>
-                          <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
-                                            type='Dashboard.AddFrame'
-                                            data='{"viewId":"resource-editor", 
-                                                  "entityTypeConfig": "\{{resourceConfig.value}}", 
-                                                  "editable": true,
-                                                  "customLabel": "New \{{resourceName.value}}",
-                                                  "mode":"new"}' 
-                                            targets='["thinking-frames"]'>
-
+                          <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames"                                            
+                                            urlqueryparam-view='resource-editor'
+                                            urlqueryparam-entity-type-config='\{{resourceConfig.value}}'
+                                            urlqueryparam-mode="new"
+                                            urlqueryparam-custom-label='New \{{resourceName.value}}'>
                               <div class="new-resource-card">
                                 \{{#if resourceIcon}}
-                                  <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol=true></rs-icon>
+                                  <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol="true"></rs-icon>
                                 \{{else}}
-                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol=true></rs-icon>
+                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol="true"></rs-icon>
                                 \{{/if}}
                                 <div class="color-secondary text-font-size__base">\{{resourceName.value}}</div>
                               </div>
-                          </mp-event-trigger>
+                          </semantic-link-container>
                         </template>
                         </semantic-table>
                       </div>
                     </bs-tab>
 
-                    <bs-tab event-key="system" title="System resources">
+                    <bs-tab event-key="system" title="System resources" mount-on-enter="true">
                       <div class="resources-tab-container">
                         <semantic-table  id='newResource-tab-results'
                                         query='SELECT ?resourceConfig ?resourceName ?resourceFormIRI ?resourceIcon WHERE {
@@ -460,24 +439,20 @@
                                         options='{"showFilter":true, "filterPlaceholderText":"Filter results by ontological type", "resultsPerPage":50}'
                       >
                         <template id='newResourceCard'>
-                          <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
-                                            type='Dashboard.AddFrame'
-                                            data='{"viewId":"resource-editor", 
-                                                  "entityTypeConfig": "\{{resourceConfig.value}}", 
-                                                  "editable": true,
-                                                  "customLabel": "New \{{resourceName.value}}",
-                                                  "mode":"new"}' 
-                                            targets='["thinking-frames"]'>
-
+                          <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames"                                            
+                                            urlqueryparam-view='resource-editor'
+                                            urlqueryparam-entity-type-config='\{{resourceConfig.value}}'
+                                            urlqueryparam-mode="new"
+                                            urlqueryparam-custom-label='New \{{resourceName.value}}'>
                               <div class="new-resource-card">
                                 \{{#if resourceIcon}}
-                                  <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol=true></rs-icon>
+                                  <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol="true"></rs-icon>
                                 \{{else}}
-                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol=true></rs-icon>
+                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol="true"></rs-icon>
                                 \{{/if}}
                                 <div class="color-secondary text-font-size__base">\{{resourceName.value}}</div>
                               </div>
-                          </mp-event-trigger>
+                          </semantic-link-container>
                         </template>
                         </semantic-table>
                       </div>
@@ -493,321 +468,263 @@
 
         <mp-anonymous-hidden>
           <li>
-            <mp-event-trigger id='openProjectForm-in-new-frame-trigger' 
-                              type='Dashboard.AddFrame'
-                              data='{"viewId":"resource-editor", 
-                                    "entityTypeConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Project", 
-                                    "editable": true,
-                                    "customLabel": "New project",
-                                    "mode":"new"}' 
-                              targets='["thinking-frames"]'>
-
-              <button class="btn btn-action btn-textAndIcon" >
-                <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
-                <span>New Project</span>
-              </button>
-            </mp-event-trigger>
-            
-          </li>
-        </mp-anonymous-hidden>
-
-   {{!--      <bs-nav-dropdown id="test-dropdown" title="Testing">
-
-            <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
-                                      urlqueryparam-view='resource-editor' 
-                                      urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map'
-                                      urlqueryparam-mode='new'>
-              <bs-menu-item>knowledge map</bs-menu-item>
-            </semantic-link-container>
-          
-            <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames"
-                                      urlqueryparam-view='resource-editor' 
-                                      urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative'
-                                      urlqueryparam-mode='new'>
-              <bs-menu-item>semantic narrative</bs-menu-item>
-            </semantic-link-container>
-          
-            <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames"
-                                    urlqueryparam-view='resource-editor' 
-                                    urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation'
-                                    urlqueryparam-mode='new'>
-              <bs-menu-item>image annotation</bs-menu-item>
-            </semantic-link-container>
-
-            <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
-                                      urlqueryparam-view='resource-editor' 
-                                      urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Set'
-                                      urlqueryparam-mode='new'>
-              <bs-menu-item>Set</bs-menu-item>
-            </semantic-link-container>
-
-            <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
-                                      urlqueryparam-view='resource-editor' 
-                                      urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
-                                      urlqueryparam-mode='new'>
-              <bs-menu-item>User</bs-menu-item>
-            </semantic-link-container>
-
-        </bs-nav-dropdown> --}}
-
-      </ul>
-
-      <ul class="nav navbar-nav navbar-right">
-        {{!-- Update profile-dropdown on resourceForm actions --}}
-        <semantic-query query='SELECT ?systemUser WHERE {
-                                BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
-                              }'
-                        template='\{{> template}}'>
-            <template id='template'>
-              <div>
-                <mp-event-proxy id='update-profile-dropdown-on-resourceForm-actions2'
-                                on-event-source='\{{bindings.0.systemUser.value}}-resource-form'
-                                on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated", "Form.ResourceRemoved"]'         
-                                proxy-event-type='Component.TemplateUpdate' 
-                                proxy-targets='["header-profile-dropdown"]'
-                ></mp-event-proxy> 
-              </div>
-            </template>
-        </semantic-query>
-
-        <mp-user-language-switch></mp-user-language-switch>
-        <li>
-          <mp-anonymous-hidden alt='<li><a href="/login" title="login"></a></li>'>
-            <mp-event-target-template-render id='header-profile-dropdown' template='\{{> template}}'>
-              <template id='template'>
-                <semantic-query query='SELECT DISTINCT ?systemUser ?systemUserName ?actorFullName ?group ?groupFullName { 
-                                        BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
-                                        BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?systemUserName)
-
-                                        OPTIONAL {
-                                          ?systemUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
-                                          ?systemUser crm:P1_is_identified_by ?actorName .
-                                          ?actorName a crm:E41_Appellation .
-                                          ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
-                                          ?actorName crm:P190_has_symbolic_content ?actorFullName .
-                                        }
-
-                                        OPTIONAL {
-                                          ?systemUser crm:P02i_is_range_of ?pc107 .
-                                          ?pc107 rdf:type crm:PC107_has_current_or_former_member .
-                                          ?pc107 crm:P01_has_domain ?group .
-                                          ?group crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
-                                          ?group a crm:E74_Group .
-                                          ?group crm:P1_is_identified_by ?groupName .
-                                          ?groupName a crm:E41_Appellation .
-                                          ?groupName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
-                                          ?groupName crm:P190_has_symbolic_content ?groupFullName .
-                                        }
-                                      }'
-                              template='\{{> template}}'>
-
-                <template id='template'>
-
-                  <bs-dropdown id="navbar-dropdown" class="user-dropdown">
-                    <bs-dropdown-toggle>
-                      <div class="navDropdown-iconAndLabel"> 
-                        <mp-resource-thumbnail iri='\{{bindings.0.systemUser.value}}' style="width: 25px; height:25px; border-radius:1.5px; object-fit: cover; object-position: top;">
-                          <mp-resource-thumbnail-fallback>
-                              <rs-icon icon-type="round" icon-name="account_box"></rs-icon>
-                          </mp-resource-thumbnail-fallback>
-                        </mp-resource-thumbnail>  
-                        \{{#if bindings.0.actorFullName.value}}
-                          <div>\{{bindings.0.actorFullName.value}}</div>
-                        \{{else}}
-                          <div>\{{bindings.0.systemUserName.value}}</div>
-                        \{{/if}}
-                      </div>
-                    </bs-dropdown-toggle>
-                    <bs-dropdown-menu>
-                      \{{#if bindings.0.actorFullName.value}}
-                        <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                  urlqueryparam-view='resource-editor' 
-                                                  urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
-                                                  urlqueryparam-resource-iri="\{{bindings.0.systemUser.value}}"
-                                                  urlqueryparam-mode='edit'>
-                          <bs-menu-item>
-                            <rs-icon icon-type="round" icon-name="account_box" class="icon-left"></rs-icon>
-                            <span>My profile</span> 
-                          </bs-menu-item>
-                        </semantic-link-container>
-                      \{{else}}
-                        <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                urlqueryparam-view='resource-editor' 
-                                                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
-                                                urlqueryparam-custom-label='New profile'
-                                                urlqueryparam-mode='new'>
-                          <bs-menu-item>
-                            <rs-icon icon-type="round" icon-name="account_box" class="icon-left"></rs-icon>
-                            <span>My profile (not registered user)</span>  
-                          </bs-menu-item>
-                        </semantic-link-container>
-                      \{{/if}}
-                      
-                      \{{#if bindings.0.group.value}}
-                        \{{#each bindings}}
-                          <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                    urlqueryparam-view='resource-editor' 
-                                                    urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
-                                                    urlqueryparam-resource-iri="\{{group.value}}"
-                                                    urlqueryparam-mode='edit'>
-                            <bs-menu-item>
-                              <rs-icon icon-type="round" icon-name="groups" class="icon-left"></rs-icon>
-                              <span>My team - \{{groupFullName.value}}</span>
-                            </bs-menu-item>
-                          </semantic-link-container>
-                        \{{/each}}
-                      \{{/if}}
-
-                      <bs-menu-item divider="true"></bs-menu-item>
-
-                      <bs-menu-item href="/logout" title='logout'>
-                        <rs-icon icon-type="round" icon-name="logout" class="icon-left"></rs-icon>
-                        <span>Logout</span>
-                      </bs-menu-item>
-                    </bs-dropdown-menu>
-                  </bs-dropdown>
-                </template>
-                </semantic-query>
-              </template>
-            </mp-event-target-template-render>
-          </mp-anonymous-hidden>
-        </li>
-
-        <li>
-        {{!--  <bs-dropdown id="navbar-dropdown" class="feedback-dropdown">
-              <bs-dropdown-toggle class="btn btn-icon">
-                <rs-icon icon-type="round" icon-name="forum"></rs-icon>
-              </bs-dropdown-toggle>
-              <bs-dropdown-menu>
-                  <bs-menu-item>
-                    <rs-icon icon-type="round" icon-name="add_box" class="icon-left"></rs-icon>
-                    New feedback
-                  </bs-menu-item>
-
-                  <bs-menu-item>
-                    <rs-icon icon-type="round" icon-name="feed" class="icon-left"></rs-icon>
-                    All feedback
-                  </bs-menu-item>
-              </bs-dropdown-menu>
-          </bs-dropdown> --}}
-            <mp-overlay-dialog id="header-contact-modal" type="modal" bs-size="large" class="header-contact-modal">
-              <mp-overlay-dialog-trigger>
-                <button class="btn btn-icon">
-                  <rs-icon icon-type="round" icon-name="forum"></rs-icon>
-                </button>
-              </mp-overlay-dialog-trigger>
-
-              <mp-overlay-dialog-content>
-                   <div class="contact-container">
-                    <div class="contact-motif"></div>
-                    <div class="contact-header">
-                      <div class="title">Contact & Support</div>
-                      <div class="contact-icons-container">
-                          <a href="https://www.researchspace.org/" title="Researchspace website" target="_blank">
-                            <i class="rs-icon rs-icon-researchspace"></i>
-                          </a>
-                          <a href="mailto:info@kartography.org" title="mailto:info@kartography.org" target="_blank">
-                            <i class="rs-icon rs-icon-mail_send"></i>
-                          </a>
-                          <a href="https://www.youtube.com/channel/UCtUOzTB2vBG9ZimeDVrlULQ/featured" title="Youtube researchspace" target="_blank">
-                            <i class="rs-icon rs-icon-youtube"></i>
-                          </a>
-                          <a href="https://x.com/researchspace" title="X researchspace" target="_blank">
-                            <img src="/assets/images/logos/x-social-media-logo.svg">
-                          </a>
-
-                          <a href="https://github.com/researchspace/researchspace" title="Github researchspace" target="_blank">
-                            <i class="fa fa-github-square"></i>
-                          </a>
-                      </div>
-                    </div>
-
-                    <div class="contact-content">
-                      <div>This version of ResearchSpace is released and supported by <a href="https://kartography.org/" title="Kartography" target="_blank" class="text-link-action">Kartography CIC</a>.</div>
-                      <div style="padding: 10px 0 10px 0;">Kartography offers:</div>
-                      <div class="contact-card-container">
-                       
-                        <div class="contact-card"> 
-                          <rs-icon icon-type="rounded" icon-name="biotech" symbol="true"></rs-icon>
-                          <div>
-                            <div class="card-title">Consultancy</div>
-                            <div class="card-content">We offer comprehensive consultancy services—including process analysis, data strategies, and ResearchSpace-related software development.</div>
-                          </div>
-                        </div>
-                        <div class="contact-card"> 
-                          <rs-icon icon-type="rounded" icon-name="display_settings" symbol="true"></rs-icon>
-                          <div>
-                            <div class="card-title">Customisations of ResearchSpace</div>
-                            <div class="card-content">We design and develop bespoke UI/UX interactions, visualisations and workflows using ResearchSpace functionalities.</div>
-                          </div>
-                        </div>
-                        <div class="contact-card"> 
-                          <rs-icon icon-type="rounded" icon-name="data_exploration" symbol="true"></rs-icon>
-                          <div>
-                            <div class="card-title">Diversity and inclusion in data</div>
-                            <div class="card-content">Our expertise lies in bringing together diverse disciplines through the use of semantic data and interactive environments. This approach enhances collaboration and ensures that a wide array of perspectives, especially those that are usually underrepresented in data, are captured and valued in any project.</div>
-                          </div>
-                        </div>
-                        <div class="contact-card"> 
-                          <rs-icon icon-type="rounded" icon-name="linked_services" symbol="true"></rs-icon>
-                          <div>
-                            <div class="card-title">Knowledge representation using Linked Data</div>
-                            <div class="card-content">We use CIDOC CRM real world ontologies for data modelling with context, preserving meaning and relationships.</div>
-                          </div>
-                        </div>
-                                             
-                        <div class="contact-card"> 
-                          <rs-icon icon-type="rounded" icon-name="school" symbol="true"></rs-icon>
-                          <div>
-                            <div class="card-title">Training</div>
-                            <div class="card-content">
-                              We organize workshops and personalized training sessions to help with the use of ResearchSpace. These are available periodically and upon request.
-                            </div>
-                          </div>
-                        </div>
-                        <div class="contact-card"> 
-                          <rs-icon icon-type="rounded" icon-name="live_help" symbol="true"></rs-icon>
-                          <div>
-                            <div class="card-title">Technical support</div>
-                            <div class="card-content">We can assist in setting up, maintaining, and developing your ResearchSpace instance, whether for local deployment or integration into existing infrastructures.</div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="contact-content-buttons">
-                        <mp-event-trigger id='header-close-header-contact-modal' 
-                                          type='OverlayDialog.Close' 
-                                          targets='["header-contact-modal"]'>
-                          <button class="btn btn-default">Close</button>
-                        </mp-event-trigger>
-                      </div>
-                    </div>
-                  </div>               
-              </mp-overlay-dialog-content>
-          </mp-overlay-dialog>
-          
-        </li>
-
-        <li>
-          <button class="btn btn-icon">
-            <a href="https://documentation.researchspace.org/resource/rsp:Start" title="Help center" target="_blank">
-              <rs-icon icon-type="round" icon-name="help_center"></rs-icon>
-            </a>
-          </button>
-        </li>
-
-        <mp-anonymous-hidden>
-          <li>
-            <button class="btn btn-icon">
-              <semantic-link iri="http://www.researchspace.org/resource/admin" title="System Settings" target="_blank">
-                <rs-icon icon-type="round" icon-name="settings"></rs-icon>
-              </semantic-link>
-            </button>
+              <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                        urlqueryparam-view='resource-editor'
+                                        urlqueryparam-mode="new"
+                                        urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Project'
+                                        urlqueryparam-custom-label='New Project'>
+                  <button class="btn btn-action btn-textAndIcon" >
+                    <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                    <span>New Project</span>
+                  </button>
+              </semantic-link-container>           
           </li>
         </mp-anonymous-hidden>
 
       </ul>
+
+      {{> navbarRight }}
     </div>
   </div>
 </nav>
 
+{{#*inline "navbarRight"}}
+  <ul class="nav navbar-nav navbar-right">
+    {{!-- Update profile-dropdown on resourceForm actions --}}
+    <semantic-query query='SELECT ?systemUser WHERE {
+                            BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
+                          }'
+                    template='\{{> template}}'>
+        <template id='template'>
+          <div>
+            <mp-event-proxy id='update-profile-dropdown-on-resourceForm-actions2'
+                            on-event-source='\{{bindings.0.systemUser.value}}-resource-form'
+                            on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated", "Form.ResourceRemoved"]'         
+                            proxy-event-type='Component.TemplateUpdate' 
+                            proxy-targets='["header-profile-dropdown"]'
+            ></mp-event-proxy> 
+          </div>
+        </template>
+    </semantic-query>
 
+    <mp-user-language-switch></mp-user-language-switch>
+    <li>
+      <mp-anonymous-hidden alt='<li><a href="/login" title="login"></a></li>'>
+        <mp-event-target-template-render id='header-profile-dropdown' template='\{{> template}}'>
+          <template id='template'>
+            <semantic-query query='SELECT DISTINCT ?systemUser ?systemUserName ?actorFullName ?group ?groupFullName { 
+                                    BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
+                                    BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?systemUserName)
+
+                                    OPTIONAL {
+                                      ?systemUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                      ?systemUser crm:P1_is_identified_by ?actorName .
+                                      ?actorName a crm:E41_Appellation .
+                                      ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                      ?actorName crm:P190_has_symbolic_content ?actorFullName .
+                                    }
+
+                                    OPTIONAL {
+                                      ?systemUser crm:P02i_is_range_of ?pc107 .
+                                      ?pc107 rdf:type crm:PC107_has_current_or_former_member .
+                                      ?pc107 crm:P01_has_domain ?group .
+                                      ?group crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                      ?group a crm:E74_Group .
+                                      ?group crm:P1_is_identified_by ?groupName .
+                                      ?groupName a crm:E41_Appellation .
+                                      ?groupName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                      ?groupName crm:P190_has_symbolic_content ?groupFullName .
+                                    }
+                                  }'
+                          template='\{{> template}}'>
+
+            <template id='template'>
+
+              <bs-dropdown id="navbar-dropdown" class="user-dropdown">
+                <bs-dropdown-toggle>
+                  <div class="navDropdown-iconAndLabel"> 
+                    <mp-resource-thumbnail iri='\{{bindings.0.systemUser.value}}' style="width: 25px; height:25px; border-radius:1.5px; object-fit: cover; object-position: top;">
+                      <mp-resource-thumbnail-fallback>
+                          <rs-icon icon-type="round" icon-name="account_box"></rs-icon>
+                      </mp-resource-thumbnail-fallback>
+                    </mp-resource-thumbnail>  
+                    \{{#if bindings.0.actorFullName.value}}
+                      <div>\{{bindings.0.actorFullName.value}}</div>
+                    \{{else}}
+                      <div>\{{bindings.0.systemUserName.value}}</div>
+                    \{{/if}}
+                  </div>
+                </bs-dropdown-toggle>
+                <bs-dropdown-menu>
+                  \{{#if bindings.0.actorFullName.value}}
+                    <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                              urlqueryparam-view='resource-editor' 
+                                              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                              urlqueryparam-resource-iri="\{{bindings.0.systemUser.value}}"
+                                              urlqueryparam-mode='edit'>
+                      <bs-menu-item>
+                        <rs-icon icon-type="rounded" icon-name="account_box" class="icon-left" symbol="true"></rs-icon>
+                        <span>My profile</span> 
+                      </bs-menu-item>
+                    </semantic-link-container>
+                  \{{else}}
+                    <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                            urlqueryparam-view='resource-editor' 
+                                            urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                            urlqueryparam-custom-label='New profile'
+                                            urlqueryparam-mode='new'>
+                      <bs-menu-item>
+                        <rs-icon icon-type="rounded" icon-name="account_box" class="icon-left" symbol="true"></rs-icon>
+                        <span>My profile (not registered user)</span>  
+                      </bs-menu-item>
+                    </semantic-link-container>
+                  \{{/if}}
+                  
+                  \{{#if bindings.0.group.value}}
+                    \{{#each bindings}}
+                      <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                urlqueryparam-view='resource-editor' 
+                                                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                                urlqueryparam-resource-iri="\{{group.value}}"
+                                                urlqueryparam-mode='edit'>
+                        <bs-menu-item>
+                          <rs-icon icon-type="rounded" icon-name="groups" class="icon-left" symbol="true"></rs-icon>
+                          <span>My team - \{{groupFullName.value}}</span>
+                        </bs-menu-item>
+                      </semantic-link-container>
+                    \{{/each}}
+                  \{{/if}}
+
+                  <bs-menu-item divider="true"></bs-menu-item>
+
+                  <bs-menu-item href="/logout" title='logout'>
+                    <rs-icon icon-type="rounded" icon-name="logout" class="icon-left" symbol="true"></rs-icon>
+                    <span>Logout</span>
+                  </bs-menu-item>
+                </bs-dropdown-menu>
+              </bs-dropdown>
+            </template>
+            </semantic-query>
+          </template>
+        </mp-event-target-template-render>
+      </mp-anonymous-hidden>
+    </li>
+
+    <li>
+        <mp-overlay-dialog id="header-contact-modal" type="modal" bs-size="large" class="header-contact-modal">
+          <mp-overlay-dialog-trigger>
+            <button class="btn btn-icon" title="Contact & support">
+              <rs-icon icon-type="round" icon-name="forum"></rs-icon>
+            </button>
+          </mp-overlay-dialog-trigger>
+
+          <mp-overlay-dialog-content>
+                <div class="contact-container">
+                <div class="contact-motif"></div>
+                <div class="contact-header">
+                  <div class="title">Contact & Support</div>
+                  <div class="contact-icons-container">
+                      <a href="https://www.researchspace.org/" title="Researchspace website" target="_blank">
+                        <i class="rs-icon rs-icon-researchspace"></i>
+                      </a>
+                      <a href="mailto:info@kartography.org" title="mailto:info@kartography.org" target="_blank">
+                        <i class="rs-icon rs-icon-mail_send"></i>
+                      </a>
+                      <a href="https://www.youtube.com/channel/UCtUOzTB2vBG9ZimeDVrlULQ/featured" title="Youtube researchspace" target="_blank">
+                        <i class="rs-icon rs-icon-youtube"></i>
+                      </a>
+                      <a href="https://x.com/researchspace" title="X researchspace" target="_blank">
+                        <img src="/assets/images/logos/x-social-media-logo.svg">
+                      </a>
+
+                      <a href="https://github.com/researchspace/researchspace" title="Github researchspace" target="_blank">
+                        <i class="fa fa-github-square"></i>
+                      </a>
+                  </div>
+                </div>
+
+                <div class="contact-content">
+                  <div>This version of ResearchSpace is released and supported by <a href="https://kartography.org/" title="Kartography" target="_blank" class="text-link-action">Kartography CIC</a>.</div>
+                  <div style="padding: 10px 0 10px 0;">Kartography offers:</div>
+                  <div class="contact-card-container">
+                    
+                    <div class="contact-card"> 
+                      <rs-icon icon-type="rounded" icon-name="biotech" symbol="true"></rs-icon>
+                      <div>
+                        <div class="card-title">Consultancy</div>
+                        <div class="card-content">We offer comprehensive consultancy services — including process analysis, data strategies, and ResearchSpace-related software development.</div>
+                      </div>
+                    </div>
+                    <div class="contact-card"> 
+                      <rs-icon icon-type="rounded" icon-name="display_settings" symbol="true"></rs-icon>
+                      <div>
+                        <div class="card-title">Customisations of ResearchSpace</div>
+                        <div class="card-content">We design and develop bespoke UI/UX interactions, visualisations and workflows using ResearchSpace functionalities.</div>
+                      </div>
+                    </div>
+                    <div class="contact-card"> 
+                      <rs-icon icon-type="rounded" icon-name="data_exploration" symbol="true"></rs-icon>
+                      <div>
+                        <div class="card-title">Diversity and inclusion in data</div>
+                        <div class="card-content">Our expertise lies in bringing together diverse disciplines through the use of semantic data and interactive environments. This approach enhances collaboration and ensures that a wide array of perspectives, especially those that are usually underrepresented in data, are captured and valued in any project.</div>
+                      </div>
+                    </div>
+                    <div class="contact-card"> 
+                      <rs-icon icon-type="rounded" icon-name="linked_services" symbol="true"></rs-icon>
+                      <div>
+                        <div class="card-title">Knowledge representation using Linked Data</div>
+                        <div class="card-content">We use CIDOC CRM real world ontologies for data modelling with context, preserving meaning and relationships.</div>
+                      </div>
+                    </div>
+                                          
+                    <div class="contact-card"> 
+                      <rs-icon icon-type="rounded" icon-name="school" symbol="true"></rs-icon>
+                      <div>
+                        <div class="card-title">Training</div>
+                        <div class="card-content">
+                          We organize workshops and personalized training sessions to help with the use of ResearchSpace. These are available periodically and upon request.
+                        </div>
+                      </div>
+                    </div>
+                    <div class="contact-card"> 
+                      <rs-icon icon-type="rounded" icon-name="live_help" symbol="true"></rs-icon>
+                      <div>
+                        <div class="card-title">Technical support</div>
+                        <div class="card-content">We can assist in setting up, maintaining, and developing your ResearchSpace instance, whether for local deployment or integration into existing infrastructures.</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="contact-content-buttons">
+                    <mp-event-trigger id='header-close-header-contact-modal' 
+                                      type='OverlayDialog.Close' 
+                                      targets='["header-contact-modal"]'>
+                      <button class="btn btn-default">Close</button>
+                    </mp-event-trigger>
+                  </div>
+                </div>
+              </div>               
+          </mp-overlay-dialog-content>
+      </mp-overlay-dialog>
+      
+    </li>
+
+    <li>
+      <button class="btn btn-icon">
+        <a href="https://documentation.researchspace.org/resource/rsp:Start" title="Help center" target="_blank">
+          <rs-icon icon-type="round" icon-name="help_center"></rs-icon>
+        </a>
+      </button>
+    </li>
+
+    <mp-anonymous-hidden>
+      <li>
+        <button class="btn btn-icon">
+          <semantic-link iri="http://www.researchspace.org/resource/admin" title="System settings" target="_blank">
+            <rs-icon icon-type="round" icon-name="settings"></rs-icon>
+          </semantic-link>
+        </button>
+      </li>
+    </mp-anonymous-hidden>
+
+  </ul>
+{{/inline}}

@@ -41,7 +41,7 @@ export class RecentQueries extends Component<RecentQueriesProps, void> {
   render() {
     const recentQueries = BrowserPersistence.getItem(LS_RECENT_QUERIES);
     if (!recentQueries) {
-      return <span>no queries</span>;
+      return <span style={{ padding: '0 18px'}}>no queries</span>;
     }
 
     return (

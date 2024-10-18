@@ -197,7 +197,7 @@ export class StandardTemplate extends Component<TemplateProps, {}> {
           disabled={!canDelete}
           onClick={onDelete}
         >
-          <Icon iconType='round' iconName='delete'/>
+          <Icon iconType='rounded' iconName='delete' symbol />
           &nbsp;
           {canEdit === undefined ? <HtmlSpinner width={SPINNER_WIDTH} height={SPINNER_HEIGHT} /> : 'Delete'}
         </button>
@@ -208,7 +208,7 @@ export class StandardTemplate extends Component<TemplateProps, {}> {
           disabled={!canEdit}
           onClick={onEdit}
         >
-          <Icon iconType='round' iconName='edit'/> 
+          <Icon iconType='rounded ' iconName='edit' symbol /> 
           &nbsp;
           {canEdit === undefined ? <HtmlSpinner width={SPINNER_WIDTH} height={SPINNER_HEIGHT} /> : 'Edit'}
         </button>

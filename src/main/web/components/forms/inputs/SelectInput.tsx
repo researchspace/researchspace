@@ -42,6 +42,7 @@ import Icon from 'platform/components/ui/icon/Icon';
 import ResourceLinkContainer from 'platform/api/navigation/components/ResourceLinkContainer';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 import {getResourceConfigurationEditForm} from './ResourceConfigHelper';
+import { ConfigHolder } from 'platform/api/services/config-holder';
 
 type nestedFormEl = {
   label?: string,
@@ -339,6 +340,8 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
         ? this.createDefaultPlaceholder(definition)
         : this.props.placeholder;
 
+    const dashboard = ConfigHolder.getDashboard()?ConfigHolder.getDashboard().value:"http://www.researchspace.org/resource/ThinkingFrames";
+
     return (
       <div className={SELECT_TEXT_CLASS} ref={this.htmlElement}>
         <ReactSelect 
@@ -368,12 +371,12 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
         )}
         { showEditButton && 
           <Button className={`${SELECT_TEXT_CLASS}__create-button btn-textAndIcon`} title='Edit' onClick={() => {this.onEditHandler(selectedValue)}}>
-            <Icon iconType='round' iconName='edit'/>
+            <Icon iconType='rounded' iconName='edit' symbol/>
           </Button>
         }
         {showLinkResourceButton && !FieldValue.isEmpty(this.props.value) && 
             <ResourceLinkContainer 
-              uri="http://www.researchspace.org/resource/ThinkingFrames" 
+              uri={dashboard} 
               urlqueryparam-view="resource-editor"
               urlqueryparam-open-as-drag-and-drop="true"
               urlqueryparam-resource={(this.props.value.value as Rdf.Iri).value}

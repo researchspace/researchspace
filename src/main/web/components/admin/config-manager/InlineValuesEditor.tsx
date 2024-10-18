@@ -128,7 +128,7 @@ export class InlineValuesEditor extends Component<InlineValuesEditorProps, State
                     this.setState({ targetValues });
                   }}
                 >
-                  <Icon iconType='round' iconName='close'/>
+                  <Icon iconType='rounded' iconName='close' symbol />
                 </Button>
               </div>
             ))}

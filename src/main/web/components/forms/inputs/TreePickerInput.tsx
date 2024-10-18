@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -324,6 +325,7 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
               uri={iri} 
               urlqueryparam-view={view}
               urlqueryparam-resource={scheme}
+              urlqueryparam-open-as-drag-and-drop="true"
             >
             <Button className={`${CLASS_NAME}__create-button`} style={{height: '100%'}}>
               <span className='fa fa-book'></span>

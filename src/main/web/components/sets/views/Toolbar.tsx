@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -27,6 +28,7 @@ import { ComponentTemplateUpdate } from 'platform/api/events/BuiltInEvents';
 export interface ToolbarProps extends ReorderingProps {
   baseClass: string;
   readonly: boolean;
+  singleSet: boolean;
   itemViewMode: ItemViewMode;
   onModeChanged: (newMode: ItemViewMode) => void;
   onPressCreateNewSet: () => void;
@@ -34,7 +36,7 @@ export interface ToolbarProps extends ReorderingProps {
 
 export class Toolbar extends React.Component<ToolbarProps, {}> {
   render() {
-    const { baseClass, readonly, itemViewMode, onModeChanged, isReordering, canReorder } = this.props;
+    const { baseClass, readonly, itemViewMode, onModeChanged, isReordering, canReorder, singleSet } = this.props;
 
     return (
       <div className={`${baseClass}__toolbar`}>
@@ -42,8 +44,8 @@ export class Toolbar extends React.Component<ToolbarProps, {}> {
           <ItemViewModeSwitch baseClass={baseClass} mode={itemViewMode} onModeChanged={onModeChanged} />
           {!readonly && canReorder ? <ReorderItemsButton {...this.props} /> : null}
           <div className={`${baseClass}__toolbar-spacer`}></div>
-          {readonly ? null : this.renderAddNewSetButton()}
-          <button className='btn btn-default btn-default-icon'
+          {(readonly || singleSet)? null : this.renderAddNewSetButton()}
+{/*           <button className='btn btn-default btn-default-icon'
                   title="Refresh clipboard"
                   onClick={() => {
                     trigger({ 
@@ -51,8 +53,8 @@ export class Toolbar extends React.Component<ToolbarProps, {}> {
                       source: 'btn-refresh-clipboard', });
                   }}
             >
-            <Icon iconType='round' iconName='refresh'/>
-          </button>
+            <Icon iconType='rounded ' iconName='refresh' symbol />
+          </button> */}
           
         </div>
         {isReordering && canReorder ? <ReorderConfirmation {...this.props} /> : null}
@@ -70,7 +72,7 @@ export class Toolbar extends React.Component<ToolbarProps, {}> {
             className="btn btn-default btn-default-icon"
             onClick={this.props.onPressCreateNewSet}
           >
-            <Icon iconType='round' iconName='create_new_folder'/>
+            <Icon iconType='rounded' iconName='create_new_folder' symbol/>
           </button>
         )}
       </div>
@@ -104,7 +106,7 @@ export class ReorderItemsButton extends React.Component<ReorderingProps, {}> {
           className={classnames({ 'btn btn-default btn-default-icon': true, active: isReordering })}
           onClick={onPressReorder}
         >
-          <Icon iconType='round' iconName='low_priority'/>
+          <Icon iconType='rounded' iconName='low_priority' symbol/>
         </button>
       </div>
     );

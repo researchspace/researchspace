@@ -38,27 +38,32 @@
                                   }
                                 }
                                 ORDER BY (?order) ASC(?nodeLabel)' 
-                            tuple-template='{{> nodeTemplate}}'
-                            no-result-template='{{> noResults}}'>
+                          tuple-template='{{> nodeTemplate}}'
+                          no-result-template='{{> noResults}}'
+                          collapsed=true>
                             
               <template id='nodeTemplate'>
-                <mp-event-trigger id='event-trigger' 
-                                  type='Component.TemplateUpdate' 
-                                  targets='["entity-viewes"]'
-                                  data='{"navigationEntry": "{{node.value}}"}'>
+                {{#if finderPreview}}
+                  <div class="Tree--itemLink {{#ifCond node.value '==' finderItem }}active{{/ifCond}}" style="cursor:default;">
+                    {{#if icon.value}}<rs-icon icon-type="outlined" icon-name="{{icon.value}}" symbol="true"></rs-icon>{{/if}}
+                    <div>{{nodeLabel.value}}</div> 
+                  </div>
+                {{else}}
+                  <mp-event-trigger id='finder-open-resource-search-page--trigger' 
+                                    type='Dashboard.AddFrame' 
+                                    targets='["thinking-frames"]'
+                                    data='{ "viewId": "resource-search",
+                                            "iri":"{{node.value}}",
+                                            "resourceIri": "{{node.value}}",
+                                            "customLabel":"Search {{nodeLabel.value}}"
+                                          }'>
+                    <div class="Tree--itemLink">
+                      {{#if icon.value}}<rs-icon icon-type="outlined" icon-name="{{icon.value}}" symbol="true"></rs-icon>{{/if}}
+                      <div>{{nodeLabel.value}}</div> 
+                    </div>
+                  </mp-event-trigger>
+                {{/if}}
 
-                  {{#ifCond node.value "==" finderItem }}
-                    <div class="Tree--itemLink active" style="{{#if finderPreview}}{{else}}cursor:pointer;{{/if}}">
-                      {{#if icon.value}}<rs-icon icon-type="outlined" icon-name="{{icon.value}}" symbol=true></rs-icon>{{/if}}
-                      <div>{{nodeLabel.value}}</div> 
-                    </div>
-                  {{else}}
-                    <div class="Tree--itemLink" style="{{#if finderPreview}}{{else}}cursor:pointer;{{/if}}">
-                      {{#if icon.value}}<rs-icon icon-type="outlined" icon-name="{{icon.value}}" symbol=true></rs-icon>{{/if}}
-                      <div>{{nodeLabel.value}}</div> 
-                    </div>
-                  {{/ifCond}}
-              </mp-event-trigger>
               </template>  
 
               <template id='noResults'>
@@ -71,207 +76,44 @@
       {{#if finderPreview}}
       {{else}}
         <div class="finder-section-settings-container">
-           <semantic-link uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+          <mp-event-trigger id='{{frameId}}-open-allResources-search-page--trigger' 
+                            type='Dashboard.AddFrame' 
+                            targets='["thinking-frames"]'
+                            data='{ "viewId": "all-resources-search",
+                                    "customLabel":"Search all resources"
+                                  }'>
+
+            <button class="btn btn-default btn-textAndIcon" style="justify-content: space-between;">
+
+              <div>Search all resources</div>
+              <rs-icon icon-type="rounded" icon-name="chevron_right" symbol="true"></rs-icon>
+            </button>
+          </mp-event-trigger>    
+          
+          
+         [[!-- <semantic-link iri='[[resolvePrefix "rsp:ThinkingFrames"]]'
                         urlqueryparam-view='resource-configuration'>
             <button class="btn btn-default btn-textAndIcon" style="justify-content: space-between;">
               
               <div>Advanced search</div>
-              <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
+              <rs-icon icon-type="rounded" icon-name="chevron_right" symbol="true"></rs-icon>
             </button>
           </semantic-link>
+      --]]
 
-          <semantic-link uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                        urlqueryparam-view='resource-configuration'>
-            <button class="btn btn-default btn-textAndIcon" style="justify-content: space-between;">
-              
-              <div>Resource configuration</div>
-              <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
-            </button>
-          </semantic-link>
+          [[#if (hasPermission "sparql:update")]]
+            <semantic-link iri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                          urlqueryparam-view='resource-configuration'>
+              <button class="btn btn-default btn-textAndIcon" style="justify-content: space-between;">
+                
+                <div>Resource configuration</div>
+                <rs-icon icon-type="rounded" icon-name="chevron_right" symbol="true"></rs-icon>
+              </button>
+            </semantic-link>
+          [[/if]]
         </div>
       {{/if}}
 
     </div>
   </template>
 </mp-event-target-template-render>
-
-[[!--
-
-<entity-finder>
-  <template id='template'>
-    <div class="resource-context-page">
-
-      <!-- Entity context sidebar -->
-      <div class="resource-sidebar">
-        <semantic-tree query='{{navigationQuery}}' 
-                        tuple-template='{{> nodeTemplate}}'
-                        no-result-template='{{> noResults}}'>
-                        
-          <template id='nodeTemplate'>
-            <mp-event-trigger id='event-trigger' 
-                              type='Component.TemplateUpdate' 
-                              targets='["entity-viewes"]'
-                              data='{"navigationEntry": "{{node.value}}"}'>
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px;">
-              <div>{{nodeLabel.value}}</div> 
-              <div class="badge" style="margin-left: 15px; background-color: #514f4f; border-radius: 3px;">{{count.value}}</div>
-            </div>
-          </mp-event-trigger>
-          </template>  
-
-          <template id='noResults'>
-            <div>no results available</div>
-          </template>
-        </semantic-tree>
-      </div>
-
-      <!-- Entity context results -->
-      <div class="resource-results">
-
-        <mp-event-target-template-render id='entity-viewes' template='{{> entityViewes}}'>
-          <template id='entityViewes'>
-            <div style="height: 100%;">
-            {{#if navigationEntry}}
-              <entity-view-search-results entity-view-config-iri='{{entityViewConfigIri}}' 
-                                          navigation-entry-iri='{{navigationEntry}}'>
-                <template id='template'>
-                  <semantic-search config='{{searchConfig}}'>
-
-<!--  What is this? -->
-                    <semantic-search-query-constant domain='<{{entityDomain}}>'
-                                                    query='{{searchQuery}}'
-                      ></semantic-search-query-constant>
-  
-                    <div style="height: 100%;">
-                      <semantic-search-result-holder>
-                        <div class="resource-results-container">
-                          <div class="resource-results-header">
-                            <div style="font-size: 16px; font-weight: 600;">Node label value</div>
-                            
-                            <div style="display: flex;
-                                        justify-content: end;
-                                        flex-wrap: wrap;
-                                        flex: 1;
-                                        gap: 30px;">
-                              <button class="btn btn-primary">+ New entity</button>
-                            
-                              {{#if (eq viewes.length 1)}}
-                                <bs-dropdown id="" class="">
-                                  <bs-dropdown-toggle>
-                                    {{viewes.0.label}}
-                                  </bs-dropdown-toggle>
-                                  <bs-dropdown-menu>
-                                  </bs-dropdown-menu>
-                                </bs-dropdown>
-                              {{else}}
-                                <bs-dropdown id="" class="">
-                                  <bs-dropdown-toggle>
-                                        View
-                                  </bs-dropdown-toggle>
-                                  <bs-dropdown-menu>
-                                    {{#each viewes}}
-                                    <mp-event-trigger id='{{order}}-view-trigger' 
-                                                      type='Component.TemplateUpdate' 
-                                                      targets='["search-results"]' 
-                                                      data='{"templateIri": "{{templateIri}}"}'>
-                                      <bs-menu-item>
-                                        {{label}}
-                                      </bs-menu-item>
-                                    </mp-event-trigger>
-                              			{{/each}}
-                                  </bs-dropdown-menu>
-                                </bs-dropdown>
-                              {{/if}}
-
-                              <div style="display: flex; gap: 3px;">
-                                <bs-dropdown>
-                                  <bs-dropdown-toggle>
-                                        Save
-                                  </bs-dropdown-toggle>
-                                  <bs-dropdown-menu>
-                                    <bs-menu-item >
-                                        Save as
-                                    </bs-menu-item>
-                                    <bs-menu-item>
-                                      Save as
-                                    </bs-menu-item>
-                                  </bs-dropdown-menu>
-                                </bs-dropdown>
-                                
-                                <bs-dropdown>
-                                  <bs-dropdown-toggle>
-                                        Export
-                                  </bs-dropdown-toggle>
-                                  <bs-dropdown-menu>
-                                    <bs-menu-item>
-                                        Export as CSV
-                                    </bs-menu-item>
-                                    <bs-menu-item>
-                                      Export as JSON
-                                    </bs-menu-item>
-                                  </bs-dropdown-menu>
-                                </bs-dropdown>
-                              </div>
-
-                            </div>
-                          
-                          </div>
-                        
-                          <div class="resource-results-keywordSearch">search input here</div>
-
-                          <div class="resource-results-content">
-
-                            <div style="flex:1;">
-                              <semantic-search-facet-breadcrumbs></semantic-search-facet-breadcrumbs>
-                              <mp-event-target-template-render id='search-results' template='{{> template}}'>
-                                <template id='template'>
-                                  <inline-template template-iri='{{#if templateIri}}{{templateIri}}{{else}}{{viewes.0.templateIri}}{{/if}}'></inline-template>
-                                </template>
-                              </mp-event-target-template-render>
-                            </div>
-                            
-                            <div class="resource-results-contentNavigation">
-                              <semantic-search-result id='semantic-search-result'>
-                                <mp-sparql-result-counts id='semantic-search-result-count' query="SELECT DISTINCT ?subject {}"
-                                                        template='{{> template}}'
-                                >
-                                  <template id='template'>
-                                    <div>
-                                      <span>
-                                        <span style="font-weight: 600;">{{#if hasLimit}}{{totalNumberOfResults}}{{else}}{{numberOfResults}}{{/if}}</span> 
-                                        items
-                                      </span>
-                                    </div>
-                                  </template>
-                                </mp-sparql-result-counts>
-                              </semantic-search-result>
-                              <div>Pagination</div>
-                            </div>
-                          </div>
-
-                          <div class="resource-results-filters">
-                            <semantic-search-facet id='semantic-search-facet' open-by-default='true'></semantic-search-facet>
-                          </div>
-                      
-                        </div>
-                      </semantic-search-result-holder>
-
-                      
-                    </div>
-
-                  </semantic-search>
-                </template>
-              </entity-view-search-results>
-
-<!--               <p>{{navigationEntry}}</p> -->
-            {{/if}}
-            </div>
-          </template>
-        </mp-event-target-template-render>
-
-      </div>
-
-    </div>
-  </template>
-</entity-finder>
---]]

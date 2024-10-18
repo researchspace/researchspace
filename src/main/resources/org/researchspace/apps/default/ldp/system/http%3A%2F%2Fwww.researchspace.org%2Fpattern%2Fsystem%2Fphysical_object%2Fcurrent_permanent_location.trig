@@ -1,0 +1,85 @@
+
+<http://www.researchspace.org/pattern/system/physical_object/current_permanent_location/context> {
+  <http://www.researchspace.org/pattern/system/physical_object/current_permanent_location>
+    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
+      <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.w3.org/2000/01/rdf-schema#comment> "The foreseen permanent location of the  object at the time of validity of this record. It indicates the place currently reserved for an object,  such as the permanent storage location or a permanent exhibit location. The object may be temporarily removed from the permanent location, for example when used in temporary exhibitions or loaned to another institution. The object may never actually be located at its permanent location.";
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-9fd7dcbffe614f5dbdd26f13d63fc6bc-gbsjlp;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.w3.org/2000/01/rdf-schema#label> "Current permanent location";
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-9fd7dcbffe614f5dbdd26f13d63fc6bc-pmgx7c;
+    <http://www.researchspace.org/resource/system/fields/category> 
+    <http://www.researchspace.org/resource/system/category/physical_object>,
+    <http://www.researchspace.org/resource/system/category/human_made_object_search>,
+    <http://www.researchspace.org/resource/system/category/physical_object_search>,
+    <http://www.researchspace.org/resource/system/category/series_search>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-9fd7dcbffe614f5dbdd26f13d63fc6bc-8q1iy1g;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-9fd7dcbffe614f5dbdd26f13d63fc6bc-yprn6;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-9fd7dcbffe614f5dbdd26f13d63fc6bc-24p9mm;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.researchspace.org/resource/system/fields/domain> 
+    <http://www.cidoc-crm.org/cidoc-crm/E19_Physical_Object>,
+    <http://www.cidoc-crm.org/cidoc-crm/E20_Biological_Object>,
+    <http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object>,
+    <http://www.cidoc-crm.org/cidoc-crm/E21_Person>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E53_Place>;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-05-28T15:40:07.603+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-9fd7dcbffe614f5dbdd26f13d63fc6bc-gbsjlp a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+   	$subject crm:P54_has_current_permanent_location ?value .
+      
+    ?value a crm:E53_Place .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-9fd7dcbffe614f5dbdd26f13d63fc6bc-pmgx7c a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {  
+     $subject crm:P54_has_current_permanent_location ?value .
+     $value crm:P54i_is_current_permanent_location_of $subject .
+} WHERE { 
+     $subject crm:P54_has_current_permanent_location ?value .
+     $value crm:P54i_is_current_permanent_location_of $subject .
+      
+      ?value a crm:E53_Place .
+      ?value crm:P1_is_identified_by ?appellation .
+      ?appellation a crm:E41_Appellation .
+      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+      ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-9fd7dcbffe614f5dbdd26f13d63fc6bc-8q1iy1g a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+     $subject crm:P54_has_current_permanent_location ?value .
+     $value crm:P54i_is_current_permanent_location_of $subject .
+} WHERE {
+}""" .
+  
+  _:genid-9fd7dcbffe614f5dbdd26f13d63fc6bc-24p9mm a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    $value a crm:E53_Place .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-9fd7dcbffe614f5dbdd26f13d63fc6bc-yprn6 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    $value a crm:E53_Place .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/physical_object/current_permanent_location> .
+}

@@ -1,29 +1,31 @@
 <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="rs-header">
-    <!-- Brand and toggle get grouped for better mobile display -->
+    <!-- Logo and toggle get grouped for better mobile display -->
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#rs-navbar"
-        aria-expanded="false" aria-controls="rs-navbar" aria-label="Toggle navigation">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-     <a class="rs-header-logo" href="/">
-        <img src="/assets/images/logos/researchspace_symbol_white.svg">
-      </a>
-{{!--      <a href="/">
-        <div class='rs-header-title'>
-          ResearchSpace
+      
+      <div class="navbar-toggle collapsed" data-toggle="collapse" data-target="#rs-navbar"
+                aria-expanded="false" aria-controls="rs-navbar" aria-label="Toggle navigation">
+      <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                urlqueryparam-view='homepage'>
+          <img src="/assets/images/logos/researchspace_symbol_white.svg">
+        
+      </semantic-link-container>
+
+      {{> navbarRight }}
+      </div>
+
+      <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                urlqueryparam-view='homepage'>
+        <div class="rs-header-logo">
+          <img src="/assets/images/logos/researchspace_symbol_white.svg">
         </div>
-      </a> --}}
+      </semantic-link-container>
     </div>
 
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="rs-navbar">
 
       <ul class="nav navbar-nav navbar-left">
-        
         <mp-anonymous-hidden>
           <li>
             <bs-dropdown id="navbar-dropdown">
@@ -39,7 +41,7 @@
                                             urlqueryparam-view='semantic-narrative'>
                     <bs-menu-item>
                       <div class="dropdown-item-iconContainer">
-                        <rs-icon icon-type="round" icon-name="description" style="color: #ffb450;"></rs-icon>
+                        <rs-icon icon-type="rounded" icon-name="description" style="color: #ffb450;" symbol="true"></rs-icon>
                       </div>
                       <div>
                         <div class="dropdown-item-title">Semantic narrative</div>
@@ -50,9 +52,9 @@
 
                   <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames" 
                                             urlqueryparam-view='knowledge-map'>
-                                            <bs-menu-item>
+                    <bs-menu-item>
                       <div class="dropdown-item-iconContainer">
-                        <rs-icon icon-type="round" icon-name="account_tree" style="color: #ff7f66;"></rs-icon>
+                        <rs-icon icon-type="rounded" icon-name="account_tree" style="color: #ff7f66;" symbol="true"></rs-icon>
                       </div>
                       <div>
                         <div class="dropdown-item-title">Knowledge Map</div>
@@ -62,30 +64,19 @@
                   </semantic-link-container>
 
                   <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames" 
-                                            urlqueryparam-view='vocabulary'>
+                                            urlqueryparam-view='resource-search'
+                                            urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document'
+                                            urlqueryparam-custom-label='Search Authority document'>
                     <bs-menu-item>
                       <div class="dropdown-item-iconContainer">
-                        <i class="iconmoon iconmoon-books" style="color: #10BC7A;"></i>
+                        <rs-icon icon-type="rounded" icon-name="dictionary" style="color: #10BC7A;" symbol="true"></rs-icon>
                       </div>
                       <div>
-                        <div class="dropdown-item-title">Vocabularies/Authorities</div>
-                        <div class="dropdown-item-description">Create, view and edit vocabulary / authority list of terms.</div>
+                        <div class="dropdown-item-title">Authority document</div>
+                        <div class="dropdown-item-description">Create, view and edit list of resources like vocabularies, thesauri, etc.</div>
                       </div>
                     </bs-menu-item>
                   </semantic-link-container>
-
-                  <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames" 
-                                            urlqueryparam-view='vocabulary'>
-                    <bs-menu-item>
-                      <div class="dropdown-item-iconContainer">
-                        <rs-icon icon-type="round" icon-name="image" style="color: #55A6FF;"></rs-icon>
-                      </div>
-                      <div>
-                        <div class="dropdown-item-title">Image view and annotation</div>
-                        <div class="dropdown-item-description">View, compare and annotate high-resolution images.</div>
-                      </div>
-                    </bs-menu-item>
-                  </semantic-link-container> 
 
                 </div>
               </bs-dropdown-menu>
@@ -96,7 +87,7 @@
         <mp-anonymous-hidden>
           <li>
             <mp-event-proxy id='closeModal-onSelect-newResource-proxy'
-                          on-event-source='openResourceForm-in-new-frame-trigger' 
+                          on-event-source="link"
                           on-event-type='Dashboard.AddFrame'
                           proxy-event-type='OverlayDialog.Close' 
                           proxy-targets='["newResource-form-dialog"]'
@@ -104,16 +95,15 @@
 
             <mp-overlay-dialog title="New resource" type="lightbox" id="newResource-form-dialog">
               <mp-overlay-dialog-trigger>
-                <button class="btn btn-default btn-textAndIcon" style="margin-left: 30px;">
+                <button class="btn btn-default btn-textAndIcon">
                   <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
                   <span>New resource</span>
                 </button>
               </mp-overlay-dialog-trigger>
               <mp-overlay-dialog-content>
-                <bs-tab-container id="new-resource-tab-container" default-active-key="all">
+                <bs-tab-container id="new-resource-tab-container" default-active-key="all" >
                   <bs-tabs mount-on-enter="true">
-
-                    <bs-tab event-key="all" title="All resources">
+                    <bs-tab event-key="all" title="All resources" mount-on-enter="true">
                       <div class="resources-tab-container">
                         <semantic-table  id='newResource-tab-results'
                                         query='SELECT ?resourceConfig ?resourceName ?resourceOntologyClass ?resourceFormIRI ?resourceIcon WHERE {
@@ -126,43 +116,44 @@
                                                   ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .
                                                 }
                                                 FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>)
+                                                FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation>)
                                                 FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>)
+                                                FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart>)
                                                 FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>)
+                                                FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline>)
                                                 FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>)
                                                 FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item>)
                                                 FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/User>)
-                                              } ORDER BY ASC(?resourceName)'
+                                              } ORDER BY (LCASE(STR(?resourceName)))'
 
                                         tuple-template='\{{> newResourceCard}}',
-                                        options='{"showFilter":true, "resultsPerPage":50}'
+                                        options='{"showFilter":true, "filterPlaceholderText":"Filter results by ontological type", "resultsPerPage":100}'
                       >
                         <template id='newResourceCard'>
-                          <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
-                                            type='Dashboard.AddFrame'
-                                            data='{"viewId":"entity-editor", 
-                                                  "entityTypeConfig": "\{{resourceConfig.value}}", 
-                                                  "editable": true,
-                                                  "resourceEditorLabel": "New \{{resourceName.value}}",
-                                                  "mode":"new"}' 
-                                            targets='["thinking-frames"]'>
 
+                           <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames"                                            
+                                            urlqueryparam-view='resource-editor'
+                                            urlqueryparam-entity-type-config='\{{resourceConfig.value}}'
+                                            urlqueryparam-mode="new"
+                                            urlqueryparam-custom-label='New \{{resourceName.value}}'>
                               <div class="new-resource-card">
                                 \{{#if resourceIcon}}
-                                  <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol=true></rs-icon>
+                                  <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol="true"></rs-icon>
                                 \{{else}}
-                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol=true></rs-icon>
+                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol="true"></rs-icon>
                                 \{{/if}}
                                 <div class="color-secondary text-font-size__base">\{{resourceName.value}}</div>
                               </div>
-                          </mp-event-trigger>
+                          </semantic-link-container>
+                          
                         </template>
                         </semantic-table>
                       </div>
                     </bs-tab>
 
-                    <bs-tab event-key="general" title="Generic">
+                    <bs-tab event-key="general" title="Generic" mount-on-enter="true">
                       <div class="resources-tab-container">
-                        <semantic-table  id='newResource-tab-results'
+                        <semantic-table id='newResource-tab-results'
                                         query='SELECT ?resourceConfig ?resourceName ?resourceOntologyClass ?resourceFormIRI ?resourceIcon WHERE {
                                                 ?resourceConfig a Platform:resource_configuration . 
                                                 ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceName .
@@ -176,43 +167,41 @@
                                                 FILTER (?resourceConfig NOT IN (
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>)
                                                 )
 
                                                   FILTER (EXISTS {?resourceOntologyClass rdfs:subClassOf crm:E1_CRM_Entity} || (?resourceOntologyClass = crm:E1_CRM_Entity)) 
 
-                                              } ORDER BY ASC(?resourceName)'
+                                              } ORDER BY (LCASE(STR(?resourceName)))'
                                         tuple-template='\{{> newResourceCard}}',
                                         
-                                        options='{"showFilter":true, "resultsPerPage":300}'
+                                        options='{"showFilter":true, "filterPlaceholderText":"Filter results by ontological type", "resultsPerPage":300}'
                       >
                         <template id='newResourceCard'>
-                          <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
-                                            type='Dashboard.AddFrame'
-                                            data='{"viewId":"entity-editor", 
-                                                  "entityTypeConfig": "\{{resourceConfig.value}}", 
-                                                  "editable": true,
-                                                  "resourceEditorLabel": "New \{{resourceName.value}}",
-                                                  "mode":"new"}' 
-                                            targets='["thinking-frames"]'>
-
+                          <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames"                                            
+                                            urlqueryparam-view='resource-editor'
+                                            urlqueryparam-entity-type-config='\{{resourceConfig.value}}'
+                                            urlqueryparam-mode="new"
+                                            urlqueryparam-custom-label='New \{{resourceName.value}}'>
                               <div class="new-resource-card">
                                 \{{#if resourceIcon}}
-                                  <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol=true></rs-icon>
+                                  <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol="true"></rs-icon>
                                 \{{else}}
-                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol=true></rs-icon>
+                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol="true"></rs-icon>
                                 \{{/if}}
                                 <div class="color-secondary text-font-size__base">\{{resourceName.value}}</div>
                               </div>
-                          </mp-event-trigger>
+                          </semantic-link-container>
                         </template>
                         </semantic-table>
                       </div>
                     </bs-tab>
 
-                    <bs-tab event-key="thing" title="Things">
+                    <bs-tab event-key="thing" title="Things" mount-on-enter="true">
                       <div class="resources-tab-container">
                         <semantic-table  id='newResource-tab-results'
                                         query='SELECT ?resourceConfig ?resourceName ?resourceOntologyClass ?resourceFormIRI ?resourceIcon WHERE {
@@ -228,7 +217,9 @@
                                                 FILTER (?resourceConfig NOT IN (
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>,
 
@@ -236,38 +227,35 @@
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Person>)
                                                 )
 
-                                                FILTER EXISTS {?resourceOntologyClass rdfs:subClassOf* crm:E18_Physical_Thing} 
+                                                FILTER (EXISTS {?resourceOntologyClass rdfs:subClassOf* crm:E18_Physical_Thing} || (?resourceOntologyClass = crm:E70_Thing) || (?resourceOntologyClass = crm:E71_Human-Made_Thing) || (?resourceOntologyClass = crm:E72_Legal_Object) )
 
-                                              } ORDER BY ASC(?resourceName)'
+
+                                              } ORDER BY (LCASE(STR(?resourceName)))'
 
                                         tuple-template='\{{> newResourceCard}}',
-                                        options='{"showFilter":true, "resultsPerPage":50}'
+                                        options='{"showFilter":true, "filterPlaceholderText":"Filter results by ontological type", "resultsPerPage":50}'
                       >
                         <template id='newResourceCard'>
-                          <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
-                                            type='Dashboard.AddFrame'
-                                            data='{"viewId":"entity-editor", 
-                                                  "entityTypeConfig": "\{{resourceConfig.value}}", 
-                                                  "editable": true,
-                                                  "resourceEditorLabel": "New \{{resourceName.value}}",
-                                                  "mode":"new"}' 
-                                            targets='["thinking-frames"]'>
-
+                          <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames"                                            
+                                            urlqueryparam-view='resource-editor'
+                                            urlqueryparam-entity-type-config='\{{resourceConfig.value}}'
+                                            urlqueryparam-mode="new"
+                                            urlqueryparam-custom-label='New \{{resourceName.value}}'>
                               <div class="new-resource-card">
                                 \{{#if resourceIcon}}
-                                  <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol=true></rs-icon>
+                                  <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol="true"></rs-icon>
                                 \{{else}}
-                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol=true></rs-icon>
+                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol="true"></rs-icon>
                                 \{{/if}}
                                 <div class="color-secondary text-font-size__base">\{{resourceName.value}}</div>
                               </div>
-                          </mp-event-trigger>
+                          </semantic-link-container>
                         </template>
                         </semantic-table>
                       </div>
                     </bs-tab>
 
-                    <bs-tab event-key="actor" title="Actors">
+                    <bs-tab event-key="actor" title="Actors" mount-on-enter="true">
                       <div class="resources-tab-container">
                         <semantic-table  id='newResource-tab-results'
                                         query='SELECT ?resourceConfig ?resourceName ?resourceOntologyClass ?resourceFormIRI ?resourceIcon WHERE {
@@ -282,7 +270,9 @@
                                                 FILTER (?resourceConfig NOT IN (
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/User>)
@@ -290,36 +280,32 @@
 
                                                 FILTER EXISTS {?resourceOntologyClass rdfs:subClassOf* crm:E39_Actor} 
 
-                                              } ORDER BY ASC(?resourceName)'
+                                              } ORDER BY (LCASE(STR(?resourceName)))'
 
                                         tuple-template='\{{> newResourceCard}}',
-                                        options='{"showFilter":true, "resultsPerPage":50}'
+                                        options='{"showFilter":true, "filterPlaceholderText":"Filter results by ontological type", "resultsPerPage":50}'
                       >
                         <template id='newResourceCard'>
-                          <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
-                                            type='Dashboard.AddFrame'
-                                            data='{"viewId":"entity-editor", 
-                                                  "entityTypeConfig": "\{{resourceConfig.value}}", 
-                                                  "editable": true,
-                                                  "resourceEditorLabel": "New \{{resourceName.value}}",
-                                                  "mode":"new"}' 
-                                            targets='["thinking-frames"]'>
-
+                          <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames"                                            
+                                            urlqueryparam-view='resource-editor'
+                                            urlqueryparam-entity-type-config='\{{resourceConfig.value}}'
+                                            urlqueryparam-mode="new"
+                                            urlqueryparam-custom-label='New \{{resourceName.value}}'>
                               <div class="new-resource-card">
                                 \{{#if resourceIcon}}
-                                  <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol=true></rs-icon>
+                                  <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol="true"></rs-icon>
                                 \{{else}}
-                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol=true></rs-icon>
+                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol="true"></rs-icon>
                                 \{{/if}}
                                 <div class="color-secondary text-font-size__base">\{{resourceName.value}}</div>
                               </div>
-                          </mp-event-trigger>
+                          </semantic-link-container>
                         </template>
                         </semantic-table>
                       </div>
                     </bs-tab>
 
-                    <bs-tab event-key="event" title="Events">
+                    <bs-tab event-key="event" title="Events" mount-on-enter="true">
                       <div class="resources-tab-container">
                         <semantic-table  id='newResource-tab-results'
                                         query='SELECT ?resourceConfig ?resourceName ?resourceOntologyClass ?resourceFormIRI ?resourceIcon WHERE {
@@ -334,43 +320,41 @@
                                                 FILTER (?resourceConfig NOT IN (
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>)
                                                 )
 
                                                 FILTER EXISTS {?resourceOntologyClass rdfs:subClassOf* crm:E2_Temporal_Entity} 
 
-                                              } ORDER BY ASC(?resourceName)'
+                                              } ORDER BY (LCASE(STR(?resourceName)))'
 
                                         tuple-template='\{{> newResourceCard}}',
-                                        options='{"showFilter":true, "resultsPerPage":50}'
+                                        options='{"showFilter":true, "filterPlaceholderText":"Filter results by ontological type", "resultsPerPage":50}'
                       >
                         <template id='newResourceCard'>
-                          <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
-                                            type='Dashboard.AddFrame'
-                                            data='{"viewId":"entity-editor", 
-                                                  "entityTypeConfig": "\{{resourceConfig.value}}", 
-                                                  "editable": true,
-                                                  "resourceEditorLabel": "New \{{resourceName.value}}",
-                                                  "mode":"new"}' 
-                                            targets='["thinking-frames"]'>
-
+                          <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames"                                            
+                                            urlqueryparam-view='resource-editor'
+                                            urlqueryparam-entity-type-config='\{{resourceConfig.value}}'
+                                            urlqueryparam-mode="new"
+                                            urlqueryparam-custom-label='New \{{resourceName.value}}'>
                               <div class="new-resource-card">
                                 \{{#if resourceIcon}}
-                                  <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol=true></rs-icon>
+                                  <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol="true"></rs-icon>
                                 \{{else}}
-                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol=true></rs-icon>
+                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol="true"></rs-icon>
                                 \{{/if}}
                                 <div class="color-secondary text-font-size__base">\{{resourceName.value}}</div>
                               </div>
-                          </mp-event-trigger>
+                          </semantic-link-container>
                         </template>
                         </semantic-table>
                       </div>
                     </bs-tab>
 
-                    <bs-tab event-key="concepts" title="Conceptual objects">
+                    <bs-tab event-key="concepts" title="Conceptual objects" mount-on-enter="true">
                       <div class="resources-tab-container">
                         <semantic-table  id='newResource-tab-results'
                                         query='SELECT ?resourceConfig ?resourceName ?resourceOntologyClass ?resourceFormIRI ?resourceIcon WHERE {
@@ -386,50 +370,51 @@
                                                 FILTER (?resourceConfig NOT IN (
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>,
 
-                                                  #following resources are removed as listed in System resources
-                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document>
+                                                  #following resources are removed as listed in System resources or not for data entry,but only for resource edit
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Document>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Image>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Audio>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Video>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/3d_model>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Publication>)
                                                 )
 
                                                 FILTER EXISTS {?resourceOntologyClass rdfs:subClassOf* crm:E28_Conceptual_Object} 
 
-                                              } ORDER BY ASC(?resourceName)'
+                                              } ORDER BY (LCASE(STR(?resourceName)))'
 
                                         tuple-template='\{{> newResourceCard}}',
-                                        options='{"showFilter":true, "resultsPerPage":50}'
+                                        options='{"showFilter":true, "filterPlaceholderText":"Filter results by ontological type", "resultsPerPage":50}'
                       >
                         <template id='newResourceCard'>
-                          <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
-                                            type='Dashboard.AddFrame'
-                                            data='{"viewId":"entity-editor", 
-                                                  "entityTypeConfig": "\{{resourceConfig.value}}", 
-                                                  "editable": true,
-                                                  "resourceEditorLabel": "New \{{resourceName.value}}",
-                                                  "mode":"new"}' 
-                                            targets='["thinking-frames"]'>
-
+                          <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames"                                            
+                                            urlqueryparam-view='resource-editor'
+                                            urlqueryparam-entity-type-config='\{{resourceConfig.value}}'
+                                            urlqueryparam-mode="new"
+                                            urlqueryparam-custom-label='New \{{resourceName.value}}'>
                               <div class="new-resource-card">
                                 \{{#if resourceIcon}}
-                                  <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol=true></rs-icon>
+                                  <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol="true"></rs-icon>
                                 \{{else}}
-                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol=true></rs-icon>
+                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol="true"></rs-icon>
                                 \{{/if}}
                                 <div class="color-secondary text-font-size__base">\{{resourceName.value}}</div>
                               </div>
-                          </mp-event-trigger>
+                          </semantic-link-container>
                         </template>
                         </semantic-table>
                       </div>
                     </bs-tab>
 
-                    <bs-tab event-key="system" title="System resources">
+                    <bs-tab event-key="system" title="System resources" mount-on-enter="true">
                       <div class="resources-tab-container">
                         <semantic-table  id='newResource-tab-results'
                                         query='SELECT ?resourceConfig ?resourceName ?resourceFormIRI ?resourceIcon WHERE {
@@ -437,12 +422,10 @@
                                                   (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document>)
                                                   (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Document>)
                                                   (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Image>)
-                                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation>)
                                                   (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Publication>)
-                                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>)
-                                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>)
-                                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Term>)
-                                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>)
+                                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Audio>)
+                                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Video>)
+                                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/3d_model>)
                                                 }
 
                                                 ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceName .
@@ -450,30 +433,26 @@
                                                 OPTIONAL {
                                                   ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .
                                                 }
-                                              } ORDER BY ASC(?resourceName)'
+                                              } ORDER BY (LCASE(STR(?resourceName)))'
 
                                         tuple-template='\{{> newResourceCard}}',
-                                        options='{"showFilter":true, "resultsPerPage":50}'
+                                        options='{"showFilter":true, "filterPlaceholderText":"Filter results by ontological type", "resultsPerPage":50}'
                       >
                         <template id='newResourceCard'>
-                          <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
-                                            type='Dashboard.AddFrame'
-                                            data='{"viewId":"entity-editor", 
-                                                  "entityTypeConfig": "\{{resourceConfig.value}}", 
-                                                  "editable": true,
-                                                  "resourceEditorLabel": "New \{{resourceName.value}}",
-                                                  "mode":"new"}' 
-                                            targets='["thinking-frames"]'>
-
+                          <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames"                                            
+                                            urlqueryparam-view='resource-editor'
+                                            urlqueryparam-entity-type-config='\{{resourceConfig.value}}'
+                                            urlqueryparam-mode="new"
+                                            urlqueryparam-custom-label='New \{{resourceName.value}}'>
                               <div class="new-resource-card">
                                 \{{#if resourceIcon}}
-                                  <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol=true></rs-icon>
+                                  <rs-icon icon-type="rounded" icon-name="\{{resourceIcon.value}}" symbol="true"></rs-icon>
                                 \{{else}}
-                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol=true></rs-icon>
+                                  <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol="true"></rs-icon>
                                 \{{/if}}
                                 <div class="color-secondary text-font-size__base">\{{resourceName.value}}</div>
                               </div>
-                          </mp-event-trigger>
+                          </semantic-link-container>
                         </template>
                         </semantic-table>
                       </div>
@@ -489,891 +468,263 @@
 
         <mp-anonymous-hidden>
           <li>
-            <mp-overlay-dialog title="Create a new reseach project" type="modal" class="modal-xlSize">
-              <mp-overlay-dialog-trigger>
-                <button class="btn btn-action btn-textAndIcon" >
-                  <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
-                  <span>New Project</span>
-                </button>
-              </mp-overlay-dialog-trigger>
-              <mp-overlay-dialog-content>
-                <div>PROJECT FORM</div>
-              </mp-overlay-dialog-content>
-            </mp-overlay-dialog>
-          </li>
-        </mp-anonymous-hidden>
-
-        <bs-nav-dropdown title="Testing1">
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Entity'
-              urlqueryparam-mode='new'
-            >
-            entity 
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Timespan'
-              urlqueryparam-mode='new'
-            >
-               timespan
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Persistent_item'
-              urlqueryparam-mode='new'
-            >
-               persistent item
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
-                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Place'
-                urlqueryparam-mode='new'
-              >
-            place
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
-                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Dimension'
-                urlqueryparam-mode='new'
-              >
-            dimension
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Period'
-              urlqueryparam-mode='new'
-            >
-               period
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Condition_state'
-              urlqueryparam-mode='new'
-            >
-               condition state
-            </semantic-link>
-          </bs-menu-item>
-
-        </bs-nav-dropdown>
-
-        <bs-nav-dropdown title="Events">
-          
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Event'
-              urlqueryparam-mode='new'
-            >
-               event
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Activity'
-              urlqueryparam-mode='new'
-            >
-               activity
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Beginning_of_existence'
-              urlqueryparam-mode='new'
-            >
-               beginning of existence
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/End_of_existence'
-              urlqueryparam-mode='new'
-            >
-               end of existence
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Acquisition'
-              urlqueryparam-mode='new'
-            >
-               acquisition
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Attribute_assignment'
-              urlqueryparam-mode='new'
-            >
-               attribute assignment
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Creation'
-              urlqueryparam-mode='new'
-            >
-                creation
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
-                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Exhibition'
-                urlqueryparam-mode='new'
-              >
-            exhibition
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Formation'
-              urlqueryparam-mode='new'
-            >
-                formation
-            </semantic-link>
-          </bs-menu-item>
-
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Joining'
-              urlqueryparam-mode='new'
-            >
-               joining
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Leaving'
-              urlqueryparam-mode='new'
-            >
-               leaving
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Modification'
-              urlqueryparam-mode='new'
-            >
-               modification
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Move'
-              urlqueryparam-mode='new'
-            >
-               move
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Project'
-              urlqueryparam-mode='new'
-            >
-               project
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Transfer_of_custody'
-              urlqueryparam-mode='new'
-            >
-               transfer of custody
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Curation_activity'
-              urlqueryparam-mode='new'
-            >
-               curation activity
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Production'
-              urlqueryparam-mode='new'
-            >
-               production
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Part_addition'
-              urlqueryparam-mode='new'
-            >
-               part addition
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Part_removal'
-              urlqueryparam-mode='new'
-            >
-               part removal
-            </semantic-link>
-          </bs-menu-item>
-
-        </bs-nav-dropdown>
-
-        <bs-nav-dropdown title="Events2">
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Birth'
-              urlqueryparam-mode='new'
-            >
-               birth
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Transformation'
-              urlqueryparam-mode='new'
-            >
-               transformation
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Death'
-              urlqueryparam-mode='new'
-            >
-               death
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Destruction'
-              urlqueryparam-mode='new'
-            >
-               destruction
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Dissolution'
-              urlqueryparam-mode='new'
-            >
-               dissolution
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Condition_assessment'
-              urlqueryparam-mode='new'
-            >
-               condition assessment
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Identifier_assignment'
-              urlqueryparam-mode='new'
-            >
-               id assignment
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Measurement'
-              urlqueryparam-mode='new'
-            >
-               measurement
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Type_assignment'
-              urlqueryparam-mode='new'
-            >
-               type assignment
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Type_creation'
-              urlqueryparam-mode='new'
-            >
-               type creation
-            </semantic-link>
-          </bs-menu-item>
-
-        </bs-nav-dropdown>
-
-        <bs-nav-dropdown title="Actors">
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor'
-              urlqueryparam-mode='new'
-            >
-              actor
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Group'
-              urlqueryparam-mode='new'
-            >
-               group
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Person'
-              urlqueryparam-mode='new'
-            >
-               person
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
-                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Organisation'
-                urlqueryparam-mode='new'
-              >
-              organisation
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
-                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
-                urlqueryparam-mode='new'
-              >
-            user
-            </semantic-link>
-          </bs-menu-item>
-
-        </bs-nav-dropdown>
-
-        <bs-nav-dropdown title="Things">
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Physical_thing'
-              urlqueryparam-mode='new'
-            >
-               physical thing
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Physical_object'
-              urlqueryparam-mode='new'
-            >
-               physical object
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Physical_man-made_thing'
-              urlqueryparam-mode='new'
-            >
-               physical man-made thing
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Physical_feature'
-              urlqueryparam-mode='new'
-            >
-               physical feature
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Biological_object'
-              urlqueryparam-mode='new'
-            >
-               biological object
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Man-made_object'
-              urlqueryparam-mode='new'
-            >
-               man-made object
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Curated_collection'
-              urlqueryparam-mode='new'
-            >
-               collection
-            </semantic-link>
-
-          </bs-menu-item>
-          
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Series'
-              urlqueryparam-mode='new'
-            >
-               series
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Site'
-              urlqueryparam-mode='new'
-            >
-               site
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Man-made_feature'
-              urlqueryparam-mode='new'
-            >
-               man made feature
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Right'
-              urlqueryparam-mode='new'
-            >
-               right
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Publication'
-              urlqueryparam-mode='new'
-            >
-               publication
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
-                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Identifier'
-                urlqueryparam-mode='new'
-              >
-            identifier
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Research_question'
-              urlqueryparam-mode='new'
-            >
-               research question
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
-                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Document'
-                urlqueryparam-mode='new'
-              >
-            document
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
-                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image'
-                urlqueryparam-mode='new'
-              >
-            image
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
-                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation'
-                urlqueryparam-mode='new'
-              >
-            image annotation
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Material'
-              urlqueryparam-mode='new'
-            >
-              material
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
-                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Term'
-                urlqueryparam-mode='new'
-              >
-            term
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
-                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Title'
-                urlqueryparam-mode='new'
-              >
-            title
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
-                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Type'
-                urlqueryparam-mode='new'
-              >
-            type
-            </semantic-link>
-          </bs-menu-item>
-          
-        </bs-nav-dropdown>
-
-        <bs-nav-dropdown title="Testing4">
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
-                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map'
-                urlqueryparam-mode='new'
-              >
-            knowledge map
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
-                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative'
-                urlqueryparam-mode='new'
-              >
-            semantic narrative
-            </semantic-link>
-          </bs-menu-item>
-
-        </bs-nav-dropdown>
-      </ul>
-
-      <ul class="nav navbar-nav navbar-right">
-
-        {{!-- Example resources dropdown
-        <bs-nav-dropdown title="Example Resources" class="rs-nav-resources--margin">
-
-            <li class="rs-dropdown-sectionTitle">Records</li>
-            <semantic-link-container uri="#"><bs-menu-item>Resource 1</bs-menu-item></semantic-link-container>
-            <semantic-link-container uri="#"><bs-menu-item>Resource 2</bs-menu-item></semantic-link-container>
-            <semantic-link-container uri="#"><bs-menu-item>Resource 3</bs-menu-item></semantic-link-container>
-            <bs-menu-item divider="true"></bs-menu-item>
-
-            <li class="rs-dropdown-sectionTitle">Semantic Narratives</li>
-            <semantic-link-container uri="#"><bs-menu-item>Resource 4</bs-menu-item></semantic-link-container>
-            <bs-menu-item divider="true"></bs-menu-item>
-
-            <li class="rs-dropdown-sectionTitle">Knowledge Maps</li>
-            <semantic-link-container uri="#"><bs-menu-item>Resource 5</bs-menu-item></semantic-link-container>
-           <bs-menu-item divider="true"></bs-menu-item>
-
-            <li class="rs-dropdown-sectionTitle">Searches</li>
-            <semantic-link-container uri="#"><bs-menu-item>Resource 6</bs-menu-item></semantic-link-container>
-            <bs-menu-item divider="true"></bs-menu-item>
-
-            <li class="rs-dropdown-sectionTitle">Arguments</li>
-            <semantic-link-container uri="#"><bs-menu-item>Resource 7</bs-menu-item></semantic-link-container>
-            
-        </bs-nav-dropdown> --}}
-
-     {{!--    <li>
-          <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                         urlqueryparam-view='entity-editor'> 
-            <div class="nav-iconAndLabel"> 
-                <rs-icon icon-type="round" icon-name="edit_note"></rs-icon>
-                <div>Entities</div>
-            </div>
-          </semantic-link>
-        </li>
-
-        <li>
-          <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                         urlqueryparam-view='vocabulary'> 
-            <div class="nav-iconAndLabel"> 
-                <i class="iconmoon iconmoon-books"></i>
-                <div>Authorities</div>
-            </div>
-          </semantic-link>
-        </li>
-
-        <li class="vl"></li>
-
-        <li>
-          <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                        urlqueryparam-view='system-assets'> 
-            <div class="nav-iconAndLabel"> 
-                <rs-icon icon-type="round" icon-name="image"></rs-icon>
-                <div>Assets</div>
-            </div>
-          </semantic-link>
-        </li>
-
-        <li>
-          <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                        urlqueryparam-view='system-narrative'> 
-            <div class="nav-iconAndLabel"> 
-              <rs-icon icon-type="round" icon-name="description"></rs-icon>
-              <div>Narratives</div>
-            </div>
-          </semantic-link>
-        </li>
-
-        <li>
-          <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                        urlqueryparam-view='system-knowledge-maps'> 
-            <div class="nav-iconAndLabel"> 
-                <rs-icon icon-type="round" icon-name="account_tree"></rs-icon>
-                <div>Maps</div>
-            </div>
-          </semantic-link>
-        </li> --}}
-
-        <mp-user-language-switch></mp-user-language-switch>
-        <li>
-          <mp-anonymous-hidden alt='<li><a href="/login" title="login"></a></li>'>
-
-            <bs-dropdown id="navbar-dropdown" class="user-dropdown">
-              <bs-dropdown-toggle>
-                <div class="navDropdown-iconAndLabel"> 
-                  <rs-icon icon-type="round" icon-name="account_box"></rs-icon>
-                    <semantic-query
-                      query='SELECT ?userName { BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userName) }'
-                      template='\{{> template}}'>
-                      <template id='template'>
-                          <div>\{{bindings.0.userName.value}}</div>
-                      </template>
-                    </semantic-query>
-                </div>
-              </bs-dropdown-toggle>
-              <bs-dropdown-menu>
-                <semantic-query query='SELECT ?__useruri__ ?userEmail ?actor ?actorFullName { 
-                                        BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userEmail) 
-                                        OPTIONAL {
-                                              ?actor a crm:E39_Actor .
-                                              ?actor crm:P1_is_identified_by ?actorAppellationEmail .
-                                              ?actorAppellationEmail a crm:E41_Appellation .
-                                              ?actorAppellationEmail crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/user_email> .
-                                              ?actorAppellationEmail crm:P190_has_symbolic_content ?userEmail .
-                                              
-                                              ?actor crm:P1_is_identified_by ?actorAppellationFullName .
-                                              ?actorAppellationFullName a crm:E41_Appellation .
-                                              ?actorAppellationFullName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
-                                              ?actorAppellationFullName crm:P190_has_symbolic_content ?actorFullName .
-                                        }
-                                      }'
-                                template='\{{> template}}'>
-                  <template id='template'>
-                    <semantic-link-container uri='\{{bindings.0.__useruri__.value}}'>
-                      <bs-menu-item title='userPrincipal'>
-                        <rs-icon icon-type="round" icon-name="account_box" class="icon-left"></rs-icon>
-                          \{{#if bindings.0.actor.value}}
-                            <mp-event-trigger id='openEditUserForm-frame-trigger' 
-                                              type='Dashboard.AddFrame'
-                                              data='{"viewId":"entity-editor", 
-                                                    "entityTypeConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/User", 
-                                                    "resourceIri":"{{bindings.0.actor.value}}",
-                                                    "editable": true,
-                                                    "mode":"edit"}' 
-                                              targets='["thinking-frames"]'>
-
-                                <span>Profile</span>  
-                            </mp-event-trigger>
-                          \{{else}}
-                            <mp-event-trigger id='openNewUserForm-frame-trigger' 
-                                              type='Dashboard.AddFrame'
-                                              data='{"viewId":"entity-editor", 
-                                                    "entityTypeConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/User", 
-                                                    "editable": true,
-                                                    "resourceEditorLabel": "New user",
-                                                    "mode":"new"}' 
-                                              targets='["thinking-frames"]'>
-
-                                <span>Profile (not registered user)</span>  
-                            </mp-event-trigger>
-                          \{{/if}}
-                      </bs-menu-item>
-                    </semantic-link-container>
-                  </template>
-                </semantic-query>
-                
-                <bs-menu-item href="/logout" title='my team'>
-                  <rs-icon icon-type="round" icon-name="groups" class="icon-left"></rs-icon>
-                  <span>My team</span>
-                </bs-menu-item>
-
-                <bs-menu-item divider="true"></bs-menu-item>
-
-                <bs-menu-item href="/logout" title='logout'>
-                  <rs-icon icon-type="round" icon-name="logout" class="icon-left"></rs-icon>
-                  <span>Logout</span>
-                </bs-menu-item>
-              </bs-dropdown-menu>
-            </bs-dropdown>
-          </mp-anonymous-hidden>
-        </li>
-
-        <li>
-          <bs-dropdown id="navbar-dropdown" class="feedback-dropdown">
-              <bs-dropdown-toggle class="btn btn-icon">
-                <rs-icon icon-type="round" icon-name="forum"></rs-icon>
-              </bs-dropdown-toggle>
-              <bs-dropdown-menu>
-                  <bs-menu-item>
-                    <rs-icon icon-type="round" icon-name="add_box" class="icon-left"></rs-icon>
-                    New feedback
-                  </bs-menu-item>
-
-                  <bs-menu-item>
-                    <rs-icon icon-type="round" icon-name="feed" class="icon-left"></rs-icon>
-                    All feedback
-                  </bs-menu-item>
-              </bs-dropdown-menu>
-          </bs-dropdown>
-        </li>
-
-        <li>
-          <button class="btn btn-icon">
-            <a href="https://documentation.researchspace.org/resource/rsp:Start" title="Help center" target="_blank">
-              <rs-icon icon-type="round" icon-name="help_center"></rs-icon>
-            </a>
-          </button>
-        </li>
-
-        <mp-anonymous-hidden>
-          <li>
-            <button class="btn btn-icon">
-              <semantic-link iri="http://www.researchspace.org/resource/admin" title="System Settings" target="_blank">
-                <rs-icon icon-type="round" icon-name="settings"></rs-icon>
-              </semantic-link>
-            </button>
+              <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                        urlqueryparam-view='resource-editor'
+                                        urlqueryparam-mode="new"
+                                        urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Project'
+                                        urlqueryparam-custom-label='New Project'>
+                  <button class="btn btn-action btn-textAndIcon" >
+                    <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                    <span>New Project</span>
+                  </button>
+              </semantic-link-container>           
           </li>
         </mp-anonymous-hidden>
 
       </ul>
+
+      {{> navbarRight }}
     </div>
   </div>
 </nav>
 
+{{#*inline "navbarRight"}}
+  <ul class="nav navbar-nav navbar-right">
+    {{!-- Update profile-dropdown on resourceForm actions --}}
+    <semantic-query query='SELECT ?systemUser WHERE {
+                            BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
+                          }'
+                    template='\{{> template}}'>
+        <template id='template'>
+          <div>
+            <mp-event-proxy id='update-profile-dropdown-on-resourceForm-actions2'
+                            on-event-source='\{{bindings.0.systemUser.value}}-resource-form'
+                            on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated", "Form.ResourceRemoved"]'         
+                            proxy-event-type='Component.TemplateUpdate' 
+                            proxy-targets='["header-profile-dropdown"]'
+            ></mp-event-proxy> 
+          </div>
+        </template>
+    </semantic-query>
 
+    <mp-user-language-switch></mp-user-language-switch>
+    <li>
+      <mp-anonymous-hidden alt='<li><a href="/login" title="login"></a></li>'>
+        <mp-event-target-template-render id='header-profile-dropdown' template='\{{> template}}'>
+          <template id='template'>
+            <semantic-query query='SELECT DISTINCT ?systemUser ?systemUserName ?actorFullName ?group ?groupFullName { 
+                                    BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
+                                    BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?systemUserName)
+
+                                    OPTIONAL {
+                                      ?systemUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                      ?systemUser crm:P1_is_identified_by ?actorName .
+                                      ?actorName a crm:E41_Appellation .
+                                      ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                      ?actorName crm:P190_has_symbolic_content ?actorFullName .
+                                    }
+
+                                    OPTIONAL {
+                                      ?systemUser crm:P02i_is_range_of ?pc107 .
+                                      ?pc107 rdf:type crm:PC107_has_current_or_former_member .
+                                      ?pc107 crm:P01_has_domain ?group .
+                                      ?group crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                      ?group a crm:E74_Group .
+                                      ?group crm:P1_is_identified_by ?groupName .
+                                      ?groupName a crm:E41_Appellation .
+                                      ?groupName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                      ?groupName crm:P190_has_symbolic_content ?groupFullName .
+                                    }
+                                  }'
+                          template='\{{> template}}'>
+
+            <template id='template'>
+
+              <bs-dropdown id="navbar-dropdown" class="user-dropdown">
+                <bs-dropdown-toggle>
+                  <div class="navDropdown-iconAndLabel"> 
+                    <mp-resource-thumbnail iri='\{{bindings.0.systemUser.value}}' style="width: 25px; height:25px; border-radius:1.5px; object-fit: cover; object-position: top;">
+                      <mp-resource-thumbnail-fallback>
+                          <rs-icon icon-type="round" icon-name="account_box"></rs-icon>
+                      </mp-resource-thumbnail-fallback>
+                    </mp-resource-thumbnail>  
+                    \{{#if bindings.0.actorFullName.value}}
+                      <div>\{{bindings.0.actorFullName.value}}</div>
+                    \{{else}}
+                      <div>\{{bindings.0.systemUserName.value}}</div>
+                    \{{/if}}
+                  </div>
+                </bs-dropdown-toggle>
+                <bs-dropdown-menu>
+                  \{{#if bindings.0.actorFullName.value}}
+                    <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                              urlqueryparam-view='resource-editor' 
+                                              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                              urlqueryparam-resource-iri="\{{bindings.0.systemUser.value}}"
+                                              urlqueryparam-mode='edit'>
+                      <bs-menu-item>
+                        <rs-icon icon-type="rounded" icon-name="account_box" class="icon-left" symbol="true"></rs-icon>
+                        <span>My profile</span> 
+                      </bs-menu-item>
+                    </semantic-link-container>
+                  \{{else}}
+                    <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                            urlqueryparam-view='resource-editor' 
+                                            urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                            urlqueryparam-custom-label='New profile'
+                                            urlqueryparam-mode='new'>
+                      <bs-menu-item>
+                        <rs-icon icon-type="rounded" icon-name="account_box" class="icon-left" symbol="true"></rs-icon>
+                        <span>My profile (not registered user)</span>  
+                      </bs-menu-item>
+                    </semantic-link-container>
+                  \{{/if}}
+                  
+                  \{{#if bindings.0.group.value}}
+                    \{{#each bindings}}
+                      <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                urlqueryparam-view='resource-editor' 
+                                                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                                urlqueryparam-resource-iri="\{{group.value}}"
+                                                urlqueryparam-mode='edit'>
+                        <bs-menu-item>
+                          <rs-icon icon-type="rounded" icon-name="groups" class="icon-left" symbol="true"></rs-icon>
+                          <span>My team - \{{groupFullName.value}}</span>
+                        </bs-menu-item>
+                      </semantic-link-container>
+                    \{{/each}}
+                  \{{/if}}
+
+                  <bs-menu-item divider="true"></bs-menu-item>
+
+                  <bs-menu-item href="/logout" title='logout'>
+                    <rs-icon icon-type="rounded" icon-name="logout" class="icon-left" symbol="true"></rs-icon>
+                    <span>Logout</span>
+                  </bs-menu-item>
+                </bs-dropdown-menu>
+              </bs-dropdown>
+            </template>
+            </semantic-query>
+          </template>
+        </mp-event-target-template-render>
+      </mp-anonymous-hidden>
+    </li>
+
+    <li>
+        <mp-overlay-dialog id="header-contact-modal" type="modal" bs-size="large" class="header-contact-modal">
+          <mp-overlay-dialog-trigger>
+            <button class="btn btn-icon" title="Contact & support">
+              <rs-icon icon-type="round" icon-name="forum"></rs-icon>
+            </button>
+          </mp-overlay-dialog-trigger>
+
+          <mp-overlay-dialog-content>
+                <div class="contact-container">
+                <div class="contact-motif"></div>
+                <div class="contact-header">
+                  <div class="title">Contact & Support</div>
+                  <div class="contact-icons-container">
+                      <a href="https://www.researchspace.org/" title="Researchspace website" target="_blank">
+                        <i class="rs-icon rs-icon-researchspace"></i>
+                      </a>
+                      <a href="mailto:info@kartography.org" title="mailto:info@kartography.org" target="_blank">
+                        <i class="rs-icon rs-icon-mail_send"></i>
+                      </a>
+                      <a href="https://www.youtube.com/channel/UCtUOzTB2vBG9ZimeDVrlULQ/featured" title="Youtube researchspace" target="_blank">
+                        <i class="rs-icon rs-icon-youtube"></i>
+                      </a>
+                      <a href="https://x.com/researchspace" title="X researchspace" target="_blank">
+                        <img src="/assets/images/logos/x-social-media-logo.svg">
+                      </a>
+
+                      <a href="https://github.com/researchspace/researchspace" title="Github researchspace" target="_blank">
+                        <i class="fa fa-github-square"></i>
+                      </a>
+                  </div>
+                </div>
+
+                <div class="contact-content">
+                  <div>This version of ResearchSpace is released and supported by <a href="https://kartography.org/" title="Kartography" target="_blank" class="text-link-action">Kartography CIC</a>.</div>
+                  <div style="padding: 10px 0 10px 0;">Kartography offers:</div>
+                  <div class="contact-card-container">
+                    
+                    <div class="contact-card"> 
+                      <rs-icon icon-type="rounded" icon-name="biotech" symbol="true"></rs-icon>
+                      <div>
+                        <div class="card-title">Consultancy</div>
+                        <div class="card-content">We offer comprehensive consultancy services — including process analysis, data strategies, and ResearchSpace-related software development.</div>
+                      </div>
+                    </div>
+                    <div class="contact-card"> 
+                      <rs-icon icon-type="rounded" icon-name="display_settings" symbol="true"></rs-icon>
+                      <div>
+                        <div class="card-title">Customisations of ResearchSpace</div>
+                        <div class="card-content">We design and develop bespoke UI/UX interactions, visualisations and workflows using ResearchSpace functionalities.</div>
+                      </div>
+                    </div>
+                    <div class="contact-card"> 
+                      <rs-icon icon-type="rounded" icon-name="data_exploration" symbol="true"></rs-icon>
+                      <div>
+                        <div class="card-title">Diversity and inclusion in data</div>
+                        <div class="card-content">Our expertise lies in bringing together diverse disciplines through the use of semantic data and interactive environments. This approach enhances collaboration and ensures that a wide array of perspectives, especially those that are usually underrepresented in data, are captured and valued in any project.</div>
+                      </div>
+                    </div>
+                    <div class="contact-card"> 
+                      <rs-icon icon-type="rounded" icon-name="linked_services" symbol="true"></rs-icon>
+                      <div>
+                        <div class="card-title">Knowledge representation using Linked Data</div>
+                        <div class="card-content">We use CIDOC CRM real world ontologies for data modelling with context, preserving meaning and relationships.</div>
+                      </div>
+                    </div>
+                                          
+                    <div class="contact-card"> 
+                      <rs-icon icon-type="rounded" icon-name="school" symbol="true"></rs-icon>
+                      <div>
+                        <div class="card-title">Training</div>
+                        <div class="card-content">
+                          We organize workshops and personalized training sessions to help with the use of ResearchSpace. These are available periodically and upon request.
+                        </div>
+                      </div>
+                    </div>
+                    <div class="contact-card"> 
+                      <rs-icon icon-type="rounded" icon-name="live_help" symbol="true"></rs-icon>
+                      <div>
+                        <div class="card-title">Technical support</div>
+                        <div class="card-content">We can assist in setting up, maintaining, and developing your ResearchSpace instance, whether for local deployment or integration into existing infrastructures.</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="contact-content-buttons">
+                    <mp-event-trigger id='header-close-header-contact-modal' 
+                                      type='OverlayDialog.Close' 
+                                      targets='["header-contact-modal"]'>
+                      <button class="btn btn-default">Close</button>
+                    </mp-event-trigger>
+                  </div>
+                </div>
+              </div>               
+          </mp-overlay-dialog-content>
+      </mp-overlay-dialog>
+      
+    </li>
+
+    <li>
+      <button class="btn btn-icon">
+        <a href="https://documentation.researchspace.org/resource/rsp:Start" title="Help center" target="_blank">
+          <rs-icon icon-type="round" icon-name="help_center"></rs-icon>
+        </a>
+      </button>
+    </li>
+
+    <mp-anonymous-hidden>
+      <li>
+        <button class="btn btn-icon">
+          <semantic-link iri="http://www.researchspace.org/resource/admin" title="System settings" target="_blank">
+            <rs-icon icon-type="round" icon-name="settings"></rs-icon>
+          </semantic-link>
+        </button>
+      </li>
+    </mp-anonymous-hidden>
+
+  </ul>
+{{/inline}}

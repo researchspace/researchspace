@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -26,7 +27,7 @@ import * as ReactBootstrap from 'react-bootstrap';
 
 import { Component } from 'platform/api/components';
 import { Rdf } from 'platform/api/rdf';
-import { refresh } from 'platform/api/navigation';
+import { navigateToResource, refresh } from 'platform/api/navigation';
 import { SparqlUtil } from 'platform/api/sparql';
 import { RDFGraphStoreService } from 'platform/api/services/rdf-graph-store';
 import { addNotification } from 'platform/components/ui/notification';
@@ -40,6 +41,7 @@ const ButtonToolbar = createFactory(ReactBootstrap.ButtonToolbar);
 
 import './GraphActionLink.scss';
 import { overlayMode } from 'codemirror';
+import Icon from 'platform/components/ui/icon/Icon';
 
 const CLASS = 'mp-rdf-graph-action';
 
@@ -95,7 +97,7 @@ export class GraphActionLink extends Component<Props, State> {
         dialogRef,
         createElement(OverlayDialog, {
           show: true,
-          title: 'Delete graph',
+          title: 'Delete',
           bsSize: 'lg',
           onHide,
           children: D.div(
@@ -106,13 +108,18 @@ export class GraphActionLink extends Component<Props, State> {
               D.span({}, '"?'),
             ),
             D.div(
-              {className: 'alert alert-info', style: { marginTop: '20px'}},
-              D.p({},'Please note that for larger named graphs (> 1 million statements), the deletion may typically take a few seconds (or even minutes) to be finally processed by the database.')
+              {className: 'documentation-section documentation-section-withIcon', style: { margin: '20px 0'}},
+              D.div({className:'documentation-section-icon-container'},
+                D.i({className:'fa fa-info'})),
+                D.div({style: { flex: '1'}}, 
+                  D.div({className:'documentation-section-title'}, 'Delete processing'),
+                  D.div({className:'documentation-section-content'}, 'For larger named graphs (> 1 million statements), the deletion may typically take a few seconds (or even minutes) to be finally processed by the database.')
+                    ) 
             ),
             ButtonToolbar(
               { className: 'modal-btn-group' },
               Button({ bsStyle: 'default', onClick: onHide }, 'Cancel'),
-              Button({ bsStyle: 'action', onClick: onSubmit }, 'Delete graph')
+              Button({ bsStyle: 'default', className:'btn-action', onClick: onSubmit }, 'Delete')
             )
           ),
         })
@@ -147,7 +154,7 @@ export class GraphActionLink extends Component<Props, State> {
                   ButtonToolbar(
                     { style: { display: 'flex', paddingTop: '10px', justifyContent: 'end' } },
                     Button({ bsStyle: 'default', onClick: onHide }, 'Cancel'),
-                    Button({ bsStyle: 'action', onClick: onSubmit }, 'Delete')
+                    Button({ bsStyle: 'default', className:'btn-action', onClick: onSubmit }, 'Delete')
                   )
                 ),
               })
@@ -181,7 +188,7 @@ export class GraphActionLink extends Component<Props, State> {
       targetGraph: Rdf.iri(this.props.graphuri),
       turtleString: turtleString,
       repository,
-    }).onValue((_) => {
+    }).onValue((_) => { 
       // FIRE EVENT
       trigger({
         eventType: GraphActionEvents.GraphActionSuccess,
@@ -218,14 +225,29 @@ export class GraphActionLink extends Component<Props, State> {
 
   private deleteGraph() {
     this.setState({ isInProcess: true });
+    /*
     addNotification({
       level: 'info',
       message: 'The delete command has been executed and is currently being processed by the database',
     });
+    */
 
     const { repository } = this.context.semanticContext;
     RDFGraphStoreService.deleteGraph({ targetGraph: Rdf.iri(this.props.graphuri), repository })
-      .onValue((_) => refresh())
+      .onValue((_) => {
+        // FIRE DELETE GRAPH EVENT
+        trigger({
+          eventType: GraphActionEvents.GraphActionDelete,
+          source: Math.random().toString(),
+          data:{"iri":this.props.graphuri}
+        });
+        addNotification({
+          level: 'success',
+          message: 'Resource deleted',
+        });
+        //Disable the refresh
+        //refresh();
+      })
       .onError((error: string) => {
         this.setState({ isInProcess: false });
         addNotification({

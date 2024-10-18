@@ -1,6 +1,7 @@
 /**
  * ResearchSpace
- * Copyright (C) 2020, © Trustees of the British Museum
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
+ * Copyright (C) 2015-2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
  * This program is free software: you can redistribute it and/or modify
@@ -55,19 +56,8 @@
   box-shadow: 0px 1px 2px 0px #00000061;
 
   & .navbar-toggle {
-    border-color: $color-navbar;
-    border-radius: 6px;
-    margin-top: 0;
-    margin-bottom: 0;
 
-    &:hover,
-    &:focus {
-      background-color: $color-secondary;
-    }
-
-    & .icon-bar {
-      background-color: $color-white;
-    }
+    display: none;
   }
 
   & .navbar-nav {
@@ -198,6 +188,7 @@
 
   .btn {
     height: 36px;
+    border-radius: 3px;
   }
 
   .btn-icon, 
@@ -261,12 +252,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 
   height: 36px;
-  padding: 5px;
+  padding: 8px 3px 5px;
   border-radius: 2px;
 //  border: 1px solid $color-navbar-btn-bg;
-  background-color: $color-navbar-btn-bg;
+//  background-color: $color-navbar-btn-bg;
 
   &:hover,
   &:focus {
@@ -274,7 +266,7 @@
   }
 
   img {
-    height: 22px;
+    height: 25px;
   }
 }
 
@@ -303,65 +295,29 @@
 
 @media (max-width: 767px) {
 
-  .navbar {
-    height: auto;
+  .navbar-right {
+    margin: 0;
   }
 
-  .navbar-header {
+  .navbar-default .navbar-toggle {
+    border: none;
+    margin: 0;
+    display: flex; 
+    justify-content:space-between;
     width: 100%;
-    display: flex;
     align-items: center;
-    padding: 10px 5vw;
-    min-height: $nav-height;
-  }
+    gap: 10px;
+    padding: 0 3px;
 
-  .rs-header {
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .navbar-nav {
-    margin: 0px;
-
-    & .dropdown-menu .divider {
-      height: 0.8px;
-      background-color: $color-navbar-btn-bg;
-      margin: 7px 0px;
-    }
-  }
-
-  .navbar-default {
-    .dropdown-menu {
-      margin-top: 0px;
-
-      & > li > a {
-        font-size: 14.5px;
-        padding: 6px 28px !important;
-        cursor: pointer;
-  
-        &:hover,
-        &:focus {
-          font-size: 14.5px;
-        }
-      }
+    &:hover,
+    &:focus {
+      background-color: transparent;
     }
 
-    & .navbar-nav .open .dropdown-menu > li > a:hover,
-    & .navbar-nav .open .dropdown-menu > li > a:focus {
-      background-color: $color-lighter;
-      text-shadow: 0px 0px 0.5px $color-white;
+    img {
+      height: 25px;
+      cursor: pointer;
     }
-  }
-
-  .navbar-default .navbar-nav > li > a,
-  .navbar-nav .btn {
-    text-transform: uppercase;
-    font-size: 15px !important;
-  }
-
-  .nav > li > a {
-    padding: 4px 15px;
   }
 
   .rs-header-logo {
@@ -444,6 +400,143 @@
     i {
       color: $color-base;
       font-size: 35px;
+    }
+  }
+}
+
+.header-contact-modal__body {
+  padding: 0;
+}
+
+.contact-container {
+
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+  grid-template-rows: 200px auto;
+  grid-template-areas:
+      ". contactHeader . "
+      ". contactContent .";
+  column-gap: 40px;
+  row-gap: 50px;
+
+  .contact-motif {
+    grid-column: 1 / -1;
+    grid-row: 1 / 2;
+    background: $color-secondary-light;
+    background: linear-gradient(208deg, $color-secondary-light 0%, $color-secondary-light 11%, $color-medium 60%, $color-light 80%, $color-lighter 98%);
+  }
+
+  .contact-header {
+    grid-area: contactHeader;
+    align-self: center;
+
+    .title {
+        font-size: 40px;
+        font-weight: 600;
+        line-height: 1.4;
+        color: $color-secondary;
+    }
+
+    .contact-icons-container {
+
+      display: flex;
+      padding-top: 13px;
+  
+      a {
+  
+          margin-right: 15px;
+          text-decoration: none;
+  
+          &:hover,
+          &:focus {
+  
+              text-decoration: none;
+          }
+  
+      }
+  
+      a:first-child {
+  
+          margin-right: 18px;
+      }
+  
+      .rs-icon, .fa {
+  
+          color: $color-secondary-light;
+          opacity: .7;
+  
+          &:hover,
+          &:focus {
+              opacity: 1;
+          }
+      }
+
+      .rs-icon {
+        font-size: 27px;
+      }
+
+      .fa {
+        font-size: 32px;
+        margin-top: -2px;
+      }
+  
+      img {
+          height: 28px;
+          opacity: .7;
+  
+          &:hover,
+          &:focus {
+              opacity: 1;
+          }
+      }
+    }
+  }
+
+  .contact-content {
+    grid-area: contactContent;
+    
+    .contact-content-buttons {
+
+      margin: 20px 0;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .contact-card-container {
+
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .contact-card {
+
+      padding: 20px;
+      border-radius: $border-radius;
+      border: 1px solid $color-border;
+      background-color: $color-white;
+
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+
+      i {
+        font-size: 34px;
+        color: $color-base;
+      }
+
+      .card-title {
+        color: $color-dark;
+        font-size: 16px;
+        font-weight: 600;
+        padding-bottom: 5px;
+      }
+
+      .card-content {
+        color: $color-secondary;
+        font-size: 12.5px;
+        line-height: 1.3;
+      }
     }
   }
 }

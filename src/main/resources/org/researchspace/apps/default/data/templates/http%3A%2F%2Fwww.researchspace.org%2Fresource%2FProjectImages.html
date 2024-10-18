@@ -27,7 +27,7 @@
               <mp-overlay-dialog title="Image Upload" type="modal" bs-size="large">
                 <mp-overlay-dialog-trigger>
                   <button class="btn btn-default btn-textAndIcon">
-                    <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                    <rs-icon icon-type='rounded' icon-name='upload' symbol='true'></rs-icon>
                    <div>Upload image</div>
                  </button>
                 </mp-overlay-dialog-trigger>
@@ -38,15 +38,15 @@
                                      fields='[[fieldDefinitions
                                  label="http://www.w3.org/2000/01/rdf-schema#label"
                                  P3_has_note="http://www.cidoc-crm.org/cidoc-crm/P3_has_note"
-                                 P1_is_identified_by="http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by"
+                                 entity_file_identifier="http://www.researchspace.org/pattern/system/entity/file_identifier"
                                  type="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                                ]]'
                                      >
                         <semantic-form-hidden-input for='type' 
                                                     default-values='["http://www.researchspace.org/ontology/EX_Digital_Image"]'
                                                     > </semantic-form-hidden-input>
-         
-                        <semantic-form-file-input for='P1_is_identified_by' 
+        
+                        <semantic-form-file-input for='entity_file_identifier' 
                                                   accept-pattern='image/*' 
                                                   storage='images'
                                                   temp-storage='tmp'
@@ -98,32 +98,30 @@
             <div>
               
               <semantic-search-query-keyword 
-                  query='
-                    SELECT ?subject WHERE { 
-                      ?subject a rs:EX_Digital_Image .
-                      ?subject rdfs:label ?label .
-                      ?label bds:search ?__token__ ;
-                                  bds:minRelevance "0.3" ;
-                                  bds:matchAllTerms "true"  .
-                    }
-                  '
-                  default-query='
-                    SELECT ?subject WHERE {
-                      ?subject a rs:EX_Digital_Image .
-                    }
-                  '
+                  query='SELECT ?subject WHERE { 
+                          ?subject a rs:EX_Digital_Image .
+                          ?subject rdfs:label ?label .
+                          ?label bds:search ?__token__ ;
+                                      bds:minRelevance "0.3" ;
+                                      bds:matchAllTerms "true"  .
+                        }'
+                  default-query='SELECT ?subject WHERE {
+                                  ?subject a rs:EX_Digital_Image .
+                                }'
                   debounce=500
                 ></semantic-search-query-keyword>
-                <mp-selection-action-choice id='Action' title='With selected ...' selection='images-selection-aggregator'>
+
+                <mp-selection-action-choice id='action' selection='images-selection-aggregator'>
                   <rs-iiif-overlay-action [[> rsp:IIIFConfig]]></rs-iiif-overlay-action>
                   <rs-iiif-side-by-side-action [[> rsp:IIIFConfig]]></rs-iiif-side-by-side-action>
                    [[#if (hasPermission "forms:ldp:*")]]
                   <mp-create-set-action></mp-create-set-action>
                   [[/if]]
                 </mp-selection-action-choice>
+
             </div>
             
-            <div data-flex-layout="row stretch-stretch" class='rs-results-area'>
+            <div data-flex-layout="row stretch-stretch" class='search-results-area'>
               <semantic-search-result-holder>
                 <div data-flex-self="md-full">
                   
@@ -141,7 +139,7 @@
                                 options='{"showFilter":false, "resultsPerPage":30}'
                       >
                         <template id='gridItem'>
-                          <div class='card-select-container'>
+                          <div class='card-selection-container'>
                             <div class='card-select-input'>
                               <mp-selection-toggle selection="images-selection-aggregator" tag="{{subject.value}}"></mp-selection-toggle>
                             </div>
@@ -164,7 +162,7 @@
                                       container='http://www.researchspace.org/resource/system/formContainer'
                                     >
                                       <button type="button" name='delete' class="rs-button" title="Delete">
-                                        <rs-icon icon-type="round" icon-name="delete" style="font-size: 23px;"></rs-icon>
+                                        <rs-icon icon-type="rounded" icon-name="delete" style="font-size: 23px;" symbol="true"></rs-icon>
                                       </button>
                                     </mp-ldp-remove-from-container-action>
                                   </div>

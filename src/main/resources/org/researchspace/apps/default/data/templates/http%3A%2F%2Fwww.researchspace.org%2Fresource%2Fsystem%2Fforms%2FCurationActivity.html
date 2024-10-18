@@ -10,7 +10,12 @@
                           entity_image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
                           entity_image="http://www.researchspace.org/pattern/system/entity/images"
                           entity_document="http://www.researchspace.org/pattern/system/entity/documents"
+                          entity_video="http://www.researchspace.org/pattern/system/entity/subject_of_video"
+                          entity_audio="http://www.researchspace.org/pattern/system/entity/subject_of_audio"
+                          entity_3d_model="http://www.researchspace.org/pattern/system/entity/subject_of_3Dmodel"
                           entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
+                          entity_represents_range="http://www.researchspace.org/pattern/system/entity/represents_range"
+                          entity_web_URL="http://www.researchspace.org/pattern/system/entity/web_URL_embed"
 
                           entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
                           entity_description="http://www.researchspace.org/pattern/system/entity/description"
@@ -21,7 +26,6 @@
                           period_place="http://www.researchspace.org/pattern/system/period/took_place_at_place"
                           entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
                           entity_id="http://www.researchspace.org/pattern/system/entity/identifier"
-                          entity_has_type="http://www.researchspace.org/pattern/system/entity/has_type"
 
                           period_forms_part_of_event="http://www.researchspace.org/pattern/system/period/forms_part_of_period"
                           period_consist_of_event="http://www.researchspace.org/pattern/system/period/consist_of_period"
@@ -60,29 +64,22 @@
 
   <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
     <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E87_Curation_Activity'> </semantic-form-hidden-input>
-
-    {{#if type}}
-      <semantic-form-hidden-input for="entity_has_type" default-value="{{type}}"></semantic-form-hidden-input>
-    {{else}}
-      <semantic-form-hidden-input for="entity_has_type"></semantic-form-hidden-input>
-    {{/if}}
     
     {{#if scheme}}<semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>{{/if}}
 
     <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs"> 
       <rs-tab event-key="detail" title="Details">
+        <div class="form-details-container">
+          <div style="overflow-x: auto;">
+            <semantic-form-text-input for="entity_primary_appellation" label="Curation activity name" placeholder="Enter curation activity name"></semantic-form-text-input>
 
-        <div class="form-2column-container">
-          <div>
-            <semantic-form-text-input for="entity_primary_appellation" label="Curation activity title" placeholder="Enter curation activity title"></semantic-form-text-input>
-
-            <semantic-form-text-input for="entity_description" multiline="true" label="Curation activity description" placeholder="Enter curation activity description"></semantic-form-text-input>
+            <semantic-form-text-input for="entity_description" multiline="true" label="Description" placeholder="Enter description/comment"></semantic-form-text-input>
 
             <div class="form-inline-inputs">
-           
+          
               <div style="flex: 1;">
                 <semantic-form-select-input for='activity_status' 
-                                            label="Curation activity status" 
+                                            label="Status" 
                                             placeholder="Select curation activity status" 
                                             nested-form-templates='[ 
                                               {
@@ -98,7 +95,7 @@
 
               <div style="flex: 1;">
                 <semantic-form-select-input for='activity_priority' 
-                                            label="Curation activity priority" 
+                                            label="Priority" 
                                             placeholder="Select curation activity priority" 
                                             nested-form-templates='[ 
                                               {
@@ -106,7 +103,7 @@
                                                 "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
                                                                                 scheme=\"http://www.researchspace.org/resource/vocab/priority\"
                                                                                 entityType=\"priority\" }}
-                                                               {{{{/raw}}}}"
+                                                              {{{{/raw}}}}"
                                               }
                                             ]'> 
                 </semantic-form-select-input>  
@@ -114,7 +111,7 @@
             </div>
 
             <semantic-form-autocomplete-input for='temporal_entity_date' 
-                                              label="Curation activity timespan/date" 
+                                              label="Timespan/date" 
                                               placeholder="Select timespan" 
                                               nested-form-templates='[ 
                                                 {
@@ -131,7 +128,7 @@
             {{/if}}
             
             <semantic-form-autocomplete-input for="period_place" 
-                                              label="Curation activity place" 
+                                              label="Place" 
                                               placeholder="Select place"
                                               nested-form-templates='[ 
                                                 {
@@ -144,110 +141,25 @@
                                               ]'>
             </semantic-form-autocomplete-input>
 
-            <div class="inline-composite-container">
-              <semantic-form-composite-input  for="entity_preferred_id"
-                                              label="Preferred identifier"
-                                              new-subject-template="/entity_preferred_id" 
-                                              fields='[[fieldDefinitions
-                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+            <semantic-form-autocomplete-input   for="entity_preferred_id" 
+                                                label="Preferred identifier"
+                                                placeholder="Select preferred identifier" 
+                                                nested-form-templates='[ 
+                                                    {
+                                                        "label": "Identifier",
+                                                        "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Identifier\" nested=true editable=true mode=\"new\" }}
+                                                                        {{{{/raw}}}}"
+                                                    }
+                                                ]'>
+            </semantic-form-autocomplete-input>
 
-                                                      identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
-                                                      identifier_type="http://www.researchspace.org/pattern/system/identifier/identifier_type"
-                                                  ]]'
-                                              >
-                          
-                  <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
-                      
-                  <div class="form-inline-inputs">
-                      <div style="min-width: 40%;">
-                          <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter preferred identifier"></semantic-form-text-input>
-                      </div>
-                      <div style="flex: 1;">
-                          <semantic-form-select-input for='identifier_type' 
-                                                      label="Identifier type" 
-                                                      render-header=false
-                                                      placeholder="Select identifier type" 
-                                                      nested-form-templates='[ 
-                                                          {
-                                                              "label": "Identifier",
-                                                              "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
-                                                                                              scheme=\"http://www.researchspace.org/resource/system/vocab/identifier\"
-                                                                                              entityType=\"identifier\" }}
-                                                                              {{{{/raw}}}}"
-                                                          }
-                                                      ]'>
-                          </semantic-form-select-input>
-                      </div>
-                  </div>
-              </semantic-form-composite-input>
-            </div>
-
-            <div class="inline-composite-container">
-              <semantic-form-composite-input  for="entity_id"
-                                              label="Other identifier"
-                                              new-subject-template="/entity_id/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-                                              fields='[[fieldDefinitions
-                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
-
-                                                      identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
-                                                      identifier_type="http://www.researchspace.org/pattern/system/identifier/identifier_type"
-                                                  ]]'
-                                              >
-                          
-                  <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
-                      
-                  <div class="form-inline-inputs">
-                      <div style="min-width: 40%;">
-                          <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier"></semantic-form-text-input>
-                      </div>
-                      <div style="flex: 1;">
-                          <semantic-form-select-input for='identifier_type' 
-                                                      label="Identifier type" 
-                                                      render-header=false
-                                                      placeholder="Select identifier type" 
-                                                      nested-form-templates='[ 
-                                                          {
-                                                              "label": "Identifier",
-                                                              "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
-                                                                                              scheme=\"http://www.researchspace.org/resource/system/vocab/identifier\"
-                                                                                              entityType=\"identifier\" }}
-                                                                              {{{{/raw}}}}"
-                                                          }
-                                                      ]'>
-                          </semantic-form-select-input>
-                      </div>
-                  </div>
-              </semantic-form-composite-input>
-            </div>
+            <semantic-form-autocomplete-input   for="entity_id" 
+                                                label="Other identifier"
+                                                placeholder="Select other identifier" 
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_appellations]]'>
+            </semantic-form-autocomplete-input>
           </div>
-
-          <div class="form-media-column">
-            <div class="dragAndDrop-input-container">
-                <semantic-form-drag-and-drop-input for='entity_image_main_representation' label="Main image" 
-                                                    placeholder-item-template="<div class='placeholder-item'>
-                                                                                    <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                                                                                    <div>Drag main image from 
-                                                                                        <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' 
-                                                                                        class='text-link-action' urlqueryparam-view='system-assets'>Image Library</semantic-link>
-                                                                                        or click to upload</div>
-                                                                                </div>"
-                                                    nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
-                </semantic-form-drag-and-drop-input>
-            </div>
-
-            <div class="dragAndDrop-input-container">
-                <semantic-form-drag-and-drop-input  for='entity_image' label="More images" 
-                                                    placeholder-item-template="<div class='placeholder-item'>
-                                                                                    <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                                                                                    <div>Drag images from 
-                                                                                        <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' 
-                                                                                        class='text-link-action' urlqueryparam-view='system-assets'>Image Library</semantic-link>
-                                                                                        or click to upload</div>
-                                                                                </div>"
-                                                    nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
-                </semantic-form-drag-and-drop-input>
-            </div>
-          </div>
+          [[> rsp:FormAssetSidebar]]
         </div>
       </rs-tab>
 
@@ -305,7 +217,7 @@
                                                 targets='["{{viewId}}-period-componentsView"]'
                                                 >
                                 <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
-                                <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
+                                <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
                                     Refresh
                                 </button>
                             </mp-event-trigger>
@@ -337,7 +249,6 @@
                                                                     ?node crm:P1_is_identified_by ?appellation .
                                                                     ?appellation a crm:E41_Appellation .
                                                                     ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                     
                                                                     ?appellation crm:P190_has_symbolic_content ?nodeLabel .  
                                                                 }'
                                                             template='{{> template}}'>
@@ -348,7 +259,7 @@
                                                             <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
                                                         {{else}}
                                                             <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                            urlqueryparam-view='entity-editor' 
+                                                                            urlqueryparam-view='resource-editor' 
                                                                             urlqueryparam-resource-iri='{{node.value}}'
                                                                             >
                                                                 <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
@@ -418,7 +329,7 @@
                                                                   "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
 
                                                   scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                              "view": "vocabulary-content",
+                                                                              "view": "authority-list",
                                                                               "scheme": "http://www.researchspace.org/resource/vocab/actor_role",
                                                                               "tooltip": "Open list of roles"
                                                                             }'
@@ -468,7 +379,7 @@
                                                                       "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
 
                                                       scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                  "view": "vocabulary-content",
+                                                                                  "view": "authority-list",
                                                                                   "scheme": "http://www.researchspace.org/resource/vocab/actor_role",
                                                                                   "tooltip": "Open list of roles"
                                                                                 }'
@@ -620,7 +531,7 @@
                                                                     "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
 
                                                     scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                "view": "vocabulary-content",
+                                                                                "view": "authority-list",
                                                                                 "scheme": "http://www.researchspace.org/resource/vocab/mode_of_use",
                                                                                 "tooltip": "Open list of modes of use"
                                                                               }'
@@ -645,7 +556,7 @@
                                           fields='[[fieldDefinitions
                                                       classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                                                       
-                                                      was_intended_use_of_man-made_thing_range="http://www.researchspace.org/pattern/system/was_intended_use_of/man_made_thing_range"
+                                                      was_intended_use_of_human-made_thing_range="http://www.researchspace.org/pattern/system/was_intended_use_of/human_made_thing_range"
                                                       mode_of_use="http://www.researchspace.org/pattern/system/was_intended_use_of/mode_of_use"
                                                   ]]'>
 
@@ -653,10 +564,10 @@
 
             <div class="form-inline-inputs">
               <div style="flex: 1;">
-                <semantic-form-autocomplete-input for='was_intended_use_of_man-made_thing_range' 
+                <semantic-form-autocomplete-input for='was_intended_use_of_human-made_thing_range' 
                                                   render-header="false"
-                                                  placeholder="Select man made thing" 
-                                                  nested-form-templates='[[> Platform:NestedFormTemplates_manMadeThings]]'>
+                                                  placeholder="Select human made thing" 
+                                                  nested-form-templates='[[> Platform:NestedFormTemplates_humanMadeThings]]'>
                 </semantic-form-autocomplete-input> 
               </div>
               <div style="flex: 1;">
@@ -670,7 +581,7 @@
                                                                   "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
 
                                                   scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                              "view": "vocabulary-content",
+                                                                              "view": "authority-list",
                                                                               "scheme": "http://www.researchspace.org/resource/vocab/mode_of_use",
                                                                               "tooltip": "Open list of modes of use"
                                                                             }'
@@ -718,7 +629,7 @@
               <semantic-form-autocomplete-input for='depicts_thing_domain' 
                                                 render-header="false"
                                                 placeholder="Select what depicts the curation activity"
-                                                nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'>
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_physicalHumanMadeThings]]'>
               </semantic-form-autocomplete-input>
             </div>
             <div style="flex: 1;">
@@ -731,7 +642,7 @@
                                                                 "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
 
                                                 scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                            "view": "vocabulary-content",
+                                                                            "view": "authority-list",
                                                                             "scheme": "http://www.researchspace.org/resource/vocab/mode_of_depiction",
                                                                             "tooltip": "Open list of mode of depictions"
                                                                           }'
@@ -786,7 +697,7 @@
                                                                 "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
 
                                                 scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                            "view": "vocabulary-content",
+                                                                            "view": "authority-list",
                                                                             "scheme": "http://www.researchspace.org/resource/vocab/type_of_reference",
                                                                             "tooltip": "Open list of type of references"
                                                                           }'
@@ -819,7 +730,7 @@
                                                         }'
 
                                           scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                      "view": "vocabulary-content",
+                                                                      "view": "authority-list",
                                                                       "scheme": "http://www.researchspace.org/resource/vocab/technique",
                                                                       "tooltip": "Open list of techniques"
                                                                     }'
@@ -857,7 +768,7 @@
                                                           }'
 
                                           scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                      "view": "vocabulary-content",
+                                                                      "view": "authority-list",
                                                                       "scheme": "http://www.researchspace.org/resource/vocab/object_type",
                                                                       "tooltip": "Open list of object types"
                                                                       }'
@@ -896,11 +807,9 @@
       </rs-tab>
 
       [[> rsp:FormMetadataTab]]
-
-      [[> rsp:FormAssetTab]]
       
     </rs-tabs>
-
+    
   </div>
 
   <semantic-form-errors></semantic-form-errors> 

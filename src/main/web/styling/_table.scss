@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -47,7 +48,8 @@ table {
         border: none;
     }
 
-    & > thead > tr > th {
+    & > thead > tr > th,
+    & > thead > tr > td {
 
         border: none;
         padding: 0 8px 8px;
@@ -144,12 +146,26 @@ table {
 
         & > thead > tr > th {
 
-            padding: 0 8px 2px;
+            padding: 0 15px 2px 15px;
+        }
+
+        & tbody:first-of-type {
+
+            & .standard-row {
+                background-color: $color-white;
+
+/*              &:hover,
+                &:focus,
+                &:focus-within {
+                    background-color: $color-lighter-hover;
+                } */
+            }
         }
 
         & > tbody > tr > td {
             
-            background-color: $color-white;
+            padding: 10px 15px 10px 15px;
+          //  background-color: $color-white;
             border-top: 1px solid $color-border;
             border-bottom: 1px solid $color-border;
     
@@ -221,6 +237,56 @@ table {
 .table-bordered {
 
     border-color: $color-border;
+}
+
+.table-fixed-header {
+
+    .griddle-body {
+
+        .table {
+            width: 100%;
+            table-layout: fixed;
+        }
+
+        & > div > div {
+            position: relative;
+            overflow-y: auto;
+            width: 100%;
+            flex: 1;
+        }
+    }
+}
+
+.table-scrollable-content {
+
+    .griddle-body {
+
+        & > div {
+            display: flex;
+            flex-direction: column;
+
+        }
+
+        & > div > div {
+
+            .footer-container {
+                position: sticky;
+                bottom: 0;
+                padding: 0;
+            }
+        }
+    }
+}
+
+i.resource-thumbnail-small-fallback-icon {
+
+    color: $color-base;
+    font-size: 26px;
+    opacity: 0.4;
+
+    display: flex;
+    align-items: center;
+
 }
 
 .rs-resource-data-table,
@@ -299,45 +365,110 @@ table {
     width: auto;
 }
 
-.table-projects {
+.search-table-container {
 
-    .table > tbody > tr > td {
+    .table {
+        margin: 0;
 
-        &:first-of-type {
-            width: 35%;
+        & > thead > tr > th {
+                 
+            padding-left: 3px;
+
+            &:last-of-type {
+                width: 100px;
+            }
         }
 
-        &:nth-child(2) {
-            width: 15%;
-        }
+        & > tbody > tr > td {
 
-        &:nth-child(3) {
-            width: 11%;
-        }
+            padding-left: 3px;
 
-        &:nth-child(4) {
-            width: 9%;
-        }
+            &:empty {
+                //  width: 0;
+                //  padding: 0;
+            }
+            
+            &:first-of-type {
+                padding-left: 10px;
+            }
 
-        &:nth-child(5) {
-            width: 9%;
-        }
-
-        &:nth-child(6) {
-            width: 9%;
-        }
-
-        &:nth-child(7) {
-            width: 12%;
+            &:last-of-type {
+                
+                width: 100px;
+    
+                .btn {
+    
+                  padding: 8px 8px 8px 6px;
+    
+                  i {
+                    font-size: 20px;
+                  }
+                }
+            }
         }
     }
+}
+
+.table-with-checkbox {
+
+    .table {
+        input[type="checkbox"] {
+            margin: 0;
+        }
+
+        & > thead > tr > td {
+
+            &:first-of-type {
+                width: 42px;
+                padding-left: 15px;
+                padding-right: 10px;
+            }
+        }
+  
+          & > tbody > tr > td {
+  
+            &:first-of-type {
+                width: 42px;
+                padding-left: 15px;
+                padding-right: 10px;
     
-    
+                & > div {
+                    height: 13px;
+                }
+            }
+        }
+    }
+}
+
+.table-without-checkbox {
+
+    .table {
+
+        & > thead > tr > td {
+
+            &:first-of-type {
+                padding: 0;
+                width: 20px;
+            }
+        }
+  
+          & > tbody > tr > td {
+  
+            &:first-of-type {
+                padding: 0;
+                width: 20px;
+            }
+        }
+    }
 }
 
 .metadata-table {
 
     margin: 0;
+
+    .table-title b {
+        text-wrap: nowrap;
+    }
 }
 
 .table-title {
@@ -375,19 +506,38 @@ table {
     font-size: 20px;
 }
 
-.researcher-icon {
+.people-icon {
 
-    color:$color-white; 
-    background:$color-secondary; 
-    border-radius: 50%; 
+    color: $color-white; 
+    background:$color-secondary-light; 
+    border-radius: 3px; 
     padding: 5px;
+    cursor: pointer;
+}
+
+.person-icon {
+
+    color: $color-white; 
+    background:$color-secondary-light; 
+    border-radius: 3px; 
+    padding: 5px;
+}
+
+.person-thumbnail {
+
+    border-radius: 3px;
+    background:$color-light; 
+    border: 1px solid $color-border;
+    height: 35px;
+    width: 35px;
+    object-fit: cover;
+    object-position: top;
 }
 
 .table-no-results {
 
     width: 100%;
-    margin-top: 20px;
-    padding: 8vh 10px;
+    margin-top: 10px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -511,7 +661,6 @@ table {
 
     }
 }
-
 
 .METapiResultsTable {
 

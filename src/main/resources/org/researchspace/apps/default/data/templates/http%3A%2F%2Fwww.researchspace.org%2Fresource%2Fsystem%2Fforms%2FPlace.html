@@ -1,18 +1,20 @@
-<semantic-form id='{{viewId}}-vocab-form' 
-                post-action="event"
-                subject='{{node}}' 
+<semantic-form [[> rsp:FormDefaults]] 
                 persistence='{"type": "sparql", "targetInsertGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
                 new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/place/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
                 fields='[[fieldDefinitions
                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                        entity_has_type="http://www.researchspace.org/pattern/system/entity/has_type"
                         inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
                         entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
 
                         entity_image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
                         entity_image="http://www.researchspace.org/pattern/system/entity/images"
                         entity_document="http://www.researchspace.org/pattern/system/entity/documents"
+                        entity_video="http://www.researchspace.org/pattern/system/entity/subject_of_video"
+                        entity_audio="http://www.researchspace.org/pattern/system/entity/subject_of_audio"
+                        entity_3d_model="http://www.researchspace.org/pattern/system/entity/subject_of_3Dmodel"
                         entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
+                        entity_represents_range="http://www.researchspace.org/pattern/system/entity/represents_range"
+                        entity_web_URL="http://www.researchspace.org/pattern/system/entity/web_URL_embed"
 
                         entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
                         entity_description="http://www.researchspace.org/pattern/system/entity/description"
@@ -25,10 +27,15 @@
                         place_postcode="http://www.researchspace.org/pattern/system/place/postcode" 
                         place_overlaps_with_place="http://www.researchspace.org/pattern/system/place/overlaps_with_place"
                         place_borders_with_place="http://www.researchspace.org/pattern/system/place/borders_with_place"
+                        place_approximates_place="http://www.researchspace.org/pattern/system/place/approximates_place"
+                        place_approximated_by_place="http://www.researchspace.org/pattern/system/place/approximated_by_place"
                         
                         entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
                         entity_id="http://www.researchspace.org/pattern/system/entity/identifier"
+                        
                         place_geo_coordinates="http://www.researchspace.org/pattern/system/place/osm_geo_coordinates"
+                        place_within_geo_coordinates="http://www.researchspace.org/pattern/system/place/within_geo_coordinates"
+                        place_contains_geo_coordinates="http://www.researchspace.org/pattern/system/place/contains_geo_coordinates"
 
                         place_falls_within_place="http://www.researchspace.org/pattern/system/place/falls_within_place"
                         place_contains_place="http://www.researchspace.org/pattern/system/place/contains_place"
@@ -65,9 +72,8 @@
     
     <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
       <rs-tab event-key="detail" title="Details">
-
-        <div class="form-2column-container">
-          <div>
+        <div class="form-details-container">
+          <div style="overflow-x: auto;">
             {{#if apiResourceLabel}}
               <div class="focused-input-container">
                 <semantic-form-text-input for="entity_primary_appellation" label="Place name" placeholder="Enter place name" default-value="{{apiResourceLabel}}" force-defaults=true></semantic-form-text-input>
@@ -81,13 +87,40 @@
                 <semantic-form-text-input for="entity_primary_appellation" label="Place name" placeholder="Enter place name"></semantic-form-text-input>
               {{/if}}
             {{/if}}
+
+            {{#if node}}
+              <semantic-query query='SELECT ?authorityDocument ?authorityDocumentName WHERE {
+                                      <{{node}}> crm:P71i_is_listed_in ?authorityDocument .
+                                      ?authorityDocument a crm:E32_Authority_Document .
+                                      ?authorityDocument crm:P1_is_identified_by ?appellation . 
+                                      ?appellation a crm:E41_Appellation . 
+                                      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                      ?appellation crm:P190_has_symbolic_content ?authorityDocumentName .
+                                  } LIMIT 1'
+                              template='{{> template}}'>
+                              
+                  <template id='template'>
+                      <div>
+                          <div style="display: flex; gap: 3px; margin-top: 20px;">
+                              <div>Listed in authority document: </div>
+                              <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                              urlqueryparam-view='authority-list' 
+                                              urlqueryparam-resource-iri='{{bindings.0.authorityDocument.value}}'
+                                              class="text-link">
+                              {{bindings.0.authorityDocumentName.value}}
+                              </semantic-link>
+                          </div>
+                      </div>  
+                  </template>
+              </semantic-query>
+            {{/if}}
           
             {{#if apiResourceDescription}}
               <div class="focused-input-container">
-                <semantic-form-text-input for="entity_description" default-value="{{apiResourceDescription}}" multiline="true" label="Place description" placeholder="Enter place description"></semantic-form-text-input>
+                <semantic-form-text-input for="entity_description" default-value="{{apiResourceDescription}}" multiline="true" label="Description" placeholder="Enter description/comment"></semantic-form-text-input>
               </div>
             {{else}}
-              <semantic-form-text-input for="entity_description" multiline="true" label="Place description" placeholder="Enter place description"></semantic-form-text-input>
+            <semantic-form-text-input for="entity_description" multiline="true" label="Description" placeholder="Enter description/comment"></semantic-form-text-input>
             {{/if}}
 
             <semantic-form-tree-picker-input for="place_type" 
@@ -99,7 +132,7 @@
                                                               "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
 
                                               scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                          "view": "vocabulary-content",
+                                                                          "view": "authority-list",
                                                                           "scheme": "http://www.researchspace.org/resource/vocab/place_type",
                                                                           "tooltip": "Open list of place types"
                                                                         }'
@@ -159,81 +192,37 @@
                                               ]'>
             </semantic-form-autocomplete-input>
 
-            <div class="inline-composite-container">
-              <semantic-form-composite-input  for="entity_preferred_id"
-                                              label="Preferred identifier"
-                                              new-subject-template="/entity_preferred_id" 
-                                              fields='[[fieldDefinitions
-                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+            <semantic-form-autocomplete-input for="place_approximates_place" 
+                                              label="Approximates place" 
+                                              placeholder="Enter place name"
+                                              nested-form-templates='[ 
+                                                {
+                                                    "label": "Place",
+                                                    "nestedForm": "{{{{raw}}}}
+                                                                    {{> \"http://www.researchspace.org/resource/system/forms/Place\" nested=true editable=true mode=\"new\"
+                                                                    apiResourceURI=false apiResourceName=false apiResourceLabel=false apiResourceDescription=false apiResourceosmGeoCoordinates=false}}
+                                                                {{{{/raw}}}}"
+                                                }
+                                              ]'>
+            </semantic-form-autocomplete-input>
 
-                                                      identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
-                                                      identifier_type="http://www.researchspace.org/pattern/system/identifier/identifier_type"
-                                                  ]]'
-                                              >
-                          
-                  <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
-                      
-                  <div class="form-inline-inputs">
-                      <div style="min-width: 40%;">
-                          <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter preferred identifier"></semantic-form-text-input>
-                      </div>
-                      <div style="flex: 1;">
-                          <semantic-form-select-input for='identifier_type' 
-                                                      label="Identifier type" 
-                                                      render-header=false
-                                                      placeholder="Select identifier type" 
-                                                      nested-form-templates='[ 
-                                                          {
-                                                              "label": "Identifier",
-                                                              "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
-                                                                                              scheme=\"http://www.researchspace.org/resource/system/vocab/identifier\"
-                                                                                              entityType=\"identifier\" }}
-                                                                              {{{{/raw}}}}"
-                                                          }
-                                                      ]'>
-                          </semantic-form-select-input>
-                      </div>
-                  </div>
-              </semantic-form-composite-input>
-            </div>
+            <semantic-form-autocomplete-input   for="entity_preferred_id" 
+                                                label="Preferred identifier"
+                                                placeholder="Select preferred identifier" 
+                                                nested-form-templates='[ 
+                                                    {
+                                                        "label": "Identifier",
+                                                        "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Identifier\" nested=true editable=true mode=\"new\" }}
+                                                                        {{{{/raw}}}}"
+                                                    }
+                                                ]'>
+            </semantic-form-autocomplete-input>
 
-            <div class="inline-composite-container">
-              <semantic-form-composite-input  for="entity_id"
-                                              label="Other identifier"
-                                              new-subject-template="/entity_id/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-                                              fields='[[fieldDefinitions
-                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
-
-                                                      identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
-                                                      identifier_type="http://www.researchspace.org/pattern/system/identifier/identifier_type"
-                                                  ]]'
-                                              >
-                          
-                  <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
-                      
-                  <div class="form-inline-inputs">
-                      <div style="min-width: 40%;">
-                          <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier"></semantic-form-text-input>
-                      </div>
-                      <div style="flex: 1;">
-                          <semantic-form-select-input for='identifier_type' 
-                                                      label="Identifier type" 
-                                                      render-header=false
-                                                      placeholder="Select identifier type" 
-                                                      nested-form-templates='[ 
-                                                          {
-                                                              "label": "Identifier",
-                                                              "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
-                                                                                              scheme=\"http://www.researchspace.org/resource/system/vocab/identifier\"
-                                                                                              entityType=\"identifier\" }}
-                                                                              {{{{/raw}}}}"
-                                                          }
-                                                      ]'>
-                          </semantic-form-select-input>
-                      </div>
-                  </div>
-              </semantic-form-composite-input>
-            </div>
+            <semantic-form-autocomplete-input   for="entity_id" 
+                                                label="Other identifier"
+                                                placeholder="Select other identifier" 
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_appellations]]'>
+            </semantic-form-autocomplete-input>
 
             {{#if apiResourceosmGeoCoordinates}}
               <div class="focused-input-container">
@@ -243,116 +232,22 @@
               <semantic-form-text-input for="place_geo_coordinates" label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input>
             {{/if}}
           </div>
-
-          <div class="form-media-column">
-            {{#if apiResourceosmGeoCoordinates}}
-              <div style='height: 330px; width: 100%; margin: 43px 0 0;'>
-                <semantic-map query='SELECT ?wkt WHERE { BIND("{{apiResourceosmGeoCoordinates}}" AS ?wkt) }'
-                              tuple-template='{{#if apiResourceName}}<b style="color:#525156; padding-bottom:5px;">{{apiResourceName}}</b>{{/if}}
-                                              {{#if apiResourceURI}}
-                                                <div>
-                                                  <a style="color:#396EFE;"
-                                                      target="_blank" 
-                                                      href="{{apiResourceURI}}"
-                                                      title="{{apiResourceURI}}">
-                                                    Open in wikidata
-                                                  </a>
-                                                </div>
-                                              {{/if}}'>
-                </semantic-map>
-              </div>
-            {{/if}}
-            
-            {{#if apiResourceURI}}
-              <div style="padding-top: 5px;">
-                <span>Imported from: </span>
-                <a class="text-link-action" target="_blank" href="{{apiResourceURI}}" title="{{apiResourceURI}}">{{apiResourceURI}}</a>
-              </div>
-            {{else}}
-              {{#if node}}
-                <semantic-query query='SELECT ?place ?placeName ?osmURI WHERE {
-                                        BIND(<{{node}}> AS ?place)
-
-                                        ?place crm:P129i_is_subject_of ?entityFormRecord .
-                                        # ?entityFormRecord a crmdig:D1_Digital_Object .
-                                        ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
-                                        ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
-                                        ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
-
-                                        ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
-                                        # ?importFromExternalSource a crmdig:D12_Data_Transfer_Event .
-                                        ?importFromExternalSource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source> .
-
-                                        ?importFromExternalSource crmdig:L14_transferred ?osmURI .
-        
-                                        # ?osmURI a crmdig:D1_Digital_Object .
-                                        ?osmURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
-
-                                        ?place crm:P1_is_identified_by ?appellation . 
-                                        # ?appellation a crm:E41_Appellation . 
-                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                        ?appellation crm:P190_has_symbolic_content ?placeName .
-                                      }'
-                              template='{{> template}}'
-                >
-                      
-                  <template id='template'>
-                    <div>
-                      <div style='height: 330px; width: 100%; margin: 43px 0 0;'>
-                        <semantic-map query='SELECT ?wkt WHERE { 
-                                                <{{bindings.0.place.value}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                                                # ?osm_geoCoordinates a crm:E94_Space_Primitive .
-                                                ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
-                                                ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
-                                              }'
-                                      tuple-template='<b style="color:#525156; padding-bottom:5px;">{{bindings.0.placeName.value}}</b>
-                                                      <div>
-                                                        <a style="color:#396EFE;"
-                                                            target="_blank" 
-                                                            href="{{bindings.0.osmURI.value}}"
-                                                            title="{{bindings.0.osmURI.value}}">
-                                                          Open in wikidata
-                                                        </a>
-                                                      </div>'>
-                        </semantic-map>
-                      </div>
-                      <div style="padding-top: 5px;">
-                        <span>Imported from: </span>
-                        <a class="text-link-action" target="_blank" href="{{bindings.0.osmURI.value}}" title="{{bindings.0.osmURI.value}}">{{bindings.0.osmURI.value}}</a>
-                      </div>
-                    </div>
-                  </template>
-                </semantic-query>
-              {{/if}}
-            {{/if}}
-
-            <div class="dragAndDrop-input-container">
-              <semantic-form-drag-and-drop-input for='entity_image_main_representation' label="Main image" 
-                                                  placeholder-item-template="<div class='placeholder-item'>
-                                                                                  <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                                                                                  <div>Drag main image from 
-                                                                                      <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' 
-                                                                                      class='text-link-action' urlqueryparam-view='system-assets'>Image Library</semantic-link>
-                                                                                      or click to upload</div>
-                                                                              </div>"
-                                                  nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
-              </semantic-form-drag-and-drop-input>
-            </div>
-
-            <div class="dragAndDrop-input-container">
-              <semantic-form-drag-and-drop-input  for='entity_image' label="More images" 
-                                                  placeholder-item-template="<div class='placeholder-item'>
-                                                                                  <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                                                                                  <div>Drag images from 
-                                                                                      <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' 
-                                                                                      class='text-link-action' urlqueryparam-view='system-assets'>Image Library</semantic-link>
-                                                                                      or click to upload</div>
-                                                                              </div>"
-                                                  nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
-              </semantic-form-drag-and-drop-input>
-            </div>
-          </div>
+          [[> rsp:FormAssetSidebar map=true]]
         </div>
+      </rs-tab>
+
+      <rs-tab event-key="geoCoordinates" title="Geographic coordinates">
+        {{#if apiResourceosmGeoCoordinates}}
+          <div class="focused-input-container">
+            <semantic-form-text-input for="place_geo_coordinates" default-value='{{apiResourceosmGeoCoordinates}}' label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true></semantic-form-text-input>
+          </div>
+        {{else}}
+          <semantic-form-text-input for="place_geo_coordinates" label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input>
+        {{/if}}
+
+        <semantic-form-text-input for="place_within_geo_coordinates" label="Within geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input>
+
+        <semantic-form-text-input for="place_contains_geo_coordinates" label="Contains geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input>
       </rs-tab>
 
       <rs-tab event-key="component" title="Components">
@@ -419,7 +314,7 @@
                                         targets='["{{viewId}}-place-componentsView"]'
                                         >
                         <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
-                          <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
+                          <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
                             Refresh
                         </button>
                       </mp-event-trigger>
@@ -458,7 +353,7 @@
                                                   <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
                                               {{else}}
                                                   <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                  urlqueryparam-view='entity-editor' 
+                                                                  urlqueryparam-view='resource-editor' 
                                                                   urlqueryparam-resource-iri='{{node.value}}'
                                                                   >
                                                       <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
@@ -683,7 +578,7 @@
               <semantic-form-autocomplete-input for='depicts_thing_domain' 
                                                 render-header="false"
                                                 placeholder="Select what depicts the place"
-                                                nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'>
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_physicalHumanMadeThings]]'>
               </semantic-form-autocomplete-input>
             </div>
             <div style="flex: 1;">
@@ -696,7 +591,7 @@
                                                                 "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
 
                                                 scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                            "view": "vocabulary-content",
+                                                                            "view": "authority-list",
                                                                             "scheme": "http://www.researchspace.org/resource/vocab/mode_of_depiction",
                                                                             "tooltip": "Open list of mode of depictions"
                                                                           }'
@@ -751,7 +646,7 @@
                                                                 "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
 
                                                 scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                            "view": "vocabulary-content",
+                                                                            "view": "authority-list",
                                                                             "scheme": "http://www.researchspace.org/resource/vocab/type_of_reference",
                                                                             "tooltip": "Open list of type of references"
                                                                           }'
@@ -772,8 +667,6 @@
       </rs-tab>
 
       [[> rsp:FormMetadataTab]]
-
-      [[> rsp:FormAssetTab]]
 
     </rs-tabs>
   
@@ -807,7 +700,7 @@
 
       <mp-overlay-dialog-trigger>
           <button class="btn btn-action btn-textAndIcon" style="margin-top: 15px; width: 100%;">
-              <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+              <rs-icon icon-type='rounded' icon-name='upload' symbol='true'></rs-icon>
               <span>Import from OpenStreetMap</span>
           </button>
       </mp-overlay-dialog-trigger>

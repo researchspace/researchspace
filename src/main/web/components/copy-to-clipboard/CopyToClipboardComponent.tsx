@@ -37,13 +37,14 @@ export interface Props {
  * @example
  * <mp-copy-to-clipboard text='text'>
  *     <button class='btn btn-default'>
- *         <rs-icon icon-type="round" icon-name="content_copy"></rs-icon>
+ *         <rs-icon icon-type="rounded" icon-name="content_copy" symbol="true"></rs-icon>
  *     </button>
  * </mp-copy-to-clipboard>
  */
 export class CopyToClipboardComponent extends React.Component<Props, {}> {
   static defaultProps = {
     message: 'The content has been copied!',
+    isUrl: false
   };
 
   private onCopy = () => {
@@ -53,12 +54,13 @@ export class CopyToClipboardComponent extends React.Component<Props, {}> {
     });
   };
 
-  render() {
+  render() {  
     return (
       <CopyToClipboard text={this.props.text} onCopy={this.onCopy}>
         {this.props.children}
       </CopyToClipboard>
     );
+   
   }
 }
 

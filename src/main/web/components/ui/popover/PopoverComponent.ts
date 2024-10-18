@@ -46,7 +46,7 @@ export interface Props {
  * @example
  * <mp-popover title="my popover">
  *     <mp-popover-trigger placement="left" trigger='["click","hover","focus"]' root-close='false'>
- *         <rs-icon icon-type="round" icon-name="help"></rs-icon>
+ *         <rs-icon icon-type="rounded" icon-name="help" symbol="true"></rs-icon>
  *     </mp-popover-trigger>
  *     <mp-popover-content>Content</mp-popover-content>
  * </mp-popover>

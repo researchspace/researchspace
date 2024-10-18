@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -210,6 +211,7 @@ export class ViewModel {
     return {
       search: {},
       itemViewMode: itemViewMode || props.defaultViewMode,
+      openedSet: props.singleSetIri?Rdf.iri(props.singleSetIri):null,
     };
   }
 
@@ -249,7 +251,7 @@ export class ViewModel {
           const state = this.getState();
           let sets = params.keepItems ? reuseOldSetItems(loadedSets, state.sets) : loadedSets;
           if (!sets.has(defaultSet.value)) {
-            console.warn(`Default set ${defaultSet} not found`);
+            //console.warn(`Default set ${defaultSet} not found`);
             sets = sets.set(defaultSet.value, emptySet(defaultSet));
           }
 
@@ -333,13 +335,13 @@ export class ViewModel {
     this.setState({ openedSet: setIri, search: {}, itemsOrdering: undefined });
   }
 
-  onDropItemToSet(item: Rdf.Iri, targetSet: Rdf.Iri) {
+  onDropItemToSet(item: Rdf.Iri, targetSet: Rdf.Iri,sourceSetManager:string) {
     this.cancellation
-      .map(getSetServiceForUser(this.getContext()).flatMap((service) => service.addToExistingSet(targetSet, item)))
+      .map(getSetServiceForUser(this.getContext()).flatMap((service) => service.addToExistingSet(targetSet, item, this.props.id)))
       .observe({
         value: () => {
           // This is ugly hack to fully reload all sets if we add something to the
-          // Uncategorized set, we need this to fetch Knowledg Maps when they are added
+          // Uncategorized set, we need this to fetch Knowledge Maps when they are added
           // to the clipboard
           if (targetSet.equals(this.getState().defaultSet)) {
             this.loadSets({keepItems: false});
@@ -477,7 +479,7 @@ export class ViewModel {
       .observe({
         value: () => {
           this.loadSets({ keepItems: true });
-          this.trigger(SetManagementEvents.SetAdded);
+          this.trigger(SetManagementEvents.SetAdded, {});
         },
         error: (error) => {
           addNotification(
@@ -516,10 +518,9 @@ export class ViewModel {
       });
   }
 
-  removeSetFromView(set: Rdf.Iri) {
-    const visibleInViewForTemplateWithId = maybe.Just(this.props.id);    
+  removeSetFromView(set: Rdf.Iri) {  
     this.cancellation
-      .map(getSetServiceForUser(this.getContext()).flatMap((service) => service.updateSet(set, visibleInViewForTemplateWithId.get())))
+      .map(getSetServiceForUser(this.getContext()).flatMap((service) => service.removeSetVisibleTriples(set, this.props.id)))
       .observe({
         value: () => {
           this.setState({ openedSet: undefined });

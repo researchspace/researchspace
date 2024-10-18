@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,6 +21,13 @@
 /* Mirador */
 
 .mirador .researchspace-mirador.mirador-container {
+
+    background-color: $mirador-main-color-bg !important;
+    background-image: none !important;
+
+    .menu-divider {
+        color: #e5e5e5;
+    }
 
     .modal-backdrop {
     z-index: 1040 !important;
@@ -46,15 +54,91 @@
         font-family: $font-family-base;
     }
 
+    .sidePanel {
+        background-color: $color-lighter;
+        border-top: 1px solid $color-border !important;
+        color: $mirador-main-color;
+
+        .tabContentArea {
+
+            background-color: $color-lighter;
+            border-color: $color-border;
+
+            .h2 {
+                color: $mirador-main-color;
+            }
+        }
+    }
+
     .mirador-main-menu-bar {
 
-        background-color: $mirador-main-color-bg;
-        border-bottom: 0.1px solid $mirador-main-color;
-        height: 32px;
+        background-color: $color-frames-tabset-bg;
+        border-bottom: none;
+        height: 42px;
 
         display: flex;
-        justify-content: center;
         align-items: center;
+
+        ul.mirador-main-menu {
+
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            width: 100%;
+            margin-right: 0;
+            margin-left: 3px;
+            padding: 9px 15px;;
+            background-color: $color-miradorSlot-bg;
+            border-radius: $border-radius;
+            border: 1px solid $color-border;
+
+            & > li {
+
+                padding: 0;
+
+                a {
+
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+
+                    font-size: 12.5px;
+                 //   border-radius: $border-radius;
+                    line-height: 1.2;
+                    padding: 0;
+
+                    color: $color-btn-default;
+                 //   background-color: $color-btn-default-bg;
+                 //   border: 1px solid $color-btn-default-border;
+                    opacity: 1;
+
+                    .fa {
+                        color: $color-btn-default;
+                        font-size: 16px;
+                    }
+
+                    &:hover,
+                    &:focus,
+                    &:focus-within {
+                        color: $color-btn-default-hover;
+                        background-color: $color-btn-default-bg-hover;
+                        border: none;
+                    }
+
+                    .open > &.dropdown-toggle,
+                    .open > &.dropdown-toggle:hover,
+                    .open > &.dropdown-toggle:focus,
+                    .open > &.dropdown-toggle.focus {
+                        color: $color-btn-default;
+                        background-color: $color-btn-default-bg-active;
+                        border: none;
+                    }
+                    
+                }
+            }
+    
+
+        }
     }
 
     .manifest-info {
@@ -66,39 +150,37 @@
         }
     }
 
+    #manifest-search-form {
+        display: flex;
+        align-items: baseline;
+        width: 100%;
+
+        label {
+
+            font-weight: normal;
+        }
+
+        input {
+
+            flex: 1;
+            height: $input-height;
+            border: 1px solid $input-border-color;
+            border-radius: $input-border-radius;
+            color: $input-color;
+            font-size: $input-font-size;
+            padding: 0 12px;
+        }
+    }
+
 /*     Add Item window */
     .layout-slot {
 
         background-color: $color-miradorSlot-bg;
     }
 
-    .mirador-main-menu {
-
-        padding: 0;
-
-        a {
-            color: $mirador-mainMenu-color;
-            opacity: 0.8;
-            font-size: 13px;
-
-            .fa {
-                font-size: 13px; 
-            }
-    
-            &:hover {
-                background-color: transparent;
-            }
-    
-            &:active,
-            &.active {
-                border-bottom: 2px solid $mirador-mainMenu-color;
-            }
-        }
-    }
-
     .hud-control {
         opacity: .8;
-        text-shadow: 0px 0px 6px $color-white;
+        text-shadow: 0px 0px 2px #ffffffd9;
     }
 
     .mirador-osd,
@@ -108,7 +190,7 @@
     .thumbnail-view {
 
         background-color: $mirador-window-color-bg;
-        box-shadow: inset 1px 2px 5px 1px #80808063;
+        box-shadow: none;
 
         .material-icons,
         .fa {
@@ -116,8 +198,15 @@
         }
     }
 
+    .book-view,
+    .image-view,
+    .scroll-view,
+    .thumbnail-view {
+        border-top: 1px solid $color-border;
+    }
+
     #workspace-select-menu {
-        background-color: $color-miradorSlot-bg;
+        background-color: $color-tf-dashboard-bg;
         background-image: none !important;
 
         h1, h3 {
@@ -141,16 +230,66 @@
 
     .mirador-viewer {
 
-        background-color: $color-miradorViewer-bg;
-        top: 27px;
+        background-color: $color-frames-tabset-bg;
+        top: 38px;
+
+        .workspace-container {
+            margin: 0;
+        }
 
         .window-manifest-title {
 
             margin: 10px 0 0;
             font-size: 15px;
-            color: $color-dark;
+            color: $mirador-main-color;
             letter-spacing: .3px;
             font-weight: 600;
+        }
+    
+        & .dropdown {
+            background-color: $color-white;
+            border: 1px solid $color-border;
+            border-radius: $border-radius;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
+            color: $dropdown-link-color;
+            margin: 2px 0 0;
+            padding: 8px 0;
+
+            & > li {
+
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                justify-content: start;
+                color: $dropdown-link-color;
+                font-size: $dropdown-font-size;
+                font-weight: normal;
+                padding: 9px 25px 9px 20px;
+                clear: both;
+                line-height: 1.42857;
+                white-space: nowrap;
+                text-decoration: none;
+
+                background: $color-white;
+                border-left: none;
+
+                .fa {
+                    font-size: 17px;
+                    color: $color-base;
+                }
+
+                &:hover {
+
+                    border-left: none;
+                    color: $dropdown-link-color;
+                    font-size: $dropdown-font-size;
+                    background-color: $color-lighter;
+                    font-weight: normal;
+                    padding: 9px 25px 9px 20px;
+                }
+
+            }
+
         }
 
         a.mirador-icon-view-type, 
@@ -162,7 +301,7 @@
         a.mirador-icon-toc,
         a.mirador-icon-window-menu {
     
-        color: $mirador-main-color;
+            color: $mirador-main-color;
         }
 
         a.mirador-close-window {
@@ -215,24 +354,7 @@
         .slot .remove-slot-option:hover,
         #manifest-select-menu .remove-object-option:hover {
 
-            color: $color-dark;
-        }
-
-        .dropdown li {
-    
-            border-left: none;
             color: $mirador-main-color;
-            background: $mirador-dropdown-color-bg;
-            font-weight: normal;
-
-            &:hover {
-
-                border-left: none;
-                color: $mirador-main-color;
-                background-color: $color-light;
-                font-weight: normal;
-                padding: 10px;
-            }
         }
 
         .content-container {
@@ -247,7 +369,7 @@
 
         .sub-title {
 
-            border-bottom: 1px solid #bbb;
+            border-bottom: 1px solid $color-border;
             color: $mirador-main-color;
             font-size: 16px;
             text-transform: capitalize;
@@ -288,14 +410,14 @@
 
         .metadata-listing a {
 
-            border-bottom: 1px dotted $color-dark;
+            border-bottom: 1px dotted $mirador-main-color;
         }
         
         .metadata-listing a:hover,
         .metadata-listing a:active,
         .metadata-listing a:focus {
         
-            color: $color-dark;
+            color: $mirador-main-color;
         }
 
         ul.listing-thumbs {
@@ -319,15 +441,23 @@
                 width: auto;
             }
 
+            img.thumbnail-image {
+        
+                border: 1px solid $color-medium;
+                background-color: $color-base;
+                box-shadow: none;
+                margin: 0;
+            }
+
             img.thumbnail-image.highlight {
 
-                border: 2px solid $color-info;
+                border: 2px solid $color-action;
             }
 
             img:hover {
 
                 transform: scale(1.05);
-                border: 2px solid $color-info;
+                border: 2px solid $color-action;
             }
 
             .thumb-label {
@@ -373,7 +503,10 @@
 
         .layout-slot {
 
-            box-shadow: 0px 0px 3px $color-miradorSlot-shadow;
+          //  box-shadow: 0px 0px 3px $color-miradorSlot-shadow;
+          box-shadow: none;
+          border-radius: $border-radius;
+          border: 1px solid $color-border;
         }
 
         .slot {
@@ -384,7 +517,8 @@
             &.focused,
             &:hover {
     
-              //  box-shadow: inset 0 0 5px $color-miradorSlot-shadow-darker;
+               box-shadow: none;
+
             }
 
             .remove-slot-option {
@@ -411,25 +545,77 @@
 
     .grid-item .grid-icon {
 
-        background-color: $color-dark--op75;
+        background-color: $color-secondary-light;
     }
 
     .grid-item.hovered .grid-icon {
 
-        background: $color-secondary;
-        box-shadow: 0 0 5px $mirador-main-color;
+        background: $color-imageIcons;
+         //box-shadow: 0 0 5px $mirador-main-color;
+        box-shadow: none;
         transform: scale(1.03) translateY(-2px) translateX(-2px);
         
     }
 
     #manifest-select-menu {
 
-        background-color: $mirador-main-color-bg;
-        box-shadow: 0 0 4px $color-box-shadow;
+        background-color: $color-lighter;
+        margin: 3px;
+        box-shadow: none;
+
 
         & .container {
-            padding: 2em;
-            background-color: $color-miradorSlot-bg;
+            padding: 10px;
+            background-color: $mirador-window-color-bg;
+            border: 1px solid $color-border;
+            color: $mirador-main-color;
+
+            .manifest-panel-controls {
+
+                display: flex;
+                align-items: center;
+                width: 100%;
+                flex-direction: row-reverse;
+
+                .remove-object-option {
+
+                    display: flex;
+                    align-items: center;
+                    gap: 2px;
+
+                    background-color: $mirador-window-color-bg;
+                    border: none;
+                    color: $color-secondary;
+                    font-weight: 500;
+                    text-shadow: none;
+
+                    font-size: 12.5px;
+                    line-height: 1.2;
+                    padding: 0;
+
+                    &:hover,
+                    &:focus {
+                        background-color: $mirador-window-color-bg;
+                        color: $color-secondary;
+                    }
+                
+                    .fa {
+                        color: $color-secondary;
+                        font-size: 16px;
+                        font-weight: 500;
+                    }
+                }
+            }
+        }
+
+        .manifest-panel-controls #load-controls {
+
+            margin: 10px;
+
+            #manifest-search-form {
+
+                display: none;
+            }
         }
     }
 
@@ -437,19 +623,14 @@
     #url-load-form input:focus,
     #url-load-form input[type=submit]:hover {
 
-        border-color: #b9b9b9;
-    }
-
-    #load-controls input {
-
-        height: 29px;
+        border-color: $color-border;
     }
 
     #load-controls input[type=submit] {
 
-            color: $color-white;
-            background-color: $color-secondary;
-            border-color: $color-secondary;
+        color: $color-white;
+        background-color: $color-secondary;
+        border-color: $color-secondary;
 
     }
 
@@ -459,15 +640,32 @@
         margin-left: 10px;
     }
 
-    .items-listing li:hover {
-        background-color: $color-light;
+    .items-listing {
+
+        padding: 0 !important;
+        border-left: 1px solid $color-border;
+        border-right: 1px solid $color-border;
+        background-color: $color-off-white;
+
+        .repo-image {
+
+            display: none;
+        }
+
+        & li {
+            border-bottom: 1px solid $color-border;
+
+            &:hover {
+                background-color: $color-lighter;
+            }
+        }
     }
 
     .items-listing h3,
     .canvas-count,
     .repo-label {
 
-        color: $color-dark;
+        color: $mirador-main-color;
     }
 
     .items-listing h3 {
@@ -476,26 +674,36 @@
     }
 
     .select-results {
-        
-        border-top: 1px solid #bdbdbdc4;
+        border-top: 1px solid $color-border;
+        overflow-y: auto;
+        margin-top: 5px;
     }
 
-    .preview-image:hover {
+    .preview-image {
 
-        box-shadow: 0 0 4px 2px rgb(96, 97, 109);
+        border: 1px solid $color-medium;
+        background-color: $color-base;
+        box-shadow: none;
+
+        &:hover {
+            box-shadow: none;
+            border: 1px solid $color-medium;
+         }
     }
+
+
 
     /* Bottom Panel */
     .mirador-osd-toggle-bottom-panel {
 
-        bottom: 7px;
+        bottom: -8px;
     }
 
     .bottomPanel {
 
         background-color: $color-miradorBottomPanel-bg;
         border-top: 1px solid $color-border;
-        height: 140px;
+        height: 120px;
 
         .panel-thumbnail-view {
 
@@ -510,21 +718,34 @@
     
                 &.panel-listing-thumbs li {
     
+                    margin: 0;
+
                     .thumb-label {
             
                         color: $mirador-main-color;
                         padding-top: 3px;
                     }
 
+                    img.thumbnail-image {
+        
+                        border: 1px solid $color-medium;
+                        background-color: $color-base;
+                        box-shadow: none;
+                        margin: 0;
+
+                        max-height: 70px;
+                        width: auto;
+                    }
+
                     img.thumbnail-image.highlight {
         
-                        border: 2px solid $color-info;
+                        border: 2px solid $color-action;
                     }
         
                     img:hover {
         
                         transform: scale(1.05);
-                        border: 2px solid $color-info;
+                        border: 2px solid $color-action;
                     } 
                 }
             }
@@ -559,21 +780,21 @@
     .qtip-bootstrap {
 
         line-height: 1.3;
-        color: $color-dark;
+        color: $mirador-main-color;
 
-        border: 1px solid #bbb;
-        border-radius: 5px;
+        border: 1px solid $color-border;
+        border-radius: $border-radius;
         padding: 2px;
         padding-right: 5px;
-        background-color: $color-light;
+        background-color: $color-lighter;
 
         input.annotation-body-editor__title-field {
 
             height: 22px;
             width: 100%;
-            color: $color-dark;
+            color: $mirador-main-color;
             border-radius: 4px;
-            border: 1px solid #ddd;
+            border: 1px solid $color-border;
 
             &::placeholder {
 
@@ -596,8 +817,8 @@
         max-width: 210px;
 
         line-height: 1.3;
-        color: $color-dark;
-        border: 1px solid #bbb;
+        color: $mirador-main-color;
+        border: 1px solid $color-border;
 
         padding: 12px;
 
@@ -609,7 +830,7 @@
 
         .text-viewer {
 
-            color: $color-dark;
+            color: $mirador-main-color;
             font-size: 14px;
             font-weight: 600;
             margin-bottom: 5px;
@@ -624,8 +845,8 @@
 
             &:hover {
 
-                background-color: #cad1d7;
-                border-radius: 2px;
+            //    background-color: $color-light;
+            //    border-radius: 2px;
             }
 
              /* .open-region {
@@ -637,7 +858,7 @@
 
         .all-annotations > .annotation-display:not(:last-child) {
 
-            border-bottom: 1px solid #8080806c;
+           // border-bottom: 1px solid $color-border;
         }
 
         .annotation-tooltip .button-container {
@@ -662,7 +883,7 @@
                 margin: 0;
                 
                 &:hover {
-                    color: $color-dark;
+                    color: $mirador-main-color;
                 }
 
                 &:not(:last-child) {
@@ -679,7 +900,7 @@
             }
 
             &:hover {
-                color: $color-dark;
+                color: $mirador-main-color;
             }
 
         }
@@ -692,7 +913,7 @@
     border-color: $color-miradorTooltipDark-bg;
     color: $color-white;
 
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     letter-spacing: .2px;
     line-height: 1.3;

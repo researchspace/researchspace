@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -43,7 +44,9 @@
 table .dropdown-menu {
 
     color: $dropdown-link-color;
+    min-width: -moz-available;
     min-width: -webkit-fill-available;
+    min-width: fill-available;
     max-height: 40vh;
     overflow: auto;
     border-radius: $border-radius;
@@ -81,6 +84,7 @@ table .dropdown-menu {
         }
 
         i {
+            font-size: 21px;
             color: $color-base;
         }
 
@@ -127,6 +131,27 @@ table .dropdown-menu {
     }
 }
 
+.dropdown-menu.resource-actions__dropdown-menu {
+
+    min-width: 165px;
+
+    & > li > a {
+        align-items: flex-start;
+        padding: 7px 10px;
+        font-size: 13.5px;
+        cursor: pointer;
+
+        span {
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        i {
+            font-size: 18px;
+        }
+    }
+}
+
 .btn-group.open .dropdown-toggle, 
 .btn:active {
 
@@ -144,12 +169,13 @@ table .dropdown-menu {
     }
 }
 
-.link-dropdown {
+.text-dropdown {
 
     border: none;
     background: transparent;
-    color: $color-action;
     font-size: $font-size-body;
+    font-weight: 600;
+    text-shadow: none;
     padding: 0;
 
     &:hover,
@@ -170,7 +196,69 @@ table .dropdown-menu {
     .open > &.dropdown-toggle.focus {
 
         background: transparent;
+    }
+
+    &.link-dropdown {
         color: $color-action;
+
+        &:hover,
+        &:focus,
+        &:focus-within,
+        &:active,
+        &:active:hover,
+        &.active,
+        .open > &.dropdown-toggle,
+        &:active:hover,
+        &:active:focus,
+        &:active.focus,
+        &.active:hover,
+        &.active:focus,
+        &.active.focus,
+        .open > &.dropdown-toggle:hover,
+        .open > &.dropdown-toggle:focus,
+        .open > &.dropdown-toggle.focus {
+    
+            color: $color-action;
+        }
     }
 }
 
+.dropdown-no-caret {
+
+    .caret {
+        display: none;
+    }
+}
+
+.dropdown-menu > li.dropdown-item-action-selection-container {
+
+    & div,
+    & li {
+        width: 100%;
+    }
+
+    & > a {
+       width: 100%;
+       padding: 0; 
+       
+
+       .selection-action-choice a {
+
+        width: 100%;
+        display: flex;
+        align-items: center;
+        padding: 9px 25px 9px 20px;
+
+         
+            color: $dropdown-link-color;
+            font-size: $dropdown-font-size;
+
+            &:hover, 
+            &:focus {
+                color: $color-dark;
+            }
+        
+       }
+    }
+    
+}

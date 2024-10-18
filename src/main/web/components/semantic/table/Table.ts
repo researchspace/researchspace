@@ -37,6 +37,7 @@ import { ErrorNotification } from 'platform/components/ui/notification';
 
 import { Pagination, CustomPaginationProps } from './Pagination';
 import { RdfValueDisplay } from './RdfValueDisplay';
+import Icon from 'platform/components/ui/icon/Icon';
 
 import './Table.scss';
 
@@ -205,8 +206,8 @@ export class Table extends Component<TableProps, State> {
       showFilter: true,
       useGriddleStyles: false,
       tableClassName: 'table',
-      sortAscendingComponent: createElement('i', { className: 'material-icons-round' }, 'north'), 
-      sortDescendingComponent: createElement('i', { className: 'material-icons-round' }, 'south'),
+      sortAscendingComponent: createElement(Icon, {iconType:'rounded', iconName: 'north', symbol: true}), 
+      sortDescendingComponent: createElement(Icon, {iconType:'rounded', iconName: 'south', symbol: true}),
       useCustomPagerComponent: true,
       customPagerComponent: Pagination,
       customPagerComponentOptions: paginationProps,

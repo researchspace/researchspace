@@ -74,7 +74,7 @@ export class PanelSystem extends React.Component<Props, State> {
             className={`btn btn-default btn-xs ${styles.fullScreenButton}`}
             onClick={() => this.setState({ size: this.prevSize, expandedPanelKey: undefined })}
           >
-            <Icon iconType='round' iconName='close_fullscreen'/>
+            <Icon iconType='rounded' iconName='close_fullscreen' symbol />
           </button>
         ) : (
           <button
@@ -86,7 +86,7 @@ export class PanelSystem extends React.Component<Props, State> {
               })
             }
           >
-            <Icon iconType='round' iconName='open_in_full'/>
+            <Icon iconType='rounded' iconName='open_in_full' symbol />
           </button>
         )}
       </div>

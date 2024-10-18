@@ -1,0 +1,74 @@
+
+<http://www.researchspace.org/pattern/system/person/birth/context> {
+  <http://www.researchspace.org/pattern/system/person/birth> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E67_Birth>;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E21_Person>;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-138074aea9d54f7687e8d0a46d097fd0-j0jlxg;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-138074aea9d54f7687e8d0a46d097fd0-6fs3af;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/person>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-138074aea9d54f7687e8d0a46d097fd0-hv76v;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-138074aea9d54f7687e8d0a46d097fd0-6jzfu;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-138074aea9d54f7687e8d0a46d097fd0-a75h6m;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Birth"@en;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-10T19:21:36.593+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-138074aea9d54f7687e8d0a46d097fd0-a75h6m a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P98i_was_born $value .
+  $value crm:P98_brought_into_life $subject .
+} WHERE {}""" .
+  
+  _:genid-138074aea9d54f7687e8d0a46d097fd0-6jzfu a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  $subject crm:P98i_was_born $value .
+      
+  ?value a crm:E67_Birth .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-138074aea9d54f7687e8d0a46d097fd0-hv76v a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+  $subject crm:P98i_was_born $value .
+  $value crm:P98_brought_into_life $subject .
+} WHERE {
+  $subject crm:P98i_was_born $value .
+  $value crm:P98_brought_into_life $subject .
+      
+  ?value a crm:E67_Birth .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-138074aea9d54f7687e8d0a46d097fd0-j0jlxg a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a crm:E67_Birth .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-138074aea9d54f7687e8d0a46d097fd0-6fs3af a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a crm:E67_Birth .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/person/birth> .
+}

@@ -174,7 +174,7 @@ export class AssertionsComponent extends Component<AssertionsProps, State> {
         {this.noBeliefs() ? (
           <Alert bsStyle="warning">
             <p>
-              <Icon iconType='round' iconName='report_problem'></Icon>
+              <Icon iconType='rounded' iconName='report_problem' symbol ></Icon>
               <strong>Please add an opinion to at least one value!</strong> Opinions are required for newly asserted
               values.
             </p>

@@ -1,0 +1,205 @@
+[[!-- 
+Uses inline templates and can be customised for presentation and editing of authority document list of resources
+Incoming Parameters:
+  * title -- page title"
+  * addTitle
+  * customInsertAuthorityForm
+  * customAuthorityUploadDropzoneMessage
+  * exceptionsCheck
+  * AuthoritySearchResults
+The code for this inline template is defined in the application page using the rsp:AuthorityManagerTemplate
+--]]
+
+{{#bind viewId=dashboardId}}
+  <div class="page__grid-container">
+    <div class="page__content-container">
+      <div class="page__main-title-row">
+
+        <h1 class="headline">[[title]]</h1>
+        <div class='page__main-top-actions'>
+
+          <mp-overlay-dialog id='{{viewId}}-createNew-vocabulary-dialog' 
+                              title="New [[addTitle]]" 
+                              type="modal" 
+                              bs-size="large" 
+                              class="newVocabulary-modal">
+            <mp-overlay-dialog-trigger>
+              <button class="btn btn-action btn-textAndIcon" title="New [[addTitle]]">
+                <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                <span>New [[addTitle]]</span>
+              </button>
+            </mp-overlay-dialog-trigger>
+            <mp-overlay-dialog-content>
+              {{#bind viewId=viewId}}
+                [[#> customInsertAuthorityForm]] [[/customInsertAuthorityForm]]
+              {{/bind}}
+            </mp-overlay-dialog-content>
+          </mp-overlay-dialog>
+
+          <mp-overlay-dialog id='{{viewId}}-import-vocabulary-dialog'
+                              title="Import [[addTitle]]" 
+                              type="modal" 
+                              bs-size="large"
+                              class="importVocabulary-modal">
+            <mp-overlay-dialog-trigger>
+              <button class="btn btn-default btn-textAndIcon" title="Import [[addTitle]]">
+                <rs-icon icon-type='rounded' icon-name='upload' symbol='true'></rs-icon>
+                <span>Import [[addTitle]]</span>
+              </button>
+            </mp-overlay-dialog-trigger>
+            <mp-overlay-dialog-content>
+              <mp-rdf-upload accept='[".trig", ".nq"]' 
+                              keep-source-graphs='true' 
+                              allow-load-by-url='false' 
+                              show-advanced-options='false' 
+                              drop-area-template='{{> template}}'>
+                <template id='template'>
+                  <div class='RdfUpload__rdf-dropzone-content' style='text-align: center;'>
+                    {{#if isDragAccept}}
+                      <div>
+                        <bs-progress-bar active="true" min="0" now="100" max="100" label="Uploading files" striped="true"></bs-progress-bar>
+                      </div>
+                    {{else}}
+                      {{#if isDragReject}}
+                    		Only *.trig or *.nq files are accepted.
+                      {{else}}
+                        [[#> customAuthorityUploadDropzoneMessage]] [[/customAuthorityUploadDropzoneMessage]]
+                      {{/if}}
+                    {{/if}}
+                  </div>
+                </template>
+              </mp-rdf-upload>
+            </mp-overlay-dialog-content>
+          </mp-overlay-dialog>
+
+          <mp-event-proxy id='{{viewId}}-vocabulary-import-closeModal-proxy' 
+                          on-event-type='RdfUpload.Success'
+                          proxy-event-type='OverlayDialog.Close' 
+                          proxy-targets='["{{viewId}}-import-vocabulary-dialog"]'
+          ></mp-event-proxy>
+
+          <mp-event-proxy id='{{viewId}}-vocabulary-uploadSuccess-refreshTable-proxy' 
+                          on-event-type='RdfUpload.Success'
+                          proxy-event-type='Component.TemplateUpdate' 
+                          proxy-targets='["{{viewId}}-vocabulary-table"]'>
+          ></mp-event-proxy>
+
+        </div>
+      </div>
+      
+      [[#> exceptionsCheck]] [[/exceptionsCheck]]
+
+      <mp-event-proxy id='{{viewId}}-vocabulary-graphActionSuccess-refreshTable-proxy' 
+                      on-event-type='GraphAction.Success'
+                      proxy-event-type='Component.TemplateUpdate'
+                      proxy-targets='["{{viewId}}-vocabulary-table"]'
+      ></mp-event-proxy>
+
+      <mp-event-proxy id='{{viewId}}-vocabulary-onFormSave-message-proxy' 
+                      on-event-source='{{viewId}}-new-vocabulary-form'
+                      on-event-type='Form.ResourceCreated'
+                      additional-data='{"vocabularySaved": "true", "viewId": "{{viewId}}" }'
+                      proxy-event-type='Component.TemplateUpdate' 
+                      proxy-targets='["{{viewId}}-vocabulary-save-state"]'>
+      </mp-event-proxy>
+
+      <mp-event-proxy id='{{viewId}}-newVocabCreated-refreshTable-proxy'
+                      on-event-source='{{viewId}}-new-vocabulary-form'
+                      on-event-type='Form.ResourceCreated'
+                      proxy-event-type='Component.TemplateUpdate' 
+                      proxy-targets='["{{viewId}}-vocabulary-table"]'>
+      </mp-event-proxy> 
+
+      <mp-event-proxy id='{{viewId}}-newVocabCreated-closeModal-proxy' 
+                      on-event-source='{{viewId}}-new-vocabulary-form'
+                      on-event-type='Form.ResourceCreated'
+                      proxy-event-type='OverlayDialog.Close' 
+                      proxy-targets='["{{viewId}}-createNew-vocabulary-dialog"]'
+      ></mp-event-proxy>
+
+      <mp-event-proxy id='{{viewId}}-vocUpdated-closeModal-proxy' 
+                      on-event-source='{{viewId}}-edit-vocabulary-form'
+                      on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
+                      proxy-event-type='OverlayDialog.Close' 
+                      proxy-targets='["{{viewId}}-edit-vocabulary-dialog"]'
+      ></mp-event-proxy>
+
+      <mp-event-proxy id='{{viewId}}-vocUpdated-refreshTable-proxy'
+                      on-event-source='{{viewId}}-edit-vocabulary-form'
+                      on-event-type='Form.ResourceUpdated'
+                      proxy-event-type='Component.TemplateUpdate' 
+                      proxy-targets='["{{viewId}}-vocabulary-table"]'>
+      </mp-event-proxy> 
+
+      <mp-event-proxy id='{{viewId}}-vocabulary-onFormEdit-message-proxy' 
+                      on-event-source='{{viewId}}-edit-vocabulary-form'
+                      on-event-types='["Form.ResourceUpdated"]'
+                      additional-data='{"vocabularyUpdate": "true", "viewId": "{{viewId}}" }'
+                      proxy-event-type='Component.TemplateUpdate' 
+                      proxy-targets='["{{viewId}}-vocabulary-save-state"]'>
+      </mp-event-proxy>
+
+      <mp-event-proxy id='{{viewId}}-vocEnabled-closeModal-proxy' 
+                      on-event-source='{{viewId}}-enable-vocabulary-form'
+                      on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
+                      proxy-event-type='OverlayDialog.Close' 
+                      proxy-targets='["{{viewId}}-edit-vocabulary-dialog"]'
+      ></mp-event-proxy>
+
+      <mp-event-proxy id='{{viewId}}-vocEnabled-refreshTable-proxy'
+                      on-event-source='{{viewId}}-enable-vocabulary-form'
+                      on-event-type='Form.ResourceUpdated'
+                      proxy-event-type='Component.TemplateUpdate' 
+                      proxy-targets='["{{viewId}}-vocabulary-table"]'>
+      </mp-event-proxy>
+
+      <mp-event-target-template-render id='{{viewId}}-vocabulary-save-state' template='{{> template}}'>
+        <template id='template'>
+          {{#if hideMessage}}
+          {{else}}
+            {{#if (or vocabularySaved vocabularyUpdate)}}
+              [[!-- the form send an iri in console with the subject of the resource created --]]
+              <div class='success-documentation-section success-documentation-section-withIcon' style="margin-bottom: 20px;">
+                <div class="success-documentation-section-icon-container">
+                  <rs-icon icon-type="rounded" icon-name="done" symbol="true"></rs-icon>
+                </div>
+
+                <div style="flex: 1;">
+                  <div class="success-documentation-section-title">Success!</div>
+                  <div class="success-documentation-section-content">
+                    {{#if vocabularySaved}}Created {{/if}}
+                    {{#if vocabularyUpdate}}Updated {{/if}}
+                    :
+                    <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                  urlqueryparam-view='authority-list' 
+                                  urlqueryparam-resource='{{iri}}'
+                                  urlqueryparam-mode='new'
+                                >
+                      <mp-label iri='{{iri}}' style="text-decoration: underline;"></mp-label>
+                    </semantic-link>
+                  </div>
+                </div>
+
+                <mp-event-trigger id='{{viewId}}-cancel-save-message-{{iri}}'
+                                  type='Component.TemplateUpdate'
+                                  data='{ "hideMessage": "true" }'
+                                  targets='["{{viewId}}-vocabulary-save-state"]'
+                >
+                  <button class="btn btn-documentation">
+                    <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
+                  </button>
+                </mp-event-trigger>
+              </div>
+            {{/if}}
+          {{/if}}
+        </template>
+      </mp-event-target-template-render>
+
+      <mp-event-target-template-render id='{{viewId}}-vocabulary-table' template='{{> template}}'>
+        <template id='template'>
+            [[#> AuthoritySearchResults]][[/AuthoritySearchResults]]
+        </template>
+      </mp-event-target-template-render>
+    </div>  
+  </div>
+{{/bind}}

@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -209,8 +210,8 @@ export class NamespaceManager extends Component<{}, State> {
           <ButtonToolbar>
             <Button
               type="submit"
-              bsSize="small"
-              bsStyle="action"
+              bsStyle="default"
+              className="btn-action"
               onClick={this.onSetNamespace}
               disabled={!(this.state.selectedPrefix && this.state.selectedNamespace && this.state.selectedAppId)}
             >
@@ -300,7 +301,7 @@ function createActionsCellRenderer(params: { onDelete: (record: PrefixRecord) =>
       } else {
         return (
           <Button className="btn btn-default btn-textAndIcon" onClick={this.onDeleteClick}>
-            <Icon iconType='round' iconName='delete'/>
+            <Icon iconType='rounded' iconName='delete' symbol/>
             Delete
           </Button>
         );

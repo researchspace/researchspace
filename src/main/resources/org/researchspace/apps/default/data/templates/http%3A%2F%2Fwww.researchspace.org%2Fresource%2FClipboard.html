@@ -1,23 +1,53 @@
-<mp-event-proxy id='refresh-clipboard-proxy' 
-                on-event-source="btn-refresh-clipboard"
-                proxy-event-type='Component.TemplateUpdate' 
-                proxy-targets='["system-clipboard-render"]'>
+<mp-event-proxy id='refresh-clipboard-on-actions'
+                on-event-types='["Components.SetManagement.SetRenamed",
+                                "Components.SetManagement.SetRemoved",
+                                "Components.SetManagement.ItemAdded",
+                                "Components.SetManagement.ItemRemoved",
+                                "Components.SetManagement.ItemsReordered",
+                                "Form.ResourceUpdated", 
+                                "Form.ResourceRemoved",
+                                "GraphAction.Delete",
+                                "Narrative.Updated",
+                                "Ontodia.DiagramSaved",
+                                "Ontodia.DiagramDataPersisted"
+                                ]'
+                proxy-event-type='Component.Refresh'
+                proxy-targets='["clipboard"]'>
 </mp-event-proxy>
 
-<mp-event-target-template-render id='system-clipboard-render' template='{{> clipboard}}'>
-  <template id='clipboard'>
-    <mp-set-management  [[#if (hasPermission "forms:ldp:*")]]
+<mp-event-proxy id='refresh-clipboard-on-save-search' 
+                on-event-source='save-search-result-action'
+                proxy-event-type='Component.Refresh' 
+                proxy-targets='["clipboard"]'
+></mp-event-proxy>
+
+[[!-- not needed anymore, because chart and timeline don't go to clipboard after save --]]
+[[!--
+<mp-event-proxy id='refresh-clipboard-on-persisted-component' 
+                on-event-source='persist-component-action'
+                proxy-event-type='Component.Refresh' 
+                proxy-targets='["clipboard"]'
+></mp-event-proxy>
+--]]
+
+[[!--
+<mp-event-proxy id='refresh-clipboard-btn-proxy' 
+                on-event-source="btn-refresh-clipboard"
+                proxy-event-type='Component.Refresh'
+                proxy-targets='["clipboard"]'>
+</mp-event-proxy>
+--]]
+
+ <mp-set-management  [[#if (hasPermission "forms:ldp:*")]]
                           readonly='false'
-                        [[else]]
-                          readonly='true'
-                        [[/if]]
-                        id='[[id]]'
-                        reparentable='true'
-                        fixed-key='[[id]]'
-                        default-view-mode='[[defaultViewMode]]'
-                        style='flex: auto; overflow-y: auto;'
-                        [[> rsp:ClipboardConfig id=id]]
-    >
-    </mp-set-management>
-  </template>
-</mp-event-target-template-render>
+                      [[else]]
+                        readonly='true'
+                      [[/if]]
+                      id='clipboard'
+                      reparentable='true'
+                      fixed-key='[[id]]'
+                      default-view-mode='[[defaultViewMode]]'
+                      style='flex: auto; overflow-y: auto;'
+                      [[> rsp:ClipboardConfig id=id]]
+>
+</mp-set-management>

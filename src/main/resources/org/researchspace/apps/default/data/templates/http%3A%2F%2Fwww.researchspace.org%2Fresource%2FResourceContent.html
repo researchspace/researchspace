@@ -20,7 +20,7 @@
         <div style="max-width: 70%;">
             
             <mp-draggable iri='[[this]]'>
-                <div class="rs-draggable-container">
+                <div class="draggable-container">
                     <semantic-query query='SELECT ?type ?typeLabel WHERE {
                                             <[[this]]> a ?type .
                                             ?type rdfs:label ?typeLabel .
@@ -38,7 +38,7 @@
             </mp-draggable>
 
             <mp-copy-to-clipboard text='[[this]]'>
-                <div class="rs-copy-IRI">Copy resource IRI</div>
+                <div class="rs-copy-IRI">Copy IRI</div>
             </mp-copy-to-clipboard>
                 
         </div>
@@ -120,14 +120,14 @@
                             <mp-event-trigger id='details-view-trigger' type='Component.TemplateUpdate'
                                 data='{"iri": "{{iri}}"}' targets='["details-view", "open-details-sidebar"]'>
                                 <button type="button" title="Resource Details">
-                                    <rs-icon icon-type="round" icon-name="info_outline"></rs-icon>
+                                    <rs-icon icon-type="rounded" icon-name="info" symbol="true"></rs-icon>
                                 </button>
                             </mp-event-trigger>
                             
                             <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                                    urlqueryparam-view='entity-editor' urlqueryparam-resource='[[this]]'>
+                                                    urlqueryparam-view='resource-editor' urlqueryparam-resource='[[this]]'>
                                 <button type="button" title="Author Resource in Form">
-                                    <rs-icon icon-type="round" icon-name="edit_note"></rs-icon>
+                                    <rs-icon icon-type="rounded" icon-name="edit_note" symbol="true"></rs-icon>
                                 </button>
                             </semantic-link-container>
                            
@@ -156,7 +156,7 @@
                                         <mp-overlay-dialog title="Resource Media" type="modal" class="modal-xlSize">
                                             <mp-overlay-dialog-trigger>
                                                 <button type="button" class="btn btn-icon" title="Explore Media">
-                                                    <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
+                                                    <rs-icon icon-type="rounded" icon-name="fullscreen" symbol="true"></rs-icon>
                                                 </button>
                                             </mp-overlay-dialog-trigger>
                                             <mp-overlay-dialog-content>
@@ -169,7 +169,7 @@
                                         <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
                                                 urlqueryparam-view='iiif' urlqueryparam-resource='[[this]]'>
                                             <button type="button" class="btn btn-icon" title="Explore Images in high resolution Viewer">
-                                                <rs-icon icon-type="round" icon-name="image"></rs-icon>
+                                                <rs-icon icon-type="rounded" icon-name="image" symbol="true"></rs-icon>
                                             </button>
                                         </semantic-link-container>
 
@@ -179,7 +179,7 @@
                                             [[!-- don't show annotation icon for image regions --]]
                                             {{else}}
                                                 <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                                        urlqueryparam-view='objectImageObservation' urlqueryparam-resource='[[this]]'>
+                                                        urlqueryparam-view='image-annotation' urlqueryparam-resource='[[this]]'>
                                                     <button type="button" class="btn btn-icon" title="Annotate Images">
                                                         <rs-icon icon-type="round" icon-name="photo_size_select_large"></rs-icon>
                                                     </button>
@@ -207,7 +207,7 @@
                                                                     OPTIONAL {
                                                                     <[[this]]> ?representationProp ?representation .
                                                                     ?representation a rs:EX_Digital_Image ;
-                                                                                    crm:P1_is_identified_by/rs:PX_has_file_name ?fileName.
+                                                                                    crmdig:L60i_is_documented_by/crmdig:L11_had_output/rs:PX_has_file_name ?fileName.
                                                                     BIND(CONCAT("/proxy/IIIF/", ?fileName, "/full/!640,480/0/default.jpg") AS ?uploadIiifUrl)
                                                                     }
 
@@ -223,7 +223,7 @@
                                                                     <[[this]]> crm:P138i_has_representation ?representation .
                                                                     ?representation a rs:EX_Digital_Image_Region .
                                                                     ?representation crmdig:L49_is_primary_area_of ?image .
-                                                                    ?image crm:P1_is_identified_by/rs:PX_has_file_name ?fileName.
+                                                                    ?image crmdig:L60i_is_documented_by/crmdig:L11_had_output/rs:PX_has_file_name ?fileName.
                                                                     ?representation rs:boundingBox ?bb.
                                                                     BIND(STRAFTER(?bb, "xywh=") AS ?boundingBox).
                                                                     BIND(CONCAT("/proxy/IIIF/", ?fileName, "/", ?boundingBox, "/!640,480/0/default.jpg") AS ?uploadIiifRegionUrl)
@@ -246,7 +246,7 @@
                                                                     <[[this]]> a rs:EX_Digital_Image ;
                                                                     OPTIONAL {
                                                                     <[[this]]> a rs:EX_Digital_Image ;
-                                                                    crm:P1_is_identified_by/rs:PX_has_file_name ?fileName. 
+                                                                    crmdig:L60i_is_documented_by/crmdig:L11_had_output/rs:PX_has_file_name ?fileName. 
                                                                     BIND(CONCAT("/proxy/IIIF/", ?fileName, "/full/!640,480/0/default.jpg") AS ?uploadIiifUrl)
                                                                     }
 
@@ -600,7 +600,7 @@
 
                                 [[!-- <div class="rs-resource-section-showall">
                                     <button type="button" class="rs-button rs-button-icon-M--dark">
-                                        <rs-icon icon-type="round" icon-name="expand_more"></rs-icon>
+                                        <rs-icon icon-type="rounded" icon-name="expand_more" symbol="true"></rs-icon>
                                     </button>
                                     <span class="text-underline" style="margin-left:8px;">Show all fields</span>
                                 </div> --]]
@@ -646,7 +646,7 @@
 
                                 <div class="rs-resource-section-showall">
                                     <button type="button" class="rs-button rs-button-icon-M--dark">
-                                        <rs-icon icon-type="round" icon-name="expand_more"></rs-icon>
+                                        <rs-icon icon-type="rounded" icon-name="expand_more" symbol="true"></rs-icon>
                                     </button>
                                     <span class="text-underline" style="margin-left:8px;">Show all fields</span>
                                 </div>
@@ -699,7 +699,7 @@
     </div>
     <div style="display: flex ;">
         <mp-copy-to-clipboard text='[[this]]'>
-            <div class="rs-copy-IRI">Copy resource IRI</div>
+            <div class="rs-copy-IRI">Copy IRI</div>
         </mp-copy-to-clipboard>
         <div class="statements">Statements</div>
     </div>

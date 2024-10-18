@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -27,8 +28,9 @@ import { trigger, BuiltInEvents } from 'platform/api/events';
 import { AdapterAnnotationEndpoint } from './MiradorAnnotationEndpoint';
 import { researchspaceAnnotationBodyEditor } from './AnnotationBodyEditor';
 
-import 'cache-loader!script-loader!../../../lib/mirador/mirador.js';
+import 'script-loader!../../../lib/mirador/mirador.js';
 import '../../../lib/mirador/css/mirador.scss';
+import { ConfigHolder } from 'platform/api/services/config-holder';
 
 interface EmitterMixin extends Mirador.EventEmitter {
   bus?: JQuery;
@@ -128,44 +130,55 @@ globalHandlebars.registerHelper(
 const defaultAnnotationViewerTemplate = globalHandlebars.compile(
   `
   <div class="all-annotations" id="annotation-viewer-{{windowId}}">
-    <div class="text-viewer">Image Region(s)</div>
-      {{#each annotations}}
-        <div class="annotation-display annotation-tooltip" data-anno-id="{{id}}">
-          <div class="button-container">
-            {{#if id}}
-              <mp-template-item style="max-width: calc(100% - 80px);">
-                <div>
-                  <semantic-link iri="{{id}}" style="display: block; width: 100%;">{{{annoText}}}</semantic-link>
+    {{#each annotations}}
+      <div class="annotation-display annotation-tooltip" data-anno-id="{{id}}">
+        <div class="button-container">
+          {{#if id}}
+            <mp-template-item>
+              <semantic-link iri="`+ConfigHolder.getDashboard().value+`" 
+                            draggable="false"
+                            urlqueryparam-view="resource-editor"
+                            urlqueryparam-resource-iri="{{id}}"
+                              >
+                <div style="width: 100%;    
+                            text-decoration: underline;
+                            font-weight: 600;
+                            cursor: pointer;
+                            color: #525156">
+                  {{{annoText}}}
                 </div>
-              </mp-template-item>
-            {{/if}}
-            <div>
-              {{#if showUpdate}}
-                <a href="#edit" class="edit">
-                  <rs-icon icon-type="round" icon-name="edit"></rs-icon>
-                </a>
-              {{/if}}
-              {{#if showDelete}}
-                <a href="#delete" class="delete">
-                <rs-icon icon-type="round" icon-name="delete"></rs-icon>
-                </a>
-              {{/if}}
-            </div>
-          </div>
+              </semantic-link>
+            </mp-template-item>
+          {{/if}}
         </div>
-      {{/each}}
-    </div>
+      </div>
+    {{/each}}
   </div>
   `
  );
+
+/*  Mirador Buttons in annotation popup 
+<div>
+{{#if showUpdate}}
+  <a href="#edit" class="edit">
+    <rs-icon icon-type="rounded" icon-name="edit" symbol="true"></rs-icon>
+  </a>
+{{/if}}
+{{#if showDelete}}
+  <a href="#delete" class="delete">
+  <rs-icon icon-type="rounded" icon-name="delete" symbol="true"></rs-icon>
+  </a>
+{{/if}}
+</div>  */
+
 Mirador.AnnotationTooltip.prototype.viewerTemplate = defaultAnnotationViewerTemplate;
 Mirador.AnnotationTooltip.prototype.editorTemplate = globalHandlebars.compile(
   `
   <form id="annotation-editor-{{windowId}}" class="annotation-editor annotation-tooltip" {{#if id}}data-anno-id="{{id}}"{{/if}}>
     <div>
       <div class="button-container">
-        <a href="#cancel" class="cancel"><button class="btn btn-default">{{t "cancel"}}</button></a>
-        <a href="#save" class="save"><button class="btn btn-action">{{t "save"}}</button></a>
+        <button class="btn btn-default"><a href="#cancel" class="cancel">{{t "cancel"}}</a></button>
+        <button class="btn btn-action"><a href="#save" class="save">{{t "save"}}</a></button>
       </div>
     </div>
   </form>

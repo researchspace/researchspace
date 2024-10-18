@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -83,12 +84,12 @@ export interface SemanticMapConfig {
   query: string;
 
   /**
-   * <semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> for marker popup. By default shows `<semantic-link>` to the resource with a short textual description
+   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> for marker popup. By default shows `<semantic-link>` to the resource with a short textual description
    */
   tupleTemplate?: string;
 
   /**
-   * <semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is applied when query returns no results
+   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is applied when query returns no results
    */
   noResultTemplate?: string;
 
@@ -136,7 +137,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
     if (_.isUndefined(props.link) === false) {
       defaultContent += `
-          <semantic-link uri="${props.link}"></semantic-link>
+          <semantic-link iri="${props.link}"></semantic-link>
           <p>${props.description}</p>
       `;
     }
@@ -455,7 +456,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
   private compileTemplatesInConfig = (config: SemanticMapConfig): void => {
     const defaultTemplate = `
-        <semantic-link class="map-resource-link" data-uri="{{link.value}}">
+        <semantic-link class="map-resource-link" iri="{{link.value}}">
         </semantic-link>
         <p>{{description.value}}</p>
     `;

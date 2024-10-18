@@ -95,7 +95,7 @@ export class InstancesSearch extends React.Component<InstancesSearchProps, State
             />
             <span className="ontodia-input-group-btn">
               <button
-                className="btn btn-default btn-input-height"
+                className="btn btn-action btn-input-height"
                 type="button"
                 title="Search"
                 onClick={() => this.submitCriteriaUpdate()}
@@ -122,7 +122,7 @@ export class InstancesSearch extends React.Component<InstancesSearchProps, State
               style={{ display: this.state.moreItemsAvailable ? undefined : 'none' }}
               onClick={() => this.queryItems(true)}
             >
-              <Icon iconType='round' iconName='expand_more' />
+              <Icon iconType='rounded' iconName='expand_more' symbol />
               &nbsp;Show more
             </button>
           </div>
@@ -204,7 +204,7 @@ export class InstancesSearch extends React.Component<InstancesSearchProps, State
     return (
       <div className={`${CLASS_NAME}__criterion-remove ontodia-btn-group ontodia-btn-group-xs`}>
         <button type="button" className="ontodia-btn ontodia-btn-default" title="Remove criteria" onClick={onClick}>
-          <Icon iconType='round' iconName='close' />
+          <Icon iconType='rounded' iconName='close' symbol />
         </button>
       </div>
     );

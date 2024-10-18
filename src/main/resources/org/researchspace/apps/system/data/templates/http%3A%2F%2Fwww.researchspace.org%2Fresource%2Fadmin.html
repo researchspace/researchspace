@@ -1,62 +1,3 @@
-[[!-- IMPORTANT: DON'T REMOVE KP GENERATOR BELOW --]]
-[[!-- This section build knowledge patterns (KPs) for any new ontology found in the system. 
-      In its first iteration it generates KPs for all the system ontologies found in 
-      src/main/resources/org/researchspace/apps/default/ldp/ontologies
---]]
-[[!--
-  <div style="display: none;">
-    <semantic-query query='SELECT ?ontology (count(?prop) as ?propCount) (count(?kp) as ?kpCount) {
-                             ?ontology a owl:Ontology .
-                             BIND((IF((STRENDS(STR(?ontology),"/")),STR(?ontology),CONCAT(STR(?ontology),"/"))) as ?ontologyURI)
-                             BIND(IRI(CONCAT(STR(?ontologyURI),"context")) as ?ontologyContext)
-                             {
-                                graph ?ontologyContext {
-                                  ?prop a ?owlType .
-                                  FILTER (?owlType IN (owl:DatatypeProperty,owl:ObjectProperty))     
-                                  FILTER(CONTAINS(STR(?prop),REPLACE(STR(?ontologyContext),"/context","")))
-                                }
-                             }
-                             UNION {
-                               ?kp <http://www.researchspace.org/resource/system/fields/ontology> ?ontology .
-                               ?kp a ?owlType .
-                               FILTER (?owlType IN (owl:DatatypeProperty,owl:ObjectProperty))
-                            }
-
-                          } 
-                          group by ?ontology'      
-                          template='{{> ontologyKpGenerator}}'>
-      
-        <template id='ontologyKpGenerator'>
-            {{#each bindings}}
-              {{#ifCond kpCount.value "!==" propCount.value }}
-                <ontology-create-new-resource-action 
-                    container='http://www.researchspace.org/resource/system/ontologyContainer'
-                    ontology-iri="{{ontology.value}}">
-                </ontology-create-new-resource-action>
-                <mp-json-renderer
-                    get-url='/rs/kp/getGeneratedKpsAndResponse?ontologyIri={{encodeUriComponent ontology.value}}'
-                    template="{{> kpGeneratorTemplate}}">
-
-                    <template id='kpGeneratorTemplate'>
-                      <div class="alert alert-info" style="margin: 0; padding: 15px; font-size: 14px;">
-                        Created
-                        <semantic-link iri="http://www.researchspace.org/resource/system/fieldDefinitionContainer">
-                          <b>{{this.kp_count}} knowledge patterns</b>
-                        </semantic-link>
-                        from the {{ontology.value}} ontology.
-                      </div>
-                    </template>
-                </mp-json-renderer>
-              {{/ifCond}}
-            {{/each}}
-        </template>
-    </semantic-query>
-  </div> --]]
-[[!-- END OF KP GENERATOR --]]
-
-
-
-
 <ol class="page-breadcrumb">
   <li>
     <mp-link title="Home" url="/">Home</mp-link>
@@ -92,19 +33,21 @@
 
         <bs-row>
           <bs-col xs="12"><h2 class="admin-title">Configurations</h2></bs-col>
-          <bs-col xs="6" md=3>
-            <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                         urlqueryparam-view='resource-configuration'>
-                  <div class="text-center panel panel-default admin-icon-panel">
-                    <div class="panel-body">
-                      <rs-icon icon-type="round" icon-name="ballot"></rs-icon>
+          [[#if (hasPermission "sparql:update")]]
+            <bs-col xs="6" md=3>
+              <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                          urlqueryparam-view='resource-configuration'>
+                    <div class="text-center panel panel-default admin-icon-panel">
+                      <div class="panel-body">
+                        <rs-icon icon-type="rounded" icon-name="ballot" symbol="true"></rs-icon>
+                      </div>
+                      <div class="panel-footer text-truncate" style="position: relative">
+                        Resource
+                      </div>
                     </div>
-                    <div class="panel-footer text-truncate" style="position: relative">
-                      <a>Resource</a>
-                    </div>
-                  </div>
-            </semantic-link-container>
-          </bs-col>
+              </semantic-link-container>
+            </bs-col>
+          [[/if]]
           <bs-col xs=6 md=3>[[>Admin:IconPanelInclude title="System" materialIcon="settings" pageLink=(resolvePrefix "Admin:Configuration")]]
           </bs-col>
           <bs-col xs=6 md=3>[[>Admin:IconPanelInclude title="Repositories" materialIcon="dns" pageLink=(resolvePrefix "Admin:Repositories")]]
@@ -115,20 +58,17 @@
 
         <bs-row>
           <bs-col xs="12"><h2 class="admin-title">Knowledge Modelling</h2></bs-col>
-          [[#if (hasPermission
-          "api:ldp:container:<http://www.researchspace.org/resource/system/fieldDefinitionContainer>:read:any")]]
-          <bs-col xs="6" md="3"
-            >[[>Admin:IconPanelInclude title="Knowledge Patterns Catalog" materialIcon="list"
-            pageLink="http://www.researchspace.org/resource/system/fieldDefinitionContainer"]]
-          </bs-col>
+          [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/fieldDefinitionContainer>:read:any")]]
+            <bs-col xs="6" md="3"
+              >[[>Admin:IconPanelInclude title="Knowledge Patterns" materialIcon="list"
+              pageLink="http://www.researchspace.org/resource/system/fieldDefinitionContainer"]]
+            </bs-col>
           [[/if]]
           <bs-col xs="6" md="3"
-            >[[>Admin:IconPanelInclude title="Ontologies" materialIcon="schema"
-            pageLink="http://www.researchspace.org/resource/assets/Ontologies"]]
+            >[[>Admin:IconPanelInclude title="Ontologies" materialIcon="schema" pageLink="http://www.researchspace.org/resource/assets/Ontologies"]]
           </bs-col>
           <bs-col xs="6" md="3"
-            >[[>Admin:IconPanelInclude title="RDF Namespace Prefixes" materialIcon="integration_instructions" pageLink=(resolvePrefix
-            "Admin:Namespaces")]]
+            >[[>Admin:IconPanelInclude title="RDF Namespace Prefixes" materialIcon="integration_instructions" pageLink=(resolvePrefix "Admin:Namespaces")]]
           </bs-col>
           [[!-- TODO rename sparql endpoint and make it a proper link --]]
           <bs-col xs="6" md="3">
@@ -138,7 +78,7 @@
                         <span class="rs-icon rs-icon-sparql"></span>
                       </div>
                       <div class="panel-footer text-truncate" style="position: relative">
-                          <a>SPARQL</a>
+                          SPARQL
                       </div>
                   </div>
               </mp-link>
@@ -149,23 +89,22 @@
         <bs-row>
           <bs-col xs="12"><h2 class="admin-title">System Resources</h2></bs-col>
           <bs-col xs="6" md="3">
-            
-          <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                   urlqueryparam-view='system-vocabulary'>
-                  <div class="text-center panel panel-default admin-icon-panel">
-                    <div class="panel-body">
-                      <rs-icon icon-type="round" icon-name="description"></rs-icon>
-                    </div>
-                    <div class="panel-footer text-truncate" style="position: relative">
-                      <a>Vocabularies / Authorities</a>
-                    </div>
-                  </div>
-            </semantic-link-container>
-            
+            [[#if (hasPermission "sparql:update")]]
+              <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                      urlqueryparam-view='system-authority'>
+                      <div class="text-center panel panel-default admin-icon-panel">
+                        <div class="panel-body">
+                          <rs-icon icon-type="rounded" icon-name="description" symbol="true"></rs-icon>
+                        </div>
+                        <div class="panel-footer text-truncate" style="position: relative">
+                          System authority documents
+                        </div>
+                      </div>
+                </semantic-link-container>
+            [[/if]]
           </bs-col>
           <bs-col xs="6" md="3"
-            >[[>Admin:IconPanelInclude title="Template & Application Pages" materialIcon="description"
-            pageLink=(resolvePrefix "Admin:Templates")]]
+            >[[>Admin:IconPanelInclude title="Template & Application Pages" materialIcon="description" pageLink=(resolvePrefix "Admin:Templates")]]
           </bs-col>
           <bs-col xs=6 md=3>[[>Admin:IconPanelInclude title="Apps & Storages" materialIcon="storage" pageLink=(resolvePrefix "Admin:Apps")]]
           </bs-col>
@@ -192,12 +131,10 @@
             <semantic-link-container title="Query Templates" uri="http://www.researchspace.org/resource/assets/QueryTemplates">
               <div class="text-center panel panel-default admin-icon-panel">
                 <div class="panel-body">      
-                  <rs-icon icon-type="round" icon-name="query_builder"></rs-icon>
+                  <rs-icon icon-type="rounded" icon-name="query_builder" symbol="true"></rs-icon>
                 </div>
                 <div class="panel-footer" style="position: relative">
-                    <a>
-                          Query Templates
-                    </a>
+                  Query Templates
                 </div>
               </div>
             </semantic-link-container>
@@ -218,13 +155,13 @@
             [[#if (hasPermission "system:restart")]]
             <mp-restart-wrapper>
               <button class="btn btn-default btn-textAndIcon">
-                <rs-icon icon-type="round" icon-name="power_settings_new"></rs-icon>
+                <rs-icon icon-type="rounded" icon-name="power_settings_new" symbol="true"></rs-icon>
                 <div>Restart Platform</div>
               </button>
             </mp-restart-wrapper>
             [[else]]
             <div class="restart-no-permission">
-              <rs-icon icon-type="round" icon-name="power_settings_new"></rs-icon>
+              <rs-icon icon-type="rounded" icon-name="power_settings_new" symbol="true"></rs-icon>
               <div>Restart Platform: No permission to restart the platform
               </div>
             </div>

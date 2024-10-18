@@ -1,6 +1,7 @@
 /**
  * ResearchSpace
- * Copyright (C) 2020, © Trustees of the British Museum
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
+ * Copyright (C) 2015-2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
  * This program is free software: you can redistribute it and/or modify
@@ -83,6 +84,7 @@ $form-group-margin-bottom: 15px; //bootstrap variable
   padding: 0px 12px;
 
   -webkit-box-shadow: none;
+  -moz--box-shadow: none;
   box-shadow: none;
 
   &::placeholder {
@@ -93,6 +95,7 @@ $form-group-margin-bottom: 15px; //bootstrap variable
   &:focus {
     outline: none;
     -webkit-box-shadow: none;
+    -moz--box-shadow: none;
     box-shadow: none;
     border-color: inherit;
     border: 1px solid $input-border-color;
@@ -110,7 +113,7 @@ $form-group-margin-bottom: 15px; //bootstrap variable
   flex:1;
   display: flex;
   align-items: center;
-  height: calc(#{$input-height} + 2px);
+  height: 35px;
 
   background-color: $input-color-bg;
   border-radius: $input-border-radius;
@@ -130,7 +133,7 @@ $form-group-margin-bottom: 15px; //bootstrap variable
   }
 
   .form-control.input-keyword-search {
-
+    height: 33px;
     border: none;
   }
 }
@@ -146,9 +149,9 @@ textarea.form-control {
 .form-control[readonly],
 fieldset[disabled] .form-control {
 
-  background-color: inherit;
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
+  background-color: $input-color-bg
 }
 
 // Feedback states
@@ -261,6 +264,12 @@ fieldset[disabled] .form-control {
   &__add-value-btn {
 
     width: -webkit-fill-available;
+    width: -moz-available;
+    width: fill-available;
+    
+    min-width: -moz-available;
+    min-width: -webkit-fill-available;
+    min-width: fill-available;
     padding: 7px 12px;
     font-size: $font-size-small;
 
@@ -320,28 +329,18 @@ fieldset[disabled] .form-control {
       background-color: $color-lighter-hover;
       border-color: $color-border-darker;
     }
-
-    .composite-input {
-
-      & > .semantic-form-input-decorator--with-header {
-        .semantic-form-input-decorator__header {
-        //  margin-top: 5px;
-        }
-      }
-    }
     
   }
 
   &_no-header {
 
     padding: 0px;
-   // border: none;
 
-    .semantic-form-input-decorator--with-header:first-of-type {
+/*     .semantic-form-input-decorator--with-header:first-of-type {
       .semantic-form-input-decorator__header {
-        margin: 20px 0 5px 0px;
+        margin: 20px 0 8px 0px;
       }
-    }
+    } */
   }
 
   &__group-instance > &__remove-value {
@@ -361,7 +360,8 @@ fieldset[disabled] .form-control {
       background-color: transparent;
     }
 
-    .material-icons-round {
+    .material-icons-round,
+    .material-symbols-rounded {
 
       font-size: inherit;
     }
@@ -582,7 +582,7 @@ fieldset[disabled] .form-control {
 
   &__header {
 
-    margin: 20px 0 5px 0px;
+    margin: 20px 0 8px 0px;
     display: flex;
     align-items: center;
 
@@ -592,8 +592,8 @@ fieldset[disabled] .form-control {
 
    font-weight: 600;
    font-size: $font-size-body;
-   display: inline-block;
-   text-transform: lowercase;
+ //  display: inline-block;
+ //  text-transform: lowercase;
 
    &::first-letter {
 
@@ -844,16 +844,17 @@ fieldset[disabled] .form-control {
   &__checkbox {
     cursor: pointer;
     position: relative;
-    height: 20px;
-    width: 20px;
+    height: 16px;
+    width: 16px;
     margin-right: 10px;
-    background-color: $color-light;
+    background-color: $color-white;
+    border: 1px solid $color-medium;
   }
   &__radio {
     border-radius: 50%;
   }
   &__checkbox {
-    border-radius: $border-radius;
+    border-radius: 3px;
   }
 
   &__input:checked ~ &__radio,
@@ -864,10 +865,10 @@ fieldset[disabled] .form-control {
   &__input:checked ~ &__checkbox::after {
     content: '';
     position: absolute;
-    top: 6px;
-    left: 6px;
-    width: 8px;
-    height: 8px;
+    top: 3.5px;
+    left: 3.5px;
+    width: 7px;
+    height: 7px;
     background: white;
   }
   &__input:checked ~ &__checkbox::after {
@@ -952,7 +953,6 @@ fieldset[disabled] .form-control {
 
   .btn-group {
 
-    margin-top: 15px;
     display: flex;
     align-items: center;
     justify-content: flex-end;
@@ -988,6 +988,16 @@ fieldset[disabled] .form-control {
   .clearable-input {
 
  //   border: none;
+  }
+
+  .Select-arrow-zone {
+    padding: 0 12px 0 5px;
+    width: 31px;
+    background-color: $input-color-bg;
+  }
+
+  .Select-clear-zone {
+    background-color: $input-color-bg;
   }
   
 } 
@@ -1046,6 +1056,14 @@ fieldset[disabled] .form-control {
       margin-top: 0;
     }
   }
+
+  .composite-input .semantic-form-input-decorator.semantic-form-input-decorator--with-header:not(:first-of-type) {
+
+    .semantic-form-input-decorator__header {
+      margin-top: 20px;
+    }
+  }
+
 }
 
 .form-inline-inputs {
@@ -1132,6 +1150,15 @@ fieldset[disabled] .form-control {
   }
 }
 
+.form-2column-flex {
+
+  display: flex; 
+  align-items:stretch; 
+  column-gap:40px; 
+  flex-flow: wrap;
+  min-height: 100%;
+}
+
 .form-2column-container {
 
   display: grid;
@@ -1160,11 +1187,55 @@ fieldset[disabled] .form-control {
   }
 }
 
+.formFileUpload-container {
+  margin-top: 20px;
+  margin-bottom: 0; 
+  padding-top: 0; 
+  width: 400px;
+
+  .FileManager--selectorContainer {
+    border: 1px solid $input-border-color;
+    border-radius: $border-radius;
+    background-color: $input-color-bg;
+  }
+
+  .FileManager--FileManager .FileManager--alertComponent {
+    margin-bottom: 5px;
+  }
+
+  .FileManager--FileVisualizer .FileManager--uploadedImageDepiction img {
+    max-width: 280px;
+  }
+
+/*   .formFileUpload-min0 {
+    .FileManager--FileVisualizer .FileManager--uploadedImageDepiction img {
+      max-width: 240px;
+    }
+  } */
+}
+
 .form-tabs {
   height: 100%;
+  width: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+
+  & > ul{
+    display: flex;
+    align-items: center;
+    overflow-y: hidden;
+    overflow-x: auto;
+    padding-bottom: 1px;
+
+    & > li > a {
+      text-wrap: nowrap;
+    }
+
+    .tab-right {
+      margin-left: auto;
+    }
+  }
 
   .tab-content {
 
@@ -1176,14 +1247,11 @@ fieldset[disabled] .form-control {
   .tab-pane {
     height: 100%;
     overflow-y: auto;
-    padding: 0 15px 0 0;
+    padding: 0 20px 0 0;
 
-    &.tab_overflow_hidden,
-    &.object-tab-pane {
+    &.tab_height-auto {
 
-      overflow: hidden;
-      padding: 0;
-      border: none;
+      height: auto;
     }
   }
 }
@@ -1320,12 +1388,42 @@ fieldset[disabled] .form-control {
   }
 }
 
+.formResourceAsset-tabs {
+  height: 100%;
+  margin-top: 1px; 
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+
+  .page__section-container.tab-content {
+
+    overflow: hidden;
+    flex: 1;
+    margin: 5px 0 0;
+    padding: 12px 15px;
+  }
+
+  .tab-pane-content {
+
+    padding: 15px 0;
+
+    .semantic-form-input-decorator__header {
+      margin-top: 15px;
+    }
+
+    ul.btn.btn-secondary.nav>li>a {
+
+      padding: 0;
+    }
+  }
+}
+
 .form-tabs-subtabs-content,
 .tab-pane.form-tabs-subtabs-content {
 
   height: 100%;
   flex: 1;
-  overflow: hidden;
+ // overflow: hidden;
 
   padding: 0;
 
@@ -1341,15 +1439,16 @@ fieldset[disabled] .form-control {
     justify-content: space-between;
     border-bottom: 1px solid $color-border;
     position: relative;
-    padding: 8px 20px 6px 20px;
+    padding: 0 0 6px 3px;
+    flex-wrap: wrap;
+    column-gap: 20px;
+    row-gap: 10px;
 
     h4, ul {
       margin: 0;
     }
 
     .form-tabs-subtabs-content--title-actions {
-      position: absolute; 
-      right: 110px; 
       display: flex;
       gap:3px;
 
@@ -1448,13 +1547,20 @@ fieldset[disabled] .form-control {
 
     flex: 1;
 
+
     .DropArea--dropArea.mp-droppable-enabled {
 
       border-color: $color-action;
+      border-style: dashed;
+      background-color: $color-white;
+
+      display: flex;
 
       &.mp-droppable-hover {
-        border-style: dashed;
+        
+        border-style: solid;
         border-color: $color-action;
+        background-color: $color-white;
       }
       
     }
@@ -1463,8 +1569,9 @@ fieldset[disabled] .form-control {
   .DragAndDropInput--itemArea {
 
     min-height: -webkit-fill-available;
+    min-height: 80px;
     border-style: dashed;
-    border-width: 2px;
+    border-width: 1.5px;
     border-color: $color-border;
 
     .placeholder-item {
@@ -1475,11 +1582,11 @@ fieldset[disabled] .form-control {
 
       width: 100%; 
       color:$input-placeholder-color; 
-      padding: 40px 20px; 
+      padding: 20px; 
       text-align: center;
 
-      .material-icons-round,
-      .fa-upload {
+      .upload_icon.material-icons-round,
+      .upload_icon.material-symbols-rounded {
         font-size: 25px;
         padding-bottom: 10px;
         color: inherit;
@@ -1498,7 +1605,7 @@ fieldset[disabled] .form-control {
 }
 
 .customFormHeader {
-  margin: 20px 0 5px 0px;
+  padding: 20px 0 8px 0px;
   display: flex;
   align-items: center;
   font-weight: 600;
@@ -1643,7 +1750,7 @@ fieldset[disabled] .form-control {
   }
 
   .has-value.Select--single > .Select-control .Select-value .Select-value-label {
-    background-color: var(--color-action, #396EFE);
+    background-color: $color-action;
     height: 26px;
     border: none;
     border-radius: $border-radius;
@@ -1666,6 +1773,16 @@ fieldset[disabled] .form-control {
   display: flex;
   flex-direction: column;
 
+  .tab-content {
+    overflow-y: auto;
+    padding-right: 5px;
+    flex: 1;
+  }
+}
+
+.form-assetView-tabs,
+.page__section-container {
+
   .btn.btn-icon {
     padding: 4px;
    // background-color: $color-lighter;
@@ -1676,6 +1793,13 @@ fieldset[disabled] .form-control {
     i {
       font-size: 20px;
     }
+
+    &:hover,
+    &:focus,
+    &:focus-within {
+        color: $color-secondary-light;
+        background-color: $color-white;
+    }
   }
 
   .tab-pane {
@@ -1683,5 +1807,58 @@ fieldset[disabled] .form-control {
     padding: 0;
   }
 
+}
+
+/* .entity-resource-sidebar {
+
+  position: relative;
+
+  .Resizer {
+    margin-top: 46.5px;
+  }
+
+  .Pane.Pane2 {
+
+    height: calc(100% - 46.5px);
+    margin-top: 46.5px;
+    margin-left: -6px;
+    background-color: $pageSection-bg;
+    border-top: 1px solid $color-border;
+
+    .split-pane__sidebar {
+
+      .btn-toggle-on {
+        padding-top: 20px;
+        
+        i {
+          font-size: 23px;
+        }
+      }
+
+      .btn-toggle-off {
+
+        padding-top: 20px;
+        padding-bottom: 0;
+        gap: 5px;
+        
+        i {
+          font-size: 21px;
+        }
+      }
+
+      .split-pane__sidebar-open {
+
+        padding-bottom: 0;
+      }
+    }
+  }
+} */
+
+.form-details-container {
+
+  display: grid; 
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  width: 100%;
 }
 

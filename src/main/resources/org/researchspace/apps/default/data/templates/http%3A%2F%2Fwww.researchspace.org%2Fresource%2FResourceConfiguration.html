@@ -1,23 +1,30 @@
 {{#bind viewId=dashboardId}}
   <div class="resource-editView-container">
-      <mp-splitpane min-size=60 default-size=330 max-size=330 size=330 default-open='true' persist-resize=false snap-threshold=120 class="frame-split-pane" >
-        <div data-flex-layout="column top-stretch">
+      <mp-splitpane id="resource-config-sidebar" 
+                    min-size=250 
+                    default-size=450 
+                    snap-threshold=70
+                    default-open=true 
+                    always-render=true 
+                    persist-resize=false>
+        <div class="split-pane__sidebar split-pane__leftsidebar">
           <mp-splitpane-toggle-on>
             <button class="btn-toggle-on">
               <div class="btn-toggle-on-content">
-                <h4>
-                  <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
+                <h4 style="width: 100%; text-align: left;">
+                  Resource configuration
                 </h4>
+                <rs-icon icon-type="rounded" icon-name="chevron_right" symbol="true"></rs-icon>
               </div>
             </button>
           </mp-splitpane-toggle-on>
           <mp-splitpane-toggle-off>
-            <div class="split-pane__leftsidebar-header">
-              <button data-flex-layout='row center-left' class="btn-toggle-off">
+            <div class="split-pane__sidebar-header">
+              <button class="btn-toggle-off">
                 <h4 style="width: 100%; text-align: left;">
                   Resource configuration
                 </h4>
-                <rs-icon icon-type="round" icon-name="chevron_left"></rs-icon>
+                <rs-icon icon-type="rounded" icon-name="chevron_left" symbol="true"></rs-icon>
               </button>
             </div>
           </mp-splitpane-toggle-off>
@@ -50,9 +57,9 @@
                                                   "labelPattern": "?item <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label . ",
                                                 {{/if}}
                                                 
-                                                "resourceOrderPattern": "ASC(lcase(?label))",
+                                                "orderByPattern": "BIND(?label as ?order)",
                                                 
-                                                  "schemePattern": " ?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> ?__scheme__ . 
+                                                "schemePattern": " ?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> ?__scheme__ . 
                                                                       FILTER(?label != \"Finder\" )
                                                                       {{#if resourceOntologyClass }} ?item a/rdfs:subClassOf* <{{resourceOntologyClass }}> . {{/if}} 
                                                                       {{#if resourceP2Type}} ?item <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> <{{resourceP2Type}}> . {{/if}}
@@ -63,10 +70,10 @@
                         <span class="tree-item-actions-container">
                           <div style="display: flex; align-items: center; gap: 7px;">
 
-                            <semantic-if query='ASK { <{{iri}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_use_as_vocabulary_type> ?value . }'
-                              then='{{> useAsVocabularyType}}'
+                            <semantic-if query='ASK { <{{iri}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_list_in_authority> ?value . }'
+                              then='{{> listInAuthority}}'
                             >
-                              <template id='useAsVocabularyType'>
+                              <template id='listInAuthority'>
                                 <span class="badge badge--secondary" style="height: 28px;">Voc. / Auth.</span>
                               </template>
                             </semantic-if>
@@ -86,9 +93,44 @@
 
                            <semantic-if query='ASK { <{{iri}}> crm:P2_has_type <http://www.researchspace.org/pattern/system/resource_configuration/configuration_type/system> . }'
                                           then='{{> system}}'
+                                          else='{{>else}}'
                             >
                                 <template id='system'>
                                   <span class="badge badge--secondary" style="height: 28px; width: 54px;">System</span>
+                                </template>
+
+                                <template id='else'>
+                                  <semantic-query query='SELECT ?resourceConfiguration ?resourceConfigurationName ?iriOntologyClass ?iriType WHERE { 
+                                                          <{{iri}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?iriOntologyClass .
+                                                          ?resourceConfiguration crm:P2_has_type <http://www.researchspace.org/pattern/system/resource_configuration/configuration_type/system> . 
+                                                          ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceConfigurationName .
+                                                          ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?iriOntologyClass . 
+
+                                                          OPTIONAL {
+                                                            <{{iri}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?iriP2Type .
+                                                            BIND(true as ?iriType)
+                                                          }
+                                                          FILTER(NOT EXISTS{ ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .})
+                                                        }'
+                                                template='{{> template}}'>
+
+                                    <template id='template'>
+                                      {{#if (not bindings.0.iriType.value)}}
+                                        <mp-popover title="Error">
+                                          <mp-popover-trigger placement="right" trigger='["click","hover","focus"]'> 
+                                            <div class="badge badge--danger" style="height: 28px; width: 54px;">
+                                              <rs-icon icon-type="rounded" icon-name="block" symbol="true" style="font-size: 20px;"></rs-icon>
+                                            </div>
+                                          </mp-popover-trigger>
+                                          <mp-popover-content>
+                                            <b>A configuration for <mp-label iri='{{bindings.0.iriOntologyClass.value}}' style="text-transform: uppercase;"></mp-label> already exists!</b>
+                                            <div>Don't create a new configuration for ontology class <mp-label iri='{{bindings.0.iriOntologyClass.value}}'></mp-label>, but just 
+                                              modify the existing <span style="text-transform: uppercase;">{{bindings.0.resourceConfigurationName.value}}</span> system configuration. Otherwise a custom configuration can be created adding a configuration Type.</div>
+                                          </mp-popover-content>
+                                        </mp-popover>
+                                      {{/if}}
+                                    </template>
+                                  </semantic-query>
                                 </template>
                             </semantic-if> 
 
@@ -97,7 +139,7 @@
                                               data='{"iri":"{{iri}}", "label": "{{label}}", "mode": "edit" }' 
                                               targets='["{{viewId}}-resource-config-term-forms"]'>
                               <span class='tree-item-action'>
-                                <rs-icon icon-type="round" icon-name="edit" title="Edit configuration"></rs-icon>
+                                <rs-icon icon-type="rounded" icon-name="edit" title="Edit configuration" symbol="true"></rs-icon>
                               </span>
                             </mp-event-trigger>
 
@@ -132,13 +174,19 @@
                         {{else}}
                             <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%;">
                               <div class="success-documentation-section-icon-container">
-                                <rs-icon icon-type="round" icon-name="done"></rs-icon>
+                                <rs-icon icon-type="rounded" icon-name="done" symbol="true"></rs-icon>
                               </div>
             
                               <div style="flex: 1;"> 
                                 <div class="success-documentation-section-title">Success!</div>
                                 <div class="success-documentation-section-content">
-                                  <span style="text-transform: capitalize;">{{label}}</span>
+                                  <span style="text-transform: capitalize;">
+                                    {{#if label}}
+                                      {{label}}
+                                    {{else}}
+                                      <mp-label iri='{{iri}}'></mp-label>
+                                    {{/if}}
+                                  </span>
                                   <span> has been deleted.</span>
                                 </div>
                               </div>
@@ -149,7 +197,7 @@
                                                 targets='["{{viewId}}-deleted-state"]'
                               >
                                 <button class="btn btn-documentation">
-                                  <rs-icon icon-type="round" icon-name="close"></rs-icon>
+                                  <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
                                 </button>
                               </mp-event-trigger>
                             </div>
@@ -160,7 +208,7 @@
 
                   {{#if (not (eq mode "deleted"))}}
                     <mp-event-proxy id='{{viewId}}-resource-config-tree-refresh-on-created' 
-                                    on-event-source='{{viewId}}-vocab-form' 
+                                    on-event-source='{{viewId}}-resource-form' 
                                     on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
                                     proxy-event-type='Component.TemplateUpdate' 
                                     proxy-targets='["{{viewId}}-resource-config-mytree", "{{viewId}}-resource-config-term-forms"]'
@@ -168,7 +216,7 @@
                     ></mp-event-proxy>
           
                     <mp-event-proxy id='{{viewId}}-resource-config-tree-refresh-on-delete' 
-                                    on-event-source='{{viewId}}-vocab-form' 
+                                    on-event-source='{{viewId}}-resource-form' 
                                     on-event-types='["Form.ResourceRemoved"]'
                                     proxy-event-type='Component.TemplateUpdate' 
                                     proxy-targets='["{{viewId}}-resource-config-mytree", "{{viewId}}-resource-config-term-forms"]'

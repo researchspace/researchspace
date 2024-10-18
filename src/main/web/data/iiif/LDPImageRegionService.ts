@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -103,9 +104,9 @@ export class LdpRegionServiceClass extends LdpService {
       .toProperty();
   }
 
-  public search(objectIri: Rdf.Iri): Kefir.Property<OARegionAnnotation[]> {
+  public search(resourceIri: Rdf.Iri): Kefir.Property<OARegionAnnotation[]> {
     // we assume that regions are always stored in the default repository
-    return SparqlClient.select(this.selectForRegions(objectIri), { context: { repository: 'default' } })
+    return SparqlClient.select(this.selectForRegions(resourceIri), { context: { repository: 'default' } })
       .flatMap((result) => {
         if (result.results.bindings.length === 0) {
           return Kefir.constant<OARegionAnnotation[]>([]);
@@ -155,10 +156,10 @@ export class LdpRegionServiceClass extends LdpService {
     }));
   }
 
-  private selectForRegions(objectIri: Rdf.Iri): string {
+  private selectForRegions(resourceIri: Rdf.Iri): string {
     return `prefix crmdig: <http://www.ics.forth.gr/isl/CRMdig/>
-select ?region where {
-  ?region crmdig:L49_is_primary_area_of ${objectIri}.
+  select ?region where {
+  ?region crmdig:L49_is_primary_area_of ${resourceIri}.
 }`;
   }
 
@@ -198,7 +199,7 @@ CONSTRUCT {
                        rdf:value ?boundingBox .
 } WHERE {
   ?annotation a rs:EX_Digital_Image_Region ;
-              (rs:displayLabel|rdfs:label) ?label ;
+              crm:P190_has_symbolic_content ?label ;
               crmdig:L49_is_primary_area_of ?img ;
               rdf:value ?svgValue .
 

@@ -37,13 +37,15 @@ export function mockRequest() {
 
 export function mockConfig() {
   initNavigation();
-  sinon.stub(ConfigHolder, 'getUIConfig').callsFake(function () {
-    return { preferredLanguages: [] };
-  });
-  sinon.stub(ConfigHolder, 'getGlobalConfig').callsFake(function () {
-    return { };
-  });
-  sinon.stub(ConfigHolder, 'getEnvironmentConfig').callsFake(function () {
-    return { resourceUrlMapping: { value: 'http://example.com/' } };
-  });
+  if (!(ConfigHolder.getUIConfig as any).restore) {
+    sinon.stub(ConfigHolder, 'getUIConfig').callsFake(function () {
+      return { preferredLanguages: [] };
+    });
+    sinon.stub(ConfigHolder, 'getGlobalConfig').callsFake(function () {
+      return { };
+    });
+    sinon.stub(ConfigHolder, 'getEnvironmentConfig').callsFake(function () {
+      return { resourceUrlMapping: { value: 'http://example.com/' } };
+    });  
+  }
 }

@@ -1,0 +1,82 @@
+
+<http://www.researchspace.org/pattern/system/place/witnessed_period/context> {
+  <http://www.researchspace.org/pattern/system/place/witnessed_period> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E53_Place>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-440eebf1e648426c9692f860d11bc504-hknmv;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-440eebf1e648426c9692f860d11bc504-tlk8ra;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/place>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-440eebf1e648426c9692f860d11bc504-hhnvz9;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-440eebf1e648426c9692f860d11bc504-u0ylk;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E4_Period>;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-440eebf1e648426c9692f860d11bc504-nfeuvv;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Witnessed period";
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-03-26T18:51:10.487Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-440eebf1e648426c9692f860d11bc504-hknmv a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {   
+  $subject crm:P7i_witnessed $value . 
+  $value crm:P7_took_place_at $subject .
+}  WHERE {
+  $subject crm:P7i_witnessed $value . 
+  $value crm:P7_took_place_at $subject .
+
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E4_Period .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+   
+  ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-440eebf1e648426c9692f860d11bc504-tlk8ra a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E4_Period .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+   
+  ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-440eebf1e648426c9692f860d11bc504-hhnvz9 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  $subject crm:P7i_witnessed $value . 
+    
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E4_Period .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+   
+  ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-440eebf1e648426c9692f860d11bc504-nfeuvv a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E4_Period .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+   
+  ?appellation crm:P190_has_symbolic_content ?label .
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label) 
+  LIMIT 10 """ .
+  
+  _:genid-440eebf1e648426c9692f860d11bc504-u0ylk a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P7i_witnessed $value . 
+  $value crm:P7_took_place_at $subject .
+} WHERE {}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/place/witnessed_period> .
+}

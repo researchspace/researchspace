@@ -34,16 +34,16 @@
                     <mp-graph-store-action  title='Download in Turtle Format' 
                                             action='GET'
                                             graphuri='{{bindings.0.graph.value}}' 
-                                            file-ending='ttl'>
+                                            file-ending='trig'>
                       <button class="btn btn-default btn-textAndIcon" title="Download">
-                        <rs-icon icon-type="round" icon-name="download" title='Download'></rs-icon>Download
+                        <rs-icon icon-type="rounded" icon-name="download" title='Download' symbol="true"></rs-icon>Download
                       </button> 
                     </mp-graph-store-action>
                   
                     <mp-overlay-dialog title="Print Preview" type="lightbox" id="'test">
                       <mp-overlay-dialog-trigger>
                         <button class="btn btn-default btn-textAndIcon" title="Print">
-                          <rs-icon icon-type="round" icon-name="print" title='Print'></rs-icon>Print
+                          <rs-icon icon-type="rounded" icon-name="print" title='Print' symbol="true"></rs-icon>Print
                         </button>
                       </mp-overlay-dialog-trigger>
                       <mp-overlay-dialog-content>
@@ -57,7 +57,7 @@
                                       bs-size="large">
                       <mp-overlay-dialog-trigger>
                         <button class="btn btn-default btn-textAndIcon" title="Delete ontology">
-                          <rs-icon icon-type="round" icon-name="delete" title='Delete ontology'></rs-icon>Delete
+                          <rs-icon icon-type="rounded" icon-name="delete" title='Delete ontology' symbol="true"></rs-icon>Delete
                         </button>
                       </mp-overlay-dialog-trigger>
                       <mp-overlay-dialog-content>
@@ -66,9 +66,14 @@
                             <b><semantic-link iri='{{bindings.0.subject.value}}' class="text-underline;"></semantic-link></b>?
                           </p>
                           <semantic-query query='SELECT (count(?kp) as ?count) WHERE {
-                                                    ?kp <http://www.researchspace.org/resource/system/fields/ontology> <{{bindings.0.subject.value}}> .
-                                                    ?kp a ?owlType .
-                                                    FILTER (?owlType IN (owl:DatatypeProperty,owl:ObjectProperty))
+                                                    BIND(<{{bindings.0.subject.value}}> AS ?ontology)
+                                                                BIND(IF(STRENDS(STR(?ontology), "/"), STR(?ontology), CONCAT(STR(?ontology), "/")) AS ?ontologyURI)
+                                                                BIND(IRI(CONCAT(STR(?ontologyURI), "context")) AS ?ontologyContext)
+                                                                ?kp rdf:type <http://www.researchspace.org/resource/system/fields/Field> .
+                                                                graph ?ontologyContext { 
+                                                                    ?kp a ?type . 
+                                                                    VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}
+                                                                }                                             
                                                   }'
                                             template='{{> template}}'
                             >
@@ -79,23 +84,19 @@
                                   </template>
                             </semantic-query>
                           <div class="form-btn-group">
-                            <div style="display: flex; justify-content: flex-end; width: 100%;">
-                              <mp-event-trigger id='removeOntology-cancel-dialog-trigger' 
-                                                type='OverlayDialog.Close' 
-                                                targets='["removeOntology-confirmation-dialog"]'>
-                                <button class="btn btn-default">Cancel</button>
-                              </mp-event-trigger>
-                                <mp-event-trigger id='removeOntology-removeKps-dialog-trigger' 
-                                                type='Component.TemplateUpdate' 
-                                                targets='[""]'>
-                                  <mp-ldp-remove-from-container-action iri="{{subject.value}}" 
-                                                      container=" http://www.researchspace.org/resource/system/ontologyContainer">
-                                    <button class="btn btn-action">Delete ontology</button> 
-                                  </mp-ldp-remove-from-container-action> 
-                              </mp-event-trigger>
-
-
-                            </div>
+                            <mp-event-trigger id='removeOntology-cancel-dialog-trigger' 
+                                              type='OverlayDialog.Close' 
+                                              targets='["removeOntology-confirmation-dialog"]'>
+                              <button class="btn btn-default">Cancel</button>
+                            </mp-event-trigger>
+                            <mp-event-trigger id='removeOntology-removeKps-dialog-trigger' 
+                                              type='Component.TemplateUpdate' 
+                                              targets='[""]'>
+                                <mp-ldp-remove-from-container-action iri="{{subject.value}}" 
+                                                    container=" http://www.researchspace.org/resource/system/ontologyContainer">
+                                  <button class="btn btn-action">Delete ontology</button> 
+                                </mp-ldp-remove-from-container-action> 
+                            </mp-event-trigger>
                           </div>
                         </div>
                       </mp-overlay-dialog-content>
@@ -116,7 +117,7 @@
             <bs-row>
               <bs-col sm=8> 
                 <semantic-table query="SELECT DISTINCT ?Class WHERE { 
-                                          GRAPH ?g { ?Class rdf:type owl:Class . ?? rdf:type owl:Ontology  } FILTER( !isBlank(?Class))
+                                          GRAPH ?g { ?Class rdf:type ?classType . VALUES ?classType {owl:Class rdfs:Class}  ?? rdf:type owl:Ontology  } FILTER( !isBlank(?Class))
                                         } ORDER BY ?Class"
                                 options='{"showTableHeading": false, "filterPlaceholderText":"Filter Classes"}'
                                 no-result-template='<i>No Classes.</i>'
@@ -126,7 +127,7 @@
                 <semantic-tree 
                           query="
                               SELECT DISTINCT ?node ?parent WHERE {
-                                GRAPH ?g { ?? a owl:Ontology . { ?node a owl:Class } UNION { ?x rdfs:subClassOf ?node } }
+                                GRAPH ?g { ?? a owl:Ontology . { ?node a ?classType . VALUES ?classType {owl:Class rdfs:Class}} UNION { ?x rdfs:subClassOf ?node } }
                                 OPTIONAL { ?node rdfs:subClassOf ?parent. FILTER(ISIRI(?parent)) }
                                 FILTER(ISIRI(?node))
                               }
@@ -154,21 +155,29 @@
                             options='{"showTableHeading": false, "filterPlaceholderText":"Filter Datatype Properties"}'
                             no-result-template='<i>No Datatype Properties.</i>'>
             </semantic-table>
+          </bs-tab>   
+          <bs-tab event-key="4" title="RDF Properties" style="padding-top: 20px;">
+            <semantic-table query="SELECT distinct ?rdfProperty WHERE { 
+                                      GRAPH ?g { ?rdfProperty rdf:type rdf:Property . ?? rdf:type owl:Ontology } 
+                                  } order by ?rdfProperty"
+                            options='{"showTableHeading": false, "filterPlaceholderText":"Filter RDF Properties"}'
+                            no-result-template='<i>No RDF Properties.</i>'>
+            </semantic-table>
           </bs-tab>    
-          <bs-tab event-key="4" title="Individuals" style="padding-top: 20px;">
+          <bs-tab event-key="5" title="Individuals" style="padding-top: 20px;">
             <semantic-table query='SELECT ?Individual ?Class WHERE { 
-                                    GRAPH ?g { ?Individual rdf:type ?Class . ?Class rdf:type owl:Class . ?? rdf:type owl:Ontology } 
+                                    ?Individual rdf:type ?Class . ?Class rdf:type ?classType . VALUES ?classType {owl:Class rdfs:Class} ?? rdf:type owl:Ontology 
                                     FILTER( !isBlank(?Individual))
                                   } LIMIT 500'
                             options='{"filterPlaceholderText":"Filter Individuals"}'
                             no-result-template='<i>No Individuals.</i>'>
             </semantic-table>
           </bs-tab>
-          <bs-tab event-key="5" title="Diagrams" style="padding-top: 20px;">
+          <bs-tab event-key="6" title="Diagrams" style="padding-top: 20px;">
             [[!-- [[> http://www.researchspace.org/resource/assets/OntodiaDiagrams]] --]]
             <mp-page-loader iri='http://www.researchspace.org/resource/assets/OntodiaDiagramsTable' urlqueryparam-ontology-iri='[[this]]'></mp-page-loader>    
           </bs-tab>
-          <bs-tab event-key="6" title="VOWL" style="padding-top: 20px;">
+          <bs-tab event-key="7" title="VOWL" style="padding-top: 20px;">
             [[!-- [[> http://www.researchspace.org/resource/OntologyTemplateVowl]] --]]
             <mp-page-loader iri="http://www.researchspace.org/resource/OntologyTemplateVowl"></mp-page-loader>    
           </bs-tab>

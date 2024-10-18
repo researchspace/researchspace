@@ -1,4 +1,4 @@
-<div class='rs-results-area'>
+<div class='search-results-area'>
         
   <semantic-search-facet id='semantic-search-facet'
     value-categories='{
@@ -18,7 +18,7 @@
   <div class="semantic-search-results-container">
 
     <div class="semantic-search-keywordAndActions">
-      
+      [[!--
         <semantic-search-query-keyword 
           domain='<http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>'
           query='
@@ -40,7 +40,7 @@
               }         
           '
           debounce=500
-      ></semantic-search-query-keyword>
+      ></semantic-search-query-keyword> --]]
       
       <div class="semantic-search-results-actions">
         <mp-anonymous-hidden>
@@ -58,7 +58,7 @@
                               header="text/csv"
                               filename="csv-result.csv"
           >
-              <button class="btn btn-default btn-textAndIcon"> <rs-icon icon-type="round" icon-name="file_download"></rs-icon> CSV</button>
+              <button class="btn btn-default btn-textAndIcon"> <rs-icon icon-type="rounded" icon-name="file_download" symbol="true"></rs-icon> CSV</button>
           </mp-sparql-download>
         </semantic-search-result>
         <semantic-search-result>
@@ -66,7 +66,7 @@
                               header="application/sparql-results+json"
                               filename="json-result.json"
           >
-              <button class="btn btn-default btn-textAndIcon"><rs-icon icon-type="round" icon-name="file_download"></rs-icon> JSON</button>
+              <button class="btn btn-default btn-textAndIcon"><rs-icon icon-type="rounded" icon-name="file_download" symbol="true"></rs-icon> JSON</button>
           </mp-sparql-download>
         </semantic-search-result>
         [[#if (hasPermission "forms:ldp:*")]]
@@ -82,7 +82,7 @@
       <bs-tab-container id="search-results" default-active-key="grid" >
           <div>
             <semantic-search-facet-breadcrumbs></semantic-search-facet-breadcrumbs>
-            <div class="semantic-search-results">
+            <div class="search-results-header">
 
               <semantic-search-result id='semantic-search-result'>
                 <mp-sparql-result-counts id='semantic-search-result-count' query="SELECT DISTINCT ?subject {}"
@@ -115,7 +115,7 @@
               
             </div>
             
-            <bs-tab-content animation="true">
+            <bs-tab-content animation="true" mount-on-enter="true" >
               <bs-tab-pane event-key="grid">
                 <semantic-search-result>
                   <semantic-table
@@ -129,7 +129,7 @@
                   options='{"showFilter":false, "resultsPerPage":12}'
                 >
                 <template id='gridItem'>
-                  <div class='card-select-container'> 
+                  <div class='card-selection-container'> 
                     [[#if (hasPermission "forms:ldp:*")]]
                     <div class='card-select-input'>
                       <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
@@ -190,7 +190,7 @@
                       <mp-component-toolbar-actions>
                         <semantic-chart-type-selector id='search-result-chart-type-selector' default="bar" types='["line", "bar", "radar", "pie", "donut"]'></semantic-chart-type-selector>
                           <mp-component-toolbar-action-download></mp-component-toolbar-action-download>
-                          <mp-component-toolbar-action-save id='persit-component-action' add-to-default-set=true></mp-component-toolbar-action-save>
+                          <mp-component-toolbar-action-save id='persist-component-action' add-to-default-set=true></mp-component-toolbar-action-save>
                       </mp-component-toolbar-actions>
                       <mp-component-toolbar-component>
                       <semantic-chart
@@ -234,7 +234,7 @@
                   <semantic-search-result  id='semantic-search-result-timeline'>
                       <mp-component-toolbar>
                       <mp-component-toolbar-actions>
-                          <mp-component-toolbar-action-save id='persit-component-action' add-to-default-set=true></mp-component-toolbar-action-save>
+                          <mp-component-toolbar-action-save id='persist-component-action' add-to-default-set=true></mp-component-toolbar-action-save>
                       </mp-component-toolbar-actions>
                       <mp-component-toolbar-component>
                           <semantic-timeline
@@ -257,7 +257,7 @@
                               <mp-popover-trigger placement="top" trigger='["hover"]' root-close='false'>
                                   <div data-flex-layout='column top-left'>
                                   <p>{{start.value}} - {{end.value}}</p>
-                                  <semantic-link uri='{{iri.value}}'></semantic-link>
+                                  <semantic-link iri='{{iri.value}}'></semantic-link>
                                   </div>
                               </mp-popover-trigger>
                               <mp-popover-content>{{> rsp:itemCardTemplate}}</mp-popover-content>

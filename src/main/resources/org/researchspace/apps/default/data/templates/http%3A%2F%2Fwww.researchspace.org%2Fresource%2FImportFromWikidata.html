@@ -4,7 +4,7 @@
                                   min-search-term-length=2
                                   tokenize-lucene-query=false
                                   escape-lucene-syntax=false
-                                  debounce=1000
+                                  debounce=500
                                   debounce=500
                                   query='PREFIX wikidataentity: <http://www.researchspace.org/resource/system/service/wikidataentity/>
                                           SELECT ?subject WHERE { 
@@ -13,7 +13,8 @@
                                             ?subject wikidataentity:id ?wikidataId .
                                             ?subject wikidataentity:concepturi ?concepturi .
                                             ?subject wikidataentity:label ?wikidataEntityLabel .
-                                            ?subject wikidataentity:description ?description .
+                                            ?subject wikidataentity:description ?description_original .
+                                            BIND(REPLACE(?description_original,"\"","") as ?description)
                                           }'
   ></semantic-search-query-keyword>
   <!-- add label-->
@@ -114,9 +115,9 @@
                                           }
                                         } LIMIT 1'
 
-                                        template='{{> placeImage}}'
+                                        template='{{> image}}'
                                         >
-                                          <template id='placeImage'>
+                                          <template id='image'>
                                             <div>
                                               <a href="[[decodeUriComponent '{{bindings.0.image.value}}']]"
                                                 title="[[decodeUriComponent '{{bindings.0.image.value}}']]"
@@ -187,7 +188,7 @@
                                         {{#if bindings.0.existingRecord.value}}
                                           <mp-event-trigger id='{{viewId}}-openExistingRecord-in-new-frame-trigger' 
                                                             type='Dashboard.AddFrame'
-                                                            data='{"viewId":"entity-editor", 
+                                                            data='{"viewId":"resource-editor", 
                                                                   "resourceIri":"{{bindings.0.existingRecord.value}}",
                                                                   "entityTypeConfig": "{{domainConfig}}",
                                                                   "editable": true,

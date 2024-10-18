@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -22,6 +23,7 @@ import * as _ from 'lodash';
 
 import { Rdf } from 'platform/api/rdf';
 import { AutoCompletionInput } from 'platform/components/ui/inputs';
+import {getResourceConfigurationEditForm} from './ResourceConfigHelper';
 
 import { FieldDefinition, getPreferredLabel } from '../FieldDefinition';
 import { FieldValue, AtomicValue, EmptyValue } from '../FieldValues';
@@ -36,11 +38,12 @@ import ResourceLinkContainer from 'platform/api/navigation/components/ResourceLi
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 import { DropdownButton, MenuItem } from 'react-bootstrap';
 import { RdfLiteral } from 'platform/ontodia/src/ontodia';
+import { ConfigHolder } from 'platform/api/services/config-holder';
 
 
 type nestedFormEl = {
   label?: string,
-  nestedForm?: string
+  nestedForm?: string,
   modalId?: string
 }
 
@@ -49,8 +52,12 @@ export interface AutocompleteInputProps extends AtomicValueInputProps {
   placeholder?: string;
   nestedFormTemplate?: string;
   minimumInput?: number;
-  showLinkResourceButton?: boolean;
   nestedFormTemplates?: nestedFormEl[];
+  /**
+   * @default false
+   * If set to true, the resource can not be edited and the Edit button will not be shown and will not possible to open the resource in a new tab
+   */
+  readonlyResource?: boolean;
 }
 
 interface SelectValue {
@@ -62,35 +69,15 @@ interface State {
   nestedForm?: React.ReactElement<any>;
   nestedFormOpen?: boolean;
   activeForm?: string;
+  valueSelectedWithoutEditForm?: boolean;
   nestedFormTemplates?: nestedFormEl[];
   labelFormSelected?: string;
-  modalId?: string
+  modalId?: string;
 }
 
 const CLASS_NAME = 'autocomplete-text-field';
 const MINIMUM_LIMIT = 3;
 const DEFAULT_TEMPLATE = `<span title="{{label.value}}">{{label.value}}</span>`;
-
-const SPARQL_QUERY = SparqlUtil.Sparql`
-  SELECT DISTINCT ?config ?resourceRestrictionPattern WHERE {
-    {
-      ?__resourceIri__ (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) ?resourceOntologyClass.
-      ?config <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.researchspace.org/resource/system/resource_configuration>;
-        <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass.
-      FILTER(NOT EXISTS { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type. })
-      OPTIONAL { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern . }
-    }
-    UNION
-    {
-      ?__resourceIri__ <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?resourceOntologyClass;
-        <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> ?resourceP2Type.
-      ?config <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.researchspace.org/resource/system/resource_configuration>;
-        <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass;
-        <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .
-    OPTIONAL { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern . }
-    }
-  }
-`
 
 export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, State> {
   private tupleTemplate: string = null;
@@ -116,9 +103,26 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
         nestedFormTemplates: this.props.nestedFormTemplates
       })
     }
+
+    if (FieldValue.isAtomic(this.props.value)) {
+      const rdfNode = FieldValue.asRdfNode(this.props.value);      
+      getResourceConfigurationEditForm(Rdf.iri(rdfNode.value),this.context)
+          .then(binding=>{
+            if (binding.resourceFormIri) {
+              if (binding.scheme)
+                this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit" scheme="${binding.scheme.value}"}}`});
+              else  
+                this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit"}}`});
+            }
+            else
+                {this.setState({activeForm: undefined, valueSelectedWithoutEditForm: true});}})
+          .catch(error => {this.setState({activeForm: undefined, valueSelectedWithoutEditForm: true});});
+    } else {
+      this.setState({activeForm: undefined, valueSelectedWithoutEditForm: false});
+    }
   }
 
-  private openSelectedNestedForm(formTemplate: string) {
+  public openSelectedNestedForm(formTemplate: string) {
     tryExtractNestedForm(this.props.children, this.context, formTemplate)
       .then(nestedForm => {
         if (nestedForm != undefined) {
@@ -128,48 +132,26 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
       });
   }
 
-  private buildResourceFormIriQuery(queryResultBindings: SparqlClient.Bindings, iri: Rdf.Iri) {
-    const UNION_QUERY = []
-    _.forEach(queryResultBindings, (b) => {
-      UNION_QUERY.push(
-        `{ 
-          BIND(${iri} AS ?item)
-            BIND(<${b.config.value}> AS ?config)
-            ${b.resourceRestrictionPattern ? b.resourceRestrictionPattern.value : ''}
-            ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
-        }`
-      )
-    })
-
-    return `SELECT ?resourceFormIRI WHERE { ${UNION_QUERY.join('UNION')} }`
-  }
-
-  private findAndOpenNestedForm(queryResultBindings: SparqlClient.Bindings, iri: Rdf.Iri) {
-    const RESOURCE_FORM_IRI_QUERY = this.buildResourceFormIriQuery(queryResultBindings, iri)
-    SparqlClient.select(RESOURCE_FORM_IRI_QUERY, {context: this.context.semanticContext})
-    .onValue((fr) => {
-      const resourceFormIri = fr.results.bindings[0].resourceFormIRI.value
-      this.openSelectedNestedForm(`{{> "${resourceFormIri}" nested=true editable=true mode="edit" }}`)      
-      })
-    .onError((err) => console.error('Error during resource form query execution ',err))
-  }
-
-  private onEditHandler(iri: Rdf.Iri) {
-    if(iri) {
-      const query = SparqlClient.setBindings(SPARQL_QUERY, { __resourceIri__: iri});
-      SparqlClient.select(query, {context: this.context.semanticContext})
-        .onValue((r) => this.findAndOpenNestedForm(r.results.bindings, iri))
-        .onError((err) => console.error('Error during query execution ',err))
+  private onEditHandler(iri: Rdf.Iri) {  
+    if(iri) {      
+      // if a resource configuration form is found, open in a modal that form
+      if (this.state.activeForm !== undefined) {
+          this.openSelectedNestedForm(this.state.activeForm)
+      } this.setState({valueSelectedWithoutEditForm: true});
+    } else {
+      this.setState({activeForm: undefined, valueSelectedWithoutEditForm: false});
     }
   }
 
   private onDropdownSelectHandler(label: string) {
     const nestedFormTemplateSelected = this.state.nestedFormTemplates.filter((e) => e.label === label)[0].nestedForm
     const modalId = this.state.nestedFormTemplates.filter((e) => e.label === label)[0].modalId
+    
     this.setState({
       labelFormSelected: label,
       modalId
     })
+    
     this.openSelectedNestedForm(nestedFormTemplateSelected)
   }
 
@@ -181,9 +163,13 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
           label: Rdf.literal(this.props.value.label || rdfNode.value),
         }
       : undefined;
+  
     return (
       <div className={CLASS_NAME} ref={this.htmlElement}>
-        {this.renderSelect(value)}
+        { 
+          this.renderSelect(value)
+    
+        }
         <ValidationMessages errors={FieldValue.getErrors(this.props.value)} />
         {this.state.nestedFormOpen ? (
           <NestedModalForm
@@ -193,8 +179,8 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
             }
             title={value?.label.value ?? this.state.labelFormSelected}
             definition={this.props.definition}
-            onSubmit={this.onNestedFormSubmit}
-            onCancel={() => this.setState({ nestedFormOpen: false })}
+            onSubmit={this.onNestedFormSubmit}      
+            onCancel={() => {this.setState({ nestedFormOpen: false });}}
             parent={this.htmlElement}
           >
             {this.state.nestedForm}
@@ -204,8 +190,25 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
     );
   }
 
-  private onNestedFormSubmit = (value: AtomicValue) => {
-    this.setState({ nestedFormOpen: false });
+  private onNestedFormSubmit = (value: AtomicValue) => {    
+    if (value) {
+      getResourceConfigurationEditForm(Rdf.iri(value.value.value),this.context)
+          .then(binding=>{
+            if (binding.resourceFormIri) {
+              if (binding.scheme)
+                this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit" scheme="${binding.scheme.value}"}}`});
+              else  
+                this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit"}}`});
+            }
+            else
+                {this.setState({activeForm: undefined, valueSelectedWithoutEditForm: true});}})
+          .catch(error => {this.setState({activeForm: undefined, valueSelectedWithoutEditForm: true});});
+    }
+    else {
+      this.setState({activeForm: undefined, valueSelectedWithoutEditForm: false})
+    }    
+
+    this.setState({ nestedFormOpen: false});
     this.setAndValidate(value);
   };
 
@@ -215,11 +218,13 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
       typeof this.props.placeholder === 'undefined'
         ? this.createDefaultPlaceholder(definition)
         : this.props.placeholder;
-
-    const showLinkResourceButton = this.props.showLinkResourceButton ?? true
-    const showEditButton = value !== undefined
-    const showCreateNewDropdown = !_.isEmpty(this.state.nestedFormTemplates) && this.state.nestedFormTemplates.length > 1 && !showEditButton;
-    const showCreateNewButton = !_.isEmpty(this.state.nestedFormTemplates) && this.state.nestedFormTemplates.length === 1 && !showEditButton;
+    
+    const isFieldValueEmpty = FieldValue.isEmpty(this.props.value)
+    
+    const showLinkResourceButton = !isFieldValueEmpty && !this.props.readonlyResource
+    const showEditButton = !isFieldValueEmpty && !this.props.readonlyResource
+    const showCreateNewDropdown = !_.isEmpty(this.state.nestedFormTemplates) && this.state.nestedFormTemplates.length > 1 && !this.state.valueSelectedWithoutEditForm && isFieldValueEmpty
+    const showCreateNewButton = !_.isEmpty(this.state.nestedFormTemplates) && this.state.nestedFormTemplates.length === 1 && !this.state.valueSelectedWithoutEditForm && isFieldValueEmpty
 
     return (
       <div className={`${CLASS_NAME}__main-row`}>
@@ -266,19 +271,19 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
           </DropdownButton>
         )}
         { showEditButton && 
-          <Button className={`${CLASS_NAME}__create-button btn-textAndIcon`} onClick={() => {this.onEditHandler(value.value as Rdf.Iri)}}>
-            <Icon iconType='round' iconName='edit'/>
-            <span>Edit</span>
+          <Button className={`${CLASS_NAME}__create-button btn-textAndIcon`} title='Edit' onClick={() => {this.onEditHandler(value.value as Rdf.Iri)}}>
+            <Icon iconType='rounded' iconName='edit' symbol/>
           </Button>
         }
-        {showLinkResourceButton && !FieldValue.isEmpty(this.props.value) && 
+        {showLinkResourceButton && 
           <ResourceLinkContainer 
-            uri="http://www.researchspace.org/resource/ThinkingFrames" 
-            urlqueryparam-view="entity-editor"
+            uri={ConfigHolder.getDashboard().value} 
+            urlqueryparam-view="resource-editor"
+            urlqueryparam-open-as-drag-and-drop="true"
             urlqueryparam-resource={(this.props.value.value as Rdf.Iri).value}
           >
-            <Button className={`${CLASS_NAME}__open-in-new-tab`} title='Open in new tab'>
-              <Icon iconType='round' iconName='open_in_new' />
+            <Button className={`${CLASS_NAME}__open-in-new-tab`} title='Edit in new draggable tab'>
+              <Icon iconType='rounded' iconName='read_more' symbol={true} />
             </Button>
         </ResourceLinkContainer>
         }
@@ -291,15 +296,29 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
   };
 
   private onChange = (selected: SelectValue | null): void => {
-    let value: AtomicValue | EmptyValue;
+    let value: AtomicValue | EmptyValue; 
     if (selected) {
       value = FieldValue.fromLabeled({
         value: selected.value,
         label: selected.label.value,
       });
+      
+      getResourceConfigurationEditForm(Rdf.iri(selected.value.value),this.context)
+          .then(binding=>{ 
+            if (binding.resourceFormIri) {
+              if (binding.scheme)
+                this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit" scheme="${binding.scheme.value}"}}`});
+              else  {
+                this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit"}}`});}
+            }       
+            else
+                {this.setState({activeForm: undefined, valueSelectedWithoutEditForm: true});}})
+          .catch(error => {this.setState({activeForm: undefined, valueSelectedWithoutEditForm: true});});
     } else {
       value = FieldValue.empty;
+      this.setState({activeForm: undefined, valueSelectedWithoutEditForm: false});
     }
+
     this.setState({ nestedFormOpen: false });
     this.setAndValidate(value);
   };

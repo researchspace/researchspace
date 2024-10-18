@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -117,7 +118,7 @@ export class RdfUpload extends Component<Props, State> {
     allowLoadByUrl: true,
     showAdvancedOptions: true,
     dropAreaTemplate: `<div class='${CLASS_NAME}__rdf-dropzone-content'>
-                        <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                        <rs-icon icon-type='rounded' icon-name='upload' symbol></rs-icon>
                         <div>Drag RDF file(s) or click to upload</div>
                       </div>`
   }
@@ -336,7 +337,8 @@ export class RdfUpload extends Component<Props, State> {
                     }
                     />
                     <Button
-                      bsStyle="action"
+                      bsStyle="default"
+                      className="btn-action"
                       disabled={!this.state.remoteFileUrl || isInProcess}
                       onClick={this.onClickLoadByUrl}
                     >

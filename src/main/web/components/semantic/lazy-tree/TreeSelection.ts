@@ -23,10 +23,7 @@ import { KeyedForest, Traversable, NodePath } from './KeyedForest';
 
 export type TreeSelection<T> = KeyedForest<SelectionNode<T>>;
 
-interface SelectionBrand {
-  __selectionBrand: void;
-}
-export type SelectionNode<T> = T & Traversable<T> & SelectionBrand;
+export type SelectionNode<T> = T & Traversable<T>;
 export namespace SelectionNode {
   export function set<T>(node: T, props: Partial<Traversable<T>>) {
     return { ...(node as any), ...props } as SelectionNode<T>;

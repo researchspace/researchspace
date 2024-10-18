@@ -9,7 +9,12 @@
                         entity_image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
                         entity_image="http://www.researchspace.org/pattern/system/entity/images"
                         entity_document="http://www.researchspace.org/pattern/system/entity/documents"
+                        entity_video="http://www.researchspace.org/pattern/system/entity/subject_of_video"
+                        entity_audio="http://www.researchspace.org/pattern/system/entity/subject_of_audio"
+                        entity_3d_model="http://www.researchspace.org/pattern/system/entity/subject_of_3Dmodel"
                         entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
+                        entity_represents_range="http://www.researchspace.org/pattern/system/entity/represents_range"
+                        entity_web_URL="http://www.researchspace.org/pattern/system/entity/web_URL_embed"
 
                         entity_prefLabel="http://www.researchspace.org/pattern/system/entity/skos_prefLabel"
                         entity_altLabel="http://www.researchspace.org/pattern/system/entity/skos_altLabel"
@@ -28,7 +33,7 @@
                         type_typical_parts_of="http://www.researchspace.org/pattern/system/type/typical_parts_of"
                         type_typical_wholes_for="http://www.researchspace.org/pattern/system/type/typical_wholes_for"
 
-                        man-made_thing_was_intended_for="http://www.researchspace.org/pattern/system/man-made_thing/was_intended_for"
+                        human-made_thing_was_intended_for="http://www.researchspace.org/pattern/system/human-made_thing/was_intended_for"
                         thing_general_use="http://www.researchspace.org/pattern/system/thing/had_as_general_use"
                         thing_dimension="http://www.researchspace.org/pattern/system/thing/dimension"
 
@@ -38,7 +43,7 @@
                         type_was_assigned_by="http://www.researchspace.org/pattern/system/type/was_assigned_by"
                         type_was_created_by="http://www.researchspace.org/pattern/system/type/was_created_by"
                         conceptual_object_created_by="http://www.researchspace.org/pattern/system/conceptual_object/created_by"
-                        man-made_thing_was_intended_use_of_range="http://www.researchspace.org/pattern/system/man-made_thing/was_intended_use_of_range"
+                        human-made_thing_was_intended_use_of_range="http://www.researchspace.org/pattern/system/human-made_thing/was_intended_use_of_range"
                         thing_used_specific_object_range="http://www.researchspace.org/pattern/system/thing/used_specific_object_range"
                         persistent_item_present_at="http://www.researchspace.org/pattern/system/persistent_item/present_at"
                         persistent_item_brought_into_existence_by="http://www.researchspace.org/pattern/system/persistent_item/brought_into_existence_by"
@@ -69,13 +74,40 @@
 
     <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
       <rs-tab event-key="detail" title="Details">
-        <div class="form-2column-container">
-          <div>
+        <div class="form-details-container">
+          <div style="overflow-x: auto;">
             <semantic-form-text-input for="entity_prefLabel" label="Preferred name" placeholder="Enter preferred name"></semantic-form-text-input>
             
             <semantic-form-text-input for="entity_altLabel" label="Alternative name" placeholder="Enter alternative name"> </semantic-form-text-input>
 
-            <semantic-form-text-input for="entity_description" multiline=true label="Description/comment" placeholder="Enter description/comment"></semantic-form-text-input>
+            {{#if node}}
+              <semantic-query query='SELECT ?authorityDocument ?authorityDocumentName WHERE {
+                                      <{{node}}> crm:P71i_is_listed_in ?authorityDocument .
+                                      ?authorityDocument a crm:E32_Authority_Document .
+                                      ?authorityDocument crm:P1_is_identified_by ?appellation . 
+                                      ?appellation a crm:E41_Appellation . 
+                                      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                      ?appellation crm:P190_has_symbolic_content ?authorityDocumentName .
+                                  } LIMIT 1'
+                              template='{{> template}}'>
+                              
+                  <template id='template'>
+                      <div>
+                          <div style="display: flex; gap: 3px; margin-top: 20px;">
+                              <div>Listed in authority document: </div>
+                              <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                              urlqueryparam-view='authority-list' 
+                                              urlqueryparam-resource-iri='{{bindings.0.authorityDocument.value}}'
+                                              class="text-link">
+                              {{bindings.0.authorityDocumentName.value}}
+                              </semantic-link>
+                          </div>
+                      </div>  
+                  </template>
+              </semantic-query>
+            {{/if}}
+
+            <semantic-form-text-input for="entity_description" multiline=true label="Description" placeholder="Enter description/comment"></semantic-form-text-input>
 
             {{#if scheme}}
               <semantic-form-tree-picker-input  for="type_broader" 
@@ -116,73 +148,26 @@
                                               nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
             </semantic-form-autocomplete-input> 
 
-            <div class="inline-composite-container">
-              <semantic-form-composite-input  for="entity_preferred_id"
-                                              label="Preferred identifier"
-                                              new-subject-template="/entity_id" 
-                                              fields='[[fieldDefinitions
-                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
-                                                      has_type="http://www.researchspace.org/pattern/system/entity/has_type"
-                                                      identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
-                                                  ]]'
-                                              >
-                          
-                  <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
-                  <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/entity_preferred_id'></semantic-form-hidden-input>
-                      
-                  <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter preferred identifier"></semantic-form-text-input>
+            <semantic-form-autocomplete-input   for="entity_preferred_id" 
+                                                label="Preferred identifier"
+                                                placeholder="Select preferred identifier" 
+                                                nested-form-templates='[ 
+                                                    {
+                                                        "label": "Identifier",
+                                                        "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Identifier\" nested=true editable=true mode=\"new\" }}
+                                                                        {{{{/raw}}}}"
+                                                    }
+                                                ]'>
+            </semantic-form-autocomplete-input>
 
-              </semantic-form-composite-input>
-            </div>
-
-            <div class="inline-composite-container">
-              <semantic-form-composite-input  for="entity_id"
-                                              label="Other identifier"
-                                              new-subject-template="/entity_id/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-                                              fields='[[fieldDefinitions
-                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
-                                                      has_type="http://www.researchspace.org/pattern/system/entity/has_type"
-                                                      identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
-                                                  ]]'
-                                              >
-                          
-                  <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
-                  <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/entity_id'></semantic-form-hidden-input>
-                      
-                  <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier"></semantic-form-text-input>
-              </semantic-form-composite-input>
-            </div>
+            <semantic-form-autocomplete-input   for="entity_id" 
+                                                label="Other identifier"
+                                                placeholder="Select other identifier" 
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_appellations]]'>
+            </semantic-form-autocomplete-input>
             
           </div>
-
-          <div class="form-media-column">
-            <div class="dragAndDrop-input-container">
-                <semantic-form-drag-and-drop-input for='entity_image_main_representation' label="Main image" 
-                                                    placeholder-item-template="<div class='placeholder-item'>
-                                                                                    <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                                                                                    <div>Drag main image from 
-                                                                                        <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' 
-                                                                                        class='text-link-action' urlqueryparam-view='system-assets'>Image Library</semantic-link>
-                                                                                        or click to upload</div>
-                                                                                </div>"
-                                                    nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
-                </semantic-form-drag-and-drop-input>
-            </div>
-
-            <div class="dragAndDrop-input-container">
-                <semantic-form-drag-and-drop-input  for='entity_image' label="More images" 
-                                                    placeholder-item-template="<div class='placeholder-item'>
-                                                                                    <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                                                                                    <div>Drag images from 
-                                                                                        <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' 
-                                                                                        class='text-link-action' urlqueryparam-view='system-assets'>Image Library</semantic-link>
-                                                                                        or click to upload</div>
-                                                                                </div>"
-                                                    nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
-                </semantic-form-drag-and-drop-input>
-            </div>
-          </div>
-
+          [[> rsp:FormAssetSidebar]]
         </div>
       </rs-tab>
 
@@ -225,7 +210,7 @@
                                                                     "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
     
                                                     scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                "view": "vocabulary-content",
+                                                                                "view": "authority-list",
                                                                                 "scheme": "http://www.researchspace.org/resource/vocab/taxonomic_role",
                                                                                 "tooltip": "Open list of taxonomic roles"
                                                                             }'
@@ -286,7 +271,7 @@
                                                     <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
                                                 {{else}}
                                                     <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                    urlqueryparam-view='entity-editor' 
+                                                                    urlqueryparam-view='resource-editor' 
                                                                     urlqueryparam-resource-iri='{{node.value}}'
                                                                     >
                                                         <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
@@ -361,7 +346,7 @@
                                                     <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
                                                 {{else}}
                                                     <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                    urlqueryparam-view='entity-editor' 
+                                                                    urlqueryparam-view='resource-editor' 
                                                                     urlqueryparam-resource-iri='{{node.value}}'
                                                                     >
                                                         <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
@@ -396,7 +381,7 @@
 
       <rs-tab event-key="type" title="Type/Dimensions">
     
-        <semantic-form-autocomplete-input   for='man-made_thing_was_intended_for' 
+        <semantic-form-autocomplete-input   for='human-made_thing_was_intended_for' 
                                             label="Was intended for" 
                                             placeholder="Select the type describing the intended usage of the type" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_types]]'>
@@ -416,6 +401,11 @@
                                                     "label": "Dimension",
                                                     "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Dimension\" nested=true editable=true mode=\"new\"}}
                                                                 {{{{/raw}}}}"
+                                                },
+                                                {
+                                                  "label": "Monetary amount",
+                                                  "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/MonetaryAmount\" nested=true editable=true mode=\"new\"}}
+                                                              {{{{/raw}}}}"
                                                 }
                                             ]'> 
         </semantic-form-autocomplete-input>
@@ -475,7 +465,7 @@
         </semantic-form-autocomplete-input> 
 
         <div class="inline-composite-container">
-          <semantic-form-composite-input  for="man-made_thing_was_intended_use_of_range"
+          <semantic-form-composite-input  for="human-made_thing_was_intended_use_of_range"
                                           label="Made for"
                                           new-subject-template="/PC19_was_intended_use_of/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
                                           fields='[[fieldDefinitions
@@ -506,7 +496,7 @@
                                                                   "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
       
                                                   scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                              "view": "vocabulary-content",
+                                                                              "view": "authority-list",
                                                                               "scheme": "http://www.researchspace.org/resource/vocab/mode_of_use",
                                                                               "tooltip": "Open list of modes of use"
                                                                             }'
@@ -557,7 +547,7 @@
                                                                       "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
 
                                                       scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                  "view": "vocabulary-content",
+                                                                                  "view": "authority-list",
                                                                                   "scheme": "http://www.researchspace.org/resource/vocab/mode_of_use",
                                                                                   "tooltip": "Open list of modes of use"
                                                                                 }'
@@ -650,7 +640,7 @@
           <semantic-form-autocomplete-input   for='type_was_intention_of' 
                                               label="Was intention of"
                                               placeholder="Select thing, physical or immaterial, that had this type as intended method or technique of use" 
-                                              nested-form-templates='[[> Platform:NestedFormTemplates_manMadeThings]]'> 
+                                              nested-form-templates='[[> Platform:NestedFormTemplates_humanMadeThings]]'> 
           </semantic-form-autocomplete-input>
 
           <semantic-form-autocomplete-input   for='type_was_use_of' 
@@ -690,7 +680,7 @@
                                                                     "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
   
                                                     scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                "view": "vocabulary-content",
+                                                                                "view": "authority-list",
                                                                                 "scheme": "http://www.researchspace.org/resource/vocab/thing_kind_of_similarity",
                                                                                 "tooltip": "Open list of kind of similarities"
                                                                               }'
@@ -739,7 +729,7 @@
                                                                     "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
   
                                                     scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                "view": "vocabulary-content",
+                                                                                "view": "authority-list",
                                                                                 "scheme": "http://www.researchspace.org/resource/vocab/thing_kind_of_similarity",
                                                                                 "tooltip": "Open list of kind of similarities"
                                                                               }'
@@ -775,7 +765,7 @@
                 <semantic-form-autocomplete-input for='depicts_thing_domain' 
                                                   render-header="false"
                                                   placeholder="Select what depicts the {{#if entityType}}{{entityType}}{{else}}type{{/if}}"
-                                                  nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'>
+                                                  nested-form-templates='[[> Platform:NestedFormTemplates_physicalHumanMadeThings]]'>
                 </semantic-form-autocomplete-input>
               </div>
               <div style="flex: 1;">
@@ -788,7 +778,7 @@
                                                                   "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
   
                                                   scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                              "view": "vocabulary-content",
+                                                                              "view": "authority-list",
                                                                               "scheme": "http://www.researchspace.org/resource/vocab/mode_of_depiction",
                                                                               "tooltip": "Open list of mode of depictions"
                                                                             }'
@@ -843,7 +833,7 @@
                                                                         "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
         
                                                         scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                    "view": "vocabulary-content",
+                                                                                    "view": "authority-list",
                                                                                     "scheme": "http://www.researchspace.org/resource/vocab/type_of_reference",
                                                                                     "tooltip": "Open list of type of references"
                                                                                     }'
@@ -863,10 +853,10 @@
 
       </rs-tab>
 
+      [[> rsp:FormMetadataTab]]
 
-
-    [[> rsp:FormAssetTab]]
     </rs-tabs>
+    
   </div>
   
   <semantic-form-errors></semantic-form-errors>

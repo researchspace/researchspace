@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -615,9 +616,9 @@ class LDPApi {
         // semantic narrative editable by anybody with an account -- collaboration on sn is key
         // scenario: A opens sn and B opens sn what happens... nothing good
         // autosave of the semantic narrative regularly
-        //if (graph.contains(null, LDP.contains, null))
-          //  throw new IllegalArgumentException(
-            //        "Statements to be added to the LDP Resource MUST NOT contain any ldp:contains relations.");
+        if (graph.contains(null, LDP.contains, null))
+            throw new IllegalArgumentException(
+                    "Statements to be added to the LDP Resource MUST NOT contain any ldp:contains relations.");
 
         return new PointedGraph(newResourceUri, graph);
     }

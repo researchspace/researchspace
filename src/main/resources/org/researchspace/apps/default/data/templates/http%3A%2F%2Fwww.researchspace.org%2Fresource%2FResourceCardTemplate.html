@@ -1,0 +1,286 @@
+<div  class="resource-card {{#if (or narrativeCard knowledgeMapCard knowledgeMapPreviewCard)}}resource-card__no-hover{{/if}}{{#if dragAndDropInputCard}}resource-card-small{{/if}}"
+      style="{{#if autosize}}{{else if clipboardList}}width:100%; height:{{#if height}}{{height}}{{else}}200{{/if}}px;
+              {{else}}width:{{#if width}}{{width}}{{else}}155{{/if}}px; 
+                      height:{{#if height}}{{height}}{{else}}200{{/if}}px; 
+                      margin:{{#if cardMargin}}{{cardMargin}}{{else}}0{{/if}}px;{{/if}}">
+      [[!-- when autosize is set we don't set any fixed height and width, used in semantic narratives where user can resize the card --]]
+
+
+  {{#if newKMCard}}
+  {{else}}
+    <div class="resource-card__header-actions">
+      [[#if (hasPermission "forms:ldp:*")]]
+        {{#if selectionToggle}}
+          {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
+          {{else}}
+            <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri}}"></mp-selection-toggle>
+          {{/if}}
+        {{/if}}
+      [[/if]]
+      <div class="resource-card__buttons-container" style="{{#if clipboardList}}gap:5px{{/if}}">
+    
+        {{#if (or narrativeCard knowledgeMapCard)}}
+          <mp-draggable iri='{{iri}}'>
+            <button type="button" class="btn btn-default resource-card__button" title="Drag item {{#if knowledgeMapCard}}outside the map{{/if}}">
+              <rs-icon icon-type="rounded" icon-name="drag_pan" symbol="true"></rs-icon>
+            </button>
+          </mp-draggable>
+        {{/if}}
+        
+        <rs-resource-dropdown id="{{viewId}}-{{iri}}-item-actions-dropdown" class-name="dropdown-no-caret" toggle-class-name="border-none resource-card__button">
+          {{> rsp:ResourceDropdownActions viewId=viewId
+                                          iri=iri
+                                          resourceConfig=resourceConfig
+                                          resourceLabel=resourceLabel
+                                          resourceFormIRI=resourceFormIRI
+                                          resourceOntologyClass=resourceOntologyClass
+          }}
+        </rs-resource-dropdown>
+
+        {{#if (or clipboardCard clipboardList)}}
+          {{#if isSetItem}}
+            <mp-anonymous-hidden>
+              <mp-set-management-action-remove-set-item item="{{iri.value}}">
+                <button type="button" class="btn btn-default resource-card__button" title="Remove">
+                  <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
+                </button>
+              </mp-set-management-action-remove-set-item>
+            </mp-anonymous-hidden> 
+          {{/if}}
+        {{else if dragAndDropInputCard}}
+          <mp-event-trigger type='Form.DragAndDropInput.RemoveItem' targets='["{{inputId}}"]' data='{"iri": "{{iri}}"}'>
+            <button type="button" class="btn btn-default resource-card__button" title="Remove">
+              <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
+            </button>
+          </mp-event-trigger>
+        {{/if}}
+      </div>
+    </div>
+  {{/if}}
+
+  {{#if hideMediaSection}}
+  {{else}}
+    <div class="resource-card__media-container" style="{{#if autosize}}height:auto{{else}}max-height:142px;{{/if}}">
+
+      {{#if props}}
+        [[!-- for card in KM --]]
+        
+        {{#if props.[http://www.researchspace.org/pattern/system/image_annotation/area_of_image]}}
+          [[!-- when the resource is an Image annotation created in Image graph authoring, before saving the data --]]
+          <rs-iiif-image-thumbnail  height='480' width='640' style='height: 100%; width: 100%;'
+                                    image-or-region='{{props.[http://www.researchspace.org/pattern/system/image_annotation/area_of_image].values.0.value}}' 
+                                    bbox='{{props.[http://www.researchspace.org/pattern/system/image_annotation/boundingBox].values.0.value}}'
+                                    viewport='{{props.[http://www.researchspace.org/pattern/system/image_annotation/viewport].values.0.value}}'
+                                    svg='{{props.[http://www.researchspace.org/pattern/system/image_annotation/value].values.0.value}}'
+                                    [[> rsp:IIIFConfig]]>
+          </rs-iiif-image-thumbnail>
+        {{else if props.[http://www.researchspace.org/pattern/system/image_annotation/boundingBox]}}
+          [[!-- when the resource is an Image annotation --]]
+          <rs-iiif-image-thumbnail  height='480' width='640' style='height: 100%; width: 100%;'
+                                    image-or-region='{{iri}}' 
+                                    [[> rsp:IIIFConfig]]>
+          </rs-iiif-image-thumbnail>
+        {{else if imgUrl}}
+          <semantic-if query='ASK { <{{imgUrl}}> a rs:EX_Digital_Image_Region }'
+                       then='{{> then}}'
+                       else='{{> else}}'>
+
+            <template id='then'>
+              [[!-- when the resource has an annotation as image --]]
+              <rs-iiif-image-thumbnail  height='480' width='640' style='height: 100%; width: 100%;'
+                                        image-or-region='{{imgUrl}}'
+                                        [[> rsp:IIIFConfig]]>
+              </rs-iiif-image-thumbnail>
+            </template>
+
+            <template id='else'>
+              <mp-resource-thumbnail fixed-key='image-{{imgUrl}}' iri='{{imgUrl}}' class="resource-card__thumbnail">
+                <mp-resource-thumbnail-fallback>
+                  [[> defaultCardIcon]]
+                </mp-resource-thumbnail-fallback>
+              </mp-resource-thumbnail>
+            </template>
+          </semantic-if>
+        {{else}}
+          <mp-resource-thumbnail iri='{{iri}}' class="resource-card__thumbnail">
+            <mp-resource-thumbnail-fallback>
+              [[> defaultCardIcon]]
+            </mp-resource-thumbnail-fallback>
+          </mp-resource-thumbnail>
+        {{/if}}
+
+      {{else}}
+
+        {{#switch resourceOntologyClass}}
+        [[!-- for all other cards that are not in KM --]]
+
+          {{#case "http://www.researchspace.org/ontology/EX_Digital_Image_Region" break=true}}
+            <rs-iiif-image-thumbnail height='480' width='640' style='height: 100%; width: 100%;'
+                                    image-or-region='{{iri}}'      
+                                    [[> rsp:IIIFConfig]]>
+            </rs-iiif-image-thumbnail>
+          {{/case}}
+
+          {{#case "http://www.researchspace.org/ontology/EX_Digital_Image" break=true}}
+            <mp-resource-thumbnail iri='{{iri}}' class="resource-card__thumbnail">
+              <mp-resource-thumbnail-fallback>
+                [[> defaultCardIcon]]
+              </mp-resource-thumbnail-fallback>
+            </mp-resource-thumbnail>
+          {{/case}}
+
+    [[!--      {{#case "http://iflastandards.info/ns/fr/frbr/frbroo/F26_Recording" break=true}}
+            <semantic-query query='SELECT DISTINCT ?video WHERE { 
+                                    <{{iri}}> crm:P129i_is_subject_of ?digital_object.
+                                    <{{iri}}> crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_video> .
+                                    ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                                    ?digital_object crm:P190_has_symbolic_content ?video .
+                                  } LIMIT 1'
+                                
+                            template='{{> template}}'
+                            no-result-template='{{> noResults}}'>
+
+                  <template id='template'>
+                    <div class="h100 w100">
+                        <iframe src='{{bindings.0.video.value}}' 
+                                frameborder="0" 
+                                allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
+                                width="100%" height="100%"
+                                allowfullscreen>
+                        </iframe>
+                    </div>
+                  </template>
+
+                  <template id="noResults">
+                    [[> defaultCardIcon]]
+                  </template>
+            </semantic-query>
+          {{/case}}  --]]
+
+          {{#default}}
+            <mp-resource-thumbnail iri='{{iri}}' class="resource-card__thumbnail">
+              <mp-resource-thumbnail-fallback>
+                [[> defaultCardIcon]]
+              </mp-resource-thumbnail-fallback>
+            </mp-resource-thumbnail>
+          {{/default}}
+
+        {{/switch}}
+
+      {{/if}}
+    </div>
+  {{/if}}
+
+  <div class="resource-card__footer" style="{{#if hideMediaSection}}width: 200px;{{/if}}{{#if clipboardList}}width: calc(100% - 70px); height: 40px; gap: 0;{{/if}}">
+    [[#if customFooter]]
+      [[#block "customFooter"]][[/block]]
+    [[else]]
+      <div class="resource-card__footer-type color-secondary-light text-font-size__xsmall" style="{{#if clipboardList}}font-size:11px;{{/if}}">
+        {{#if resourceLabel}}
+          {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/User")}}
+            <semantic-query query='SELECT DISTINCT ?systemUser  { 
+                                    BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
+                                  }'
+                            template='{{> template}}'>
+
+              <template id='template'>
+                {{#ifCond bindings.0.systemUser.value "===" iri}}
+                  <span class="resource-card__footer-class text-truncate-line1 color-action text-bold600">My profile</span>
+                {{else}}
+                  <span class="resource-card__footer-class text-truncate-line1" title="{{resourceLabel}}">{{resourceLabel}}</span>
+                {{/ifCond}}
+              </template>
+            </semantic-query>
+          {{else}}
+            <span class="resource-card__footer-class text-truncate-line1" title="{{resourceLabel}}">{{resourceLabel}}</span>
+          {{/if}}
+        {{else if data.types}}
+          [[!-- ontology class from KM props --]]
+          <div class="resource-card__footer-class text-truncate-line1">
+            <mp-label iri='{{data.types}}'></mp-label>
+          </div>
+        {{else if resourceOntologyClass}}
+          <mp-label iri='{{resourceOntologyClass}}' class="resource-card__footer-class text-truncate-line1" highlight='{{highlight}}' highlight-props='{"style": {"color": "#396EFE"}}'></mp-label>
+        {{/if}}
+      </div>
+
+      <div class="resource-card__footer-title text-truncate-line1">
+        <mp-draggable iri='{{iri}}'>
+          <div>
+            {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map")}}
+              <mp-event-trigger id='{{iri}}-open-km-title-trigger' 
+                              type='Dashboard.AddFrame'
+                              data='{"viewId":"knowledge-map", 
+                                      "resourceIri": "{{iri}}"}' 
+                              targets='["thinking-frames"]'>
+              
+                <div><mp-label iri='{{iri}}' class="text-link"></mp-label></div>
+              </mp-event-trigger>
+            {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")}}
+              <mp-event-trigger id='{{iri}}-open-chart-title-trigger' 
+                              type='Dashboard.AddFrame'
+                              data='{"viewId":"chart", 
+                                      "resourceIri": "{{iri}}"}' 
+                              targets='["thinking-frames"]'>
+              
+                <div><mp-label iri='{{iri}}' class="text-link"></mp-label></div>
+              </mp-event-trigger>
+            {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline")}}
+              <mp-event-trigger id='{{iri}}-open-chart-title-trigger' 
+                              type='Dashboard.AddFrame'
+                              data='{"viewId":"timeline", 
+                                      "resourceIri": "{{iri}}"}' 
+                              targets='["thinking-frames"]'>
+              
+                <div><mp-label iri='{{iri}}' class="text-link"></mp-label></div>
+              </mp-event-trigger>
+            {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
+              <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                              urlqueryparam-view='authority-list'
+                              urlqueryparam-resource='{{iri}}'>
+                <mp-label iri='{{iri}}' class="text-link"></mp-label>
+              </semantic-link>
+            {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
+              <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                              urlqueryparam-view='single-set-management'
+                              urlqueryparam-resource='{{iri}}'>
+                <mp-label iri='{{iri}}' class="text-link"></mp-label>
+              </semantic-link>
+            {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item")}}
+              <mp-label iri='{{iri}}' class="text-link" style="text-decoration: none; cursor: initial;"></mp-label>
+            {{else}}
+              <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                              urlqueryparam-view='{{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}semantic-narrative{{else}}resource-editor{{/if}}'
+                              urlqueryparam-resource='{{iri}}'>
+                {{#if label}}
+                  [[!-- Label from KM props --]]
+                  <span class="text-link" title="{{label}}">{{label}}</span>
+                {{else}}
+                  <mp-label iri='{{iri}}' class="text-link" highlight='{{highlight}}' highlight-props='{"style": {"color": "#396EFE"}}'></mp-label>
+                {{/if}}
+              </semantic-link>
+            {{/if}}
+          </div>
+        </mp-draggable>
+      </div>
+    [[/if]]
+  </div>
+</div>
+
+[[#*inline "defaultCardIcon"]]
+  <div class="h100 w100 resource-card__icon-container">
+    {{#if resourceIcon}}
+      <rs-icon icon-type="rounded" icon-name="{{resourceIcon}}" symbol="true"></rs-icon>
+    {{else}}
+      <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol="true"></rs-icon>
+    {{/if}}
+
+    {{#if resourceLabel}}
+      <div>{{resourceLabel}}</div>
+    {{else if data.types}} [[!-- ontology class from KM data --]]
+      <mp-label iri='{{data.types}}'></mp-label>
+    {{else if resourceOntologyClass}}
+      <mp-label iri='{{resourceOntologyClass}}'></mp-label>
+    {{/if}}
+  </div>
+[[/inline]]

@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -298,7 +299,7 @@ export class DirectFileUploader extends Component<DirectFileUploaderProps, Direc
               {fileNotSelected ? (
                 <div className=''> {this.props.children || (
                     <div className='placeholder-item'>
-                      <Icon iconType='round' iconName='file_upload' />
+                      <Icon iconType='rounded' iconName='upload' symbol className='upload_icon'/>
                       <div>{this.props.placeholder || 'Drag file or click to upload'}</div>
                     </div>
                   )}

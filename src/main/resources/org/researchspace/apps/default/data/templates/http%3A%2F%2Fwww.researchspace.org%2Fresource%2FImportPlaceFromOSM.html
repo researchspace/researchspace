@@ -4,7 +4,7 @@
                                   min-search-term-length=2
                                   tokenize-lucene-query=false
                                   escape-lucene-syntax=false
-                                  debounce=1000
+                                  debounce=500
                                   debounce=500
                                   query=' PREFIX osm: <http://www.researchspace.org/resource/system/services/osm/>
                                           SELECT ?subject WHERE { 
@@ -84,17 +84,19 @@
                 <div style='height: 210px; width: 20vw;'>
                   <semantic-context repository='default'>
                     <semantic-map query='SELECT ?wkt WHERE { BIND("{{geoText.value}}" AS ?wkt) }'
-                                  tuple-template='<b style="color:#525156; padding-botto:5px;">{{placeName.value}}</b>
-                                                  {{#if wikidataId.value}}
-                                                    <div>
-                                                      <a style="color:#396EFE;"
-                                                          target="_blank" 
-                                                          href="http://www.wikidata.org/entity/{{wikidataId.value}}"
-                                                          title="http://www.wikidata.org/entity/{{wikidataId.value}}">
-                                                        Open in wikidata
-                                                      </a>
-                                                    </div>
-                                                  {{/if}}'>
+                                  tuple-template='<div style="display:flex; flex-direction:column; gap:5px;">
+                                                    <b style="color:#525156;">{{placeName.value}}</b>
+                                                    {{#if wikidataId.value}}
+                                                      <div>
+                                                        <a style="color:#396EFE;"
+                                                            target="_blank" 
+                                                            href="http://www.wikidata.org/entity/{{wikidataId.value}}"
+                                                            title="http://www.wikidata.org/entity/{{wikidataId.value}}">
+                                                          Open in wikidata
+                                                        </a>
+                                                      </div>
+                                                    {{/if}}
+                                                  </div>'>
                     </semantic-map>
                   </semantic-context>
                 </div>
@@ -204,7 +206,7 @@
                                           {{#if bindings.0.existingRecord.value}}
                                             <mp-event-trigger id='{{viewId}}-openExistingRecord-in-new-frame-trigger' 
                                                               type='Dashboard.AddFrame'
-                                                              data='{"viewId":"entity-editor", 
+                                                              data='{"viewId":"resource-editor", 
                                                                     "resourceIri":"{{bindings.0.existingRecord.value}}",
                                                                     "entityTypeConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Place", 
                                                                     "editable": true,

@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -34,10 +35,10 @@ export const ImageRegionLabel = Forms.normalizeFieldDefinition({
   id: 'label',
   xsdDatatype: vocabularies.xsd._string,
   insertPattern: `INSERT {
-    $subject <http://www.researchspace.org/ontology/displayLabel> $value .
+    $subject <http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> $value .
   } WHERE {}`,
   selectPattern: `SELECT ?value WHERE {
-    $subject <http://www.researchspace.org/ontology/displayLabel> ?value .
+    $subject <http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?value .
   }`,
 });
 

@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,11 +26,12 @@ import { Rdf } from 'platform/api/rdf';
 import { TemplateItem } from 'platform/components/ui/template';
 import { DropArea } from 'platform/components/dnd/DropArea';
 import { Cancellation } from 'platform/api/async';
-import { listen } from 'platform/api/events';
 import PageLoaderComponent from 'platform/components/ui/page-loader';
 
 import * as styles from './Dashboard.scss';
 import * as DashboardEvents from './DashboardEvents';
+import { listen } from 'platform/api/events';
+
 import Icon from '../ui/icon/Icon';
 
 const DEFAULT_VARIABLE = 'dashboardId';
@@ -40,7 +42,7 @@ export interface DashboardViewConfig {
    */
   id: string;
   /**
-   * <semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is used to render the view when users drop a resource on it. Expects <code>{{iri}}</code> and <code>{{dashboardId}}</code> (or a variable specified in <code>frameVariable</code>) as context variables.
+   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is used to render the view when users drop a resource on it. Expects <code>{{iri}}</code> and <code>{{dashboardId}}</code> (or a variable specified in <code>frameVariable</code>) as context variables.
    */
   template: string;
   /**
@@ -81,11 +83,11 @@ export interface DashboardViewConfig {
    */
   frameVariable?: string;
   /**
-   * <semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> for the label of a frame, it is used in the frame controller. By default the <code><mp-label></mp-label></code> component is used. Expects <code>{{iri}}</code> and <code>{{dashboardId}}</code> (or a variable specified in <code>frameVariable</code>) as context variables.
+   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> for the label of a frame, it is used in the frame controller. By default the <code><mp-label></mp-label></code> component is used. Expects <code>{{iri}}</code> and <code>{{dashboardId}}</code> (or a variable specified in <code>frameVariable</code>) as context variables.
    */
   itemLabelTemplate?: string;
   /**
-   * <semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> for the body of a frame item. If it is specified, it will applied to the contents of the frame item displayed as dropdown of the frame controller. Expects <code>{{iri}}</code> and <code>{{dashboardId}}</code> (or a variable specified in <code>frameVariable</code>) as context variables.
+   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> for the body of a frame item. If it is specified, it will applied to the contents of the frame item displayed as dropdown of the frame controller. Expects <code>{{iri}}</code> and <code>{{dashboardId}}</code> (or a variable specified in <code>frameVariable</code>) as context variables.
    */
   itemBodyTemplate?: string;
 
@@ -243,12 +245,13 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
       .observe({
         value: ({ data }) => {
           if (onResourceChange) {
+            if (!data.resourceIri && data["iri"])
+              data.resourceIri = data["iri"];
             onResourceChange(data.resourceIri, data.data);
           }
         },
       });
     this.onFocus();
-
   }
 
   private onFocus = () => {
@@ -364,7 +367,7 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
     const { homePageIri } = this.props;
 
     return (<PageLoaderComponent
-            iri={homePageIri}>
+            iri={homePageIri}> 
             </PageLoaderComponent>)
   };
 

@@ -50,7 +50,7 @@ export class DefaultToolbar extends React.Component<ToolbarProps, {}> {
         disabled={this.props.canSaveDiagram === false}
         onClick={this.props.onSaveDiagram}
       >
-        <Icon iconType='round' iconName='save'/> Save diagram
+        <Icon iconType="rounded" iconName="save" symbol /> Save diagram
       </button>
     );
   }
@@ -66,7 +66,7 @@ export class DefaultToolbar extends React.Component<ToolbarProps, {}> {
         disabled={this.props.canPersistChanges === false}
         onClick={this.props.onPersistChanges}
       >
-        <Icon iconType='round' iconName='save'/> Save data
+        <Icon iconType="rounded" iconName="save" symbol /> Save data
       </button>
     );
   }
@@ -106,7 +106,7 @@ export class DefaultToolbar extends React.Component<ToolbarProps, {}> {
               title="Clear All"
               onClick={this.props.onClearAll}
             >
-              <Icon iconType='round' iconName='layers_clear'/>
+              <Icon iconType="rounded" iconName="layers_clear" symbol />
               &nbsp;Clear All
             </button>
           ) : null}
@@ -116,7 +116,7 @@ export class DefaultToolbar extends React.Component<ToolbarProps, {}> {
             title="Force layout"
             onClick={this.props.onForceLayout}
           >
-            <Icon iconType='round' iconName='schema'/> Layout
+            <Icon iconType="rounded" iconName="schema" symbol /> Layout
           </button>
           <button
             type="button"
@@ -124,7 +124,7 @@ export class DefaultToolbar extends React.Component<ToolbarProps, {}> {
             title="Zoom In"
             onClick={this.props.onZoomIn}
           >
-            <Icon iconType='round' iconName='zoom_in'/>
+            <Icon iconType="rounded" iconName="zoom_in" symbol />
           </button>
           <button
             type="button"
@@ -132,7 +132,7 @@ export class DefaultToolbar extends React.Component<ToolbarProps, {}> {
             title="Zoom Out"
             onClick={this.props.onZoomOut}
           >
-            <Icon iconType='round' iconName='zoom_out'/>
+            <Icon iconType="rounded" iconName="zoom_out" symbol />
           </button>
           <button
             type="button"
@@ -140,7 +140,7 @@ export class DefaultToolbar extends React.Component<ToolbarProps, {}> {
             title="Fit to Screen"
             onClick={this.props.onZoomToFit}
           >
-            <Icon iconType='round' iconName='fit_screen'/>
+            <Icon iconType="rounded" iconName="fit_screen" symbol />
           </button>
           <button
             type="button"
@@ -148,7 +148,7 @@ export class DefaultToolbar extends React.Component<ToolbarProps, {}> {
             title="Export diagram as PNG"
             onClick={this.onExportPNG}
           >
-            <Icon iconType='round' iconName='image'/> PNG
+            <Icon iconType="rounded" iconName="image" symbol /> PNG
           </button>
           <button
             type="button"
@@ -156,7 +156,7 @@ export class DefaultToolbar extends React.Component<ToolbarProps, {}> {
             title="Export diagram as SVG"
             onClick={this.onExportSVG}
           >
-            <Icon iconType='round' iconName='image'/> SVG
+            <Icon iconType="rounded" iconName="image" symbol /> SVG
           </button>
           <button
             type="button"
@@ -164,7 +164,7 @@ export class DefaultToolbar extends React.Component<ToolbarProps, {}> {
             title="Print diagram"
             onClick={this.props.onPrint}
           >
-            <Icon iconType='round' iconName='print'/>
+            <Icon iconType="rounded" iconName="print" symbol />
           </button>
           {this.renderLanguages()}
         </div>

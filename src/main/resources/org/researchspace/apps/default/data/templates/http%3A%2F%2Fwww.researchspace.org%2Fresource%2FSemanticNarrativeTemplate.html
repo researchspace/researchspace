@@ -101,6 +101,13 @@
                                                 "resizable": false
                                               },
                                               {
+                                                "id": "timeline",
+                                                "type": "http://www.researchspace.org/ontologies/persist/PersistedComponent",
+                                                "label": "timeline",
+                                                "template": "{{> timeline}}",
+                                                "resizable": false
+                                              },
+                                              {
                                                 "id": "card",
                                                 "type": "any",
                                                 "label": "card",
@@ -119,6 +126,12 @@
             </div>
           </template>
 
+          <template id='timeline'>
+            <div>
+              <mp-persisted-component iri='{{iri.value}}'></mp-persisted-component>
+            </div>
+          </template>
+
           <template id='itemCard'>
             {{> rsp:ResourceCard  iri=iri.value
                                   viewId="narrative"
@@ -128,6 +141,11 @@
           </template>
 
           <template id='image'>
+            <style>
+              .mirador .researchspace-mirador.mirador-container .qtip-viewer .qtip-content {
+                
+              }
+            </style>
             [[!-- We generating random id for all mirador instances, because otherwise openseadragon can't be initialized --]]
             <rs-iiif-mirador id='mirador-{{uuid}}'
             [[> rsp:IIIFConfig]]
@@ -147,12 +165,16 @@
           <template id='knowledgeMap'>
             <div>
               <style>
-                .ontodia .Toolbar--component {
-                  display: flex;
-                  justify-content: center;
+                .Toolbar--buttonsContainer .dropdown.btn-group button.btn-action,
+                .Toolbar--buttonsContainer .dropdown.btn-group button#save-diagram-button-split {
+                  display: none;
+                }
+
+                .ontodia {
+                  border: 1px solid #E0E0E4;
                 }
               </style>
-              [[> rsp:KnowledgeMapOntodiaConfig standalone=true readonly=true]]
+              {{> rsp:KnowledgeMapOntodiaConfig standalone=true readonly=true iri=iri.value }}
             </div>
           </template>
 

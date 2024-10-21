@@ -52,7 +52,7 @@
                                               {
                                                 "id": "image",
                                                 "type": "http://www.researchspace.org/ontology/EX_Digital_Image",
-                                                "label": "Annotated Image",
+                                                "label": "Annotated image",
                                                 "template": "{{> image}}",
                                                 "resizable": true,
                                                 "defaults": {
@@ -63,18 +63,18 @@
                                               {
                                                 "id": "full-size-image",
                                                 "type": "http://www.researchspace.org/ontology/EX_Digital_Image",
-                                                "label": "Full Image",
+                                                "label": "Full image",
                                                 "template": "{{> fullImage}}",
                                                 "resizable": true,
                                                 "defaults": {
-                                                  "height": "600px",
+                                                  "height": "300px",
                                                   "width": "100%"
                                                 }
                                               },
                                               {
                                                 "id": "knowledge-map",
                                                 "type": "http://ontodia.org/schema/v1#Diagram",
-                                                "label": "Knowledge Map",
+                                                "label": "Knowledge map",
                                                 "template": "{{> knowledgeMap diagram=iri.value}}",
                                                 "resizable": true,
                                                 "defaults": {
@@ -85,7 +85,7 @@
                                               {
                                                 "id": "set-grid",
                                                 "type": "http://www.researchspace.org/resource/system/Set",
-                                                "label": "Set Grid",
+                                                "label": "Set grid",
                                                 "template": "{{> setGrid}}",
                                                 "resizable": true,
                                                 "defaults": {
@@ -94,26 +94,49 @@
                                                 }
                                               },
                                               {
-                                                "id": "chart",
+                                                "id": "set-list",
+                                                "type": "http://www.researchspace.org/resource/system/Set",
+                                                "label": "Set list",
+                                                "template": "{{> setList}}",
+                                                "resizable": true,
+                                                "defaults": {
+                                                  "height": "300px",
+                                                  "width": "100%"
+                                                }
+                                              },
+                                              {
+                                                "id": "persisted-component",
                                                 "type": "http://www.researchspace.org/ontologies/persist/PersistedComponent",
-                                                "label": "chart",
-                                                "template": "{{> chart}}",
+                                                "label": "View",
+                                                "template": "{{> PersistedComponentView}}",
                                                 "resizable": false
                                               },
                                               {
                                                 "id": "card",
                                                 "type": "any",
-                                                "label": "card",
+                                                "label": "Card",
                                                 "template": "{{> itemCard}}",
                                                 "resizable": true,
                                                 "defaults": {
-                                                  "height": "240px",
-                                                  "width": "180px"
+                                                  "height": "200px",
+                                                  "width": "155px"
                                                 }
-                                              }                      
+                                              },
+                                              {
+                                                "id": "map",
+                                                "type": "http://www.cidoc-crm.org/cidoc-crm/E53_Place",
+                                                "label": "Map",
+                                                "template": "{{> map}}",
+                                                "resizable": true,
+                                                "defaults": {
+                                                  "height": "500px",
+                                                  "width": "100%"
+                                                }
+                                              }
+                                                                  
                         ]'
         >
-          <template id='chart'>
+          <template id='PersistedComponentView'>
             <div>
               <mp-persisted-component iri='{{iri.value}}'></mp-persisted-component>
             </div>
@@ -130,9 +153,25 @@
           <template id='image'>
             [[!-- We generating random id for all mirador instances, because otherwise openseadragon can't be initialized --]]
             <rs-iiif-mirador id='mirador-{{uuid}}'
-            [[> rsp:IIIFConfig]]
-            image-or-region='{{iri.value}}'
-            use-details-sidebar=true></rs-iiif-mirador>
+                              [[> rsp:IIIFConfig]]
+                              image-or-region='{{iri.value}}'
+                              annotation-view-tooltip-template='
+                                {{{{raw}}}}                                
+                                  <div class="all-annotations" id="annotation-viewer-{{windowId}}">{{#each annotations}}<div class="annotation-display annotation-tooltip" data-anno-id="{{id}}"><div class="button-container">
+                                    {{#if id}}
+                                      <mp-template-item>
+                                        <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                                        draggable="false"
+                                                        urlqueryparam-view="resource-editor"
+                                                        urlqueryparam-resource-iri="{{id}}"
+                                                          >
+                                            <div style="width: 100%;text-decoration: underline;font-weight: 600;cursor: pointer;color: #525156;">{{{annoText}}}</div>
+                                          </semantic-link><div>test</div>
+                                      </mp-template-item>
+                                    {{/if}}</div></div>{{/each}}</div>
+                                {{{{/raw}}}}
+                              '>
+            </rs-iiif-mirador>
           </template>
 
           <template id='fullImage'>
@@ -147,12 +186,16 @@
           <template id='knowledgeMap'>
             <div>
               <style>
-                .ontodia .Toolbar--component {
-                  display: flex;
-                  justify-content: center;
+                .Toolbar--buttonsContainer .dropdown.btn-group button.btn-action,
+                .Toolbar--buttonsContainer .dropdown.btn-group button#save-diagram-button-split {
+                  display: none;
+                }
+
+                .ontodia {
+                  border: 1px solid #E0E0E4;
                 }
               </style>
-              [[> rsp:KnowledgeMapOntodiaConfig standalone=true readonly=true]]
+              {{> rsp:KnowledgeMapOntodiaConfig standalone=true readonly=true iri=iri.value }}
             </div>
           </template>
 
@@ -185,6 +228,96 @@
                   </template>
               </semantic-table>
             </div>
+          </template>
+
+          <template id='setList'>
+            <div>
+              <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                        urlqueryparam-view="resource-editor"
+                                        urlqueryparam-resource-iri='{{iri.value}}'>
+                <div style="margin-bottom: 10px;">Set: <mp-label iri='{{iri.value}}' class="text-link-action"></mp-label></div>
+              </semantic-link-container>
+
+              <semantic-table class-name="narrative-set-list-table"
+                              number-of-displayed-rows=1000
+                              query='SELECT ?iri WHERE {
+                                      <{{iri.value}}> a <http://www.researchspace.org/resource/system/Set> ;
+                                      <http://www.w3.org/ns/ldp#contains> ?item .
+                                      ?item <http://www.researchspace.org/resource/system/setItem> ?iri .
+                                      OPTIONAL {
+                                        ?item <http://www.researchspace.org/resource/system/setItemIndex> ?index .
+                                        ?item prov:generatedAtTime ?modificationDate .
+                                      }
+                                    } ORDER BY ?index DESC(?modificationDate)'
+                              tuple-template='{{> item}}'
+                              options='{"showFilter":false}'
+              >
+                  <template id="item">
+                    {{> rsp:ResourceCard  iri=iri.value
+                                          viewId="narrative-list-view"
+                                          clipboardList=true
+                                          hideMediaSection=true
+                                          height=42
+                    }}
+                  </template>
+              </semantic-table>
+            </div>
+          </template>
+
+          <template id='map'>
+            <semantic-map tuple-template='{{> popover}}'
+                          query='SELECT DISTINCT ?wkt ?place ?color WHERE {
+                                  {
+                                  <{{iri.value}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
+                                    ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
+                                    ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
+                                    BIND(<{{iri.value}}> AS ?place) .
+                                    BIND(0 as ?order)
+                                  } UNION {
+                                    ?place crm:P89_falls_within* <{{iri.value}}> .
+                                    ?place crm:P168_place_is_defined_by ?osm_geoCoordinates .
+                                    ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
+                                    ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
+                                    BIND(1 as ?order)
+                                  } UNION {
+                                    <{{iri.value}}> crm:P161i_is_spatial_projection_of/crm:P10i_contains/crm:P53i_is_former_or_current_location_of ?place .
+                                    ?place crm:P168_place_is_defined_by ?osm_geoCoordinates .
+                                    ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
+                                    ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
+                                    BIND(true AS ?isBuilding)
+                                    BIND(2 as ?order)
+                                  }
+                                  BIND(IF(?isBuilding, "rgba(244, 224, 77, 0.7)", "rgba(56, 178, 194, 0.44)") AS ?color)
+                                } ORDER BY ASC(?order)'
+                          no-result-template='{{> noResults}}'>
+
+                <template id='popover'>
+                  <style>
+                    .place-row {
+                      display: flex; 
+                      align-items: center;
+                      gap: 5px;
+                      flex-wrap: wrap;
+                      overflow: hidden;
+                    }
+                  </style>
+
+                  <div style="min-width:250px; font-size: 13.5px; overflow: hidden;">
+                    <div class="place-row">
+                      <div>Place:</div>
+                      <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                urlqueryparam-view="resource-editor"
+                                                urlqueryparam-resource='{{place.value}}'>
+                        <div><mp-label iri='{{place.value}}' style="text-decoration: underline; cursor: pointer; color:#396EFE; font-weight: 600;"></mp-label></div>
+                      </semantic-link-container>
+                    </div>
+                  </div>
+                </template>
+
+                <template id='noResults'>
+                  <div>No geographic coordinates available for the resource</div>
+                </template>
+            </semantic-map>
           </template>
 
           <template id="semantic-narrative-dropdown">

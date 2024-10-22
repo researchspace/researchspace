@@ -76,8 +76,8 @@ interface Props {
   featuresOptionsEnabled: boolean;
   filtersInitialization: Filters;
   showFilters?: boolean;
-  //TODO: optionals and document
   timeline: Timeline;
+  featuresColorsPalette?: string;
 }
 
 export class SemanticMapControls extends Component<Props, State> {
@@ -161,20 +161,6 @@ export class SemanticMapControls extends Component<Props, State> {
       // console.log("Groupcolors NOT changed.")
     }
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
   /** EVENTS */
@@ -341,19 +327,6 @@ export class SemanticMapControls extends Component<Props, State> {
   }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
   /** UI  */
 
 
@@ -454,13 +427,6 @@ export class SemanticMapControls extends Component<Props, State> {
     }
     this.setState({ displayColorPicker: displayColorPickerClone });
   };
-
-
-
-
-
-
-
 
 
 
@@ -1192,55 +1158,61 @@ export class SemanticMapControls extends Component<Props, State> {
       this.getGroupsFromTaxonomy(this.state.featuresColorTaxonomy, this.getAllVectorLayers(this.state.mapLayers))
     );
   }
-
+  
   private generateColorPalette() {
-    //TODO: give possibility to set a colorpalette from the props
-    let colorNumbers = this.state.featuresColorGroups.length;
-    let palette = [
-      "rgba(245,185,153,0.6)",
-      "rgba(124,164,204,0.6)",
-      "rgb(183,161,209,0.6)",
-      "rgba(0,63,114,0.6)",
-      "rgba(173,195,165,0.6)",
-      "rgba(214,223,218,0.6)",
-    ];
-    /*
-    let hueFraction = 360 / colorNumbers;
-    let seed = Math.floor(Math.random() * 360);
-    for (let i = 0; i < colorNumbers; i++) {
-      let generatedAngle = hueFraction * i + seed;
-      if (generatedAngle > 360) {
-        generatedAngle -= 360;
+    let groupColorAssociationsClone = { ...this.state.groupColorAssociations };
+  
+    // Check the type of the prop
+    console.log('featuresColorsPalette prop:', this.props.featuresColorsPalette);
+    console.log('Type of featuresColorsPalette prop:', typeof this.props.featuresColorsPalette);
+  
+    let featuresColorsPaletteParsed: { [label: string]: string } = {};
+  
+    if (this.props.featuresColorsPalette) {
+      if (typeof this.props.featuresColorsPalette === 'string') {
+        // It's a string; parse it
+        try {
+          featuresColorsPaletteParsed = JSON.parse(this.props.featuresColorsPalette);
+        } catch (e) {
+          console.error('Error parsing featuresColorsPalette prop:', e);
+          featuresColorsPaletteParsed = {};
+        }
+      } else if (typeof this.props.featuresColorsPalette === 'object') {
+        // It's already an object; use it directly
+        featuresColorsPaletteParsed = this.props.featuresColorsPalette;
+      } else {
+        console.error('Unexpected type for featuresColorsPalette prop:', typeof this.props.featuresColorsPalette);
+        featuresColorsPaletteParsed = {};
       }
-      palette.push({
-        h: generatedAngle.toString(),
-        s: '0.4',
-        l: '0.7',
-        a: '0.4',
-      });
     }
-    */
-
-    //Update state with generated palette
-    let groupColorAssociationsClone = JSON.stringify(this.state.groupColorAssociations);
-    let groupColroAssociationsCloneObject = JSON.parse(groupColorAssociationsClone)
-    let _i = 0;
-    for (let association in groupColroAssociationsCloneObject) {
-      //groupColorAssociationsClone[association] = "hsv(" + palette[_i].h + ","+palette[_i].s+","+palette[_i].v+",0.4)";
-      let rgbstring = palette[_i];
-      groupColroAssociationsCloneObject[association] = rgbstring;
-      _i++;
+  
+    // Create a version with lowercase keys for case-insensitive matching
+    let featuresColorsPaletteLowercased: { [label: string]: string } = {};
+    for (let key in featuresColorsPaletteParsed) {
+      featuresColorsPaletteLowercased[key.toLowerCase()] = featuresColorsPaletteParsed[key];
     }
-    this.setState(
-      {
-        groupColorAssociations: groupColroAssociationsCloneObject,
-      },
-      () => {
-        //console.log('New GroupColorAssociations:');
-        //console.log(this.state.groupColorAssociations);
+  
+    // Define the default color
+    const defaultColor = this.defaultFeaturesColor;
+  
+    // Iterate over each label in groupColorAssociations
+    for (let label in groupColorAssociationsClone) {
+      let labelLowercased = label.toLowerCase();
+  
+      if (featuresColorsPaletteLowercased.hasOwnProperty(labelLowercased)) {
+        // Use the color from featuresColorsPalette
+        groupColorAssociationsClone[label] = featuresColorsPaletteLowercased[labelLowercased];
+      } else {
+        // Assign the default color
+        groupColorAssociationsClone[label] = defaultColor;
       }
-    );
+    }
+  
+    // Update the state
+    this.setState({ groupColorAssociations: groupColorAssociationsClone });
   }
+  
+  
 
   private getAllVectorLayers(allLayers?) {
     if (!allLayers) {

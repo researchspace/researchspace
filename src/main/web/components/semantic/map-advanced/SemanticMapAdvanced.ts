@@ -783,36 +783,15 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
           .forEach((feature) => {
 
             try {
-              if (this.state.yearFiltering) {
-                // console.log(feature)
-                let feature_eoe = "";
-                let feature_eob = "";
-                let feature_boe = "";
-                let feature_bob = "";
-
-                if (feature.get('bob')) {
-                  feature_bob = feature.get('bob').value;
-                } else {
-                  // THIS might be different
-                  feature_bob = "0";
-                }
-                if (feature.get('eoe')) {
-                  feature_eoe = feature.get('eoe').value;
-                } else {
-                  feature_eoe = new Date().getFullYear().toString();
-                }
-
-                if (feature.get('eob')) {
-                  feature_eob = feature.get('eob').value;
-                } else {
-                  feature_eob = feature.get('bob').value;
-                }
-
-                if (feature.get('boe')) {
-                  feature_boe = feature.get('boe').value;
-                } else {
-                  feature_boe = feature.get('eoe').value;
-                }
+              if (this.state.yearFiltering) {                
+                // For feature_bob
+                const feature_bob = feature.get('bob')?.value ?? "0";
+                // For feature_eoe
+                const feature_eoe = feature.get('eoe')?.value ?? new Date().getFullYear().toString();
+                // For feature_eob
+                const feature_eob = feature.get('eob')?.value ?? feature.get('bob')?.value ?? "0";
+                // For feature_boe
+                const feature_boe = feature.get('boe')?.value ?? feature.get('eoe')?.value ?? new Date().getFullYear().toString();
                 if (Object.keys(this.state.vectorLevels).length !== 0) {
                   let feature_t = feature.values_.t.value
                   if (this.state.vectorLevels[feature_t].visible && this.dateInclusion(feature_bob, feature_eob, feature_boe, feature_eoe, year)) {

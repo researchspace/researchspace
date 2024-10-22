@@ -162,5 +162,38 @@ export const GenericFunctions = {
    */
   uuid() {
     return uuidLib.v4();
+  },
+
+  highlightSubstring(options: string, substring:string) {
+    const words = options.split(' ');
+    const substringRegex = new RegExp(substring, 'gi');
+    const match = substringRegex.exec(options);
+    
+    if (!match) {
+        // No match found, return the original text wrapped in a <p> tag
+        return `${options}`;
+    }
+
+    const startIndex = match.index;
+    const endIndex = match.index + match[0].length;
+
+    // Split text before and after the match
+    const before = options.slice(0, startIndex).trim().split(' ');
+    const after = options.slice(endIndex).trim().split(' ');
+
+    // Get up to 5 words before and after
+    const beforeWords = before.slice(-5).join(' ');
+    const afterWords = after.slice(0, 5).join(' ');
+
+    // Check if we need ellipses
+    const beforeEllipsis = before.length > 5 ? '...' : '';
+    const afterEllipsis = after.length > 5 ? '...' : '';
+
+    // Rebuild the highlighted text with strong tags around the substring
+    const highlightedText = `${beforeEllipsis} ${beforeWords} ${substring.replace("*", "")} ${afterWords} ${afterEllipsis}`.trim();
+
+    // Return the text wrapped in a <p> tag
+    return `${highlightedText}`;
   }
+
 };

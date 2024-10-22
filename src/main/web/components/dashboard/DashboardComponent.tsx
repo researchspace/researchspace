@@ -863,8 +863,8 @@ export class DashboardComponent extends Component<Props, State> {
     const iiifViewerDashboardItems = []; 
 
     images.forEach(image => iiifViewerDashboardItems.push(image.id+"-image-annotation"));
-
-    const actions = [Actions.ADJUST_BORDER_SPLIT, Actions.ADJUST_SPLIT, Actions.MOVE_NODE, Actions.ADD_NODE, Actions.SELECT_TAB, Actions.DELETE_TAB]
+  //  console.log(action.type);
+    const actions = [Actions.ADJUST_BORDER_SPLIT, Actions.ADJUST_SPLIT, Actions.MOVE_NODE, Actions.ADD_NODE, Actions.SELECT_TAB, Actions.DELETE_TAB, Actions.MAXIMIZE_TOGGLE]
     if (actions.includes(action.type))
       trigger({
         eventType: LayoutChanged,
@@ -886,7 +886,7 @@ export class DashboardComponent extends Component<Props, State> {
         ref={this.layoutRef}
         model={this.state.layout}
         factory={this.factory}
-        titleFactory={this.titleFactory}
+      //  titleFactory={this.titleFactory}
         onRenderTabSet={this.onRenderTabSet}
         onAction={this.onLayoutAction}
         icons={this.tabIcons()}

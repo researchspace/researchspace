@@ -805,6 +805,7 @@ export class DashboardComponent extends Component<Props, State> {
       'close': <Icon iconType='rounded' iconName='close' symbol />,
       'maximize': <Icon iconType='rounded' iconName='fullscreen' symbol />,
       'restore': <Icon iconType='rounded' iconName='close_fullscreen' symbol />,
+      'popout': <Icon iconType='rounded' iconName='open_in_new' symbol />,
       'more': <Icon iconType='rounded' iconName='arrow_drop_down' symbol/>,
     });
 

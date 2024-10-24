@@ -46,7 +46,7 @@ public class MpSPARQLRepositoryConfig extends SPARQLRepositoryConfig {
     private boolean usingQuads = true;
     private boolean writable = true;
     private boolean silentMode = false;
-
+    
     public MpSPARQLRepositoryConfig() {
         super();
         setType(DefaultMpSPARQLRepositoryFactory.REPOSITORY_TYPE);
@@ -105,7 +105,7 @@ public class MpSPARQLRepositoryConfig extends SPARQLRepositoryConfig {
                     .ifPresent(lit -> setWritable(lit.booleanValue()));
             Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.SILENT_MODE, null))
                     .ifPresent(lit -> setSilentMode(lit.booleanValue()));
-        } catch (ModelException e) {
+            } catch (ModelException e) {
             throw new SailConfigException(e.getMessage(), e);
         }
     }

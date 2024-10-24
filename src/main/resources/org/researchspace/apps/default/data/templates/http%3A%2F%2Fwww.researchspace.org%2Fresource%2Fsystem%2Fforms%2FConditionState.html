@@ -139,76 +139,6 @@
                     </semantic-form-tree-picker-input> 
                 {{else}}
                     <div class="hierarchyView-form-container">
-                        <mp-event-target-template-render id='{{viewId}}-state-componentsView' template='{{> stateComponents}}'>
-                        <template id='stateComponents'>
-                            <div class="page__section-container formHierarchyView-container">
-                                <div class="form-header-withButtons">
-                                    <h4>Components</h4>
-                                    <div class="btn-form-actions"> 
-                                    <mp-event-trigger id='{{viewId}}-state-componentsView-refresh-trigger' 
-                                                        type='Component.TemplateUpdate' 
-                                                        targets='["{{viewId}}-state-componentsView"]'
-                                                        >
-                                        <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
-                                        <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
-                                            Refresh
-                                        </button>
-                                    </mp-event-trigger>
-                                    </div>
-                                </div>
-                                <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
-                                    {{#if node}}
-                                        {{#bind state=node }}
-                                            <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
-                                                                    BIND(<{{node}}> as ?state)
-                                                                    
-                                                                    { ?state crm:P5_consists_of ?node . }
-                                                                    UNION
-                                                                    { ?state crm:P5i_forms_part_of ?parent . }
-                                                                    
-                                                                    ?node crm:P5i_forms_part_of ?parent .
-
-                                                                    FILTER(ISIRI(?node))
-                                                                }
-                                                                ORDER BY (?node)' 
-
-                                                            tuple-template='{{> nodeTemplate}}'>
-                                                            
-                                                <template id='nodeTemplate'>
-                                                    <semantic-query query='SELECT ?node ?nodeLabel WHERE {
-                                                                            BIND (<{{node.value}}> as ?node)
-                                                                            ?node a crm:E3_Condition_State .
-                                                                            ?node crm:P1_is_identified_by ?appellation .
-                                                                            ?appellation a crm:E41_Appellation .
-                                                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                            ?appellation crm:P190_has_symbolic_content ?nodeLabel .  
-                                                                        }'
-                                                                    template='{{> template}}'>
-                                                        
-                                                        <template id='template'>
-                                                            <div>
-                                                                {{#ifCond bindings.0.node.value "===" state}}
-                                                                    <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                                {{else}}
-                                                                    <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                                    urlqueryparam-view='resource-editor' 
-                                                                                    urlqueryparam-resource-iri='{{node.value}}'
-                                                                                    >
-                                                                        <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                                    </semantic-link>
-                                                                {{/ifCond}}
-                                                            </div>
-                                                        </template>
-                                                    </semantic-query>
-                                                </template>  
-                                            </semantic-tree>
-                                        {{/bind}}
-                                    {{/if}}
-                                </div>
-                            </div>
-                        </template>
-                        </mp-event-target-template-render>
-
                         <div class="page__section-container formHierarchyInputs-container">
                             <semantic-form-autocomplete-input   for='condition_state_forms_part_of' 
                                                                 label="Forms part of condition state" 
@@ -236,6 +166,78 @@
                                                                 ]'>  
                             </semantic-form-autocomplete-input> 
                         </div>
+                        
+                        <mp-event-target-template-render id='{{viewId}}-state-componentsView' template='{{> stateComponents}}'>
+                            <template id='stateComponents'>
+                                <div class="page__section-container formHierarchyView-container">
+                                    <div class="form-header-withButtons">
+                                        <h4>Components hierarchy</h4>
+                                        {{#if node}}
+                                            <div class="btn-form-actions"> 
+                                                <mp-event-trigger id='{{viewId}}-state-componentsView-refresh-trigger' 
+                                                                    type='Component.TemplateUpdate' 
+                                                                    targets='["{{viewId}}-state-componentsView"]'
+                                                                    >
+                                                    <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
+                                                    <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
+                                                        Refresh
+                                                    </button>
+                                                </mp-event-trigger>
+                                            </div>
+                                        {{/if}}
+                                    </div>
+                                    <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
+                                        {{#if node}}
+                                            {{#bind state=node }}
+                                                <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
+                                                                        BIND(<{{node}}> as ?state)
+                                                                        
+                                                                        { ?state crm:P5_consists_of ?node . }
+                                                                        UNION
+                                                                        { ?state crm:P5i_forms_part_of ?parent . }
+                                                                        
+                                                                        ?node crm:P5i_forms_part_of ?parent .
+
+                                                                        FILTER(ISIRI(?node))
+                                                                    }
+                                                                    ORDER BY (?node)' 
+
+                                                                tuple-template='{{> nodeTemplate}}'>
+                                                                
+                                                    <template id='nodeTemplate'>
+                                                        <semantic-query query='SELECT ?node ?nodeLabel WHERE {
+                                                                                BIND (<{{node.value}}> as ?node)
+                                                                                ?node a crm:E3_Condition_State .
+                                                                                ?node crm:P1_is_identified_by ?appellation .
+                                                                                ?appellation a crm:E41_Appellation .
+                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                                ?appellation crm:P190_has_symbolic_content ?nodeLabel .  
+                                                                            }'
+                                                                        template='{{> template}}'>
+                                                            
+                                                            <template id='template'>
+                                                                <div>
+                                                                    {{#ifCond bindings.0.node.value "===" state}}
+                                                                        <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                                    {{else}}
+                                                                        <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                        urlqueryparam-view='resource-editor' 
+                                                                                        urlqueryparam-resource-iri='{{node.value}}'
+                                                                                        >
+                                                                            <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                                        </semantic-link>
+                                                                    {{/ifCond}}
+                                                                </div>
+                                                            </template>
+                                                        </semantic-query>
+                                                    </template>  
+                                                </semantic-tree>
+                                            {{/bind}}
+                                        {{/if}}
+                                    </div>
+                                </div>
+                            </template>
+                        </mp-event-target-template-render>
                     </div>
                 {{/if}}
 

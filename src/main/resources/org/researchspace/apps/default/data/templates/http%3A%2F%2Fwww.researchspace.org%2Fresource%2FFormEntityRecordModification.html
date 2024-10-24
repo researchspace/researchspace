@@ -1,0 +1,21 @@
+<div>
+  <semantic-form  id='{{formId}}' 
+                  new-subject-template='{{node}}/entity_form_record/entity_formRecord_modification/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
+                  post-action="event"
+                  persistence='{"type": "sparql", "targetInsertGraphIri":"{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
+                  fields='[[fieldDefinitions
+                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+                            entity_resource_type="http://www.researchspace.org/pattern/system/entity/resource_type"
+                            entity_formRecord_modification="http://www.researchspace.org/pattern/system/entityFormRecord/formRecord_modification3"
+                            modification_at_some_time_within="http://www.researchspace.org/pattern/system/temporal_entity/at_some_time_within"
+                            modification_carried_out_by="http://www.researchspace.org/pattern/system/activity/carried_out_by"
+                          ]]'>
+                          
+      <semantic-form-hidden-input for="classtype" default-value="http://www.ics.forth.gr/isl/CRMdig/D7_Digital_Machine_Event"></semantic-form-hidden-input>
+      <semantic-form-hidden-input for="entity_resource_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_modification'></semantic-form-hidden-input>
+                          
+      <semantic-form-hidden-input for="entity_formRecord_modification" default-value="{{node}}/entity_form_record" force-defaults=true></semantic-form-hidden-input>
+      <semantic-form-hidden-input for="modification_at_some_time_within" default-value="{{currentDateTime 'YYYY-MM-DDTHH:mm:ss'}}" force-defaults=true></semantic-form-hidden-input>
+      <semantic-form-hidden-input for="modification_carried_out_by" default-value='[[userUri]]' force-defaults=true></semantic-form-hidden-input>
+  </semantic-form>
+</div>

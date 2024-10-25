@@ -174,7 +174,7 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
         })
       ).observe({
         value: () => {
-          this.onSave();
+          this.onSave(true);
         }
       });
 
@@ -383,7 +383,7 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
     this.onSave();
   };
 
-  private onSave = () => {
+  private onSave = (isComingFromTrigger?: boolean) => {
     const validatedModel = this.form.validate(this.state.model);
     if (readyToSubmit(validatedModel, FieldError.isPreventSubmit)) {
       this.setState((state) => ({ model: validatedModel, submitting: true }));
@@ -415,7 +415,8 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
               eventProps: { isNewSubject, sourceId: this.props.id },
               queryParams: getPostActionUrlQueryParams(this.props),
               defaultTabKey: this.state.defaultTab,
-              tabSource: this.state.tabSource
+              tabSource: this.state.tabSource,
+              sendNotification: !isComingFromTrigger
             });
           },
           error: (error) => {
@@ -456,6 +457,8 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
             subject: itemToRemove,
             eventProps: { isNewSubject: false, isRemovedSubject: true, sourceId: this.props.id },
             queryParams: getPostActionUrlQueryParams(this.props),
+            sendNotification: true
+
           });
         },
         error: () => {}

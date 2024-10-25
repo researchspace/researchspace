@@ -129,8 +129,9 @@ export function performFormPostAction(parameters: {
   queryParams?: { [paramKey: string]: string };
   defaultTabKey?: any
   tabSource?: any
+  sendNotification?: boolean
 }) {
-  const { postAction = 'reload', subject, eventProps, queryParams, defaultTabKey, tabSource } = parameters;
+  const { postAction = 'reload', subject, eventProps, queryParams, defaultTabKey, tabSource, sendNotification } = parameters;
   if (postAction === 'none') {
     return;
   }
@@ -149,30 +150,39 @@ export function performFormPostAction(parameters: {
         source: eventProps.sourceId,
         data: { iri: subject.value },
       });
-      addNotification({
-        level: 'success',
-        message: 'Resource created',
-      });
+      if(sendNotification) {
+        addNotification({
+          level: 'success',
+          message: 'Resource created',
+        });
+      }
+      
     } else if (eventProps.isRemovedSubject) {
       trigger({
         eventType: FormEvents.FormResourceRemoved,
         source: eventProps.sourceId,
         data: { iri: subject.value },
       });
-      addNotification({
-        level: 'success',
-        message: 'Resource deleted',
-      });
+      if(sendNotification) {
+        addNotification({
+          level: 'success',
+          message: 'Resource deleted',
+        });
+      }
+      
     } else {
       trigger({
         eventType: FormEvents.FormResourceUpdated,
         source: eventProps.sourceId,
         data: { iri: subject.value },
       });
-      addNotification({
-        level: 'success',
-        message: 'Resource saved',
-      });
+      if(sendNotification) {
+        addNotification({
+          level: 'success',
+          message: 'Resource saved',
+        });
+      }
+      
     }
     if(defaultTabKey) {
       localeStorageTabs.setValues({

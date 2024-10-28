@@ -49,10 +49,7 @@ import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.researchspace.data.rdf.container.LDPApiInternal;
-import org.researchspace.data.rdf.container.LDPAssetsLoader;
 import org.researchspace.data.rdf.container.LDPAssetsLoader.LDPModelComparator.StatementKey;
 import org.researchspace.junit.AbstractIntegrationTest;
 import org.researchspace.repository.RepositoryManager;
@@ -84,7 +81,6 @@ public class LDPAssetsLoaderTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @Ignore("This test is skipped temporarily")
     public void testLoadIntoEmpty() throws Exception {System.out.println("something");
         Model totalModel = Rio.parse(LDPApiInternal.class.getResourceAsStream("testQueryContainerPermissions.trig"), "",
                 RDFFormat.TRIG);
@@ -209,7 +205,6 @@ public class LDPAssetsLoaderTest extends AbstractIntegrationTest {
     }
  
     @Test
-    @Ignore("This test is skipped temporarily")
     public void testLoadIconsistent() throws Exception {
         try (RepositoryConnection con = repositoryRule.getAssetRepository().getConnection()) {
             con.add(LDPApiInternal.class.getResourceAsStream("testQueryContainerPermissions.trig"), "", RDFFormat.TRIG);

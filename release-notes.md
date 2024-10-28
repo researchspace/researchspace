@@ -10,6 +10,21 @@
 {Optional: High-level summary}
 
 ### New features
+- **Design and Implementation of a default interactive system UI**
+  This version introduces a set of default system resource configurations, vocabularies, knowledge patterns and templates
+that work together to give the user a complex coherent UI for working with semantic data. Beforehand, the platform was available with a small number of example templates, which involved loading from another github repo dependant knowledge patterns. Previous templates were not setup to work together or to create a coherent UI as a starting project for any RS-based project. This meant a lot of time and effort was spent by each new project to repeateadly set up the same types of templates for viewing, editing or searching through the existing data. It also, led to implementations that did not take full advantage of the RS functionalities. 
+
+  There are four new repositories: "configurations", "system", "ontologies", "vocabularies" which can be loaded by setting ```loadDefaultConfig``` to 0 or 1 in the runtime-data/config/global.prop or the custom-app/config/global.prop; 
+
+  The ```configurations`` repo is a group of named graphs each containing a resource configuration.
+  The ```system``` repo is a set of knowledge patterns that cannot be edited by the users of the system and are a prerequisite for the functioning of the default templates.
+  The ```vocabularies``` repo is a set of crm:E32_AuthorityDocuments created using RS that are referred to by the system knowledge patterns and system default templates.
+  The ```ontologies``` repo is a set of ontologies: CIDOC 7.3.1, CRMArcheo 1.4, CRMba 1.4, CRMdig 3.2.1, CRMgeo 1.2, CRMinfluence, CRMsci, frbroo, skos (not an ontology).
+
+  The current implementation covers the following scenarios:
+  1. For a new RS system setup with an empty graph-database all repositories are loaded for the first time regardless if the loadDefaultConfig was set as 0 or 1.
+  2. For a RS system with content in its graph-database, the LDPAssetsLoader will check if the loadDefaultConfig is set. If true, configurations and vocabularies are loaded, and can be overwritten by the user as the system is being used. The system repository contains solely knowledge patterns that cannot be edited. And finally the ontologies are loaded only if no other ontologies already exist. A user can work with their own choice of ontologies, but note the templates provided have been customised around CIDOC CRM 7.3.1.
+
 
 - **Resource Configuration**
 

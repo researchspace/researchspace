@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -55,11 +56,13 @@ import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.repository.config.RepositoryImplConfig;
+import org.eclipse.rdf4j.repository.util.Repositories;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParseException;
 import org.eclipse.rdf4j.rio.Rio;
@@ -107,9 +110,6 @@ public class LDPAssetsLoader {
     private Configuration configuration;
 
     @Inject
-    private LDPImplManager ldpImplManager;
-
-    @Inject
     private KnowledgePatternGenerator pg;
 
     public LDPAssetsLoader() {
@@ -134,49 +134,27 @@ public class LDPAssetsLoader {
         return configuration.getGlobalConfig().getForceLDPLoadFromStorages().contains(storageId);
     }
 
-    public void load() throws StorageException, IOException, UnknownConfigurationException {
+    public void load() throws StorageException, IOException, UnknownConfigurationException, Exception {
         Map<StoragePath, FindResult> mapResults = platformStorage.findAll(ObjectKind.LDP);
         Map<String, Map<String, Map<StoragePath, FindResult>>> mapResultsByRepositoryIdAndStorageId = Maps.newHashMap();
         logger.info("Loading LDP assets...");
 
-        //MpSPARQLRepositoryConfig config = (MpSPARQLRepositoryConfig)repositoryManager
-          //                                          .getRepositoryConfig(repositoryManager.DEFAULT_REPOSITORY_ID)
-            //                                        .getRepositoryImplConfig();
-        //logger.info("class"+config.getClass());
-        /**
-         * Determine if default repository is writable
-         */          
-        //boolean defaultRepoWritable = config.isWritable();
-
-        /**
-         * Determine if configurations, system KPs and vocabularies should be added to the default repository 
-        */
-        //boolean enableDefaultConfigurationsSystemKPsAndVocabularies = config.getDefaultConfigurationsSystemKPsAndVocabularies();
-
-        /**
-         * Determine if ontologies and KPs for the crm ontologies shoudl be added to the default repository
-         */
-        //boolean enableCRMOntologiesAndKPs = config.getCRMOntologiesAndKPs();
-
-        //logger.info("DefaultConfigurationsSystemKPsAndVocabularies: " + enableDefaultConfigurationsSystemKPsAndVocabularies);
-        //logger.info("CRMOntologiesAndKPs: " + enableCRMOntologiesAndKPs);
-
-
-        Integer loadDefaultConfig;
+        Integer loadDefaultConfig = -2;
         List<String> defaultRepositoriesList = Arrays.asList("configurations", "system", "ontologies", "vocabularies");
 
         String checkIfDefaultRepoHasData =                                 
-                    "SELECT ?counter WHERE {?s a ?o . BIND(1 as ?counter)} limit 1";
+                    "SELECT * WHERE {?s ?p ?o .} limit 1";
 
-        if (hasDefaultAlreadyLoaded(checkIfDefaultRepoHasData, "counter")) {
+        if (hasDefaultAlreadyLoaded(checkIfDefaultRepoHasData)) {
             /* repository has data and the loadDefaultConfig flag needs to be setup */ 
             /* show a message and ask for it to be setup */
             if ((loadDefaultConfig=configuration.getGlobalConfig().getLoadDefaultConfig()) == -1) {
                 logger.fatal(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"); 
                 logger.fatal(">>>> loadDefaultConfig needs to be set to 0 or 1 in your runtime-data/config/global.prop <<<");
+                logger.fatal(">>>> More details in the release-notes.md                                                <<<");               
                 logger.fatal(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"); 
                 
-                throw new UnknownConfigurationException();
+                //throw new UnknownConfigurationException();
             }
         }
         else {
@@ -209,29 +187,29 @@ public class LDPAssetsLoader {
                 .entrySet()) {
             if (isLoadableFromStorage(entry.getKey()) || defaultRepositoriesList.contains(entry.getKey())) {
                 boolean isWritable = repositoryManager.getRepository(entry.getKey()).isWritable();
-                if (isWritable) { 
-                                                 
-                    if ((loadDefaultConfig == 1) && defaultRepositoriesList.contains(entry.getKey())) {
+                if (isWritable) {                                                  
+                    if (!defaultRepositoriesList.contains(entry.getKey())){
+                        /* Load non-default repositories */
+                        loadAllToRepository(entry.getKey(), entry.getValue());
+                    } else if (loadDefaultConfig == 1) {
                         if (entry.getKey().equals("configurations")) {
                             String checkIfResourceConfigurationsExists = 
-                                "SELECT (count(?resource_configuration) as ?counter) " +
-                                "WHERE { graph <http://www.researchspace.org/resource/system/resource_configurations_container> " + 
+                                "SELECT * " +
+                                "WHERE { " + 
                                     "{ ?resource_configuration a <http://www.researchspace.org/resource/system/resource_configuration> .} "+ 
-                                "}";
+                                "} LIMIT 1";
 
                             logger.info("loading configurations");
-                            //if (!hasDefaultAlreadyLoaded(checkIfResourceConfigurationsExists,"counter"))
+                            if (!hasDefaultAlreadyLoaded(checkIfResourceConfigurationsExists))
                                 loadAllToRepository(entry.getKey(), entry.getValue());    
                         } 
                         else if (entry.getKey().equals("vocabularies")) {
-                            String checkIfVocabulariesExist = 
-                                        "PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>\n" + 
-                                        "SELECT (COUNT(?a) as ?counter) WHERE { " + 
-                                            "?a a crm:E32_Authority_Document . " +
-                                        "FILTER((CONTAINS(STR(?a),\"http://www.researchspace.org/resource/vocab/\")) "+
-                                                "|| (CONTAINS(STR(?a),\"http://www.researchspace.org/resource/system/vocab/\"))) " +
-                                        "}";
-                            //if (!hasDefaultAlreadyLoaded(checkIfVocabulariesExist, "counter"))
+                            String checkIfVocabulariesExist =  
+                                        "PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/> " +                                      
+                                        "SELECT * WHERE { " +                                          
+                                        "<http://www.researchspace.org/resource/system/vocab/search_view_type> a crm:E32_Authority_Document . " +
+                                        "} LIMIT 1";
+                            if (!hasDefaultAlreadyLoaded(checkIfVocabulariesExist))
                                 loadAllToRepository(entry.getKey(), entry.getValue());    
                         }
                         else if (entry.getKey().equals("system")) {
@@ -240,90 +218,54 @@ public class LDPAssetsLoader {
                         else if (entry.getKey().equals("ontologies")) {
                             String checkIfOntologiesExist = 
                                     "PREFIX owl: <http://www.w3.org/2002/07/owl#>\n" +                    
-                                    "SELECT (count(?ontology) as ?counter) WHERE {" +
+                                    "SELECT * WHERE {" +
                                                 "?ontology a owl:Ontology . " +
-                                    "}";
-                            if (!hasDefaultAlreadyLoaded(checkIfOntologiesExist, "counter")) {
+                                    "} LIMIT 1";
+                            if (!hasDefaultAlreadyLoaded(checkIfOntologiesExist)) {
                                 loadAllToRepository(entry.getKey(), entry.getValue());
                                 checkIfKPsExistForPreloadedOntologiesAndLoad();
                             }
                         }
-                        else {
-                            loadAllToRepository(entry.getKey(), entry.getValue());
-                        }
                     }
-                } else {
+                }
+                else {
                     logger.warn("Skipping loading of LDP assets into the " + entry.getKey()
                             + " repository, because it is not writable!");
                 }
+                
             } else {
-                logger.info("Skipping loading LDP assets into the \"" + entry.getKey()
-                        + "\" repository: the repository is not listed in "
-                        + "\"repositoriesLDPLoad\" property in \"global.prop\"");
+                if (!defaultRepositoriesList.contains(entry.getKey())){
+                    logger.info("Skipping loading LDP assets into the \"" + entry.getKey()
+                                + "\" repository: the repository is not listed in "
+                                + "\"repositoriesLDPLoad\" property in \"global.prop\"");
+                } else {
+                    logger.info("Skipping loading LDP assets into the \"" + entry.getKey()
+                                + "\" repository: the repository is loaded only when "
+                                + "loadDefaultConfig is set to 1 in \"global.prop\"");
+                }
             }
         }
         logger.info("All LDP assets loading finished");
 
         
     }
-
-    private boolean hasDefaultAlreadyLoaded(String checkIfConfigurationsExists, String counterBindingName) {
-        Repository defaultRepository = repositoryManager.getDefault();
-         
-        // connection and to run the sparql query
-        logger.trace(checkIfConfigurationsExists);
-        try (RepositoryConnection con = defaultRepository.getConnection()) {
-            try (TupleQueryResult tqr = con.prepareTupleQuery(checkIfConfigurationsExists).evaluate()) {
-                while (tqr.hasNext()) {
-                    BindingSet bs = tqr.next();
-
-                    int count = Integer.parseInt(bs.getBinding(counterBindingName).getValue().stringValue());
-                    logger.info("counter: "+count);
-                    if (count > 0) {
-                        // skip loading the configurations     
-                        logger.trace("skip loading these defaults!!! ");
-                        return true;                       
-                    } 
+    
+    private boolean hasDefaultAlreadyLoaded(String query) throws Exception {
+        List<BindingSet> results = Repositories.tupleQuery(
+            repositoryManager.getDefault(), 
+            query, 
+            iteration -> {
+                try {
+                    return QueryResults.asList(iteration);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
                 }
             }
-        } catch (Exception e) {
-            logger.error("Failed to .... \n");
-            logger.error(e.getMessage());           
-        }
-        return false;
+        );
+        logger.info("results");logger.info(!results.isEmpty());
+        return !results.isEmpty();
     }
 
-    private boolean isEmptyRepository() {
-        String checkIfResourceConfigurationsExists = 
-                                
-                "SELECT (count(?s) as ?count) {" +
-                            "?s ?p ?o . " +
-                "} limit 1";           
-
-        Repository defaultRepository = repositoryManager.getDefault();
-            
-        // connection and to run the sparql query
-        logger.trace(checkIfResourceConfigurationsExists);
-        try (RepositoryConnection con = defaultRepository.getConnection()) {
-            try (TupleQueryResult tqr = con.prepareTupleQuery(checkIfResourceConfigurationsExists).evaluate()) {
-                while (tqr.hasNext()) {
-                    BindingSet bs = tqr.next();
-
-                    int ontologiesCount = Integer.parseInt(bs.getBinding("count").getValue().stringValue());
-                    logger.info("counter" + ontologiesCount);
-                    if (ontologiesCount > 0) {
-                        // skip loading the ontologies     
-                        logger.trace("skip loading the ontologies!!! ");
-                        return true;                       
-                    } 
-                }
-            }
-        } catch (Exception e) {
-            logger.error("Failed to .... \n");
-            logger.error(e.getMessage());           
-        }
-        return false;
-    }
     private void checkIfKPsExistForPreloadedOntologiesAndLoad() {
         //generate KPs if they don't already exist
         String checkIfKPsExistForPreloadedOntologies = "" +
@@ -383,10 +325,9 @@ public class LDPAssetsLoader {
         for (Entry<String, Map<StoragePath, FindResult>> storageEntry : mapResults.entrySet()) {
             LinkedHashModel loadedAssetsModel = new LinkedHashModel();
             logger.info("Loading " + storageEntry.getValue().size() + " LDP assets into the \"" + repositoryId + "\" repository");
-
-                      
+                     
             for (Entry<StoragePath, FindResult> entry : storageEntry.getValue().entrySet()) {
-                StoragePath path = entry.getKey();
+                StoragePath path = entry.getKey(); 
                 boolean hasKnownFormat = (path.hasExtension(".trig") || path.hasExtension(".nq")
                         || path.hasExtension(".trix"));
                 if (!hasKnownFormat) {
@@ -405,7 +346,7 @@ public class LDPAssetsLoader {
                 }
                 ObjectRecord record = entry.getValue().getRecord();
                 try (InputStream in = record.getLocation().readContent()) {
-                    Model model = Rio.parse(in, "", format);               
+                    Model model = Rio.parse(in, "", format);              
                     loadedAssetsModel.addAll(model);                   
                 } catch (IOException | RDFParseException e) {
                     logger.error("Failed to parse LDP asset: " + record.getLocation() + ". Details: " + e.getMessage());
@@ -437,23 +378,7 @@ public class LDPAssetsLoader {
                     ldpContainersConsistencyCheck(repositoryId, loadedAssetsModel, conn);
                     for (Resource ctx : toLoad) {
                         logger.trace("Loading LDP asset context: " + ctx.stringValue());
-                        Model currentAsset = loadedAssetsModel.filter(null, null, null, ctx);
-                                               
-                        if (repositoryId.equals("system")) {                             
-                            if (ctx.isResource())   
-                                conn.clear(ctx);                                 
-                        }
-
-                        if (repositoryId.equals("configurations")) {                             
-                            logger.info(ctx);
-                            conn.clear(ctx);                                 
-                        }
-
-                        if (repositoryId.equals("vocabularies")) {                             
-                            logger.info(ctx);
-                            conn.clear(ctx);                                 
-                        }
-                       
+                        Model currentAsset = loadedAssetsModel.filter(null, null, null, ctx);                   
                         conn.add(currentAsset);
                     }
                 }
@@ -520,11 +445,10 @@ public class LDPAssetsLoader {
         LinkedHashModel modelExisting;
         Set<Resource> inconsistentContexts = Sets.newHashSet();
         List<Resource> toLoad = Lists.newArrayList();
-        List<Resource> defaultToLoad = Lists.newArrayList();
         for (Resource ctx : contextsLoaded) {
-            Model modelLoaded = loadedAssetsModel.filter(null, null, null, ctx);
+            Model modelLoaded = loadedAssetsModel.filter(null, null, null, ctx);//from local storage + jnl
             modelExisting = new LinkedHashModel();
-            try (RepositoryResult<Statement> res = conn.getStatements(null, null, null, ctx)) {
+            try (RepositoryResult<Statement> res = conn.getStatements(null, null, null, ctx)) { 
                 while (res.hasNext()) {
                     modelExisting.add(res.next());
                 }
@@ -533,31 +457,22 @@ public class LDPAssetsLoader {
             if (modelExisting.isEmpty()) {
                 toLoad.add(ctx);
             } 
-            else if (!LDPAssetsLoader.compareModelsWithoutDates(modelExisting, modelLoaded)) {
-                inconsistentContexts.add(ctx);
-                //loadedAssetsModel.remove(ctx);
-                defaultToLoad.add(ctx);
-            }
+            else {
+                if (!LDPAssetsLoader.compareModelsWithoutDates(modelExisting, modelLoaded)) {
+                    inconsistentContexts.add(ctx);
+                    if (repositoryId.equals("system")) {  
+                        logger.info("reload system KP that changed:"+ctx.stringValue());                        
+                        conn.clear(ctx);
+                        toLoad.add(ctx);
+                    }
+                } 
+            } 
         }
 
-        if (!inconsistentContexts.isEmpty() && 
-                (repositoryId.equals("ontologies") ||repositoryId.equals("vocabularies"))) {
-            /* loading nothing, using what is in the ontologies, vocabularies, or configurations repository at runtime */
-            toLoad = Lists.newArrayList();
-            return toLoad;           
-        }
-
-        if (!inconsistentContexts.isEmpty() && 
-                ((repositoryId.equals("system"))||(repositoryId.equals("configurations")))) {
-            /* loading system repository and over-writing anything in the runtime repository */
-            //toLoad = Lists.newArrayList();
-            logger.debug("context"+defaultToLoad);
-            return defaultToLoad;           
-        }
-        if (!inconsistentContexts.isEmpty()) {            
+        if (!inconsistentContexts.isEmpty() && !(repositoryId.equals("system"))) {            
             String msg = "Inconsistent state of the LDP assets storage: the content of named graphs "
                     + inconsistentContexts.toString() + " in the \"" + repositoryId
-                    + "\" repository does not correspond to the content loaded from storage";
+                    + "\" repository does not correspond to the content loaded from storage; To reconcile the two remove either the one from the database or the one from the storage being loaded";
             logger.error(msg);
             throw new IllegalStateException(msg);
         }

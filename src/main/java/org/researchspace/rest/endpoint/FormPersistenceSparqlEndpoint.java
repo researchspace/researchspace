@@ -44,16 +44,12 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.eclipse.rdf4j.common.iteration.Iterations;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.eclipse.rdf4j.model.util.Models;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 import org.researchspace.api.sparql.SparqlOperationBuilder;
@@ -66,10 +62,7 @@ import org.researchspace.security.SecurityService;
 import org.researchspace.services.storage.api.ObjectKind;
 import org.researchspace.services.storage.api.ObjectMetadata;
 import org.researchspace.services.storage.api.PlatformStorage;
-import org.researchspace.services.storage.api.StorageException;
 import org.researchspace.services.storage.api.StoragePath;
-import org.researchspace.vocabulary.LDP;
-import org.researchspace.vocabulary.PLATFORM;
 import org.researchspace.vocabulary.PROV;
 
 /**

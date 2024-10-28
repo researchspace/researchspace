@@ -240,7 +240,7 @@ class FieldEditorComponent extends Component<Props, State> {
             placement="bottom"
             overlay={<Popover id="tooltip">{tooltip}</Popover>}
           >
-            <Icon iconType='rounded' iconName='help' symbol style={ {position:'absolute', top: '-5px', right: '-6px', fontSize: '20px'} }/>
+            <Icon iconType='rounded' iconName='help' symbol style={ {position:'absolute', top: '-5px', right: '-2px', fontSize: '20px'} }/>
           </OverlayTrigger>
         </div>
     )

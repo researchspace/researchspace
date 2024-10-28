@@ -261,7 +261,7 @@ class FieldEditorComponent extends Component<Props, State> {
       this.updateState({ label });
     };
     return D.div(
-      {},
+      {style: { display: 'flex', flexDirection: 'column', height: '100%' } },
       D.div({style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
         D.div( {}, 
         this.isEditMode() ? 

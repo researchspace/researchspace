@@ -1,7 +1,7 @@
 {{#if knowledgeMapPreviewCard}}
   [[> resourceCardQuery]]
 {{else if resourceConfig}}
-  <div>{{> rsp:resourceCardTemplate}}</div>
+  <div>{{> rsp:ResourceCardTemplate}}</div>
 {{else}}
   [[> resourceCardQuery]]
 {{/if}}
@@ -35,17 +35,14 @@
                                   ?resourceConfigWithP2Label, IF(BOUND(?resourceConfigWithoutP2Label),?resourceConfigWithoutP2Label,""))) AS ?resourceLabel)
                           BIND((IF(BOUND(?resourceConfigWithP2Icon), 
                                 ?resourceConfigWithP2Icon, IF(BOUND(?resourceConfigWithoutP2Icon),?resourceConfigWithoutP2Icon,""))) AS ?resourceIcon)
-                          
-
                       } LIMIT 1'
       
-                template='{{> template}}'
-        >
+                template='{{> template}}'>
 
     <template id='template'>
       <div>
         {{#if bindings.0.resourceConfig.value}}
-          {{> rsp:resourceCardTemplate  resourceConfig=bindings.0.resourceConfig.value
+          {{> rsp:ResourceCardTemplate  resourceConfig=bindings.0.resourceConfig.value
                                         resourceOntologyClass=bindings.0.resourceOntologyClass.value
                                         resourceLabel=bindings.0.resourceLabel.value
                                         resourceIcon=bindings.0.resourceIcon.value
@@ -59,11 +56,11 @@
                         no-result-template='{{> noResults}}'>
       
             <template id='template'>
-              <div>{{> rsp:resourceCardTemplate resourceOntologyClass=bindings.0.resourceOntologyClass.value }}</div>
+              <div>{{> rsp:ResourceCardTemplate resourceOntologyClass=bindings.0.resourceOntologyClass.value }}</div>
             </template>
 
             <template id="noResults">
-              <div>{{> rsp:resourceCardTemplate newKMCard=true }}</div>
+              <div>{{> rsp:ResourceCardTemplate newKMCard=true }}</div>
             </template>
           </semantic-query>
         {{/if}}

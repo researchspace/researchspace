@@ -23,10 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
-
 import javax.inject.Inject;
-
 import org.eclipse.rdf4j.common.iteration.Iterations;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
@@ -58,7 +55,6 @@ import org.researchspace.services.storage.api.ObjectMetadata;
 import org.researchspace.services.storage.api.PlatformStorage;
 import org.researchspace.services.storage.api.StoragePath;
 import org.researchspace.vocabulary.PROV;
-
 import com.google.inject.Injector;
 
 public class LDPAssetsLoaderTest extends AbstractIntegrationTest {
@@ -81,7 +77,7 @@ public class LDPAssetsLoaderTest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testLoadIntoEmpty() throws Exception {System.out.println("something");
+    public void testLoadIntoEmpty() throws Exception {
         Model totalModel = Rio.parse(LDPApiInternal.class.getResourceAsStream("testQueryContainerPermissions.trig"), "",
                 RDFFormat.TRIG);
         LDPAssetsLoader loader = new LDPAssetsLoader();
@@ -95,11 +91,6 @@ public class LDPAssetsLoaderTest extends AbstractIntegrationTest {
         try (RepositoryConnection con = repositoryRule.getAssetRepository().getConnection()) {
             loader.load(); 
             Model model2 = new LinkedHashModel(Iterations.asList(con.getStatements(null, null, null, contextIri)));
-            Iterator<Statement> iterator = model2.iterator();
-            while (iterator.hasNext()) {
-                Statement element = iterator.next();
-                System.out.println(element.getSubject());               
-            }
             Assert.assertTrue(Models.isomorphic(model, model2));
         }
     }

@@ -96,12 +96,16 @@
                       <div>
                           <div style="display: flex; gap: 3px; margin-top: 20px;">
                               <div>Listed in authority document: </div>
-                              <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                              urlqueryparam-view='authority-list' 
-                                              urlqueryparam-resource-iri='{{bindings.0.authorityDocument.value}}'
-                                              class="text-link">
-                              {{bindings.0.authorityDocumentName.value}}
-                              </semantic-link>
+                              {{#if scheme}}
+                                {{bindings.0.authorityDocumentName.value}} 
+                              {{else}}
+                                <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                urlqueryparam-view='authority-list' 
+                                                urlqueryparam-resource-iri='{{bindings.0.authorityDocument.value}}'
+                                                class="text-link">
+                                  {{bindings.0.authorityDocumentName.value}}
+                                </semantic-link>
+                              {{/if}}
                           </div>
                       </div>  
                   </template>

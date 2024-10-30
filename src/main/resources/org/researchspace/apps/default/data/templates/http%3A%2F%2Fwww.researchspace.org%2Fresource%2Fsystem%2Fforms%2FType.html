@@ -95,12 +95,16 @@
                       <div>
                           <div style="display: flex; gap: 3px; margin-top: 20px;">
                               <div>Listed in authority document: </div>
-                              <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                              urlqueryparam-view='authority-list' 
-                                              urlqueryparam-resource-iri='{{bindings.0.authorityDocument.value}}'
-                                              class="text-link">
-                              {{bindings.0.authorityDocumentName.value}}
-                              </semantic-link>
+                              {{#if scheme}}
+                                {{bindings.0.authorityDocumentName.value}} 
+                              {{else}}
+                                <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                urlqueryparam-view='authority-list' 
+                                                urlqueryparam-resource-iri='{{bindings.0.authorityDocument.value}}'
+                                                class="text-link">
+                                  {{bindings.0.authorityDocumentName.value}}
+                                </semantic-link>
+                              {{/if}}
                           </div>
                       </div>  
                   </template>
@@ -234,58 +238,6 @@
         <rs-tab event-key="hierarchy" title="Broader/narrower types">
 
           <div class="hierarchyView-form-container">
-            <div class="page__section-container formHierarchyView-container">
-                <div class="form-header-withButtons">
-                    <h4>Types</h4>
-                </div>
-                <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
-                    {{#if node}}
-                        {{#bind type=node }}
-                            <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
-                                                    BIND(<{{node}}> as ?type)
-                                                    
-                                                    { ?type crm:P127i_has_narrower_term ?node . }
-                                                    UNION
-                                                    { ?type crm:P127_has_broader_term ?parent . }
-                                                    
-                                                    ?node crm:P127_has_broader_term|^crm:P127i_has_narrower_term ?parent .
-
-                                                    FILTER(ISIRI(?node))
-                                                }
-                                                ORDER BY (?node)' 
-
-                                            tuple-template='{{> nodeTemplate}}'>
-                                            
-                                <template id='nodeTemplate'>
-                                    <semantic-query query='SELECT ?node ?nodeLabel WHERE {
-                                                            BIND (<{{node.value}}> as ?node)
-                                                            ?node a ?ontologyClass .
-                                                            ?ontologyClass rdfs:subClassOf* crm:E55_Type .
-                                                            ?node skos:prefLabel ?nodeLabel .  
-                                                        }'
-                                                    template='{{> template}}'>
-                                        
-                                        <template id='template'>
-                                            <div>
-                                                {{#ifCond bindings.0.node.value "===" type}}
-                                                    <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                {{else}}
-                                                    <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                    urlqueryparam-view='resource-editor' 
-                                                                    urlqueryparam-resource-iri='{{node.value}}'
-                                                                    >
-                                                        <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                    </semantic-link>
-                                                {{/ifCond}}
-                                            </div>
-                                        </template>
-                                    </semantic-query>
-                                </template>  
-                            </semantic-tree>
-                        {{/bind}}
-                    {{/if}}
-                </div>
-            </div>
 
             <div class="page__section-container formHierarchyInputs-container">
               <semantic-form-autocomplete-input for='type_broader' 
@@ -300,6 +252,77 @@
                                                 nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
               </semantic-form-autocomplete-input> 
             </div>
+
+            <mp-event-target-template-render id='{{viewId}}-type-broaderNarrowerView' template='{{> broaderNarrowerView}}'>
+              <template id='broaderNarrowerView'>
+                <div class="page__section-container formHierarchyView-container">
+                    <div class="form-header-withButtons">
+                        <h4>Types</h4>
+                        {{#if node}}
+                          <div class="btn-form-actions"> 
+                            <mp-event-trigger id='{{viewId}}-type-broaderNarrowerView-refresh-trigger' 
+                                                type='Component.TemplateUpdate' 
+                                                targets='["{{viewId}}-type-broaderNarrowerView"]'
+                                                >
+                                <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
+                                <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
+                                    Refresh
+                                </button>
+                            </mp-event-trigger>
+                          </div>
+                        {{/if}}
+                    </div>
+                    <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
+                        {{#if node}}
+                            {{#bind type=node }}
+                                <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
+                                                        BIND(<{{node}}> as ?type)
+                                                        
+                                                        { ?type crm:P127i_has_narrower_term ?node . }
+                                                        UNION
+                                                        { ?type crm:P127_has_broader_term ?parent . }
+                                                        
+                                                        ?node crm:P127_has_broader_term|^crm:P127i_has_narrower_term ?parent .
+
+                                                        FILTER(ISIRI(?node))
+                                                    }
+                                                    ORDER BY (?node)' 
+
+                                                tuple-template='{{> nodeTemplate}}'>
+                                                
+                                    <template id='nodeTemplate'>
+                                        <semantic-query query='SELECT ?node ?nodeLabel WHERE {
+                                                                BIND (<{{node.value}}> as ?node)
+                                                                ?node a ?ontologyClass .
+                                                                ?ontologyClass rdfs:subClassOf* crm:E55_Type .
+                                                                ?node skos:prefLabel ?nodeLabel .  
+                                                            }'
+                                                        template='{{> template}}'>
+                                            
+                                            <template id='template'>
+                                                <div>
+                                                    {{#ifCond bindings.0.node.value "===" type}}
+                                                        <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                    {{else}}
+                                                        <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                        urlqueryparam-view='resource-editor' 
+                                                                        urlqueryparam-resource-iri='{{node.value}}'
+                                                                        >
+                                                            <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                        </semantic-link>
+                                                    {{/ifCond}}
+                                                </div>
+                                            </template>
+                                        </semantic-query>
+                                    </template>  
+                                </semantic-tree>
+                            {{/bind}}
+                        {{/if}}
+                    </div>
+                </div>
+              </template>
+            </mp-event-target-template-render>
+
           </div>
           
         </rs-tab>
@@ -309,13 +332,41 @@
 
         <div class="hierarchyView-form-container">
 
-            <div class="page__section-container formHierarchyView-container">
-                <div class="form-header-withButtons">
-                    <h4>Components</h4>
-                </div>
-                <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
+          <div class="page__section-container formHierarchyInputs-container">
+            <semantic-form-autocomplete-input for='type_typical_parts_of' 
+                                            label="Typical parts of" 
+                                            placeholder="Enter type that defines typical wholes for the type"
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
+            </semantic-form-autocomplete-input> 
+
+            <semantic-form-autocomplete-input for='type_typical_wholes_for' 
+                                            label="Typical wholes for" 
+                                            placeholder="Enter type that defines typical part of the type"
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
+            </semantic-form-autocomplete-input> 
+          </div>
+          <mp-event-target-template-render id='{{viewId}}-type-componentsView' template='{{> typeComponents}}'>
+            <template id='typeComponents'>
+              <div class="page__section-container formHierarchyView-container">
+                  <div class="form-header-withButtons">
+                    <h4>Components hierarchy</h4>
                     {{#if node}}
-                        {{#bind type=node }}
+                      <div class="btn-form-actions"> 
+                        <mp-event-trigger id='{{viewId}}-type-componentsView-refresh-trigger' 
+                                            type='Component.TemplateUpdate' 
+                                            targets='["{{viewId}}-type-componentsView"]'
+                                            >
+                            <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
+                            <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
+                                Refresh
+                            </button>
+                        </mp-event-trigger>
+                      </div>
+                    {{/if}}
+                  </div>
+                  <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
+                      {{#if node}}
+                          {{#bind type=node }}
                             <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
                                                     BIND(<{{node}}> as ?type)
                                                     
@@ -357,24 +408,13 @@
                                     </semantic-query>
                                 </template>  
                             </semantic-tree>
-                        {{/bind}}
-                    {{/if}}
-                </div>
-            </div>
+                          {{/bind}}
+                      {{/if}}
+                  </div>
+              </div>
+            </template>
+          </mp-event-target-template-render>
 
-            <div class="page__section-container formHierarchyInputs-container">
-                <semantic-form-autocomplete-input for='type_typical_parts_of' 
-                                                label="Typical parts of" 
-                                                placeholder="Enter type that defines typical wholes for the type"
-                                                nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
-                </semantic-form-autocomplete-input> 
-
-                <semantic-form-autocomplete-input for='type_typical_wholes_for' 
-                                                label="Typical wholes for" 
-                                                placeholder="Enter type that defines typical part of the type"
-                                                nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
-                </semantic-form-autocomplete-input> 
-            </div>
         </div>
           
       </rs-tab>

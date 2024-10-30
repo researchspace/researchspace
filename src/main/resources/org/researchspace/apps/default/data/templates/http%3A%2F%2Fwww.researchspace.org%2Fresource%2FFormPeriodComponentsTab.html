@@ -1,0 +1,273 @@
+<rs-tab event-key="component" title="Components">
+
+  {{#if scheme}}
+    <semantic-form-tree-picker-input    for='period_forms_part_of_event' 
+                                        label="Forms part of [[resourceLabel]]" 
+                                        placeholder="Select [[resourceLabel]]" 
+                                        default-values='[{{#if broader}}"{{broader}}"{{/if}}]'
+                                        tree-patterns='{"scheme": "{{scheme}}",
+                                                        "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
+                                                        "relationPattern": "?item crm:P9i_forms_part_of ?parent",
+                                                        "labelPattern": "?item crm:P1_is_identified_by ?appellation .
+                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                                                        ?appellation crm:P190_has_symbolic_content ?label ."}'
+
+                                        query-item-label='SELECT ?label WHERE {
+                                                            ?item crm:P1_is_identified_by ?appellation .
+                                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                                            ?appellation crm:P190_has_symbolic_content ?label .
+                                                        }'> 
+    </semantic-form-tree-picker-input>   
+
+    <semantic-form-tree-picker-input    for='period_consist_of_event' 
+                                        label="Consists of [[resourceLabel]]" 
+                                        placeholder="Select [[resourceLabel]]"
+                                        tree-patterns='{"scheme": "{{scheme}}",
+                                                        "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
+                                                        "relationPattern": "?item crm:P9i_forms_part_of ?parent",
+                                                        "labelPattern": "?item crm:P1_is_identified_by ?appellation .
+                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                                                        ?appellation crm:P190_has_symbolic_content ?label ."}'
+
+                                        query-item-label='SELECT ?label WHERE {
+                                                            ?item crm:P1_is_identified_by ?appellation .
+                                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                                            ?appellation crm:P190_has_symbolic_content ?label .
+                                                        }'>
+    </semantic-form-tree-picker-input> 
+  {{else}}
+    <div class="hierarchyView-form-container">
+
+      <div class="page__section-container formHierarchyInputs-container">
+        <semantic-form-autocomplete-input   for='period_forms_part_of_event' 
+                                            label="Forms part of" 
+                                            placeholder="Select period/event/activity" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_periods]]'> 
+        </semantic-form-autocomplete-input> 
+
+        <semantic-form-autocomplete-input   for='period_consist_of_event' 
+                                            label="Consists of" 
+                                            placeholder="Select period/event/activity" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_periods]]'> 
+        </semantic-form-autocomplete-input> 
+      </div>
+
+      <mp-event-target-template-render id='{{viewId}}-period-componentsView' template='{{> periodComponents}}'>
+        <template id='periodComponents'>
+          <div class="page__section-container formHierarchyView-container">
+              <div class="form-header-withButtons">
+                <h4>Components hierarchy</h4>
+                {{#if node}}
+                  <div class="btn-form-actions"> 
+                    <mp-event-trigger id='{{viewId}}-period-componentsView-refresh-trigger' 
+                                        type='Component.TemplateUpdate' 
+                                        targets='["{{viewId}}-period-componentsView"]'
+                                        >
+                        <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
+                        <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
+                            Refresh
+                        </button>
+                    </mp-event-trigger>
+                  </div>
+                {{/if}}
+              </div>
+              <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
+                {{#if node}}
+                    {{#bind period=node }}
+                      <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
+                                              BIND(<{{node}}> as ?period)
+                                              
+                                              { ?period crm:P9_consists_of ?node . }
+                                              UNION
+                                              { ?period crm:P9i_forms_part_of ?parent . }
+                                              
+                                              ?node crm:P9i_forms_part_of ?parent .
+
+                                              FILTER(ISIRI(?node))
+                                          }
+                                          ORDER BY (?node)' 
+
+                                      tuple-template='{{> nodeTemplate}}'>
+                                      
+                          <template id='nodeTemplate'>
+                              <semantic-query query='SELECT ?node ?nodeLabel WHERE {
+                                                      BIND (<{{node.value}}> as ?node)
+                                                      ?node a ?ontologyClass .
+                                                      ?ontologyClass rdfs:subClassOf* crm:E4_Period .
+                                                      ?node crm:P1_is_identified_by ?appellation .
+                                                      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                      ?appellation crm:P190_has_symbolic_content ?nodeLabel .  
+                                                  }'
+                                              template='{{> template}}'>
+                                  
+                                  <template id='template'>
+                                      <div>
+                                          {{#ifCond bindings.0.node.value "===" period}}
+                                              <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                          {{else}}
+                                              <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                              urlqueryparam-view='resource-editor' 
+                                                              urlqueryparam-resource-iri='{{node.value}}'
+                                                              >
+                                                  <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                              </semantic-link>
+                                          {{/ifCond}}
+                                      </div>
+                                  </template>
+                              </semantic-query>
+                          </template>  
+                      </semantic-tree>
+                    {{/bind}}
+                {{/if}}
+              </div>
+          </div>
+        </template>
+      </mp-event-target-template-render>
+
+    </div>
+  {{/if}}
+
+  {{#if node}}
+  <style>
+    .collapsible-div-content {
+      padding: 0;
+    }
+  </style>
+    <div style="margin-top: 20px;">
+      <mp-collapsible-div expanded="false" render-hidden="false">
+        <mp-collapsible-div-trigger>
+          <b>Components timeline</b>
+        </mp-collapsible-div-trigger>
+        <mp-collapsible-div-content style="padding: 0;">
+          <mp-event-target-template-render id='{{viewId}}-timeline-componentsView' template='{{> timelineView}}'>
+            <template id='timelineView'>
+              <div class="page__section-container" style="margin-top: 10px; padding: 10px 20px 20px; height: fit-content;">
+                <div class="form-header-withButtons" style="border: none;">
+                  <h4>Components timeline</h4>
+                  <div class="btn-form-actions"> 
+                    <mp-event-trigger id='{{viewId}}-timeline-componentsView-refresh-trigger' 
+                                        type='Component.TemplateUpdate' 
+                                        targets='["{{viewId}}-timeline-componentsView"]'
+                                        >
+                        <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
+                        <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
+                          Refresh
+                        </button>
+                    </mp-event-trigger>
+                  </div>
+                </div>
+                <div class="form-timeline-container">
+                  <semantic-timeline query='PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+                                              SELECT DISTINCT ?item ?timespan ?start ?end ?birthTimespan ?deathTimespan WHERE {
+                                                {
+                                                  BIND(<{{node}}> as ?item)
+                                                } UNION {
+                                                  <{{node}}> crm:P9i_forms_part_of|crm:P9_consists_of ?item .
+                                                  ?item a ?ontologyClass .
+                                                  ?ontologyClass rdfs:subClassOf* crm:E2_Temporal_Entity .
+                                                }
+                                                  
+                                                  ?item crm:P4_has_time-span ?timespan .
+                                                  ?timespan crm:P82a_begin_of_the_begin|crm:P82b_end_of_the_end|crm:P82_at_some_time_within ?timespanDate .
+                                                  OPTIONAL { ?timespan crm:P82a_begin_of_the_begin ?timespanStart . }
+                                                  OPTIONAL { ?timespan crm:P82b_end_of_the_end ?timespanEnd . }
+                                                  OPTIONAL { ?timespan crm:P82_at_some_time_within ?date . }
+                                                  
+                                                  BIND(IF(BOUND(?timespanStart), ?timespanStart, ?date) AS ?start)
+                                                  BIND(IF(BOUND(?timespanEnd), ?timespanEnd, ?date) AS ?end)
+                                              }
+                                              ORDER BY ?start ?end
+                                              LIMIT 100'
+                                      tuple-template='{{> timelineItem}}'
+                                      tuple-template-height=auto
+                                      no-result-template='{{> noResults}}'>
+
+                    <template id='timelineItem'>
+                      <div style='display:flex;'>
+                        <div style='display:flex; gap: 12px; flex: 1;'>
+                          <div>
+                            <mp-resource-thumbnail iri='{{item.value}}'
+                                                  style="width: 55px; height: 55px; object-fit:cover; margin-top: 5px;">
+                              <mp-resource-thumbnail-fallback>
+                                <span>Image not found!</span>
+                              </mp-resource-thumbnail-fallback>
+                            </mp-resource-thumbnail>
+                          </div>
+                          <div style='display:flex; flex-direction:column;align-items: flex-start; gap: 2px;'>
+                            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                            urlqueryparam-view='resource-editor' 
+                                            urlqueryparam-resource-iri='{{item.value}}'>
+                              <mp-label iri='{{item.value}}' class="text-link-action text-truncate-line1"></mp-label>
+                            </semantic-link>
+                            {{#if timespan}}
+                              {{#if start.value}}<div>Start date: {{start.value}}</div>{{/if}}
+                              {{#if end.value}}<div>End date: {{end.value}}</div>{{/if}}
+                              <div style="display: flex; gap: 3px;">
+                                <span>View date:</span>
+                                <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                urlqueryparam-view='resource-editor' 
+                                                urlqueryparam-resource-iri='{{timespan.value}}'>
+                                    <span><mp-label iri='{{timespan.value}}' class="text-link text-truncate-line1"></mp-label></span>
+                                </semantic-link>
+                              </div> 
+                            {{/if}}
+                          </div>
+                        </div>
+                        <div style="display:flex; gap: 3px;">
+                          <mp-copy-to-default-set id="{{viewId}}-copy-to-clipboard" resource="{{item.value}}">
+                            <button class="btn btn-default" style="height: 35px;">
+                              <rs-icon icon-type="rounded" icon-name="inventory" symbol="true" title="Copy to clipboard"></rs-icon>
+                            </button>
+                          </mp-copy-to-default-set>
+                          
+                          <mp-overlay-dialog  id="{{item.value}}-resource-preview-dialog"  
+                                              type="modal" 
+                                              class="modal-xlSize preview_modal"
+                                              title="Preview">
+                            <mp-overlay-dialog-trigger>
+                              <button class="btn btn-default" style="height: 35px;">
+                                <rs-icon icon-type="rounded" icon-name="fullscreen" symbol="true" title="Preview"></rs-icon>
+                              </button>
+                            </mp-overlay-dialog-trigger>
+
+                            <mp-overlay-dialog-content>
+                              <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
+                                                options='{  "resource": "{{item.value}}", 
+                                                            "resourceConfig": "[[urlParam "resourceconfig" escape=false]]", 
+                                                            "resourceConfigLabel": "[[urlParam "resourcelabel" escape=false]]",
+                                                            "resourceOntologyClass": "[[urlParam "resourceontologyclass" escape=false]]",
+                                                            "resourceDetailSection": true
+                                                          }' >
+                              </inline-template> 
+                            </mp-overlay-dialog-content>
+                          </mp-overlay-dialog>
+                        </div>
+                      </div>
+                    </template>
+
+                    <template id='noResults'>
+                      <div style="margin-bottom: 20px;">
+                        <div class="documentation-section documentation-section-withIcon">
+                          <div class="documentation-section-icon-container">
+                            <i class="fa fa-info"></i>
+                          </div>
+        
+                          <div style="flex: 1;"> 
+                            <div class="documentation-section-title">No results available</div>
+                            <div class="documentation-section-content">
+                              To display the timeline components must have associated a Timespan with date, start date or end date.
+                            </div>
+                          </div>
+                        </div> 
+                      </div>
+                    </template>
+                  </semantic-timeline>
+                </div>
+              </div>
+            </template>
+          </mp-event-target-template-render>
+        </mp-collapsible-div-content>
+      </mp-collapsible-div>
+    </div>
+  {{/if}}
+</rs-tab>

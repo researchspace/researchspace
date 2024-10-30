@@ -287,7 +287,8 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
             {this.externalLinkButton()}
           </ButtonGroup> */}
 
-          <Dropdown id='links' disabled={this.isTextSelectionActionDisabled()}>
+{/* Links Buttons hidden as they have bugs to be fixed  */}
+{/*           <Dropdown id='links' disabled={this.isTextSelectionActionDisabled()}>
             <Dropdown.Toggle>
               <Icon iconType='rounded' iconName='add_link' symbol className='icon-left'/>
               Links
@@ -303,7 +304,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
             </MenuItem>
               
             </Dropdown.Menu>
-          </Dropdown>
+          </Dropdown> */}
 
         </div>
         

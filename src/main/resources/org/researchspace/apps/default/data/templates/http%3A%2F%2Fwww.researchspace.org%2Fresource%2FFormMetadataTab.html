@@ -3,11 +3,10 @@
 {{#ifCond mode "!==" "new"}}
     {{#if node}}
         <bs-tab event-key="metadata" title="Metadata">
-            <semantic-query query='SELECT ?entity ?entityFormRecordCreation ?actor ?actorFullName ?creationDateValue ?importFromExternalSource ?sourceURI WHERE {
+            <semantic-query query='SELECT ?actor ?actorFullName ?creationDateValue ?importFromExternalSource ?sourceURI WHERE {
                                     BIND(<{{node}}> AS ?entity)
 
                                     ?entity crm:P129i_is_subject_of ?entityFormRecord .
-                                    ?entityFormRecord a crmdig:D1_Digital_Object .
                                     ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
                                     ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
                                     ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
@@ -17,7 +16,6 @@
                                     OPTIONAL {
                                         ?actor crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
                                         ?actor crm:P1_is_identified_by ?actorName .
-                                        ?actorName a crm:E41_Appellation .
                                         ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                                         ?actorName crm:P190_has_symbolic_content ?actorFullName .
                                     }
@@ -27,10 +25,8 @@
 
                                     OPTIONAL {
                                         ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
-                                        ?importFromExternalSource a crmdig:D12_Data_Transfer_Event .
                                         ?importFromExternalSource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source> .
                                         ?importFromExternalSource crmdig:L14_transferred ?sourceURI .
-                                        ?sourceURI a crmdig:D1_Digital_Object .
                                         ?sourceURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
                                     }
 
@@ -44,15 +40,9 @@
                                     <table class="table metadata-table">
                                         <tbody>
                                             <tr class="standard-row">
-                                                <td class="table-title"><b>created</b></td>
+                                                <td class="table-title" style="width: 200px;"><b>Created</b></td>
                                                 <td class="table-description">
-                                                    {{dateTimeFormat bindings.0.creationDateValue.value "DD/MM/YYYY, h:mm a"}}
-                                                </td>
-                                            </tr>
-                                            <tr class="standard-row">
-                                                <td class="table-title"><b>created by</b></td>
-                                                <td class="table-description">
-                                                    <rs-icon icon-type="rounded" icon-name="account_box" class="table-icon" symbol="true"></rs-icon>
+                                                    {{dateTimeFormat bindings.0.creationDateValue.value "DD/MM/YYYY, h:mm a"}} by
                                                     {{#if bindings.0.actorFullName.value}}
                                                         <semantic-link-container    uri="http://www.researchspace.org/resource/ThinkingFrames"
                                                                                     urlqueryparam-view='resource-editor' 
@@ -68,7 +58,7 @@
                                             </tr>
                                             {{#if bindings.0.importFromExternalSource.value}}
                                                 <tr class="standard-row">
-                                                    <td class="table-title"><b>imported from</b></td>
+                                                    <td class="table-title" style="width: 200px;"><b>Imported from</b></td>
                                                     <td class="table-description">
                                                         <a class="text-link-action" target="_blank" href="{{bindings.0.sourceURI.value}}" title="{{bindings.0.sourceURI.value}}">{{bindings.0.sourceURI.value}}</a>
                                                     </td>
@@ -80,33 +70,83 @@
                             </template>
             </semantic-query>
 
+            <semantic-query query='SELECT ?actor ?actorFullName (MAX(?modificationDateValue) AS ?lastModificationDate) WHERE {
+                                    BIND(<{{node}}> AS ?entity)
+
+                                    ?entity crm:P129i_is_subject_of ?entityFormRecord .
+                                    ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                    ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordModification .
+                                    ?entityFormRecordModification crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_modification> .
+
+                                    ?entityFormRecordModification crm:P14_carried_out_by ?actor .
+
+                                    OPTIONAL {
+                                        ?actor crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                        ?actor crm:P1_is_identified_by ?actorName .
+                                        ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                        ?actorName crm:P190_has_symbolic_content ?actorFullName .
+                                    }
+
+                                    ?entityFormRecordModification crm:P4_has_time-span ?modificationDate .
+                                    ?modificationDate crm:P82_at_some_time_within ?modificationDateValue .
+                                } GROUP BY ?actor ?actorFullName'
+                                        
+                            template='{{> template}}'>
+                                
+                    <template id='template'>
+                        <div class="table-expanded">
+                            <table class="table metadata-table">
+                                <tbody>
+                                    {{#each bindings}}
+                                        <tr class="standard-row">
+                                            <td class="table-title" style="width: 200px;"><b>Last modified</b></td>
+                                            <td class="table-description">
+                                                {{dateTimeFormat lastModificationDate.value "DD/MM/YYYY, h:mm a"}} by
+                                                {{#if actorFullName}}
+                                                    <semantic-link-container    uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                urlqueryparam-view='resource-editor' 
+                                                                                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                                                                urlqueryparam-resource-iri="{{actor.value}}"
+                                                                                urlqueryparam-mode='edit'>
+                                                        <div style="text-decoration: underline; cursor: pointer;">{{actorFullName.value}}</div>
+                                                    </semantic-link-container>
+                                                {{else}}
+                                                    <mp-label iri='{{actor.value}}'></mp-label>
+                                                {{/if}}
+                                            </td>
+                                        </tr>
+                                    {{/each}}
+                                </tbody>   
+                            </table>
+                        </div>
+                    </template>
+            </semantic-query>
+
             [[#if imageOverlay]]
-                <semantic-query  query='SELECT ?overlayImage ?modifiedByUser ?modifiedByUserFullName ?modifiedAtTime WHERE {
-                                                    BIND(<{{node}}> AS ?overlayImage)
+                <semantic-query  query='SELECT ?modifiedByUser ?modifiedByUserFullName ?modifiedAtTime WHERE {
+                                            BIND(<{{node}}> AS ?overlayImage)
 
-                                                    ?overlayImage a crmdig:D9_Data_Object .
-                                                    ?overlayImage crmdig:L60i_is_documented_by ?digitizationProcess .
-                                                    ?digitizationProcess a crmdig:D2_Digitization_Process .
-                    
-                                                    ?overlayImage <http://www.w3.org/ns/prov#generatedAtTime> ?modifiedAtTime .
-                    
-                                                    [[#if (hasPermission "forms:ldp:*")]]
-                                                        ?overlayImage <http://www.w3.org/ns/prov#wasAttributedTo> ?modifiedByUser .
-                                                    [[else]]
-                                                        ?overlayImage <http://www.w3.org/ns/prov#wasAttributedTo> ?modifiedByUser .
-                                                        FILTER(?modifiedByUser = <http://www.researchspace.org/resource/system/anonymousUser> )
-                                                    [[/if]]
+                                            ?overlayImage a crmdig:D9_Data_Object .
+                                            ?overlayImage crmdig:L60i_is_documented_by ?digitizationProcess .
+                                            ?digitizationProcess a crmdig:D2_Digitization_Process .
+            
+                                            ?overlayImage <http://www.w3.org/ns/prov#generatedAtTime> ?modifiedAtTime .
+            
+                                            [[#if (hasPermission "forms:ldp:*")]]
+                                                ?overlayImage <http://www.w3.org/ns/prov#wasAttributedTo> ?modifiedByUser .
+                                            [[else]]
+                                                ?overlayImage <http://www.w3.org/ns/prov#wasAttributedTo> ?modifiedByUser .
+                                                FILTER(?modifiedByUser = <http://www.researchspace.org/resource/system/anonymousUser> )
+                                            [[/if]]
 
-                                                    OPTIONAL {
-                                                        ?modifiedByUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
-                                                        ?modifiedByUser crm:P1_is_identified_by ?actorName .
-                                                        ?actorName a crm:E41_Appellation .
-                                                        ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
-                                                        ?actorName crm:P190_has_symbolic_content ?modifiedByUserFullName .
-                                                    }
-                                                }'
-                                            template='{{> template}}'
-                                        >
+                                            OPTIONAL {
+                                                ?modifiedByUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                                ?modifiedByUser crm:P1_is_identified_by ?actorName .
+                                                ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                                ?actorName crm:P190_has_symbolic_content ?modifiedByUserFullName .
+                                            }
+                                        }'
+                                template='{{> template}}'>
                                             
                             <template id='template'>
                                 <div>
@@ -115,15 +155,9 @@
                                         <table class="table metadata-table">
                                             <tbody>
                                                 <tr class="standard-row">
-                                                    <td class="table-title"><b>created at</b></td>
+                                                    <td class="table-title" style="width: 200px;"><b>Created</b></td>
                                                     <td class="table-description">
-                                                        {{dateTimeFormat bindings.0.modifiedAtTime.value "DD/MM/YYYY, h:mm a"}}
-                                                    </td>
-                                                </tr>
-                                                <tr class="standard-row">
-                                                    <td class="table-title"><b>created by</b></td>
-                                                    <td class="table-description">
-                                                        <rs-icon icon-type="rounded" icon-name="account_box" class="table-icon" symbol="true"></rs-icon>
+                                                        {{dateTimeFormat bindings.0.modifiedAtTime.value "DD/MM/YYYY, h:mm a"}} by
                                                         {{#if bindings.0.modifiedByUserFullName.value}}
                                                             <semantic-link-container    uri="http://www.researchspace.org/resource/ThinkingFrames"
                                                                                         urlqueryparam-view='resource-editor' 
@@ -144,6 +178,152 @@
                             </template>
                 </semantic-query>
             [[/if]]
+
+           
+            <div class="table-expanded">
+                <table class="table metadata-table">
+                    <tbody>
+                        <tr class="standard-row">
+                            <td class="table-title" style="width: 200px;"><b>Modification history</b></td>
+                            <td class="table-description">
+                                <mp-overlay-dialog  id="{{viewId}}-modification-history"  
+                                                    type="modal" 
+                                                    class="modal-xlSize preview_modal"
+                                                    title="All modifications">
+                                <mp-overlay-dialog-trigger>
+                                    <div style="text-decoration: underline; cursor: pointer;">all modifications</div>
+                                </mp-overlay-dialog-trigger>
+                                <mp-overlay-dialog-content>
+                                    <div>
+                                        <semantic-table id='{{viewId}}-modification-table'
+                                                        class-name="table-fixed-header table-expanded"
+                                                        query='SELECT ?actor ?actorFullName ?modificationDateValue WHERE {
+                                                            BIND(<{{node}}> AS ?entity)
+                        
+                                                            ?entity crm:P129i_is_subject_of ?entityFormRecord .
+                                                            ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                                            ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordModification .
+                                                            ?entityFormRecordModification crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_modification> .
+                        
+                                                            ?entityFormRecordModification crm:P14_carried_out_by ?actor .
+                        
+                                                            OPTIONAL {
+                                                                ?actor crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                                                ?actor crm:P1_is_identified_by ?actorName .
+                                                                ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                                                ?actorName crm:P190_has_symbolic_content ?actorFullName .
+                                                            }
+                        
+                                                            ?entityFormRecordModification crm:P4_has_time-span ?modificationDate .
+                                                            ?modificationDate crm:P82_at_some_time_within ?modificationDateValue .
+                                                        } ORDER BY DESC(?modificationDateValue)'
+                                                        
+                                                        number-of-displayed-rows=20
+                                                        options:='{"filterPlaceholderText":"Filter modifications"}'
+                                                        no-result-template='{{> noResults}}'
+                                                        column-configuration='[{"variableName": "modificationDateValue", "displayName": "Modification date", "cellTemplate": "{{> date}}" },
+                                                                                {"variableName": "actorFullName", "displayName": "Modified by", "cellTemplate": "{{> actor}}" }
+                                                                            ]'>
+
+                                                <template id='date'>
+                                                    <div style="display: flex; gap: 5px; align-items: center;">
+                                                        <rs-icon icon-type="rounded" icon-name="schedule" symbol="true"></rs-icon>
+                                                        <div>{{dateTimeFormat modificationDateValue.value "DD/MM/YYYY, h:mm a"}}</div>
+                                                    </div>
+                                                </template>
+                                                
+                                                <template id='actor'>
+                                                    <div style="display: flex; gap: 5px; align-items: center;">
+                                                        <rs-icon icon-type="rounded" icon-name="portrait" symbol="true"></rs-icon>
+                                                        {{#if actorFullName.value}}
+                                                            <semantic-link-container    uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                                        urlqueryparam-view='resource-editor' 
+                                                                                        urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                                                                        urlqueryparam-resource-iri="{{actor.value}}"
+                                                                                        urlqueryparam-mode='edit'>
+                                                                <div class="text-link">{{actorFullName.value}}</div>
+                                                            </semantic-link-container>
+                                                        {{else}}
+                                                            <mp-label iri='{{actor.value}}'></mp-label>
+                                                        {{/if}}
+                                                    </div>
+                                                </template>
+
+                                                <template id="noResults">
+                                                    <div style="padding: 12px 0">
+                                                        No modification available
+                                                    </div>
+                                                </template>
+                                        </semantic-table>
+                                    </div>
+                                </mp-overlay-dialog-content>
+                                </mp-overlay-dialog>
+                            </td>
+                        </tr>
+                    </tbody>   
+                </table>
+            </div>
+
+            <div class="table-expanded">
+                <table class="table metadata-table">
+                    <tbody>
+                        <tr class="standard-row">
+                            <td class="table-title" style="width: 200px;"><b>Contributors</b></td>
+                            <td class="table-description">
+                                <semantic-query query='SELECT DISTINCT ?actor ?actorFullName WHERE {
+                                                        BIND(<{{node}}> AS ?entity)
+
+                                                        ?entity crm:P129i_is_subject_of ?entityFormRecord .
+                                                        ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                                        ?entityFormRecord crmdig:L11i_was_output_of ?recordOutput .
+                                                        ?recordOutput crm:P2_has_type ?type .
+                                                        FILTER(?type IN (<http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_modification>, 
+                                                                            <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation>
+                                                                          ))
+                                                        ?recordOutput crm:P14_carried_out_by ?actor .
+
+                                                        OPTIONAL {
+                                                            ?actor crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                                            ?actor crm:P1_is_identified_by ?actorName .
+                                                            ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                                            ?actorName crm:P190_has_symbolic_content ?actorFullName .
+                                                        }
+                                                    } ORDER BY ?actorFullName ?actor'
+                                                template='{{> template}}'>
+
+                                    <template id='template'>
+                                        <div>
+                                        <mp-popover>
+                                            <mp-popover-trigger placement="bottom" trigger='["click", "focus"]'> 
+                                                <rs-icon icon-type="rounded" icon-name="people_alt" class="people-icon" symbol="true"></rs-icon>
+                                            </mp-popover-trigger>
+                                            <mp-popover-content>
+                                                <div>
+                                                    {{#each bindings}}
+                                                        {{#if actorFullName.value}}
+                                                            <semantic-link-container    uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                                        urlqueryparam-view='resource-editor' 
+                                                                                        urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                                                                        urlqueryparam-resource-iri="{{actor.value}}"
+                                                                                        urlqueryparam-mode='edit'>
+                                                                <div class="text-link">{{actorFullName.value}}</div>
+                                                            </semantic-link-container>
+                                                        {{else}}
+                                                            <mp-label iri='{{actor.value}}'></mp-label>
+                                                        {{/if}}
+                                                    {{/each}}
+                                                </div>
+                                            </mp-popover-content>
+                                        </mp-popover>
+                                        </div>
+                                    </template>
+                                </semantic-query>
+                            </td>
+                        </tr>
+                    </tbody>   
+                </table>
+            </div>
+            
         </bs-tab>
     {{/if}}
 {{/ifCond}}

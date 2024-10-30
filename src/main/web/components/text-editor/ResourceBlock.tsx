@@ -126,8 +126,7 @@ export class ResourceBlock extends React.Component<ResourceBlockProps> {
         >
           <div
             style={{
-              ...style,
-              padding: 10,
+              ...style
             }}
             ref={this.onTemplateRendered}
           >

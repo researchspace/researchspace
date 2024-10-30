@@ -220,13 +220,42 @@
         <rs-tab event-key="hierarchy" title="Broader/narrower types">
 
           <div class="hierarchyView-form-container">
-            <div class="page__section-container formHierarchyView-container">
-                <div class="form-header-withButtons">
-                    <h4>Types</h4>
-                </div>
-                <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
-                    {{#if node}}
-                        {{#bind type=node }}
+            <div class="page__section-container formHierarchyInputs-container">
+              <semantic-form-autocomplete-input for='type_broader' 
+                                                label="Broader type" 
+                                                placeholder="Enter broader type"
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
+              </semantic-form-autocomplete-input> 
+
+              <semantic-form-autocomplete-input for='type_narrower' 
+                                                label="Narrower type" 
+                                                placeholder="Enter narrower type"
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
+              </semantic-form-autocomplete-input> 
+            </div>
+
+            <mp-event-target-template-render id='{{viewId}}-type-broaderNarrowerView' template='{{> broaderNarrowerView}}'>
+              <template id='broaderNarrowerView'>
+                <div class="page__section-container formHierarchyView-container">
+                    <div class="form-header-withButtons">
+                      <h4>Types</h4>
+                      {{#if node}}
+                        <div class="btn-form-actions"> 
+                          <mp-event-trigger id='{{viewId}}-type-broaderNarrowerView-refresh-trigger' 
+                                              type='Component.TemplateUpdate' 
+                                              targets='["{{viewId}}-type-broaderNarrowerView"]'
+                                              >
+                              <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
+                              <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
+                                  Refresh
+                              </button>
+                          </mp-event-trigger>
+                        </div>
+                      {{/if}}
+                    </div>
+                    <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
+                      {{#if node}}
+                          {{#bind type=node }}
                             <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
                                                     BIND(<{{node}}> as ?type)
                                                     
@@ -268,24 +297,12 @@
                                     </semantic-query>
                                 </template>  
                             </semantic-tree>
-                        {{/bind}}
-                    {{/if}}
+                          {{/bind}}
+                      {{/if}}
+                    </div>
                 </div>
-            </div>
-
-            <div class="page__section-container formHierarchyInputs-container">
-              <semantic-form-autocomplete-input for='type_broader' 
-                                                label="Broader type" 
-                                                placeholder="Enter broader type"
-                                                nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
-              </semantic-form-autocomplete-input> 
-
-              <semantic-form-autocomplete-input for='type_narrower' 
-                                                label="Narrower type" 
-                                                placeholder="Enter narrower type"
-                                                nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
-              </semantic-form-autocomplete-input> 
-            </div>
+              </template>
+            </mp-event-target-template-render>
           </div>
           
         </rs-tab>
@@ -295,9 +312,38 @@
 
         <div class="hierarchyView-form-container">
 
+          <div class="page__section-container formHierarchyInputs-container">
+            <semantic-form-autocomplete-input for='type_typical_parts_of' 
+                                            label="Typical parts of" 
+                                            placeholder="Enter type that defines typical wholes for the language"
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
+            </semantic-form-autocomplete-input> 
+
+            <semantic-form-autocomplete-input for='type_typical_wholes_for' 
+                                            label="Typical wholes for" 
+                                            placeholder="Enter type that defines typical part of the language"
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
+            </semantic-form-autocomplete-input> 
+         </div>
+
+         <mp-event-target-template-render id='{{viewId}}-type-componentsView' template='{{> typeComponents}}'>
+          <template id='typeComponents'>
             <div class="page__section-container formHierarchyView-container">
                 <div class="form-header-withButtons">
-                    <h4>Components</h4>
+                    <h4>Components hierarchy</h4>
+                    {{#if node}}
+                      <div class="btn-form-actions"> 
+                        <mp-event-trigger id='{{viewId}}-type-componentsView-refresh-trigger' 
+                                            type='Component.TemplateUpdate' 
+                                            targets='["{{viewId}}-type-componentsView"]'
+                                            >
+                            <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
+                            <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
+                                Refresh
+                            </button>
+                        </mp-event-trigger>
+                      </div>
+                    {{/if}}
                 </div>
                 <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
                     {{#if node}}
@@ -347,20 +393,10 @@
                     {{/if}}
                 </div>
             </div>
+          </template>
+        </mp-event-target-template-render>
 
-            <div class="page__section-container formHierarchyInputs-container">
-                <semantic-form-autocomplete-input for='type_typical_parts_of' 
-                                                label="Typical parts of" 
-                                                placeholder="Enter type that defines typical wholes for the language"
-                                                nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
-                </semantic-form-autocomplete-input> 
 
-                <semantic-form-autocomplete-input for='type_typical_wholes_for' 
-                                                label="Typical wholes for" 
-                                                placeholder="Enter type that defines typical part of the language"
-                                                nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
-                </semantic-form-autocomplete-input> 
-            </div>
         </div>
           
       </rs-tab>

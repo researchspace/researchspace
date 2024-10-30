@@ -144,9 +144,7 @@ const defaultAnnotationViewerTemplate = globalHandlebars.compile(
                             text-decoration: underline;
                             font-weight: 600;
                             cursor: pointer;
-                            color: #525156">
-                  {{{annoText}}}
-                </div>
+                            color: #525156">{{{annoText}}}</div>
               </semantic-link>
             </mp-template-item>
           {{/if}}

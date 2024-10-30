@@ -121,8 +121,8 @@ export class ExternalLink extends React.Component<ExternalLinkProps, ExternalLin
                   />
                   :
                   <div className={styles.externalLinkHolder}>
-                    <a {...dataAttributes}>
-                      {node.text}
+                    <a target='_blank' {...dataAttributes}>
+                      {node.text} 
                     </a>
                   </div>
               }

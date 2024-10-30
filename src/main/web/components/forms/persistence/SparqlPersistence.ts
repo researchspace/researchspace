@@ -27,6 +27,8 @@ import { SparqlUtil } from 'platform/api/sparql';
 import { CompositeValue, EmptyValue, FieldValue } from '../FieldValues';
 import { RawSparqlPersistence } from './RawSparqlPersistence';
 import { TriplestorePersistence } from './TriplestorePersistence';
+import { isIri } from 'platform/api/sparql/TypeGuards';
+
 
 export interface SparqlPersistenceConfig {
   type?: 'sparql';
@@ -48,13 +50,15 @@ export class SparqlPersistence implements TriplestorePersistence {
     const stringQueries = Immutable.List<SparqlJs.ConstructQuery>(updateQueries)
       .map(SparqlUtil.serializeQuery)
       .flatten();
-
+console.log("persist");
+    const graph = targetGraphIri?targetGraphIri:targetInsertGraphIri?targetInsertGraphIri:"";
     const req = request
       .post('/form-persistence/sparql')
       .type('application/json')
-      .query({ repository })
+      .query(isIri(graph) ? { repository, graph } : { repository })
       .send(stringQueries);
-    return Kefir.fromNodeCallback<void>((cb) => req.end((err, res) => cb(err, res.body))).toProperty();
+      
+    return Kefir.fromNodeCallback<void>((cb) => req.end((err, res) => cb(err, res.body))).toProperty();   
   }
 
   remove(model: CompositeValue): Kefir.Property<void> {

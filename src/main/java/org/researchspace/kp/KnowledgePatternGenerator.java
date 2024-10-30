@@ -20,6 +20,7 @@
 package org.researchspace.kp;
 
 import java.util.Arrays;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -43,6 +44,8 @@ import org.researchspace.data.rdf.container.LDPResource;
 import org.researchspace.data.rdf.container.PermissionsAwareLDPApiRegistry;
 import org.researchspace.repository.MpRepositoryProvider;
 import org.researchspace.repository.RepositoryManager;
+import org.researchspace.repository.sparql.MpSPARQLRepositoryConfig;
+import org.researchspace.repository.sparql.SPARQLBasicAuthRepositoryConfig;
 import org.researchspace.vocabulary.FIELDS;
 
 import org.apache.logging.log4j.LogManager;
@@ -87,7 +90,7 @@ public class KnowledgePatternGenerator {
 
     private ValueFactory vf = SimpleValueFactory.getInstance();
 
-    public int generateKnowledgePatternsFromOntology(IRI ontoIri) {
+    public int generateKnowledgePatternsFromOntology(IRI ontoIri) throws IOException {
         int numberOfKPsGenerated = 0;
 
         logger.debug("Generating KPs for ontology: {}", ontoIri);
@@ -95,59 +98,76 @@ public class KnowledgePatternGenerator {
         Repository repo = repositoryManager.getRepository(RepositoryManager.ONTOLOGIES_REPOSITORY_ID);
         RepositoryConnection conn = repo.getConnection();
 
-        try(conn) {
-            // Our expectation is that ontology is fully stored in the
-            // named graph where it is defined as an ontology
-            Resource[] owlGraphs =
-                Iterations.asList(conn.getStatements(ontoIri, RDF.TYPE, OWL.ONTOLOGY))
-                .stream().map(s -> s.getContext()).distinct().toArray(Resource[] ::new);
+        MpSPARQLRepositoryConfig config = (MpSPARQLRepositoryConfig)repositoryManager
+                                                    .getRepositoryConfig(repositoryManager.DEFAULT_REPOSITORY_ID)
+                                                    .getRepositoryImplConfig();
+        /**
+         * Determine if default repository is writable and CRMOntologiesAndKPs can be automatically generated
+         */          
+        boolean defaultRepoWritable = config.isWritable();
 
-            Resource[] rdfsGraphs = Iterations.asList(conn.getStatements(ontoIri, RDF.TYPE, RDFS.CLASS))
-                .stream().map(s -> s.getContext()).distinct().toArray(Resource[] ::new);
+        /**
+         * Ontologies Repo just proxies to default
+         */
+        boolean enableCRMOntologiesAndKPs = true;//config.getCRMOntologiesAndKPs();
 
-            Resource[] graphs = Stream.concat(Arrays.stream(owlGraphs), Arrays.stream(rdfsGraphs))
-                                 .toArray(Resource[]::new);
+        if (defaultRepoWritable && enableCRMOntologiesAndKPs) {
+            try(conn) {
+                // Our expectation is that ontology is fully stored in the
+                // named graph where it is defined as an ontology
+                Resource[] owlGraphs =
+                    Iterations.asList(conn.getStatements(ontoIri, RDF.TYPE, OWL.ONTOLOGY))
+                    .stream().map(s -> s.getContext()).distinct().toArray(Resource[] ::new);
 
-            logger.trace("Ontology is found in the following graphs: {}", (Object[])graphs);
+                Resource[] rdfsGraphs = Iterations.asList(conn.getStatements(ontoIri, RDF.TYPE, RDFS.CLASS))
+                    .stream().map(s -> s.getContext()).distinct().toArray(Resource[] ::new);
 
-            Model ontology =
-                QueryResults.asModel(conn.getStatements(null, null, null, graphs));
-            
-            Set<Resource> objectProperties =
-                ontology.filter(null, RDF.TYPE, OWL.OBJECTPROPERTY).subjects();
-            logger.trace("Generating KPs for {} object properties", objectProperties.size());           
-            Iterator<Resource> iterator = objectProperties.iterator();
+                Resource[] graphs = Stream.concat(Arrays.stream(owlGraphs), Arrays.stream(rdfsGraphs))
+                                    .toArray(Resource[]::new);
 
-            while (iterator.hasNext()) {
-                Resource resource = iterator.next();
-                if (resource.isIRI()) {
-                    if (resource.toString().contains(ontoIri.stringValue()))
-                        saveKp(generateOpKp(ontology, ontoIri, (IRI)resource));
+                logger.trace("Ontology is found in the following graphs: {}", (Object[])graphs);
+
+                Model ontology =
+                    QueryResults.asModel(conn.getStatements(null, null, null, graphs));
+                
+                Set<Resource> objectProperties =
+                    ontology.filter(null, RDF.TYPE, OWL.OBJECTPROPERTY).subjects();
+                logger.trace("Generating KPs for {} object properties", objectProperties.size());           
+                Iterator<Resource> iterator = objectProperties.iterator();
+
+                while (iterator.hasNext()) {
+                    Resource resource = iterator.next();
+                    if (resource.isIRI()) {
+                        if (resource.toString().contains(ontoIri.stringValue()))
+                            saveKp(generateOpKp(ontology, ontoIri, (IRI)resource));
+                    }
                 }
-            }
-            
-            numberOfKPsGenerated += objectProperties.size();
+                
+                numberOfKPsGenerated += objectProperties.size();
 
-            Set<Resource> datatypeProperties =
-                ontology.filter(null, RDF.TYPE, OWL.DATATYPEPROPERTY).subjects();
-            logger.trace("Generating KPs for {} datatype properties", datatypeProperties.size());
-            datatypeProperties.forEach(op -> saveKp(generateDpKp(ontology, ontoIri, (IRI)op)));
-            numberOfKPsGenerated += datatypeProperties.size();
+                Set<Resource> datatypeProperties =
+                    ontology.filter(null, RDF.TYPE, OWL.DATATYPEPROPERTY).subjects();
+                logger.trace("Generating KPs for {} datatype properties", datatypeProperties.size());
+                datatypeProperties.forEach(op -> saveKp(generateDpKp(ontology, ontoIri, (IRI)op)));
+                numberOfKPsGenerated += datatypeProperties.size();
 
-            Set<Resource> rdfProperties =
-                ontology.filter(null, RDF.TYPE, RDF.PROPERTY).subjects();
-            logger.trace("Generating KPs for {} datatype properties", rdfProperties.size());
-            rdfProperties.forEach(op -> saveKp(generateOpKp(ontology, ontoIri, (IRI)op)));
-            numberOfKPsGenerated += rdfProperties.size();
-/* 
-            Set<Resource> annotationProperties =
-                ontology.filter(null, RDF.TYPE, OWL.ANNOTATIONPROPERTY).subjects();
-            logger.trace("Generating KPs for {} annotation properties", annotationProperties.size());
-            annotationProperties.forEach(op -> saveKp(generateApKp(ontology, ontoIri, (IRI)op)));
-            numberOfKPsGenerated += annotationProperties.size();*/
-        } 
+                Set<Resource> rdfProperties =
+                    ontology.filter(null, RDF.TYPE, RDF.PROPERTY).subjects();
+                logger.trace("Generating KPs for {} datatype properties", rdfProperties.size());
+                rdfProperties.forEach(op -> saveKp(generateOpKp(ontology, ontoIri, (IRI)op)));
+                numberOfKPsGenerated += rdfProperties.size();
+    /* 
+                Set<Resource> annotationProperties =
+                    ontology.filter(null, RDF.TYPE, OWL.ANNOTATIONPROPERTY).subjects();
+                logger.trace("Generating KPs for {} annotation properties", annotationProperties.size());
+                annotationProperties.forEach(op -> saveKp(generateApKp(ontology, ontoIri, (IRI)op)));
+                numberOfKPsGenerated += annotationProperties.size();*/
+            } 
 
-        return numberOfKPsGenerated;
+            return numberOfKPsGenerated;
+        }
+
+        return 0;
     }
 
     private void saveKp(PointedGraph kpGraph) {

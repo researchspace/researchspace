@@ -38,6 +38,7 @@ public class CustomSPARQLConnection extends SPARQLConnection {
         super(repository, client, quadMode);
     }
 
+
     public CustomSPARQLConnection(SPARQLRepository repository, SPARQLProtocolSession client) {
         super(repository, client);
     }

@@ -42,7 +42,7 @@ import { ValuePatch, computeValuePatch, applyValuePatch } from './Serialization'
 
 import { TriplestorePersistence, isTriplestorePersistence } from './persistence/TriplestorePersistence';
 import { LdpPersistence } from './persistence/LdpPersistence';
-import { SparqlPersistence } from './persistence/SparqlPersistence';
+import { SparqlPersistence, SparqlPersistenceConfig } from './persistence/SparqlPersistence';
 import { RawSparqlPersistence } from './persistence/RawSparqlPersistence';
 import { SparqlPersistence as SparqlPersistenceClass } from './persistence/SparqlPersistence';
 import { RecoverNotification } from './static/RecoverNotification';
@@ -391,14 +391,35 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
       const initialModel = this.initialState.model;
       this.form
         .finalize(this.state.model)
-        .flatMap((finalModel) =>
-          this.persistence
+        .flatMap((finalModel) => {
+
+          /**
+           * There are cases when the inputs of a form need to be stored in a graph that uses the subject of a newly created
+           * resource; The persistence props are set in the constructor by default, this can be achieved currently by setting
+           * the value of the target graphs as newSubject 
+           */
+          const isNewSubject =
+           !this.initialState.model || CompositeValue.isPlaceholder(this.initialState.model.subject);
+          if (isNewSubject && (this.props.persistence["targetGraphIri"] || this.props.persistence["targetInsertGraphIri"])) {    
+        
+              if (this.props.persistence["targetInsertGraphIri"] === "newSubject" || 
+                  this.props.persistence["targetGraphIri"] === "newSubject" ) {
+                const sparqlConfig: SparqlPersistenceConfig = {
+                  type: this.props.persistence["type"],
+                  repository: this.props.persistence["repository"],                  
+                  targetInsertGraphIri: finalModel.subject.value,
+                };
+              
+                this.persistence = normalizePersistenceMode(sparqlConfig, 'default');
+              }
+          }
+          return this.persistence
             .persist(initialModel, finalModel)
             .map(() =>
               this.props.addToDefaultSet ? addToDefaultSet(finalModel.subject, this.props.id) : Kefir.constant(true)
             )
             .map(() => finalModel)
-        )
+        })
         .observe({
           value: (finalModel) => {
             // only ignore setState() and always reset localStorage and perform post-action

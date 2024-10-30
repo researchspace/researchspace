@@ -23,9 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Date;
-
 import javax.inject.Inject;
-
 import org.eclipse.rdf4j.common.iteration.Iterations;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
@@ -49,8 +47,6 @@ import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
-import org.researchspace.data.rdf.container.LDPApiInternal;
-import org.researchspace.data.rdf.container.LDPAssetsLoader;
 import org.researchspace.data.rdf.container.LDPAssetsLoader.LDPModelComparator.StatementKey;
 import org.researchspace.junit.AbstractIntegrationTest;
 import org.researchspace.repository.RepositoryManager;
@@ -59,7 +55,6 @@ import org.researchspace.services.storage.api.ObjectMetadata;
 import org.researchspace.services.storage.api.PlatformStorage;
 import org.researchspace.services.storage.api.StoragePath;
 import org.researchspace.vocabulary.PROV;
-
 import com.google.inject.Injector;
 
 public class LDPAssetsLoaderTest extends AbstractIntegrationTest {
@@ -94,7 +89,7 @@ public class LDPAssetsLoaderTest extends AbstractIntegrationTest {
         Model model = totalModel.filter(null, null, null, contextIri);
         writeModelToStorage(resourceIri, model);
         try (RepositoryConnection con = repositoryRule.getAssetRepository().getConnection()) {
-            loader.load();
+            loader.load(); 
             Model model2 = new LinkedHashModel(Iterations.asList(con.getStatements(null, null, null, contextIri)));
             Assert.assertTrue(Models.isomorphic(model, model2));
         }
@@ -199,7 +194,7 @@ public class LDPAssetsLoaderTest extends AbstractIntegrationTest {
         Assert.assertFalse(LDPAssetsLoader.compareModelsWithoutDates(modelExisting, modelLoaded));
 
     }
-
+ 
     @Test
     public void testLoadIconsistent() throws Exception {
         try (RepositoryConnection con = repositoryRule.getAssetRepository().getConnection()) {

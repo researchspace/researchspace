@@ -29,8 +29,7 @@
                                         ?importFromExternalSource crmdig:L14_transferred ?sourceURI .
                                         ?sourceURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
                                     }
-
-                                } '
+                                }'
                                         
                             template='{{> template}}'>
                                 
@@ -272,35 +271,35 @@
                 </template>
             </semantic-if>
 
-            <div class="table-expanded">
-                <table class="table metadata-table">
-                    <tbody>
-                        <tr class="standard-row">
-                            <td class="table-title" style="width: 200px;"><b>Contributors</b></td>
-                            <td class="table-description">
-                                <semantic-query query='SELECT DISTINCT ?actor ?actorFullName WHERE {
-                                                        BIND(<{{node}}> AS ?entity)
 
-                                                        ?entity crm:P129i_is_subject_of ?entityFormRecord .
-                                                        ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
-                                                        ?entityFormRecord crmdig:L11i_was_output_of ?recordOutput .
-                                                        ?recordOutput crm:P2_has_type ?type .
-                                                        FILTER(?type IN (<http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_modification>, 
-                                                                            <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation>
-                                                                          ))
-                                                        ?recordOutput crm:P14_carried_out_by ?actor .
+            <semantic-query query='SELECT DISTINCT ?actor ?actorFullName WHERE {
+                                    BIND(<{{node}}> AS ?entity)
 
-                                                        OPTIONAL {
-                                                            ?actor crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
-                                                            ?actor crm:P1_is_identified_by ?actorName .
-                                                            ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
-                                                            ?actorName crm:P190_has_symbolic_content ?actorFullName .
-                                                        }
-                                                    } ORDER BY ?actorFullName ?actor'
-                                                template='{{> template}}'>
+                                    ?entity crm:P129i_is_subject_of ?entityFormRecord .
+                                    ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                    ?entityFormRecord crmdig:L11i_was_output_of ?recordOutput .
+                                    ?recordOutput crm:P2_has_type ?type .
+                                    FILTER(?type IN (<http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_modification>, 
+                                                        <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation>
+                                                        ))
+                                    ?recordOutput crm:P14_carried_out_by ?actor .
 
-                                    <template id='template'>
-                                        <div>
+                                    OPTIONAL {
+                                        ?actor crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                        ?actor crm:P1_is_identified_by ?actorName .
+                                        ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                        ?actorName crm:P190_has_symbolic_content ?actorFullName .
+                                    }
+                                } ORDER BY ?actorFullName ?actor'
+                            template='{{> template}}'>
+
+                <template id='template'>
+                    <div class="table-expanded">
+                        <table class="table metadata-table">
+                            <tbody>
+                                <tr class="standard-row">
+                                    <td class="table-title" style="width: 200px;"><b>Contributors</b></td>
+                                    <td class="table-description">
                                         <mp-popover>
                                             <mp-popover-trigger placement="bottom" trigger='["click", "focus"]'> 
                                                 <rs-icon icon-type="rounded" icon-name="people_alt" class="people-icon" symbol="true"></rs-icon>
@@ -323,14 +322,13 @@
                                                 </div>
                                             </mp-popover-content>
                                         </mp-popover>
-                                        </div>
-                                    </template>
-                                </semantic-query>
-                            </td>
-                        </tr>
-                    </tbody>   
-                </table>
-            </div>
+                                    </td>
+                                </tr>
+                            </tbody>   
+                        </table>
+                    </div>
+                </template>
+            </semantic-query>
             
         </bs-tab>
     {{/if}}

@@ -25,19 +25,16 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.xml.bind.annotation.XmlElement.DEFAULT;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -49,7 +46,6 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 
 import org.eclipse.rdf4j.model.Value;
-import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.Models;
@@ -61,19 +57,15 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryResult;
-import org.eclipse.rdf4j.repository.config.RepositoryImplConfig;
 import org.eclipse.rdf4j.repository.util.Repositories;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParseException;
 import org.eclipse.rdf4j.rio.Rio;
 import org.researchspace.config.Configuration;
 import org.researchspace.config.UnknownConfigurationException;
-import org.researchspace.data.rdf.PointedGraph;
 import org.researchspace.kp.KnowledgePatternGenerator;
 import org.researchspace.repository.MpRepositoryProvider;
 import org.researchspace.repository.RepositoryManager;
-import org.researchspace.repository.sparql.MpSPARQLRepositoryConfig;
-import org.researchspace.repository.sparql.SPARQLBasicAuthRepositoryConfig;
 import org.researchspace.services.storage.api.ObjectKind;
 import org.researchspace.services.storage.api.ObjectRecord;
 import org.researchspace.services.storage.api.PlatformStorage;
@@ -200,7 +192,7 @@ public class LDPAssetsLoader {
                                 "} LIMIT 1";
 
                             logger.info("loading configurations");
-                            if (!hasDefaultAlreadyLoaded(checkIfResourceConfigurationsExists))
+                            //if (!hasDefaultAlreadyLoaded(checkIfResourceConfigurationsExists))
                                 loadAllToRepository(entry.getKey(), entry.getValue());    
                         } 
                         else if (entry.getKey().equals("vocabularies")) {
@@ -209,7 +201,7 @@ public class LDPAssetsLoader {
                                         "SELECT * WHERE { " +                                          
                                         "<http://www.researchspace.org/resource/system/vocab/search_view_type> a crm:E32_Authority_Document . " +
                                         "} LIMIT 1";
-                            if (!hasDefaultAlreadyLoaded(checkIfVocabulariesExist))
+                            //if (!hasDefaultAlreadyLoaded(checkIfVocabulariesExist))
                                 loadAllToRepository(entry.getKey(), entry.getValue());    
                         }
                         else if (entry.getKey().equals("system")) {
@@ -316,6 +308,63 @@ public class LDPAssetsLoader {
             logger.error("Failed to run knowledge patterns generator.... \n");
             logger.error(e.getMessage());           
         }
+    }
+
+    private void loadUpdatesToRepository(String repositoryId, Map<String, Map<StoragePath, FindResult>> mapResults)
+            throws IOException {
+         Repository repository = repositoryManager.getRepository(repositoryId);
+
+        for (Entry<String, Map<StoragePath, FindResult>> storageEntry : mapResults.entrySet()) {
+            LinkedHashModel loadedAssetsModel = new LinkedHashModel();
+            logger.info("Loading " + storageEntry.getValue().size() + " LDP assets into the \"" + repositoryId + "\" repository");
+                     
+            for (Entry<StoragePath, FindResult> entry : storageEntry.getValue().entrySet()) {
+                StoragePath path = entry.getKey(); 
+                boolean hasKnownFormat = (path.hasExtension(".trig") || path.hasExtension(".nq")
+                        || path.hasExtension(".trix"));
+                if (!hasKnownFormat) {
+                    continue;
+                }
+                Optional<RDFFormat> optFormat = Rio.getParserFormatForFileName(path.getLastComponent());
+                if (!optFormat.isPresent()) {
+                    logger.error("Unknown assets format: " + path.getLastComponent());
+                    continue;
+                }
+                RDFFormat format = optFormat.get();
+                if (!format.equals(RDFFormat.NQUADS) && !format.equals(RDFFormat.TRIG)
+                        && !format.equals(RDFFormat.TRIX)) {
+                    logger.error(
+                            "Unsupported assets format " + format.toString() + " for the object " + entry.getKey());
+                }
+                ObjectRecord record = entry.getValue().getRecord();
+                try (InputStream in = record.getLocation().readContent()) {
+                    Model model = Rio.parse(in, "", format);              
+                    loadedAssetsModel.addAll(model);                   
+                } catch (IOException | RDFParseException e) {
+                    logger.error("Failed to parse LDP asset: " + record.getLocation() + ". Details: " + e.getMessage());
+                    throw e; // just propagate
+                }
+            }
+            logger.info("Read " + mapResults.size() + " assets. Loading into the repository...");
+
+            try (RepositoryConnection conn = repository.getConnection()) {
+
+                 {
+                    
+                    // We only load the contexts, which are not present in the repository
+                    // If present with different content, an error is thrown.
+                    List<Resource> toLoad = selectContentToLoad(repositoryId, loadedAssetsModel, conn);
+                    
+                    ldpContainersConsistencyCheck(repositoryId, loadedAssetsModel, conn);
+                    for (Resource ctx : toLoad) {
+                        logger.trace("Loading LDP context: " + ctx.stringValue());
+                        Model currentAsset = loadedAssetsModel.filter(null, null, null, ctx);                   
+                        conn.add(currentAsset);
+                    }
+                }
+            }
+        }
+        logger.info("Loading finished.");
     }
 
     private void loadAllToRepository(String repositoryId, Map<String, Map<StoragePath, FindResult>> mapResults)

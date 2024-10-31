@@ -50,7 +50,7 @@ export class SparqlPersistence implements TriplestorePersistence {
     const stringQueries = Immutable.List<SparqlJs.ConstructQuery>(updateQueries)
       .map(SparqlUtil.serializeQuery)
       .flatten();
-console.log("persist");
+
     const graph = targetGraphIri?targetGraphIri:targetInsertGraphIri?targetInsertGraphIri:"";
     const req = request
       .post('/form-persistence/sparql')

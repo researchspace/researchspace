@@ -108,7 +108,7 @@ CONSTRUCT {
     ?view <http://www.researchspace.org/pattern/system/resource_configuration/view_has_order> ?viewOrder.
     ?view <http://www.researchspace.org/pattern/system/resource_configuration/view_has_template> ?viewTemplate .
   }
-}
+} limit 1
       `
     );
 

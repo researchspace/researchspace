@@ -154,6 +154,7 @@ export function performFormPostAction(parameters: {
         addNotification({
           level: 'success',
           message: 'Resource created',
+          dismissible: true
         });
       }
       
@@ -167,6 +168,7 @@ export function performFormPostAction(parameters: {
         addNotification({
           level: 'success',
           message: 'Resource deleted',
+          dismissible: true
         });
       }
       
@@ -180,6 +182,7 @@ export function performFormPostAction(parameters: {
         addNotification({
           level: 'success',
           message: 'Resource saved',
+          dismissible: true
         });
       }
       

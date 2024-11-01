@@ -51,6 +51,7 @@ export class CopyToClipboardComponent extends React.Component<Props, {}> {
     addNotification({
       level: 'success',
       message: this.props.message,
+      dismissible: true
     });
   };
 

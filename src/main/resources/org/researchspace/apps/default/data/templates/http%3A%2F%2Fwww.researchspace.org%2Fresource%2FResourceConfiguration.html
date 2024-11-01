@@ -116,9 +116,9 @@
 
                                     <template id='template'>
                                       {{#if (not bindings.0.iriType.value)}}
-                                        <mp-popover title="Error">
+                                        <mp-popover title="Error in ontology class">
                                           <mp-popover-trigger placement="right" trigger='["click","hover","focus"]'> 
-                                            <div class="badge badge--danger" style="height: 28px; width: 54px;">
+                                            <div class="badge badge--danger" style="height: 28px; width: fit-content;">
                                               <rs-icon icon-type="rounded" icon-name="priority_high" symbol="true" style="font-size: 20px;"></rs-icon>
                                             </div>
                                           </mp-popover-trigger>
@@ -133,6 +133,46 @@
                                   </semantic-query>
                                 </template>
                             </semantic-if> 
+
+                            <semantic-if query='ASK { <{{iri}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_list_in_authority> ?listInAuthority . 
+                                                FILTER(NOT EXISTS{ <{{iri}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty .})}'
+                                        then='{{> then}}'>
+
+                              <template id='then'>
+                                <mp-popover title="Missing membership in the authority document">
+                                  <mp-popover-trigger placement="right" trigger='["click","hover","focus"]'> 
+                                    <div class="badge badge--danger" style="height: 28px; width: fit-content;">
+                                      <rs-icon icon-type="rounded" icon-name="priority_high" symbol="true" style="font-size: 20px;"></rs-icon>
+                                    </div>
+                                  </mp-popover-trigger>
+                                  <mp-popover-content>
+                                    <div>When a resource can be listed in authority document a membership in the authority must be defined.</div>
+                                  </mp-popover-content>
+                                </mp-popover>
+                              </template>
+                            </semantic-if>
+
+                            <semantic-if query='ASK { <{{iri}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_in_finder> ?resourceInFinder . 
+                                                FILTER(NOT EXISTS{ 
+                                                  ?navigationItem crm:P67_refers_to <{{iri}}> ;
+                                                  a <http://www.researchspace.org/resource/system/FinderNavigationItem> ;
+                                                  <http://www.researchspace.org/pattern/system/navigation_item/menu_section_type> ?finderSection .
+                                                })}'
+                                          then='{{> then}}'>
+
+                              <template id='then'>
+                                <mp-popover title="Missing finder section">
+                                  <mp-popover-trigger placement="right" trigger='["click","hover","focus"]'> 
+                                    <div class="badge badge--danger" style="height: 28px; width: fit-content;">
+                                      <rs-icon icon-type="rounded" icon-name="priority_high" symbol="true" style="font-size: 20px;"></rs-icon>
+                                    </div>
+                                  </mp-popover-trigger>
+                                  <mp-popover-content>
+                                    <div>For a resource displayed in finder the finder section must be defined.</div>
+                                  </mp-popover-content>
+                                </mp-popover>
+                              </template>
+                            </semantic-if>
 
                             <mp-event-trigger id='{{viewId}}-resource-config-form-edit-trigger--{{iri}}' 
                                               type='Component.TemplateUpdate'

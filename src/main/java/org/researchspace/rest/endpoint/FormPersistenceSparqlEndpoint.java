@@ -129,9 +129,6 @@ public class FormPersistenceSparqlEndpoint {
                         
                         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
                         
-                        pg.getGraph().add(vf.createStatement(graphIri, PROV.wasAttributedTo, vf.createLiteral(SecurityService.getUserName().toString())));
-                        pg.getGraph().add(vf.createStatement(graphIri, PROV.generatedAtTime, vf.createLiteral(Date.from(Instant.now()))));
-                        
                         List<Statement> toWrite = pg.getGraph().stream()
                                 .map(stmt -> vf.createStatement(stmt.getSubject(), stmt.getPredicate(), stmt.getObject(), graphIri))
                                 .collect(Collectors.toList());

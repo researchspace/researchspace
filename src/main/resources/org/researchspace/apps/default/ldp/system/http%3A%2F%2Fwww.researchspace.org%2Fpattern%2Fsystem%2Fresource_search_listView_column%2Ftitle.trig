@@ -30,7 +30,9 @@
   
   _:genid-edfbb368fe8b483388c3b0fc62f574fe-agiltl a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
-  $subject <http://www.researchspace.org/pattern/system/resource_search_listView_column/title> ?value.
+      BIND(URI(STRBEFORE(STR($subject),"/resource_search_listView")) as ?resource_config) 
+      graph ?resource_config {
+  $subject <http://www.researchspace.org/pattern/system/resource_search_listView_column/title> ?value.}
 }""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>

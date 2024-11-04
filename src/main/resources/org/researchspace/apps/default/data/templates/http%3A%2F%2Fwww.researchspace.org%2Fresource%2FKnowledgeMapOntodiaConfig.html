@@ -46,14 +46,16 @@ uses client-side templates:
       SELECT ?class ?label ?parent WHERE {
         GRAPH ?g {
           ?ontology a owl:Ontology .
-          ?class a owl:Class .
+          ?class a ?type .
+          FILTER(?type in (rdfs:Class, owl:Class))
           OPTIONAL {
           	?class rdfs:label ?label.
           }
 
           OPTIONAL {
           	?class rdfs:subClassOf ?p.
-         	  ?p a owl:Class .
+         	  ?p a ?subClassType .
+            FILTER(?subClassType in (rdfs:Class, owl:Class)) 
           }
           BIND(IF(BOUND(?p), ?p, ?ontology) AS ?parent)
         }

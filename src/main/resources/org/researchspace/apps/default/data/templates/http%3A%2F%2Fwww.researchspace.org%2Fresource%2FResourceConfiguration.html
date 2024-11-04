@@ -247,6 +247,13 @@
                   {{/ifCond}}
 
                   {{#if (not (eq mode "deleted"))}}
+                    <mp-event-proxy id='{{viewId}}-modification-saveForm-proxy'
+                                    on-event-source='{{viewId}}-resource-form'
+                                    on-event-types='["Form.ResourceUpdated"]'
+                                    proxy-event-type='Form.Save' 
+                                    proxy-targets='["{{viewId}}-resourceConfig-modification-form"]'
+                    ></mp-event-proxy>
+
                     <mp-event-proxy id='{{viewId}}-resource-config-tree-refresh-on-created' 
                                     on-event-source='{{viewId}}-resource-form' 
                                     on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
@@ -275,6 +282,17 @@
                                                 "resourceBroaderProperty": {{#if resourceBroaderProperty}}"{{resourceBroaderProperty}}"{{else}}null{{/if}}
                                       }'>
                       </inline-template>
+
+                      {{#ifCond mode "!==" "new"}}
+                        <inline-template template-iri='http://www.researchspace.org/resource/FormEntityRecordModification' 
+                                          options='{
+                                                    "formId": "{{viewId}}-resourceConfig-modification-form",
+                                                    "mode": "edit",
+                                                    "node": "{{iri}}",
+                                                    "scheme": "{{iri}}"
+                                                  }'>
+                        </inline-template>
+                      {{/ifCond}}
                     {{/if}}
                   
                   {{else}}

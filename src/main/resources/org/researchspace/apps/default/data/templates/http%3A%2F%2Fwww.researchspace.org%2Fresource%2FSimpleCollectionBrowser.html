@@ -233,7 +233,6 @@
                               {{/if}}
                             </h2>
                           {{else}}
-
                             <h2 class="resource-editView-formHeader-title">New
                               {{#if collection}}
                                 {{#if collectionLabel}}
@@ -454,6 +453,13 @@
                                       proxy-targets='["{{viewId}}"]'                                                          
                       ></mp-event-proxy>
                     {{/if}}
+                    
+                    <mp-event-proxy id='{{iri}}-modification-saveForm-proxy'
+                                    on-event-source='{{iri}}-resource-form'
+                                    on-event-types='["Form.ResourceUpdated"]'
+                                    proxy-event-type='Form.Save' 
+                                    proxy-targets='["{{iri}}-resource-record-modification-form"]'
+                    ></mp-event-proxy>
 
                     <mp-event-proxy id='{{viewId}}-view-update-on-created' 
                                     on-event-source='{{#if iri}}{{iri}}-resource-form{{else}}{{viewId}}-resource-form{{/if}}' 
@@ -554,7 +560,8 @@
                         <inline-template template-iri='http://www.researchspace.org/resource/FormEntityRecordModification' 
                                           options='{
                                                     "formId": "{{iri}}-resource-record-modification-form",
-                                                    "mode": "new",
+                                                    "mode": "edit",
+                                                    {{#if collection}}"scheme": "{{collection}}",{{/if}}
                                                     "node": "{{iri}}"
                                                   }'>
                         </inline-template>
@@ -566,16 +573,6 @@
                   {{/if}}
                 </template>
               </mp-event-target-template-render>
-
-              {{#ifCond mode "!==" "new"}}
-
-              <mp-event-proxy id='{{iri}}-modification-saveForm-proxy'
-                              on-event-source='{{iri}}-resource-form'
-                              on-event-types='["Form.ResourceUpdated"]'
-                              proxy-event-type='Form.Save' 
-                              proxy-targets='["{{iri}}-resource-record-modification-form"]'
-              ></mp-event-proxy>
-              {{/ifCond}}
               
               <mp-event-proxy id='{{viewId}}-closeModal-onSelect-APIResource-proxy'
                               on-event-source='{{viewId}}-select-api-resource-trigger' 

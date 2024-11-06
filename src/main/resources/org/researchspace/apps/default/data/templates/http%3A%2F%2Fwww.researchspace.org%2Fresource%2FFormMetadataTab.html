@@ -3,72 +3,100 @@
 {{#ifCond mode "!==" "new"}}
     {{#if node}}
         <bs-tab event-key="metadata" title="Metadata" tab-class-name="tab-right">
+
+            [[!-- creation details --]]
             <semantic-query query='SELECT DISTINCT ?actor ?actorFullName ?creationDateValue ?importFromExternalSource ?sourceURI WHERE {
-                                    BIND(<{{node}}> AS ?entity)
+                                        BIND(<{{node}}> AS ?entity)
 
-                                    ?entity crm:P129i_is_subject_of ?entityFormRecord .
-                                    ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
-                                    ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
-                                    ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+                                        ?entity crm:P129i_is_subject_of ?entityFormRecord .
+                                        ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                        ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
+                                        ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
 
-                                    ?entityFormRecordCreation crm:P14_carried_out_by ?actor .
+                                        ?entityFormRecordCreation crm:P14_carried_out_by ?actor .
 
-                                    OPTIONAL {
-                                        ?actor crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
-                                        ?actor crm:P1_is_identified_by ?actorName .
-                                        ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
-                                        ?actorName crm:P190_has_symbolic_content ?actorFullName .
-                                    }
+                                        OPTIONAL {
+                                            ?actor crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                            ?actor crm:P1_is_identified_by ?actorName .
+                                            ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                            ?actorName crm:P190_has_symbolic_content ?actorFullName .
+                                        }
 
-                                    ?entityFormRecordCreation crm:P4_has_time-span ?creationDate .
-                                    ?creationDate crm:P82_at_some_time_within ?creationDateValue .
+                                        ?entityFormRecordCreation crm:P4_has_time-span ?creationDate .
+                                        ?creationDate crm:P82_at_some_time_within ?creationDateValue .
 
-                                    OPTIONAL {
-                                        ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
-                                        ?importFromExternalSource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source> .
-                                        ?importFromExternalSource crmdig:L14_transferred ?sourceURI .
-                                        ?sourceURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
-                                    }
-                                }'
+                                        OPTIONAL {
+                                            ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
+                                            ?importFromExternalSource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source> .
+                                            ?importFromExternalSource crmdig:L14_transferred ?sourceURI .
+                                            ?sourceURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                                        }
+                                    }'
                                         
                             template='{{> template}}'>
                                 
-                            <template id='template'>
-                                <div class="semantic-form-input-title">Record metadata</div>
-                                <div class="table-expanded">
-                                    <table class="table metadata-table">
-                                        <tbody>
-                                            <tr class="standard-row">
-                                                <td class="table-title" style="width: 200px;"><b>Created</b></td>
-                                                <td class="table-description">
-                                                    {{dateTimeFormat bindings.0.creationDateValue.value "DD/MM/YYYY, h:mm a"}} by
-                                                    {{#if bindings.0.actorFullName.value}}
-                                                        <semantic-link-container    uri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                                    urlqueryparam-view='resource-editor' 
-                                                                                    urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
-                                                                                    urlqueryparam-resource-iri="{{bindings.0.actor.value}}"
-                                                                                    urlqueryparam-mode='edit'>
-                                                            <div style="text-decoration: underline; cursor: pointer;">{{bindings.0.actorFullName.value}}</div>
-                                                        </semantic-link-container>
-                                                    {{else}}
-                                                        <mp-label iri='{{bindings.0.actor.value}}'></mp-label>
-                                                    {{/if}}
-                                                </td>
-                                            </tr>
-                                            {{#if bindings.0.importFromExternalSource.value}}
-                                                <tr class="standard-row">
-                                                    <td class="table-title" style="width: 200px;"><b>Imported from</b></td>
-                                                    <td class="table-description">
-                                                        <a class="text-link-action" target="_blank" href="{{bindings.0.sourceURI.value}}" title="{{bindings.0.sourceURI.value}}">{{bindings.0.sourceURI.value}}</a>
-                                                    </td>
-                                                </tr>
-                                            {{/if}}
-                                        </tbody>   
-                                    </table>
-                                </div>
-                            </template>
+                <template id='template'>
+                    <div class="semantic-form-input-title">Record metadata</div>
+                    <div class="table-expanded">
+                        <table class="table metadata-table">
+                            <tbody>
+                                <tr class="standard-row">
+                                    <td class="table-title" style="width: 200px;"><b>Created</b></td>
+                                    <td class="table-description">
+                                        {{dateTimeFormat bindings.0.creationDateValue.value "DD/MM/YYYY, h:mm a"}} by
+                                        {{#if bindings.0.actorFullName.value}}
+                                            <semantic-link-container    uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                        urlqueryparam-view='resource-editor' 
+                                                                        urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                                                        urlqueryparam-resource-iri="{{bindings.0.actor.value}}"
+                                                                        urlqueryparam-mode='edit'>
+                                                <div style="text-decoration: underline; cursor: pointer;">{{bindings.0.actorFullName.value}}</div>
+                                            </semantic-link-container>
+                                        {{else}}
+                                            <mp-label iri='{{bindings.0.actor.value}}'></mp-label>
+                                        {{/if}}
+                                    </td>
+                                </tr>
+                                {{#if bindings.0.importFromExternalSource.value}}
+                                    <tr class="standard-row">
+                                        <td class="table-title" style="width: 200px;"><b>Imported from</b></td>
+                                        <td class="table-description">
+                                            <a class="text-link-action" target="_blank" href="{{bindings.0.sourceURI.value}}" title="{{bindings.0.sourceURI.value}}">{{bindings.0.sourceURI.value}}</a>
+                                        </td>
+                                    </tr>
+                                {{/if}}
+                            </tbody>   
+                        </table>
+                    </div>
+                </template>
             </semantic-query>
 
+            [[!-- creation for terms in system authority documents --]]
+            [[!--  <semantic-query query='SELECT DISTINCT ?authorityName WHERE {
+                                    BIND(<{{node}}> AS ?entity)
+
+                                    ?entity crm:P71i_is_listed_in ?authorityDoc.
+                                    ?authorityDoc rdf:type crm:E32_Authority_Document .
+                                    ?authorityDoc crm:P1_is_identified_by ?authorityAppellation .
+                                    ?authorityAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> ;
+                                                            crm:P190_has_symbolic_content ?authorityName .
+                                    ?authorityDoc crm:P129i_is_subject_of ?entityFormRecord.
+                                    ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record>;
+                                    crmdig:L11i_was_output_of ?entityFormRecordCreation.
+                                    ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+                                    ?entityFormRecordCreation crm:P4_has_time-span ?creationDate .
+                                    ?creationDate crm:P82_at_some_time_within ?creationDateValue .
+                                    FILTER (?creationDateValue = "2024-10-22T00:00:00.000Z"^^xsd:datetime)
+                                }'
+                
+                            template='{{> template}}'>
+                            
+                    <template id='template'>
+                        <div>test</div>
+                    </template>
+            </semantic-query>  --]]
+
+            [[!-- last modification details --]]
             <semantic-query query='SELECT DISTINCT ?actor ?actorFullName (MAX(?modificationDateValue) AS ?lastModificationDate) WHERE {
                                     BIND(<{{node}}> AS ?entity)
 
@@ -178,6 +206,7 @@
                 </semantic-query>
             [[/if]]
 
+            [[!-- modification history --]]
             <semantic-if query='ASK {<{{node}}> crm:P129i_is_subject_of ?entityFormRecord .
                                         ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
                                         ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordModification .
@@ -271,7 +300,7 @@
                 </template>
             </semantic-if>
 
-
+            [[!-- contributors details --]]
             <semantic-query query='SELECT DISTINCT ?actor ?actorFullName WHERE {
                                     BIND(<{{node}}> AS ?entity)
 

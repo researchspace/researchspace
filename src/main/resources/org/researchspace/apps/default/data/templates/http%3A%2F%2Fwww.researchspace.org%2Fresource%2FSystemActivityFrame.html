@@ -76,6 +76,8 @@
                                                                                 ?subject crm:P190_has_symbolic_content ?label .
                                                                               }
                                                                             }
+
+                                                                            FILTER (?date > "2024-10-22T00:00:00.000Z"^^xsd:dateTime)
                                                                             
                                                                             SERVICE <http://www.bigdata.com/rdf/search#search> {
                                                                                       ?label bds:search ?__token__ ;
@@ -108,9 +110,11 @@
                                                                                     ?creation crm:P82_at_some_time_within ?date .
                                                                                     MINUS { ?subject a Platform:resource_configuration .}
                                                                                   }
-                                                                                }'
+
+                                                                                  FILTER (?date > "2024-10-22T00:00:00.000Z"^^xsd:dateTime)
+                                                                                } ORDER BY DESC(?date)'
                                                                   debounce=500
-                                                                  placeholder="Search resource"
+                                                                  placeholder="Search by resource name"
                                   ></semantic-search-query-keyword> 
                                 </div>
 

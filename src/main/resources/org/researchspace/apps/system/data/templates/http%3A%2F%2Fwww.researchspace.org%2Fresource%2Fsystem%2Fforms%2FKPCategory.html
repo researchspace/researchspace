@@ -6,6 +6,7 @@
                   classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                   skos_inScheme="http://www.researchspace.org/pattern/system/entity/skos_inScheme"
                   entity_resource_type="http://www.researchspace.org/pattern/system/entity/resource_type"
+                  entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
 
                   skos_prefLabel="http://www.researchspace.org/pattern/system/entity/skos_prefLabel"
 
@@ -22,59 +23,156 @@
     <semantic-form-hidden-input for="skos_inScheme" default-value="http://www.researchspace.org/resource/system/FieldCategories"></semantic-form-hidden-input>  
     <semantic-form-hidden-input for="entity_resource_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/KP_category'></semantic-form-hidden-input>
 
-    <semantic-form-text-input for="skos_prefLabel" label="Preferred {{#if entityType}}{{entityType}}{{/if}} name" 
-                              placeholder="Enter preferred {{#if entityType}}{{entityType}}{{/if}} name"> 
-    </semantic-form-text-input>
+    <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
+      <rs-tab event-key="detail" title="Details">
+        <semantic-form-text-input for="skos_prefLabel" label="Preferred {{#if entityType}}{{entityType}}{{/if}} name" 
+                                  placeholder="Enter preferred {{#if entityType}}{{entityType}}{{/if}} name"> 
+        </semantic-form-text-input>
 
-    <semantic-form-tree-picker-input  for="skos_broader" 
-                                      label="Broader {{#if entityType}}{{entityType}}{{else}}category{{/if}}" 
-                                      placeholder="Select broader {{#if entityType}}{{entityType}}{{else}}category{{/if}}" 
-                                      close-dropdown-on-selection='false'
-                                      default-values='{{#if scheme}}[{{#if broader}}"{{broader}}"{{/if}}]{{else}}{{/if}}' 
+        <semantic-form-tree-picker-input  for="skos_broader" 
+                                          label="Broader {{#if entityType}}{{entityType}}{{else}}category{{/if}}" 
+                                          placeholder="Select broader {{#if entityType}}{{entityType}}{{else}}category{{/if}}" 
+                                          close-dropdown-on-selection='false'
+                                          default-values='{{#if scheme}}[{{#if broader}}"{{broader}}"{{/if}}]{{else}}{{/if}}' 
 
-                                      tree-patterns='{"scheme": "{{#if scheme}}{{scheme}}{{else}}http://www.w3.org/2004/02/skos/core#Concept{{/if}}",
-                                                      "schemePattern": "{{#if scheme}}?item skos:inScheme <{{scheme}}> .
-                                                                        {{else}}?item a skos:Concept . {{/if}}
-                                                                        ?item crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/KP_category>",
-                                                      "relationPattern": "?item skos:broader ?parent",
-                                                      "labelPattern": "?item skos:prefLabel ?label ."}'
+                                          tree-patterns='{"scheme": "{{#if scheme}}{{scheme}}{{else}}http://www.w3.org/2004/02/skos/core#Concept{{/if}}",
+                                                          "schemePattern": "{{#if scheme}}?item skos:inScheme <{{scheme}}> .
+                                                                            {{else}}?item a skos:Concept . {{/if}}
+                                                                            ?item crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/KP_category>",
+                                                          "relationPattern": "?item skos:broader ?parent",
+                                                          "labelPattern": "?item skos:prefLabel ?label ."}'
 
-                                      nested-form-template='{{#if scheme}}
-                                                              {{else}}
-                                                                {{{{raw}}}}{{> forms:KPCategory nested=true editable=true mode="new" }}{{{{/raw}}}}
-                                                              {{/if}}'  
+                                          nested-form-template='{{#if scheme}}
+                                                                  {{else}}
+                                                                    {{{{raw}}}}{{> forms:KPCategory nested=true editable=true mode="new" }}{{{{/raw}}}}
+                                                                  {{/if}}'  
 
-                                      query-item-label='SELECT ?label WHERE {
-                                                              ?item skos:prefLabel ?label .
-                                                        }'
-    ></semantic-form-tree-picker-input>
+                                          query-item-label='SELECT ?label WHERE {
+                                                                  ?item skos:prefLabel ?label .
+                                                            }'
+        ></semantic-form-tree-picker-input>
 
-    <semantic-form-tree-picker-input  for="skos_narrower" 
-                                      label="Narrower {{#if entityType}}{{entityType}}{{else}}category{{/if}}" 
-                                      placeholder="Select narrower {{#if entityType}}{{entityType}}{{else}}category{{/if}}"
-                                      close-dropdown-on-selection='false'
-                                              
-                                      tree-patterns='{"scheme": "{{#if scheme}}{{scheme}}{{else}}http://www.w3.org/2004/02/skos/core#Concept{{/if}}",
-                                                              "schemePattern": "{{#if scheme}}?item skos:inScheme <{{scheme}}> .
-                                                                                {{else}}?item a skos:Concept . {{/if}}
-                                                                                ?item crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/KP_category>",
-                                                              "relationPattern": "?item skos:broader ?parent",
-                                                              "labelPattern": "?item skos:prefLabel ?label ."}'
+        <semantic-form-tree-picker-input  for="skos_narrower" 
+                                          label="Narrower {{#if entityType}}{{entityType}}{{else}}category{{/if}}" 
+                                          placeholder="Select narrower {{#if entityType}}{{entityType}}{{else}}category{{/if}}"
+                                          close-dropdown-on-selection='false'
+                                                  
+                                          tree-patterns='{"scheme": "{{#if scheme}}{{scheme}}{{else}}http://www.w3.org/2004/02/skos/core#Concept{{/if}}",
+                                                                  "schemePattern": "{{#if scheme}}?item skos:inScheme <{{scheme}}> .
+                                                                                    {{else}}?item a skos:Concept . {{/if}}
+                                                                                    ?item crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/KP_category>",
+                                                                  "relationPattern": "?item skos:broader ?parent",
+                                                                  "labelPattern": "?item skos:prefLabel ?label ."}'
 
-                                      nested-form-template='{{#if scheme}}
-                                                              {{else}}
-                                                                {{{{raw}}}}{{> forms:KPCategory nested=true editable=true mode="new" }}{{{{/raw}}}}
-                                                              {{/if}}'  
+                                          nested-form-template='{{#if scheme}}
+                                                                  {{else}}
+                                                                    {{{{raw}}}}{{> forms:KPCategory nested=true editable=true mode="new" }}{{{{/raw}}}}
+                                                                  {{/if}}'  
 
-                                      query-item-label='SELECT ?label WHERE {
-                                                              ?item skos:prefLabel ?label .
-                                                        }'
-    ></semantic-form-tree-picker-input>
-    
-    <semantic-form-text-input for="skos_scopeNote" multiline=true label="Scope note/description" 
-                              placeholder="Enter {{#if entityType}}{{entityType}}{{else}}category{{/if}} scope note"> 
-    </semantic-form-text-input>
+                                          query-item-label='SELECT ?label WHERE {
+                                                                  ?item skos:prefLabel ?label .
+                                                            }'
+        ></semantic-form-tree-picker-input>
+        
+        <semantic-form-text-input for="skos_scopeNote" multiline=true label="Scope note/description" 
+                                  placeholder="Enter {{#if entityType}}{{entityType}}{{else}}category{{/if}} scope note"> 
+        </semantic-form-text-input>
+
+        <div style="visibility:hidden; height: 0;">
+          <semantic-form-composite-input for="entity_formRecord"
+                                          render-header=false 
+                                          new-subject-template="/entity_form_record" 
+                                          fields='[[fieldDefinitions
+                                                  classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+                                                  entity_resource_type="http://www.researchspace.org/pattern/system/entity/resource_type"
+                                                  entity_formRecord_creation="http://www.researchspace.org/pattern/system/entityFormRecord/formRecord_creation"
+                                              ]]'
+                                          >
+                                          
+              <semantic-form-hidden-input for="classtype" default-value="http://www.ics.forth.gr/isl/CRMdig/D1_Digital_Object"></semantic-form-hidden-input>
+              <semantic-form-hidden-input for="entity_resource_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record'></semantic-form-hidden-input>
+                  
+              <semantic-form-composite-input  for="entity_formRecord_creation"
+                                              render-header=false 
+                                              new-subject-template="/entity_formRecord_creation" 
+                                              fields='[[fieldDefinitions
+                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+                                                      entity_resource_type="http://www.researchspace.org/pattern/system/entity/resource_type"
+                                                      
+                                                      creation_at_some_time_within="http://www.researchspace.org/pattern/system/temporal_entity/at_some_time_within"
+                                                      creation_carried_out_by="http://www.researchspace.org/pattern/system/activity/carried_out_by"
+                                                  ]]'
+                                              >
+                                          
+                  <semantic-form-hidden-input for="classtype" default-value="http://www.ics.forth.gr/isl/CRMdig/D7_Digital_Machine_Event"></semantic-form-hidden-input>
+                  <semantic-form-hidden-input for="entity_resource_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation'></semantic-form-hidden-input>
+                                      
+              
+                  <semantic-form-hidden-input for="creation_at_some_time_within" default-value="{{currentDateTime 'YYYY-MM-DDTHH:mm:ss'}}"> </semantic-form-hidden-input>
+                  <semantic-form-hidden-input for="creation_carried_out_by" default-value='[[userUri]]' ></semantic-form-hidden-input>
       
+              </semantic-form-composite-input>    
+      
+          </semantic-form-composite-input>
+        </div>
+      </rs-tab>
+
+      {{#if node}}
+        <bs-tab event-key="metadata" title="Metadata" tab-class-name="tab-right">
+            [[!-- creation details --]]
+            <semantic-query query='SELECT DISTINCT ?actor ?actorFullName ?creationDateValue WHERE {
+                                        BIND(<{{node}}> AS ?entity)
+
+                                        ?entity crm:P129i_is_subject_of ?entityFormRecord .
+                                        ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                        ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
+                                        ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+
+                                        ?entityFormRecordCreation crm:P14_carried_out_by ?actor .
+
+                                        OPTIONAL {
+                                            ?actor crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                            ?actor crm:P1_is_identified_by ?actorName .
+                                            ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                            ?actorName crm:P190_has_symbolic_content ?actorFullName .
+                                        }
+
+                                        ?entityFormRecordCreation crm:P4_has_time-span ?creationDate .
+                                        ?creationDate crm:P82_at_some_time_within ?creationDateValue .
+                                    }'
+                                        
+                            template='{{> template}}'>
+                                
+                <template id='template'>
+                    <div class="semantic-form-input-title">Record metadata</div>
+                    <div class="table-expanded">
+                        <table class="table metadata-table">
+                            <tbody>
+                                <tr class="standard-row">
+                                    <td class="table-title" style="width: 200px;"><b>Created</b></td>
+                                    <td class="table-description">
+                                        {{dateTimeFormat bindings.0.creationDateValue.value "DD/MM/YYYY, h:mm a"}} by
+                                        {{#if bindings.0.actorFullName.value}}
+                                            <semantic-link-container    uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                        urlqueryparam-view='resource-editor' 
+                                                                        urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                                                        urlqueryparam-resource-iri="{{bindings.0.actor.value}}"
+                                                                        urlqueryparam-mode='edit'>
+                                                <div style="text-decoration: underline; cursor: pointer;">{{bindings.0.actorFullName.value}}</div>
+                                            </semantic-link-container>
+                                        {{else}}
+                                            <mp-label iri='{{bindings.0.actor.value}}'></mp-label>
+                                        {{/if}}
+                                    </td>
+                                </tr>
+                            </tbody>   
+                        </table>
+                    </div>
+                </template>
+            </semantic-query>     
+        </bs-tab>
+      {{/if}}
+    </rs-tabs>
   </div>
   
   <semantic-form-errors></semantic-form-errors>

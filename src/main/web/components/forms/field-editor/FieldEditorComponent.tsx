@@ -122,8 +122,8 @@ const DEFAULT_VALUE_SET = `SELECT ?value ?label WHERE {
 }`;
 const DEFAULT_AUTOSUGGESTION = `SELECT ?value ?label WHERE {
   ?value a ?anyType ;
-    rdfs:label ?label .
-  FILTER REGEX(STR(?label), "?token")
+    rdfs:label|crm:P190_has_symbolic_content ?label .
+  FILTER REGEX(STR(?label), "?token", "i")
 } LIMIT 10`;
 
 class FieldEditorComponent extends Component<Props, State> {

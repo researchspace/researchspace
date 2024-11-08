@@ -33,69 +33,71 @@
 
                                 <div class="search-results-header-keyword">
                                   <semantic-search-query-keyword  domain='<http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>'
-                                                                  query='SELECT ?subject WHERE { 
-                                                                            {
-                                                                              ?subject prov:generatedAtTime ?date .
-                                                                              ?subject crm:P2_has_type ?type .
-                                                                              FILTER(?type IN (<http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map>, 
+                                                                  query='SELECT DISTINCT ?subject WHERE { 
+                                                                          {
+                                                                            ?subject prov:generatedAtTime ?date .
+                                                                            ?subject crm:P2_has_type ?type .
+                                                                            FILTER(?type IN (<http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map>, 
                                                                                               <http://www.researchspace.org/resource/system/vocab/resource_type/set>,
                                                                                               <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative>, 
                                                                                               <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_chart>,
                                                                                               <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_timeline>
-                                                                                    )
-                                                                              )
+                                                                                            ))
+                                                                            ?subject crm:P190_has_symbolic_content ?label .
+                                                                          } UNION {
+                                                                            ?subject a rs:EX_Digital_Image .
+                                                                            ?subject prov:generatedAtTime ?date .
+                                                                            ?subject crm:P1_is_identified_by ?imageAppellation . 
+                                                                            ?imageAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                            ?imageAppellation crm:P190_has_symbolic_content ?label .
+                                                                          } UNION {
+                                                                            ?subject crm:P129i_is_subject_of ?entityFormRecord .
+                                                                            ?entityFormRecord a crmdig:D1_Digital_Object .
+                                                                            ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                  
+                                                                            MINUS { ?subject a Platform:resource_configuration .}
+                  
+                                                                            ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordOutput .
+                                                                            ?entityFormRecordOutput crm:P2_has_type ?entityFormRecordOutputType .
+                                                                            FILTER(?entityFormRecordOutputType IN (<http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation>, 
+                                                                                                                    <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_modification>
+                                                                                                                    ))
+                                                                            ?entityFormRecordOutput crm:P4_has_time-span ?entityFormRecordOutputTimespan .
+                                                                            ?entityFormRecordOutputTimespan crm:P82_at_some_time_within ?date .
+                                                                            { 
+                                                                              ?subject crm:P1_is_identified_by ?appellation .
+                                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                              ?appellation crm:P190_has_symbolic_content ?label .
+                                                                            } UNION {
+                                                                              ?subject crm:P170i_time_is_defined_by ?timePrimitive .
+                                                                              ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
+                                                                              ?timePrimitive crm:P190_has_symbolic_content ?label .
+                                                                            } UNION {
+                                                                              ?subject skos:prefLabel ?label .
+                                                                            } UNION {
                                                                               ?subject crm:P190_has_symbolic_content ?label .
-                                                                            } UNION {
-                                                                              ?subject a rs:EX_Digital_Image .
-                                                                              ?subject prov:generatedAtTime ?date .
-                                                                              ?subject crm:P1_is_identified_by ?imageAppellation . 
-                                                                              ?imageAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                              ?imageAppellation crm:P190_has_symbolic_content ?label .
-                                                                            } UNION {
-                                                                              ?subject crm:P129i_is_subject_of ?entityFormRecord .
-                                                                              ?entityFormRecord a crmdig:D1_Digital_Object .
-                                                                              ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
-
-                                                                              MINUS { ?subject a Platform:resource_configuration .}
-
-                                                                              ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
-                                                                              ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
-                                                                              ?entityFormRecordCreation crm:P4_has_time-span ?creation .
-                                                                              ?creation crm:P82_at_some_time_within ?date .
-                                                                              { 
-                                                                                ?subject crm:P1_is_identified_by ?appellation .
-                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                                ?appellation crm:P190_has_symbolic_content ?label .
-                                                                              } UNION {
-                                                                                ?subject crm:P170i_time_is_defined_by ?timePrimitive .
-                                                                                ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
-                                                                                ?timePrimitive crm:P190_has_symbolic_content ?label .
-                                                                              } UNION {
-                                                                                ?subject skos:prefLabel ?label .
-                                                                              } UNION {
-                                                                                ?subject crm:P190_has_symbolic_content ?label .
-                                                                              }
                                                                             }
-
-                                                                            FILTER (?date > "2024-10-22T00:00:00.000Z"^^xsd:dateTime)
+                                                                          }
+                                                                          
+                                                                          FILTER (?date > "2024-10-22T00:00:00.000Z"^^xsd:dateTime)
                                                                             
-                                                                            SERVICE <http://www.bigdata.com/rdf/search#search> {
-                                                                                      ?label bds:search ?__token__ ;
-                                                                                      bds:minRelevance "0.3" ;
-                                                                                      bds:matchAllTerms "true"  .
-                                                                            }
-                                                                          } ORDER BY DESC(?date)'
-                                                                  default-query='SELECT ?subject WHERE {
+                                                                          SERVICE <http://www.bigdata.com/rdf/search#search> {
+                                                                                    ?label bds:search ?__token__ ;
+                                                                                    bds:minRelevance "0.3" ;
+                                                                                    bds:matchAllTerms "true"  .
+                                                                          }
+                                                                        } ORDER BY DESC(?date)'
+                                                                  default-query='SELECT DISTINCT ?subject WHERE {
                                                                                   {
                                                                                     ?subject prov:generatedAtTime ?date .
                                                                                     ?subject crm:P2_has_type ?type .
                                                                                     FILTER(?type IN (<http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map>, 
-                                                                                                    <http://www.researchspace.org/resource/system/vocab/resource_type/set>,
-                                                                                                    <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative>, 
-                                                                                                    <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_chart>,
-                                                                                                    <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_timeline>
-                                                                                          )
-                                                                                    )
+                                                                                                      <http://www.researchspace.org/resource/system/vocab/resource_type/set>,
+                                                                                                      <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative>, 
+                                                                                                      <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_chart>,
+                                                                                                      <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_timeline>
+                                                                                                    )
+                                                                                      )
                                                                                     MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
                                                                                   } UNION {
                                                                                     ?subject a rs:EX_Digital_Image .
@@ -106,13 +108,21 @@
                                                                                     ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
                                                                                     ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
                                                                                     ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
-                                                                                    ?entityFormRecordCreation crm:P4_has_time-span ?creation .
-                                                                                    ?creation crm:P82_at_some_time_within ?date .
-                                                                                    MINUS { ?subject a Platform:resource_configuration .}
-                                                                                  }
-
+                                                                                    ?entityFormRecordCreation crm:P4_has_time-span ?entityFormRecordCreationTimespan .
+                                                                                    ?entityFormRecordCreationTimespan crm:P82_at_some_time_within ?dateCreation .
+                                                                                  } UNION {
+                                                                                    ?subject crm:P129i_is_subject_of ?entityFormRecord .
+                                                                                    ?entityFormRecord a crmdig:D1_Digital_Object .
+                                                                                    ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                                                                    ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordModification .
+                                                                                    ?entityFormRecordModification crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_modification> .
+                                                                                    ?entityFormRecordModification crm:P4_has_time-span ?entityFormRecordModificationTimespan .
+                                                                                    ?entityFormRecordModificationTimespan crm:P82_at_some_time_within ?dateModification .
+                                                                                  } 
+                                                                                  BIND(IF(BOUND(?dateModification), ?dateModification, ?dateCreation) AS ?date)
+                                                                                  MINUS { ?subject a Platform:resource_configuration .}
                                                                                   FILTER (?date > "2024-10-22T00:00:00.000Z"^^xsd:dateTime)
-                                                                                } ORDER BY DESC(?date)'
+                                                                                }'
                                                                   debounce=500
                                                                   placeholder="Search by resource name"
                                   ></semantic-search-query-keyword> 
@@ -150,10 +160,10 @@
                                           <semantic-search-result>
                                             <semantic-table id='activity-result-grid'
                                                             class-name="semantic-search-result-grid"
-                                                            query='SELECT DISTINCT ?subject ?iri ?date WHERE {
+                                                            query='SELECT DISTINCT ?subject ?iri WHERE {
                                                                         BIND(?subject as ?iri) .
                                                                     } ORDER BY DESC(?date)
-                                                                    LIMIT 200'
+                                                                    LIMIT 300'
                                                             tuple-template='{{> gridItem }}'
                                                             options='{"showFilter":false,
                                                                       "resultsPerPage":80

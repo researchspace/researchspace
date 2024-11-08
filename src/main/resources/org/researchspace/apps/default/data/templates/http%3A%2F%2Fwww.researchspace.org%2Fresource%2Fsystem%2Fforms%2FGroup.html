@@ -1,5 +1,5 @@
 <semantic-form [[> rsp:FormDefaults]] 
-                persistence='{"type": "sparql","targetInsertGraphIri":"{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
+                persistence='{"type": "sparql", "targetInsertGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}", "repository":"{{#if scheme}}vocabularies{{else}}default{{/if}}"}'
                 new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/group/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
                 fields='[[fieldDefinitions
                           classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
@@ -139,12 +139,16 @@
                     <div>
                       <div style="display: flex; gap: 3px; margin-top: 20px;">
                         <div>Listed in authority document: </div>
-                        <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                        urlqueryparam-view='authority-list' 
-                                        urlqueryparam-resource-iri='{{bindings.0.authorityDocument.value}}'
-                                        class="text-link">
-                          {{bindings.0.authorityDocumentName.value}}
-                        </semantic-link>
+                        {{#if scheme}}
+                          {{bindings.0.authorityDocumentName.value}} 
+                        {{else}}
+                          <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                          urlqueryparam-view='authority-list' 
+                                          urlqueryparam-resource-iri='{{bindings.0.authorityDocument.value}}'
+                                          class="text-link">
+                            {{bindings.0.authorityDocumentName.value}}
+                          </semantic-link>
+                        {{/if}}
                       </div>
                     </div>  
                   </template>
@@ -765,7 +769,7 @@
                 <semantic-form-autocomplete-input for='depicts_thing_domain' 
                                                   render-header="false"
                                                   placeholder="Select what depicts the group"
-                                                  nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'>
+                                                  nested-form-templates='[[> Platform:NestedFormTemplates_physicalHumanMadeThings]]'>
                 </semantic-form-autocomplete-input>
               </div>
               <div style="flex: 1;">

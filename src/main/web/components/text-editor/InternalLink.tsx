@@ -23,6 +23,8 @@ import { RenderNodeProps } from 'slate-react';
 import { Overlay, Popover, Button } from 'react-bootstrap';
 
 import { ResourceLinkComponent } from 'platform/api/navigation/components';
+import { ResourceLinkContainer } from 'platform/api/navigation/components';
+import { ConfigHolder } from 'platform/api/services/config-holder';
 import { Rdf } from 'platform/api/rdf';
 import { DropArea } from 'platform/components/dnd/DropArea';
 
@@ -114,7 +116,11 @@ export class InternalLink extends React.Component<InternalLinkProps, InternalLin
                     isNoHref ? null :
                     // because ResourceLinkComponent is not update when iri changes
                     // we need to use react key to recreate it on change
-                    <ResourceLinkComponent key={dataAttributes.href} iri={dataAttributes.href} />
+                    <ResourceLinkComponent 
+                                            iri={ConfigHolder.getDashboard().value}
+                                            urlqueryparam-view="resource-editor"
+                                            urlqueryparam-resource={dataAttributes.href}
+                    />
                   }
                 </DropArea>
                 <Button bsClass='btn-default' className='btn-default-icon' onMouseDown={this.onUnlink}>

@@ -1,5 +1,5 @@
 <semantic-form [[> rsp:FormDefaults]] 
-               persistence='{"type": "sparql", "targetGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
+               persistence='{"type": "sparql", "targetInsertGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}", "repository":"{{#if scheme}}vocabularies{{else}}default{{/if}}"}'
                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/appellation/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
                fields='[[fieldDefinitions
                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
@@ -28,7 +28,7 @@
                         symbolic_object_part_of="http://www.researchspace.org/pattern/system/symbolic_object/part_of"
                         symbolic_object_composed_of="http://www.researchspace.org/pattern/system/symbolic_object/composed_of"
 
-                        man-made_thing_was_intended_for="http://www.researchspace.org/pattern/system/man-made_thing/was_intended_for"
+                        human-made_thing_was_intended_for="http://www.researchspace.org/pattern/system/human-made_thing/was_intended_for"
                         thing_general_use="http://www.researchspace.org/pattern/system/thing/had_as_general_use"
                         thing_dimension="http://www.researchspace.org/pattern/system/thing/dimension"
 
@@ -37,7 +37,7 @@
 
                         symbolic_object_used_in="http://www.researchspace.org/pattern/system/symbolic_object/used_in"
                         conceptual_object_created_by="http://www.researchspace.org/pattern/system/conceptual_object/created_by"
-                        man-made_thing_was_intended_use_of_range="http://www.researchspace.org/pattern/system/man-made_thing/was_intended_use_of_range"
+                        human-made_thing_was_intended_use_of_range="http://www.researchspace.org/pattern/system/human-made_thing/was_intended_use_of_range"
                         thing_used_specific_object_range="http://www.researchspace.org/pattern/system/thing/used_specific_object_range"
                         persistent_item_present_at="http://www.researchspace.org/pattern/system/persistent_item/present_at"
                         persistent_item_brought_into_existence_by="http://www.researchspace.org/pattern/system/persistent_item/brought_into_existence_by"
@@ -220,77 +220,95 @@
         {{else}}
           <div class="hierarchyView-form-container">
 
-              <div class="page__section-container formHierarchyView-container">
-                <div class="form-header-withButtons">
-                    <h4>Components</h4>
-                </div>
-                <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
+            <div class="page__section-container formHierarchyInputs-container">    
+              <semantic-form-autocomplete-input   for='symbolic_object_part_of' 
+                                                  label="Part of" 
+                                                  placeholder="Select the item of which the appellation is part of" 
+                                                  nested-form-templates='[[> Platform:NestedFormTemplates_symbolicObjects]]'> 
+              </semantic-form-autocomplete-input>
+
+              <semantic-form-autocomplete-input   for='symbolic_object_composed_of' 
+                                                  label="Components" 
+                                                  placeholder="Select component of the appellation" 
+                                                  nested-form-templates='[[> Platform:NestedFormTemplates_symbolicObjects]]'>
+              </semantic-form-autocomplete-input>
+            </div>
+
+            <mp-event-target-template-render id='{{viewId}}-symbolicObject-componentsView' template='{{> componentsView}}'>
+              <template id='componentsView'>
+                <div class="page__section-container formHierarchyView-container">
+                  <div class="form-header-withButtons">
+                    <h4>Components hierarchy</h4>
                     {{#if node}}
-                        {{#bind symbolicObject=node }}
-                            <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
-                                                    BIND(<{{node}}> as ?symbolicObject)
-                                                    
-                                                    { ?symbolicObject crm:P106_is_composed_of ?node . }
-                                                    UNION
-                                                    { ?symbolicObject crm:P106i_forms_part_of ?parent . }
-                                                    
-                                                    ?node crm:P106i_forms_part_of ?parent .
-
-                                                    FILTER(ISIRI(?node))
-                                                }
-                                                ORDER BY (?node)' 
-
-                                            tuple-template='{{> nodeTemplate}}'>
-                                            
-                                <template id='nodeTemplate'>
-                                    <semantic-query query='SELECT ?node ?nodeLabel WHERE {
-                                                                BIND (<{{node.value}}> as ?node)
-                                                                { 
-                                                                  ?node crm:P1_is_identified_by ?appellation .
-                                                                  ?appellation a crm:E41_Appellation .
-                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                  ?appellation crm:P190_has_symbolic_content ?label .
-                                                                } UNION {
-                                                                  ?node crm:P190_has_symbolic_content ?nodeLabel .
-                                                                }
-                                                            }'
-                                                    template='{{> template}}'>
-                                        
-                                        <template id='template'>
-                                            <div>
-                                                {{#ifCond bindings.0.node.value "===" symbolicObject}}
-                                                    <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                {{else}}
-                                                    <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                    urlqueryparam-view='resource-editor' 
-                                                                    urlqueryparam-resource-iri='{{node.value}}'
-                                                                    >
-                                                        <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                    </semantic-link>
-                                                {{/ifCond}}
-                                            </div>
-                                        </template>
-                                    </semantic-query>
-                                </template>  
-                            </semantic-tree>
-                        {{/bind}}
+                      <div class="btn-form-actions"> 
+                        <mp-event-trigger id='{{viewId}}-symbolicObject-componentsView-refresh-trigger' 
+                                            type='Component.TemplateUpdate' 
+                                            targets='["{{viewId}}-symbolicObject-componentsView"]'
+                                            >
+                            <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
+                            <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
+                                Refresh
+                            </button>
+                        </mp-event-trigger>
+                      </div>
                     {{/if}}
+                  </div>
+                  <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
+                      {{#if node}}
+                          {{#bind symbolicObject=node }}
+                              <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
+                                                      BIND(<{{node}}> as ?symbolicObject)
+                                                      
+                                                      { ?symbolicObject crm:P106_is_composed_of ?node . }
+                                                      UNION
+                                                      { ?symbolicObject crm:P106i_forms_part_of ?parent . }
+                                                      
+                                                      ?node crm:P106i_forms_part_of ?parent .
+
+                                                      FILTER(ISIRI(?node))
+                                                  }
+                                                  ORDER BY (?node)' 
+
+                                              tuple-template='{{> nodeTemplate}}'>
+                                              
+                                  <template id='nodeTemplate'>
+                                      <semantic-query query='SELECT ?node ?nodeLabel WHERE {
+                                                                  BIND (<{{node.value}}> as ?node)
+                                                                  { 
+                                                                    ?node crm:P1_is_identified_by ?appellation .
+                                                                    ?appellation a crm:E41_Appellation .
+                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                    ?appellation crm:P190_has_symbolic_content ?label .
+                                                                  } UNION {
+                                                                    ?node crm:P190_has_symbolic_content ?nodeLabel .
+                                                                  }
+                                                              }'
+                                                      template='{{> template}}'>
+                                          
+                                          <template id='template'>
+                                              <div>
+                                                  {{#ifCond bindings.0.node.value "===" symbolicObject}}
+                                                      <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                  {{else}}
+                                                      <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                      urlqueryparam-view='resource-editor' 
+                                                                      urlqueryparam-resource-iri='{{node.value}}'
+                                                                      >
+                                                          <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                      </semantic-link>
+                                                  {{/ifCond}}
+                                              </div>
+                                          </template>
+                                      </semantic-query>
+                                  </template>  
+                              </semantic-tree>
+                          {{/bind}}
+                      {{/if}}
+                  </div>
                 </div>
-              </div>
+              </template>
+            </mp-event-target-template-render>
 
-              <div class="page__section-container formHierarchyInputs-container">    
-                <semantic-form-autocomplete-input   for='symbolic_object_part_of' 
-                                                    label="Part of" 
-                                                    placeholder="Select the item of which the appellation is part of" 
-                                                    nested-form-templates='[[> Platform:NestedFormTemplates_symbolicObjects]]'> 
-                </semantic-form-autocomplete-input>
-
-                <semantic-form-autocomplete-input   for='symbolic_object_composed_of' 
-                                                    label="Components" 
-                                                    placeholder="Select component of the appellation" 
-                                                    nested-form-templates='[[> Platform:NestedFormTemplates_symbolicObjects]]'>
-                </semantic-form-autocomplete-input>
-              </div>
           </div>
         {{/if}}
 
@@ -298,7 +316,7 @@
 
       <rs-tab event-key="type" title="Type/Dimensions">
     
-        <semantic-form-autocomplete-input   for='man-made_thing_was_intended_for' 
+        <semantic-form-autocomplete-input   for='human-made_thing_was_intended_for' 
                                             label="Was intended for" 
                                             placeholder="Select the type describing the intended usage of the appellation" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_types]]'>
@@ -361,7 +379,7 @@
         </semantic-form-autocomplete-input> 
 
         <div class="inline-composite-container">
-            <semantic-form-composite-input  for="man-made_thing_was_intended_use_of_range"
+            <semantic-form-composite-input  for="human-made_thing_was_intended_use_of_range"
                                             label="Made for"
                                             new-subject-template="/PC19_was_intended_use_of/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
                                             fields='[[fieldDefinitions
@@ -674,7 +692,7 @@
               <semantic-form-autocomplete-input for='depicts_thing_domain' 
                                                 render-header="false"
                                                 placeholder="Select what depicts the appellation"
-                                                nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'>
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_physicalHumanMadeThings]]'>
               </semantic-form-autocomplete-input>
             </div>
             <div style="flex: 1;">

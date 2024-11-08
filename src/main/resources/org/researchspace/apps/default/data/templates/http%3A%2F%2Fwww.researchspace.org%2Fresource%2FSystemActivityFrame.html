@@ -55,6 +55,9 @@
                                                                               ?subject crm:P129i_is_subject_of ?entityFormRecord .
                                                                               ?entityFormRecord a crmdig:D1_Digital_Object .
                                                                               ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+
+                                                                              MINUS { ?subject a Platform:resource_configuration .}
+
                                                                               ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
                                                                               ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
                                                                               ?entityFormRecordCreation crm:P4_has_time-span ?creation .
@@ -73,6 +76,8 @@
                                                                                 ?subject crm:P190_has_symbolic_content ?label .
                                                                               }
                                                                             }
+
+                                                                            FILTER (?date > "2024-10-22T00:00:00.000Z"^^xsd:dateTime)
                                                                             
                                                                             SERVICE <http://www.bigdata.com/rdf/search#search> {
                                                                                       ?label bds:search ?__token__ ;
@@ -103,10 +108,13 @@
                                                                                     ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
                                                                                     ?entityFormRecordCreation crm:P4_has_time-span ?creation .
                                                                                     ?creation crm:P82_at_some_time_within ?date .
+                                                                                    MINUS { ?subject a Platform:resource_configuration .}
                                                                                   }
-                                                                                }'
+
+                                                                                  FILTER (?date > "2024-10-22T00:00:00.000Z"^^xsd:dateTime)
+                                                                                } ORDER BY DESC(?date)'
                                                                   debounce=500
-                                                                  placeholder="Search resource"
+                                                                  placeholder="Search by resource name"
                                   ></semantic-search-query-keyword> 
                                 </div>
 
@@ -144,7 +152,8 @@
                                                             class-name="semantic-search-result-grid"
                                                             query='SELECT DISTINCT ?subject ?iri ?date WHERE {
                                                                         BIND(?subject as ?iri) .
-                                                                    } ORDER BY DESC(?date)'
+                                                                    } ORDER BY DESC(?date)
+                                                                    LIMIT 200'
                                                             tuple-template='{{> gridItem }}'
                                                             options='{"showFilter":false,
                                                                       "resultsPerPage":80

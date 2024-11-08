@@ -1,5 +1,5 @@
 <semantic-form [[> rsp:FormDefaults]] 
-                persistence='{"type": "sparql","targetInsertGraphIri":"{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
+                persistence='{"type": "sparql", "targetInsertGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}", "repository":"{{#if scheme}}vocabularies{{else}}default{{/if}}"}'
                 new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/production/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
 
                 fields='[[fieldDefinitions
@@ -45,7 +45,7 @@
                           entity_assigned_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/assigned_by_attribute_assignment"
                           entity_measurement="http://www.researchspace.org/pattern/system/entity/measurement"                         
 
-                          production_has_produced_mmThing="http://www.researchspace.org/pattern/system/production/has_produced_mmThing"
+                          production_has_produced_mmThing="http://www.researchspace.org/pattern/system/production/has_produced_physical_human-made_thing"
                           beginning_of_existence_thing="http://www.researchspace.org/pattern/system/beginning_of_existence/brought_into_existence_thing"
                           modification_has_modified_physical_thing="http://www.researchspace.org/pattern/system/modification/has_modified_physical_thing"
                           activity_used_specific_object_domain="http://www.researchspace.org/pattern/system/activity/PC16_used_specific_object"
@@ -168,137 +168,7 @@
         </div>
       </rs-tab>
 
-      <rs-tab event-key="component" title="Components">
-
-        {{#if scheme}}
-          <semantic-form-tree-picker-input    for='period_forms_part_of_event' 
-                                              label="Forms part of production" 
-                                              placeholder="Select production" 
-                                              default-values='[{{#if broader}}"{{broader}}"{{/if}}]'
-                                              tree-patterns='{"scheme": "{{scheme}}",
-                                                              "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
-                                                              "relationPattern": "?item crm:P9i_forms_part_of ?parent",
-                                                              "labelPattern": "?item crm:P1_is_identified_by ?appellation .
-                                                                              ?appellation a crm:E41_Appellation .
-                                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
-                                                                              ?appellation crm:P190_has_symbolic_content ?label ."}'
-
-                                              query-item-label='SELECT ?label WHERE {
-                                                                  ?item crm:P1_is_identified_by ?appellation .
-                                                                  ?appellation a crm:E41_Appellation .
-                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
-                                                                  ?appellation crm:P190_has_symbolic_content ?label .
-                                                              }'> 
-          </semantic-form-tree-picker-input>   
-
-          <semantic-form-tree-picker-input    for='period_consist_of_event' 
-                                              label="Consists of production" 
-                                              placeholder="Select production"
-                                              tree-patterns='{"scheme": "{{scheme}}",
-                                                              "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
-                                                              "relationPattern": "?item crm:P9i_forms_part_of ?parent",
-                                                              "labelPattern": "?item crm:P1_is_identified_by ?appellation .
-                                                                              ?appellation a crm:E41_Appellation .
-                                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
-                                                                              ?appellation crm:P190_has_symbolic_content ?label ."}'
-
-                                              query-item-label='SELECT ?label WHERE {
-                                                                  ?item crm:P1_is_identified_by ?appellation .
-                                                                  ?appellation a crm:E41_Appellation .
-                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
-                                                                  ?appellation crm:P190_has_symbolic_content ?label .
-                                                              }'>
-          </semantic-form-tree-picker-input> 
-        {{else}}
-          <div class="hierarchyView-form-container">
-              <mp-event-target-template-render id='{{viewId}}-period-componentsView' template='{{> periodComponents}}'>
-                <template id='periodComponents'>
-                    <div class="page__section-container formHierarchyView-container">
-                        <div class="form-header-withButtons">
-                            <h4>Components</h4>
-                            <div class="btn-form-actions"> 
-                            <mp-event-trigger id='{{viewId}}-period-componentsView-refresh-trigger' 
-                                                type='Component.TemplateUpdate' 
-                                                targets='["{{viewId}}-period-componentsView"]'
-                                                >
-                                <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
-                                <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
-                                    Refresh
-                                </button>
-                            </mp-event-trigger>
-                            </div>
-                        </div>
-                        <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
-                            {{#if node}}
-                                {{#bind activity=node }}
-                                    <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
-                                                            BIND(<{{node}}> as ?activity)
-                                                            
-                                                            { ?activity crm:P9_consists_of ?node . }
-                                                            UNION
-                                                            { ?activity crm:P9i_forms_part_of ?parent . }
-                                                            
-                                                            ?node crm:P9i_forms_part_of ?parent .
-
-                                                            FILTER(ISIRI(?node))
-                                                        }
-                                                        ORDER BY (?node)' 
-
-                                                    tuple-template='{{> nodeTemplate}}'>
-                                                    
-                                        <template id='nodeTemplate'>
-                                            <semantic-query query='SELECT ?node ?nodeLabel WHERE {
-                                                                    BIND (<{{node.value}}> as ?node)
-                                                                    ?node a ?ontologyClass .
-                                                                    ?ontologyClass rdfs:subClassOf* crm:E4_Period .
-                                                                    ?node crm:P1_is_identified_by ?appellation .
-                                                                    ?appellation a crm:E41_Appellation .
-                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                    ?appellation crm:P190_has_symbolic_content ?nodeLabel .  
-                                                                }'
-                                                            template='{{> template}}'>
-                                                
-                                                <template id='template'>
-                                                    <div>
-                                                        {{#ifCond bindings.0.node.value "===" activity}}
-                                                            <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                        {{else}}
-                                                            <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                            urlqueryparam-view='resource-editor' 
-                                                                            urlqueryparam-resource-iri='{{node.value}}'
-                                                                            >
-                                                                <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                            </semantic-link>
-                                                        {{/ifCond}}
-                                                    </div>
-                                                </template>
-                                            </semantic-query>
-                                        </template>  
-                                    </semantic-tree>
-                                {{/bind}}
-                            {{/if}}
-                        </div>
-                    </div>
-                </template>
-              </mp-event-target-template-render>
-
-              <div class="page__section-container formHierarchyInputs-container">
-                  <semantic-form-autocomplete-input   for='period_forms_part_of_event' 
-                                                      label="Forms part of" 
-                                                      placeholder="Select period/event/activity" 
-                                                      nested-form-templates='[[> Platform:NestedFormTemplates_periods]]'> 
-                  </semantic-form-autocomplete-input> 
-
-                  <semantic-form-autocomplete-input   for='period_consist_of_event' 
-                                                      label="Consists of" 
-                                                      placeholder="Select period/event/activity" 
-                                                      nested-form-templates='[[> Platform:NestedFormTemplates_periods]]'> 
-                  </semantic-form-autocomplete-input> 
-              </div>
-          </div>
-        {{/if}}
-
-      </rs-tab>
+      [[> rsp:FormPeriodComponentsTab resourceLabel='production']]
 
       <rs-tab event-key="actor" title="Actors">
 
@@ -498,7 +368,7 @@
         <semantic-form-autocomplete-input   for='production_has_produced_mmThing' 
                                             label="Has produced" 
                                             placeholder="Select thing produced" 
-                                            nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'> 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_physicalHumanMadeThings]]'> 
         </semantic-form-autocomplete-input> 
 
         <semantic-form-autocomplete-input   for='beginning_of_existence_thing' 
@@ -571,7 +441,7 @@
                                           fields='[[fieldDefinitions
                                                       classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                                                       
-                                                      was_intended_use_of_man-made_thing_range="http://www.researchspace.org/pattern/system/was_intended_use_of/man_made_thing_range"
+                                                      was_intended_use_of_human-made_thing_range="http://www.researchspace.org/pattern/system/was_intended_use_of/human_made_thing_range"
                                                       mode_of_use="http://www.researchspace.org/pattern/system/was_intended_use_of/mode_of_use"
                                                   ]]'>
 
@@ -579,10 +449,10 @@
 
             <div class="form-inline-inputs">
               <div style="flex: 1;">
-                <semantic-form-autocomplete-input for='was_intended_use_of_man-made_thing_range' 
+                <semantic-form-autocomplete-input for='was_intended_use_of_human-made_thing_range' 
                                                   render-header="false"
-                                                  placeholder="Select man made thing" 
-                                                  nested-form-templates='[[> Platform:NestedFormTemplates_manMadeThings]]'>
+                                                  placeholder="Select human made thing" 
+                                                  nested-form-templates='[[> Platform:NestedFormTemplates_humanMadeThings]]'>
                 </semantic-form-autocomplete-input> 
               </div>
               <div style="flex: 1;">
@@ -644,7 +514,7 @@
               <semantic-form-autocomplete-input for='depicts_thing_domain' 
                                                 render-header="false"
                                                 placeholder="Select what depicts the production"
-                                                nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'>
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_physicalHumanMadeThings]]'>
               </semantic-form-autocomplete-input>
             </div>
             <div style="flex: 1;">

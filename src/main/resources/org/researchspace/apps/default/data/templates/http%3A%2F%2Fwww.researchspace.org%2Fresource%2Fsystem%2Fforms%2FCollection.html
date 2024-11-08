@@ -1,5 +1,5 @@
 <semantic-form [[> rsp:FormDefaults]] 
-                persistence='{"type": "sparql","targetInsertGraphIri":"{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
+                persistence='{"type": "sparql", "targetInsertGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}", "repository":"{{#if scheme}}vocabularies{{else}}default{{/if}}"}'
                 new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/collection/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
                 fields='[[fieldDefinitions
                             classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
@@ -17,7 +17,7 @@
                             entity_web_URL="http://www.researchspace.org/pattern/system/entity/web_URL_embed"
 
                             entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
-                            man-made_thing_title="http://www.researchspace.org/pattern/system/man-made_thing/PC102_has_title"
+                            human-made_thing_title="http://www.researchspace.org/pattern/system/human-made_thing/PC102_has_title"
                             entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
                             entity_preferred_id_min1="http://www.researchspace.org/pattern/system/entity/preferred_identifier_min1"
                             entity_id="http://www.researchspace.org/pattern/system/entity/identifier"
@@ -27,7 +27,7 @@
                             physical_thing_part_of="http://www.researchspace.org/pattern/system/physical_thing/part_of_physical_thing"
                             physical_thing_component="http://www.researchspace.org/pattern/system/physical_thing/composed_of_physical_thing"
 
-                            man-made_thing_was_intended_for="http://www.researchspace.org/pattern/system/man-made_thing/was_intended_for"
+                            human-made_thing_was_intended_for="http://www.researchspace.org/pattern/system/human-made_thing/was_intended_for"
                             thing_general_use="http://www.researchspace.org/pattern/system/thing/had_as_general_use"
                             thing_dimension="http://www.researchspace.org/pattern/system/thing/dimension"
                             physical_thing_material="http://www.researchspace.org/pattern/system/physical_thing/material"
@@ -48,11 +48,11 @@
 
                             collection_curated_by="http://www.researchspace.org/pattern/system/collection/was_curated_by"
 
-                            man-made_thing_was_intended_use_of_range="http://www.researchspace.org/pattern/system/man-made_thing/was_intended_use_of_range"
+                            human-made_thing_was_intended_use_of_range="http://www.researchspace.org/pattern/system/human-made_thing/was_intended_use_of_range"
                             thing_used_specific_object_range="http://www.researchspace.org/pattern/system/thing/used_specific_object_range"
-                            physical_man-made_thing_produced_by="http://www.researchspace.org/pattern/system/physical_man-made_thing/produced_by"
-                            physical_man-made_thing_augmented_by="http://www.researchspace.org/pattern/system/physical_man-made_thing/augmented_by"
-                            physical_man-made_thing_diminished_by="http://www.researchspace.org/pattern/system/physical_man-made_thing/diminished_by"
+                            physical_human-made_thing_produced_by="http://www.researchspace.org/pattern/system/physical_human-made_thing/produced_by"
+                            physical_human-made_thing_augmented_by="http://www.researchspace.org/pattern/system/physical_human-made_thing/augmented_by"
+                            physical_human-made_thing_diminished_by="http://www.researchspace.org/pattern/system/physical_human-made_thing/diminished_by"
                             physical_thing_modified_by="http://www.researchspace.org/pattern/system/physical_thing/modified_by"
                             persistent_item_present_at="http://www.researchspace.org/pattern/system/persistent_item/present_at"
                             persistent_item_brought_into_existence_by="http://www.researchspace.org/pattern/system/persistent_item/brought_into_existence_by"
@@ -70,15 +70,15 @@
                             entity_subject_of="http://www.researchspace.org/pattern/system/entity/subject_of_propositional_object"
                             entity_refers_to_range="http://www.researchspace.org/pattern/system/entity/refers_to_range"
 
-                            physical_man-made_thing_visual_item="http://www.researchspace.org/pattern/system/physical_man-made_thing/shows_visual_item"
-                            physical_man-made_thing_depicts="http://www.researchspace.org/pattern/system/physical_man-made_thing/PC62_depicts"
+                            physical_human-made_thing_visual_item="http://www.researchspace.org/pattern/system/physical_human-made_thing/shows_visual_item"
+                            physical_human-made_thing_depicts="http://www.researchspace.org/pattern/system/physical_human-made_thing/PC62_depicts"
 
 
                         ]]'
             >
 
     <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
-        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E78_Collection'></semantic-form-hidden-input>
+        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E78_Curated_Holding'></semantic-form-hidden-input>
         
         {{#if scheme}}
             <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
@@ -132,7 +132,7 @@
                         {{/if}}
                         
                         <div class="inline-composite-container">
-                            <semantic-form-composite-input  for="man-made_thing_title" 
+                            <semantic-form-composite-input  for="human-made_thing_title" 
                                                             label="Title"
                                                             new-subject-template="/PC102_has_title/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
                                                             fields='[[fieldDefinitions
@@ -354,22 +354,39 @@
                     </semantic-form-tree-picker-input> 
                 {{else}}
                     <div class="hierarchyView-form-container">
+
+                        <div class="page__section-container formHierarchyInputs-container">    
+                            <semantic-form-autocomplete-input   for='physical_thing_part_of' 
+                                                                label="Part of" 
+                                                                placeholder="Select the item of which the collection is part of" 
+                                                                nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
+                            </semantic-form-autocomplete-input>
+
+                            <semantic-form-autocomplete-input   for='physical_thing_component' 
+                                                                label="Components" 
+                                                                placeholder="Select component of the collection" 
+                                                                nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'>
+                            </semantic-form-autocomplete-input>
+                        </div>
+
                         <mp-event-target-template-render id='{{viewId}}-physicalThing-componentsView' template='{{> physicalThingComponents}}'>
                             <template id='physicalThingComponents'>
                                 <div class="page__section-container formHierarchyView-container">
                                     <div class="form-header-withButtons">
-                                        <h4>Components</h4>
-                                        <div class="btn-form-actions"> 
-                                            <mp-event-trigger id='{{viewId}}-physicalThing-componentsView-refresh-trigger' 
-                                                            type='Component.TemplateUpdate' 
-                                                            targets='["{{viewId}}-physicalThing-componentsView"]'
-                                                            >
-                                            <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
-                                                <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
-                                                Refresh
-                                            </button>
-                                            </mp-event-trigger>
-                                        </div>
+                                        <h4>Components hierarchy</h4>
+                                        {{#if node}}
+                                            <div class="btn-form-actions"> 
+                                                <mp-event-trigger id='{{viewId}}-physicalThing-componentsView-refresh-trigger' 
+                                                                type='Component.TemplateUpdate' 
+                                                                targets='["{{viewId}}-physicalThing-componentsView"]'
+                                                                >
+                                                <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
+                                                    <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
+                                                    Refresh
+                                                </button>
+                                                </mp-event-trigger>
+                                            </div>
+                                        {{/if}}
                                     </div>
                                     <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
                                         {{#if node}}
@@ -422,20 +439,6 @@
                                 </div>
                             </template>
                         </mp-event-target-template-render>
-
-                        <div class="page__section-container formHierarchyInputs-container">    
-                            <semantic-form-autocomplete-input   for='physical_thing_part_of' 
-                                                                label="Part of" 
-                                                                placeholder="Select the item of which the collection is part of" 
-                                                                nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
-                            </semantic-form-autocomplete-input>
-
-                            <semantic-form-autocomplete-input   for='physical_thing_component' 
-                                                                label="Components" 
-                                                                placeholder="Select component of the collection" 
-                                                                nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'>
-                            </semantic-form-autocomplete-input>
-                        </div>
                     </div>
                 {{/if}}
 
@@ -443,7 +446,7 @@
 
             <rs-tab event-key="type" title="Type/Dimensions/Materials">
 
-                <semantic-form-autocomplete-input   for='man-made_thing_was_intended_for' 
+                <semantic-form-autocomplete-input   for='human-made_thing_was_intended_for' 
                                                     label="Was intended for" 
                                                     placeholder="Select the type describing the intended usage of the collection " 
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_types]]'>
@@ -604,7 +607,7 @@
                 </semantic-form-autocomplete-input>
 
                 <div class="inline-composite-container">
-                    <semantic-form-composite-input  for="man-made_thing_was_intended_use_of_range"
+                    <semantic-form-composite-input  for="human-made_thing_was_intended_use_of_range"
                                                     label="Made for"
                                                     new-subject-template="/PC19_was_intended_use_of/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
                                                     fields='[[fieldDefinitions
@@ -704,7 +707,7 @@
                     </semantic-form-composite-input>
                 </div>
 
-                <semantic-form-autocomplete-input   for='physical_man-made_thing_produced_by' 
+                <semantic-form-autocomplete-input   for='physical_human-made_thing_produced_by' 
                                                     label="Produced by" 
                                                     placeholder="Select production"
                                                     nested-form-templates='[ 
@@ -717,7 +720,7 @@
                                                     ]'> 
                 </semantic-form-autocomplete-input>
 
-                <semantic-form-autocomplete-input   for='physical_man-made_thing_augmented_by' 
+                <semantic-form-autocomplete-input   for='physical_human-made_thing_augmented_by' 
                                                     label="Augmented by" 
                                                     placeholder="Select part addition"
                                                     nested-form-templates='[ 
@@ -730,7 +733,7 @@
                                                     ]'> 
                 </semantic-form-autocomplete-input>
 
-                <semantic-form-autocomplete-input   for='physical_man-made_thing_diminished_by' 
+                <semantic-form-autocomplete-input   for='physical_human-made_thing_diminished_by' 
                                                     label="Diminished by" 
                                                     placeholder="Select part removal"
                                                     nested-form-templates='[ 
@@ -943,7 +946,7 @@
                         <semantic-form-autocomplete-input for='depicts_thing_domain' 
                                                             render-header="false"
                                                             placeholder="Select what depicts the collection"
-                                                            nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'>
+                                                            nested-form-templates='[[> Platform:NestedFormTemplates_physicalHumanMadeThings]]'>
                         </semantic-form-autocomplete-input>
                         </div>
                         <div style="flex: 1;">
@@ -1032,7 +1035,7 @@
             </rs-tab>
 
             <rs-tab event-key="visualItem" title="Visual items">
-                <semantic-form-autocomplete-input   for='physical_man-made_thing_visual_item' 
+                <semantic-form-autocomplete-input   for='physical_human-made_thing_visual_item' 
                                                     label="Shows visual item" 
                                                     placeholder="Select visual item shown by the collection" 
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_visualitems]]'> 
@@ -1042,7 +1045,7 @@
             <rs-tab event-key="more" title="More">
 
                 <div class="inline-composite-container">
-                    <semantic-form-composite-input  for="physical_man-made_thing_depicts" 
+                    <semantic-form-composite-input  for="physical_human-made_thing_depicts" 
                                                     label="Depicts" 
                                                     new-subject-template="/PC62_depicts/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
                                                     fields='[[fieldDefinitions

@@ -147,7 +147,7 @@ const PLACEHOLDER_SUBJECT = Rdf.iri(vocabularies.VocabPlatform._NAMESPACE + 'For
  *        "minOccurs": "1",
  *        "maxOccurs": "2",
  *        "valueSetPattern": "SELECT $value $label WHERE { VALUES ($value $label)
- *        { (<http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object> \"Man Made Object\")
+ *        { (<http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object> \"Human Made Object\")
  *        (<http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object> \"Information Object\") } }",
  *        "selectPattern": "SELECT $value WHERE { $subject a $value }"
  *      },

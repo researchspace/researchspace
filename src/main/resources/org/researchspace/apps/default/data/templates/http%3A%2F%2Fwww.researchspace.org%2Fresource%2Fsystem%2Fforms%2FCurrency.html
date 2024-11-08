@@ -1,5 +1,5 @@
 <semantic-form [[> rsp:FormDefaults]] 
-               persistence='{"type": "sparql", "targetGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
+               persistence='{"type": "sparql", "targetInsertGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}", "repository":"{{#if scheme}}vocabularies{{else}}default{{/if}}"}'
                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{entity_prefLabel}}{{{{/raw}}}}{{else}}/currency/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
                fields='[[fieldDefinitions
                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
@@ -36,7 +36,7 @@
                         type_typical_parts_of="http://www.researchspace.org/pattern/system/type/typical_parts_of"
                         type_typical_wholes_for="http://www.researchspace.org/pattern/system/type/typical_wholes_for"
 
-                        man-made_thing_was_intended_for="http://www.researchspace.org/pattern/system/man-made_thing/was_intended_for"
+                        human-made_thing_was_intended_for="http://www.researchspace.org/pattern/system/human-made_thing/was_intended_for"
                         thing_general_use="http://www.researchspace.org/pattern/system/thing/had_as_general_use"
                         thing_dimension="http://www.researchspace.org/pattern/system/thing/dimension"
 
@@ -46,7 +46,7 @@
                         type_was_assigned_by="http://www.researchspace.org/pattern/system/type/was_assigned_by"
                         type_was_created_by="http://www.researchspace.org/pattern/system/type/was_created_by"
                         conceptual_object_created_by="http://www.researchspace.org/pattern/system/conceptual_object/created_by"
-                        man-made_thing_was_intended_use_of_range="http://www.researchspace.org/pattern/system/man-made_thing/was_intended_use_of_range"
+                        human-made_thing_was_intended_use_of_range="http://www.researchspace.org/pattern/system/human-made_thing/was_intended_use_of_range"
                         thing_used_specific_object_range="http://www.researchspace.org/pattern/system/thing/used_specific_object_range"
                         persistent_item_present_at="http://www.researchspace.org/pattern/system/persistent_item/present_at"
                         persistent_item_brought_into_existence_by="http://www.researchspace.org/pattern/system/persistent_item/brought_into_existence_by"
@@ -98,12 +98,16 @@
                       <div>
                           <div style="display: flex; gap: 3px; margin-top: 20px;">
                               <div>Listed in authority document: </div>
-                              <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                              urlqueryparam-view='authority-list' 
-                                              urlqueryparam-resource-iri='{{bindings.0.authorityDocument.value}}'
-                                              class="text-link">
-                              {{bindings.0.authorityDocumentName.value}}
-                              </semantic-link>
+                              {{#if scheme}}
+                                {{bindings.0.authorityDocumentName.value}} 
+                              {{else}}
+                                <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                urlqueryparam-view='authority-list' 
+                                                urlqueryparam-resource-iri='{{bindings.0.authorityDocument.value}}'
+                                                class="text-link">
+                                  {{bindings.0.authorityDocumentName.value}}
+                                </semantic-link>
+                              {{/if}}
                           </div>
                       </div>  
                   </template>
@@ -272,13 +276,42 @@
         <rs-tab event-key="hierarchy" title="Broader/narrower types">
 
           <div class="hierarchyView-form-container">
-            <div class="page__section-container formHierarchyView-container">
-                <div class="form-header-withButtons">
-                    <h4>Currencies/Types</h4>
-                </div>
-                <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
-                    {{#if node}}
-                        {{#bind type=node }}
+            <div class="page__section-container formHierarchyInputs-container">
+              <semantic-form-autocomplete-input for='type_broader' 
+                                                label="Broader currency/type" 
+                                                placeholder="Enter broader type"
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
+              </semantic-form-autocomplete-input> 
+
+              <semantic-form-autocomplete-input for='type_narrower' 
+                                                label="Narrower type" 
+                                                placeholder="Enter narrower currency/type"
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
+              </semantic-form-autocomplete-input> 
+            </div>
+
+            <mp-event-target-template-render id='{{viewId}}-type-broaderNarrowerView' template='{{> broaderNarrowerView}}'>
+              <template id='broaderNarrowerView'>
+                <div class="page__section-container formHierarchyView-container">
+                    <div class="form-header-withButtons">
+                      <h4>Currencies/Types</h4>
+                      {{#if node}}
+                        <div class="btn-form-actions"> 
+                          <mp-event-trigger id='{{viewId}}-type-broaderNarrowerView-refresh-trigger' 
+                                              type='Component.TemplateUpdate' 
+                                              targets='["{{viewId}}-type-broaderNarrowerView"]'
+                                              >
+                              <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
+                              <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
+                                  Refresh
+                              </button>
+                          </mp-event-trigger>
+                        </div>
+                      {{/if}}
+                    </div>
+                    <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
+                      {{#if node}}
+                          {{#bind type=node }}
                             <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
                                                     BIND(<{{node}}> as ?type)
                                                     
@@ -320,24 +353,12 @@
                                     </semantic-query>
                                 </template>  
                             </semantic-tree>
-                        {{/bind}}
-                    {{/if}}
+                          {{/bind}}
+                      {{/if}}
+                    </div>
                 </div>
-            </div>
-
-            <div class="page__section-container formHierarchyInputs-container">
-              <semantic-form-autocomplete-input for='type_broader' 
-                                                label="Broader currency/type" 
-                                                placeholder="Enter broader type"
-                                                nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
-              </semantic-form-autocomplete-input> 
-
-              <semantic-form-autocomplete-input for='type_narrower' 
-                                                label="Narrower type" 
-                                                placeholder="Enter narrower currency/type"
-                                                nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
-              </semantic-form-autocomplete-input> 
-            </div>
+              </template>
+            </mp-event-target-template-render>
           </div>
           
         </rs-tab>
@@ -346,80 +367,83 @@
       <rs-tab event-key="component" title="Components">
 
         <div class="hierarchyView-form-container">
+          <div class="page__section-container formHierarchyInputs-container">
+            <semantic-form-autocomplete-input for='type_typical_parts_of' 
+                                            label="Typical parts of" 
+                                            placeholder="Enter type that defines typical wholes for the currency"
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
+            </semantic-form-autocomplete-input> 
 
-            <div class="page__section-container formHierarchyView-container">
-                <div class="form-header-withButtons">
-                    <h4>Components</h4>
-                </div>
-                <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
-                    {{#if node}}
-                        {{#bind type=node }}
-                            <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
-                                                    BIND(<{{node}}> as ?type)
-                                                    
-                                                    { ?type crm:P150i_defines_typical_wholes_for ?node . }
-                                                    UNION
-                                                    { ?type crm:P150_defines_typical_parts_of ?parent . }
-                                                    
-                                                    ?node crm:P150_defines_typical_parts_of ?parent .
+            <semantic-form-autocomplete-input for='type_typical_wholes_for' 
+                                            label="Typical wholes for" 
+                                            placeholder="Enter type that defines typical part of the currency"
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
+            </semantic-form-autocomplete-input> 
+          </div>
 
-                                                    FILTER(ISIRI(?node))
-                                                }
-                                                ORDER BY (?node)' 
+          <mp-event-target-template-render id='{{viewId}}-type-componentsView' template='{{> typeComponents}}'>
+            <template id='typeComponents'>
+              <div class="page__section-container formHierarchyView-container">
+                  <div class="form-header-withButtons">
+                      <h4>Components hierarchy</h4>
+                  </div>
+                  <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
+                      {{#if node}}
+                          {{#bind type=node }}
+                              <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
+                                                      BIND(<{{node}}> as ?type)
+                                                      
+                                                      { ?type crm:P150i_defines_typical_wholes_for ?node . }
+                                                      UNION
+                                                      { ?type crm:P150_defines_typical_parts_of ?parent . }
+                                                      
+                                                      ?node crm:P150_defines_typical_parts_of ?parent .
 
-                                            tuple-template='{{> nodeTemplate}}'>
-                                            
-                                <template id='nodeTemplate'>
-                                    <semantic-query query='SELECT ?node ?nodeLabel WHERE {
-                                                            BIND (<{{node.value}}> as ?node)
-                                                            ?node a ?ontologyClass .
-                                                            ?ontologyClass rdfs:subClassOf* crm:E55_Type .
-                                                            ?node skos:prefLabel ?nodeLabel .  
-                                                        }'
-                                                    template='{{> template}}'>
-                                        
-                                        <template id='template'>
-                                            <div>
-                                                {{#ifCond bindings.0.node.value "===" type}}
-                                                    <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                {{else}}
-                                                    <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                    urlqueryparam-view='resource-editor' 
-                                                                    urlqueryparam-resource-iri='{{node.value}}'
-                                                                    >
-                                                        <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                    </semantic-link>
-                                                {{/ifCond}}
-                                            </div>
-                                        </template>
-                                    </semantic-query>
-                                </template>  
-                            </semantic-tree>
-                        {{/bind}}
-                    {{/if}}
-                </div>
-            </div>
+                                                      FILTER(ISIRI(?node))
+                                                  }
+                                                  ORDER BY (?node)' 
 
-            <div class="page__section-container formHierarchyInputs-container">
-                <semantic-form-autocomplete-input for='type_typical_parts_of' 
-                                                label="Typical parts of" 
-                                                placeholder="Enter type that defines typical wholes for the currency"
-                                                nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
-                </semantic-form-autocomplete-input> 
-
-                <semantic-form-autocomplete-input for='type_typical_wholes_for' 
-                                                label="Typical wholes for" 
-                                                placeholder="Enter type that defines typical part of the currency"
-                                                nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
-                </semantic-form-autocomplete-input> 
-            </div>
+                                              tuple-template='{{> nodeTemplate}}'>
+                                              
+                                  <template id='nodeTemplate'>
+                                      <semantic-query query='SELECT ?node ?nodeLabel WHERE {
+                                                              BIND (<{{node.value}}> as ?node)
+                                                              ?node a ?ontologyClass .
+                                                              ?ontologyClass rdfs:subClassOf* crm:E55_Type .
+                                                              ?node skos:prefLabel ?nodeLabel .  
+                                                          }'
+                                                      template='{{> template}}'>
+                                          
+                                          <template id='template'>
+                                              <div>
+                                                  {{#ifCond bindings.0.node.value "===" type}}
+                                                      <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                  {{else}}
+                                                      <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                      urlqueryparam-view='resource-editor' 
+                                                                      urlqueryparam-resource-iri='{{node.value}}'
+                                                                      >
+                                                          <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                      </semantic-link>
+                                                  {{/ifCond}}
+                                              </div>
+                                          </template>
+                                      </semantic-query>
+                                  </template>  
+                              </semantic-tree>
+                          {{/bind}}
+                      {{/if}}
+                  </div>
+              </div>
+            </template>
+          </mp-event-target-template-render>
         </div>
           
       </rs-tab>
 
       <rs-tab event-key="type" title="Type/Dimensions">
     
-        <semantic-form-autocomplete-input   for='man-made_thing_was_intended_for' 
+        <semantic-form-autocomplete-input   for='human-made_thing_was_intended_for' 
                                             label="Was intended for" 
                                             placeholder="Select the type describing the intended usage of the currency" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_types]]'>
@@ -503,7 +527,7 @@
         </semantic-form-autocomplete-input> 
 
         <div class="inline-composite-container">
-          <semantic-form-composite-input  for="man-made_thing_was_intended_use_of_range"
+          <semantic-form-composite-input  for="human-made_thing_was_intended_use_of_range"
                                           label="Made for"
                                           new-subject-template="/PC19_was_intended_use_of/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
                                           fields='[[fieldDefinitions
@@ -678,7 +702,7 @@
           <semantic-form-autocomplete-input   for='type_was_intention_of' 
                                               label="Was intention of"
                                               placeholder="Select thing, physical or immaterial, that had this currency as intended method or technique of use" 
-                                              nested-form-templates='[[> Platform:NestedFormTemplates_manMadeThings]]'> 
+                                              nested-form-templates='[[> Platform:NestedFormTemplates_humanMadeThings]]'> 
           </semantic-form-autocomplete-input>
 
           <semantic-form-autocomplete-input   for='type_was_use_of' 
@@ -803,7 +827,7 @@
                 <semantic-form-autocomplete-input for='depicts_thing_domain' 
                                                   render-header="false"
                                                   placeholder="Select what depicts the {{#if entityType}}{{entityType}}{{else}}currency{{/if}}"
-                                                  nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'>
+                                                  nested-form-templates='[[> Platform:NestedFormTemplates_physicalHumanMadeThings]]'>
                 </semantic-form-autocomplete-input>
               </div>
               <div style="flex: 1;">

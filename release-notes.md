@@ -10,6 +10,19 @@
 {Optional: High-level summary}
 
 ### New features
+- **Design and Implementation of a default interactive system UI**
+ The rationale of this version is to introduce a set of default system resource configurations, vocabularies, knowledge patterns and templates that build together a complex coherent UI, enabling a user to work with semantic data both directly or via interactive visualisations. Beforehand, the platform was available with just a small number of example templates, which involved loading from another [github repo](https://github.com/researchspace/researchspace-instance-configurations) dependant knowledge patterns -- this now becomes obsolete. The previous templates were not designed to work together, they were just disparate starting points for developers. This meant a lot of time and effort was spent by each new project to repeatedly set up the same types of templates for viewing, editing or searching through the existing data. It also, led to implementations that did not take full advantage of the RS functionalities. 
+
+  There are now four new repositories: "configurations", "system", "ontologies", "vocabularies" which can be loaded by setting ```loadDefaultConfig``` to 1 in the runtime-data/config/global.prop in the custom-app/config/global.prop; 
+
+  The ```configurations``` repo is a group of named graphs each containing a resource configuration.
+  The ```system``` repo is a set of knowledge patterns that cannot be edited by the users of the system and are a prerequisite for the functioning of the default templates.
+  The ```vocabularies``` repo is a set of crm:E32_AuthorityDocuments created using RS that are referred to by the system knowledge patterns and system default templates.
+  The ```ontologies``` repo is a set of ontologies: CIDOC 7.3.1 (including CRMpc 1.2), CRMArcheo 1.4, CRMba 1.4, CRMdig 3.2.1, CRMgeo 1.2, CRMinfluence, CRMsci, frbroo, skos (not an ontology).
+
+  The current implementation covers the following scenarios:
+  1. For a new RS system setup with an empty graph-database all repositories are loaded for the first time regardless if the loadDefaultConfig was set as 0 or 1.
+  2. For a RS system with content in its graph-database, the LDPAssetsLoader will check if the loadDefaultConfig is set. If true, configurations and vocabularies are loaded, and can be overwritten by the user as the system is being used. The system repository contains solely knowledge patterns that cannot be edited. And finally the ontologies are loaded only if no other ontologies already exist. A user can work with their own choice of ontologies, but note the templates provided have been customised around CIDOC CRM 7.3.1.
 
 - **Resource Configuration**
 
@@ -17,7 +30,7 @@
   KP Category, Char, Timeline, Image Annotation, Knowledge Map, Semantic Narrative, Set, Set Item, User
 
   ***CIDOC CRM Related Resource Configurations***
-  Type, Group, Organisation, Material, Model 3D, Acquisition, Activity, Actor, Appellation, Attribute assignment, Audio, Authority document, Beginning of existence, Biological object, Birth, Conceptual object, Condition assessment, Condition state, Creation, Curated collection, Curation activity, Death, Design or procedure, Destruction, Dimension, Dissolution, Document, End of existence, Entity, Event, Exhibition, Formation, Identifier, Identifier assignment, Image, Information object, Inscription, Joining, Language, Leaving, Linguistic object, Man-made feature, Man-made object, Mark, Measurement, Modification, Move, Part addition, Part removal, Period, Persistent item, Person, Physical feature, Physical man-made thing, Physical object, Physical thing, Place, Production, Project, Propositional object, Publication, Research question, Right, Series, Site, Symbolic object, Term, Timespan, Title, Transfer of custody, Transformation, Type assignment, Type creation, Video, Visual item
+  Type, Group, Organisation, Material, Model 3D, Acquisition, Activity, Actor, Appellation, Attribute assignment, Audio, Authority document, Beginning of existence, Biological object, Birth, Conceptual object, Condition assessment, Condition state, Creation, Curated collection, Curation activity, Death, Design or procedure, Destruction, Dimension, Dissolution, Document, End of existence, Entity, Event, Exhibition, Formation, Identifier, Identifier assignment, Image, Information object, Inscription, Joining, Language, Leaving, Linguistic object, Human-made feature, Human-made object, Mark, Measurement, Modification, Move, Part addition, Part removal, Period, Persistent item, Person, Physical feature, Physical Human-made thing, Physical object, Physical thing, Place, Production, Project, Propositional object, Publication, Research question, Right, Series, Site, Symbolic object, Term, Timespan, Title, Transfer of custody, Transformation, Type assignment, Type creation, Video, Visual item
 
 
 - **New Resource**
@@ -25,7 +38,7 @@
   {Feature description}
   
 - **Importing Resources using REST APIs (OSM, MET, V&A, TNA examples)**
-  ==Man-Made Object==
+  ==Human-made Object==
   ==Place==
 
 - **Finder**

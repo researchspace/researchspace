@@ -1,5 +1,5 @@
 <semantic-form [[> rsp:FormDefaults]] 
-                persistence='{"type": "sparql","targetInsertGraphIri":"{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
+                persistence='{"type": "sparql", "targetInsertGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}", "repository":"{{#if scheme}}vocabularies{{else}}default{{/if}}"}'
                 new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/period/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
 
                 fields='[[fieldDefinitions
@@ -109,137 +109,7 @@
         </div>
       </rs-tab>
 
-      <rs-tab event-key="component" title="Components">
-
-        {{#if scheme}}
-            <semantic-form-tree-picker-input    for='period_forms_part_of_event' 
-                                                label="Forms part of period" 
-                                                placeholder="Select period" 
-                                                default-values='[{{#if broader}}"{{broader}}"{{/if}}]'
-                                                tree-patterns='{"scheme": "{{scheme}}",
-                                                                "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
-                                                                "relationPattern": "?item crm:P9i_forms_part_of ?parent",
-                                                                "labelPattern": "?item crm:P1_is_identified_by ?appellation .
-                                                                                ?appellation a crm:E41_Appellation .
-                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
-                                                                                ?appellation crm:P190_has_symbolic_content ?label ."}'
-
-                                                query-item-label='SELECT ?label WHERE {
-                                                                    ?item crm:P1_is_identified_by ?appellation .
-                                                                    ?appellation a crm:E41_Appellation .
-                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
-                                                                    ?appellation crm:P190_has_symbolic_content ?label .
-                                                                }'> 
-            </semantic-form-tree-picker-input>   
-
-            <semantic-form-tree-picker-input    for='period_consist_of_event' 
-                                                label="Consists of period" 
-                                                placeholder="Select period"
-                                                tree-patterns='{"scheme": "{{scheme}}",
-                                                                "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
-                                                                "relationPattern": "?item crm:P9i_forms_part_of ?parent",
-                                                                "labelPattern": "?item crm:P1_is_identified_by ?appellation .
-                                                                                ?appellation a crm:E41_Appellation .
-                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
-                                                                                ?appellation crm:P190_has_symbolic_content ?label ."}'
-
-                                                query-item-label='SELECT ?label WHERE {
-                                                                    ?item crm:P1_is_identified_by ?appellation .
-                                                                    ?appellation a crm:E41_Appellation .
-                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
-                                                                    ?appellation crm:P190_has_symbolic_content ?label .
-                                                                }'>
-            </semantic-form-tree-picker-input> 
-        {{else}}
-            <div class="hierarchyView-form-container">
-                <mp-event-target-template-render id='{{viewId}}-period-componentsView' template='{{> periodComponents}}'>
-                <template id='periodComponents'>
-                    <div class="page__section-container formHierarchyView-container">
-                        <div class="form-header-withButtons">
-                            <h4>Components</h4>
-                            <div class="btn-form-actions"> 
-                            <mp-event-trigger id='{{viewId}}-period-componentsView-refresh-trigger' 
-                                                type='Component.TemplateUpdate' 
-                                                targets='["{{viewId}}-period-componentsView"]'
-                                                >
-                                <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
-                                <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
-                                    Refresh
-                                </button>
-                            </mp-event-trigger>
-                            </div>
-                        </div>
-                        <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
-                            {{#if node}}
-                                {{#bind period=node }}
-                                    <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
-                                                            BIND(<{{node}}> as ?period)
-                                                            
-                                                            { ?period crm:P9_consists_of ?node . }
-                                                            UNION
-                                                            { ?period crm:P9i_forms_part_of ?parent . }
-                                                            
-                                                            ?node crm:P9i_forms_part_of ?parent .
-
-                                                            FILTER(ISIRI(?node))
-                                                        }
-                                                        ORDER BY (?node)' 
-
-                                                    tuple-template='{{> nodeTemplate}}'>
-                                                    
-                                        <template id='nodeTemplate'>
-                                            <semantic-query query='SELECT ?node ?nodeLabel WHERE {
-                                                                    BIND (<{{node.value}}> as ?node)
-                                                                    ?node a ?ontologyClass .
-                                                                    ?ontologyClass rdfs:subClassOf* crm:E4_Period .
-                                                                    ?node crm:P1_is_identified_by ?appellation .
-                                                                    ?appellation a crm:E41_Appellation .
-                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                    ?appellation crm:P190_has_symbolic_content ?nodeLabel .  
-                                                                }'
-                                                            template='{{> template}}'>
-                                                
-                                                <template id='template'>
-                                                    <div>
-                                                        {{#ifCond bindings.0.node.value "===" period}}
-                                                            <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                        {{else}}
-                                                            <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                            urlqueryparam-view='resource-editor' 
-                                                                            urlqueryparam-resource-iri='{{node.value}}'
-                                                                            >
-                                                                <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                            </semantic-link>
-                                                        {{/ifCond}}
-                                                    </div>
-                                                </template>
-                                            </semantic-query>
-                                        </template>  
-                                    </semantic-tree>
-                                {{/bind}}
-                            {{/if}}
-                        </div>
-                    </div>
-                </template>
-                </mp-event-target-template-render>
-
-                <div class="page__section-container formHierarchyInputs-container">
-                    <semantic-form-autocomplete-input   for='period_forms_part_of_event' 
-                                                        label="Forms part of" 
-                                                        placeholder="Select period/event" 
-                                                        nested-form-templates='[[> Platform:NestedFormTemplates_periods]]'> 
-                    </semantic-form-autocomplete-input> 
-
-                    <semantic-form-autocomplete-input   for='period_consist_of_event' 
-                                                        label="Consists of" 
-                                                        placeholder="Select period/event" 
-                                                        nested-form-templates='[[> Platform:NestedFormTemplates_periods]]'> 
-                    </semantic-form-autocomplete-input> 
-                </div>
-            </div>
-        {{/if}}
-
-      </rs-tab>
+      [[> rsp:FormPeriodComponentsTab resourceLabel='period']]
 
       <rs-tab event-key="event" title="Events">
 
@@ -321,7 +191,7 @@
                 <semantic-form-autocomplete-input for='depicts_thing_domain' 
                                                   render-header="false"
                                                   placeholder="Select what depicts the period"
-                                                  nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'>
+                                                  nested-form-templates='[[> Platform:NestedFormTemplates_physicalHumanMadeThings]]'>
                 </semantic-form-autocomplete-input>
               </div>
               <div style="flex: 1;">

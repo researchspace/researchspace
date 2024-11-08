@@ -1,5 +1,5 @@
 <semantic-form [[> rsp:FormDefaults]] 
-                persistence='{"type": "sparql","targetInsertGraphIri":"{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
+                persistence='{"type": "sparql", "targetInsertGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}", "repository":"{{#if scheme}}vocabularies{{else}}default{{/if}}"}'
                 new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/physical_feature/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
                 fields='[[fieldDefinitions
                             classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
@@ -286,22 +286,38 @@
                     </semantic-form-tree-picker-input> 
                 {{else}}
                     <div class="hierarchyView-form-container">
+                        <div class="page__section-container formHierarchyInputs-container">    
+                            <semantic-form-autocomplete-input   for='physical_thing_part_of' 
+                                                                label="Part of" 
+                                                                placeholder="Select the item of which the physical feature is part of" 
+                                                                nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
+                            </semantic-form-autocomplete-input>
+
+                            <semantic-form-autocomplete-input   for='physical_thing_component' 
+                                                                label="Components" 
+                                                                placeholder="Select component of the physical feature" 
+                                                                nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'>
+                            </semantic-form-autocomplete-input>
+                        </div>
+                        
                         <mp-event-target-template-render id='{{viewId}}-physicalThing-componentsView' template='{{> physicalThingComponents}}'>
                             <template id='physicalThingComponents'>
                                 <div class="page__section-container formHierarchyView-container">
                                     <div class="form-header-withButtons">
-                                        <h4>Components</h4>
-                                        <div class="btn-form-actions"> 
-                                            <mp-event-trigger id='{{viewId}}-physicalThing-componentsView-refresh-trigger' 
-                                                            type='Component.TemplateUpdate' 
-                                                            targets='["{{viewId}}-physicalThing-componentsView"]'
-                                                            >
-                                            <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
-                                                <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
-                                                Refresh
-                                            </button>
-                                            </mp-event-trigger>
-                                        </div>
+                                        <h4>Components hierarchy</h4>
+                                        {{#if node}}
+                                            <div class="btn-form-actions"> 
+                                                <mp-event-trigger id='{{viewId}}-physicalThing-componentsView-refresh-trigger' 
+                                                                type='Component.TemplateUpdate' 
+                                                                targets='["{{viewId}}-physicalThing-componentsView"]'
+                                                                >
+                                                <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
+                                                    <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
+                                                    Refresh
+                                                </button>
+                                                </mp-event-trigger>
+                                            </div>
+                                        {{/if}}
                                     </div>
                                     <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
                                         {{#if node}}
@@ -354,20 +370,6 @@
                                 </div>
                             </template>
                         </mp-event-target-template-render>
-
-                        <div class="page__section-container formHierarchyInputs-container">    
-                            <semantic-form-autocomplete-input   for='physical_thing_part_of' 
-                                                                label="Part of" 
-                                                                placeholder="Select the item of which the physical feature is part of" 
-                                                                nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
-                            </semantic-form-autocomplete-input>
-
-                            <semantic-form-autocomplete-input   for='physical_thing_component' 
-                                                                label="Components" 
-                                                                placeholder="Select component of the physical feature" 
-                                                                nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'>
-                            </semantic-form-autocomplete-input>
-                        </div>
                     </div>
                 {{/if}}
 
@@ -767,7 +769,7 @@
                             <semantic-form-autocomplete-input for='depicts_thing_domain' 
                                                             render-header="false"
                                                             placeholder="Select what depicts the physical feature"
-                                                            nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'>
+                                                            nested-form-templates='[[> Platform:NestedFormTemplates_physicalHumanMadeThings]]'>
                             </semantic-form-autocomplete-input>
                         </div>
                         <div style="flex: 1;">

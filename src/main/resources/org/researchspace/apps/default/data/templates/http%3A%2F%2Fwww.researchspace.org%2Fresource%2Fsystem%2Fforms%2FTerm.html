@@ -1,7 +1,7 @@
 
 
 <semantic-form [[> rsp:FormDefaults]] 
-               persistence='{"type": "sparql", "targetGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
+               persistence='{"type": "sparql", "targetInsertGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}", "repository":"{{#if scheme}}vocabularies{{else}}default{{/if}}"}'
                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{skos_prefLabel}}{{{{/raw}}}}{{else}}/skos_concept/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
                fields='[[
                     fieldDefinitions
@@ -53,12 +53,16 @@
                     <div>
                         <div style="display: flex; gap: 3px; margin-top: 20px;">
                             <div>Listed in authority document: </div>
-                            <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                            urlqueryparam-view='authority-list' 
-                                            urlqueryparam-resource-iri='{{bindings.0.authorityDocument.value}}'
-                                            class="text-link">
-                            {{bindings.0.authorityDocumentName.value}}
-                            </semantic-link>
+                            {{#if scheme}}
+                              {{bindings.0.authorityDocumentName.value}} 
+                            {{else}}
+                              <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                              urlqueryparam-view='authority-list' 
+                                              urlqueryparam-resource-iri='{{bindings.0.authorityDocument.value}}'
+                                              class="text-link">
+                                {{bindings.0.authorityDocumentName.value}}
+                              </semantic-link>
+                            {{/if}}
                         </div>
                     </div>  
                 </template>

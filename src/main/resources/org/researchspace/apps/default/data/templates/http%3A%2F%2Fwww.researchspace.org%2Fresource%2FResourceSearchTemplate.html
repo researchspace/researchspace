@@ -833,31 +833,39 @@
                                 <mp-component-toolbar-component>
                                     <semantic-timeline  id='search-result-timeline'
                                                         query='PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-                                                                SELECT DISTINCT ?iri ?timespan ?start ?end ?birthTimespan ?deathTimespan WHERE {
+                                                                SELECT DISTINCT ?item ?timespan ?start ?end ?birthTimespan ?deathTimespan WHERE {
                                                                   {
-                                                                    ?subject a ?ontologyClass .
+                                                                    ?item a ?ontologyClass .
                                                                     ?ontologyClass rdfs:subClassOf* crm:E2_Temporal_Entity .
-                                                                    ?subject crm:P4_has_time-span ?__value__ .
-                                                                    ?__value__ crm:P82a_begin_of_the_begin ?start ;
-                                                                                crm:P82b_end_of_the_end ?end .
+                                                                    ?item crm:P4_has_time-span ?__value__ .
+                                                                    ?__value__ crm:P82a_begin_of_the_begin|crm:P82b_end_of_the_end|crm:P82_at_some_time_within ?timespanDate .
+                                                                    OPTIONAL { ?__value__ crm:P82a_begin_of_the_begin ?timespanStart . }
+                                                                    OPTIONAL { ?__value__ crm:P82b_end_of_the_end ?timespanEnd . }
+                                                                    OPTIONAL { ?__value__ crm:P82_at_some_time_within ?date . }
+                                                                    
+                                                                    BIND(IF(BOUND(?timespanStart), ?timespanStart, ?date) AS ?start)
+                                                                    BIND(IF(BOUND(?timespanEnd), ?timespanEnd, ?date) AS ?end)
                                                                     BIND(?__value__ as ?timespan)
-                                                                    BIND(?subject AS ?iri)
+                                                               
                                                                     OPTIONAL { FILTER(?__contextRelationPattern__) }
                                                                   } UNION
                                                                   {
-                                                                    OPTIONAL {
-                                                                      ?subject a crm:E21_Person .
-                                                                      ?subject crm:P98i_was_born ?birth .
+                                                                    ?item rdf:type crm:E21_Person.
+                                                                    {
+                                                                      ?item crm:P98i_was_born ?birth .
                                                                       ?birth crm:P4_has_time-span ?birthTimespan .
-                                                                      OPTIONAL { ?birthTimespan crm:P82_at_some_time_within ?start . }
-                                                                      BIND(?subject AS ?iri)
+                                                                      ?birthTimespan crm:P82_at_some_time_within|crm:P82_at_some_time_within ?birthTimespanDate .
+                                                                      OPTIONAL { ?birthTimespan crm:P82a_begin_of_the_begin ?birthStart . }
+                                                                      OPTIONAL { ?birthTimespan crm:P82_at_some_time_within ?birthDate . }
+                                                                      BIND(IF(BOUND(?birthStart), ?birthStart, ?birthDate) AS ?start)
                                                                     }
-                                                                    OPTIONAL {
-                                                                      ?subject a crm:E21_Person .
-                                                                      ?subject crm:P100i_died_in ?death .
+                                                                    UNION {
+                                                                      ?item crm:P100i_died_in ?death .
                                                                       ?death crm:P4_has_time-span ?deathTimespan .
-                                                                      OPTIONAL { ?deathTimespan crm:P82_at_some_time_within ?end .}
-                                                                      BIND(?subject AS ?iri)
+                                                                      ?deathTimespan crm:P82_at_some_time_within|crm:crm:P82b_end_of_the_end ?deathTimespanDate .
+                                                                      OPTIONAL { ?deathTimespan crm:crm:P82b_end_of_the_end ?deathEnd .}
+                                                                      OPTIONAL { ?deathTimespan crm:P82_at_some_time_within ?deathDate . }
+                                                                      BIND(IF(BOUND(?deathEnd), ?deathEnd, ?deathDate) AS ?end)
                                                                     }
                                                                     OPTIONAL { FILTER(?__contextRelationPattern__) }
                                                                   } 
@@ -872,7 +880,7 @@
                                         <div style='display:flex;'>
                                           <div style='display:flex; gap: 12px; flex: 1;'>
                                             <div>
-                                              <mp-resource-thumbnail iri='{{iri.value}}'
+                                              <mp-resource-thumbnail iri='{{item.value}}'
                                                                     style="width: 55px; height: 55px; object-fit:cover; margin-top: 5px;">
                                                 <mp-resource-thumbnail-fallback>
                                                   <span>Image not found!</span>
@@ -882,8 +890,8 @@
                                             <div style='display:flex; flex-direction:column;align-items: flex-start; gap: 2px;'>
                                               <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
                                                               urlqueryparam-view='resource-editor' 
-                                                              urlqueryparam-resource-iri='{{iri.value}}'>
-                                                <mp-label iri='{{iri.value}}' class="text-link-action text-truncate-line1"></mp-label>
+                                                              urlqueryparam-resource-iri='{{item.value}}'>
+                                                <mp-label iri='{{item.value}}' class="text-link-action text-truncate-line1"></mp-label>
                                               </semantic-link>
                                               {{#if timespan}}
                                                 {{#if start.value}}<div>Start date: {{start.value}}</div>{{/if}}
@@ -930,13 +938,13 @@
                                             </div>
                                           </div>
                                           <div style="display:flex; gap: 3px;">
-                                            <mp-copy-to-default-set id="[[urlParam 'viewid' escape=false]]-copy-to-clipboard" resource="{{iri.value}}">
+                                            <mp-copy-to-default-set id="[[urlParam 'viewid' escape=false]]-copy-to-clipboard" resource="{{item.value}}">
                                               <button class="btn btn-default" style="height: 35px;">
                                                 <rs-icon icon-type="rounded" icon-name="inventory" symbol="true" title="Copy to clipboard"></rs-icon>
                                               </button>
                                             </mp-copy-to-default-set>
                                             
-                                            <mp-overlay-dialog  id="{{iri.value}}-resource-preview-dialog"  
+                                            <mp-overlay-dialog  id="{{item.value}}-resource-preview-dialog"  
                                                                 type="modal" 
                                                                 class="modal-xlSize preview_modal"
                                                                 title="Preview">
@@ -948,7 +956,7 @@
 
                                               <mp-overlay-dialog-content>
                                                 <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
-                                                                  options='{  "resource": "{{iri.value}}", 
+                                                                  options='{  "resource": "{{item.value}}", 
                                                                               "resourceConfig": "[[urlParam "resourceconfig" escape=false]]", 
                                                                               "resourceConfigLabel": "[[urlParam "resourcelabel" escape=false]]",
                                                                               "resourceOntologyClass": "[[urlParam "resourceontologyclass" escape=false]]",
@@ -971,7 +979,7 @@
                                             <div style="flex: 1;"> 
                                               <div class="documentation-section-title">No results available</div>
                                               <div class="documentation-section-content">
-                                                To display a resource in the timeline it must have associated a Timespan with Start date and End date.
+                                                To display a resource in the timeline it must have associated a Timespan with date, start date or end date.
                                               </div>
                                             </div>
                                           </div> 
@@ -1088,7 +1096,7 @@
                                                                     {{#if bindings.0.columnTitle2.value}} {"variableName": "", "displayName": "{{bindings.0.columnTitle2.value}}", "cellTemplate": "{{> column2}}" },{{/if}}
                                                                     {{#if bindings.0.columnTitle3.value}} {"variableName": "", "displayName": "{{bindings.0.columnTitle3.value}}", "cellTemplate": "{{> column3}}" },{{/if}}
                                                                     {{#if bindings.0.columnTitle4.value}} {"variableName": "", "displayName": "{{bindings.0.columnTitle4.value}}", "cellTemplate": "{{> column4}}" },{{/if}}
-                                                                    {"variableName": "", "displayName": "more", "cellTemplate": "{{> actions}}" }
+                                                                    {"variableName": "", "displayName": "", "cellTemplate": "{{> actions}}" }
                                                                   ]'   
                             >
     
@@ -1445,7 +1453,7 @@
                                                                     {"variableName": "subject", "displayName": "", "cellTemplate": "{{> selectionCheckbox}}" },
                                                                     {"variableName": "subject", "displayName": "[[urlParam "resourcelabel" escape=false]] name", "cellTemplate": "{{> column1}}" },
                                                                     {"variableName": "description", "displayName": "Description", "cellTemplate": "{{> column2}}" },
-                                                                    {"variableName": "", "displayName": "more", "cellTemplate": "{{> actions}}" }
+                                                                    {"variableName": "", "displayName": "", "cellTemplate": "{{> actions}}" }
                                                                   ]'   
                             >
     

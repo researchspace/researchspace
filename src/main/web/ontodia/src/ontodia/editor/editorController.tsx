@@ -527,7 +527,7 @@ export class EditorController {
           this.removeTemporaryElement(target);
           this.removeTemporaryLink(link);
 
-          const batch = this.model.history.startBatch(isNewElement ? 'Create new entity' : 'Link to entity');
+          const batch = this.model.history.startBatch(isNewElement ? 'Create new resource' : 'Link to resource');
 
           this.model.addElement(target);
           if (isNewElement) {
@@ -765,7 +765,7 @@ export class EditorController {
   createNewEntity({
     elementModel, temporary
   }: { elementModel: ElementModel; position?: Vector, temporary?: boolean }): Element {
-    const batch = this.model.history.startBatch('Create new entity');
+    const batch = this.model.history.startBatch('Create new resource');
 
     // when creating new element we want to put it in the center of the diagram
     // but avoid overlap with other existing elements
@@ -799,7 +799,7 @@ export class EditorController {
       return;
     }
     const oldData = elements[0].data;
-    const batch = this.model.history.startBatch('Edit entity');
+    const batch = this.model.history.startBatch('Edit resource');
 
     const newState = AuthoringState.changeElement(this._authoringState, oldData, newData);
     // get created authoring event by either old or new IRI (in case of new entities)
@@ -817,7 +817,7 @@ export class EditorController {
       return;
     }
 
-    const batch = this.model.history.startBatch('Delete entity');
+    const batch = this.model.history.startBatch('Delete resource');
     const model = elements[0].data;
 
     const event = state.elements.get(elementIri);

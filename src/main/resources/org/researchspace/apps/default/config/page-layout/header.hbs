@@ -512,7 +512,7 @@
       <mp-anonymous-hidden alt='<li><a href="/login" title="login"></a></li>'>
         <mp-event-target-template-render id='header-profile-dropdown' template='\{{> template}}'>
           <template id='template'>
-            <semantic-query query='SELECT DISTINCT ?systemUser ?systemUserName ?actorFullName ?group ?groupFullName { 
+            <semantic-query query='SELECT DISTINCT ?systemUser ?systemUserName ?actorFullName ?group ?groupFullName ?image ?imageType { 
                                     BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
                                     BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?systemUserName)
 
@@ -534,6 +534,12 @@
                                       ?groupName a crm:E41_Appellation .
                                       ?groupName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                                       ?groupName crm:P190_has_symbolic_content ?groupFullName .
+                                    }
+
+                                    OPTIONAL {
+                                      ?systemUser rs:PX_has_main_representation ?image . 
+                                      ?image a ?imageType .
+                                      FILTER(?imageType in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
                                     }
                                   }'
                           template='\{{> template}}'>

@@ -20,8 +20,25 @@
  
 /* Homepage */
 
+.Dashboard--viewContainer:has(.homepage-container) {
+    container-name: homepage-dashboard-view;
+    container-type: inline-size;
+}
+
 #template-content:has(.homepage-container) {
-overflow: hidden;
+
+    overflow: hidden;
+
+    container-name: homepage-template-content;
+    container-type: inline-size;
+    
+}
+
+@container homepage-dashboard-view (width <= 1000px) {
+
+    #template-content:has(.homepage-container) {
+        overflow: auto;
+    }
 }
 
 .homepage-container {
@@ -32,8 +49,16 @@ overflow: hidden;
     overflow: hidden;
     height: 100%;
 
-    @media screen and (max-width: 1200px) {
+    container-name: homepage-container;
+    container-type: inline-size;
+}
+
+@container homepage-template-content (width <= 1000px) {
+
+    .homepage-container { 
         grid-template-columns: 100%;
+        overflow: auto;
+        height: auto;
     }
 }
 
@@ -45,6 +70,17 @@ overflow: hidden;
 
     height: 100%;
     overflow: hidden;
+}
+
+@container homepage-container (width <= 1000px) {
+
+    .homepage-project-container { 
+        overflow: auto;
+    }
+
+    .homepage-activity-container {
+        border-top: 1px solid $color-border;
+    }
 }
 
 .homepage-project-header {
@@ -149,7 +185,7 @@ overflow: hidden;
 
     .homepage-activity-content {
 
-        padding: 0 23px 0 30px;
+        margin: 0 23px 0 30px;
         flex: 1;
         overflow-y: auto;
     }

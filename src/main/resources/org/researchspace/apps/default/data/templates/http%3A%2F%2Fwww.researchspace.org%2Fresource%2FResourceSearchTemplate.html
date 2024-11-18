@@ -828,8 +828,10 @@
                                                                     OPTIONAL { ?__value__ crm:P82b_end_of_the_end ?timespanEnd . }
                                                                     OPTIONAL { ?__value__ crm:P82_at_some_time_within ?date . }
                                                                     
-                                                                    BIND(IF(BOUND(?timespanStart), ?timespanStart, ?date) AS ?start)
+                                                                  #  BIND(IF(BOUND(?timespanStart), ?timespanStart, ?date) AS ?start)
+
                                                                     BIND(IF(BOUND(?timespanEnd), ?timespanEnd, ?date) AS ?end)
+                                                                    BIND(COALESCE(?timespanStart, ?date, ?end) AS ?start)
                                                                     BIND(?__value__ as ?timespan)
                                                                
                                                                     OPTIONAL { FILTER(?__contextRelationPattern__) }
@@ -839,19 +841,22 @@
                                                                     {
                                                                       ?item crm:P98i_was_born ?birth .
                                                                       ?birth crm:P4_has_time-span ?birthTimespan .
-                                                                      ?birthTimespan crm:P82_at_some_time_within|crm:P82_at_some_time_within ?birthTimespanDate .
+                                                                      ?birthTimespan crm:P82_at_some_time_within|crm:P82a_begin_of_the_begin|crm:P82b_end_of_the_end ?birthTimespanDate .
                                                                       OPTIONAL { ?birthTimespan crm:P82a_begin_of_the_begin ?birthStart . }
+                                                                      OPTIONAL { ?birthTimespan crm:P82b_end_of_the_end ?birthEnd . }
                                                                       OPTIONAL { ?birthTimespan crm:P82_at_some_time_within ?birthDate . }
-                                                                      BIND(IF(BOUND(?birthStart), ?birthStart, ?birthDate) AS ?start)
+                                                                      BIND(COALESCE(?birthDate, ?birthStart, ?birthEnd) AS ?existingStart)
                                                                     }
                                                                     UNION {
                                                                       ?item crm:P100i_died_in ?death .
                                                                       ?death crm:P4_has_time-span ?deathTimespan .
-                                                                      ?deathTimespan crm:P82_at_some_time_within|crm:crm:P82b_end_of_the_end ?deathTimespanDate .
+                                                                      ?deathTimespan crm:P82_at_some_time_within|crm:P82a_begin_of_the_begin|crm:P82b_end_of_the_end ?deathTimespanDate .
+                                                                      OPTIONAL { ?deathTimespan crm:P82a_begin_of_the_begin ?deathStart . }
                                                                       OPTIONAL { ?deathTimespan crm:crm:P82b_end_of_the_end ?deathEnd .}
                                                                       OPTIONAL { ?deathTimespan crm:P82_at_some_time_within ?deathDate . }
-                                                                      BIND(IF(BOUND(?deathEnd), ?deathEnd, ?deathDate) AS ?end)
+                                                                      BIND(COALESCE(?deathDate, ?deathStart, ?deathEnd) AS ?end)
                                                                     }
+                                                                    BIND(COALESCE(?existingStart, ?end) AS ?start)
                                                                     OPTIONAL { FILTER(?__contextRelationPattern__) }
                                                                   } 
                                                                 }

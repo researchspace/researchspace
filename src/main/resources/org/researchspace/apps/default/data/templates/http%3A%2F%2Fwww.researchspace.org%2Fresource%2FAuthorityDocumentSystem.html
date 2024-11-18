@@ -106,6 +106,7 @@
                                     fields='[[fieldDefinitions
                                               classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                                               has_type="http://www.researchspace.org/pattern/system/entity/has_all_types"
+                                              rdfs_label="http://www.w3.org/2000/01/rdf-schema#label"
                                               entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
                                               vocabulary_refersto_resourceConfig="http://www.researchspace.org/pattern/system/system_vocabulary/refers_to_resourceConfig"
                                               entity_description="http://www.researchspace.org/pattern/system/entity/description"
@@ -116,7 +117,10 @@
                           </semantic-form-hidden-input>
                           <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/System_Resource'>
                           </semantic-form-hidden-input>   
-                          <semantic-form-hidden-input for="entity_primary_appellation" placeholder="Enter authority document name" label="Name"
+                    [[!--      <semantic-form-hidden-input for="entity_primary_appellation" placeholder="Enter authority document name" label="Name"
+                                                      default-value='{{bindings.0.vocabularyLabel.value}}'>
+                      --]]
+                          <semantic-form-hidden-input for="rdfs_label" placeholder="Enter authority document name" label="Name"
                                                       default-value='{{bindings.0.vocabularyLabel.value}}'>
                           </semantic-form-hidden-input>   
                           <div>
@@ -289,10 +293,7 @@
                                                 } UNION {
                                                   GRAPH ?vocabulary {
                                                     ?vocabulary rdf:type crm:E32_Authority_Document ;
-                                                    crm:P1_is_identified_by ?vocabularyAppellation .
-
-                                                    ?vocabularyAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> ;
-                                                    crm:P190_has_symbolic_content ?vocabularyLabel .
+                                                    rdfs:label ?vocabularyLabel .
 
                                                     ?vocabularyLabel bds:search ?__token__ .
                                                   }
@@ -322,10 +323,7 @@
                                 } UNION {
                                     GRAPH ?vocabulary {
                                         ?vocabulary rdf:type crm:E32_Authority_Document;
-                                        crm:P1_is_identified_by ?vocabularyAppellation .
-
-                                      ?vocabularyAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> ;
-                                      crm:P190_has_symbolic_content ?vocabularyLabel .
+                                        rdfs:label ?vocabularyLabel .
 
                                         BIND(crm:E32_Authority_Document AS ?vocabularyType)
                                     }

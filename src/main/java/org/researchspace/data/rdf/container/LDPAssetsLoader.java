@@ -510,15 +510,19 @@ public class LDPAssetsLoader {
                 if (!LDPAssetsLoader.compareModelsWithoutDates(modelExisting, modelLoaded)) {
                     inconsistentContexts.add(ctx);
                     if (repositoryId.equals("system")) {  
-                        logger.info("reload system KP that changed:"+ctx.stringValue());                        
+                        logger.info("Reload system KP that changed: "+ctx.stringValue());                        
                         conn.clear(ctx);
                         toLoad.add(ctx);
+                    }
+                    if (repositoryId.equals("vocabularies")) {  
+                        logger.info("Do not reload authority document as it's been changed by application: "+ctx.stringValue());                                             
+                        toLoad.remove(ctx);
                     }
                 } 
             } 
         }
 
-        if (!inconsistentContexts.isEmpty() && !(repositoryId.equals("system"))) {            
+        if (!inconsistentContexts.isEmpty() && ! repositoryId.equals("system") && !(repositoryId.equals("vocabularies"))) {            
             String msg = "Inconsistent state of the LDP assets storage: the content of named graphs "
                     + inconsistentContexts.toString() + " in the \"" + repositoryId
                     + "\" repository does not correspond to the content loaded from storage; To reconcile the two remove either the one from the database or the one from the storage being loaded";
@@ -566,6 +570,7 @@ public class LDPAssetsLoader {
         // with the
         // rdf4j implementation (ID-1130 and
         // https://github.com/eclipse/rdf4j/issues/1441)
+
         return LDPModelComparator.compare(model1WithoutDate, model2WithoutDate);
 
     }

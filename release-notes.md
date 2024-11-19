@@ -1,19 +1,85 @@
 # Release Notes - ResearchSpace 4.0.0
+## Release Date - 2024-11-19
 
-> The ResearchSpace codebase has been developed for more than a decade. During this period practices and approaches to semantic modelling have changed, ontologies have evolved, and UI/UX have become more sophisticated. This release brings with it an exhaustive review of how to build on ResearchSpace as a platform and offers a more accessible starting point for users and developers with default templates and complex customisations that encourage good practices when creating a ResearchSpace-based projects.
+> The ResearchSpace codebase has been developed for more than a decade. A variety of projects have been using this platform developing and improving it, albeit in separate setups. This created a need for the consolidation work carried out in this release, by incorporating some of the most relevant PRs, and introducing a new default user interface that supports modelling using CIDOC CRM ontologies, as well as an easy to customise mechanism to start a project, record primary sources, add interpretions, annotate, build visual arguments or synthesize narratives. 
 
-> The building blocks of the ResearchSpace platform are ontologies, knowledge patterns, and its templates that enable constructing interactive user interfaces with mechanisms for authoring, viewing and searching [ResearchSpace documentation](https://documentation.researchspace.org/resource/rsp:Start).
+> This release brings with it a review of how to build on ResearchSpace as a platform and offers a more accessible starting point for developers with default templates, complex customisations that encourage good practices when creating ResearchSpace-based projects. It enables quick prototyping and experimentation with data that can be engaging for researchers early on.
 
-## {Release Notes Version - 4.0.0}
-## {Release Date - 2024-09-01}
 
-{Optional: High-level summary}
+## Summary of changes
+### A visual way of representing reality with CIDOC CRM ontologies 
 
-### New features
-- **Design and Implementation of a default interactive system UI**
- The rationale of this version is to introduce a set of default system resource configurations, vocabularies, knowledge patterns and templates that build together a complex coherent UI, enabling a user to work with semantic data both directly or via interactive visualisations. Beforehand, the platform was available with just a small number of example templates, which involved loading from another [github repo](https://github.com/researchspace/researchspace-instance-configurations) dependant knowledge patterns -- this now becomes obsolete. The previous templates were not designed to work together, they were just disparate starting points for developers. This meant a lot of time and effort was spent by each new project to repeatedly set up the same types of templates for viewing, editing or searching through the existing data. It also, led to implementations that did not take full advantage of the RS functionalities. 
+Across existing projects in particular in Cultural Heritage, several key problems have been preventing new knowledge and new thinking to be added to existing structures. In these cases the legacy data has no clear history, semantics, or any mechanisms to add new interpretations, corrections, and current research. One of the main impediments has been the use of non-semantic technologies and use of relational databases. A platform such as ResearchSpace overcomes the technological restrictions, but still poses the challenge of enabling non-technical users, experts in particular areas to be creators and publishers of their own semantic data.
 
-  There are now four new repositories: "configurations", "system", "ontologies", "vocabularies" which can be loaded by setting ```loadDefaultConfig``` to 1 in the runtime-data/config/global.prop in the custom-app/config/global.prop; 
+The current release offers a unique way of recording data with semantics based on an exhaustive collection of resource templates, interconnected, allowing one to start by adding any [new resource based on CIDOC CRM ontology](./images/release4/NewResource.png). For example, selecting [new Human-Made Object](./images/release4/NewHumanMadeObject.png) and progressively adding more details such as who was created by, when it was produced, and any other information including using ranges for dates which are notoriously difficult to know with certainty. Thus, through the UI a whole new context is captured. [Work by Giovanna Garzoni, early research with visualisation in the Knowledge Map](./images/release4/DogWithABiscuit.png) An important aspect for ResearchSpace is to support quality data creation, as sometimes unverified data is "rolled forward" across systems without reviews. The projects using ResearchSpace have a shared goal for maintaining quality data.
+
+
+### Re-organising how resources are managed in ResearchSpace
+  > The elements for creating a system using the ResearchSpace platform are semantic data created by modelling reality using ontologies, knowledge patterns (a mechanism to define the insert, select, delete SPARQL patters, etc for creating linked data connections), templates (application and resource templates) and its many components that enable constructing interactive user interfaces for authoring, visualisation and searching of data ([more details in ResearchSpace documentation](https://documentation.researchspace.org/resource/rsp:Start)).
+
+  #### What is a resource in ResearchSpace? 
+  It is a technical term that refers to a **real world entity** such as **Giovanna Garzoni** modelled as an **instance of an ontology class** such as **E21 Person** , and further specialised as an **artist** by using the P2 has type relationship, connecting to an entry from a thesaurus. 
+
+  #### Knowledge Patterns
+  Historically, the platform was available with just a small number of example templates and a set of [dependant knowledge patterns](https://github.com/researchspace/researchspace-instance-configurations); This was problematic to maintain, it resided in a separate repo and often missed as a prerequisite when preparing a new ResearchSpace instance, and there was no clear organisation of the knowledge patterns.
+  
+  * New way of [categorising the knowledge pattern when created](./images/release4/KPCategories.png) and [improved visibility of these categories](./images/release4/KPsCategories.png). One can now easily group and get a clear view of the setup of the KPs in the system.
+
+  * There are three main groups of knowledge patterns in any instance: 
+    - custom KPs created for the current application
+    - system KPs introduced with this release (not editable)
+    - [auto-generated KPs for the uploaded ontologies](./images/release4/KPsAutogenerated.png)(not editable)
+    
+  #### Ontologies
+  As the mapping of data relies on ontologies, we have fixed the Ontologies section of the admin page and improved the way ontologies are managed within a system.
+  
+  * The codebase now contains revised files for the following [ontologies](./images/release4/OntologiesList.png): CIDOC 7.3.1 (including CRMpc 1.2), CRMArcheo 1.4, CRMba 1.4, CRMdig 3.2.1, CRMgeo 1.2, CRMinfluence, CRMsci, frbroo, skos (not an ontology); Note, these are loaded only when ```loadDefaultConfig``` is set to 1 (see section *** below for more details)
+  * Support for automatic generation and tagging of knowledge patterns when an ontology is uploaded
+  * Delete of all the associated knowledge patterns when an ontology is removed from the system
+  * [Ontology properties search with inference](./images/release4/OntologiesPropertiesSearchTool.png) across the ontologies available in a running system and [ontologies elements search](./images/release4/OntologiesElements.png)
+  * Support for upload of both owl and rdfs descriptions of ontologies
+
+  #### Authority Documents (vocabularies) integration 
+  There are a set of editable vocabularies provided as needed by templates or other functionalities:   
+  * [System authority documents](./images/release4/SystemAuthorityDocumentList.png)
+  * Other authority documents required by KPs or default templates
+  
+  #### Resource Configurations
+  In the admin configurations section, we introduced a new section namely **Resources**  where one can specify explicitly how to manage a resource (e.g. [Person configuration](./images/release4/ResourceConfigurationPerson.png)) in terms of editing it via [semantic forms](./images/release4/ResourceConfigurationPersonEditVisualisation.png), visualisations, [use in authority documents](./images/release4/ResourceConfigurationPersonIsListedIn.png), and consistent visual representations through icons or labels. 
+
+  There is a selection of 90+ configurations predefined that can be customised further:
+
+  * *System Resources Configurations:*
+    KP Category, Chart, Timeline, Image Annotation, Knowledge Map, Semantic Narrative, Set, Set Item, User
+
+  * *CIDOC CRM Classes Resource Configurations*
+  Type, Group, Organisation, Material, Model 3D, Acquisition, Activity, Actor, Appellation, Attribute assignment, Audio, Authority document, Beginning of existence, Biological object, Birth, Conceptual object, Condition assessment, Condition state, Creation, Curated collection, Curation activity, Death, Design or procedure, Destruction, Dimension, Dissolution, Document, End of existence, Entity, Event, Exhibition, Formation, Identifier, Identifier assignment, Image, Information object, Inscription, Joining, Language, Leaving, Linguistic object, Human-made feature, Human-made object, Mark, Measurement, Modification, Move, Part addition, Part removal, Period, Persistent item, Person, Physical feature, Physical Human-made thing, Physical object, Physical thing, Place, Production, Project, Propositional object, Publication, Research question, Right, Series, Site, Symbolic object, Term, Timespan, Title, Transfer of custody, Transformation, Type assignment, Type creation, Video, Visual item
+
+
+*Note, resource configurations are intended to make it explicit what templates are being used for a resource. The resource templating mechanism remains in place [resource template](https://documentation.researchspace.org/resource/rsp:Documentation_Templates#rs-doc_resourceTemplate), but it wasn't sufficient for creating a complex UI*
+
+(./images/release4/ResourceConfigurationPersonFinder.png)
+(./images/release4/ResourceConfigurationPersonSearch.png)
+
+
+
+what semantic form to use for editing data attached to a particular resource. 
+
+Resource details, Resource edit/visualisation, Resource in Authority document, Search, Finder
+
+A configuration for CRM Entity already exists!
+Don't create a new configuration for ontology class CRM Entity, but just modify the existing Entity system configuration. Otherwise a custom configuration can be created adding a configuration Type below
+
+    semantic forms explicitly connected to a particular resource type (ontology class and P2_has_type)
+    
+    
+
+   
+
+### Design and Implementation of a default interactive system UI
+ The rationale of this version is to introduce a set of default system resource configurations, vocabularies, knowledge patterns and templates that build together a complex coherent UI, enabling a user to work with semantic data both directly or via interactive visualisations. Beforehand, the platform was available with just a small number of example templates, which involved loading from another [github repo](https://github.com/researchspace/researchspace-instance-configurations) dependant knowledge patterns -- obsolete from this version onwards. The previous templates were not designed to work together, they were just disparate starting points for developers. This meant a lot of time and effort was spent by each new project to repeatedly set up the same types of templates for viewing, editing or searching through the existing data. It also, led to implementations that did not take full advantage of the RS functionalities. 
+
+  There are now four new repositories: "configurations", "system", "ontologies", "vocabularies" which can be loaded by setting ```loadDefaultConfig``` to 1 in the runtime-data/config/global.prop or in the your-custom-app/config/global.prop; In developer mode just add "-Dconfig.global.loadDefaultConfig=1" to build.gradle script.
 
   The ```configurations``` repo is a group of named graphs each containing a resource configuration.
   The ```system``` repo is a set of knowledge patterns that cannot be edited by the users of the system and are a prerequisite for the functioning of the default templates.
@@ -24,18 +90,9 @@
   1. For a new RS system setup with an empty graph-database all repositories are loaded for the first time regardless if the loadDefaultConfig was set as 0 or 1.
   2. For a RS system with content in its graph-database, the LDPAssetsLoader will check if the loadDefaultConfig is set. If true, configurations and vocabularies are loaded, and can be overwritten by the user as the system is being used. The system repository contains solely knowledge patterns that cannot be edited. And finally the ontologies are loaded only if no other ontologies already exist. A user can work with their own choice of ontologies, but note the templates provided have been customised around CIDOC CRM 7.3.1.
 
-- **Resource Configuration**
 
-  ***System Resources***
-  KP Category, Char, Timeline, Image Annotation, Knowledge Map, Semantic Narrative, Set, Set Item, User
+  
 
-  ***CIDOC CRM Related Resource Configurations***
-  Type, Group, Organisation, Material, Model 3D, Acquisition, Activity, Actor, Appellation, Attribute assignment, Audio, Authority document, Beginning of existence, Biological object, Birth, Conceptual object, Condition assessment, Condition state, Creation, Curated collection, Curation activity, Death, Design or procedure, Destruction, Dimension, Dissolution, Document, End of existence, Entity, Event, Exhibition, Formation, Identifier, Identifier assignment, Image, Information object, Inscription, Joining, Language, Leaving, Linguistic object, Human-made feature, Human-made object, Mark, Measurement, Modification, Move, Part addition, Part removal, Period, Persistent item, Person, Physical feature, Physical Human-made thing, Physical object, Physical thing, Place, Production, Project, Propositional object, Publication, Research question, Right, Series, Site, Symbolic object, Term, Timespan, Title, Transfer of custody, Transformation, Type assignment, Type creation, Video, Visual item
-
-
-- **New Resource**
-
-  {Feature description}
   
 - **Importing Resources using REST APIs (OSM, MET, V&A, TNA examples)**
   ==Human-made Object==
@@ -52,21 +109,10 @@
   * Individual Resource Search Pages
   * All Resources Search Page
 
-- **Ontologies**
-* Default loading of CIDOC CRM 6.2.1, ... Influece
-* Support for automatic generation and tagging of knowledge patterns when an ontology is uploaded
-* Delete all the associated knowledge patterns when an ontology is removed from the system
-* Ontology properties search with inference across ontologies uploaded in a running system
-* Support for upload of both owl and rdfs descriptions of ontologies
 
-- **Knowledge Patterns**
-* System knowledge patterns
 
-- **System Vocabularies**
 
-### Improvements
-
-- **Semantic Modelling**
+### Changes to Semantic Modelling
 
 Change mapping for SN and KM to F2_Expression
 Modified mapping for Audio/Video/3D from F21 to F26_Recording
@@ -78,7 +124,7 @@ Modified crm:P1_is_identified_by/rs:PX_has_file_name for images/docs with new ma
   [Media new mapping](./images/release4/media_new_mapping.png)
 
 
-- **Semantic Components**
+### Changes to Semantic Components
 
   {Improvement description}
 
@@ -96,6 +142,18 @@ Modified crm:P1_is_identified_by/rs:PX_has_file_name for images/docs with new ma
   </tr>
    <tr>
     <td>Sets</td>
+    <td><strong></strong><br><br>
+      Add support for sets to be added and removed from clipboard, but not deleted from the system
+    </td>
+  </tr>
+<tr>
+    <td>Charts</td>
+    <td><strong></strong><br><br>
+      Add support for sets to be added and removed from clipboard, but not deleted from the system
+    </td>
+  </tr>
+<tr>
+ <td>Timelines</td>
     <td><strong></strong><br><br>
       Add support for sets to be added and removed from clipboard, but not deleted from the system
     </td>

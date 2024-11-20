@@ -303,15 +303,13 @@
                                                       [[/if]]
 
                                                       {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Appellation")}}
-                                                        MINUS { <http://www.researchspace.org/resource/system/ontodiaDiagramContainer> crm:P1_is_identified_by ?subject .}
+                                                        MINUS { ?systemAuthorityItem crm:P1_is_identified_by|crm:P170i_time_is_defined_by ?subject .
+                                                                ?systemAuthorityItem crm:P71i_is_listed_in systemAuthority .
+                                                                ?systemAuthority crm:P2_has_type Platform:System_Resource . }
                                                       {{/if}}
 
                                                       {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor")}}
                                                         MINUS {?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .}
-                                                      {{/if}}
-
-                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
-                                                        MINUS { ?subject crm:P2_has_type Platform:System_Resource .}
                                                       {{/if}}
 
                                                       {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Entity")}}
@@ -333,16 +331,14 @@
                                                         }
                                                       {{/if}}
 
-                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Type")}}
-                                                        MINUS { 
-                                                          ?subject crm:P71i_is_listed_in ?vocabulary .
-                                                          ?vocabulary crm:P2_has_type Platform:System_Resource .
-                                                        }
-                                                      {{/if}}
-
                                                       {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
                                                         MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
                                                       {{/if}}
+
+                                                      MINUS {
+                                                        ?subject crm:P71i_is_listed_in|skos:inScheme ?systemAuthorityDoc .
+                                                        ?systemAuthorityDoc crm:P2_has_type Platform:System_Resource .
+                                                      }
 
                                                       SERVICE <http://www.bigdata.com/rdf/search#search> {
                                                         ?label bds:search ?__token__ ;
@@ -365,13 +361,12 @@
                                                                 [[/if]]
 
                                                                 {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Appellation")}}
-                                                                  MINUS { <http://www.researchspace.org/resource/system/ontodiaDiagramContainer> crm:P1_is_identified_by ?subject .}
+                                                                  MINUS { ?systemAuthorityItem crm:P1_is_identified_by|crm:P170i_time_is_defined_by ?subject .
+                                                                    ?systemAuthorityItem crm:P71i_is_listed_in systemAuthority .
+                                                                    ?systemAuthority crm:P2_has_type Platform:System_Resource . }
                                                                 {{/if}}
                                                                 {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor")}}
                                                                   MINUS {?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .}
-                                                                {{/if}}
-                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
-                                                                  MINUS { ?subject crm:P2_has_type Platform:System_Resource .}
                                                                 {{/if}}
                                                                 {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Entity")}}
                                                                   MINUS { ?configuration <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_listView_column> ?subject .}
@@ -388,16 +383,14 @@
                                                                     ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
                                                                   }
                                                                 {{/if}}
-                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Type")}}
-                                                                  MINUS { 
-                                                                    ?subject crm:P71i_is_listed_in ?vocabulary .
-                                                                    ?vocabulary crm:P2_has_type Platform:System_Resource .
-                                                                  }
-                                                                {{/if}}
                                                                 {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
                                                                   MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
                                                                 {{/if}}
 
+                                                                MINUS {
+                                                                  ?subject crm:P71i_is_listed_in|skos:inScheme ?systemAuthorityDoc .
+                                                                  ?systemAuthorityDoc crm:P2_has_type Platform:System_Resource .
+                                                                }
                                                               }'
                                                 debounce=300
                                                 placeholder="Search [[urlParam 'resourcelabel' escape=false]]"
@@ -567,15 +560,13 @@
                                               }
 
                                               {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Appellation")}}
-                                                MINUS { <http://www.researchspace.org/resource/system/ontodiaDiagramContainer> crm:P1_is_identified_by ?subject .}
+                                                MINUS { ?systemAuthorityItem crm:P1_is_identified_by|crm:P170i_time_is_defined_by ?subject .
+                                                  ?systemAuthorityItem crm:P71i_is_listed_in systemAuthority .
+                                                  ?systemAuthority crm:P2_has_type Platform:System_Resource . }
                                               {{/if}}
 
                                               {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor")}}
                                                 MINUS {?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .}
-                                              {{/if}}
-
-                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
-                                                MINUS { ?subject crm:P2_has_type Platform:System_Resource .}
                                               {{/if}}
 
                                               {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Entity")}}
@@ -597,16 +588,14 @@
                                                 }
                                               {{/if}}
 
-                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Type")}}
-                                                MINUS { 
-                                                  ?subject crm:P71i_is_listed_in ?vocabulary .
-                                                  ?vocabulary crm:P2_has_type Platform:System_Resource .
-                                                }
-                                              {{/if}}
-
                                               {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
                                                 MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
                                               {{/if}}
+
+                                              MINUS {
+                                                ?subject crm:P71i_is_listed_in|skos:inScheme ?systemAuthorityDoc .
+                                                ?systemAuthorityDoc crm:P2_has_type Platform:System_Resource .
+                                              }
                                             }'
                                       header='text/csv'
                                       filename='[[urlParam "resourcelabel" escape=false]]-csv-result.csv'>
@@ -649,15 +638,13 @@
                                               }
 
                                               {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Appellation")}}
-                                                MINUS { <http://www.researchspace.org/resource/system/ontodiaDiagramContainer> crm:P1_is_identified_by ?subject .}
+                                                MINUS { ?systemAuthorityItem crm:P1_is_identified_by|crm:P170i_time_is_defined_by ?subject .
+                                                  ?systemAuthorityItem crm:P71i_is_listed_in systemAuthority .
+                                                  ?systemAuthority crm:P2_has_type Platform:System_Resource . }
                                               {{/if}}
 
                                               {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor")}}
                                                 MINUS {?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .}
-                                              {{/if}}
-
-                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
-                                                MINUS { ?subject crm:P2_has_type Platform:System_Resource .}
                                               {{/if}}
 
                                               {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Entity")}}
@@ -679,16 +666,14 @@
                                                 }
                                               {{/if}}
 
-                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Type")}}
-                                                MINUS { 
-                                                  ?subject crm:P71i_is_listed_in ?vocabulary .
-                                                  ?vocabulary crm:P2_has_type Platform:System_Resource .
-                                                }
-                                              {{/if}}
-
                                               {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
                                                 MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
                                               {{/if}}
+
+                                              MINUS {
+                                                ?subject crm:P71i_is_listed_in|skos:inScheme ?systemAuthorityDoc .
+                                                ?systemAuthorityDoc crm:P2_has_type Platform:System_Resource .
+                                              }
                                             }'
                                       header='application/sparql-results+json'
                                       filename='[[urlParam "resourcelabel" escape=false]]-json-result.json'>
@@ -843,8 +828,10 @@
                                                                     OPTIONAL { ?__value__ crm:P82b_end_of_the_end ?timespanEnd . }
                                                                     OPTIONAL { ?__value__ crm:P82_at_some_time_within ?date . }
                                                                     
-                                                                    BIND(IF(BOUND(?timespanStart), ?timespanStart, ?date) AS ?start)
+                                                                  #  BIND(IF(BOUND(?timespanStart), ?timespanStart, ?date) AS ?start)
+
                                                                     BIND(IF(BOUND(?timespanEnd), ?timespanEnd, ?date) AS ?end)
+                                                                    BIND(COALESCE(?timespanStart, ?date, ?end) AS ?start)
                                                                     BIND(?__value__ as ?timespan)
                                                                
                                                                     OPTIONAL { FILTER(?__contextRelationPattern__) }
@@ -854,19 +841,22 @@
                                                                     {
                                                                       ?item crm:P98i_was_born ?birth .
                                                                       ?birth crm:P4_has_time-span ?birthTimespan .
-                                                                      ?birthTimespan crm:P82_at_some_time_within|crm:P82_at_some_time_within ?birthTimespanDate .
+                                                                      ?birthTimespan crm:P82_at_some_time_within|crm:P82a_begin_of_the_begin|crm:P82b_end_of_the_end ?birthTimespanDate .
                                                                       OPTIONAL { ?birthTimespan crm:P82a_begin_of_the_begin ?birthStart . }
+                                                                      OPTIONAL { ?birthTimespan crm:P82b_end_of_the_end ?birthEnd . }
                                                                       OPTIONAL { ?birthTimespan crm:P82_at_some_time_within ?birthDate . }
-                                                                      BIND(IF(BOUND(?birthStart), ?birthStart, ?birthDate) AS ?start)
+                                                                      BIND(COALESCE(?birthDate, ?birthStart, ?birthEnd) AS ?existingStart)
                                                                     }
                                                                     UNION {
                                                                       ?item crm:P100i_died_in ?death .
                                                                       ?death crm:P4_has_time-span ?deathTimespan .
-                                                                      ?deathTimespan crm:P82_at_some_time_within|crm:crm:P82b_end_of_the_end ?deathTimespanDate .
+                                                                      ?deathTimespan crm:P82_at_some_time_within|crm:P82a_begin_of_the_begin|crm:P82b_end_of_the_end ?deathTimespanDate .
+                                                                      OPTIONAL { ?deathTimespan crm:P82a_begin_of_the_begin ?deathStart . }
                                                                       OPTIONAL { ?deathTimespan crm:crm:P82b_end_of_the_end ?deathEnd .}
                                                                       OPTIONAL { ?deathTimespan crm:P82_at_some_time_within ?deathDate . }
-                                                                      BIND(IF(BOUND(?deathEnd), ?deathEnd, ?deathDate) AS ?end)
+                                                                      BIND(COALESCE(?deathDate, ?deathStart, ?deathEnd) AS ?end)
                                                                     }
+                                                                    BIND(COALESCE(?existingStart, ?end) AS ?start)
                                                                     OPTIONAL { FILTER(?__contextRelationPattern__) }
                                                                   } 
                                                                 }

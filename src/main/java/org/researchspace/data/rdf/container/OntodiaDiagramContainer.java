@@ -49,10 +49,6 @@ public class OntodiaDiagramContainer extends DefaultLDPContainer {
             LinkedHashModel m = new LinkedHashModel();
             m.add(vf.createStatement(IRI, RDF.TYPE, LDP.Container));
             m.add(vf.createStatement(IRI, RDF.TYPE, LDP.Resource));
-            m.add(vf.createStatement(IRI, CidocCRM.P1_IS_IDENTIFIED_BY, vf.createIRI(IRI.stringValue().concat("/primary_appellation"))));
-            m.add(vf.createStatement(vf.createIRI(IRI.stringValue().concat("/primary_appellation")), RDF.TYPE, CidocCRM.E41_APPELLATION_CLASS));
-            m.add(vf.createStatement(vf.createIRI(IRI.stringValue().concat("/primary_appellation")), CidocCRM.P2_HAS_TYPE, vf.createIRI("http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation")));
-            m.add(vf.createStatement(vf.createIRI(IRI.stringValue().concat("/primary_appellation")), CidocCRM.P190_HAS_SYMBOLIC_CONTENT,vf.createLiteral("Ontodia Diagram Container")));
             m.add(vf.createStatement(IRI, RDFS.LABEL, vf.createLiteral("Ontodia Diagram Container")));
             try {
                 getRootContainer().add(new PointedGraph(IRI, m));

@@ -28,12 +28,16 @@
 }""" .
   
   _:genid-81c72c1276724bfe9efd6c76e2723286-95ck98 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
     $subject crm:P01_has_domain $value . 
     $value crm:P01i_is_domain_of $subject .
 	  $subject a crm:PC11_had_participant .
     $value a crm:E7_Activity .
-}""" .
+    $value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
   
   _:genid-81c72c1276724bfe9efd6c76e2723286-eruh9 a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {

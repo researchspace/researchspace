@@ -23,7 +23,7 @@
   ?value a crm:E55_Type .
   ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/dimension_type> .
   ?value skos:prefLabel ?label .
-}""" .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
   
   _:genid-ae692110d41747d39d8484b45789edef-ysveze a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
@@ -47,6 +47,7 @@
   ?value a crm:E55_Type .
   ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/dimension_type> .
   ?value skos:prefLabel ?label .
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
   FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ?label
   LIMIT 10""" .

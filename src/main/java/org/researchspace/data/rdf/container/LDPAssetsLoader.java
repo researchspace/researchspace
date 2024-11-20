@@ -184,25 +184,11 @@ public class LDPAssetsLoader {
                         /* Load non-default repositories */
                         loadAllToRepository(entry.getKey(), entry.getValue());
                     } else if (loadDefaultConfig == 1) {
-                        if (entry.getKey().equals("configurations")) {
-                            String checkIfResourceConfigurationsExists = 
-                                "SELECT * " +
-                                "WHERE { " + 
-                                    "{ ?resource_configuration a <http://www.researchspace.org/resource/system/resource_configuration> .} "+ 
-                                "} LIMIT 1";
-
-                            logger.info("loading configurations");
-                            //if (!hasDefaultAlreadyLoaded(checkIfResourceConfigurationsExists))
-                                loadAllToRepository(entry.getKey(), entry.getValue());    
+                        if (entry.getKey().equals("configurations")) {                            
+                            loadAllToRepository(entry.getKey(), entry.getValue());    
                         } 
                         else if (entry.getKey().equals("vocabularies")) {
-                            String checkIfVocabulariesExist =  
-                                        "PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/> " +                                      
-                                        "SELECT * WHERE { " +                                          
-                                        "<http://www.researchspace.org/resource/system/vocab/search_view_type> a crm:E32_Authority_Document . " +
-                                        "} LIMIT 1";
-                            //if (!hasDefaultAlreadyLoaded(checkIfVocabulariesExist))
-                                loadAllToRepository(entry.getKey(), entry.getValue());    
+                            loadAllToRepository(entry.getKey(), entry.getValue());    
                         }
                         else if (entry.getKey().equals("system")) {
                             loadAllToRepository(entry.getKey(), entry.getValue());
@@ -308,63 +294,6 @@ public class LDPAssetsLoader {
             logger.error("Failed to run knowledge patterns generator.... \n");
             logger.error(e.getMessage());           
         }
-    }
-
-    private void loadUpdatesToRepository(String repositoryId, Map<String, Map<StoragePath, FindResult>> mapResults)
-            throws IOException {
-         Repository repository = repositoryManager.getRepository(repositoryId);
-
-        for (Entry<String, Map<StoragePath, FindResult>> storageEntry : mapResults.entrySet()) {
-            LinkedHashModel loadedAssetsModel = new LinkedHashModel();
-            logger.info("Loading " + storageEntry.getValue().size() + " LDP assets into the \"" + repositoryId + "\" repository");
-                     
-            for (Entry<StoragePath, FindResult> entry : storageEntry.getValue().entrySet()) {
-                StoragePath path = entry.getKey(); 
-                boolean hasKnownFormat = (path.hasExtension(".trig") || path.hasExtension(".nq")
-                        || path.hasExtension(".trix"));
-                if (!hasKnownFormat) {
-                    continue;
-                }
-                Optional<RDFFormat> optFormat = Rio.getParserFormatForFileName(path.getLastComponent());
-                if (!optFormat.isPresent()) {
-                    logger.error("Unknown assets format: " + path.getLastComponent());
-                    continue;
-                }
-                RDFFormat format = optFormat.get();
-                if (!format.equals(RDFFormat.NQUADS) && !format.equals(RDFFormat.TRIG)
-                        && !format.equals(RDFFormat.TRIX)) {
-                    logger.error(
-                            "Unsupported assets format " + format.toString() + " for the object " + entry.getKey());
-                }
-                ObjectRecord record = entry.getValue().getRecord();
-                try (InputStream in = record.getLocation().readContent()) {
-                    Model model = Rio.parse(in, "", format);              
-                    loadedAssetsModel.addAll(model);                   
-                } catch (IOException | RDFParseException e) {
-                    logger.error("Failed to parse LDP asset: " + record.getLocation() + ". Details: " + e.getMessage());
-                    throw e; // just propagate
-                }
-            }
-            logger.info("Read " + mapResults.size() + " assets. Loading into the repository...");
-
-            try (RepositoryConnection conn = repository.getConnection()) {
-
-                 {
-                    
-                    // We only load the contexts, which are not present in the repository
-                    // If present with different content, an error is thrown.
-                    List<Resource> toLoad = selectContentToLoad(repositoryId, loadedAssetsModel, conn);
-                    
-                    ldpContainersConsistencyCheck(repositoryId, loadedAssetsModel, conn);
-                    for (Resource ctx : toLoad) {
-                        logger.trace("Loading LDP context: " + ctx.stringValue());
-                        Model currentAsset = loadedAssetsModel.filter(null, null, null, ctx);                   
-                        conn.add(currentAsset);
-                    }
-                }
-            }
-        }
-        logger.info("Loading finished.");
     }
 
     private void loadAllToRepository(String repositoryId, Map<String, Map<StoragePath, FindResult>> mapResults)
@@ -515,14 +444,20 @@ public class LDPAssetsLoader {
                         toLoad.add(ctx);
                     }
                     if (repositoryId.equals("vocabularies")) {  
-                        logger.info("Do not reload authority document as it's been changed by application: "+ctx.stringValue());                                             
+                        logger.info("Do not reload authority document as it's been changed by application:"+ctx.stringValue());                                             
+                        toLoad.remove(ctx);
+                    }
+
+                    if (repositoryId.equals("configurations")) {  
+                        logger.info("Do not reload configuration as it's been changed by application:"+ctx.stringValue());                                             
                         toLoad.remove(ctx);
                     }
                 } 
             } 
         }
 
-        if (!inconsistentContexts.isEmpty() && ! repositoryId.equals("system") && !(repositoryId.equals("vocabularies"))) {            
+        if (!inconsistentContexts.isEmpty() && ! repositoryId.equals("system") && !(repositoryId.equals("vocabularies")) 
+                && !(repositoryId.equals("configurations"))) {            
             String msg = "Inconsistent state of the LDP assets storage: the content of named graphs "
                     + inconsistentContexts.toString() + " in the \"" + repositoryId
                     + "\" repository does not correspond to the content loaded from storage; To reconcile the two remove either the one from the database or the one from the storage being loaded";
@@ -561,6 +496,7 @@ public class LDPAssetsLoader {
                 .getInstance().createStatement(st.getSubject(), st.getPredicate(), st.getObject()))
                 .forEach(st -> model1WithoutDate.add(st));
 
+       
         Model model2WithoutDate = new LinkedHashModel();
         model2.stream().filter(st -> resourceIsNotDateTimeOrDouble(st.getObject())).map(st -> SimpleValueFactory
                 .getInstance().createStatement(st.getSubject(), st.getPredicate(), st.getObject()))
@@ -570,7 +506,16 @@ public class LDPAssetsLoader {
         // with the
         // rdf4j implementation (ID-1130 and
         // https://github.com/eclipse/rdf4j/issues/1441)
-
+         
+        if (!LDPModelComparator.compare(model1WithoutDate, model2WithoutDate)) {
+            for (Statement stmt : model1WithoutDate) {
+                logger.info(stmt.getSubject() + " " + stmt.getPredicate()+ " " + stmt.getObject());
+            }
+            logger.info("------------------------------------------------------------------------");
+            for (Statement stmt : model2WithoutDate) {
+                logger.info(stmt.getSubject() + " " + stmt.getPredicate()+ " " + stmt.getObject());
+            }
+        }
         return LDPModelComparator.compare(model1WithoutDate, model2WithoutDate);
 
     }
@@ -607,14 +552,14 @@ public class LDPAssetsLoader {
     public static class LDPModelComparator {
         // Entry point
         public static boolean compare(Model model1, Model model2) {
-            if (model1.size() != model2.size()) {
+            if (model1.size() != model2.size()) { logger.info("different sizes");
                 return false;
             }
 
             FragmentedModel fragmentedModel1 = fragmentModel(model1);
             FragmentedModel fragmentedModel2 = fragmentModel(model2);
 
-            if (fragmentedModel1.blankStatements.size() != fragmentedModel2.blankStatements.size()) {
+            if (fragmentedModel1.blankStatements.size() != fragmentedModel2.blankStatements.size()) {logger.info("different blank sizes");
                 return false;
             }
 

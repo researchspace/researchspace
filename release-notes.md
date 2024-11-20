@@ -47,7 +47,7 @@ The current release offers a unique way of recording data with semantics based o
   #### What is a resource in ResearchSpace? 
   It is a technical term that refers to a **real world entity** such as **Giovanna Garzoni** modelled as an **instance of an ontology class** such as **E21 Person** , and further specialised as an **artist** by using the P2 has type relationship, connecting to an entry from a thesaurus. 
 
-  #### Managing resources 
+  #### Working with resources 
   In the admin configurations section, we introduced a new section namely **Resources**  where one can specify explicitly how to manage a resource (e.g. [Person configuration](./images/release4/ResourceConfigurationPerson.png)) in terms of editing it via [semantic forms](./images/release4/ResourceConfigurationPersonEditVisualisation.png), visualisations, [use in authority documents](./images/release4/ResourceConfigurationPersonIsListedIn.png), and consistent visual representations through icons or labels. Previously, this information was not available through the UI, and as projects grew maintenance of the codebase became more difficult. 
 
   There is a selection of 90+ configurations predefined that can be customised further:
@@ -59,9 +59,10 @@ The current release offers a unique way of recording data with semantics based o
   Type, Group, Organisation, Material, Model 3D, Acquisition, Activity, Actor, Appellation, Attribute assignment, Audio, Authority document, Beginning of existence, Biological object, Birth, Conceptual object, Condition assessment, Condition state, Creation, Curated collection, Curation activity, Death, Design or procedure, Destruction, Dimension, Dissolution, Document, End of existence, Entity, Event, Exhibition, Formation, Identifier, Identifier assignment, Image, Information object, Inscription, Joining, Language, Leaving, Linguistic object, Human-made feature, Human-made object, Mark, Measurement, Modification, Move, Part addition, Part removal, Period, Persistent item, Person, Physical feature, Physical Human-made thing, Physical object, Physical thing, Place, Production, Project, Propositional object, Publication, Research question, Right, Series, Site, Symbolic object, Term, Timespan, Title, Transfer of custody, Transformation, Type assignment, Type creation, Video, Visual item
 
 
-**!!!** Resource configurations are intended to make it explicit what templates are being used for a resource. The resource templating mechanism remains in place [resource template](https://documentation.researchspace.org/resource/rsp:Documentation_Templates#rs-doc_resourceTemplate), but it wasn't sufficient for creating a complex UI*
 
-**!!!** Do not create a new configuration for an ontology class from the list above, but just modify the existing configuration. Otherwise, a custom configuration can be created adding a configuration Type*
+**IMPORTANT:** Resource configurations are intended to make it explicit what templates are being used for a resource. The resource templating mechanism remains in place [resource template](https://documentation.researchspace.org/resource/rsp:Documentation_Templates#rs-doc_resourceTemplate), but it wasn't sufficient for creating a complex UI*
+
+**IMPORTANT:** Do not create a new configuration for an ontology class from the list above, but just modify the existing configuration. Otherwise, a custom configuration can be created adding a configuration Type*
 
 #### How to enable/disable the default UI
   There are now four new repositories: "configurations", "system", "ontologies", "vocabularies" which can be loaded by setting ```loadDefaultConfig``` to 1 in the runtime-data/config/global.prop or in the your-custom-app/config/global.prop and in developer mode just add "-Dconfig.global.loadDefaultConfig=1" to build.gradle script.
@@ -75,7 +76,7 @@ The current release offers a unique way of recording data with semantics based o
   1. For a new RS system setup with an empty graph-database all repositories are loaded for the first time regardless if the loadDefaultConfig was set as 0 or 1, but if you want your system to load updates you still need to set this flag.
   2. For a RS system with content in its graph-database, the LDPAssetsLoader will check if the loadDefaultConfig is set. If true, configurations and vocabularies are loaded, and can be overwritten by the user as the system is being used. The system repository contains solely knowledge patterns that cannot be edited. And finally the ontologies are loaded only if no other ontologies already exist. A user can work with their own choice of ontologies, but note the templates provided have been customised around CIDOC CRM 7.3.1.
 
-**!!!** We encourage setting the flag to 1 even for existing systems, as some of the templates in the Admin section will be broken otherwise. 
+**IMPORTANT** We encourage setting the flag to 1 even for existing systems, as some of the templates in the Admin section will be broken otherwise. 
   
 
 #### Importing Resources using REST APIs (Wikidata, OSM, MET, V&A, and TNA) 
@@ -87,7 +88,7 @@ The current release offers a unique way of recording data with semantics based o
 Often, the solution to these is acomplished in pre-processing of the data part of a workflow of adding data. Though that is a good solution in some contexts, for a non-technical user that is too complicated as a first step, therefore we designed and integrated in the process of creating a **New Resource** for relevant entities like Person, Place, Human-Made Object, etc. a way to import from external resources with the option of adding and mapping to semantic data with one click.
 
 A simple workflow: [New Person](./images/release4/NewPersonImportPerson.png), click import from External Resource and [Search on wikidata for Artemisia Gentileschi](./images/release4/ImportArtemisiaFromWikidata.png), 
-[add an image](./images/release4/ImportingImagesFetch.png) and the the [imported data from Wikidata](./images/release4/ImportPersonFromWikidata.png) is part of the system. This functionality is only bringing some of the elements available via the APIs. More can be added by extending the existing templates.
+[add an image](./images/release4/ImportingImagesFetch.png) and the [imported data from Wikidata](./images/release4/ImportPersonFromWikidata.png) is part of the system. This functionality is only bringing some of the elements available via the APIs. More can be added by extending the existing templates.
 
 Screenshots: [Search and Import from the V&A](./images/release4/SearchAndImportFromVAM.png), [Search and Import from TNA](./images/release4/SearchAndImportFromTNA.png)  
  
@@ -113,6 +114,7 @@ Screenshots: [Search and Import from the V&A](./images/release4/SearchAndImportF
 
 #### Image Annotation for All
 ![alt text](./images/release4/SetAndImageAnnotations.png) 
+Redesign 
 
 #### Frames Layout
 
@@ -121,6 +123,17 @@ Screenshots: [Search and Import from the V&A](./images/release4/SearchAndImportF
 
 
 #### UI 
+contextual dropdown menu
+card redesign
+review of templates to be responsive inside frames view: https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_containment/Container_queries
+Google Material symbols
+
+https://fonts.google.com/icons?icon.set=Material+Symbols
+
+Modified form select, autocomplete tree input 
+
+User form 
+
 
 ### Changes to Semantic Modelling
 

@@ -14,7 +14,6 @@
 
 [[!-- When new region is defined in the IIIF Viewer it triggers `IIIFViewer.RegionCreated`. --]]
 
-
 <div class="imageAnnotation__container">
   <div class="imageAnnotation__viewer">
     [[!-- we assume that @partial-block is IIIF Viewer component. It is defined in the rsp:ImageAnnotation template --]]
@@ -97,7 +96,7 @@
                                                           new-subject-template='{{resourceIri}}'
                                                           fields='[[fieldDefinitions entity_image="http://www.researchspace.org/pattern/system/entity/images" ]]'>
                                             <div class="form-scroll-area" style="padding-top: 20px;">
-                                              <div><span>Image for: </span> <mp-label iri="{{resourceIri}}" style="font-weight: 600;"></mp-label></div>
+                                              <div><span>Select image for: </span> <mp-label iri="{{resourceIri}}" style="font-weight: 600;"></mp-label></div>
                                               <semantic-form-autocomplete-input for='entity_image' 
                                                                                 label="Image"
                                                                                 placeholder="Select image to add"
@@ -177,7 +176,7 @@
                                             new-subject-template='{{resourceIri}}'
                                             fields='[[fieldDefinitions entity_image="http://www.researchspace.org/pattern/system/entity/images" ]]'>
                               <div class="form-scroll-area" style="padding-top: 20px;">
-                                <div><span>Image for: </span> <mp-label iri="{{resourceIri}}" style="font-weight: 600;"></mp-label></div>
+                                <div><span>Select image for: </span> <mp-label iri="{{resourceIri}}" style="font-weight: 600;"></mp-label></div>
                                 <semantic-form-autocomplete-input for='entity_image' 
                                                                   label="Image"
                                                                   placeholder="Select image to add" readonly-resource="true"> 
@@ -258,17 +257,11 @@
 
           <bs-tab-container id="{{viewId}}-annotation-resources-tabs" class="imageAnnotation__resourceAnnotation-result-tabs" default-active-key="{{#each resources}}{{#if @first}}{{../viewId}}-resource-tab-{{resourceIri}}{{/if}}{{/each}}">
             <div>
-              <bs-nav bs-style="tabs">
-                {{#each resources}}
+              <bs-nav bs-style="tabs"> 
+                {{#each resources}} 
                   {{#bind viewId=../viewId insideForm=../insideForm recordType=../recordType}}
                     <bs-nav-item event-key="{{viewId}}-resource-tab-{{resourceIri}}">
                       <mp-label iri="{{resourceIri}}" class="text-truncate-line1"></mp-label> 
-                      <mp-event-trigger id='{{viewId}}-image-view-trigger-{{resourceIri}}' 
-                                        type='IIIFViewer.AddImagesForResource' 
-                                        targets='["{{viewId}}-image-annotation"]'
-                                        data='{ "resourceIri": "{{resourceIri}}" }'>
-                        <rs-icon icon-type="rounded" icon-name="image" title="View resource images in the viewer" symbol="true"></rs-icon>
-                      </mp-event-trigger>
                     </bs-nav-item>
                   {{/bind}}
                 {{/each}}
@@ -324,7 +317,26 @@
                                             no-result-template='{{> noResults}}'>
                             
                               <template id="noResults">
-                                <div>
+                                <div class="imageAnnotation__resourceAnnotation-result-items">
+                                  <div class="imageAnnotation__resourceAnnotation-result-items-header">
+                                    <mp-label iri="{{resourceIri}}" class="imageAnnotation__resourceAnnotation-result-items-header-title"></mp-label>
+                                    <div class="imageAnnotation__resourceAnnotation-result-items-header-actions">
+                                      <mp-event-trigger id='{{viewId}}-image-view-trigger-{{resourceIri}}' 
+                                                        type='IIIFViewer.AddImagesForResource' 
+                                                        targets='["{{viewId}}-image-annotation"]'
+                                                        data='{ "resourceIri": "{{resourceIri}}" }'>
+                                        <button class="btn btn-default border-none" title="View resource images in the viewer">
+                                          <rs-icon icon-type="rounded" icon-name="image" symbol="true"></rs-icon>
+                                        </button>
+                                      </mp-event-trigger>
+                                      <rs-resource-dropdown id="{{viewId}}-{{resourceIri}}-item-actions-dropdown" class-name="dropdown-no-caret" toggle-class-name="border-none">
+                                        {{> rsp:ResourceDropdownActions viewId=viewId
+                                                                        iri=resourceIri
+                                                                        hideAnnotations=true
+                                        }}
+                                      </rs-resource-dropdown>
+                                    </div>
+                                  </div>
                                   <div style="padding: 10px;">
                                     <div class="documentation-section documentation-section-withIcon">
                                       <div class="documentation-section-icon-container">
@@ -336,7 +348,6 @@
                                         <div style="padding-top: 3px;">The toggle annotation in the image viewer allows to draw annotations 
                                           with the selected shape, border style, color and fill.</div>
                                       </div>
-                                      
                                     </div>
                                   </div>
                                 </div>
@@ -344,115 +355,133 @@
           
                               <template id='imageAnnotations'>
                                   <div class="imageAnnotation__resourceAnnotation-result-items">
-                                    
+                                    <div class="imageAnnotation__resourceAnnotation-result-items-header">
+                                      <mp-label iri="{{resourceIri}}" class="imageAnnotation__resourceAnnotation-result-items-header-title"></mp-label>
+                                      <div class="imageAnnotation__resourceAnnotation-result-items-header-actions">
+                                        <mp-event-trigger id='{{viewId}}-image-view-trigger-{{resourceIri}}' 
+                                                          type='IIIFViewer.AddImagesForResource' 
+                                                          targets='["{{viewId}}-image-annotation"]'
+                                                          data='{ "resourceIri": "{{resourceIri}}" }'>
+                                          <button class="btn btn-default border-none" title="View resource images in the viewer">
+                                            <rs-icon icon-type="rounded" icon-name="image" symbol="true"></rs-icon>
+                                          </button>
+                                        </mp-event-trigger>
+                                        <rs-resource-dropdown id="{{viewId}}-{{resourceIri}}-item-actions-dropdown" class-name="dropdown-no-caret" toggle-class-name="border-none">
+                                          {{> rsp:ResourceDropdownActions viewId=viewId
+                                                                          iri=resourceIri
+                                                                          hideAnnotations=true
+                                          }}
+                                        </rs-resource-dropdown>
+                                      </div>
+                                    </div>
                                   [[!-- Iterate over all query result bindings that represent image regions --]]
-                                  {{#each bindings}}
-                                    {{#bind viewId=../viewId}}
-                                      <mp-event-trigger id='{{viewId}}-highlightRegion-event-trigger-{{resourceIri}}-{{region.value}}' 
-                                                        type='IIIFViewer.HighlightRegion' 
-                                                        targets='["{{viewId}}-image-annotation"]'
-                                                        data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}' 
-                                                        on='["hover"]'
-                                      >
-                                      <div class="imageAnnotation__resourceAnnotation-result-item">
+                                    {{#each bindings}}
+                                      {{#bind viewId=../viewId}}
+                                        <mp-event-trigger id='{{viewId}}-highlightRegion-event-trigger-{{resourceIri}}-{{region.value}}' 
+                                                          type='IIIFViewer.HighlightRegion' 
+                                                          targets='["{{viewId}}-image-annotation"]'
+                                                          data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}' 
+                                                          on='["hover"]'
+                                        >
+                                        <div class="imageAnnotation__resourceAnnotation-result-item">
 
-                                        <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
-                                          <mp-draggable iri='{{region.value}}'>
-                                            <div style="cursor: pointer;">
-                                              <mp-event-trigger id='{{viewId}}-focus-event-trigger-{{resourceIri}}-{{region.value}}' 
-                                                                type='IIIFViewer.ZoomToRegion' 
-                                                                targets='["{{viewId}}-image-annotation"]'
-                                                                data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
-                                                <div>
-                                                  <rs-iiif-image-thumbnail  height='40' width='45' style='border-radius: 1.5px;'
-                                                                            image-or-region='{{region.value}}'      
-                                                                            [[> rsp:IIIFConfig]]>
-                                                  </rs-iiif-image-thumbnail>
-                                                </div>
-                                              </mp-event-trigger>
-                                            </div>
-                                          </mp-draggable>
-
-                                          <div style="flex: 1;">
+                                          <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
                                             <mp-draggable iri='{{region.value}}'>
-                                              <div>
+                                              <div style="cursor: pointer;">
                                                 <mp-event-trigger id='{{viewId}}-focus-event-trigger-{{resourceIri}}-{{region.value}}' 
                                                                   type='IIIFViewer.ZoomToRegion' 
                                                                   targets='["{{viewId}}-image-annotation"]'
                                                                   data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
-                                                  <div class="text-link text-truncate-line1">{{regionLabel.value}}</div>
+                                                  <div>
+                                                    <rs-iiif-image-thumbnail  height='40' width='45' style='border-radius: 1.5px;'
+                                                                              image-or-region='{{region.value}}'      
+                                                                              [[> rsp:IIIFConfig]]>
+                                                    </rs-iiif-image-thumbnail>
+                                                  </div>
                                                 </mp-event-trigger>
                                               </div>
                                             </mp-draggable>
 
-                                            <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">Image annotation</div>
-                                          </div>
-                                        </div>
-
-                                        <div class='imageAnnotation__resourceAnnotation-result-item-actions'>
-
-                                          [[!-- Zoom to the current image region in the IIIF Viewer, 
-                                          creates new slot if the viewer doesn't have active slot with the corresponding image. --]]                                         
-                                          <mp-event-trigger id='{{viewId}}-focus-event-trigger-{{resourceIri}}-{{region.value}}' 
-                                                            type='IIIFViewer.ZoomToRegion' 
-                                                            targets='["{{viewId}}-image-annotation"]'
-                                                            data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
-                                            <button class="btn btn-default border-none" title="Focus to annotation">
-                                              <rs-icon icon-type="rounded" icon-name="center_focus_strong" symbol="true"></rs-icon>
-                                            </button>
-                                          </mp-event-trigger>
-
-                                          <rs-resource-dropdown id="{{viewId}}-{{region.value}}-item-actions-dropdown" class-name="dropdown-no-caret" toggle-class-name="border-none">
-                                            {{> rsp:ResourceDropdownActions viewId=viewId
-                                                                            iri=region.value
-                                                                            resourceConfig="http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation"
-                                                                            resourceLabel="Image annotation"
-                                                                            resourceFormIRI="http://www.researchspace.org/resource/system/forms/ImageAnnotation"
-                                                                            imageAnnotation="true"
-                                            }}
-                                          </rs-resource-dropdown>
-            
-                                          [[!-- Old Delete image annotation --]]
-                                          [[!-- <mp-overlay-dialog id='{{viewId}}-region-remove-confirmation-dialog--{{region.value}}' title="Delete image annotation" type="modal">
-                                            <mp-overlay-dialog-trigger>
-                                              <div class='text-link'>delete</div>
-                                            </mp-overlay-dialog-trigger>
-                                            <mp-overlay-dialog-content>
-                                              <div>
+                                            <div style="flex: 1;">
+                                              <mp-draggable iri='{{region.value}}'>
                                                 <div>
-                                                  <p>Are you sure you want to delete the image annotation '<strong><mp-label iri='{{region.value}}'></mp-label></strong>' ?</p>
+                                                  <mp-event-trigger id='{{viewId}}-focus-event-trigger-{{resourceIri}}-{{region.value}}' 
+                                                                    type='IIIFViewer.ZoomToRegion' 
+                                                                    targets='["{{viewId}}-image-annotation"]'
+                                                                    data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
+                                                    <div class="text-link text-truncate-line1">{{regionLabel.value}}</div>
+                                                  </mp-event-trigger>
                                                 </div>
-                                                <div class="form-btn-group">
-                                                  <div style="display: flex; justify-content: flex-end; width: 100%;">
-            
-                                                    <mp-event-trigger id='{{viewId}}-cancel-modal' 
-                                                                      type='OverlayDialog.Close' 
-                                                                      targets='["{{viewId}}-region-remove-confirmation-dialog--{{region.value}}"]'>
-                                                      <button class="btn btn-default">Cancel</button>
-                                                    </mp-event-trigger>
-            
-                                                    <mp-event-trigger id='{{viewId}}-remove-region-event-trigger--{{region.value}}' 
-                                                                      type='IIIFViewer.RemoveRegion' 
-                                                                      targets='["{{viewId}}-image-annotation"]'
-                                                                      data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
-                                                      <button class="btn btn-action">Delete annotation</button>
-                                                    </mp-event-trigger>
-            
-                                                    <mp-event-proxy id='{{viewId}}-close-region-removal-dialog--{{feature.value}}' 
-                                                                    on-event-source='{{viewId}}-remove-region-event-trigger--{{region.value}}'
-                                                                    proxy-event-type='OverlayDialog.Close' 
-                                                                    targets='["{{viewId}}-region-remove-confirmation-dialog--{{region.value}}"]'
-                                                    ></mp-event-proxy>
+                                              </mp-draggable>
+
+                                              <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">Image annotation</div>
+                                            </div>
+                                          </div>
+
+                                          <div class='imageAnnotation__resourceAnnotation-result-item-actions'>
+
+                                            [[!-- Zoom to the current image region in the IIIF Viewer, 
+                                            creates new slot if the viewer doesn't have active slot with the corresponding image. --]]                                         
+                                            <mp-event-trigger id='{{viewId}}-focus-event-trigger-{{resourceIri}}-{{region.value}}' 
+                                                              type='IIIFViewer.ZoomToRegion' 
+                                                              targets='["{{viewId}}-image-annotation"]'
+                                                              data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
+                                              <button class="btn btn-default border-none" title="Focus to annotation">
+                                                <rs-icon icon-type="rounded" icon-name="center_focus_strong" symbol="true"></rs-icon>
+                                              </button>
+                                            </mp-event-trigger>
+
+                                            <rs-resource-dropdown id="{{viewId}}-{{region.value}}-item-actions-dropdown" class-name="dropdown-no-caret" toggle-class-name="border-none">
+                                              {{> rsp:ResourceDropdownActions viewId=viewId
+                                                                              iri=region.value
+                                                                              resourceConfig="http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation"
+                                                                              resourceLabel="Image annotation"
+                                                                              resourceFormIRI="http://www.researchspace.org/resource/system/forms/ImageAnnotation"
+                                                                              imageAnnotation="true"
+                                              }}
+                                            </rs-resource-dropdown>
+              
+                                            [[!-- Old Delete image annotation --]]
+                                            [[!-- <mp-overlay-dialog id='{{viewId}}-region-remove-confirmation-dialog--{{region.value}}' title="Delete image annotation" type="modal">
+                                              <mp-overlay-dialog-trigger>
+                                                <div class='text-link'>delete</div>
+                                              </mp-overlay-dialog-trigger>
+                                              <mp-overlay-dialog-content>
+                                                <div>
+                                                  <div>
+                                                    <p>Are you sure you want to delete the image annotation '<strong><mp-label iri='{{region.value}}'></mp-label></strong>' ?</p>
+                                                  </div>
+                                                  <div class="form-btn-group">
+                                                    <div style="display: flex; justify-content: flex-end; width: 100%;">
+              
+                                                      <mp-event-trigger id='{{viewId}}-cancel-modal' 
+                                                                        type='OverlayDialog.Close' 
+                                                                        targets='["{{viewId}}-region-remove-confirmation-dialog--{{region.value}}"]'>
+                                                        <button class="btn btn-default">Cancel</button>
+                                                      </mp-event-trigger>
+              
+                                                      <mp-event-trigger id='{{viewId}}-remove-region-event-trigger--{{region.value}}' 
+                                                                        type='IIIFViewer.RemoveRegion' 
+                                                                        targets='["{{viewId}}-image-annotation"]'
+                                                                        data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
+                                                        <button class="btn btn-action">Delete annotation</button>
+                                                      </mp-event-trigger>
+              
+                                                      <mp-event-proxy id='{{viewId}}-close-region-removal-dialog--{{feature.value}}' 
+                                                                      on-event-source='{{viewId}}-remove-region-event-trigger--{{region.value}}'
+                                                                      proxy-event-type='OverlayDialog.Close' 
+                                                                      targets='["{{viewId}}-region-remove-confirmation-dialog--{{region.value}}"]'
+                                                      ></mp-event-proxy>
+                                                    </div>
                                                   </div>
                                                 </div>
-                                              </div>
-                                            </mp-overlay-dialog-content>
-                                          </mp-overlay-dialog>  --]]
+                                              </mp-overlay-dialog-content>
+                                            </mp-overlay-dialog>  --]]
+                                          </div>
                                         </div>
-                                      </div>
-                                      </mp-event-trigger>
-                                    {{/bind}}
-                                  {{/each}}
+                                        </mp-event-trigger>
+                                      {{/bind}}
+                                    {{/each}}
                                   </div>
                               </template>
                             </semantic-query>

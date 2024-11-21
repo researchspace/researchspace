@@ -827,8 +827,7 @@
                                                                     OPTIONAL { ?__value__ crm:P82a_begin_of_the_begin ?timespanStart . }
                                                                     OPTIONAL { ?__value__ crm:P82b_end_of_the_end ?timespanEnd . }
                                                                     OPTIONAL { ?__value__ crm:P82_at_some_time_within ?date . }
-                                                                    
-                                                                  #  BIND(IF(BOUND(?timespanStart), ?timespanStart, ?date) AS ?start)
+                                                                  
 
                                                                     BIND(IF(BOUND(?timespanEnd), ?timespanEnd, ?date) AS ?end)
                                                                     BIND(COALESCE(?timespanStart, ?date, ?end) AS ?start)
@@ -838,7 +837,10 @@
                                                                   } UNION
                                                                   {
                                                                     ?item rdf:type crm:E21_Person.
-                                                                    {
+                                                                    ?item crm:P98i_was_born|crm:P100i_died_in ?activity .
+                                                                    ?activity crm:P4_has_time-span ?activityTimespan .
+                                                                    ?activityTimespan crm:P82_at_some_time_within|crm:P82a_begin_of_the_begin|crm:P82b_end_of_the_end ?activityTimespanDate .
+                                                                    OPTIONAL {
                                                                       ?item crm:P98i_was_born ?birth .
                                                                       ?birth crm:P4_has_time-span ?birthTimespan .
                                                                       ?birthTimespan crm:P82_at_some_time_within|crm:P82a_begin_of_the_begin|crm:P82b_end_of_the_end ?birthTimespanDate .
@@ -847,7 +849,7 @@
                                                                       OPTIONAL { ?birthTimespan crm:P82_at_some_time_within ?birthDate . }
                                                                       BIND(COALESCE(?birthDate, ?birthStart, ?birthEnd) AS ?existingStart)
                                                                     }
-                                                                    UNION {
+                                                                    OPTIONAL {
                                                                       ?item crm:P100i_died_in ?death .
                                                                       ?death crm:P4_has_time-span ?deathTimespan .
                                                                       ?deathTimespan crm:P82_at_some_time_within|crm:P82a_begin_of_the_begin|crm:P82b_end_of_the_end ?deathTimespanDate .
@@ -862,6 +864,9 @@
                                                                 }
                                                                 ORDER BY ?start ?end
                                                                 LIMIT 100'
+                                                                
+                                                            
+                                                        options='{"showCurrentTime": "true", "height": "500px"}'
                                                         tuple-template='{{> timelineItem}}'
                                                         no-result-template='{{> noResults}}'
                                                         tuple-template-height=auto>

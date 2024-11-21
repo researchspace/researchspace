@@ -173,7 +173,7 @@
                                                   OPTIONAL { ?timespan crm:P82b_end_of_the_end ?timespanEnd . }
                                                   OPTIONAL { ?timespan crm:P82_at_some_time_within ?date . }
                                                   
-                                                  BIND(IF(BOUND(?timespanStart), ?timespanStart, ?date) AS ?start)
+                                                  BIND(COALESCE(?timespanStart, ?date, ?timespanEnd) AS ?start)
                                                   BIND(IF(BOUND(?timespanEnd), ?timespanEnd, ?date) AS ?end)
                                               }
                                               ORDER BY ?start ?end

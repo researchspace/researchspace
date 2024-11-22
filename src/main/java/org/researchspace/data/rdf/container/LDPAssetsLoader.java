@@ -132,7 +132,7 @@ public class LDPAssetsLoader {
         logger.info("Loading LDP assets...");
 
         Integer loadDefaultConfig = -2;
-        List<String> defaultRepositoriesList = Arrays.asList("configurations", "system", "ontologies", "vocabularies");
+        List<String> defaultRepositoriesList = Arrays.asList("configurations", "system", "ontologies", "authorities");
 
         String checkIfDefaultRepoHasData =                                 
                     "SELECT * WHERE {?s ?p ?o .} limit 1";
@@ -187,7 +187,7 @@ public class LDPAssetsLoader {
                         if (entry.getKey().equals("configurations")) {                            
                             loadAllToRepository(entry.getKey(), entry.getValue());    
                         } 
-                        else if (entry.getKey().equals("vocabularies")) {
+                        else if (entry.getKey().equals("authorities")) {
                             loadAllToRepository(entry.getKey(), entry.getValue());    
                         }
                         else if (entry.getKey().equals("system")) {
@@ -443,7 +443,7 @@ public class LDPAssetsLoader {
                         conn.clear(ctx);
                         toLoad.add(ctx);
                     }
-                    if (repositoryId.equals("vocabularies")) {  
+                    if (repositoryId.equals("authorities")) {  
                         logger.info("Do not reload authority document as it's been changed by application:"+ctx.stringValue());                                             
                         toLoad.remove(ctx);
                     }
@@ -456,7 +456,7 @@ public class LDPAssetsLoader {
             } 
         }
 
-        if (!inconsistentContexts.isEmpty() && ! repositoryId.equals("system") && !(repositoryId.equals("vocabularies")) 
+        if (!inconsistentContexts.isEmpty() && ! repositoryId.equals("system") && !(repositoryId.equals("authorities")) 
                 && !(repositoryId.equals("configurations"))) {            
             String msg = "Inconsistent state of the LDP assets storage: the content of named graphs "
                     + inconsistentContexts.toString() + " in the \"" + repositoryId
@@ -506,7 +506,7 @@ public class LDPAssetsLoader {
         // with the
         // rdf4j implementation (ID-1130 and
         // https://github.com/eclipse/rdf4j/issues/1441)
-         
+        /* 
         if (!LDPModelComparator.compare(model1WithoutDate, model2WithoutDate)) {
             for (Statement stmt : model1WithoutDate) {
                 logger.info(stmt.getSubject() + " " + stmt.getPredicate()+ " " + stmt.getObject());
@@ -515,7 +515,7 @@ public class LDPAssetsLoader {
             for (Statement stmt : model2WithoutDate) {
                 logger.info(stmt.getSubject() + " " + stmt.getPredicate()+ " " + stmt.getObject());
             }
-        }
+        }*/
         return LDPModelComparator.compare(model1WithoutDate, model2WithoutDate);
 
     }

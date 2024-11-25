@@ -131,57 +131,64 @@
           <div class="homepage-project-summary">
             <h3>Projects summary</h3>
 
-              <semantic-query query='SELECT DISTINCT ?systemUser ?hasTeamProject ?hasMyProject { 
-                                      BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
-                                      
-                                      OPTIONAL {
-                                        ?systemUser crm:P02i_is_range_of ?pc107 .
-                                        ?pc107 rdf:type crm:PC107_has_current_or_former_member .
-                                        ?pc107 crm:P01_has_domain ?group .
-                                        ?group crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
-                                        ?group a crm:E74_Group .
-                             
-                                        ?teamProject crm:P01i_is_domain_of ?pc14Group .
-                                        ?teamProject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
-                                        ?pc14Group rdf:type crm:PC14_carried_out_by .
-                                        ?pc14Group crm:P02_has_range ?group .
-                                      }
+            <semantic-query query='SELECT DISTINCT ?systemUser ?hasTeamProject ?hasMyProject { 
+                                    BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
+                                    
+                                    OPTIONAL {
+                                      ?systemUser crm:P02i_is_range_of ?pc107 .
+                                      ?pc107 rdf:type crm:PC107_has_current_or_former_member .
+                                      ?pc107 crm:P01_has_domain ?group .
+                                      ?group crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                      ?group a crm:E74_Group .
+                            
+                                      ?teamProject crm:P01i_is_domain_of ?pc14Group .
+                                      ?teamProject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
+                                      ?pc14Group rdf:type crm:PC14_carried_out_by .
+                                      ?pc14Group crm:P02_has_range ?group .
+                                    }
 
-                                      OPTIONAL {
-                                        ?userProject crm:P01i_is_domain_of ?pc14User .
-                                        ?userProject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
-                                        ?pc14User rdf:type crm:PC14_carried_out_by .
-                                        ?pc14User crm:P02_has_range ?systemUser .
-                                      }
+                                    OPTIONAL {
+                                      ?userProject crm:P01i_is_domain_of ?pc14User .
+                                      ?userProject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
+                                      ?pc14User rdf:type crm:PC14_carried_out_by .
+                                      ?pc14User crm:P02_has_range ?systemUser .
+                                    }
 
-                                      BIND(IF(BOUND(?pc14Group), true, false) AS ?hasTeamProject) .
-                                      BIND(IF(BOUND(?pc14User), true, false) AS ?hasMyProject) .
-                                    }'
-                              template='{{> template}}'>
-                <template id='template'>
-                  <bs-tabs id="projectTabs" default-active-key='ongoing' unmount-on-exit=true>
-                    <bs-tab event-key="ongoing" title="Ongoing">
-                      [[> projectSearch label="ongoing" status="ongoing" statusIRI="http://www.researchspace.org/resource/vocab/status/ongoing"]]
+                                    BIND(IF(BOUND(?pc14Group), true, false) AS ?hasTeamProject) .
+                                    BIND(IF(BOUND(?pc14User), true, false) AS ?hasMyProject) .
+                                  }'
+                            template='{{> template}}'>
+              <template id='template'>
+                <bs-tabs id="projectTabs" default-active-key='ongoing' unmount-on-exit=true>
+                  <bs-tab event-key="ongoing" title="Ongoing">
+                    [[> projectSearch label="ongoing" status="ongoing" statusIRI="http://www.researchspace.org/resource/vocab/status/ongoing"]]
+                  </bs-tab>
+                  <bs-tab event-key="proposed" title="Proposed">
+                    [[> projectSearch label="proposed" status="proposed" statusIRI="http://www.researchspace.org/resource/vocab/status/proposed"]]
+                  </bs-tab>
+                  <bs-tab event-key="completed" title="Completed">
+                    [[> projectSearch label="completed" status="completed" statusIRI="http://www.researchspace.org/resource/vocab/status/completed"]]
+                  </bs-tab>
+              [[!--   {{#if (eq bindings.0.hasTeamProject.value 'true')}}
+                    <bs-tab event-key="myTeamProjects" title="My Team Projects" tab-class-name="tab-right pr-0">
+                      [[> projectSearch label="my-team-project" actorIRI="{{bindings.0.systemUser.value}}" teamProject=true]]
                     </bs-tab>
-                    <bs-tab event-key="proposed" title="Proposed">
-                      [[> projectSearch label="proposed" status="proposed" statusIRI="http://www.researchspace.org/resource/vocab/status/proposed"]]
+                  {{/if}}
+                  {{#if (eq bindings.0.hasMyProject.value 'true')}}
+                    <bs-tab event-key="myProjects" title="My Projects" tab-class-name="tab-right">
+                      [[> projectSearch label="my-project" actorIRI="{{bindings.0.systemUser.value}}"]]
                     </bs-tab>
-                    <bs-tab event-key="completed" title="Completed">
-                      [[> projectSearch label="completed" status="completed" statusIRI="http://www.researchspace.org/resource/vocab/status/completed"]]
-                    </bs-tab>
-                    {{#if (eq bindings.0.hasTeamProject.value 'true')}}
-                      <bs-tab event-key="myTeamProjects" title="My Team Projects" tab-class-name="tab-right pr-0">
-                        [[> projectSearch label="my-team-project" actorIRI="{{bindings.0.systemUser.value}}" teamProject=true]]
-                      </bs-tab>
-                    {{/if}}
-                    {{#if (eq bindings.0.hasMyProject.value 'true')}}
-                      <bs-tab event-key="myProjects" title="My Projects" tab-class-name="tab-right">
-                        [[> projectSearch label="my-project" actorIRI="{{bindings.0.systemUser.value}}"]]
-                      </bs-tab>
-                    {{/if}}
-                </template>
-              </semantic-query>
-            </bs-tabs>
+                  {{/if}}
+              --]]
+                  <bs-tab event-key="myTeamProjects" title="My Team Projects" tab-class-name="tab-right pr-0">
+                    [[> projectSearch label="my-team-project" actorIRI="{{bindings.0.systemUser.value}}" teamProject=true]]
+                  </bs-tab>
+                  <bs-tab event-key="myProjects" title="My Projects" tab-class-name="tab-right">
+                    [[> projectSearch label="my-project" actorIRI="{{bindings.0.systemUser.value}}"]]
+                  </bs-tab>
+                </bs-tabs>
+              </template>
+            </semantic-query>
 
             <semantic-if query="ASK { ?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .}"
                          then="{{> then}}"

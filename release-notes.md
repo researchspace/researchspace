@@ -131,7 +131,7 @@ Similarly, other external sources can be selected: [Search and Import from the V
 * resource card redesign to include the contextual menu instead of previous hover effect
 * responsive templates implementation inside frames using [container queries](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_containment/Container_queries)
 * addition and consistent use of [Google Material symbols](https://fonts.google.com/icons?icon.set=Material+Symbols) for all icons in the UI
-* helper page for [ResearchSpace UI Design Elements](./src/main/resources/org/researchspace/apps/default/data/templates/http%3A%2F%2Fwww.researchspace.org%2Fresource%2FUiDesignElements.html)
+* helper page for [ResearchSpace UI Design Elements](src/main/resources/org/researchspace/apps/default/data/templates/http%253A%252F%252Fwww.researchspace.org%252Fresource%252FUiDesignElements.html)
 
 ### Semantic Modelling
 

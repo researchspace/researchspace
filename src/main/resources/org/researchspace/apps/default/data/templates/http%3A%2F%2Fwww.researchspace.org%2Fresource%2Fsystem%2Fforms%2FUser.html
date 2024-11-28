@@ -17,5 +17,12 @@
     </template>
   </semantic-query>
 {{else}}
-  {{> forms:User_partial}}
+  <semantic-query query='SELECT DISTINCT * WHERE { 
+                        BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
+                        BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?systemUserName)
+                      } LIMIT 1'>
+    <template id='template'>
+      {{> forms:User_partial user_email=bindings.0.systemUserName.value}}
+    </template>
+  </semantic-query>
 {{/if}}

@@ -71,31 +71,100 @@
                         <span class="tree-item-actions-container">
                           <div style="display: flex; align-items: center; gap: 7px;">
 
-                            <semantic-if query='ASK { <{{iri}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_list_in_authority> ?value . }'
-                              then='{{> listInAuthority}}'
-                            >
+                            <semantic-if  query='ASK { <{{iri}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?membership .}'
+                                          then='{{> listInAuthority}}'
+                                          else='{{> else}}'>
+              
                               <template id='listInAuthority'>
-                                <span class="badge badge--secondary" style="height: 28px;">Voc. / Auth.</span>
+                                <span class="badge badge--secondary" style="height: 28px;">Authority</span>
+                              </template>
+
+                              <template id='else'>
+                                <semantic-if query='ASK {
+                                                          {
+                                                            <{{iri}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property> ?broader .
+                                                          }
+                                                          UNION
+                                                          {
+                                                            <{{iri}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_order_sparql_pattern> ?listOrder .
+                                                          }
+                                                        }'
+                                              then='{{> then}}'>
+              
+                                  <template id='then'>
+                                    <mp-popover title="Missing membership in the authority document">
+                                      <mp-popover-trigger placement="right" trigger='["click","hover","focus"]'> 
+                                        <div class="badge badge--danger" style="height: 28px; width: fit-content; padding: 0px 10px 0 5px;">
+                                          <rs-icon icon-type="rounded" icon-name="priority_high" symbol="true" style="font-size: 20px;"></rs-icon>Authority
+                                        </div>
+                                      </mp-popover-trigger>
+                                      <mp-popover-content>
+                                        <div>When a resource can be listed in authority document a membership in the authority must be defined.</div>
+                                      </mp-popover-content>
+                                    </mp-popover>
+                                  </template>
+                                </semantic-if>
                               </template>
                             </semantic-if>
 
-                            <semantic-if query='ASK { <{{iri}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_in_finder> ?value . }'
-                                        then='{{> inFinder}}'
-                                        else="{{> else}}"
-                            >
+                            <semantic-if  query='ASK {  ?navigationItem a <http://www.researchspace.org/resource/system/FinderNavigationItem> . 
+                                                        ?navigationItem crm:P67_refers_to <{{iri}}> . 
+                                                        ?navigationItem <http://www.researchspace.org/pattern/system/navigation_item/menu_section_type> ?finderSection .}'
+                                          then='{{> inFinder}}'
+                                          else='{{> else}}'>
+
                               <template id='inFinder'>
                                 <span class="badge badge--secondary" style="height: 28px; width: 54px;">Finder</span>
                               </template>
 
                               <template id='else'>
-                                <span style="width: 54px;"></span>
+                                <semantic-if query='ASK {
+                                                          {
+                                                            ?navigationItem a <http://www.researchspace.org/resource/system/FinderNavigationItem> . 
+                                                            ?navigationItem crm:P67_refers_to <{{iri}}> . 
+                                                            ?navigationItem  <http://www.researchspace.org/pattern/system/navigation_item/order_in_menu_section> ?order .
+                                                          }
+                                                          UNION
+                                                          {
+                                                            ?navigationItem a <http://www.researchspace.org/resource/system/FinderNavigationItem> . 
+                                                            ?navigationItem crm:P67_refers_to <{{iri}}> . 
+                                                            ?navigationItem <http://www.researchspace.org/pattern/system/navigation_item/broader_resource_configuration> ?broader .
+                                                          }
+                                                          UNION
+                                                          {
+                                                            ?navigationItem a <http://www.researchspace.org/resource/system/FinderNavigationItem> . 
+                                                            ?navigationItem crm:P67_refers_to <{{iri}}> . 
+                                                            ?navigationItem <http://www.researchspace.org/pattern/system/navigation_item/resource_icon> ?icon .
+                                                          }
+                                                        }'
+                                                then='{{> then}}'
+                                                else='{{> else}}'>
+
+                                    <template id='then'>
+                                      <mp-popover title="Missing finder section">
+                                        <mp-popover-trigger placement="right" trigger='["click","hover","focus"]'> 
+                                          <div class="badge badge--danger" style="height: 28px; width: fit-content; padding: 0px 10px 0 5px;">
+                                            <rs-icon icon-type="rounded" icon-name="priority_high" symbol="true" style="font-size: 20px;"></rs-icon>Finder
+                                          </div>
+                                        </mp-popover-trigger>
+                                        <mp-popover-content>
+                                          <div>For a resource displayed in finder the finder section must be defined.</div>
+                                        </mp-popover-content>
+                                      </mp-popover>
+      
+                                    </template>
+
+                                    <template id='else'>
+                                      <span style="width: 54px;"></span>
+                                    </template>
+                                </semantic-if>
                               </template>
                             </semantic-if>
 
-                           <semantic-if query='ASK { <{{iri}}> crm:P2_has_type <http://www.researchspace.org/pattern/system/resource_configuration/configuration_type/system> . }'
+                            <semantic-if query='ASK { <{{iri}}> crm:P2_has_type <http://www.researchspace.org/pattern/system/resource_configuration/configuration_type/system> . }'
                                           then='{{> system}}'
-                                          else='{{>else}}'
-                            >
+                                          else='{{> else}}'>
+
                                 <template id='system'>
                                   <span class="badge badge--secondary" style="height: 28px; width: 54px;">System</span>
                                 </template>
@@ -119,61 +188,24 @@
                                       {{#if (not bindings.0.iriType.value)}}
                                         <mp-popover title="Error in ontology class">
                                           <mp-popover-trigger placement="right" trigger='["click","hover","focus"]'> 
-                                            <div class="badge badge--danger" style="height: 28px; width: fit-content;">
-                                              <rs-icon icon-type="rounded" icon-name="priority_high" symbol="true" style="font-size: 20px;"></rs-icon>
+                                            <div class="badge badge--danger" style="height: 28px; width: fit-content; padding: 0px 10px 0 5px;">
+                                              <rs-icon icon-type="rounded" icon-name="priority_high" symbol="true" style="font-size: 20px;"></rs-icon>Ontology class
                                             </div>
                                           </mp-popover-trigger>
                                           <mp-popover-content>
-                                            <b>A configuration for <mp-label iri='{{bindings.0.iriOntologyClass.value}}' style="text-transform: uppercase;"></mp-label> already exists!</b>
+                                            <b>A configuration for class <mp-label iri='{{bindings.0.iriOntologyClass.value}}' style="text-transform: uppercase;"></mp-label> already exists!</b>
                                             <div>Don't create a new configuration for ontology class <mp-label iri='{{bindings.0.iriOntologyClass.value}}'></mp-label>, but just 
                                               modify the existing <span style="text-transform: uppercase;">{{bindings.0.resourceConfigurationName.value}}</span> system configuration. Otherwise a custom configuration can be created adding a configuration Type.</div>
                                           </mp-popover-content>
                                         </mp-popover>
+                                      {{else}}
+                                        <span><span style="width: 54px; display: block;"></span></span>
                                       {{/if}}
                                     </template>
+
                                   </semantic-query>
                                 </template>
                             </semantic-if> 
-
-                            <semantic-if query='ASK { <{{iri}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_list_in_authority> ?listInAuthority . 
-                                                FILTER(NOT EXISTS{ <{{iri}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty .})}'
-                                        then='{{> then}}'>
-
-                              <template id='then'>
-                                <mp-popover title="Missing membership in the authority document">
-                                  <mp-popover-trigger placement="right" trigger='["click","hover","focus"]'> 
-                                    <div class="badge badge--danger" style="height: 28px; width: fit-content;">
-                                      <rs-icon icon-type="rounded" icon-name="priority_high" symbol="true" style="font-size: 20px;"></rs-icon>
-                                    </div>
-                                  </mp-popover-trigger>
-                                  <mp-popover-content>
-                                    <div>When a resource can be listed in authority document a membership in the authority must be defined.</div>
-                                  </mp-popover-content>
-                                </mp-popover>
-                              </template>
-                            </semantic-if>
-
-                            <semantic-if query='ASK { <{{iri}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_in_finder> ?resourceInFinder . 
-                                                FILTER(NOT EXISTS{ 
-                                                  ?navigationItem crm:P67_refers_to <{{iri}}> ;
-                                                  a <http://www.researchspace.org/resource/system/FinderNavigationItem> ;
-                                                  <http://www.researchspace.org/pattern/system/navigation_item/menu_section_type> ?finderSection .
-                                                })}'
-                                          then='{{> then}}'>
-
-                              <template id='then'>
-                                <mp-popover title="Missing finder section">
-                                  <mp-popover-trigger placement="right" trigger='["click","hover","focus"]'> 
-                                    <div class="badge badge--danger" style="height: 28px; width: fit-content;">
-                                      <rs-icon icon-type="rounded" icon-name="priority_high" symbol="true" style="font-size: 20px;"></rs-icon>
-                                    </div>
-                                  </mp-popover-trigger>
-                                  <mp-popover-content>
-                                    <div>For a resource displayed in finder the finder section must be defined.</div>
-                                  </mp-popover-content>
-                                </mp-popover>
-                              </template>
-                            </semantic-if>
 
                             <mp-event-trigger id='{{viewId}}-resource-config-form-edit-trigger--{{iri}}' 
                                               type='Component.TemplateUpdate'
@@ -259,7 +291,7 @@
                                     on-event-source='{{viewId}}-resource-form' 
                                     on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
                                     proxy-event-type='Component.TemplateUpdate' 
-                                    proxy-targets='["{{viewId}}-resource-config-mytree", "{{viewId}}-resource-config-term-forms"]'
+                                    proxy-targets='["{{viewId}}-resource-config-mytree", "{{viewId}}-resource-config-term-forms", "system-finder-render"]'
                                     additional-data='{"mode": "edit"}'
                     ></mp-event-proxy>
           
@@ -267,7 +299,7 @@
                                     on-event-source='{{viewId}}-resource-form' 
                                     on-event-types='["Form.ResourceRemoved"]'
                                     proxy-event-type='Component.TemplateUpdate' 
-                                    proxy-targets='["{{viewId}}-resource-config-mytree", "{{viewId}}-resource-config-term-forms"]'
+                                    proxy-targets='["{{viewId}}-resource-config-mytree", "{{viewId}}-resource-config-term-forms", "system-finder-render"]'
                                     additional-data='{"mode": "deleted", "label": "{{label}}"}'
                     ></mp-event-proxy>
       

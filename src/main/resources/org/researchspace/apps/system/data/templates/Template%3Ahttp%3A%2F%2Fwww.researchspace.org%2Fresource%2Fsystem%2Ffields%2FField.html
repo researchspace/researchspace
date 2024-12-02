@@ -120,7 +120,8 @@
                 }
 
                 .tab-content {
-                  overflow: hidden;
+                  overflow-y: auto;
+                  padding-right: 10px;
                   display: flex;
                   flex-direction: column;
                 }
@@ -227,30 +228,28 @@
                     <template id='template'>
                       {{#if hideMessage}}
                       {{else}}
-                        <div style="margin-top: 20px;">
-                          <div class="documentation-section documentation-section-withIcon">
-                            <div class="documentation-section-icon-container">
-                              <i class="fa fa-info"></i>
+                        <div class="documentation-section documentation-section-withIcon">
+                          <div class="documentation-section-icon-container">
+                            <i class="fa fa-info"></i>
+                          </div>
+        
+                          <div style="flex: 1;"> 
+                            <div class="documentation-section-title">Knowledge pattern id</div>
+                            <div class="documentation-section-content">
+                              Use the code below replacing 'id':'example' with the current IRI <br>
+                              <b>'id': '[[this]]'</b>
                             </div>
-          
-                            <div style="flex: 1;"> 
-                              <div class="documentation-section-title">Knowledge pattern id</div>
-                              <div class="documentation-section-content">
-                                Use the code below replacing 'id':'example' with the current IRI <br>
-                                <b>'id': '[[this]]'</b>
-                              </div>
-                            </div>
-                            <mp-event-trigger id='documentation-kpConfig-trigger'
-                                              type='Component.TemplateUpdate'
-                                              data='{ "hideMessage": "true" }'
-                                              targets='["documentation-kpConfig"]'
-                                        >
-                                <button class="btn btn-documentation">
-                                  <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
-                                </button>
-                            </mp-event-trigger>
-                          </div> 
-                        </div>
+                          </div>
+                          <mp-event-trigger id='documentation-kpConfig-trigger'
+                                            type='Component.TemplateUpdate'
+                                            data='{ "hideMessage": "true" }'
+                                            targets='["documentation-kpConfig"]'
+                                      >
+                              <button class="btn btn-documentation">
+                                <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
+                              </button>
+                          </mp-event-trigger>
+                        </div> 
                       {{/if}}
                     </template>
                   </mp-event-target-template-render>

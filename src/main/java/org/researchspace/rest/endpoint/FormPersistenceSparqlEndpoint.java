@@ -21,6 +21,7 @@ package org.researchspace.rest.endpoint;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.net.URLEncoder;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
@@ -50,20 +51,25 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 import org.researchspace.api.sparql.SparqlOperationBuilder;
 import org.researchspace.cache.CacheManager;
 import org.researchspace.config.NamespaceRegistry;
 import org.researchspace.data.rdf.PointedGraph;
+import org.researchspace.repository.MpRepositoryProvider;
 import org.researchspace.repository.RepositoryManager;
 import org.researchspace.security.Permissions.FORMS_SPARQL;
-import org.researchspace.security.SecurityService;
+import org.researchspace.services.files.FileManager;
+import org.researchspace.services.files.ManagedFileName;
 import org.researchspace.services.storage.api.ObjectKind;
 import org.researchspace.services.storage.api.ObjectMetadata;
+import org.researchspace.services.storage.api.ObjectStorage;
 import org.researchspace.services.storage.api.PlatformStorage;
+import org.researchspace.services.storage.api.PlatformStorage.FindResult;
+import org.researchspace.services.storage.api.StorageException;
 import org.researchspace.services.storage.api.StoragePath;
-import org.researchspace.vocabulary.PROV;
 
 /**
  * @author Johannes Trame <jt@metaphacts.com>
@@ -86,7 +92,10 @@ public class FormPersistenceSparqlEndpoint {
     private NamespaceRegistry nsRegistry;
 
     private final ValueFactory vf = SimpleValueFactory.getInstance();
-  
+    
+    @Inject
+    private FileManager fileManager;
+
     /**
      * Executes and array of SPARQL INSERT and DELETE query strings in one
      * transaction. 
@@ -133,12 +142,31 @@ public class FormPersistenceSparqlEndpoint {
                                 .map(stmt -> vf.createStatement(stmt.getSubject(), stmt.getPredicate(), stmt.getObject(), graphIri))
                                 .collect(Collectors.toList());
 
-                        Rio.write(toWrite, outStream, RDFFormat.TRIG);
-                        byte[] bytes = outStream.toByteArray();
-
-                        ByteArrayInputStream content = new ByteArrayInputStream(bytes);
-                        platformStorage.getStorage(PlatformStorage.DEVELOPMENT_RUNTIME_STORAGE_KEY).appendObject(objectId,
-                           new ObjectMetadata(), content, bytes.length);                        
+                        if (toWrite.size()>0) {
+                            Rio.write(toWrite, outStream, RDFFormat.TRIG);
+                            byte[] bytes = outStream.toByteArray();
+                            
+                            ByteArrayInputStream content = new ByteArrayInputStream(bytes);
+                            platformStorage.getStorage(PlatformStorage.DEVELOPMENT_RUNTIME_STORAGE_KEY).appendObject(objectId,
+                            new ObjectMetadata(), content, bytes.length);  
+                        } else {
+                            try {
+                                platformStorage.getStorage(PlatformStorage.DEVELOPMENT_RUNTIME_STORAGE_KEY).deleteObject(objectId,
+                                        platformStorage.getDefaultMetadata());
+                                // Check if the object still exists in some app (usually immutable)
+                                Optional<FindResult> optObject = platformStorage.findObject(objectId);
+                                if (optObject.isPresent()) {
+                                    // We need to shadow the object to prevent loading from the app, so we save an
+                                    // empty
+                                    // model under the same name into the runtime storage
+                                    //this.saveToStorage(new PointedGraph(graphIri, new LinkedHashModel()),
+                                    //      graphIri);
+                                }
+                            } catch (StorageException e) {
+                                throw new RepositoryException(
+                                        "Could not delete the object " + objectId + " from storage: " + e.getMessage(), e);
+                            }
+                        }
                     }
                 } catch (Exception e) {
                     // con.rollback();

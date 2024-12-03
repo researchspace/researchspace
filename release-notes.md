@@ -8,7 +8,7 @@ Previously, the platform was available with just a small number of example templ
 ## Summary of changes
 ### A full  CIDOC CRM authoring system
 
-The current release offers a unique way of recording data with semantics based on an exhaustive collection of interconnected resource templates, allowing one to start by adding any [new resource based on CIDOC CRM ontology](./images/release4/NewResource.png). For example, one can start by selecting [new Human-Made Object](./images/release4/NewHumanMadeObject.png) and progressively adding more details such as who created it, when was it produced, and any other relevant information. The form's inputs reflect all applicable relationships (properties) from the CIDOC CRM ontology. Thus, through the UI a wide range of data can be captured, creating complex semantic data networks without the need for modelling. [Work by Giovanna Garzoni, data visualisation in the Knowledge Map](./images/release4/DogWithABiscuit.png) 
+The current release offers a unique way of recording data with semantics based on an exhaustive collection of interconnected resource templates, allowing one to start by adding any [new resource based on CIDOC CRM ontology](./images/release4/NewResource.png). For example, one can start by selecting [new Human-Made Object](./images/release4/NewHumanMadeObject.png) and progressively adding more details such as who created it, when was it produced, and any other relevant information. The form's inputs reflect all applicable relationships (properties) from the CIDOC CRM ontology. Thus, through the UI a wide range of entities can be described, combining data input with modelling and creating complex semantic data networks. [Work by Giovanna Garzoni, data visualisation in the Knowledge Map](./images/release4/DogWithABiscuit.png) 
 
 
 ### The elements of a ResearchSpace instance
@@ -17,7 +17,7 @@ Setting up a system using the ResearchSpace platform is a process of generating 
 
 #### Knowledge Patterns
 
-In previous versions, the platform was available with just a small number of example templates and a set of [dependant knowledge patterns](https://github.com/researchspace/researchspace-instance-configurations); This was problematic to maintain; they resided in a separate repo and often missed as a prerequisite when preparing a new ResearchSpace instance; also, no clear UI based way for the categorisation of the knowledge patterns was in place. Hence, the following have been introduced:
+In previous versions, the platform was available with just a small number of example templates and a set of [dependant knowledge patterns](https://github.com/researchspace/researchspace-instance-configurations); This was problematic to maintain; they resided in a separate repositories and often missed as a prerequisite when preparing a new ResearchSpace instance; also, no clear UI based way for the categorisation of the knowledge patterns was in place. Hence, the following have been introduced:
   
   * A new way of [categorising the knowledge pattern when created](./images/release4/KPCategories.png), with [categories](./images/release4/KPsCategories.png) visible in the KPs catalogue in the Admin section. 
 
@@ -74,7 +74,7 @@ Knowledge Pattern Category, Chart, Timeline, Image Annotation, Knowledge Map, Se
 Acquisition, Activity, Actor, Appellation, Attribute assignment, Audio, Authority document, Beginning of existence, Biological object, Birth, Conceptual object, Condition assessment, Condition state, Creation, Curated collection, Curation activity, Currency, Death, Design or procedure, Destruction, Dimension, Dissolution, Document, End of existence, Entity, Event, Exhibition, Formation, Group, Human-made feature, Human-made object, Human-made thing, Identifier, Identifier assignment, Image, Information object, Inscription, Joining, Language, Leaving, Legal object, Linguistic object, Mark, Material, Measurement, Measurement unit, Model 3D, Modification, Monetary amount, Move, Organisation, Part addition, Part removal, Period, Persistent item, Person, Physical feature, Physical Human-made thing, Physical object, Physical thing, Place, Product type, Production, Project, Propositional object, Publication, Purchase, Research question, Right, Series, Site, Symbolic object, Term, Thing, Timespan, Title, Transfer of custody, Transformation, Type, Type assignment, Type creation, Video, Visual item
 
 
-**IMPORTANT** Do not create a new configuration for an ontology class from the list above, but just modify the existing configuration. Otherwise, a custom configuration can be created adding a configuration *Type*.
+**IMPORTANT** Existing configurations can be modified and new configuration are only necessary for resources that have an ontology class not covered by the default configurations or if the representation is more specific. In our running example, there exists a configuration for ```Person```, but if needed a custom configuration can be created for ```Artist``` (a type of Person) by adding a E21 Person as ontology class and ```artist``` E55 Type as the *Type* of the configuration. This will allow the system to differentiate when to use the ```Person configuration``` or the custom ```Artist configuration```.
 
 **IMPORTANT** The resource configurations are intended to make it explicit what templates are being used for a new instance of that resource. 
 
@@ -83,15 +83,15 @@ The existing [resource templating mechanism](https://documentation.researchspace
   
 ### How to enable/disable the default UI
 There are four new repositories: ```configurations```, ```system```, ```ontologies```, and ```authorities```. These contain information that supports the default UI. For a new installation of the system these will be loaded and reloaded on start when the setting ```loadDefaultConfig``` is  1 in the runtime-data/config/global.prop or in the your-custom-app/config/global.prop. In developer mode, just add "-Dconfig.global.loadDefaultConfig=1" to build.gradle script.
-* The ```configurations``` repo is a group of named graphs each containing a resource configuration
-* The ```system``` repo is a set of knowledge patterns that cannot be edited by the users of the system and are a prerequisite for the functioning of the default templates.
-* The ```authorities``` repo is a set of crm:E32 Authority Documents created using RS that are referred to by the system knowledge patterns and default templates.
-* The ```ontologies``` repo is a set of ontologies: CIDOC 7.3.1 (including CRMpc 1.2), CRMArcheo 1.4, CRMba 1.4, CRMdig 3.2.1, CRMgeo 1.2, Influence, CRMsci, FRBRoo, skos (not an ontology).
+* The ```configurations``` repository is a group of named graphs each containing a resource configuration
+* The ```system``` repository is a set of knowledge patterns that cannot be edited by the users of the system and are a prerequisite for the functioning of the default templates.
+* The ```authorities``` repository is a set of crm:E32 Authority Documents created using RS that are referred to by the system knowledge patterns and default templates.
+* The ```ontologies``` repository is a set of ontologies: CIDOC 7.3.1 (including CRMpc 1.2), CRMArcheo 1.4, CRMba 1.4, CRMdig 3.2.1, CRMgeo 1.2, Influence, CRMsci, FRBRoo, skos (not an ontology).
 
   The current implementation covers the following scenarios:
   1. For a new RS system setup with an empty graph-database all repositories above are loaded for the first time, if the ```loadDefaultConfig``` was not set; if you want your system to load future updates the flag needs to be set explicitly to 1.
  
-  2. For an existing system with content in its graph-database, the loading process will check if the ```loadDefaultConfig``` is set to 1. If true, ```configurations``` and ```authorities``` are loaded, and can be edited by the user. The ```system``` repo is also loaded. And finally the ```ontologies``` are loaded only if no other ontologies already exist. A user can work with their own choice of ontologies, but note that the templates provided have been customised based on CIDOC CRM 7.3.1.
+  2. For an existing system with content in its graph-database, the loading process will check if the ```loadDefaultConfig``` is set to 1. If true, ```configurations``` and ```authorities``` are loaded, and can be edited by the user. The ```system``` repository is also loaded. And finally the ```ontologies``` are loaded only if no other ontologies already exist. A user can work with their own choice of ontologies, but note that the templates provided have been customised based on CIDOC CRM 7.3.1.
 
 
 **IMPORTANT** Setting the flag to 0 will not load any of the repositories above and the Resources and Ontologies sections in the Admin section will be **broken**. For existing systems, the default UI should not create any conflicts with the existing setups, but do investigate your logs which will reflect if such conflicts occur.

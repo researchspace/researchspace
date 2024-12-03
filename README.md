@@ -18,7 +18,7 @@
 
 # The ResearchSpace Platform
 
-In 1968, the first conference on the [*Potential of Computers in Museums*](https://link.springer.com/article/10.1007/BF02400262) highlighted a paradox that would would persist in arts and heritage-related systems for the next 50 years: the reliance on generalized, object-focused data records. While these records aligned with the technical capabilities of computer databases, they failed to capture the nuanced knowledge that organizations actually created. One curator at the conference recognized that computerization would only be truly valuable if its models could adapt to changing needs. However, the rigid nature of traditional databases made such adaptability impossible.
+In 1968, the first conference on the [*Potential of Computers in Museums*](https://link.springer.com/article/10.1007/BF02400262) highlighted a paradox that would persist in arts and heritage-related systems for the next 50 years: the reliance on generalized, object-focused data records. While these records aligned with the technical capabilities of computer databases, they failed to capture the nuanced knowledge that organizations actually created. One curator at the conference recognized that computerization would only be truly valuable if its models could adapt to changing needs. However, the rigid nature of traditional databases made such adaptability impossible.
 
 [ResearchSpace](https://www.researchspace.org/), in conjunction with the [CIDOC CRM](https://site2024.cidoc-crm.org/), resolves this paradox and addresses other limitations of conventional databases. By combining structure with flexibility, it enables data models to evolve and expand to accommodate new questions and incorporate community-driven knowledge. Leveraging semantics, ResearchSpace unlocks the knowledge hidden within databases and allows extending the objects' representations with rich contextual information. It unites research and practice, strengthening the educational, engagement, and participatory roles of museums and cultural organizations.
 
@@ -30,6 +30,7 @@ As a platform for contextualizing knowledge, ResearchSpace fosters collaborative
 
 <!--ts-->
    * [From Research Questions to Knowledge Bases](#from-research-questions-to-knowledge-bases) 
+   * [ResearchSpace v.4.0.0](#researchspace-v400)
    * [Installation Options](#installation-options)
       * [Latest Release](#latest-release)
       * [Docker Image](#docker-image)
@@ -74,15 +75,26 @@ Changing the methods of research in the humanities requires an innovative platfo
 
 The thinking and design of the platform is that any research is a process of growing a network of connections, namely a ***knowledge graph***. From a technical perspective it is a "changing informational structure that mediates between a human, the world and a computer. The graph itself is ontologically based and enhanced by human epistemology. These are closely linked in that the ontology provides real world references and a structure of interrelated entities or processes, while the epistemology uses the graph to interpret and generate new knowledge. Growing the graph is based on both automated reasoning and crucially, collaborative human thinking and creativity". [Oldman and Tanase](https://link.springer.com/chapter/10.1007/978-3-030-00668-6_20)
 
-This led to the creation of a [***new release***](release-notes.md) that reflects this design thinking.
+This led to the creation of a new release reflecting this design thinking.
+
+## ResearchSpace v.4.0.0
+
+This release offers a unique way of recording data with semantics based on an exhaustive collection of interconnected resource templates, allowing one to start by adding any [new resource based on CIDOC CRM ontology](./images/release4/NewResource.png). See further details in the **[RELEASE NOTES](release-notes.md)**.
+
+This version of ResearchSpace is created and supported by Kartography CIC.
+
 ![Research as Data](./images/release4/ResearchAsData.png)
+
+
+
 
 # Installation Options
 ## Latest Release
 
-This is an invitation to explore new ways of researching using as example our research on the ***Seventeenth Century Woman Artists***. This version of ResearchSpace is released and supported by Kartography CIC.
+This is an invitation to explore new ways of researching using as example of our research on the ***Seventeenth Century Woman Artists***. 
 
-[*Download Latest ResearchSpace Release with Example Data*](./example-researchspace-instance.zip) (ResearchSpace bundled with demo data, [blazegraph triplestore](https://blazegraph.com/) and [digilib](https://robcast.github.io/digilib/) IIIF viewer).
+[**Download Latest ResearchSpace Release with Example Data**](./example-researchspace-instance.zip) (ResearchSpace bundled with demo data, [blazegraph triplestore](https://blazegraph.com/) and [digilib](https://robcast.github.io/digilib/) IIIF viewer).
+
 
 
 ## Docker Image

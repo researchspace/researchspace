@@ -93,7 +93,7 @@ This version of ResearchSpace is created and supported by Kartography CIC.
 
 This is an invitation to explore new ways of researching using as example of our research on the ***Seventeenth Century Woman Artists***. 
 
-[**Download Latest ResearchSpace Release with Example Data**](./example-researchspace-instance.zip) (ResearchSpace bundled with demo data, [blazegraph triplestore](https://blazegraph.com/) and [digilib](https://robcast.github.io/digilib/) IIIF viewer).
+[**Download Latest ResearchSpace Release with Example Data**](https://drive.google.com/file/d/18j4tocxPpsj9-Ej8Rx9DIv4yAEzJN1rn/view?usp=sharing) (ResearchSpace bundled with demo data, [blazegraph triplestore](https://blazegraph.com/) and [digilib](https://robcast.github.io/digilib/) IIIF viewer).
 
 
 
@@ -107,7 +107,7 @@ Latest docker images for ResearchSpace are available on [Docker Hub](https://hub
 
 <!-- Download the latest ZIP bundle from the latest [CI build](https://github.com/researchspace/researchspace/actions?query=branch%3Amaster) artefacts and follow instructions in the README file inside the ZIP.-->
 
-[Download Release](./empty-researchspace-instance.zip) - empty ResearchSpace bundle with [blazegraph triplestore](https://blazegraph.com/) and [digilib](https://robcast.github.io/digilib/) IIIF viewer.
+[Download Release](https://drive.google.com/file/d/10W9iMj2w6I9iXvIiRBp9gS1YrF_FG8Ix/view?usp=sharing) - empty ResearchSpace bundle with [blazegraph triplestore](https://blazegraph.com/) and [digilib](https://robcast.github.io/digilib/) IIIF viewer.
 
 # Browser Compatibility
 The ResearchSpace platform's **browser compatibility** is **Google Chrome (minimum version 53)** and **Mozilla Firefox (minimum version 58)**.

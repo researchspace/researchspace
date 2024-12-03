@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-import { ReactNode } from 'react';
+import { createFactory, ReactNode } from 'react';
 
 import { Rdf } from 'platform/api/rdf';
 import { navigateToResource, refresh } from 'platform/api/navigation';
@@ -29,6 +29,8 @@ import { FieldDefinitionProp } from './FieldDefinition';
 import { TriplestorePersistence } from './persistence/TriplestorePersistence';
 import { CompositeValue } from './FieldValues';
 import * as FormEvents from './FormEvents';
+import {localeStorageTabs} from '../../components/ui/tabs/LocalStorageTab'
+import { addNotification } from '../ui/notification';
 
 export type PostAction = 'none' | 'reload' | 'redirect' | 'event' | string | ((subject: Rdf.Iri) => void);
 
@@ -102,7 +104,7 @@ export function getPostActionUrlQueryParams(props: ResourceEditorFormProps) {
 
   for (const key in props) {
     if (Object.hasOwnProperty.call(props, key)) {
-      if (key.indexOf(POST_ACTION_QUERY_PARAM_PREFIX) === 0) {
+      if (key.startsWith(POST_ACTION_QUERY_PARAM_PREFIX)) {
         const queryKey = key.substring(POST_ACTION_QUERY_PARAM_PREFIX.length).toLowerCase();
         params[queryKey] = props[key];
       }
@@ -125,8 +127,11 @@ export function performFormPostAction(parameters: {
   subject: Rdf.Iri;
   eventProps: { isNewSubject: boolean; isRemovedSubject?: boolean; sourceId: string };
   queryParams?: { [paramKey: string]: string };
+  defaultTabKey?: any
+  tabSource?: any
+  sendNotification?: boolean
 }) {
-  const { postAction = 'reload', subject, eventProps, queryParams } = parameters;
+  const { postAction = 'reload', subject, eventProps, queryParams, defaultTabKey, tabSource, sendNotification } = parameters;
   if (postAction === 'none') {
     return;
   }
@@ -145,18 +150,48 @@ export function performFormPostAction(parameters: {
         source: eventProps.sourceId,
         data: { iri: subject.value },
       });
+      if(sendNotification) {
+        addNotification({
+          level: 'success',
+          message: 'Resource created',
+          dismissible: true
+        });
+      }
+      
     } else if (eventProps.isRemovedSubject) {
       trigger({
         eventType: FormEvents.FormResourceRemoved,
         source: eventProps.sourceId,
         data: { iri: subject.value },
       });
+      if(sendNotification) {
+        addNotification({
+          level: 'success',
+          message: 'Resource deleted',
+          dismissible: true
+        });
+      }
+      
     } else {
       trigger({
         eventType: FormEvents.FormResourceUpdated,
         source: eventProps.sourceId,
         data: { iri: subject.value },
       });
+      if(sendNotification) {
+        addNotification({
+          level: 'success',
+          message: 'Resource saved',
+          dismissible: true
+        });
+      }
+      
+    }
+    if(defaultTabKey) {
+      localeStorageTabs.setValues({
+        sourceId: tabSource,
+        defaultTabKey: defaultTabKey
+      })
     }
     return;
   } else if (typeof postAction === 'function') {

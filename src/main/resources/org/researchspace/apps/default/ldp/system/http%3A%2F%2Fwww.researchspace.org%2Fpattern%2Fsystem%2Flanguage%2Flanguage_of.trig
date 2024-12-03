@@ -1,0 +1,68 @@
+
+<http://www.researchspace.org/pattern/system/language/language_of/context> {
+  <http://www.researchspace.org/pattern/system/language/language_of> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E56_Language>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E33_Linguistic_Object>;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-f0e576da4cdc4037b54ff8b638484cb9-3h8eq;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/language>;
+    <http://www.w3.org/2000/01/rdf-schema#comment> "Select linguistic object that is expressed, at least partially, in this language.";
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-f0e576da4cdc4037b54ff8b638484cb9-75s4zm;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-f0e576da4cdc4037b54ff8b638484cb9-qto8y;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-f0e576da4cdc4037b54ff8b638484cb9-xwaex;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Language of";
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-f0e576da4cdc4037b54ff8b638484cb9-ae30fa;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-29T17:59:17.871+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-f0e576da4cdc4037b54ff8b638484cb9-75s4zm a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E33_Linguistic_Object .
+  ?value crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-f0e576da4cdc4037b54ff8b638484cb9-xwaex a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P72i_is_language_of $value .
+  $value crm:P72_has_language $subject .
+} WHERE {}""" .
+  
+  _:genid-f0e576da4cdc4037b54ff8b638484cb9-ae30fa a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  $subject crm:P72i_is_language_of $value .
+   
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E33_Linguistic_Object .
+  ?value crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-f0e576da4cdc4037b54ff8b638484cb9-qto8y a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {   
+  $subject crm:P72i_is_language_of $value .
+  $value crm:P72_has_language $subject .
+}  WHERE {
+  $subject crm:P72i_is_language_of $value .
+  $value crm:P72_has_language $subject .
+      
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E33_Linguistic_Object .
+  ?value crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-f0e576da4cdc4037b54ff8b638484cb9-3h8eq a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E33_Linguistic_Object .
+  ?value crm:P190_has_symbolic_content ?label .
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/language/language_of> .
+}

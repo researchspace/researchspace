@@ -21,21 +21,22 @@
 
     The <code><semantic-form></semantic-form></code> component needs to be configured mainly on two levels:
     <ul>
-      <li><a href="#fielddefinitions">Field Definitions</a></li>
+      <li><a href="#fielddefinitions">Knowledge Patterns</a></li>
       <li><a href="#html5markup">HTML5 Markup</a></li>
     </ul>
 
 
-    <h2 id="fielddefinitions">Field Definitions</h2>
+    <h2 id="fielddefinitions">Knowledge Patterns (Field Definitions)</h2>
     <p>
-      So called <b>field definitions</b> provide an abstraction over the data model (aka ontology) by specifying complex path patterns within knowledge graph as SPARQL patterns.
+      Knowledge Patterns (also called field definitions in some areas of the system) provide an abstraction over the data model (aka ontology) 
+      by specifying complex path patterns within knowledge graph as SPARQL patterns.
     </p>
     <p>
-      The <b>field definitions</b> can be used to instruct the <b>form</b> how to read and update <u>atomic values</u> within the graph.
+      The <b>knowledge pattern</b> can be used to instruct the <b>form</b> how to read and update atomic values within the graph.
       Furthermore, they can be used to specify certain validation constraints such as datatypes, cardinalities or pattern matches against existing database entries.
     </p>
     <p>
-      Attributes of a field definition are (mandatory attributes marked with *):
+      Attributes of a fknowledge pattern are (mandatory attributes marked with *):
     </p>
       <table class="table table-striped table-bordered">
       <tbody>
@@ -45,8 +46,8 @@
         </tr>
         <tr>
           <td>id*</td>
-          <td>Unique identifier of the field definition, in most cases it
-          will be the URI of the field definition</td>
+          <td>Unique identifier of the knowledge pattern, in most cases it
+          will be the URI of the knowledge pattern</td>
         </tr>
         <tr>
           <td>label*</td>
@@ -187,11 +188,11 @@
     <p>Whether <b>$</b> or <b>?</b> are being used as SPARQL variable identifier does not matter (both are valid in SPARQL). However, we recommend using <b>$</b> for variables to be replaced/injected by the form, for example, <b>$subject</b> or <b>$value.</b> We recommend this just for sake of readability i.e. the one is reminded when reading or modifying these patterns, that certain variables will be replaced/injected later.</p>
 
     <h2 id="html5markup">HTML5 Markup</h2>
-    <p>While field definitions are being defined on an abstract level, forms and corresponding input elements can be instantiated using custom HTML5 components including references to the field definitions. </p>
+    <p>While knowledge patterns are being defined on an abstract level, forms and corresponding input elements can be instantiated using custom HTML5 components including references to the field definitions. </p>
 
     <p>The basic structure of a form markup looks as follows:</p>
     <p>The form itself is instantiated through the custom HTML5 tag <code>[[{{documentation}}]]<semantic-form> ... children... </semantic-form>[[{{/documentation}}]]</code> </p>
-    <p>The only mandatory attribute on the form component is the attribute <code>fields</code>, which expects and JSON object array of field definitions.</p>
+    <p>The only mandatory attribute on the form component is the attribute <code>fields</code>, which expects and JSON object array of knowledge patterns.</p>
 <mp-code-block mode='text/html' show-copy-button=false>
 <![CDATA[
 <semantic-form
@@ -255,7 +256,7 @@
       children elements e.g. for layout purpose tabs can be used.
     </p>
     <p>
-      To instantiate a certain field through an input element, one can choose from a set of dedicated form input elements, whereas each input <strong>MUST</strong> reference a field definition via the <code>for='{field-id}'</code> attribute.
+      To instantiate a certain field through an input element, one can choose from a set of dedicated form input elements, whereas each input <strong>MUST</strong> reference a knowledge pattern via the <code>for='{field-id}'</code> attribute.
     </p>
 
     <h3>Input Components</h3>
@@ -321,7 +322,7 @@
             ]]></mp-code-block>
           </td>
           <td>
-            <p>Commonly used for Literal values. However, can also be used for IRIs if corresponding xsdDatatype of field definition is <code>xsd:anyURI</code>.</p>
+            <p>Commonly used for Literal values. However, can also be used for IRIs if corresponding xsdDatatype of knowledge pattern is <code>xsd:anyURI</code>.</p>
             <p>Accepts an optional attribute <code>languages=["de","en"]</code>, which can be used to let the user select a language tag if xsdDatatype is <code>xsd:langString</code>.</p>
             <p>The optional attribute <code>require-language=true</code> selects the first language by default and disables non-language option.</p>
             <p>Setting the optional HTML attribute <code>multiline</code> to <code>multiline=true</code> will render a autoresizable text area.</p>
@@ -336,7 +337,7 @@
             ]]></mp-code-block>
           </td>
           <td>
-            <p>Offers a dropdown list to choose entities from, using the <code>valueSetPattern</code> from the referenced field definition.</p>
+            <p>Offers a dropdown list to choose entities from, using the <code>valueSetPattern</code> from the referenced knowledge pattern.</p>
           </td>
         </tr>
         <tr>
@@ -348,7 +349,7 @@
             ]]></mp-code-block>
           </td>
           <td>
-            <p>Dynamic autosuggestion while user enters search token, using the <code>autosuggestionPattern</code> from the referenced field definition.</p>
+            <p>Dynamic autosuggestion while user enters search token, using the <code>autosuggestionPattern</code> from the referenced knowledge pattern.</p>
           </td>
         </tr>
         <tr>
@@ -374,7 +375,7 @@
           </td>
           <td>
             <p>Component to either enter <code>date</code>, <code>time</code> or <code>dateTime</code> string or to select them visually from a calendar.</p>
-            <p>All dates are always displayed as and normalized to UTC strings. Format will be offered depdending on the xsd datatype as speficified in the referenced field definition.</p>
+            <p>All dates are always displayed as and normalized to UTC strings. Format will be offered depdending on the xsd datatype as speficified in the referenced knowledge pattern.</p>
           </td>
         </tr>
         <tr>
@@ -570,15 +571,15 @@
     </dl>
     <p>See also <semantic-link iri="http://help.researchspace.org/resource/SemanticFormAdvancedInputs">Advanced Inputs</semantic-link> for more specialized form inputs.</p>
 
-    <h3>Reading Field Definitions from the Database </h3>
+    <h3>Reading knowledge patterns from the Database </h3>
     <p>
-      Instead of defining the field definitions inline (as above), field definitions may also have an RDF representation and can be stored in the database (for example, when the Field Definition Catalog is used). The following backend template helper function can be used to read the definitions from the database:
+      Instead of defining the knowledge patterns inline (as above), knowledge patterns may also have an RDF representation and can be stored in the database (for example, when the Field Definition Catalog is used). The following backend template helper function can be used to read the definitions from the database:
     </p>
 
     <ul>
       <li>
-        <b>Read all field definitions:</b> <code>[[{{documentation}}]][[fieldDefinitions]][[{{/documentation}}]]</code><br>
-        Returns a JSON object array with all field definitions stored in the system. To reference a specific field definition from the form input elements, the full IRI of the field identifier needs to be used. Example:
+        <b>Read all knowledge patterns:</b> <code>[[{{documentation}}]][[fieldDefinitions]][[{{/documentation}}]]</code><br>
+        Returns a JSON object array with all knowledge patterns stored in the system. To reference a specific knowledge pattern from the form input elements, the full IRI of the field identifier needs to be used. Example:
         <mp-code-block mode='text/html'>
 <semantic-form fields=[[{{documentation}}]][[fieldDefinitions]][[{{/documentation}}]]>
   <semantic-form-text-input for='http://www.researchspace.org/instances/fields/expressionDisplayLabel'>
@@ -587,8 +588,8 @@
         </mp-code-block>
       </li>
       <li>
-        <b>Read specific field definitions:</b> <code>[[{{documentation}}]][[fieldDefinitions alias1="http://www.researchspace.org/instances/fields/expressionDisplayLabel"]][[{{/documentation}}]]</code><br>
-        Reads the specified field definitions (identified by its IRI) and re-writes the identifier to a local alias for reference from the input element.
+        <b>Read specific knowledge patterns:</b> <code>[[{{documentation}}]][[fieldDefinitions alias1="http://www.researchspace.org/instances/fields/expressionDisplayLabel"]][[{{/documentation}}]]</code><br>
+        Reads the specified knowledge patterns (identified by its IRI) and re-writes the identifier to a local alias for reference from the input element.
          Example:
         <mp-code-block mode='text/html'>
 <semantic-form fields='[[{{documentation}}]][[fieldDefinitions alias1="http://www.researchspace.org/instances/fields/expressionDisplayLabel"]][[{{/documentation}}]]'>
@@ -599,10 +600,10 @@
     </ul>
 
     <h1>Examples</h1>
-    The following two examples show how to create 1) simple field definitions and 2) complex field definitions that create sub-graphs for the <a href="http://www.cidoc-crm.org/comprehensive_intro.html" target="_blank">CIDOC Conceptual Reference Model</a> ontology.
+    The following two examples show how to create 1) simple knowledge patterns and 2) complex knowledge patterns that create sub-graphs for the <a href="http://www.cidoc-crm.org/comprehensive_intro.html" target="_blank">CIDOC Conceptual Reference Model</a> ontology.
 
-    <h3>Example 1: Simple field definitions</h3>
-    In the following we show a very simple example form with two simple field definitions to create a new CRM object.
+    <h3>Example 1: Simple knowledge patterns</h3>
+    In the following we show a very simple example form with two simple knowledge patterns to create a new CRM object.
     The fields capture an RDFS label as well as the CRM type, which can be selected from a given set of CRM type.
     <mp-code-example>
 <![CDATA[
@@ -621,7 +622,7 @@
             "valueSetPattern": "
               SELECT $value $label WHERE {
                 VALUES ($value $label) {
-                  (<http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object> \"Man Made Object\")
+                  (<http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object> \"Human Made Object\")
                   (<http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object> \"Information Object\")
                 }
               }
@@ -674,15 +675,16 @@
           <semantic-form-tree-picker-input for='location'></semantic-form-tree-picker-input>
           <semantic-form-errors></semantic-form-errors>
           <!-- save and reset button for form -->
-          <button name="submit" class="btn btn-default">Save</button>
           <button name="reset" class="btn btn-default">Reset</button>
+          <button name="submit" class="btn btn-action">Save</button>
+
         </bs-panel>
       </semantic-form>
 ]]>
     </mp-code-example>
 
-    <h3>Example 2: Complex field definitions</h3>
-    The following example shows more complex field definitions, where the field definition patterns map to complex CRM graph structures. We also show how to create a more complex, tabbed layout for the form.
+    <h3>Example 2: Complex knowledge patterns</h3>
+    The following example shows more complex knowledge patterns, where the field definition map to complex CRM graph structures. We also show how to create a more complex, tabbed layout for the form.
     <mp-code-example>
 <![CDATA[
       <semantic-form new-subject-template='http://www.example.com/id/{{UUID}}'
@@ -700,7 +702,7 @@
             "valueSetPattern": "
               SELECT $value $label WHERE {
                 VALUES ($value $label) {
-                  (<http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object> \"Man Made Object\")
+                  (<http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object> \"Human Made Object\")
                   (<http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object> \"Information Object\")
                 }
               }
@@ -845,12 +847,12 @@
             "minOccurs": "1",
             "maxOccurs": "1",
             "selectPattern": "
-              PREFIX rso: <http://www.researchspace.org/ontology/>
+              PREFIX rs: <http://www.researchspace.org/ontology/>
               PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
               SELECT ?value ?label WHERE {
                 $subject crm:P24i_changed_ownership_through ?acquisition.
                 ?acquisition crm:P23_transferred_title_from $value.
-                $value rso:displayLabel ?label
+                $value rs:displayLabel ?label
               }
             ",
             "autosuggestionPattern": "
@@ -894,8 +896,9 @@
           </bs-tabs>
           <semantic-form-errors></semantic-form-errors>
           <!-- save and reset button for form -->
-          <button name="submit" class="btn btn-default">Save</button>
+
           <button name="reset" class="btn btn-default">Reset</button>
+          <button name="submit" class="btn btn-action">Save</button>
         </bs-panel>
       </semantic-form>
 ]]>
@@ -957,8 +960,9 @@
           </semantic-form-composite-input>
           <semantic-form-errors></semantic-form-errors>
           <!-- save and reset button for form -->
-          <button name="submit" class="btn btn-default">Save</button>
+
           <button name="reset" class="btn btn-default">Reset</button>
+          <button name="submit" class="btn btn-action">Save</button>
         </semantic-form>
       </bs-panel>
 ]]>
@@ -1157,8 +1161,9 @@
           </semantic-form-tree-picker-input>
           <semantic-form-errors></semantic-form-errors>
           <!-- save and reset button for form -->
-          <button name='submit' class='btn btn-default'>Save</button>
+
           <button name='reset' class='btn btn-default'>Reset</button>
+          <button name='submit' class='btn btn-action'>Save</button>
         </semantic-form>
       </bs-panel>
 ]]>
@@ -1195,16 +1200,17 @@
           }
         ]'>
         <bs-panel>
-          <h4>Create new Man Made Object Instance</h4>
+          <h4>Create new Human Made Object Instance</h4>
           <semantic-form-recover-notification></semantic-form-recover-notification>
           <semantic-form-text-input for='label'></semantic-form-text-input>
           <semantic-form-hidden-input for='type'
-            default-value='http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object'>
+            default-value='http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object'>
           </semantic-form-hidden-input>
           <semantic-form-errors></semantic-form-errors>
           <!-- save and reset button for form -->
-          <button name="submit" class="btn btn-default">Save</button>
+
           <button name="reset" class="btn btn-default">Reset</button>
+          <button name="submit" class="btn btn-action">Save</button>
         </bs-panel>
       </semantic-form>
 ]]>
@@ -1281,8 +1287,9 @@
         <semantic-form-checklist-input for='event-happen' type='radio'></semantic-form-checklist-input>
         <semantic-form-errors></semantic-form-errors>
         <!-- save and reset button for form -->
-        <button name="submit" class="btn btn-default">Save</button>
+
         <button name="reset" class="btn btn-default">Reset</button>
+        <button name="submit" class="btn btn-action">Save</button>
       </bs-panel>
     </semantic-form>
 ]]>
@@ -1311,8 +1318,9 @@
         <semantic-form-checkbox-input for='is-dinosaur'></semantic-form-checkbox-input>
         <semantic-form-errors></semantic-form-errors>
         <!-- save and reset button for form -->
-        <button name="submit" class="btn btn-default">Save</button>
+
         <button name="reset" class="btn btn-default">Reset</button>
+        <button name="submit" class="btn btn-action">Save</button>
       </bs-panel>
     </semantic-form>
 ]]>

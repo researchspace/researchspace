@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -28,6 +29,7 @@ import { FileManager } from 'platform/api/services/file-manager';
 import * as styles from './FileManager.scss';
 import { Cancellation } from 'platform/api/async';
 import { addNotification } from 'platform/components/ui/notification';
+import Icon from 'platform/components/ui/icon/Icon';
 
 interface FileUploaderState {
   alertState?: AlertConfig;
@@ -214,10 +216,11 @@ export class FileUploader extends Component<FileUploaderProps, FileUploaderState
           onDropRejected={this.onDropRejected.bind(this)}
           noClick={Boolean(this.state.progress)}
         >
-          <div className={`${styles.mpDropZonePlaceHolder}`}>
+          <div>
             {this.props.children || (
-              <div className={styles.mpDropZonePlaceHolder}>
-                {this.props.placeholder || 'Please drag&drop your file here'}
+              <div className='placeholder-item'>
+                <Icon iconType='rounded' iconName='upload' symbol className='upload_icon'/>
+                <div>{this.props.placeholder || 'Drag file or click to upload'}</div>
               </div>
             )}
           </div>

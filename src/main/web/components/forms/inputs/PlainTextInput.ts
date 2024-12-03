@@ -133,7 +133,7 @@ export class PlainTextInput extends AtomicValueInput<PlainTextInputProps, State>
     if (text.length === 0) {
       return FieldValue.empty;
     }
-
+    
     let datatype = this.props.definition.xsdDatatype || vocabularies.xsd._string;
     if (!language && XsdDataTypeValidation.sameXsdDatatype(datatype, vocabularies.rdf.langString)) {
       // Replace rdf:langString -> xsd:string if no language specified
@@ -220,9 +220,16 @@ export class PlainTextInput extends AtomicValueInput<PlainTextInputProps, State>
     if (this.languages.length < 1) {
       return undefined;
     }
+    const rdfNode = FieldValue.asRdfNode(this.props.value);
+    let languageString = "";
+     
+    if (rdfNode) {
+      if (rdfNode["_datatype"]["_value"] === "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString")       
+        languageString = rdfNode["_lang"];
+    }
 
     const options = this.getOptionsForLanguageSelect(this.languages);
-    const language = this.state.language;
+    const language = languageString?languageString:this.state.language;
     const selectedOption = find(options, (option) => option.key === language);
 
     return ReactSelect({

@@ -32,6 +32,8 @@ import {
   MultipleValuesHandlerProps,
   ValuesWithErrors,
 } from './MultipleValuesInput';
+import { trigger } from 'platform/api/events/EventsStore';
+import { SelectionEvents } from '../../ui/selection';
 
 const CHECKBOX_CLASS = 'semantic-form-checkbox-input';
 
@@ -46,6 +48,7 @@ export interface CheckboxInputProps extends MultipleValuesProps {
    * Allow to add custom css-class of Checkbox.
    */
   className?: string;
+  customSource?: string;
 }
 
 const TRUE_VALUE = Rdf.literal(true);
@@ -61,6 +64,14 @@ const FALSE_VALUE = Rdf.literal(false);
  * <semantic-form-checkbox-input for='field-name'></semantic-form-checkbox-input>
  *
  */
+
+function triggerEvent(value: boolean, customSource?: string) {
+  trigger({
+    eventType: SelectionEvents.Toggle,
+    source: customSource || 'SelectionToggle',
+    data: { value, tag: '' },
+  });
+}
 export class CheckboxInput extends MultipleValuesInput<CheckboxInputProps, {}> {
   constructor(props: CheckboxInputProps, context: any) {
     super(props, context);
@@ -71,12 +82,13 @@ export class CheckboxInput extends MultipleValuesInput<CheckboxInputProps, {}> {
   };
 
   private createNewValues = (checked: boolean) => {
-    const { updateValues, handler } = this.props;
+    const { updateValues, handler, customSource } = this.props;
     updateValues(({ values, errors }) => {
       const newValue: LabeledValue = { value: Rdf.literal(checked) };
       let newValues = Immutable.List<FieldValue>();
       newValues = newValues.push(FieldValue.fromLabeled(newValue));
       const validated = handler.validate({ values: newValues, errors: errors });
+      triggerEvent(!!getCheckboxState(validated.values), customSource)
       return validated;
     });
   };

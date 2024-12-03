@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -20,9 +21,10 @@
 import { EventMaker } from 'platform/api/events';
 
 export interface SetManagementEventData {
-  'Components.SetManagement.SetAdded': void;
+  'Components.SetManagement.SetAdded': {containerIri: string};
   'Components.SetManagement.SetRenamed': void;
   'Components.SetManagement.SetRemoved': void;
+  'Components.SetManagement.SetRemovedFromView': void;
   'Components.SetManagement.ItemAdded': void;
   'Components.SetManagement.ItemRemoved': void;
   'Components.SetManagement.ItemSelected': string;
@@ -37,6 +39,7 @@ export namespace SetManagementEvents {
   export const SetAdded = event('Components.SetManagement.SetAdded');
   export const SetRenamed = event('Components.SetManagement.SetRenamed');
   export const SetRemoved = event('Components.SetManagement.SetRemoved');
+  export const SetRemovedFromView = event('Components.SetManagement.SetRemovedFromView');
   export const ItemAdded = event('Components.SetManagement.ItemAdded');
   export const ItemRemoved = event('Components.SetManagement.ItemRemoved');
   export const ItemSelected = event('Components.SetManagement.ItemSelected');

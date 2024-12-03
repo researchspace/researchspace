@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,16 +20,136 @@
 /* Tree View component style */
 .tree-view {
 
-  &_item,
-  &_children {
-    margin-bottom: 6px;
-  }
+  &_item {
 
-  &_children .Tree--leafNode {
-    & a {
-      text-decoration: underline;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 8px;
+
+    .tree-view_arrow {
+
+      margin: 0;
     }
 
-    margin-bottom: 6px;
+    .Tree--treeNode {
+      .Tree--itemLink {
+        margin: 0;
+      }
+    }
+
+    .Tree--leafNode {
+      margin: 0;
+
+      .Tree--itemLink {
+
+        margin: 0;
+      }
+    }
+  }
+
+  .tree-view_arrow-collapsed {
+
+    margin: 0;
+  }
+
+  &_children {
+
+    margin-bottom: 8px;
+  }
+
+  &_children {
+
+    & .Tree--leafNode {
+      margin-bottom: 4px;
+    }
+  }
+
+  &_arrow {
+      float: left;
+   //   margin-right: 10px !important;
+
+      &:after {
+
+        color: $color-secondary;
+    }
+  }
+}
+
+.Tree--treeNode,
+.Tree--leafNode {
+
+  & a,
+  & .Tree--itemLink {
+
+    color: $color-secondary;
+    font-size: 14px;
+    font-weight: 500;
+
+    cursor: pointer;
+    text-transform: capitalize;
+    min-height: inherit;
+  
+    display: flex; 
+    align-items: center; 
+    gap: 5px;
+    width: fit-content;
+  //  margin-bottom: 7px;
+  
+    i {
+      color: $color-secondary;
+      font-size: 17.5px;
+    }
+  
+    &.active {
+  
+      cursor: auto;
+      color: $color-action;
+  
+      i {
+        color: $color-action;
+      }
+    }
+  }
+
+  & .Tree--itemLink {
+    margin-bottom: 8px;
+  }
+}
+
+.tree-tableView {
+
+  .tree-view {
+
+    &_item {
+  
+      margin-bottom: 4px;
+      padding: 6px;
+      border-radius: $border-radius;
+      border: 1px solid $color-border-darker;
+      background-color: $color-lighter-hover;
+    }
+
+    &_children {
+
+      & .Tree--leafNode {
+
+        margin-bottom: 0;
+
+        .Tree--itemLink {
+
+          margin: 0;
+        }
+      }
+  
+      & > .Tree--leafNode {
+
+        margin-bottom: 4px;
+        padding: 6px 10px;
+        border-radius: $border-radius;
+        border: 1px solid $color-border-darker;
+        background-color: $color-lighter-hover;
+      }
+    }
   }
 }

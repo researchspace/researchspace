@@ -57,7 +57,7 @@ function getBeliefGraphForAssertedBelief(belief: AssertedBelief): Kefir.Property
 }
 
 /**
- * Premise for inference making can be only crminf:Belief or rso:EX_Assertion
+ * Premise for inference making can be only crminf:Belief or rs:EX_Assertion
  * (which contains beliefs).
  * To use other object as a premise we need to construct a belief out of it.
  * e.g in case of a digital image as a Premise we construct belief that object

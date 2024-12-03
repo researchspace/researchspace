@@ -1,0 +1,233 @@
+{{#bind viewId=dashboardId}}
+
+  <mp-event-proxy id='{{viewId}}-refresh-setPage-on-setInClipboard-modification'
+                  on-event-types='["Components.SetManagement.SetRenamed",
+                                  "Components.SetManagement.ItemAdded",
+                                  "Components.SetManagement.ItemRemoved",
+                                  "Components.SetManagement.ItemsReordered"]'
+                  on-event-source='clipboard'
+                  proxy-event-type='Component.Refresh'
+                  proxy-targets='["{{iri}}-set"]'>
+  </mp-event-proxy>
+
+  <mp-event-proxy id='{{viewId}}-refresh-setPage-on-setPreview-ItemsReordered'
+                  on-event-types='["Components.SetManagement.ItemsReordered"]'
+                  on-event-source='{{iri}}-set-preview'
+                  proxy-event-type='Component.Refresh'
+                  proxy-targets='["{{iri}}-set"]'>
+  </mp-event-proxy>
+
+  <mp-event-proxy id='{{viewId}}-refresh-setPage-on-resourceForm-actions'
+                  on-event-types='["Form.ResourceUpdated", "Form.ResourceRemoved"]'     
+                  proxy-event-type='Component.Refresh'
+                  proxy-targets='["{{iri}}-set"]'
+  ></mp-event-proxy>
+
+  <mp-event-proxy id='{{viewId}}-refresh-setPage-on-ontodia-data-changed'
+                  on-event-type='Ontodia.DiagramDataPersisted'    
+                  proxy-event-type='Component.Refresh'
+                  proxy-targets='["{{iri}}-set"]'
+  ></mp-event-proxy>
+
+  <mp-event-proxy id='{{viewId}}-refresh-setPage-on-set-deleted'
+                  on-event-type='Components.SetManagement.SetRemoved'
+                  on-event-source='{{iri}}-set'
+                  proxy-event-type='Component.TemplateUpdate'
+                  proxy-targets='["{{viewId}}-set-view"]'
+                  additional-data='{"setRemoved": true}'>
+  </mp-event-proxy>
+
+  <mp-event-proxy id='{{viewId}}-refresh-setPage-on-set-deleted-fromSearch'
+                  on-event-type='Form.RemoveResource'
+                  on-event-source='{{iri}}-resource-removal'
+                  proxy-event-type='Component.TemplateUpdate'
+                  proxy-targets='["{{viewId}}-set-view"]'
+                  additional-data='{"setRemoved": true}'>
+  </mp-event-proxy>
+
+  <mp-event-proxy id='{{viewId}}-show-set-deleted-message'
+                  on-event-type='Components.SetManagement.SetRemoved'
+                  on-event-source='{{iri}}-set'
+                  proxy-event-type='Component.TemplateUpdate'
+                  proxy-targets='["{{viewId}}-deleted-set-message"]'
+                  additional-data='{"setRemoved": true, "iri": "{{iri}}"}'>
+  </mp-event-proxy>
+
+  <mp-event-proxy id='{{viewId}}-refresh-setPage-on-set-deleted-fromSearch'
+                  on-event-type='Form.RemoveResource'
+                  on-event-source='{{iri}}-resource-removal'
+                  proxy-event-type='Component.TemplateUpdate'
+                  proxy-targets='["{{viewId}}-deleted-set-message"]'
+                  additional-data='{"setRemoved": true, "iri": "{{iri}}"}'>
+  </mp-event-proxy>
+
+  [[#if (hasPermission "forms:ldp:*")]]
+    <div class="page__grid-container single-set-management-container">
+      <div class="page__content-container">
+        <mp-event-target-template-render id='{{viewId}}-set-view' template='{{> template}}'>
+          <template id='template'>
+            {{#if setRemoved}}
+            {{else}}
+              <mp-set-management  id="{{#if setPreview}}{{iri}}-set-preview{{else}}{{iri}}-set{{/if}}"
+                                  [[#if (hasPermission "forms:ldp:*")]] 
+                                    readonly='false'
+                                  [[else]]
+                                    readonly='true'
+                                  [[/if]]                        
+                                  reparentable='true'
+                                  [[!--    fixed-key='set' --]]
+                                  default-view-mode='grid'
+                                  single-set-iri="{{iri}}"
+                                  style='flex: auto; overflow-y: auto;'
+                                  set-items-query='PREFIX ldp: <http://www.w3.org/ns/ldp#>
+                                                  PREFIX prov: <http://www.w3.org/ns/prov#>
+                                                  PREFIX platform: <http://www.researchspace.org/resource/system/>
+                                                  PREFIX bds: <http://www.bigdata.com/rdf/search#>
+                                                  PREFIX ontodia: <http://ontodia.org/schema/v1#>
+                                                  SELECT distinct ?item ?itemHolder ?parent ?kind WHERE {
+                                                    {
+                                                      FILTER(!(?__isSearch__)) .
+                                                      {
+                                                        {
+                                                        <{{iri}}> ldp:contains ?itemHolder .
+                                                        BIND(<{{iri}}> as ?parent) .
+                                                        OPTIONAL { ?itemHolder platform:setItem ?setItem }
+                                                        BIND(COALESCE(?setItem, ?itemHolder) AS ?item) .
+                                                      
+                                                      } UNION {
+                                                        <{{iri}}> ontodia:layoutData/ontodia:hasElement ?itemHolder .
+                                                        ?itemHolder ontodia:resource ?item .
+                                                        BIND(<{{iri}}> as ?parent) .
+                                                      } 
+                                                      }
+                                                    } 
+                                                    UNION {
+                                                      FILTER(?__isSearch__) .
+                                                      {
+                                                        {
+                                                          
+                                                          ?__setToSearch__ ldp:contains ?itemHolder.
+                                                          BIND(?__setToSearch__ as ?parent) .
+                                                          ?itemHolder platform:setItem ?item .
+                                                          FILTER(?__filterPatterns__)
+                                                      } 
+                                                      }
+                                                    } 
+                                                    OPTIONAL {
+                                                      ?itemHolder platform:setItemIndex ?i .
+                                                    }
+                                                    OPTIONAL {
+                                                      ?itemHolder prov:generatedAtTime ?modificationDate .
+                                                    }
+                                                    BIND(COALESCE(?i, 0) AS ?index) .
+                                                    OPTIONAL {
+                                                      ?item a ?type .
+                                                      FILTER(?type IN (platform:Set, ontodia:Diagram))
+                                                    }
+                                                    OPTIONAL {
+                                                      ?itemHolder a ?itemHolderType .
+                                                      FILTER(?itemHolderType IN (ontodia:Element))
+                                                    }
+                                                    BIND(COALESCE(?type, ?itemHolderType, platform:SetItem) AS ?kind) .
+
+                                                  } ORDER BY ?index DESC(?modificationDate)'
+                                set-count-query=' PREFIX ldp: <http://www.w3.org/ns/ldp#>
+                                                  PREFIX platform: <http://www.researchspace.org/resource/system/>
+                                                  PREFIX ontodia: <http://ontodia.org/schema/v1#>
+                                                  SELECT ?set (COUNT(?item) as ?count) WHERE {
+                                                      {
+                                                        <{{iri}}> ldp:contains ?set .
+                                                        OPTIONAL { ?set ldp:contains ?item }
+                                                      } UNION {
+                                                        platform:ontodiaDiagramContainer ldp:contains ?set .
+                                                        OPTIONAL { ?set ontodia:layoutData/ontodia:hasElement ?item }
+                                                      }
+                                                  } GROUP BY ?set'
+
+                                item-config='{
+                                              "<http://www.researchspace.org/resource/system/Set>": {
+                                                "isSet": true,
+                                                "listTemplate": "{{> rsp:SetView}}",
+                                                "gridTemplate": "{{> rsp:SetView}}"
+                                              },
+                                              "<http://ontodia.org/schema/v1#Diagram>": {
+                                                "isSet": true,
+                                                "listTemplate": "{{> rsp:ClipboardKnowledgeMapView}}",
+                                                "gridTemplate": "{{> rsp:ClipboardKnowledgeMapView}}"
+                                              },
+                                              "<http://ontodia.org/schema/v1#Element>": {
+                                                "isSet": false,
+                                                "listTemplate": "{{> rsp:SetListView}}",
+                                                "gridTemplate": "{{> rsp:SetGridView}}"
+                                              },
+                                              "<http://www.researchspace.org/resource/system/SetItem>": {
+                                                "isSet": false,
+                                                "listTemplate": "{{> rsp:SetListView isSetItem=true}}",
+                                                "gridTemplate": "{{> rsp:SetGridView isSetItem=true [[#if check]]check=[[check]][[/if]]}}"
+                                              }
+                                            }'
+                              filters='[{
+                                          "placeholder": "Filter by type",
+                                          "queryPattern": "{?item rdf:type/rdfs:subClassOf* ?__value__}",
+                                          "suggestionsQuery": "
+                                            PREFIX Platform: <http://www.researchspace.org/resource/system/>
+                                            PREFIX ldp: <http://www.w3.org/ns/ldp#>
+                                            PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                                            PREFIX ontodia: <http://ontodia.org/schema/v1#>
+                                            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                                            PREFIX prov: <http://www.w3.org/ns/prov#>
+
+                                            SELECT DISTINCT ?value ?label WHERE {
+                                              {
+                                                ?set a Platform:Set ;
+                                                  prov:wasAttributedTo ?__useruri__ ;
+                                                  ldp:contains/Platform:setItem/rdf:type ?class .
+                                              } UNION {
+                                                ?km a ontodia:Diagram ;
+                                                  prov:wasAttributedTo ?__useruri__ ;
+                                                  ontodia:layoutData/ontodia:hasElement/ontodia:resource/rdf:type ?class .
+                                              }
+                                              
+                                              ?class rdfs:subClassOf* ?value .
+
+                                              OPTIONAL {
+                                                ?value rdfs:label ?engLabel .
+                                                FILTER(LANG(?engLabel) = \"en\")
+                                              }
+                                              OPTIONAL {
+                                                ?value rdfs:label ?noLangLabel .
+                                                FILTER(LANG(?noLangLabel) = \"\")
+                                              }
+                                              BIND(COALESCE(?engLabel, ?noLangLabel, REPLACE(STR(?value), \"^.*/(.*)$\", \"$1\")) AS ?label) .
+                                              FILTER REGEX(STR(?label), COALESCE(?__token__, \".*\"), \"i\")
+                                            } ORDER BY ?label
+                                          "
+                              }]'>
+              </mp-set-management>
+            {{/if}}
+          </template>
+        </mp-event-target-template-render>
+
+        <mp-event-target-template-render id='{{viewId}}-deleted-set-message' template='{{> template}}'>
+          <template id='template'>
+            {{#if setRemoved}}
+              <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%;">
+                <div class="success-documentation-section-icon-container">
+                  <rs-icon icon-type="rounded" icon-name="done" symbol="true"></rs-icon>
+                </div>
+
+                <div style="flex: 1;"> 
+                  <div class="success-documentation-section-title">Success!</div>
+                  <div class="success-documentation-section-content">
+                    <span><mp-label iri='{{iri}}'></mp-label> has been deleted.</span>
+                  </div>
+                </div>
+              </div>
+            {{/if}}
+          </template>
+        </mp-event-target-template-render>
+      </div>
+    </div>
+  [[/if]]
+
+{{/bind}}

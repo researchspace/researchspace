@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -69,7 +70,7 @@ interface State {
 class SemanticSearchContextualizedResultInner extends React.Component<InnerProps, State> {
   static defaultProps = {
     tupleTemplate: `
-        <span title="{{label}}" style="display: flex; align-items: center; height: 40px;">
+        <span title="{{label}}" style="display: flex; align-items: center; height:30px;">
           {{label}}
           {{#ifCond hasRange.thumbnail.length '>' 0}}
           <img style="margin-left: auto; width: 30px; margin-right: 10px"
@@ -112,10 +113,10 @@ class SemanticSearchContextualizedResultInner extends React.Component<InnerProps
       <SemanticSearchContext.Provider value={context}>
         <div className={styles.holder}>
           <FormGroup className={styles.selectorGroup}>
-            <ControlLabel>Visualization Context</ControlLabel>
+            <ControlLabel>Visualization context</ControlLabel>
             {this.props.context.searchProfileStore.map(this.contextSelector).getOrElse(<span />)}
           </FormGroup>
-          {React.Children.only(this.props.children)}
+          <div style={{ flex: '1'}}>{React.Children.only(this.props.children)}</div>
         </div>
       </SemanticSearchContext.Provider>
     );

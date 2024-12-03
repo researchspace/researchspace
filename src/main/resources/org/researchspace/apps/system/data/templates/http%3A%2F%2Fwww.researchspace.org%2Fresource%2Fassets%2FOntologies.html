@@ -7,12 +7,11 @@
 </style>
 
 [[#*inline "count"]]
-<semantic-query query='
-										SELECT (COUNT(DISTINCT *) as ?count) WHERE{ GRAPH ?g { <{{subject.value}}> a owl:Ontology. [[pattern]] FILTER(!isBlank(?item)) .} }
-									' template='{{> itemCounts}}'>
+<semantic-query query='SELECT (COUNT(DISTINCT *) as ?count) WHERE {  { GRAPH ?g { <{{subject.value}}> a owl:Ontology. [[pattern]] FILTER(!isBlank(?item)) .} }}' 
+                template='{{> itemCounts}}'>
   <template id='itemCounts'>
     <div>
-      <span class="badge">
+      <span class="badge badge--secondary">
         <b>{{bindings.0.count.value}}&nbsp;[[label]]</b>
       </span>
     </div>
@@ -33,162 +32,433 @@
 
 <div class="page rs-ontologies">
 
-  [[> rsp:adminPageHeader title="Ontologies" icon="fa fa-sitemap fa-lg"]]
+  [[> rsp:adminPageHeader title="Ontologies" materialIcon="schema"]]
 
   <div class="container-fluid">
     <bs-row class="row-center">
       <bs-col xs=12 sm=11 md=10 lg=9 class="rs-col-xl-8">
+  
+        <div style="margin: 5px 0 15px 0; justify-content: space-between;" class="btn-inline-container">
         
-        <div style="margin: 10px 0 20px 0; display: flex; align-items: center;">
-            <mp-resource-link-container uri="http://www.researchspace.org/resource/admin/DataImportExport">
-              <div class="ontology-upload"><i class="fa fa-upload"></i>Upload Ontology</div>
-            </mp-resource-link-container>
+          <div class="btn-inline-container">
+            <semantic-link-container uri="http://www.researchspace.org/resource/OntologyElementsSearch">
+              <button class="btn btn-default btn-textAndIcon">
+                <rs-icon icon-type="rounded" icon-name="search" symbol="true"></rs-icon>
+                Search ontology elements
+              </button>
+            </semantic-link-container>
 
-            <mp-resource-link-container uri="http://www.researchspace.org/resource/OntologySearch">
-              <div class="ontology-search"><i class="fa fa-search"></i>Search for Ontology Elements</div>
-            </mp-resource-link-container>
-        </div>
-        <div data-flex-layout='column top-stretch'></div>
-        <semantic-search selector-mode='dropdown' optimizer='none' categories='{
-                  "<http://www.w3.org/2000/01/rdf-schema#Literal>": [{
-                    "kind": "literal",
-                    "queryPattern": "{
-                      {
-                        $subject ?__relation__ ?__literal__.
-                      } UNION {
-                        $subject ?__relation__ ?value.
-                        FILTER(str(?__literal__) = str(?value)) .
-                      }
-                    }"
-                  }]
-                }' search-profile='{
-                      "categories": [
-                        {"iri": "<http://www.w3.org/2002/07/owl#Ontology>", "label": "Ontology"},
-                        {"iri": "<http://www.w3.org/2000/01/rdf-schema#Resource>", "label": "Resource"},
-                        {"iri": "<http://www.w3.org/2000/01/rdf-schema#Literal>", "label": "Literal"}                       
-
-                      ],
-                      "relations": [
-                        {"iri": "<http://purl.org/dc/elements/1.1/creator>", "label": "creator", "hasDomain": "<http://www.w3.org/2002/07/owl#Ontology>", "hasRange": "<http://www.w3.org/2000/01/rdf-schema#Literal>"},
-                        {"iri": "<http://purl.org/dc/elements/1.1/contributor>", "label": "contributor", "hasDomain": "<http://www.w3.org/2002/07/owl#Ontology>", "hasRange": "<http://www.w3.org/2000/01/rdf-schema#Literal>"},                        
-                        {"iri": "<http://www.w3.org/2002/07/owl#versionInfo>", "label": "version", "hasDomain": "<http://www.w3.org/2002/07/owl#Ontology>", "hasRange": "<http://www.w3.org/2000/01/rdf-schema#Literal>"},
-                        {"iri": "<http://www.w3.org/2002/07/owl#imports>", "label": "imports", "hasDomain": "<http://www.w3.org/2002/07/owl#Ontology>", "hasRange": "<http://www.w3.org/2002/07/owl#Ontology>"}
-                                                     ]
-                    }'>
-
-          <div style="margin-bottom: 20px;">
-          <semantic-search-query-keyword domain='<http://www.w3.org/2002/07/owl#Ontology>'
-            placeholder='Filter your ontologies by name' escape-lucene-syntax=false min-search-term-length=2 query='
-                            SELECT ?subject {
-                              ?subject a owl:Ontology .
-                              OPTIONAL {
-                                ?subject rdfs:label ?label .
-                              }
-                              FILTER regex(COALESCE(?label, STR(?subject)), ?__token__, "i") .
-                            }
-                          ' default-query='
-                            SELECT ?subject {
-                              ?subject a owl:Ontology .
-                            }
-                          '>
-          </semantic-search-query-keyword>
+            <semantic-link-container uri="http://www.researchspace.org/resource/OntologyPropertiesSearch">
+              <button class="btn btn-default btn-textAndIcon">
+                <rs-icon icon-type="rounded" icon-name="search" symbol="true"></rs-icon>
+                Search ontology properties
+              </button>
+            </semantic-link-container>
           </div>
+				 [[#if (hasPermission "forms:ldp:*")]]
+            <mp-overlay-dialog id="uploadOntology-dialog"
+                                title="Upload ontology" 
+                                type="modal" 
+                                bs-size="large">
+              <mp-overlay-dialog-trigger>
+                <button class="btn btn-action btn-textAndIcon">
+                  <rs-icon icon-type='rounded' icon-name='upload' symbol='true'></rs-icon>
+                  Upload Ontology
+                </button>
+              </mp-overlay-dialog-trigger>
+              <mp-overlay-dialog-content>
+                <div>
+                  <style>
+                    .dropzone-area {
+                      height: 250px;
+                    }
+
+                    .overlay-modal__body.modal-body {
+                      min-height: 325px;
+                    }
+                  </style>
+                  <mp-rdf-upload  accept='[".trig"]'                                           
+                                  keep-source-graphs='true' 
+                                  ontology='true'
+                                  allow-load-by-url='false' 
+                                  show-advanced-options='false' 
+                                  drop-area-template='{{> template}}'>
+
+                    <template id='template'>
+                      <div class='RdfUpload__rdf-dropzone-content'>
+                        <br/><br/><br/>
+                        [[#> customOntologyUploadDropzoneMessage]][[/customOntologyUploadDropzoneMessage]]
+                        <br/><br/>
+                      </div>
+                    </template>
+                  </mp-rdf-upload>
+                </div>
+              </mp-overlay-dialog-content>
+            </mp-overlay-dialog>
+					[[/if]]
+          <mp-event-proxy id='uploadOntology-closeModal-proxy' 
+                          on-event-type='RdfUpload.Success'
+                          proxy-event-type='OverlayDialog.Close' 
+                          proxy-targets='["uploadOntology-dialog"]'
+          ></mp-event-proxy>
+
+          <mp-event-proxy id='uploadOntology-UpdateOntologySearch-proxy' 
+                    on-event-type='RdfUpload.Success'
+                    proxy-event-type='Component.TemplateUpdate' 
+                    proxy-targets='["ontology-search-results"]'>
+          ></mp-event-proxy>
+        
           
-          <div data-flex-layout="row stretch-stretch">
-            <div data-flex-self="size-1of3" style="flex: 0 0 20px;">
-              <semantic-search-facet></semantic-search-facet>
-            </div>
+        </div>
+   
+        <mp-event-target-template-render id='ontology-search-results' template='{{> template}}'>
+          <template id='template'>
+            
+            <semantic-search  selector-mode='dropdown' 
+                              optimizer='none' 
+                              categories='{
+                                            "<http://www.w3.org/2000/01/rdf-schema#Literal>": [{
+                                              "kind": "literal",
+                                              "queryPattern": "{
+                                                {
+                                                  $subject ?__relation__ ?__literal__.
+                                                } UNION {
+                                                  $subject ?__relation__ ?value.
+                                                  FILTER(str(?__literal__) = str(?value)) .
+                                                }
+                                              }"
+                                            }]}' 
+                              search-profile='{
+                                                "categories": [
+                                                  {"iri": "<http://www.w3.org/2002/07/owl#Ontology>", "label": "Ontology"},
+                                                  {"iri": "<http://www.w3.org/2000/01/rdf-schema#Resource>", "label": "Resource"},
+                                                  {"iri": "<http://www.w3.org/2000/01/rdf-schema#Literal>", "label": "Literal"}                       
 
-            <semantic-search-result-holder>
-              <div data-flex-self="md-full">
-                <semantic-search-result>
-                  <semantic-table id='field-results' number-of-displayed-rows=10 query='SELECT DISTINCT ?subject (SAMPLE(?g) as ?graph) (SAMPLE(?v) as ?version) (SAMPLE(?d) AS ?description) WHERE {
-                                           FILTER(isIRI(?subject)) .
-                                           GRAPH ?g {
-                                             ?subject a owl:Ontology .
-                                           }
-                                           OPTIONAL { ?subject owl:versionInfo ?v } 
-                                           OPTIONAL { ?subject rdfs:comment ?d }
-                                         } GROUP BY ?subject LIMIT 100' tuple-template='{{> ontology}}'
-                    options='{"showFilter": false}'>
-                    <template id='ontology'>
-                      <mp-panel>
-                        <mp-panel-body>
-                          <div class='row' data-flex-layout="row center-spread">
-                            <div class='col-sm-5'>
-                              <p style='font-size:18px;'>
-                                <semantic-link iri='{{subject.value}}' class="text-underline"></semantic-link>
-                              </p>
-                              <p style='font-size:10px;'>{{subject.value}}</p>
-                              {{#if description}}
-                              <p>
-                                <mp-text-truncate lines=4 truncate='...'
-                                  expand='<div style="text-decoration:underline;cursor:pointer; padding-right:5px;">read more</div>'
-                                  collapse='<div style="text-decoration:underline;cursor:pointer; padding-right:5px;">less</div>'>
-                                  {{description.value}}
-                                </mp-text-truncate>
-                              </p>
-                              {{/if}}
-                              <semantic-query style='font-style:italic'
-                                query='SELECT ?author WHERE{ GRAPH ?g { <{{subject.value}}>  <http://purl.org/dc/elements/1.1/creator>|<http://purl.org/dc/terms/creator> ?author} }'
-                                template='{{> authors}}'>
-                                <template id='authors'>
-                                  <div>
-                                    <b>Authors:</b>
-                                    {{#each bindings}}{{author.value}}{{#if @last}}{{else}}, {{/if}}{{/each}}
-                                  </div>
-                                </template>
-                              </semantic-query>
-                            </div>
-                            <div class='col-sm-4'>
-                              [[> count label='Classes' pattern='?item a owl:Class']]
-                              [[> count label='Object Properties' pattern='?item a owl:ObjectProperty']]
-                              [[> count label='Datatype Properies' pattern='?item a owl:DatatypeProperty']]
-                              [[> count label='SubClassOf Axioms' pattern='?item rdfs:subClassOf ?class']]
-                              [[> count label='SubPropertyOf Axioms' pattern='?item rdfs:subPropertyOf ?class']]
-                            </div>
-                            <div class='col-sm-1 rs-ontology-icon'>
-                              <mp-graph-store-action title='Download in Turtle Format' action='GET'
-                                graphuri='{{graph.value}}' file-ending='ttl'
-                                class='mp-rdf-graph-action__download-dropdown-item'>
-                                <i class='fa fa-2x fa-download' aria-hidden='true' title='Download'></i>
-                              </mp-graph-store-action>
-                            </div>
-                            <div class='col-sm-1 rs-ontology-icon'>
-                              <mp-overlay-dialog title="Print Preview" type="lightbox">
-                                <mp-overlay-dialog-trigger>
-                                  <i class='fa fa-2x fa-print mp-action' title='Print' aria-hidden='true'></i>
-                                </mp-overlay-dialog-trigger>
-                                <mp-overlay-dialog-content>
-                                  <mp-print pages='["{{subject.value}}"]'></mp-print>
-                                </mp-overlay-dialog-content>
-                              </mp-overlay-dialog>
-                            </div>
+                                                ],
+                                                "relations": [
+                                                  {"iri": "<http://purl.org/dc/elements/1.1/creator>", "label": "creator", "hasDomain": "<http://www.w3.org/2002/07/owl#Ontology>", "hasRange": "<http://www.w3.org/2000/01/rdf-schema#Literal>"},
+                                                  {"iri": "<http://purl.org/dc/elements/1.1/contributor>", "label": "contributor", "hasDomain": "<http://www.w3.org/2002/07/owl#Ontology>", "hasRange": "<http://www.w3.org/2000/01/rdf-schema#Literal>"},                        
+                                                  {"iri": "<http://www.w3.org/2002/07/owl#versionInfo>", "label": "version", "hasDomain": "<http://www.w3.org/2002/07/owl#Ontology>", "hasRange": "<http://www.w3.org/2000/01/rdf-schema#Literal>"},
+                                                  {"iri": "<http://www.w3.org/2002/07/owl#imports>", "label": "imports", "hasDomain": "<http://www.w3.org/2002/07/owl#Ontology>", "hasRange": "<http://www.w3.org/2002/07/owl#Ontology>"}
+                                                                              ]
+                                              }'>
 
-                            <div class='col-sm-1 rs-ontology-icon'>
-                              <semantic-link iri='http://www.researchspace.org/resource/assets/OntodiaDiagrams'
-                                title='Create / Edit Diagram' urlqueryparam-ontology-iri='{{subject.value}}'>
-                                <i class='fa fa-2x fa-object-group' title='Diagrams' aria-hidden=true></i>
+              <div style="margin-bottom: 20px;">
+               
+                <semantic-search-query-keyword domain='<http://www.w3.org/2002/07/owl#Ontology>'
+                                                placeholder='Search ontology by name' 
+                                                escape-lucene-syntax=false 
+                                                min-search-term-length=2 
+                                                query='SELECT ?subject {
+  																									
+                                                      ?subject a owl:Ontology .
+                                                      OPTIONAL {
+                                                        ?subject rdfs:label ?label .
+                                                      }
+                                                      FILTER regex(str(?label), $__token__, "i") .
+                                                    }' 
+                                                default-query='SELECT ?subject {
+                                                                  ?subject a owl:Ontology .
+                                                                }
+                                                              '>
+                </semantic-search-query-keyword>
+                
+              </div>
+              
+              <div data-flex-layout="row stretch-stretch">
+            [[!--    <div data-flex-self="size-1of3" style="flex: 0 0 20px;">
+                  <semantic-search-facet></semantic-search-facet>
+                </div> --]]
+
+                <semantic-search-result-holder>
+                  <div data-flex-self="md-full">
+                    <semantic-search-result>
+                      
+                      <semantic-table id='field-results' 
+                                      number-of-displayed-rows=10 
+                                      query='SELECT DISTINCT ?subject (SAMPLE(?g) as ?graph) (SAMPLE(?l) as ?name) (SAMPLE(?v) as ?version) (SAMPLE(?d) AS ?description) WHERE {
+                                              FILTER(isIRI(?subject)) .
+                                              GRAPH ?g {
+                                                ?subject a owl:Ontology .
+                                              }
+                                              OPTIONAL {?subject rdfs:label ?l}
+                                              OPTIONAL { ?subject owl:versionInfo ?v } 
+                                              OPTIONAL { ?subject rdfs:comment ?d }
+                                            } GROUP BY ?subject ORDER BY ASC(?subject) LIMIT 100' 
+                                      tuple-template='{{> ontology}}'
+                                      options='{"showFilter": false}'>
+
+                        <template id='ontology'>
+                            <semantic-if query='ASK {<http://www.researchspace.org/resource/system/ontologyContainer> <http://www.w3.org/ns/ldp#contains> <{{subject.value}}> .}' 
+                                         else='{{> else}}'>
+                              
+															<template id='else'>                             	
+                        				<ontology-create-new-resource-action 
+																		container="http://www.researchspace.org/resource/system/ontologyContainer" 
+                                    ontology-iri="{{subject.value}}">
+                                </ontology-create-new-resource-action>
+                              </template>
+                            </semantic-if>
+                          
+                            <div style="display: flex; align-items: stretch;" >
+                              <div class="page__section-container-whiteBg" style="flex: 1; margin: 0; display: flex; flex-direction: column;">
+                                <div style="flex: 1;">
+                                  <h3>
+                                    <semantic-link iri='{{subject.value}}' class="text-underline">{{name.value}}</semantic-link>
+																		                                 
+                                  </h3>
+                                  <p style='font-size:11px;'>{{subject.value}}</p>
+                                  
+                                  {{#if description}}
+                                    <div style="margin-bottom: 10px;">
+                                      <mp-text-truncate lines=4 truncate='...'
+                                        expand='<div style="text-decoration:underline;cursor:pointer; padding-right:5px;">read more</div>'
+                                        collapse='<div style="text-decoration:underline;cursor:pointer; padding-right:5px;">less</div>'>
+                                        {{description.value}}
+                                      </mp-text-truncate>
+                                    </div>
+                                  {{/if}}
+                                  <semantic-query style='font-style:italic'
+                                                    query='SELECT ?author WHERE{ 
+                                                            GRAPH ?g { 
+                                                              <{{subject.value}}>  <http://purl.org/dc/elements/1.1/creator>|<http://purl.org/dc/terms/creator> ?author} 
+                                                            }'
+                                                    template='{{> authors}}'>
+                                    <template id='authors'>
+                                      <div>
+                                        <b>Authors:</b>
+                                        {{#each bindings}}{{author.value}}{{#if @last}}{{else}}, {{/if}}{{/each}}
+                                      </div>
+                                    </template>
+                                  </semantic-query>
+                                </div>
+																<semantic-context repository="ontologies">
+                                <semantic-if query='ASK where { 
+                                                    {
+                                                      SELECT ((COUNT(?prop)) - (COUNT(?kp)) AS ?diff) WHERE {
+                                                      {
+                                                        BIND(<{{subject.value}}> AS ?ontology)
+                                                        BIND(IF(STRENDS(STR(?ontology), "/"), STR(?ontology), CONCAT(STR(?ontology), "/")) AS ?ontologyURI)
+                                                        BIND(IRI(CONCAT(STR(?ontologyURI), "context")) AS ?ontologyContext)
+
+                                                        GRAPH ?ontologyContext {
+                                                          ?prop rdf:type ?owlType.
+                                                          FILTER(?owlType IN(owl:DatatypeProperty, owl:ObjectProperty, rdf:Property))
+                                                          FILTER(CONTAINS(STR(?prop), REPLACE(STR(?ontologyContext), "/context", "")))
+                                                        }
+                                                      }
+                                                      UNION
+                                                      {
+                                                        BIND(<{{subject.value}}> AS ?ontology)
+                                                        BIND(IF(STRENDS(STR(?ontology), "/"), STR(?ontology), CONCAT(STR(?ontology), "/")) AS ?ontologyURI)
+                                                        BIND(IRI(CONCAT(STR(?ontologyURI), "context")) AS ?ontologyContext)
+                                                        ?kp rdf:type <http://www.researchspace.org/resource/system/fields/Field> .
+                                                        graph ?ontologyContext { 
+                                                            ?kp a ?type . 
+                                                            VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}
+                                                        }                                                        
+                                                      }
+                                                    }
+                                                }
+                                            FILTER(?diff != 0 ) }' 
+                                          then='{{> then}}' 
+                                          else='{{> else}}'>
+
+                                    <template id='else'>
+                                      <div class="alert alert-info" style="margin: 0;padding: 15px; font-size: 14px;">
+                                        <semantic-context repository="ontologies">
+                                        <semantic-query query='SELECT (count(?kp) as ?count) WHERE {
+                                                                ?kp a <http://www.researchspace.org/resource/system/fields/Field> .
+                                                                BIND(<{{subject.value}}> AS ?ontology)
+                                                                BIND(IF(STRENDS(STR(?ontology), "/"), STR(?ontology), CONCAT(STR(?ontology), "/")) AS ?ontologyURI)
+                                                                BIND(IRI(CONCAT(STR(?ontologyURI), "context")) AS ?ontologyContext)
+                                                                ?kp rdf:type <http://www.researchspace.org/resource/system/fields/Field> .
+                                                                graph ?ontologyContext { 
+                                                                    ?kp a ?type . 
+                                                                    VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}
+                                                                } 
+                                                              }'
+                                                        template='{{> template}}'
+                                        >
+                                              <template id='template'>
+                                                <div>
+                                                  The system includes 
+                                                  <semantic-link iri="http://www.researchspace.org/resource/system/fieldDefinitionContainer">
+                                                    <b>{{bindings.0.count.value}} knowledge pattern</b>
+                                                  </semantic-link>
+                                                  from this ontology.
+                                                </div>
+                                              </template>
+                                        </semantic-query>
+                                          </semantic-context>
+                                      </div>
+                                    </template>
+
+                                    <template id='then'>                                      
+                                      <mp-json-renderer
+                                        get-url='/rs/kp/getGeneratedKpsAndResponse?ontologyIri={{encodeUriComponent subject.value}}'
+                                        template="{{> template}}">
+
+                                        <template id='template'>
+                                          <div class="alert alert-info" style="margin: 0;padding: 15px; font-size: 14px;">
+                                            The system includes 
+                                            <semantic-link iri="http://www.researchspace.org/resource/system/fieldDefinitionContainer">
+                                              <b>{{this.kp_count}} knowledge pattern</b>
+                                            </semantic-link>
+                                            from this ontology.
+                                          </div>
+                                        </template>
+                                      </mp-json-renderer>                                     
+                                    </template>
+                                </semantic-if>
+                                  </semantic-context>
+                              </div>
+
+                              <div class="page__section-container-whiteBg" 
+                              style="margin: 0; border-left: none; min-width: fit-content; display: flex;flex-direction: column; gap: 7px;">
+                                [[> count label='Classes' pattern='?item a ?classType . VALUES ?classType {owl:Class rdfs:Class}']]
+                                [[> count label='Object Properties' pattern='?item a owl:ObjectProperty']]
+                                [[> count label='Datatype Properties' pattern='?item a owl:DatatypeProperty']]
+                                [[> count label='RDF Properties' pattern='?item a rdf:Property']]
+                                [[> count label='SubClassOf Axioms' pattern='?item rdfs:subClassOf ?class']]
+                                [[> count label='SubPropertyOf Axioms' pattern='?item rdfs:subPropertyOf ?class']]
+                              </div>
+                            </div>
+                            
+                            <div style="display: flex; align-items: center; gap: 10px; justify-content: space-between; border-top: none;" class="page__section-container-whiteBg">
+                              
+                              <semantic-link iri='{{subject.value}}'>
+                                <button class="btn btn-default btn-textAndIcon" title="View ontology">
+                                  <rs-icon icon-type="rounded" icon-name="open_in_new" title='View ontology' symbol="true"></rs-icon>View
+                                </button>
                               </semantic-link>
-                            </div>
-                            <div class='col-sm-1 rs-ontology-icon'>
+                              
+                              <div class="btn-inline-container">
+                                <mp-graph-store-action  title='Download in Trig Format' 
+                                                        action='GET'
+                                                        graphuri='{{graph.value}}' 
+                                                        file-ending='trig'>
+                                  <button class="btn btn-default btn-textAndIcon" title="Download">
+                                    <rs-icon icon-type="rounded" icon-name="download" title='Download' symbol="true"></rs-icon>Download
+                                  </button> 
+                                </mp-graph-store-action>
+                              
+                                <mp-overlay-dialog title="Print Preview" type="lightbox" id="'printPreview">
+                                  <mp-overlay-dialog-trigger>
+                                    <button class="btn btn-default btn-textAndIcon" title="Print">
+                                      <rs-icon icon-type="rounded" icon-name="print" title='Print' symbol="true"></rs-icon>Print
+                                    </button>
+                                  </mp-overlay-dialog-trigger>
+                                  <mp-overlay-dialog-content>
+                                    <mp-print pages='["{{subject.value}}"]'></mp-print>
+                                  </mp-overlay-dialog-content>
+                                </mp-overlay-dialog>
+																[[#if (hasPermission "forms:ldp:*")]]
+                                <mp-overlay-dialog id='removeOntology-confirmation-dialog'
+                                                  title="Delete ontology" 
+                                                  type="modal" 
+                                                  bs-size="large">
+                                  <mp-overlay-dialog-trigger>
+                                    <button class="btn btn-default btn-textAndIcon" title="Delete ontology">
+                                      <rs-icon icon-type="rounded" icon-name="delete" title='Delete ontology' symbol="true"></rs-icon>Delete
+                                    </button>
+                                  </mp-overlay-dialog-trigger>
+                                  <mp-overlay-dialog-content>
+                                    <div>
+                                      <p>Are you sure you want to delete the ontology 
+                                        <b><semantic-link iri='{{subject.value}}' class="text-underline;"></semantic-link></b>?
+                                      </p>
+                                      <semantic-query query='SELECT (count(?kp) as ?count) WHERE {
+                                                                BIND(<{{subject.value}}> AS ?ontology)
+                                                                BIND(IF(STRENDS(STR(?ontology), "/"), STR(?ontology), CONCAT(STR(?ontology), "/")) AS ?ontologyURI)
+                                                                BIND(IRI(CONCAT(STR(?ontologyURI), "context")) AS ?ontologyContext)
+                                                                ?kp rdf:type <http://www.researchspace.org/resource/system/fields/Field> .
+                                                                graph ?ontologyContext { 
+                                                                    ?kp a ?type . 
+                                                                    VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}
+                                                                }                                                                
+                                                              }'
+                                                        template='{{> template}}'
+                                        >
+                                              <template id='template'>
+                                                <div>
+                                                  This action will remove the {{bindings.0.count.value}} knowledge patterns included in the system for this ontology.
+                                                </div>
+                                              </template>
+                                        </semantic-query>
+                                      <div class="form-btn-group">
+                                        <mp-event-trigger id='removeOntology-cancel-dialog-trigger' 
+                                                          type='OverlayDialog.Close' 
+                                                          targets='["removeOntology-confirmation-dialog"]'>
+                                          <button class="btn btn-default">Cancel</button>
+                                        </mp-event-trigger>
+
+                                        <mp-event-trigger id='removeOntology-removeKps-dialog-trigger' 
+                                                          type='Component.TemplateUpdate' 
+                                                          targets='[""]'>
+                                            <mp-ldp-remove-from-container-action ontology=true iri="{{subject.value}}" 
+                                                                container=" http://www.researchspace.org/resource/system/ontologyContainer">
+                                              <button class="btn btn-action">Delete ontology</button> 
+                                            </mp-ldp-remove-from-container-action> 
+                                        </mp-event-trigger>
+                                      </div>
+                                    </div>
+                                  </mp-overlay-dialog-content>
+                                </mp-overlay-dialog>
+                               [[/if]]                   
+                              </div>
+                              
+                              [[!--
                               <form method='post' action='/rs/kp/generateKps?ontologyIri={{encodeUriComponent subject.value}}'>
                                 <button type=submit style="background-color: transparent;">
-                                  <i class="rs-icon rs-icon-diagram fa-2x" title='Generate Knowledge Patterns' aria-hidden=true></i>
-                                  </button>
-                              </form>
+                                  <rs-icon icon-type="rounded" icon-name="polyline" symbol="true" title='Generate Knowledge Patterns'></rs-icon>
+                                </button>
+                              </form> --]]
+
+                              [[!-- <semantic-link iri='http://www.researchspace.org/resource/assets/OntodiaDiagrams'
+                                title='Create / Edit Diagram' urlqueryparam-ontology-iri='{{subject.value}}'>
+                                <i class='fa fa-2x fa-object-group' title='Diagrams' aria-hidden=true></i>
+                              </semantic-link> --]]
+                        
                             </div>
-                          </div>
-                        </mp-panel-body>
-                      </mp-panel>
-                    </template>
-                  </semantic-table>
-                </semantic-search-result>
+                        </template>
+                        
+                      </semantic-table>
+                     
+                    </semantic-search-result>
+                  </div>
+                </semantic-search-result-holder>
               </div>
-            </semantic-search-result-holder>
-          </div>
-        </semantic-search>
+            </semantic-search>
+          </template>
+        </mp-event-target-template-render>
       </bs-col>
     </bs-row> <!--  close row -->
   </div>
 </div>
+
+[[#*inline "customOntologyUploadDropzoneMessage"]]
+      <div class='placeholder-item'>
+        <rs-icon icon-type='rounded' icon-name='upload' class='upload_icon' symbol='true'></rs-icon>
+        <div> 
+          <p>Drag ontologies as *.trig <span>or </span><span class='text-link'>click to upload</span></p>
+          <div class="documentation-section documentation-section-withIcon" style="margin: 20px 0;">
+            <div class="documentation-section-icon-container">
+              <i class="fa fa-info"></i>
+            </div>
+
+            <div style="flex: 1;"> 
+              <div class="documentation-section-title">Info</div>
+              <div class="documentation-section-content">1. Ontologies should be described using <b>OWL</b>.
+              </div>
+              <div class="documentation-section-content"> 
+                2. For an ontology all classes and properties must be defined in one named graph equal to the ontology IRI.
+              </div>
+              <div class="documentation-section-content"> 
+                3. For <b>updating</b> an ontology, please first <b>delete</b> the one already in the system.
+              </div>
+            </div>
+          </div> 
+        </div>
+      </div>  
+    [[/inline]]

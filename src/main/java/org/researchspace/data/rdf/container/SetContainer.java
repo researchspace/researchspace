@@ -75,4 +75,8 @@ public class SetContainer extends DefaultLDPContainer {
         }
     }
 
+    @Override
+    public void update(PointedGraph pointedGraph) throws RepositoryException {
+        super.update(pointedGraph);
+    }   
 }

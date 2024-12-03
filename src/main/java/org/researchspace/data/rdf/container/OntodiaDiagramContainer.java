@@ -27,6 +27,7 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.researchspace.data.rdf.PointedGraph;
 import org.researchspace.repository.MpRepositoryProvider;
 import org.researchspace.vocabulary.LDP;
+import org.researchspace.vocabulary.CidocCRM;
 
 import com.google.common.base.Throwables;
 

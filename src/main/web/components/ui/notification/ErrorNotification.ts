@@ -20,6 +20,7 @@
 import { Component, ReactNode, ReactElement, createElement, createFactory } from 'react';
 import * as D from 'react-dom-factories';
 import * as ReactBootstrap from 'react-bootstrap';
+import Icon from 'platform/components/ui/icon/Icon';
 
 import { ErrorPresenter } from './ErrorPresenter';
 
@@ -57,13 +58,10 @@ export class ErrorNotification extends Component<ErrorNotificationProps, {}> {
 
     const title = this.props.title || defaultTitleForError(errorMessage);
     const className = `${CLASS_NAME} ${this.props.className || ''}`;
-    const errorHeader = D.p(
-      {},
-      D.i({
-        className: 'fa fa-exclamation-triangle',
-        style: { marginRight: '10px', color: 'red' },
-      }),
-      D.span({}, title)
+    const errorHeader = D.div(
+      {className: `${CLASS_NAME}__title-container` },
+      D.div({className: `${CLASS_NAME}__title`}, title), 
+      D.div({className: `${CLASS_NAME}__more`}, 'see more')
     );
     return Panel(
       {
@@ -72,7 +70,16 @@ export class ErrorNotification extends Component<ErrorNotificationProps, {}> {
         className,
         defaultExpanded: isTimeout || this.props.defaultExpanded,
       },
-      errorMessage ? createElement(ErrorPresenter, { error: errorMessage }) : this.props.children
+      
+      errorMessage ? 
+      D.div({ className: `${CLASS_NAME}__error`  }, 
+            D.div({className: `${CLASS_NAME}__error-icon`}, 
+              createElement(Icon, {iconType:'rounded', iconName: 'priority_high', symbol: true})
+            ),
+            D.div({}, createElement(ErrorPresenter, { error: errorMessage }) )
+            
+          ) 
+      : this.props.children
     );
   }
 }

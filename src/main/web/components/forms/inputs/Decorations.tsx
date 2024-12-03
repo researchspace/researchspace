@@ -29,6 +29,7 @@ import { Spinner } from 'platform/components/ui/spinner';
 import { getPreferredLabel } from '../FieldDefinition';
 import { DataState, FieldError } from '../FieldValues';
 import { MultipleValuesProps } from './MultipleValuesInput';
+import Icon from 'platform/components/ui/icon/Icon';
 
 export interface ValidationMessagesProps {
   errors: Immutable.List<FieldError>;
@@ -40,16 +41,16 @@ export class ValidationMessages extends Component<ValidationMessagesProps, {}> {
   render() {
     const errorClassName = `${VALIDATION_CLASS}__error`;
     return (
-      <ul className={VALIDATION_CLASS}>
+      <div className={VALIDATION_CLASS}>
         {this.props.errors.map((err, index) => (
-          <li
+          <div
             key={index}
             className={classnames(errorClassName, `${errorClassName}--${FieldError.kindToString(err.kind)}`)}
           >
             {err.message}
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
     );
   }
 }
@@ -62,14 +63,18 @@ export class InputDecorator extends Component<MultipleValuesProps, {}> {
   };
 
   render() {
-    const { renderHeader, errors } = this.props;
+    const { renderHeader, errors, definition } = this.props;
     const className = classnames(DECORATOR_CLASS, {
       [`${DECORATOR_CLASS}--with-header`]: renderHeader,
     });
     return (
       <div className={className}>
         {renderHeader ? this.renderHeader() : null}
-        {this.props.children}
+        <div className={`${DECORATOR_CLASS}__container`}>
+          <div className={`${DECORATOR_CLASS}__input`}>{this.props.children}</div>
+          {definition.description ? this.renderInfo() : null}
+        </div>
+        
         <ValidationMessages errors={errors} />
       </div>
     );
@@ -89,18 +94,35 @@ export class InputDecorator extends Component<MultipleValuesProps, {}> {
             </span>
           </ResourceLink>
         ) : null}
-        {definition.description ? (
+        {/* {definition.description ? (
           <OverlayTrigger
             trigger={['hover', 'focus']}
             overlay={<Popover id="tooltip">{definition.description}</Popover>}
           >
-            <sup className={`${DECORATOR_CLASS}__description-icon`} />
+            <span className={`${DECORATOR_CLASS}__description-icon`}>
+              <Icon iconType='rounded' iconName='question_mark' symbol/>
+            </span>
           </OverlayTrigger>
-        ) : null}
+        ) : null} */}
         {isReady ? null : (
           <Spinner className={`${DECORATOR_CLASS}__spinner`} spinnerDelay={1000} messageDelay={30000} />
         )}
       </div>
+    );
+  }
+
+  private renderInfo() {
+    const { definition } = this.props;
+    return (
+      <OverlayTrigger
+            trigger={['click', 'hover', 'focus']}
+            placement="left"
+            overlay={<Popover id="tooltip">{definition.description}</Popover>}
+          >
+            <div className={`${DECORATOR_CLASS}__description-icon btn btn-default`}>
+              <Icon iconType='rounded' iconName='question_mark' symbol/>
+            </div>
+      </OverlayTrigger>
     );
   }
 }

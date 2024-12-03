@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -33,6 +34,7 @@ import {
 import { ResourceLinkComponent } from 'platform/api/navigation/components/ResourceLinkComponent';
 
 import './BrowseHistoryComponent.scss';
+import Icon from 'platform/components/ui/icon/Icon';
 
 interface Props {}
 
@@ -135,7 +137,7 @@ export class BrowseHistoryComponent extends React.Component<Props, State> {
             {this.state.links.map((link, index) => {
               return (
                 <li key={link.link + index}>
-                  <ResourceLinkComponent uri={link.link} guessRepository={true}></ResourceLinkComponent>
+                  <ResourceLinkComponent iri={link.link} guessRepository={true}></ResourceLinkComponent>
                 </li>
               );
             })}
@@ -152,7 +154,7 @@ export class BrowseHistoryComponent extends React.Component<Props, State> {
             onClick={this.goBack}
             href="#"
           >
-            <i className="fa fa-caret-left"></i>
+            <Icon iconType='rounded' iconName='arrow_left' symbol />
           </NavItem>
           <NavItem
             disabled={this.state.locIndex === this.state.links.length - 1}
@@ -160,7 +162,7 @@ export class BrowseHistoryComponent extends React.Component<Props, State> {
             onClick={this.goForward}
             href="#"
           >
-            <i className="fa fa-caret-right"></i>
+            <Icon iconType='rounded' iconName='arrow_right' symbol/>
           </NavItem>
         </Nav>
       </div>

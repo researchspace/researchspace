@@ -88,6 +88,7 @@ import TextSelection from './TextSelection';
 import SearchSummary from './SearchSummary';
 import MapSelectionOverlay from './MapSelectionOverlay';
 import { SelectType, SelectedArea } from './OLMapSelection';
+import Icon from 'platform/components/ui/icon/Icon';
 
 const DEFAULT_TEXT_HELP_PAGE = Rdf.iri('http://help.researchspace.org/resource/SolrFullTextSearchSyntax');
 
@@ -270,7 +271,7 @@ class QueryBuilderInner extends React.Component<InnerProps, State> {
 
     const isSearchCollapsed = this.state.isSearchCollapsed;
     return (
-      <div>
+      <div style={{ width: '100%'}}>
         {isNested ? null : this.searchSummary(search)}
         <div className={styles.searchArea} style={{ display: isSearchCollapsed ? 'none' : null }}>
           {existingClauses}
@@ -435,7 +436,7 @@ class QueryBuilderInner extends React.Component<InnerProps, State> {
         trigger({ eventType: SearchEvents.SearchOrDisjunctSelected, source: this.props.id });
       }}
     >
-      or
+      <span>or</span>
     </div>
   );
 
@@ -447,22 +448,22 @@ class QueryBuilderInner extends React.Component<InnerProps, State> {
         trigger({ eventType: SearchEvents.SearchAndConjunctSelected, source: this.props.id });
       }}
     >
-      and
+      <span>and</span>
     </div>
   );
 
   private removeConjunctionButton = (conjunct: Model.Conjunct) => (
     <button
-      className={classnames('btn', 'btn-link', styles.removeConjunctButton)}
+      className={classnames('btn', styles.removeConjunctButton)}
       onClick={(e) => this.state.store.removeConjunction(conjunct)}
     >
-      remove
+      <span>remove</span>
     </button>
   );
 
   private removeActiveConjunctionButton = () => (
     <button
-      className={classnames('btn', 'btn-link', styles.removeConjunctButton)}
+      className={classnames('btn', styles.removeConjunctButton)}
       onClick={(e) => this.state.store.resetEditMode()}
     >
       cancel
@@ -475,7 +476,7 @@ class QueryBuilderInner extends React.Component<InnerProps, State> {
     <div className={styles.itemHolder}>
       {element}
       <span
-        className={classnames('fa fa-times-circle fa-lg', styles.editButton)}
+        className={classnames('fa fa-times-circle', styles.editButton)}
         onClick={() => this.state.store.edit(editKind, conjunct as any, disjunct)}
       />
     </div>
@@ -942,8 +943,14 @@ class QueryBuilderInner extends React.Component<InnerProps, State> {
           className={classnames('btn btn-default', styles.nestedSearchButton)}
           onClick={this.state.store.selectSubSearchTerm}
         >
-          <span style={{ position: category.thumbnail ? 'absolute' : 'relative' }} className={styles.magnifierIcon} />
-          {category.thumbnail ? <img src={category.thumbnail} /> : null}
+          {/* <span style={{ position: category.thumbnail ? 'absolute' : 'relative' }} className={styles.magnifierIcon}>
+            <Icon iconType='rounded ' iconName='search' symbol />
+          </span>
+           {category.thumbnail ? <img src={category.thumbnail} /> : null} */}
+           <span className={styles.magnifierIcon}>
+           <Icon iconType='rounded ' iconName='search' symbol />
+          </span>
+          
         </button>
       </OverlayTrigger>
     );

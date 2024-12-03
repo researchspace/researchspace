@@ -19,16 +19,22 @@
 
 package org.researchspace.config.groups;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 import javax.inject.Inject;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.researchspace.config.Configuration;
 import org.researchspace.config.ConfigurationParameter;
 import org.researchspace.config.InvalidConfigurationException;
+import org.researchspace.config.UnknownConfigurationException;
 import org.researchspace.repository.RepositoryManager;
 import org.researchspace.services.storage.api.PlatformStorage;
 
 import com.google.common.collect.Lists;
+import com.google.inject.ConfigurationException;
 
 /**
  * Configuration group for global system configuration, affecting system startup
@@ -39,6 +45,8 @@ import com.google.common.collect.Lists;
 public class GlobalConfiguration extends ConfigurationGroupBase {
 
     private final static String ID = "global";
+
+    private static final Logger logger = LogManager.getLogger(GlobalConfiguration.class);
 
     // TODO: outline using locale
     private final static String DESCRIPTION = "Global system configuration, affecting system startup and global system functionality.";
@@ -55,6 +63,12 @@ public class GlobalConfiguration extends ConfigurationGroupBase {
     public String getHomePage() {
         // TODO: reconsider start page once we have /page servlet in place
         return getString("homePage", ":Start");
+    }
+
+    @ConfigurationParameter
+    public String getDashboard() {
+        // TODO: reconsider start page once we have /page servlet in place
+        return getString("dashboard", ":ThinkingFrames");
     }
 
     /****************************** VALIDATION ********************************/
@@ -79,4 +93,13 @@ public class GlobalConfiguration extends ConfigurationGroupBase {
         return getStringList("forceLDPLoadFromStorages");
     }
 
+    /**
+     * 
+     * When returning true configurations, system, ontologies and vocabularies repos should be loaded
+     *
+     */
+    @ConfigurationParameter
+    public Integer getLoadDefaultConfig() {
+        return getInteger("loadDefaultConfig",-1);
+    }
 }

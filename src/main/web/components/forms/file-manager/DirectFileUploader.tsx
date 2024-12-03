@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -33,6 +34,7 @@ import { addNotification } from 'platform/components/ui/notification';
 import { getFileIcon } from './FileVisualizer';
 
 import * as styles from './FileManager.scss';
+import Icon from 'platform/components/ui/icon/Icon';
 
 const OBJECT_KINDS = ['assets', 'templates', 'config', 'file'];
 
@@ -295,16 +297,16 @@ export class DirectFileUploader extends Component<DirectFileUploaderProps, Direc
               noClick={Boolean(this.state.progress || !storages)}
             >
               {fileNotSelected ? (
-                <div className={styles.mpDropZonePlaceHolder}>
-                  {this.props.children || (
-                    <div className={styles.mpDropZonePlaceHolder}>
-                      {this.props.placeholder || 'Select file to upload.'}
+                <div className=''> {this.props.children || (
+                    <div className='placeholder-item'>
+                      <Icon iconType='rounded' iconName='upload' symbol className='upload_icon'/>
+                      <div>{this.props.placeholder || 'Drag file or click to upload'}</div>
                     </div>
                   )}
                 </div>
               ) : (
                 <div className={styles.fileIcon}>
-                  <i className={getFileIcon(file.type)} aria-hidden="true"></i>
+                  <Icon iconType='round' iconName={getFileIcon(file.type)}/>
                 </div>
               )}
             </Dropzone>
@@ -365,8 +367,8 @@ export class DirectFileUploader extends Component<DirectFileUploaderProps, Direc
             <input
               disabled={fileNotSelected}
               value={path.name}
-              placeholder={fileNotSelected ? 'Please select first a file to upload...' : 'Input filename...'}
-              title={fileNotSelected ? 'Please select first a file to upload' : 'Filename'}
+              placeholder={fileNotSelected ? 'Upload a file' : 'Input filename'}
+              title={fileNotSelected ? 'Upload a file' : 'Filename'}
               onChange={(event) => this.setState({ path: { ...path, name: event.target.value } })}
               className={`plain-text-field__text form-control ${styles.storageInput}`}
             />
@@ -379,10 +381,10 @@ export class DirectFileUploader extends Component<DirectFileUploaderProps, Direc
               disabled={true}
               value={fileNotSelected ? '' : renderedPath}
               style={{ marginRight: 15 }}
-              placeholder="Please use the file selector to select a file to upload..."
+              placeholder="Upload a file"
               title={
                 fileNotSelected
-                  ? 'Please use the file selector to select a file to upload'
+                  ? 'Upload a file'
                   : 'Target path: ' + renderedPath
               }
               className={`plain-text-field__text form-control ${styles.storageInput}`}
@@ -390,10 +392,10 @@ export class DirectFileUploader extends Component<DirectFileUploaderProps, Direc
             <button
               title={
                 fileNotSelected
-                  ? 'Please use the file selector to select a file to upload'
+                  ? 'Upload a file'
                   : `Upload file to storage "${this.state.storageId}" and location "${this.getFolder()}${path.name}"`
               }
-              className="btn btn-primary"
+              className="btn btn-action"
               disabled={fileNotSelected || !path.name}
               onClick={() => this.uploadFile()}
             >

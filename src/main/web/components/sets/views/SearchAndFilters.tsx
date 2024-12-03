@@ -25,6 +25,7 @@ import { ClearableInput, AutoCompletionInput } from 'platform/components/ui/inpu
 
 import { KeywordFilter, SetFilter } from '../Configuration';
 import { FilterValue } from '../SetsModel';
+import Icon from 'platform/components/ui/icon/Icon';
 
 export interface Props {
   baseClass: string;
@@ -82,11 +83,12 @@ export class SearchAndFilters extends React.Component<Props, {}> {
           placeholder={this.props.setIsOpen ? placeholderInSet : placeholder}
           onChange={(e) => this.props.onSearchTextChanged(e.currentTarget.value)}
           onClear={() => this.props.onSearchTextChanged('')}
+          showPlaceholderIcon
         />
         <button
           className={classnames({
             [`${baseClass}__show-filters`]: true,
-            'btn btn-default': true,
+            'btn btn-default btn-default-icon': true,
             active: this.showAdditionalFilters(),
           })}
           aria-pressed={this.showAdditionalFilters()}
@@ -99,7 +101,7 @@ export class SearchAndFilters extends React.Component<Props, {}> {
             }
           }}
         >
-          <span className="fa fa-ellipsis-v" title="Show additional filters"></span>
+          <Icon iconType='rounded' iconName='filter_alt' symbol title="Show additional filters"/>
         </button>
       </div>
     );

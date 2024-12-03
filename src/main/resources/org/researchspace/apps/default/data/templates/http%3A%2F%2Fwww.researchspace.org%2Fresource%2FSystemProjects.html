@@ -1,11 +1,11 @@
 <div class="page__grid-container">
   <div class='page__content-container'>
     <div class="page__main-title-row">
-      <h1 class="rs-main-title">Projects</h1>
+      <h1 class="headline">Projects</h1>
       <div class="page__main-top-actions">
         [[#if (hasPermission "forms:ldp:*")]]
-            <button class="btn btn-grey" title="New Project">
-              <i class="fa fa-plus btn-icon-left"></i>
+            <button class="btn btn-default btn-textAndIcon" title="New Project">
+              <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
               <span>New Project</span>
             </button>
         [[/if]]
@@ -17,10 +17,9 @@
           <semantic-table config='{
 
           "query": "SELECT * WHERE {
-                      ?page crm:P2_has_type <http://www.researchspace.org/resource/vocab/conservation_entities/project> .
+                      ?page crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
                       ?page crm:P1_is_identified_by ?identifier.
-                      ?identifier rdfs:label ?label;
-                        crm:P2_has_type <http://www.researchspace.org/resource/vocab/identifier/projectid>.
+                      ?identifier rdfs:label ?label .
 
                       ?page crm:P67i_is_referred_to_by ?ref .
                       ?ref crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
@@ -41,7 +40,7 @@
             
             <template id='view'>
               <div style="display: flex; align-items: center;">
-                <i class="rs-icon rs-icon-drag_points" style="margin-right: 12px;"></i>
+                <rs-icon icon-type="rounded" icon-name="drag_indicator" symbol="true" style="margin-right: 12px;"></rs-icon>
                 <semantic-link iri='{{page.value}}' 
                                 class='a-draggable'
                                 >

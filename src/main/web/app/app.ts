@@ -42,6 +42,7 @@ import {
 import { renderOverlaySystem, registerOverlaySystem, getOverlaySystem } from 'platform/components/ui/overlay';
 import { listen, init as initNavigation, getCurrentUrl, getCurrentResource } from 'platform/api/navigation';
 import { ConfigHolder } from 'platform/api/services/config-holder';
+import { initEntityConfig } from 'platform/api/services/EntityViewConfig';
 import { getRegisteredPrefixes } from 'platform/api/services/namespace';
 import * as TemplateService from 'platform/api/services/template';
 import * as SecurityService from 'platform/api/services/security';
@@ -55,6 +56,7 @@ import { TemplateItemComponent } from 'platform/components/ui/template';
 customElements.define('mp-template-item', TemplateItemComponent);
 
 import * as Cookies from 'js-cookie';
+import { localeStorageTabs } from 'platform/components/ui/tabs/LocalStorageTab';
 const WINDOW_SESSION_TIMEOUT = 'sessionTimeout';
 const WINDOW_LAST_REQUEST_TIME = 'lastRequestTime';
 const WINDOW_ANONYMOUS_WARNING = 'anonymousWarning';
@@ -76,6 +78,7 @@ export class MainAppComponent extends Component<
   {
     headerHTML?: Data.Maybe<ReactNode>;
     footerHTML?: Data.Maybe<ReactNode>;
+    sidebarHTML?: Data.Maybe<ReactNode>;
     route?: ComponentClass<any> | SFC<any>;
   }
 > {
@@ -86,6 +89,7 @@ export class MainAppComponent extends Component<
     this.state = {
       headerHTML: maybe.Nothing<ReactNode>(),
       footerHTML: maybe.Nothing<ReactNode>(),
+      sidebarHTML: maybe.Nothing<ReactNode>(),
       route: this.getRoute(getCurrentUrl()),
     };
   }
@@ -122,6 +126,10 @@ export class MainAppComponent extends Component<
   }
 
   public componentDidMount() {
+
+    // remove key used for form default key from localstorage
+    localeStorageTabs.removeKey()
+
     // get sessionTimeout from backend
     this.getSessionTimeout();
 
@@ -138,6 +146,14 @@ export class MainAppComponent extends Component<
       ModuleRegistry.parseHtmlToReact(html).then((components) =>
         this.setState({
           footerHTML: maybe.Just(components),
+        })
+      )
+    );
+
+    TemplateService.getSidebar((html) =>
+      ModuleRegistry.parseHtmlToReact(html).then((components) =>
+        this.setState({
+          sidebarHTML: maybe.Just(components),
         })
       )
     );
@@ -290,14 +306,23 @@ export class MainAppComponent extends Component<
   public render() {
     return D.div(
       {},
-      ...this.getHeader(),
-      renderNotificationSystem(),
-      renderOverlaySystem(),
-      // we need to assign key to route component here because the component is created
-      // when header is loading, in the beginning it is one null element. But after loading
-      // we have two header elements, because number of elements changes react can't properly
-      // unify components and fully recreate route component.
-      createElement(this.state.route, { key: 'page-holder' }),
+      this.getHeader(),
+      D.div({className:'page-container'},
+        D.div(
+          {className:'pageSidebar-container'},
+          this.state.sidebarHTML.isNothing ? null : this.state.sidebarHTML.get(),
+        ),
+        D.div(
+          {className:'page-holder-container'},
+          renderNotificationSystem(),
+          renderOverlaySystem(),
+          // we need to assign key to route component here because the component is created
+          // when header is loading, in the beginning it is one null element. But after loading
+          // we have two header elements, because number of elements changes react can't properly
+          // unify components and fully recreate route component.
+          createElement(this.state.route, { key: 'page-holder' }),
+        )
+      ),
       this.state.footerHTML.isNothing ? null : this.state.footerHTML.get()
     );
   }
@@ -342,6 +367,9 @@ window.addEventListener('DOMContentLoaded', function () {
         return Kefir.constantError<any>(e);
       }
       return Kefir.constant(url);
+    })
+    .flatMap(() => {
+      return initEntityConfig();
     })
     .onValue(() => {
       render(createElement(MainAppComponent), document.getElementById('application'));

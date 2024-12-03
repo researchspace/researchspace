@@ -1,0 +1,71 @@
+{{#if knowledgeMapPreviewCard}}
+  [[> resourceCardQuery]]
+{{else if resourceConfig}}
+  <div>{{> rsp:ResourceCardTemplate}}</div>
+{{else}}
+  [[> resourceCardQuery]]
+{{/if}}
+
+[[#*inline "resourceCardQuery"]]
+  <semantic-query query='SELECT ?iri ?resourceOntologyClass ?resourceConfig ?resourceLabel ?resourceIcon WHERE {
+                          BIND(<{{iri}}> as ?iri)
+                          
+                          OPTIONAL {  
+                            ?iri a ?resourceOntologyClass .
+                            ?resourceOntologyClass a owl:Class .                          
+                            ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
+                            ?resourceConfigWithP2 a <http://www.researchspace.org/resource/system/resource_configuration> .
+                            ?iri crm:P2_has_type ?resourceType . 
+                            ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceType .
+                            ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceConfigWithP2Label .
+                            OPTIONAL {?resourceConfigWithP2  <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceConfigWithP2Icon .}
+                          }
+                          OPTIONAL {  
+                            ?iri a ?resourceOntologyClass .
+                            ?resourceOntologyClass a owl:Class .                       
+                            ?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
+                            ?resourceConfigWithoutP2 a <http://www.researchspace.org/resource/system/resource_configuration> .
+                            ?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceConfigWithoutP2Label .
+                            FILTER NOT EXISTS {?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceType .}
+                            OPTIONAL{ ?resourceConfigWithoutP2  <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceConfigWithoutP2Icon .}
+                          }
+                          BIND((IF(BOUND(?resourceConfigWithP2), 
+                                  ?resourceConfigWithP2, IF(BOUND(?resourceConfigWithoutP2),?resourceConfigWithoutP2,""))) AS ?resourceConfig)
+                          BIND((IF(BOUND(?resourceConfigWithP2Label), 
+                                  ?resourceConfigWithP2Label, IF(BOUND(?resourceConfigWithoutP2Label),?resourceConfigWithoutP2Label,""))) AS ?resourceLabel)
+                          BIND((IF(BOUND(?resourceConfigWithP2Icon), 
+                                ?resourceConfigWithP2Icon, IF(BOUND(?resourceConfigWithoutP2Icon),?resourceConfigWithoutP2Icon,""))) AS ?resourceIcon)
+                      } LIMIT 1'
+      
+                template='{{> template}}'>
+
+    <template id='template'>
+      <div>
+        {{#if bindings.0.resourceConfig.value}}
+          {{> rsp:ResourceCardTemplate  resourceConfig=bindings.0.resourceConfig.value
+                                        resourceOntologyClass=bindings.0.resourceOntologyClass.value
+                                        resourceLabel=bindings.0.resourceLabel.value
+                                        resourceIcon=bindings.0.resourceIcon.value
+          }}
+        {{else}}
+          <semantic-query query='SELECT ?resourceOntologyClass WHERE {
+                                    BIND(<{{iri}}> as ?iri)
+                                    ?iri a ?resourceOntologyClass .
+                                  } LIMIT 1'
+                        template='{{> template}}'
+                        no-result-template='{{> noResults}}'>
+      
+            <template id='template'>
+              <div>{{> rsp:ResourceCardTemplate resourceOntologyClass=bindings.0.resourceOntologyClass.value }}</div>
+            </template>
+
+            <template id="noResults">
+              <div>{{> rsp:ResourceCardTemplate newKMCard=true }}</div>
+            </template>
+          </semantic-query>
+        {{/if}}
+      </div>
+    </template>
+
+  </semantic-query>
+[[/inline]]

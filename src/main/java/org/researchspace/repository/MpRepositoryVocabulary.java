@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -101,7 +102,8 @@ public class MpRepositoryVocabulary {
     public static final IRI REALM = VF.createIRI(NAMESPACE, "realm");
     public static final IRI QUAD_MODE = VF.createIRI(NAMESPACE, "quadMode");
     public static final IRI WRITABLE = VF.createIRI(NAMESPACE, "writable");
-
+    public static final IRI SILENT_MODE = VF.createIRI(NAMESPACE, "silentMode");
+   
     public static final IRI USE_ASYNCHRONOUS_PARALLEL_JOIN = VF.createIRI(FEDERATION_NAMESPACE,
             "useAsynchronousParallelJoin");
     public static final IRI USE_COMPETING_JOIN = VF.createIRI(FEDERATION_NAMESPACE, "useCompetingJoin");

@@ -1,0 +1,62 @@
+
+<http://www.researchspace.org/pattern/system/monetary_amount/sales_price_of/context> {
+  _:genid-9788a5e963af41dcaf404867be10f659-rni12 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+    $subject crm:P179i_was_sales_price_of $value . 
+}""" .
+  
+  <http://www.researchspace.org/pattern/system/monetary_amount/sales_price_of> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-9788a5e963af41dcaf404867be10f659-7rbppe;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E97_Monetary_Amount>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-9788a5e963af41dcaf404867be10f659-rni12;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-9788a5e963af41dcaf404867be10f659-xwno3o;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/monetary_amount>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E96_Purchase>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-9788a5e963af41dcaf404867be10f659-hswey3;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Sales price of";
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-9788a5e963af41dcaf404867be10f659-bcva9u;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-10-15T11:43:02.484+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-9788a5e963af41dcaf404867be10f659-xwno3o a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    ?value a crm:E96_Purchase .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-9788a5e963af41dcaf404867be10f659-7rbppe a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+	$subject crm:P179i_was_sales_price_of $value . 
+  $value crm:P179_had_sales_price $subject .
+} WHERE {}""" .
+  
+  _:genid-9788a5e963af41dcaf404867be10f659-hswey3 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+	$subject crm:P179i_was_sales_price_of $value . 
+  $value crm:P179_had_sales_price $subject .
+} WHERE {
+	$subject crm:P179i_was_sales_price_of $value . 
+}""" .
+  
+  _:genid-9788a5e963af41dcaf404867be10f659-bcva9u a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    ?value a crm:E96_Purchase .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/monetary_amount/sales_price_of> .
+}

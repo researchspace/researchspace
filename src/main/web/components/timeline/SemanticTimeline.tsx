@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -44,6 +45,7 @@ import * as LabelsService from 'platform/api/services/resource-label';
 
 import 'vis/dist/vis-timeline-graph2d.min.css';
 import * as styles from './SemanticTimeline.scss';
+import Icon from '../ui/icon/Icon';
 
 export interface TimelineFormatLabelsOption {
   millisecond?: string;
@@ -221,7 +223,7 @@ export interface TimelineOptions {
    */
   groupOrder?: string;
   /**
-   * <semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> for the groups contents.
+   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> for the groups contents.
    * The variables that available in the template are following:
    * <pre>
    * {
@@ -470,11 +472,11 @@ interface SemanticTimelineConfigBase {
    */
   query: string;
   /**
-   * <semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is applied when query returns no results.
+   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is applied when query returns no results.
    */
   noResultTemplate?: string;
   /**
-   * <semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> for the items contents.
+   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> for the items contents.
    * @default {{start.value}} - {{end.value}}
    */
   tupleTemplate?: string;
@@ -483,7 +485,7 @@ interface SemanticTimelineConfigBase {
    */
   tupleTemplateHeight?: number | string;
   /**
-   * <semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> of a loading which is applied when items are drawn.
+   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> of a loading which is applied when items are drawn.
    */
   loadingTemplate?: string;
   /**
@@ -735,8 +737,8 @@ export class SemanticTimeline extends Component<SemanticTimelineProps, SemanticT
     }
 
     return (
-      <button className={`btn btn-default ${styles.fitButton}`} onClick={() => this.timeline.fit()}>
-        <i className="fa fa-expand" />
+      <button className={`btn btn-secondary ${styles.fitButton}`} onClick={() => this.timeline.fit()}>
+        <Icon iconType='rounded' iconName='open_in_full' symbol />
       </button>
     );
   };

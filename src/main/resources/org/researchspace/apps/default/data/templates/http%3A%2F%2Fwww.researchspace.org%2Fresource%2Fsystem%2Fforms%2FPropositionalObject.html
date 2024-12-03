@@ -1,0 +1,790 @@
+<semantic-form [[> rsp:FormDefaults]] 
+                persistence='{"type": "sparql", "targetInsertGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}", "repository":"{{#if scheme}}authorities{{else}}default{{/if}}"}'
+                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/propositional_object/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
+                fields='[[fieldDefinitions
+                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                            inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
+                            entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
+                            
+                            entity_image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
+                            entity_image="http://www.researchspace.org/pattern/system/entity/images"
+                            entity_document="http://www.researchspace.org/pattern/system/entity/documents"
+                            entity_video="http://www.researchspace.org/pattern/system/entity/subject_of_video"
+                            entity_audio="http://www.researchspace.org/pattern/system/entity/subject_of_audio"
+                            entity_3d_model="http://www.researchspace.org/pattern/system/entity/subject_of_3Dmodel"
+                            entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
+                            entity_represents_range="http://www.researchspace.org/pattern/system/entity/represents_range"
+                            entity_web_URL="http://www.researchspace.org/pattern/system/entity/web_URL_embed"
+
+                            entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
+                            human-made_thing_title="http://www.researchspace.org/pattern/system/human-made_thing/PC102_has_title"
+                            entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
+                            entity_id="http://www.researchspace.org/pattern/system/entity/identifier"
+                            entity_description="http://www.researchspace.org/pattern/system/entity/description"
+
+                            propositional_object_is_component_of="http://www.researchspace.org/pattern/system/propositional_object/is_component_of"
+                            propositional_object_has_component="http://www.researchspace.org/pattern/system/propositional_object/has_component"
+
+                            human-made_thing_was_intended_for="http://www.researchspace.org/pattern/system/human-made_thing/was_intended_for"
+                            thing_general_use="http://www.researchspace.org/pattern/system/thing/had_as_general_use"
+                            thing_dimension="http://www.researchspace.org/pattern/system/thing/dimension"
+
+                            human-made_thing_was_intended_use_of_range="http://www.researchspace.org/pattern/system/human-made_thing/was_intended_use_of_range"
+                            thing_used_specific_object_range="http://www.researchspace.org/pattern/system/thing/used_specific_object_range"
+                            conceptual_object_created_by="http://www.researchspace.org/pattern/system/conceptual_object/created_by"
+                            persistent_item_present_at="http://www.researchspace.org/pattern/system/persistent_item/present_at"
+                            persistent_item_brought_into_existence_by="http://www.researchspace.org/pattern/system/persistent_item/brought_into_existence_by"
+                            persistent_item_taken_out_of_existence_by="http://www.researchspace.org/pattern/system/persistent_item/taken_out_of_existence_by"
+                            entity_influenced_activity="http://www.researchspace.org/pattern/system/entity/influenced_activity"
+                            entity_motivated_activity="http://www.researchspace.org/pattern/system/entity/motivated_activity"
+                            entity_attributed_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/attributed_by_attribute_assignment"
+                            entity_assigned_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/assigned_by_attribute_assignment"
+                            entity_measurement="http://www.researchspace.org/pattern/system/entity/measurement"
+
+                            thing_shows_features_of_thing="http://www.researchspace.org/pattern/system/thing/PC130_shows_features_of"
+                            thing_has_features_of_thing="http://www.researchspace.org/pattern/system/thing/PC130_shows_features_of_range"
+                            entity_depicts_range="http://www.researchspace.org/pattern/system/entity/depicts_range"
+                            entity_subject_of="http://www.researchspace.org/pattern/system/entity/subject_of_propositional_object"
+                            entity_refers_to_range="http://www.researchspace.org/pattern/system/entity/refers_to_range"
+
+                            propositional_object_is_about="http://www.researchspace.org/pattern/system/propositional_object/is_about"
+                            propositional_object_refers_to_domain="http://www.researchspace.org/pattern/system/propositional_object/PC67_refers_to"
+                            
+                        ]]'
+            >
+
+    <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
+        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E89_Propositional_Object'></semantic-form-hidden-input>
+        
+        {{#if scheme}}
+            <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
+        {{/if}}
+
+            <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
+                <rs-tab event-key="detail" title="Details">
+                    <div class="form-details-container">
+                        <div style="overflow-x: auto;">
+                            <semantic-form-text-input for="entity_primary_appellation" label="Propositional object name" placeholder="Enter propositional object name"></semantic-form-text-input>
+
+                            <div class="inline-composite-container">
+                                <semantic-form-composite-input  for="human-made_thing_title" 
+                                                                label="Title"
+                                                                new-subject-template="/PC102_has_title/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                                                fields='[[fieldDefinitions
+                                                                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                            
+                                                                            has_title_range="http://www.researchspace.org/pattern/system/has_title/range"
+                                                                            title_type="http://www.researchspace.org/pattern/system/has_title/title_type"
+                                                                        ]]'>
+                            
+                                <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC102_has_title'> </semantic-form-hidden-input>
+                                
+                                <div class="form-inline-inputs">
+                                    <div style="flex: 1;">
+                                    <semantic-form-autocomplete-input for='has_title_range'
+                                                                        render-header="false"
+                                                                        placeholder="Select title" 
+                                                                        nested-form-templates='[ 
+                                                                            {
+                                                                                "label": "Title",
+                                                                                "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Title\" nested=true editable=true mode=\"new\"}}
+                                                                                            {{{{/raw}}}}"
+                                                                            }
+                                                                        ]'> 
+                                    </semantic-form-autocomplete-input> 
+                                    </div>
+                                    <div style="flex: 1;">
+                                    <semantic-form-tree-picker-input  for="title_type" 
+                                                                        render-header="false"
+                                                                        placeholder="Select title type"
+                                                                        close-dropdown-on-selection='true'
+                                                                        tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/title_type>", 
+                                                                                        "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/title_type>",
+                                                                                        "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+                            
+                                                                        scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                                    "view": "authority-list",
+                                                                                                    "scheme": "http://www.researchspace.org/resource/vocab/title_type",
+                                                                                                    "tooltip": "Open list of title types"
+                                                                                                }'
+                                                                        
+                                                                        nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                            scheme="http://www.researchspace.org/resource/vocab/title_type"
+                                                                                                            entityType="title type" }}{{{{/raw}}}}'
+                            
+                                                                        query-item-label='SELECT ?label WHERE {
+                                                                                            ?item skos:prefLabel ?label .
+                                                                                        }'>
+                                    </semantic-form-tree-picker-input>
+                                    </div>
+                                </div>
+                                </semantic-form-composite-input>
+                            </div>
+                            
+                            <semantic-form-text-input for="entity_description" label="Description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
+
+                            <semantic-form-autocomplete-input   for="entity_preferred_id" 
+                                                                label="Preferred identifier"
+                                                                placeholder="Select preferred identifier" 
+                                                                nested-form-templates='[ 
+                                                                    {
+                                                                        "label": "Identifier",
+                                                                        "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Identifier\" nested=true editable=true mode=\"new\" }}
+                                                                                        {{{{/raw}}}}"
+                                                                    }
+                                                                ]'>
+                            </semantic-form-autocomplete-input>
+
+                            <semantic-form-autocomplete-input   for="entity_id" 
+                                                                label="Other identifier"
+                                                                placeholder="Select other identifier" 
+                                                                nested-form-templates='[[> Platform:NestedFormTemplates_appellations]]'>
+                            </semantic-form-autocomplete-input>
+                            
+                        </div>
+                        [[> rsp:FormAssetSidebar]]
+                    </div>
+                </rs-tab>
+
+                <rs-tab event-key="component" title="Components">
+
+                    {{#if scheme}}
+                        <semantic-form-tree-picker-input  for='propositional_object_is_component_of' 
+                                                            label="Part of" 
+                                                            placeholder="Select the item of which the propositional object is structural part of" 
+                                                            default-values='[{{#if broader}}"{{broader}}"{{/if}}]'
+                                                            tree-patterns='{"scheme": "{{scheme}}",
+                                                                            "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
+                                                                            "relationPattern": "?item crm:P148i_is_component_of ?parent",
+                                                                            "labelPattern": "{ 
+                                                                                            ?item crm:P1_is_identified_by ?appellation .
+                                                                                            ?appellation a crm:E41_Appellation .
+                                                                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                                            ?appellation crm:P190_has_symbolic_content ?label .
+                                                                                            } UNION {
+                                                                                            ?item crm:P190_has_symbolic_content ?label .
+                                                                                            }"
+                                                                            }'
+
+                                                            query-item-label='SELECT ?label WHERE {
+                                                                            { 
+                                                                                ?item crm:P1_is_identified_by ?appellation .
+                                                                                ?appellation a crm:E41_Appellation .
+                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                                ?appellation crm:P190_has_symbolic_content ?label .
+                                                                            } UNION {
+                                                                                ?item crm:P190_has_symbolic_content ?label .
+                                                                            }
+                                                                            }'> 
+                        </semantic-form-tree-picker-input>  
+
+                        <semantic-form-tree-picker-input   for='propositional_object_has_component' 
+                                                            label="Components" 
+                                                            placeholder="Select component (structural part) of the propositional object" 
+                                                            tree-patterns='{"scheme": "{{scheme}}",
+                                                                            "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
+                                                                            "relationPattern": "?item crm:P148i_is_component_of ?parent",
+                                                                            "labelPattern": "{ 
+                                                                                                ?item crm:P1_is_identified_by ?appellation .
+                                                                                                ?appellation a crm:E41_Appellation .
+                                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                                                ?appellation crm:P190_has_symbolic_content ?label .
+                                                                                            } UNION {
+                                                                                                ?item crm:P190_has_symbolic_content ?label .
+                                                                                            }"
+                                                                            }'
+
+                                                            query-item-label='SELECT ?label WHERE {
+                                                                                { 
+                                                                                ?item crm:P1_is_identified_by ?appellation .
+                                                                                ?appellation a crm:E41_Appellation .
+                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                                ?appellation crm:P190_has_symbolic_content ?label .
+                                                                                } UNION {
+                                                                                ?item crm:P190_has_symbolic_content ?label .
+                                                                                }
+                                                                            }'> 
+                        </semantic-form-tree-picker-input> 
+                    {{else}}
+                        <div class="hierarchyView-form-container">
+                            <div class="page__section-container formHierarchyInputs-container">    
+
+                                <semantic-form-autocomplete-input   for='propositional_object_is_component_of' 
+                                                                    label="Part of" 
+                                                                    placeholder="Select the item of which the propositional object is structural part of" 
+                                                                    nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
+                                </semantic-form-autocomplete-input>
+
+                                <semantic-form-autocomplete-input   for='propositional_object_has_component' 
+                                                                    label="Components" 
+                                                                    placeholder="Select component (structural part) of the propositional object" 
+                                                                    nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'>
+                                </semantic-form-autocomplete-input>
+                            </div>
+                            <mp-event-target-template-render id='{{viewId}}-propositionalObject-componentsView' template='{{> propositionalObjectComponents}}'>
+                                <template id='propositionalObjectComponents'>
+                                    <div class="page__section-container formHierarchyView-container">
+                                        <div class="form-header-withButtons">
+                                            <h4>Components hierarchy</h4>
+                                            {{#if node}}
+                                                <div class="btn-form-actions"> 
+                                                    <mp-event-trigger id='{{viewId}}-propositionalObject-componentsView-refresh-trigger' 
+                                                                    type='Component.TemplateUpdate' 
+                                                                    targets='["{{viewId}}-propositionalObject-componentsView"]'
+                                                                    >
+                                                    <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
+                                                        <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
+                                                        Refresh
+                                                    </button>
+                                                    </mp-event-trigger>
+                                                </div>
+                                            {{/if}}
+                                        </div>
+                                        <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
+                                            {{#if node}}
+                                                {{#bind propositionalObject=node }}
+                                                    <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
+                                                                            BIND(<{{node}}> as ?propositionalObject)
+                                                                            
+                                                                            { ?propositionalObject crm:P148_has_component ?node . }
+                                                                            UNION
+                                                                            { ?propositionalObject crm:P148i_is_component_of ?parent . }
+                                                                            
+                                                                            ?node crm:P148i_is_component_of ?parent .
+
+                                                                            FILTER(ISIRI(?node))
+                                                                        }
+                                                                        ORDER BY (?node)' 
+
+                                                                    tuple-template='{{> nodeTemplate}}'>
+                                                                    
+                                                        <template id='nodeTemplate'>
+                                                            <semantic-query query='SELECT ?node ?nodeLabel WHERE {
+                                                                                        BIND (<{{node.value}}> as ?node)
+                                                                                        { 
+                                                                                            ?node crm:P1_is_identified_by ?appellation .
+                                                                                            ?appellation a crm:E41_Appellation .
+                                                                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                                            ?appellation crm:P190_has_symbolic_content ?nodeLabel .
+                                                                                        } UNION {
+                                                                                            ?node crm:P190_has_symbolic_content ?nodeLabel .
+                                                                                        }
+                                                                                    }'
+                                                                            template='{{> template}}'>
+                                                                
+                                                                <template id='template'>
+                                                                    <div>
+                                                                        {{#ifCond bindings.0.node.value "===" propositionalObject}}
+                                                                            <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                                        {{else}}
+                                                                            <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                            urlqueryparam-view='resource-editor' 
+                                                                                            urlqueryparam-resource-iri='{{node.value}}'
+                                                                                            >
+                                                                                <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                                            </semantic-link>
+                                                                        {{/ifCond}}
+                                                                    </div>
+                                                                </template>
+                                                            </semantic-query>
+                                                        </template>  
+                                                    </semantic-tree>
+                                                {{/bind}}
+                                            {{/if}}
+                                        </div>
+                                    </div>
+                                </template>
+                            </mp-event-target-template-render>
+                        </div>
+                    {{/if}}
+
+                </rs-tab>
+
+                <rs-tab event-key="type" title="Type/Dimensions">
+
+                    <semantic-form-autocomplete-input   for='human-made_thing_was_intended_for' 
+                                                        label="Was intended for" 
+                                                        placeholder="Select the type describing the intended usage of the propositional object" 
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_types]]'>
+                    </semantic-form-autocomplete-input>
+
+                    <semantic-form-autocomplete-input   for='thing_general_use' 
+                                                        label="Had as general use" 
+                                                        placeholder="Select the type of use that the propositional object was actually employed for" 
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_types]]'>
+                    </semantic-form-autocomplete-input>
+
+                    <semantic-form-autocomplete-input   for='thing_dimension' 
+                                                        label="Dimension" 
+                                                        placeholder="Select dimension" 
+                                                        nested-form-templates='[ 
+                                                            {
+                                                                "label": "Dimension",
+                                                                "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Dimension\" nested=true editable=true mode=\"new\"}}
+                                                                            {{{{/raw}}}}"
+                                                            },
+                                                            {
+                                                                "label": "Monetary amount",
+                                                                "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/MonetaryAmount\" nested=true editable=true mode=\"new\"}}
+                                                                            {{{{/raw}}}}"
+                                                            }
+                                                        ]'> 
+                    </semantic-form-autocomplete-input>
+                    [[> rsp:ThingDimensionTable]]
+                </rs-tab>
+
+                <rs-tab event-key="event" title="Events">
+
+                    <div class="inline-composite-container">
+                        <semantic-form-composite-input  for="human-made_thing_was_intended_use_of_range"
+                                                        label="Made for"
+                                                        new-subject-template="/PC19_was_intended_use_of/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                                        fields='[[fieldDefinitions
+                                                                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                    
+                                                                    was_intended_use_of_activity_domain="http://www.researchspace.org/pattern/system/was_intended_use_of/activity_domain"
+                                                                    mode_of_use="http://www.researchspace.org/pattern/system/was_intended_use_of/mode_of_use"
+                                                                ]]'>
+                    
+                        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC19_was_intended_use_of'> </semantic-form-hidden-input>
+                    
+                        <div class="form-inline-inputs">
+                            <div style="flex: 1;">
+                            <semantic-form-autocomplete-input for='was_intended_use_of_activity_domain' 
+                                                                render-header="false"
+                                                                placeholder="Select activity for which the propositional object was made for" 
+                                                                nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>
+                            </semantic-form-autocomplete-input> 
+                            </div>
+                            <div style="flex: 1;">
+                            <semantic-form-tree-picker-input  for="mode_of_use" 
+                                                                label="Mode of use" 
+                                                                render-header="false"
+                                                                placeholder="Select mode of use"
+                                                                close-dropdown-on-selection='true'
+                                                                tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/mode_of_use>", 
+                                                                                "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/mode_of_use>",
+                                                                                "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+                    
+                                                                scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                            "view": "authority-list",
+                                                                                            "scheme": "http://www.researchspace.org/resource/vocab/mode_of_use",
+                                                                                            "tooltip": "Open list of modes of use"
+                                                                                        }'
+                                                                
+                                                                nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                    scheme="http://www.researchspace.org/resource/vocab/mode_of_use"
+                                                                                                    entityType="mode of use" }}{{{{/raw}}}}'
+                    
+                                                                query-item-label='SELECT ?label WHERE {
+                                                                                    ?item skos:prefLabel ?label .
+                                                                                }'>
+                            </semantic-form-tree-picker-input>
+                            </div>
+                        </div>
+                        </semantic-form-composite-input>
+                    </div>
+
+                    <div class="inline-composite-container">
+                        <semantic-form-composite-input  for="thing_used_specific_object_range" 
+                                                        label="Used for"
+                                                        new-subject-template="/PC16_used_specific_object/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                                        fields='[[fieldDefinitions
+                                                                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                    
+                                                                    used_specific_object_activity_domain="http://www.researchspace.org/pattern/system/used_specific_object/domain"
+                                                                    mode_of_use="http://www.researchspace.org/pattern/system/used_specific_object/mode_of_use"
+                                                                ]]'>
+            
+                            <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC16_used_specific_object'> </semantic-form-hidden-input>
+                            
+                            <div class="form-inline-inputs">
+                            <div style="flex: 1;">
+                                <semantic-form-autocomplete-input for='used_specific_object_activity_domain' 
+                                                                label="Used for" 
+                                                                render-header="false"
+                                                                placeholder="Select activity in which the use of the propositional object was essential to the performance or outcome" 
+                                                                nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'> 
+                                </semantic-form-autocomplete-input> 
+                            </div>
+                            <div style="flex: 1;">
+                                <semantic-form-tree-picker-input  for="mode_of_use" 
+                                                                label="Mode of use" 
+                                                                render-header="false"
+                                                                placeholder="Select mode of use"
+                                                                close-dropdown-on-selection='true'
+                                                                tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/mode_of_use>", 
+                                                                                "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/mode_of_use>",
+                                                                                "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+            
+                                                                scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                            "view": "authority-list",
+                                                                                            "scheme": "http://www.researchspace.org/resource/vocab/mode_of_use",
+                                                                                            "tooltip": "Open list of modes of use"
+                                                                                            }'
+                                                                
+                                                                nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                        scheme="http://www.researchspace.org/resource/vocab/mode_of_use"
+                                                                                                        entityType="mode of use" }}{{{{/raw}}}}'
+            
+                                                                query-item-label='SELECT ?label WHERE {
+                                                                                    ?item skos:prefLabel ?label .
+                                                                                }'>
+                                </semantic-form-tree-picker-input>
+                            </div>
+                            </div>
+                        </semantic-form-composite-input>
+                    </div>
+
+                    <semantic-form-autocomplete-input   for='conceptual_object_created_by' 
+                                                        label="Created by" 
+                                                        placeholder="Select the creation event of the propositional object" 
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_creations]]'>  
+                    </semantic-form-autocomplete-input> 
+
+                    <semantic-form-autocomplete-input   for='persistent_item_present_at' 
+                                                        label="Present at" 
+                                                        placeholder="Select event in which the propositional object had an active or passive presence" 
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_events]]'>  
+                    </semantic-form-autocomplete-input> 
+
+                    <semantic-form-autocomplete-input   for='persistent_item_brought_into_existence_by' 
+                                                        label="Brought into existence by" 
+                                                        placeholder="Select event that brought the propositional object into existence" 
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_beginningOfExistences]]'>  
+                    </semantic-form-autocomplete-input>
+
+                    <semantic-form-autocomplete-input   for='persistent_item_taken_out_of_existence_by' 
+                                                        label="Taken out of existence by" 
+                                                        placeholder="Select event that took the propositional object out of existence" 
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_endOfExistences]]'>  
+                    </semantic-form-autocomplete-input>
+
+                    <semantic-form-autocomplete-input   for='entity_influenced_activity' 
+                                                        label="Influenced"
+                                                        placeholder="Select activity influenced by the propositional object" 
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
+                    </semantic-form-autocomplete-input>
+
+                    <semantic-form-autocomplete-input   for='entity_motivated_activity' 
+                                                        label="Motivated"
+                                                        placeholder="Select activity motivated by the propositional object" 
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
+                    </semantic-form-autocomplete-input>
+
+                    <semantic-form-autocomplete-input   for='entity_attributed_by_attribute_assignment' 
+                                                        label="Attributed by"
+                                                        placeholder="Select what assigned attribute to the propositional object" 
+                                                        nested-form-templates='[ 
+                                                            {
+                                                                "label": "Attribute assignment",
+                                                                "nestedForm": "{{{{raw}}}}
+                                                                                {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
+                                                                            {{{{/raw}}}}"
+                                                            }
+                                                        ]'>  
+                    </semantic-form-autocomplete-input>
+
+                    <semantic-form-autocomplete-input   for='entity_assigned_by_attribute_assignment' 
+                                                        label="Assigned by"
+                                                        placeholder="Select what assigned the propositional object" 
+                                                        nested-form-templates='[ 
+                                                            {
+                                                                "label": "Attribute assignment",
+                                                                "nestedForm": "{{{{raw}}}}
+                                                                                {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
+                                                                            {{{{/raw}}}}"
+                                                            }
+                                                        ]'>  
+                    </semantic-form-autocomplete-input>
+
+                    <semantic-form-autocomplete-input   for='entity_measurement' 
+                                                        label="Measured by"
+                                                        placeholder="Select measurement" 
+                                                        nested-form-templates='[ 
+                                                            {
+                                                                "label": "Measurement",
+                                                                "nestedForm": "{{{{raw}}}}
+                                                                                {{> \"http://www.researchspace.org/resource/system/forms/Measurement\" nested=true editable=true mode=\"new\"}}
+                                                                            {{{{/raw}}}}"
+                                                            }
+                                                        ]'>  
+                    </semantic-form-autocomplete-input>
+                </rs-tab>
+
+                <rs-tab event-key="thing" title="Things">
+
+                    <div class="inline-composite-container">
+                        <semantic-form-composite-input  for="thing_shows_features_of_thing" 
+                                                        label="Shows features of"
+                                                        new-subject-template="/PC130_shows_features_of/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                                        fields='[[fieldDefinitions
+                                                                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                    
+                                                                    shows_features_of_range="http://www.researchspace.org/pattern/system/shows_features_of/range"
+                                                                    kind_of_similarity="http://www.researchspace.org/pattern/system/shows_features_of/kind_of_similarity"
+                                                                ]]'>
+            
+                        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC130_shows_features_of'> </semantic-form-hidden-input>
+            
+                        <div class="form-inline-inputs">
+                            <div style="flex: 1;">
+                            <semantic-form-autocomplete-input for='shows_features_of_range'  
+                                                                render-header="false"
+                                                                placeholder="Select thing that has similarity with the physical phing" 
+                                                                nested-form-templates='[[> Platform:NestedFormTemplates_things]]'> 
+                            </semantic-form-autocomplete-input> 
+                            </div>
+                            <div style="flex: 1;">
+                            <semantic-form-tree-picker-input  for="kind_of_similarity" 
+                                                                render-header="false"
+                                                                placeholder="Select kind of similarity"
+                                                                close-dropdown-on-selection='true'
+                                                                tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/thing_kind_of_similarity>", 
+                                                                                "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/thing_kind_of_similarity>",
+                                                                                "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+            
+                                                                scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                            "view": "authority-list",
+                                                                                            "scheme": "http://www.researchspace.org/resource/vocab/thing_kind_of_similarity",
+                                                                                            "tooltip": "Open list of kind of similarities"
+                                                                                        }'
+                                                                
+                                                                nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                    scheme="http://www.researchspace.org/resource/vocab/thing_kind_of_similarity"
+                                                                                                    entityType="kind of similarity" }}{{{{/raw}}}}'
+            
+                                                                query-item-label='SELECT ?label WHERE {
+                                                                                    ?item skos:prefLabel ?label .
+                                                                                }'>
+                            </semantic-form-tree-picker-input>
+                            </div>
+                        </div>
+                        </semantic-form-composite-input>
+                    </div>
+
+                    <div class="inline-composite-container">
+                        <semantic-form-composite-input  for="thing_has_features_of_thing" 
+                                                        label="Has features of"
+                                                        new-subject-template="/PC130_shows_features_of/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                                        fields='[[fieldDefinitions
+                                                                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                    
+                                                                    shows_features_of_domain="http://www.researchspace.org/pattern/system/shows_features_of/domain"
+                                                                    kind_of_similarity="http://www.researchspace.org/pattern/system/shows_features_of/kind_of_similarity"
+                                                                ]]'>
+            
+                        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC130_shows_features_of'> </semantic-form-hidden-input>
+            
+                        <div class="form-inline-inputs">
+                            <div style="flex: 1;">
+                            <semantic-form-autocomplete-input for='shows_features_of_domain'  
+                                                                render-header="false"
+                                                                placeholder="Select thing that shows similarity with the physical phing" 
+                                                                nested-form-templates='[[> Platform:NestedFormTemplates_things]]'> 
+                            </semantic-form-autocomplete-input> 
+                            </div>
+                            <div style="flex: 1;">
+                            <semantic-form-tree-picker-input  for="kind_of_similarity" 
+                                                                render-header="false"
+                                                                placeholder="Select kind of similarity"
+                                                                close-dropdown-on-selection='true'
+                                                                tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/thing_kind_of_similarity>", 
+                                                                                "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/thing_kind_of_similarity>",
+                                                                                "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+            
+                                                                scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                            "view": "authority-list",
+                                                                                            "scheme": "http://www.researchspace.org/resource/vocab/thing_kind_of_similarity",
+                                                                                            "tooltip": "Open list of kind of similarities"
+                                                                                        }'
+                                                                
+                                                                nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                    scheme="http://www.researchspace.org/resource/vocab/thing_kind_of_similarity"
+                                                                                                    entityType="kind of similarity" }}{{{{/raw}}}}'
+            
+                                                                query-item-label='SELECT ?label WHERE {
+                                                                                    ?item skos:prefLabel ?label .
+                                                                                }'>
+                            </semantic-form-tree-picker-input>
+                            </div>
+                        </div>
+                        </semantic-form-composite-input>
+                    </div>
+
+                    <div class="inline-composite-container">
+                        <semantic-form-composite-input  for="entity_depicts_range" 
+                                                        label="Depicted by" 
+                                                        new-subject-template="/PC62_depicts/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                                        fields='[[fieldDefinitions
+                                                                classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                            
+                                                                depicts_thing_domain="http://www.researchspace.org/pattern/system/depicts/domain"
+                                                                mode_of_depiction="http://www.researchspace.org/pattern/system/depicts/mode_of_depiction"
+                                                                ]]'>
+            
+                        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC62_depicts'> </semantic-form-hidden-input>
+            
+                        <div class="form-inline-inputs">
+                        <div style="flex: 1;">
+                            <semantic-form-autocomplete-input for='depicts_thing_domain' 
+                                                            render-header="false"
+                                                            placeholder="Select what depicts the propositional object"
+                                                            nested-form-templates='[[> Platform:NestedFormTemplates_physicalHumanMadeThings]]'>
+                            </semantic-form-autocomplete-input>
+                        </div>
+                        <div style="flex: 1;">
+                            <semantic-form-tree-picker-input  for="mode_of_depiction" 
+                                                            render-header="false"
+                                                            placeholder="Select mode of depiction"
+                                                            close-dropdown-on-selection='true'
+                                                            tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/mode_of_depiction>", 
+                                                                            "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/mode_of_depiction>",
+                                                                            "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+            
+                                                            scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                        "view": "authority-list",
+                                                                                        "scheme": "http://www.researchspace.org/resource/vocab/mode_of_depiction",
+                                                                                        "tooltip": "Open list of mode of depictions"
+                                                                                        }'
+                                                            
+                                                            nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                    scheme="http://www.researchspace.org/resource/vocab/mode_of_depiction"
+                                                                                                    entityType="mode of depiction" }}{{{{/raw}}}}'
+            
+                                                            query-item-label='SELECT ?label WHERE {
+                                                                                ?item skos:prefLabel ?label .
+                                                                            }'>
+                            </semantic-form-tree-picker-input>
+                        </div>
+                        </div>
+                        </semantic-form-composite-input>
+                    </div>
+
+                    <semantic-form-autocomplete-input   for='entity_subject_of' 
+                                                        label="Subject of"
+                                                        placeholder="Select what is about the propositional object" 
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
+                    </semantic-form-autocomplete-input>
+
+                    <div class="inline-composite-container">
+                        <semantic-form-composite-input  for="entity_refers_to_range" 
+                                                        label="Referred to by"
+                                                        new-subject-template="/PC67_refers_to/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                                        fields='[[fieldDefinitions
+                                                                classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                            
+                                                                refers_to_propObj_domain="http://www.researchspace.org/pattern/system/refers_to/domain"
+                                                                type_of_reference="http://www.researchspace.org/pattern/system/refers_to/type_of_reference"
+                                                                ]]'>
+            
+                        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC67_refers_to'> </semantic-form-hidden-input>
+            
+                        <div class="form-inline-inputs">
+                        <div style="flex: 1;">
+                            <semantic-form-autocomplete-input for='refers_to_propObj_domain' 
+                                                            render-header="false"
+                                                            placeholder="Select what refers to the propositional object" 
+                                                            nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'>
+                            </semantic-form-autocomplete-input>
+                        </div>
+                        <div style="flex: 1;">
+                            <semantic-form-tree-picker-input  for="type_of_reference" 
+                                                            render-header="false"
+                                                            placeholder="Select type of reference"
+                                                            close-dropdown-on-selection='true'
+                                                            tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/type_of_reference>", 
+                                                                            "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/type_of_reference>",
+                                                                            "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+            
+                                                            scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                        "view": "authority-list",
+                                                                                        "scheme": "http://www.researchspace.org/resource/vocab/type_of_reference",
+                                                                                        "tooltip": "Open list of type of references"
+                                                                                        }'
+                                                            
+                                                            nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                    scheme="http://www.researchspace.org/resource/vocab/type_of_reference"
+                                                                                                    entityType="type of reference" }}{{{{/raw}}}}'
+            
+                                                            query-item-label='SELECT ?label WHERE {
+                                                                                ?item skos:prefLabel ?label .
+                                                                            }'>
+                            </semantic-form-tree-picker-input>
+                        </div>
+                        </div>
+                        </semantic-form-composite-input>
+                    </div>
+
+                </rs-tab>
+
+                <rs-tab event-key="more" title="More">
+
+                    <semantic-form-autocomplete-input   for='propositional_object_is_about' 
+                                                        label="Is about" 
+                                                        placeholder="Select what the propositional object is subject of" 
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_allEntities]]'> 
+                    </semantic-form-autocomplete-input> 
+
+                    <div class="inline-composite-container">
+                        <semantic-form-composite-input  for="propositional_object_refers_to_domain" 
+                                                        label="Refers to"
+                                                        new-subject-template="/PC67_refers_to/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                                        fields='[[fieldDefinitions
+                                                                classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                            
+                                                                refers_to_entity_range="http://www.researchspace.org/pattern/system/refers_to/range"
+                                                                type_of_reference="http://www.researchspace.org/pattern/system/refers_to/type_of_reference"
+                                                                ]]'>
+            
+                        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC67_refers_to'> </semantic-form-hidden-input>
+            
+                        <div class="form-inline-inputs">
+                        <div style="flex: 1;">
+                            <semantic-form-autocomplete-input for='refers_to_entity_range' 
+                                                            render-header="false"
+                                                            placeholder="Select what the propositional object refers to" 
+                                                            nested-form-templates='[[> Platform:NestedFormTemplates_allEntities]]'>
+                            </semantic-form-autocomplete-input>
+                        </div>
+                        <div style="flex: 1;">
+                            <semantic-form-tree-picker-input  for="type_of_reference" 
+                                                            render-header="false"
+                                                            placeholder="Select type of reference"
+                                                            close-dropdown-on-selection='true'
+                                                            tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/type_of_reference>", 
+                                                                            "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/type_of_reference>",
+                                                                            "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+            
+                                                            scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                        "view": "authority-list",
+                                                                                        "scheme": "http://www.researchspace.org/resource/vocab/type_of_reference",
+                                                                                        "tooltip": "Open list of type of references"
+                                                                                        }'
+                                                            
+                                                            nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                    scheme="http://www.researchspace.org/resource/vocab/type_of_reference"
+                                                                                                    entityType="type of reference" }}{{{{/raw}}}}'
+            
+                                                            query-item-label='SELECT ?label WHERE {
+                                                                                ?item skos:prefLabel ?label .
+                                                                            }'>
+                            </semantic-form-tree-picker-input>
+                        </div>
+                        </div>
+                        </semantic-form-composite-input>
+                    </div>
+
+                </rs-tab> 
+
+                [[> rsp:FormMetadataTab]]
+
+            </rs-tabs>
+
+    </div>
+
+    <semantic-form-errors></semantic-form-errors>  
+    [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}propositional object{{/if}}']] 
+
+</semantic-form>
+

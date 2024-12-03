@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -19,6 +20,7 @@
 
 import * as Immutable from 'immutable';
 import * as Kefir from 'kefir';
+import * as maybe from 'data.maybe';
 
 import { Cancellation } from 'platform/api/async';
 import { Rdf } from 'platform/api/rdf';
@@ -209,6 +211,7 @@ export class ViewModel {
     return {
       search: {},
       itemViewMode: itemViewMode || props.defaultViewMode,
+      openedSet: props.singleSetIri?Rdf.iri(props.singleSetIri):null,
     };
   }
 
@@ -227,7 +230,6 @@ export class ViewModel {
     this.loadingSets = this.cancellation.derive();
 
     this.setState({ loadingSets: true });
-
     this.loadingSets
       .map(
         this.rootSetIri().flatMap((rootSet) =>
@@ -249,7 +251,7 @@ export class ViewModel {
           const state = this.getState();
           let sets = params.keepItems ? reuseOldSetItems(loadedSets, state.sets) : loadedSets;
           if (!sets.has(defaultSet.value)) {
-            console.warn(`Default set ${defaultSet} not found`);
+            //console.warn(`Default set ${defaultSet} not found`);
             sets = sets.set(defaultSet.value, emptySet(defaultSet));
           }
 
@@ -333,13 +335,13 @@ export class ViewModel {
     this.setState({ openedSet: setIri, search: {}, itemsOrdering: undefined });
   }
 
-  onDropItemToSet(item: Rdf.Iri, targetSet: Rdf.Iri) {
+  onDropItemToSet(item: Rdf.Iri, targetSet: Rdf.Iri,sourceSetManager:string) {
     this.cancellation
-      .map(getSetServiceForUser(this.getContext()).flatMap((service) => service.addToExistingSet(targetSet, item)))
+      .map(getSetServiceForUser(this.getContext()).flatMap((service) => service.addToExistingSet(targetSet, item, this.props.id)))
       .observe({
         value: () => {
           // This is ugly hack to fully reload all sets if we add something to the
-          // Uncategorized set, we need this to fetch Knowledg Maps when they are added
+          // Uncategorized set, we need this to fetch Knowledge Maps when they are added
           // to the clipboard
           if (targetSet.equals(this.getState().defaultSet)) {
             this.loadSets({keepItems: false});
@@ -465,16 +467,19 @@ export class ViewModel {
 
   private createNewSet(placeholderSetIri: Rdf.Iri, name: string) {
     const { sets } = this.getState();
+
+    const visibleInViewForTemplateWithId = maybe.Just(this.props.id);
+    
     this.setState({
       sets: sets.update(placeholderSetIri.value, (set) => ({ ...set, editing: { type: EditType.ApplyingChanges } })),
     });
 
     this.cancellation
-      .map(getSetServiceForUser(this.getContext()).flatMap((service) => service.createSet(name)))
+      .map(getSetServiceForUser(this.getContext()).flatMap((service) => service.createSet(name, maybe.Nothing<string>(), visibleInViewForTemplateWithId)))
       .observe({
         value: () => {
           this.loadSets({ keepItems: true });
-          this.trigger(SetManagementEvents.SetAdded);
+          this.trigger(SetManagementEvents.SetAdded, {});
         },
         error: (error) => {
           addNotification(
@@ -513,7 +518,28 @@ export class ViewModel {
       });
   }
 
-  removeSet(set: Rdf.Iri) {
+  removeSetFromView(set: Rdf.Iri) {  
+    this.cancellation
+      .map(getSetServiceForUser(this.getContext()).flatMap((service) => service.removeSetVisibleTriples(set, this.props.id)))
+      .observe({
+        value: () => {
+          this.setState({ openedSet: undefined });
+          this.loadSets({ keepItems: false });
+          this.trigger(SetManagementEvents.SetRemovedFromView);
+        },
+        error: (error) => {
+          addNotification(
+            {
+              level: 'error',
+              message: `Error removing set`,
+            },
+            error
+          );
+        },
+      });
+  }
+
+  removeSet(set: Rdf.Iri) { 
     this.cancellation
       .map(getSetServiceForUser(this.getContext()).flatMap((service) => service.deleteResource(set)))
       .observe({

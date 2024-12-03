@@ -40,11 +40,13 @@ import { CapturedContext } from 'platform/api/services/template';
 
 export interface NestedModalFormProps {
   subject?: Rdf.Iri
+  title?: string
   definition: FieldDefinition;
   onSubmit: (value: AtomicValue) => void;
   onCancel: () => void;
   children: ReactElement<ResourceEditorFormProps> | undefined;
   parent: React.RefObject<HTMLElement>;
+  modalId?: string
 }
 
 export class NestedModalForm extends Component<NestedModalFormProps, {}> {
@@ -55,7 +57,7 @@ export class NestedModalForm extends Component<NestedModalFormProps, {}> {
   }
 
   render() {
-    const { definition, onSubmit, onCancel, children, subject, parent } = this.props;
+    const { definition, title, onSubmit, onCancel, children, subject, parent, modalId } = this.props;
     const propsOverride: Partial<ResourceEditorFormProps> = {
       id: children.props.id,
       browserPersistence: false,
@@ -76,8 +78,11 @@ export class NestedModalForm extends Component<NestedModalFormProps, {}> {
         });
       },
     };
+
+    const modalTitle = title ?? `${getPreferredLabel(definition.label) || definition.id || 'Value'}`
     return (
       <Modal
+        id={modalId}
         show={true}
         onHide={onCancel}
         container={
@@ -87,8 +92,7 @@ export class NestedModalForm extends Component<NestedModalFormProps, {}> {
       >
         <Modal.Header closeButton={true}>
           <Modal.Title>{
-            (subject ? 'Create New ' : '') +
-                        `${getPreferredLabel(definition.label) || definition.id || 'Value'}`
+            <span>{(subject ? '' : 'New ') + `${modalTitle}`}</span>
           }</Modal.Title>
         </Modal.Header>
         <Modal.Body>{cloneElement(children, propsOverride)}</Modal.Body>

@@ -1,0 +1,55 @@
+
+<http://www.researchspace.org/pattern/system/relationship/type/context> {
+  <http://www.researchspace.org/pattern/system/relationship/type> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E55_Type>;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-ba2c26ae65354dc19a32aa2c973dc5d0-qac6aa;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-ba2c26ae65354dc19a32aa2c973dc5d0-xca7z4;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-ba2c26ae65354dc19a32aa2c973dc5d0-ao20j;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.researchspace.org/ontology/Relationship>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Person relationship type";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "1";
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-ba2c26ae65354dc19a32aa2c973dc5d0-licv0q;
+    <http://www.researchspace.org/resource/system/fields/treePatterns> """{
+  \"type\": \"simple\",
+  \"schemePattern\": \"?item crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/personal_relationship_type> .\"
+}"""^^<http://www.researchspace.org/resource/system/syntheticJson>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/person>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-10T19:09:27.141+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-ba2c26ae65354dc19a32aa2c973dc5d0-qac6aa a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a crm:E55_Type .
+  ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/personal_relationship_type> .
+  ?value skos:prefLabel ?label .
+} ORDER BY ?label""" .
+  
+  _:genid-ba2c26ae65354dc19a32aa2c973dc5d0-xca7z4 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P2_has_type $value .
+  $value crm:P2i_is_type_of $subject .
+} WHERE {}""" .
+  
+  _:genid-ba2c26ae65354dc19a32aa2c973dc5d0-licv0q a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  $subject crm:P2_has_type $value .
+  ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/personal_relationship_type> .
+  ?value skos:prefLabel ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-ba2c26ae65354dc19a32aa2c973dc5d0-ao20j a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+  $subject crm:P2_has_type $value .
+  $value crm:P2i_is_type_of $subject .
+} WHERE {
+  $subject crm:P2_has_type $value .
+  $value crm:P2i_is_type_of $subject .
+  ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/personal_relationship_type> .
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/relationship/type> .
+}

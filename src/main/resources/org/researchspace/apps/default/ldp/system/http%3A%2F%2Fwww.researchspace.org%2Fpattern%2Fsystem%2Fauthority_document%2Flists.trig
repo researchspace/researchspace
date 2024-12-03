@@ -1,0 +1,127 @@
+
+<http://www.researchspace.org/pattern/system/authority_document/lists/context> {
+  <http://www.researchspace.org/pattern/system/authority_document/lists> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "List of resources";
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-05203a2b212445669c9eee4a7eccd6bb-awwx0t;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-05203a2b212445669c9eee4a7eccd6bb-g1nrsn;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-05203a2b212445669c9eee4a7eccd6bb-gtavx;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-05203a2b212445669c9eee4a7eccd6bb-aagpmb;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E32_Authority_Document>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/authority_document>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-05203a2b212445669c9eee4a7eccd6bb-lyw8f;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-26T18:40:01.578+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-05203a2b212445669c9eee4a7eccd6bb-lyw8f a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+    $subject crm:P71_lists $value .
+    $value crm:P71i_is_listed_in $subject .
+} WHERE {}""" .
+  
+  _:genid-05203a2b212445669c9eee4a7eccd6bb-gtavx a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E1_CRM_Entity .
+    { 
+      ?value crm:P1_is_identified_by ?appellation .
+      ?appellation a crm:E41_Appellation .
+      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+      ?appellation crm:P190_has_symbolic_content ?label .
+    } UNION {
+      ?value crm:P170i_time_is_defined_by ?timePrimitive .
+      ?timePrimitive a crm:E61_Time_Primitive .
+      ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
+      ?timePrimitive crm:P190_has_symbolic_content ?label .
+    } UNION {
+      ?value skos:prefLabel ?label .
+    } UNION {
+      ?value crm:P190_has_symbolic_content ?label .
+    }
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
+  MINUS { ?systemAuthorityTerm crm:P1_is_identified_by ?value .
+          ?systemAuthorityTerm crm:P71i_is_listed_in|skos:inScheme ?systemAuthorityDoc .
+          ?systemAuthorityDoc crm:P2_has_type Platform:System_Resource .
+        }
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-05203a2b212445669c9eee4a7eccd6bb-aagpmb a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E1_CRM_Entity .
+    { 
+      ?value crm:P1_is_identified_by ?appellation .
+      ?appellation a crm:E41_Appellation .
+      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+      ?appellation crm:P190_has_symbolic_content ?label .
+    } UNION {
+      ?value crm:P170i_time_is_defined_by ?timePrimitive .
+      ?timePrimitive a crm:E61_Time_Primitive .
+      ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
+      ?timePrimitive crm:P190_has_symbolic_content ?label .
+    } UNION {
+      ?value skos:prefLabel ?label .
+    } UNION {
+      ?value crm:P190_has_symbolic_content ?label .
+    }
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-05203a2b212445669c9eee4a7eccd6bb-awwx0t a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    $subject crm:P71_lists|^crm:P71i_is_listed_in $value .
+      
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E1_CRM_Entity .
+    { 
+      ?value crm:P1_is_identified_by ?appellation .
+      ?appellation a crm:E41_Appellation .
+      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+      ?appellation crm:P190_has_symbolic_content ?label .
+    } UNION {
+      ?value crm:P170i_time_is_defined_by ?timePrimitive .
+      ?timePrimitive a crm:E61_Time_Primitive .
+      ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
+      ?timePrimitive crm:P190_has_symbolic_content ?label .
+    } UNION {
+      ?value skos:prefLabel ?label .
+    } UNION {
+      ?value crm:P190_has_symbolic_content ?label .
+    }
+}""" .
+  
+  _:genid-05203a2b212445669c9eee4a7eccd6bb-g1nrsn a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+    $subject crm:P71_lists $value .
+    $value crm:P71i_is_listed_in $subject .
+} WHERE {
+    $subject crm:P71_lists $value .
+    $value crm:P71i_is_listed_in $subject .
+      
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E1_CRM_Entity .
+    { 
+      ?value crm:P1_is_identified_by ?appellation .
+      ?appellation a crm:E41_Appellation .
+      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+      ?appellation crm:P190_has_symbolic_content ?label .
+    } UNION {
+      ?value crm:P170i_time_is_defined_by ?timePrimitive .
+      ?timePrimitive a crm:E61_Time_Primitive .
+      ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
+      ?timePrimitive crm:P190_has_symbolic_content ?label .
+    } UNION {
+      ?value skos:prefLabel ?label .
+    } UNION {
+      ?value crm:P190_has_symbolic_content ?label .
+    }
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/authority_document/lists> .
+}

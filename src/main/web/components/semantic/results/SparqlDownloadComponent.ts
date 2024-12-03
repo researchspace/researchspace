@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -106,7 +107,8 @@ class SparqlDownloadComponent extends Component<Props, {}> {
   };
 
   componentWillUnmount() {
-    this.subscription.unsubscribe();
+    if (this.subscription) 
+      this.subscription.unsubscribe();
   }
 
   public render() {

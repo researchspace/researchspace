@@ -275,7 +275,7 @@ export class WorkflowManagerComponent extends Component<Props, State> {
         {!this.props.readonly ? (
           <button
             type="button"
-            className={`btn btn-success ${styles.submitButton}`}
+            className={`btn btn-action ${styles.submitButton}`}
             disabled={!workflowState.step || !workflowStateHasChanged || status !== Status.Ready}
             onClick={this.onSubmit}
           >
@@ -285,12 +285,12 @@ export class WorkflowManagerComponent extends Component<Props, State> {
         {!this.props.readonly && workflowStateHasChanged ? (
           <button
             type="button"
-            className={`btn text-danger ${styles.resetButton}`}
+            className={`btn btn-default ${styles.resetButton}`}
             onClick={() => this.setState({ workflowState: this.initialWorkflowState })}
             disabled={status !== Status.Ready}
           >
             <small>
-              <i className="fa fa-times" /> reset
+              Reset
             </small>
           </button>
         ) : null}

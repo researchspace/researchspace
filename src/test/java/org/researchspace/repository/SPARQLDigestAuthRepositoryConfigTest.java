@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -35,7 +36,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.researchspace.junit.TestUtils;
-import org.researchspace.repository.RepositoryConfigUtils;
 import org.researchspace.repository.sparql.SPARQLDigestAuthRepositoryConfig;
 
 /**

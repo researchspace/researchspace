@@ -73,7 +73,7 @@ public class RESTSail extends AbstractServiceWrappingSail<RESTSailConfig> {
             clientBuilder = clientBuilder.register(new UserAgentFilter());
         }
 
-        // if we have username and password in the config then conigure basic auth
+        // if we have username and password in the config then configure basic auth
         if (config.getUsername() != null && config.getPassword() != null) {
             HttpAuthenticationFeature basicAuthFeature = HttpAuthenticationFeature.basic(config.getUsername(),
                     config.getPassword());

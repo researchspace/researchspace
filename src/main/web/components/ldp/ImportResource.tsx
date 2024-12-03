@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -176,7 +177,7 @@ export class ImportResourceComponent extends Component<Props, State> {
     if (this.props.container) {
       return (
         <FormGroup>
-          Import will be made into <ResourceLinkComponent uri={this.props.container} />
+          Import will be made into <ResourceLinkComponent iri={this.props.container} />
         </FormGroup>
       );
     }
@@ -188,7 +189,7 @@ export class ImportResourceComponent extends Component<Props, State> {
     if (possibleContainers.length === 1) {
       return (
         <FormGroup>
-          Import will be made into <ResourceLinkComponent uri={possibleContainers[0]['@id']} />
+          Import will be made into <ResourceLinkComponent iri={possibleContainers[0]['@id']} />.
         </FormGroup>
       );
     }
@@ -204,9 +205,9 @@ export class ImportResourceComponent extends Component<Props, State> {
     if (unknownObjects.length > 0) {
       return (
         <FormGroup>
-          These object IRIs are not present in target DB:
+          <p>These object IRIs are not present in target DB:</p>
           {unknownObjects.map((objectIRI) => (
-            <div>
+            <div className='color-action'>
               <ControlLabel>{objectIRI['@id'] + '\n'}</ControlLabel>
             </div>
           ))}
@@ -230,7 +231,7 @@ export class ImportResourceComponent extends Component<Props, State> {
             <ModalTitle>Success</ModalTitle>
           </ModalHeader>
           <ModalBody>
-            Import successfully done, resource <ResourceLinkComponent uri={serverDone} /> created
+            Import successfully done, resource <ResourceLinkComponent className='text-link-action' target='_blank' iri={serverDone} /> created.
           </ModalBody>
         </Modal>
       );
@@ -274,7 +275,14 @@ export class ImportResourceComponent extends Component<Props, State> {
             {this.renderUnknownObjectsMessage(unknownObjects)}
           </ModalBody>
           <ModalFooter>
+          <Button bsStyle="default"
+                  onClick={() => this.setState({ serverDialog: undefined, selectedContainer: undefined, wait: false })}
+            >
+              Cancel
+            </Button>
             <Button
+              bsStyle="default"
+              className="btn-action"
               disabled={!canProceed}
               onClick={() => {
                 this.importFromDelayedId(delayedImportRequestId, proceedIntoContainer);
@@ -282,11 +290,6 @@ export class ImportResourceComponent extends Component<Props, State> {
               }}
             >
               Proceed
-            </Button>
-            <Button
-              onClick={() => this.setState({ serverDialog: undefined, selectedContainer: undefined, wait: false })}
-            >
-              Cancel
             </Button>
           </ModalFooter>
         </Modal>

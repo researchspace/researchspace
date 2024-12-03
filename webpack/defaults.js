@@ -19,7 +19,6 @@
 
 const path = require('path');
 const fs = require('fs');
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 module.exports = function() {
     const ROOT_DIR = path.join(__dirname, '../');
@@ -138,23 +137,11 @@ module.exports = function() {
     }
     PROJECT.cssModulesBasedComponents = cssModulesBasedComponents;
 
-    function tsTypeCheck(failOnError) {
-        return new ForkTsCheckerWebpackPlugin({
-            useTypescriptIncrementalApi: true,
-            watch: SRC,
-            tsconfig: path.resolve(__dirname, '../tsconfig.json'),
-            blockEmit: failOnError,
-            checkSyntacticErrors: true,
-            tslint: false
-        });
-    }
-
     return {
         ROOT_DIR,
         DIST,
         SRC,
         TEST,
         PROJECT,
-        tsTypeCheck: tsTypeCheck,
     };
 };

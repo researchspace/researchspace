@@ -1,0 +1,48 @@
+<div class="inline-form-switch">
+  <semantic-form-switch for="[[for_kp]]" 
+                        switch-on-field="event_type" 
+                        label="[[subjectLabel]]">
+
+    <semantic-form-switch-case label="Activity">
+      <semantic-form-composite-input  for="[[for_kp]]" 
+                                      new-subject-template="/activity/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                      fields='[[fieldDefinitions
+                                                classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+
+                                                event_type="http://www.researchspace.org/pattern/system/event_switch/type"
+                                                          
+                                                carried_out_by_activity_domain="http://www.researchspace.org/pattern/system/carried_out_by/activity_domain"
+                                          
+                                              ]]'>
+
+          <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E7_Activity'> </semantic-form-hidden-input>
+
+          <semantic-form-hidden-input for="event_type" 
+                                      default-value='http://www.researchspace.org/resource//event_switch/type/activity'> 
+          </semantic-form-hidden-input>
+
+          <div class="form-inline-inputs">
+            <div style="flex: 1;">
+              <semantic-form-select-input for='carried_out_by_activity_domain' 
+                                          label="Activity" 
+                                          render-header="false"
+                                          placeholder="Select activity" 
+                                          nested-form-templates='[ 
+                                                                        {
+                                                                            "label": "Activity",
+                                                                            "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Activity\" nested=true editable=true mode=\"new\" }}{{{{/raw}}}}"
+                                                                        }
+                                                                    
+                                                                    ]'> 
+              </semantic-form-select-input>
+            </div>
+            <div style="flex: 1;">
+
+            </div>
+          </div>
+      </semantic-form-composite-input>
+    </semantic-form-switch-case>
+
+  </semantic-form-switch>
+</div>
+            

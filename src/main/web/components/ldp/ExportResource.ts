@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -78,6 +79,9 @@ export class ExportResourceComponent extends Component<Props, {}> {
 
   private onClick = () => {
     const selection = isIriProps(this.props) ? [this.props.iri] : this.props.selection;
+    if (selection.length === 0) {
+      return
+    }
     const exportURL = this.getLDPService().getExportURL(selection);
     const { repository } = this.context.semanticContext;
     this.cancellation.map(getLabels(selection.map(Rdf.iri), { context: { repository } })).observe({

@@ -24,7 +24,7 @@ plugins {
     id 'java-library'
 
     // To run app in the development mode with jetty container
-    id 'org.gretty' version '3.0.6'
+    id 'org.gretty' version '3.1.3'
 
     // To run webpack-dev-server in the background
     id 'com.github.psxpaul.execfork' version '0.1.13'
@@ -118,6 +118,7 @@ def defaultJvmArgs = [
     // for properties that get value from project.properties see gradle.properties file for more details
     "-Dconfig.environment.sparqlEndpoint=${project.properties['sparqlEndpoint']}",
     "-Dconfig.proxy.IIIF.targetUri=${project.properties['iiifScaler']}",
+    "-Dconfig.environment.upload-iiifFolder=file://${projectDir.getAbsolutePath()}${project.properties['iiifFolder']}",
 
     // delopment storages for image upload functionality
     "-Dconfig.storage.images.type=nonVersionedFile",
@@ -127,6 +128,7 @@ def defaultJvmArgs = [
     "-Dconfig.storage.tmp.type=nonVersionedFile",
     "-Dconfig.storage.tmp.mutable=true",
 
+   // "-Dconfig.global.loadDefaultConfig=1",
 
     // Increase size limit for file upload
     "-Dorg.eclipse.jetty.server.Request.maxFormContentSize=104857600"
@@ -149,11 +151,10 @@ gretty {
     // don't restart jetty when templates in the resource folder are changed
     fastReload = "${projectDir.getAbsolutePath()}/src/main/resources/org/researchspace/apps".toString()
 
-    // no need to write logs into file in development mode
-    fileLogEnabled = false
-
     // use custom jetty-env.xml to disable websocket support
     contextConfigFile = "${projectDir}/jetty-env.xml"
+
+    recompileOnSourceChange = false
 
     if (project.gradle.startParameter.taskNames.contains('buildZip')) {
         jvmArgs = defaultJvmArgs + [
@@ -308,6 +309,7 @@ configurations.all {
 dependencies {
     implementation platform('com.amazonaws:aws-java-sdk-bom:1.11.994')
     implementation 'com.amazonaws:aws-java-sdk-s3'
+    implementation 'org.semarglproject:semargl-rdf:0.7'
 
     compileOnly (
         "javax.servlet:javax.servlet-api:3.1.0",

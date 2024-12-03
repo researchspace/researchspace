@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,34 +29,15 @@ table {
             text-decoration: none;
         }
     }
-
-    th {
-        font-weight: 600;
-        letter-spacing: 0.2px;
-        padding: 12px 8px;
-
-        .fa.fa-sort-alpha-asc,
-        .fa.fa-sort-alpha-desc {
-            margin-left: 7px;
-            color: $color-primary-100;
-        }
-    }
-
-    td {
-        padding: 12px 8px;
-    }
-
-    td,
-    th {
-      &.center {
-        text-align: center;
-      }
-    }
 }
 
 .table {
 
     margin-bottom: 0;
+    margin-top: 20px;
+
+    border-spacing: 0;
+    border-collapse: collapse;
 
     & > thead > tr > td, 
     & > tbody > tr > th, 
@@ -66,12 +48,21 @@ table {
         border: none;
     }
 
-    & > thead > tr > th {
+    & > thead > tr > th,
+    & > thead > tr > td {
 
-        border-bottom: 2px solid $color-dark;
-        padding: 12px 8px;
-        /*font h3 */
-        @include font-common($color-dark, 16px, $h-line);
+        border: none;
+        padding: 0 8px 8px;
+
+        @include font-common($color-secondary, $font-size-small, $h-line);
+        font-weight: 600;
+        text-transform: uppercase;
+        cursor: pointer;
+
+        &:first-of-type {
+
+         //   padding-left: 0;
+        }
     }
 
     //table bottom line
@@ -79,34 +70,123 @@ table {
         border-top: none;
     }
 
+    & > tbody > tr.standard-row {      
+
+        &:hover {
+            background-color: $color-lighter;
+        }
+    }
+
+    & > tbody > tr.bg-success {
+
+        background-color: $color-info-light;
+
+        & > td {
+            color: $alert-info-text;
+        }
+
+    }
+
+    .sort-ascending,
+    .sort-descending {
+        i {
+            font-size: 14px;
+            vertical-align: top;
+            margin-left: 8px;
+        }
+    }
+
+    .table-hover > tbody > tr:hover {
+
+        background-color: $color-lighter;
+    }
+
     & > tbody > tr > td {
-        @include font-common($color-dark, 13px, 1.4);
+        @include font-common($color-secondary, $font-size-small, 1.4);
     
-        padding: 15px 8px;
-        border-bottom: 0.5px solid $color-dark--op50;
+        padding: 11px 8px;
+        border-top: 1px solid $color-border;
     
         .rs-page__field-value {
             white-space: unset;
         }
 
-        & > a {
-            @include font-common($color-dark, 14px, $b-line);
+        & > a,
+        & > span a {
+            @include font-common(inherit, $font-size-small, inherit);
             text-decoration: underline;
         }
     }
 
-    & > tbody > tr.standard-row:hover {
-        background-color: $color-primary-10;
+    & > tbody > tr > td.footer-container {
+        border: none;
+        background-color: transparent;
+        padding: 5px 0 0;
     }
 
-    & > tbody > tr > td.footer-container {
-        border-bottom: none !important;
-        padding: 20px 0px;
+    .badge {
+
+        min-height: 26px;
+        height: auto;
+        padding: 6px 14px;
+        white-space: normal;
+        text-align: left;
+        line-height: 1.2;
+        width: auto;
+        min-width: min-content;
     }
 }
 
-.table-hover > tbody > tr:hover {
-    background-color: $color-primary-10;
+.table-expanded {
+
+    .table {
+
+        border-collapse: separate;
+        border-spacing: 0 5px;
+
+        & > thead > tr > th {
+
+            padding: 0 15px 2px 15px;
+        }
+
+        & tbody:first-of-type {
+
+            & .standard-row {
+                background-color: $color-white;
+
+/*              &:hover,
+                &:focus,
+                &:focus-within {
+                    background-color: $color-lighter-hover;
+                } */
+            }
+        }
+
+        & > tbody > tr > td {
+            
+            padding: 10px 15px 10px 15px;
+          //  background-color: $color-white;
+            border-top: 1px solid $color-border;
+            border-bottom: 1px solid $color-border;
+    
+            &:first-of-type {
+                border-left: 1px solid $color-border;
+                border-top-left-radius: $border-radius;
+                border-bottom-left-radius: $border-radius;
+            }
+    
+            &:last-of-type {
+                border-right: 1px solid $color-border;
+                border-top-right-radius: $border-radius;
+                border-bottom-right-radius: $border-radius;
+            }
+        }
+
+        & > tbody > tr > td.footer-container {
+            border: none;
+            background-color: transparent;
+        }
+    }
 }
 
 .pagination, 
@@ -117,15 +197,17 @@ table {
 
     & > li > a,
     & > li > span {
-        @include font-common($color-dark, 12px, $b-line);
-        text-decoration: none ;
+        @include font-common($color-secondary, 12px, $line-height-body);
+        text-decoration: none;
         font-style: italic;
         border: none;
         padding: 3px 8px;
+        font-weight: 600;
+        border-radius: $border-radius;
 
         &:hover,
         &:focus {
-            color: $color-dark;
+            color: $color-secondary;
             background-color: $color-paginationHover-bg;
         }
     }
@@ -136,7 +218,7 @@ table {
     & > .active > span,
     & > .active > span:hover,
     & > .active > span:focus {
-        background-color: $color-dark;
+        background-color: $color-secondary;
         color: $color-white;
     }
 
@@ -148,16 +230,66 @@ table {
 .table-striped {
 
     & > tbody > tr:nth-of-type(odd) {
-        background-color: $color-primary-10;
+        background-color: $color-lighter;
     }
 }
 
 .table-bordered {
 
-    border-color: $color-dark--op20;
+    border-color: $color-border;
 }
 
-.rs-summary-table,
+.table-fixed-header {
+
+    .griddle-body {
+
+        .table {
+            width: 100%;
+            table-layout: fixed;
+        }
+
+        & > div > div {
+            position: relative;
+            overflow-y: auto;
+            width: 100%;
+            flex: 1;
+        }
+    }
+}
+
+.table-scrollable-content {
+
+    .griddle-body {
+
+        & > div {
+            display: flex;
+            flex-direction: column;
+
+        }
+
+        & > div > div {
+
+            .footer-container {
+                position: sticky;
+                bottom: 0;
+                padding: 0;
+            }
+        }
+    }
+}
+
+i.resource-thumbnail-small-fallback-icon {
+
+    color: $color-base;
+    font-size: 26px;
+    opacity: 0.4;
+
+    display: flex;
+    align-items: center;
+
+}
+
+.rs-resource-data-table,
 .details-sidebar {
     
     .rs-page__field-label {
@@ -180,29 +312,37 @@ table {
  /* table widget styling */
  .researchspace-table-widget-holder {
 
+    .top-section {
+
+        margin-bottom: 10px;
+    }
+
     .griddle-filter .filter-container {
         width: 100%;
-        
-        margin-bottom: 20px;
-
-        /* display: flex;
-        justify-content: flex-end;
-        align-items: center;
+        display: flex;
 
         &::before {
 
-            content: 'Filter results:';
-            padding: 0 10px;
-            font-size: 14.5px;
-            letter-spacing: .2px;
-        } */
+            @include materialIcon('\f02f', 20px);
+
+            height: $input-height;
+            display: flex;
+            align-items: center;
+            padding: 0 8px 0 10px;
+            background: $input-color-bg;
+            border: 1px solid $input-border-color;
+            border-right: none;
+            color: $input-placeholder-color;
+        }
 
         .form-control {
 
-            background-image: url(/assets/images/icons/search.svg);
-            background-repeat: no-repeat;
-            background-size: 14px 14px;
-            background-position: right 8px center;
+            border: 1px solid $color-border;
+            border-left: none;
+            padding-left: 0;
+            flex: 1;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
         }
     }
 
@@ -223,4 +363,521 @@ table {
 .rs-page__field-label-holder {
 
     width: auto;
+}
+
+.search-table-container {
+
+    .table {
+        margin: 0;
+
+        & > thead > tr > th {
+                 
+            padding-left: 3px;
+        }
+
+        & > thead > tr > td {
+            &:last-of-type {
+                width: 100px;
+            }
+        }
+
+        & > tbody > tr > td {
+
+            padding-left: 3px;
+
+            &:empty {
+                //  width: 0;
+                //  padding: 0;
+            }
+            
+            &:first-of-type {
+                padding-left: 10px;
+            }
+
+            &:last-of-type {
+                
+                width: 100px;
+    
+                .btn {
+    
+                  padding: 8px 8px 8px 6px;
+    
+                  i {
+                    font-size: 20px;
+                  }
+                }
+            }
+        }
+    }
+}
+
+.project-table {
+
+    .table {
+
+        & > thead > tr > th {
+               
+            &:first-of-type {
+           
+                width: 30%;
+            }
+    
+            &:nth-child(2) {
+                width: 20%;
+            }
+    
+            &:nth-child(3) {
+                width: 15%;
+            }
+    
+            &:nth-child(4) {
+                width: 20%;
+            }
+
+            &:nth-child(5) {
+                width: 15%;
+            }
+        }
+
+        & > tbody > tr > td {
+
+            &:first-of-type {
+           
+                width: 30%;
+            }
+    
+            &:nth-child(2) {
+                width: 20%;
+            }
+    
+            &:nth-child(3) {
+                width: 15%;
+            }
+    
+            &:nth-child(4) {
+                width: 20%;
+            }
+
+            &:nth-child(5) {
+                width: 15%;
+            }
+
+        }
+    }
+}
+
+.table-with-checkbox {
+
+    .table {
+        input[type="checkbox"] {
+            margin: 0;
+        }
+
+        & > thead > tr > td {
+
+            &:first-of-type {
+                width: 42px;
+                padding-left: 15px;
+                padding-right: 10px;
+            }
+
+            &:last-of-type {
+                width: 100px;
+            }
+        }
+  
+          & > tbody > tr > td {
+  
+            &:first-of-type {
+                width: 42px;
+                padding-left: 15px;
+                padding-right: 10px;
+    
+                & > div {
+                    height: 13px;
+                }
+            }
+
+            &.footer-container {
+                padding: 0;
+            }
+        }
+    }
+}
+
+.table-without-checkbox {
+
+    .table {
+
+        & > thead > tr > td {
+
+            &:first-of-type {
+                padding: 0;
+                width: 20px;
+            }
+        }
+  
+          & > tbody > tr > td {
+  
+            &:first-of-type {
+                padding: 0;
+                width: 20px;
+            }
+        }
+    }
+}
+
+.metadata-table {
+
+    margin: 0;
+
+    .table-title b {
+        text-wrap: nowrap;
+    }
+}
+
+.table-title {
+
+    color: $color-dark;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.table-description {
+
+    font-size: 12.5px; 
+    padding-top: 2px;
+    line-height: 1.2;
+    color: $color-base;
+
+    .text-link-action {
+
+        color: $color-action;
+    }
+
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.table-badge-container {
+
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.table-icon {
+    font-size: 20px;
+}
+
+.people-icon {
+
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.person-icon {
+
+    color: $color-white; 
+    background:$color-secondary-light; 
+    border-radius: 3px; 
+    padding: 5px;
+}
+
+.person-thumbnail {
+
+    border-radius: 3px;
+    background:$color-light; 
+    border: 1px solid $color-border;
+    height: 35px;
+    width: 35px;
+    object-fit: cover;
+    object-position: top;
+}
+
+.table-no-results {
+
+    width: 100%;
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 50px;
+    background-color: $color-lighter;
+
+    .no-results-container {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .no-results-icon {
+
+        font-size: 50px;
+        color: $color-base;
+    }
+
+    .no-results-text {
+
+        color: $color-secondary;
+        font-size: 17px;
+    }
+
+}
+
+.kp-table {
+
+    .table > tbody > tr > td {
+
+        &:first-of-type {
+            width: 250px;
+        }
+
+        &:nth-child(2) {
+            width: 170px;
+        }
+
+        &:nth-child(3) {
+            width:auto;
+        }
+
+        &:nth-child(4) {
+            width:110px;
+        }
+
+        &:nth-child(5) {
+            width: 110px;
+        }
+
+        &:nth-child(6) {
+            width: 330px;
+        }
+    }
+
+}
+
+.ldp-resource-table {
+
+    .table > tbody > tr > td {
+
+        &:nth-child(4) {
+            width:110px;
+        }
+    }
+}
+
+.vocabulary-table {
+
+    .table > tbody > tr > td {
+
+        &:first-of-type {
+            width: 250px;
+        }
+
+        &:nth-child(2) {
+            width: 170px;
+        }
+
+        &:nth-child(3) {
+            width:auto;
+        }
+
+        &:nth-child(4) {
+            width:290px;
+        }
+
+    }
+
+}
+
+.wikipediaResultsTable {
+
+    .table > tbody > tr > td {
+
+        &:first-of-type {
+            max-width: 20vw;
+        }
+
+        &:nth-child(2) {
+            max-width: 20vw;
+        }
+
+        &:nth-child(3) {
+            max-width:min-content;
+        }
+
+        &:nth-child(4) {
+            max-width:min-content;
+        }
+
+        &:nth-child(5) {
+            width:min-content;
+
+            & div {
+                width: min-content;
+            }
+        }
+
+    }
+}
+
+.METapiResultsTable {
+
+    .table > tbody > tr > td {
+
+        width:min-content;
+
+        &:first-of-type {
+            max-width: 15vw;
+        }
+    }
+}
+
+.VAMResultsTable {
+
+    .table > tbody > tr > td {
+
+        width:min-content;
+
+        &:first-of-type {
+            max-width: 15vw;
+        }
+
+        &:nth-child(4) {
+            max-width: 20vw;
+        }
+    }
+}
+
+.TNAapiResultsTable {
+
+    .table > tbody > tr > td {
+
+        width:min-content;
+
+        &:first-of-type {
+            max-width: 20vw;
+        }
+
+        &:nth-child(3) {
+            max-width: 20vw;
+        }
+    }
+
+}
+
+.person-relationship-table {
+
+    .table > tbody > tr > td {
+
+        &:first-of-type {
+            width: 250px;
+            text-wrap: nowrap;
+        }
+    }
+}
+
+.ontology-property-table {
+
+    .table > tbody > tr > td {
+
+        &:first-of-type {
+            min-width: 230px;
+            line-break: anywhere;
+            font-weight: 600;
+        }
+
+        &:nth-child(2) {
+            min-width: 230px;
+            line-break: anywhere;
+        }
+
+        &:nth-child(3) {
+            width:auto;
+            padding-right: 20px;
+            min-width: 250px;
+
+            span, div {
+                max-width: 480px;
+            }
+        }
+
+        &:nth-child(4) {
+            min-width:230px;
+            line-break: anywhere;
+        }
+
+    }
+}
+
+.timespan-table {
+
+    .table > tbody > tr > td {
+
+        &:first-of-type {
+            min-width: 200px;
+        }
+
+        &:nth-child(2) {
+            width: fit-content;
+        }
+
+        &:nth-child(3) {
+            width: fit-content;
+        }
+
+        &:nth-child(4) {
+            width: fit-content;
+        }
+
+        &:nth-child(5) {
+            min-width:230px;
+        }
+
+        &:nth-child(6) {
+            min-width:230px;
+        }
+
+    }
+
+
+}
+
+.dimension-table {
+
+    .table > tbody > tr > td {
+
+        &:first-of-type {
+            min-width: 200px;
+        }
+
+        &:nth-child(2) {
+            width: fit-content;
+        }
+
+        &:nth-child(3) {
+            width: fit-content;
+        }
+
+        &:nth-child(4) {
+            width: fit-content;
+        }
+
+        &:nth-child(5) {
+            max-width:400px;
+        }
+    }
+}
+
+.narrative-set-list-table {
+    & .griddle-custom-row {
+        flex-direction: column;
+
+        & > div {
+            width: 100%;
+        }
+    }
 }

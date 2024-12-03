@@ -12,6 +12,7 @@ import { AuthoredEntity, AuthoredEntityContext } from '../../editor/authoredEnti
 import { AuthoringState } from '../../editor/authoringState';
 
 import { HtmlSpinner } from '../../viewUtils/spinner';
+import Icon from 'platform/components/ui/icon/Icon';
 
 const FOAF_NAME = 'http://xmlns.com/foaf/0.1/name';
 
@@ -196,7 +197,7 @@ export class StandardTemplate extends Component<TemplateProps, {}> {
           disabled={!canDelete}
           onClick={onDelete}
         >
-          <span className="fa fa-trash" />
+          <Icon iconType='rounded' iconName='delete' symbol />
           &nbsp;
           {canEdit === undefined ? <HtmlSpinner width={SPINNER_WIDTH} height={SPINNER_HEIGHT} /> : 'Delete'}
         </button>
@@ -207,7 +208,7 @@ export class StandardTemplate extends Component<TemplateProps, {}> {
           disabled={!canEdit}
           onClick={onEdit}
         >
-          <span className="fa fa-edit" />
+          <Icon iconType='rounded ' iconName='edit' symbol /> 
           &nbsp;
           {canEdit === undefined ? <HtmlSpinner width={SPINNER_WIDTH} height={SPINNER_HEIGHT} /> : 'Edit'}
         </button>

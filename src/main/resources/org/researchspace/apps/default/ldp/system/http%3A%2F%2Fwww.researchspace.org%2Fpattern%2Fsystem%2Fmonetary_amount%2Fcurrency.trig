@@ -1,0 +1,56 @@
+
+<http://www.researchspace.org/pattern/system/monetary_amount/currency/context> {
+  _:genid-b7e1365fd54e41419f97da6ffeb299da-x7btod a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+	$subject crm:P180_has_currency $value . 
+  $value crm:P180i_was_currency_of $subject .
+} WHERE {
+	$subject crm:P180_has_currency $value . 
+}""" .
+  
+  _:genid-b7e1365fd54e41419f97da6ffeb299da-gz6q8o a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+	$subject crm:P180_has_currency $value . 
+  $value crm:P180i_was_currency_of $subject .
+} WHERE {}""" .
+  
+  <http://www.researchspace.org/pattern/system/monetary_amount/currency> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E97_Monetary_Amount>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-b7e1365fd54e41419f97da6ffeb299da-x7btod;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E98_Currency>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.w3.org/2000/01/rdf-schema#label> "Currency";
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-b7e1365fd54e41419f97da6ffeb299da-kxn3t9;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/monetary_amount>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-b7e1365fd54e41419f97da6ffeb299da-gz6q8o;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-b7e1365fd54e41419f97da6ffeb299da-dneqvl;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-b7e1365fd54e41419f97da6ffeb299da-233hen;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-10-15T11:46:02.202+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-b7e1365fd54e41419f97da6ffeb299da-233hen a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+    $subject crm:P180_has_currency $value . 
+}""" .
+  
+  _:genid-b7e1365fd54e41419f97da6ffeb299da-kxn3t9 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    ?value a crm:E98_Currency .
+    ?value skos:prefLabel ?label .
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-b7e1365fd54e41419f97da6ffeb299da-dneqvl a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    ?value a crm:E98_Currency .
+    ?value skos:prefLabel ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/monetary_amount/currency> .
+}

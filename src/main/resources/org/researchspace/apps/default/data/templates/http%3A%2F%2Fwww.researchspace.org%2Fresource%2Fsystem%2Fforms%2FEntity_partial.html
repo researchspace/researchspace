@@ -1,0 +1,321 @@
+<semantic-form [[> rsp:FormDefaults]] 
+                persistence='{"type": "sparql", "targetInsertGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}", "repository":"{{#if scheme}}authorities{{else}}default{{/if}}"}'
+                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/entity/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
+                fields='[[fieldDefinitions
+                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                            inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
+                            entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
+                            
+                            entity_image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
+                            entity_image="http://www.researchspace.org/pattern/system/entity/images"
+                            entity_document="http://www.researchspace.org/pattern/system/entity/documents"
+                            entity_video="http://www.researchspace.org/pattern/system/entity/subject_of_video"
+                            entity_audio="http://www.researchspace.org/pattern/system/entity/subject_of_audio"
+                            entity_3d_model="http://www.researchspace.org/pattern/system/entity/subject_of_3Dmodel"
+                            entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
+                            entity_represents_range="http://www.researchspace.org/pattern/system/entity/represents_range"
+                            entity_web_URL="http://www.researchspace.org/pattern/system/entity/web_URL_embed"
+                            
+                            entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
+                            timespan_text_value="http://www.researchspace.org/pattern/system/timespan/time_primitive_appellationMin1"
+                            symbolic_object_content="http://www.researchspace.org/pattern/system/symbolic_object/has_symbolic_contentMin1Max1"
+                            entity_prefLabel="http://www.researchspace.org/pattern/system/entity/skos_prefLabel"
+
+                            entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
+                            entity_id="http://www.researchspace.org/pattern/system/entity/identifier"
+                            entity_has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                            entity_exemplifies_domain="http://www.researchspace.org/pattern/system/entity/PC137_exemplifies"
+                            entity_description="http://www.researchspace.org/pattern/system/entity/description"
+
+                            entity_influenced_activity="http://www.researchspace.org/pattern/system/entity/influenced_activity"
+                            entity_motivated_activity="http://www.researchspace.org/pattern/system/entity/motivated_activity"
+                            entity_attributed_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/attributed_by_attribute_assignment"
+                            entity_assigned_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/assigned_by_attribute_assignment"
+                            entity_measurement="http://www.researchspace.org/pattern/system/entity/measurement"
+
+                            entity_depicted_by="http://www.researchspace.org/pattern/system/entity/depicted_by_human_made_thing"
+                            entity_depicts_range="http://www.researchspace.org/pattern/system/entity/depicts_range"
+                            entity_subject_of="http://www.researchspace.org/pattern/system/entity/subject_of_propositional_object"
+                            entity_refers_to_range="http://www.researchspace.org/pattern/system/entity/refers_to_range"
+
+                        ]]'
+            >
+
+    <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
+        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity'></semantic-form-hidden-input>
+        
+        {{#if scheme}}
+            <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
+        {{/if}}
+            
+        <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
+            <rs-tab event-key="detail" title="Details">
+                <div class="form-details-container">
+                    <div style="overflow-x: auto;">
+                        <div>
+                            {{#if node}} 
+                                {{> @partial-block }}                                           
+                            {{else}} 
+                                <semantic-form-text-input for="entity_primary_appellation" label="Entity name/appellation" placeholder="Enter entity name/appellation"></semantic-form-text-input>                         
+                            {{/if}}
+                        </div>
+
+                        <semantic-form-autocomplete-input   for="entity_preferred_id" 
+                                                            label="Preferred identifier"
+                                                            placeholder="Select preferred identifier" 
+                                                            nested-form-templates='[ 
+                                                                {
+                                                                    "label": "Identifier",
+                                                                    "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Identifier\" nested=true editable=true mode=\"new\" }}
+                                                                                    {{{{/raw}}}}"
+                                                                }
+                                                            ]'>
+                        </semantic-form-autocomplete-input>
+
+                        <semantic-form-autocomplete-input   for="entity_id" 
+                                                            label="Other identifier"
+                                                            placeholder="Select other identifier" 
+                                                            nested-form-templates='[[> Platform:NestedFormTemplates_appellations]]'>
+                        </semantic-form-autocomplete-input>
+                        
+                        <semantic-form-autocomplete-input   for='entity_has_type' 
+                                                            label="Entity type"
+                                                            placeholder="Select type" 
+                                                            nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
+                        </semantic-form-autocomplete-input>
+
+                        <div class="inline-composite-container">
+                            <semantic-form-composite-input  for="entity_exemplifies_domain" 
+                                                            label="Entity exemplifier type"
+                                                            new-subject-template="/PC137_exemplifies/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                                            fields='[[fieldDefinitions
+                                                                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                                
+                                                                    exemplifies_type_range="http://www.researchspace.org/pattern/system/exemplifies/range"
+                                                                    taxonomic_role="http://www.researchspace.org/pattern/system/exemplifies/taxonomic_role"
+                                                                    ]]'>
+                
+                            <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC137_exemplifies'> </semantic-form-hidden-input>
+                
+                            <div class="form-inline-inputs">
+                            <div style="flex: 1;">
+                                <semantic-form-autocomplete-input for='exemplifies_type_range' 
+                                                                render-header="false"
+                                                                placeholder="Select type" 
+                                                                nested-form-templates='[[> Platform:NestedFormTemplates_types]]'>
+                                </semantic-form-autocomplete-input>
+                            </div>
+                            <div style="flex: 1;">
+                                <semantic-form-tree-picker-input  for="taxonomic_role" 
+                                                                render-header="false"
+                                                                placeholder="Select taxonomic role"
+                                                                close-dropdown-on-selection='true'
+                                                                tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/taxonomic_role>", 
+                                                                                "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/taxonomic_role>",
+                                                                                "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+                
+                                                                scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                            "view": "authority-list",
+                                                                                            "scheme": "http://www.researchspace.org/resource/vocab/taxonomic_role",
+                                                                                            "tooltip": "Open list of taxonomic roles"
+                                                                                            }'
+                                                                
+                                                                nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                        scheme="http://www.researchspace.org/resource/vocab/taxonomic_role"
+                                                                                                        entityType="taxonomic role" }}{{{{/raw}}}}'
+                
+                                                                query-item-label='SELECT ?label WHERE {
+                                                                                    ?item skos:prefLabel ?label .
+                                                                                }'>
+                                </semantic-form-tree-picker-input>
+                            </div>
+                            </div>
+                            </semantic-form-composite-input>
+                        </div>
+
+                        <semantic-form-text-input for="entity_description" label="Entity description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
+
+                    </div>
+                    [[> rsp:FormAssetSidebar]]
+                </div>
+            </rs-tab>
+
+            <rs-tab event-key="event" title="Events">
+
+                <semantic-form-autocomplete-input   for='entity_influenced_activity' 
+                                                    label="Influenced"
+                                                    placeholder="Select activity influenced by the entity" 
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
+                </semantic-form-autocomplete-input>
+
+                <semantic-form-autocomplete-input   for='entity_motivated_activity' 
+                                                    label="Motivated"
+                                                    placeholder="Select activity motivated by the entity" 
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
+                </semantic-form-autocomplete-input>
+
+                <semantic-form-autocomplete-input   for='entity_attributed_by_attribute_assignment' 
+                                                    label="Attributed by"
+                                                    placeholder="Select what assigned attribute to the entity" 
+                                                    nested-form-templates='[ 
+                                                        {
+                                                            "label": "Attribute assignment",
+                                                            "nestedForm": "{{{{raw}}}}
+                                                                            {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
+                                                                        {{{{/raw}}}}"
+                                                        }
+                                                    ]'>  
+                </semantic-form-autocomplete-input>
+
+                <semantic-form-autocomplete-input   for='entity_assigned_by_attribute_assignment' 
+                                                    label="Assigned by"
+                                                    placeholder="Select what assigned the entity" 
+                                                    nested-form-templates='[ 
+                                                        {
+                                                            "label": "Attribute assignment",
+                                                            "nestedForm": "{{{{raw}}}}
+                                                                            {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
+                                                                        {{{{/raw}}}}"
+                                                        }
+                                                    ]'>  
+                </semantic-form-autocomplete-input>
+
+                <semantic-form-autocomplete-input   for='entity_measurement' 
+                                                    label="Measured by"
+                                                    placeholder="Select measurement" 
+                                                    nested-form-templates='[ 
+                                                        {
+                                                            "label": "Measurement",
+                                                            "nestedForm": "{{{{raw}}}}
+                                                                            {{> \"http://www.researchspace.org/resource/system/forms/Measurement\" nested=true editable=true mode=\"new\"}}
+                                                                        {{{{/raw}}}}"
+                                                        }
+                                                    ]'>  
+                </semantic-form-autocomplete-input>
+            </rs-tab>
+
+            <rs-tab event-key="thing" title="Things">
+
+                <div class="inline-composite-container">
+                    <semantic-form-composite-input  for="entity_depicts_range" 
+                                                    label="Depicted by" 
+                                                    new-subject-template="/PC62_depicts/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                                    fields='[[fieldDefinitions
+                                                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                        
+                                                            depicts_thing_domain="http://www.researchspace.org/pattern/system/depicts/domain"
+                                                            mode_of_depiction="http://www.researchspace.org/pattern/system/depicts/mode_of_depiction"
+                                                            ]]'>
+        
+                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC62_depicts'> </semantic-form-hidden-input>
+        
+                    <div class="form-inline-inputs">
+                    <div style="flex: 1;">
+                        <semantic-form-autocomplete-input for='depicts_thing_domain' 
+                                                        render-header="false"
+                                                        placeholder="Select what depicts the entity"
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_physicalHumanMadeThings]]'>
+                        </semantic-form-autocomplete-input>
+                    </div>
+                    <div style="flex: 1;">
+                        <semantic-form-tree-picker-input  for="mode_of_depiction" 
+                                                        render-header="false"
+                                                        placeholder="Select mode of depiction"
+                                                        close-dropdown-on-selection='true'
+                                                        tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/mode_of_depiction>", 
+                                                                        "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/mode_of_depiction>",
+                                                                        "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+        
+                                                        scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                    "view": "authority-list",
+                                                                                    "scheme": "http://www.researchspace.org/resource/vocab/mode_of_depiction",
+                                                                                    "tooltip": "Open list of mode of depictions"
+                                                                                    }'
+                                                        
+                                                        nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                scheme="http://www.researchspace.org/resource/vocab/mode_of_depiction"
+                                                                                                entityType="mode of depiction" }}{{{{/raw}}}}'
+        
+                                                        query-item-label='SELECT ?label WHERE {
+                                                                            ?item skos:prefLabel ?label .
+                                                                        }'>
+                        </semantic-form-tree-picker-input>
+                    </div>
+                    </div>
+                    </semantic-form-composite-input>
+                </div>
+
+        [[!--        <semantic-form-autocomplete-input   for='entity_depicted_by' 
+                                                    label="Depicted by"
+                                                    placeholder="Select what depicts the entity" 
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_physicalHumanMadeThings]]'> 
+                </semantic-form-autocomplete-input> --]]
+
+                <semantic-form-autocomplete-input   for='entity_subject_of' 
+                                                    label="Subject of"
+                                                    placeholder="Select what is about the entity" 
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
+                </semantic-form-autocomplete-input>
+
+                <div class="inline-composite-container">
+                    <semantic-form-composite-input  for="entity_refers_to_range" 
+                                                    label="Referred to by"
+                                                    new-subject-template="/PC67_refers_to/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                                    fields='[[fieldDefinitions
+                                                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                        
+                                                            refers_to_propObj_domain="http://www.researchspace.org/pattern/system/refers_to/domain"
+                                                            type_of_reference="http://www.researchspace.org/pattern/system/refers_to/type_of_reference"
+                                                            ]]'>
+        
+                        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC67_refers_to'> </semantic-form-hidden-input>
+            
+                        <div class="form-inline-inputs">
+                            <div style="flex: 1;">
+                                <semantic-form-autocomplete-input for='refers_to_propObj_domain' 
+                                                                render-header="false"
+                                                                placeholder="Select what refers to the entity" 
+                                                                nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'>
+                                </semantic-form-autocomplete-input>
+                            </div>
+                            <div style="flex: 1;">
+                                <semantic-form-tree-picker-input  for="type_of_reference" 
+                                                                render-header="false"
+                                                                placeholder="Select type of reference"
+                                                                close-dropdown-on-selection='true'
+                                                                tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/type_of_reference>", 
+                                                                                "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/type_of_reference>",
+                                                                                "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+                
+                                                                scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                            "view": "authority-list",
+                                                                                            "scheme": "http://www.researchspace.org/resource/vocab/type_of_reference",
+                                                                                            "tooltip": "Open list of type of references"
+                                                                                            }'
+                                                                
+                                                                nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                        scheme="http://www.researchspace.org/resource/vocab/type_of_reference"
+                                                                                                        entityType="type of reference" }}{{{{/raw}}}}'
+                
+                                                                query-item-label='SELECT ?label WHERE {
+                                                                                    ?item skos:prefLabel ?label .
+                                                                                }'>
+                                </semantic-form-tree-picker-input>
+                            </div>
+                        </div>
+                    </semantic-form-composite-input>
+                </div>
+
+            </rs-tab>
+
+            [[> rsp:FormMetadataTab]]
+        </rs-tabs>
+
+    </div>
+
+    <semantic-form-errors></semantic-form-errors>  
+    [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}entity{{/if}}']] 
+
+</semantic-form>
+
+

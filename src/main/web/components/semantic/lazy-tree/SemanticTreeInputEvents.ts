@@ -17,6 +17,7 @@
  */
 
 import { EventMaker } from 'platform/api/events';
+import Rdf = require('platform/api/rdf/core/Rdf');
 
 export interface SemanticTreeInputEventData {
 
@@ -24,7 +25,8 @@ export interface SemanticTreeInputEventData {
    * triggered only when a single item can be selected, when selection is empty iri will be undefined
    */
   'SemanticTreeInput.ItemSelectionChanged': {
-    iri?: string
+    iri?: string;
+    iris?: Rdf.Iri[];
   }
 }
 

@@ -36,6 +36,12 @@ export interface SetManagementApi {
   removeSet(set: Rdf.Iri);
 
   /**
+   * Remove set from a particular view. 
+   * It infers the current view and removes the set without removing it from the system
+   */
+  removeSetFromView(set: Rdf.Iri);
+
+  /**
    * Puts set into renaming mode.
    */
   startRenamingSet(set: Rdf.Iri);

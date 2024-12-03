@@ -1,0 +1,63 @@
+
+<http://www.researchspace.org/pattern/system/identifier_assignment/deassigned/context> {
+  _:genid-d53429722d97418aa9b0bba0b84a3801-mlx04j a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+	$subject crm:P38_deassigned $value . 
+    $value crm:P38i_was_deassigned_by $subject .
+} WHERE {
+	$subject crm:P38_deassigned $value . 
+    $value crm:P38i_was_deassigned_by $subject .
+      
+    ?value a crm:E42_Identifier .
+	  ?value crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  <http://www.researchspace.org/pattern/system/identifier_assignment/deassigned> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E15_Identifier_Assignment>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-d53429722d97418aa9b0bba0b84a3801-41i6j7;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Deassigned";
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E42_Identifier>;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-d53429722d97418aa9b0bba0b84a3801-1sqqpe;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/identifier_assignment>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-d53429722d97418aa9b0bba0b84a3801-p9pimm;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-d53429722d97418aa9b0bba0b84a3801-f97iuq;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-d53429722d97418aa9b0bba0b84a3801-mlx04j;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-05T18:46:27.634+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-d53429722d97418aa9b0bba0b84a3801-p9pimm a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+	  $subject crm:P38_deassigned $value . 
+      
+    ?value a crm:E42_Identifier .
+	  ?value crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-d53429722d97418aa9b0bba0b84a3801-f97iuq a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+	$subject crm:P38_deassigned $value . 
+    $value crm:P38i_was_deassigned_by $subject .
+} WHERE {}""" .
+  
+  _:genid-d53429722d97418aa9b0bba0b84a3801-41i6j7 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    ?value a crm:E42_Identifier .
+	  ?value crm:P190_has_symbolic_content ?label .
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-d53429722d97418aa9b0bba0b84a3801-1sqqpe a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    ?value a crm:E42_Identifier .
+	  ?value crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/identifier_assignment/deassigned> .
+}

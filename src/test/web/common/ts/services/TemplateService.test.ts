@@ -31,8 +31,11 @@ const MOCKED_REMOTE_TEMPLATES: { [iri: string]: string } = {
 };
 
 describe('TemplateService', () => {
-  SparqlUtil.init({ test: 'test:' });
   mockFetchRemoteTemplate();
+
+  beforeEach(() => {
+    SparqlUtil.init({ test: 'test:' });
+  });
 
   it('resolves registered partials and helpers', () => {
     const scope = TemplateScope.create({

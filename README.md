@@ -8,7 +8,7 @@
 - - -
 
 <p align="center">
-  <a href="https://nightly.link/researchspace/researchspace/workflows/main/master/zip-bundle.zip">
+  <a href="https://drive.google.com/file/d/10W9iMj2w6I9iXvIiRBp9gS1YrF_FG8Ix/view?usp=sharing">
     <img src="https://img.shields.io/badge/download-zip-blue" height="30px"></a> 
   <a href="https://hub.docker.com/repository/docker/researchspace/platform-ci/general">
     <img src="https://img.shields.io/badge/docker-researchspace%2Fplatform--ci%3Alatest-blue" height="30px"></a>
@@ -153,12 +153,20 @@ On Windows the use of [Chocolatey](https://chocolatey.org/) is highly recommende
 
 **Java 11**
 
+deprecated:
 `brew tap AdoptOpenJDK/openjdk`
 `brew cask install adoptopenjdk11`
+
+Adopt has been move to Adoptium, with Temurin. Find the correct pkg version [here](https://adoptium.net/download/)
 
 **Node.js**
 
 `brew install node@12`
+
+or 
+
+use NVM [link here](https://github.com/nvm-sh/nvm?tab=readme-ov-file#installing-and-updating)
+
 
 ### Prerequisites Installation on *Windows 10*
 See [installation instruction](https://chocolatey.org/docs/installation) for [Chocolatey](https://chocolatey.org).

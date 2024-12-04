@@ -24,16 +24,17 @@ plugins {
     id 'java-library'
 
     // To run app in the development mode with jetty container
-    id 'org.gretty' version '3.1.3'
+    id 'org.gretty' version '3.1.4'
 
     // To run webpack-dev-server in the background
-    id 'com.github.psxpaul.execfork' version '0.1.13'
+    id 'com.github.psxpaul.execfork' version '0.2.2'
 
     // To generate eclipse project files
     id 'eclipse'
 
     // To show task dependency graph
     id "com.dorongold.task-tree" version "1.5"
+
 }
 
 
@@ -78,6 +79,11 @@ war {
     }
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+}
 
 farms {
     farm 'researchspace', {
@@ -218,8 +224,12 @@ tasks.runProdWebpack.dependsOn npmInstallCi
 
 // task to execute webpack in watch mode, see ./webpack/package.json
 task startWebpack(type: com.github.psxpaul.task.ExecFork) {
+    // this is needed to fix this issue https://github.com/psxpaul/gradle-execfork-plugin/issues/61
+    // see also https://github.com/springdoc/springdoc-openapi-gradle-plugin/pull/142
+    workingDir = java.nio.file.Files.createTempDirectory('webpack').toFile()
+
     executable = 'npm'
-    args = [ 'run', 'dev' ]
+    args = [ 'run', '--prefix', projectDir.getAbsolutePath(), 'dev' ]
     timeout = 1200
 
     // wait for message produces by webpack in minimal log mode

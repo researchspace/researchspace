@@ -127,8 +127,8 @@ The ResearchSpace is distributed under AGPL-3.0 or later.
 
 It is possible to use an unix-based OS as well as Windows for development against the platform. As prerequisites you need to have installed on your machine:
 
-* JDK 11 (you can use Java 14 to run the ResearchSpace but version 11 is currently the only supported version for development).
-* Latest Node.js LTS (12.x) is recommended, but any newer Node.js version should be also fine.
+* JDK 21 LTS. For historical reasons, ResearchSpace can be built only with Java 11, but the [Gradle Toolchain](https://docs.gradle.org/current/userguide/toolchains.html) feature is used to automatically install the required JDK. JDK 21 is required to run the current version of the `gradle` build tool.
+* Latest Node.js LTS (22.x) is recommended, but any newer Node.js version should be also fine.
 
 In particular, on OSX and Unix systems the most stable versions for Node.js are usually available from common package managers (e.g. homebrew, apt) and as such easy to install and to upgrade.
 
@@ -136,14 +136,19 @@ On Windows the use of [Chocolatey](https://chocolatey.org/) is highly recommende
 
 ### Prerequisites Installation on *Ubuntu*
 
-**Java 11 JDK**
+**Java 21 JDK**
 
-`sudo apt install openjdk-11-jdk`
+`sudo apt install openjdk-21-jdk`
 
 **Node.js**
 
-`curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -`
-`sudo apt install nodejs npm`
+`curl -sL https://deb.nodesource.com/setup_22.x | sudo -E bash -`
+
+`sudo apt install nodejs`
+
+or 
+
+use NVM [link here](https://github.com/nvm-sh/nvm?tab=readme-ov-file#installing-and-updating)
 
 ### Prerequisites Installation on *MacOS*
 
@@ -151,29 +156,29 @@ On Windows the use of [Chocolatey](https://chocolatey.org/) is highly recommende
 
 `/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
 
-**Java 11**
+**Java 21**
 
-deprecated:
-`brew tap AdoptOpenJDK/openjdk`
-`brew cask install adoptopenjdk11`
+`brew install openjdk@21`
 
-Adopt has been move to Adoptium, with Temurin. Find the correct pkg version [here](https://adoptium.net/download/)
+> :warning: **WARNING**: After the installation is completed, one needs to pay attention to `brew` output, as it may be necessary to run additional commands to make `java` available in the `PATH`. When the `PATH` is updated, the terminal needs to be restarted for changes to take effect.
 
 **Node.js**
 
-`brew install node@12`
+`brew install node@22`
+
+> :warning: **WARNING**: After the installation is completed, one needs to pay attention to `brew` output, as it may be necessary to run additional commands to make `node` available in the `PATH`. When the `PATH` is updated, the terminal needs to be restarted for changes to take effect.
 
 or 
 
 use NVM [link here](https://github.com/nvm-sh/nvm?tab=readme-ov-file#installing-and-updating)
 
 
-### Prerequisites Installation on *Windows 10*
-See [installation instruction](https://chocolatey.org/docs/installation) for [Chocolatey](https://chocolatey.org).
+### Prerequisites Installation on *Windows*
+See [installation instruction](https://chocolatey.org/install) for [Chocolatey](https://community.chocolatey.org/).
 
-**Java 11**
+**Java 21**
 
-`choco install adoptopenjdk11 -y`
+`choco install microsoft-openjdk -y`
 
 **Node**
 

@@ -36,18 +36,11 @@ module.exports = function (defaults) {
     // add alias for test directory from metaphacts-platform web project
     webpackConfig.resolve.alias['platform-tests'] = defaults.TEST;
 
+    // remove ModuleFederationPlugin, we don't need it in unit tests and it mess up with karma build
+    webpackConfig.plugins.pop();
+
     return {
-        frameworks: ['mocha', 'chai', 'chai-as-promised', 'webpack'],
-        plugins: [
-            'karma-mocha',
-            'karma-mocha-reporter',
-            'karma-chai-plugins',
-            'karma-sourcemap-loader',
-            'karma-webpack',
-            'karma-chrome-launcher',
-            'karma-firefox-launcher',
-            'karma-junit-reporter'
-        ],
+        frameworks: ['mocha', 'chai', 'webpack'],
         basePath: defaults.ROOT_DIR,
         preprocessors: {
             '**/*.test.ts': ['webpack']

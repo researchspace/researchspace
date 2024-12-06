@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import RDF = require('../core/Rdf');
+import * as RDF from '../core/Rdf';
 
 module dc {
   export var _NAMESPACE = 'http://purl.org/dc/elements/1.1/';

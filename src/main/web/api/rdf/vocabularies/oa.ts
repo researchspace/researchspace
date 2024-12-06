@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Rdf = require('../core/Rdf');
+import * as Rdf from '../core/Rdf';
 
 module oa {
   export const _NAMESPACE = 'http://www.w3.org/ns/oa#';

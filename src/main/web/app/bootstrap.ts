@@ -28,7 +28,7 @@ import '@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js';
 
 import { ReactErrorCatcher, ModuleRegistry } from 'platform/api/module-loader';
 
-export function initModuleRegistry() {
+export async function initModuleRegistry(isDevelopmentMode: boolean) {
   ReactErrorCatcher.initReactErrorCatcher();
-  ModuleRegistry.init();
+  return ModuleRegistry.init(isDevelopmentMode);
 }

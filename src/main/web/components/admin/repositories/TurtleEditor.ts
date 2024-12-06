@@ -29,6 +29,7 @@ import 'codemirror/addon/edit/matchtags';
 import 'codemirror/addon/edit/matchbrackets';
 
 import { Controlled as ReactCodeMirror } from 'react-codemirror2';
+import CodeMirror from 'codemirror';
 
 interface Props {
   turtleString: string;

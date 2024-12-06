@@ -1,6 +1,6 @@
 /**
  * ResearchSpace
- * Copyright (C) 2020, © Trustees of the British Museum
+ * Copyright (C) 2024, PHAROS: The International Consortium of Photo Archives
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -16,19 +16,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EventMaker } from 'platform/api/events';
-import * as Rdf from 'platform/api/rdf/core/Rdf';
-
-export interface SemanticTreeInputEventData {
-
-  /**
-   * triggered only when a single item can be selected, when selection is empty iri will be undefined
-   */
-  'SemanticTreeInput.ItemSelectionChanged': {
-    iri?: string;
-    iris?: Rdf.Iri[];
-  }
+interface MetaObject {
+  id: string;
+  storageKind: string;
+  mutableStorage: boolean;
+  components?: string[];
 }
 
-const event: EventMaker<SemanticTreeInputEventData> = EventMaker;
-export const ItemSelectionChanged = event('SemanticTreeInput.ItemSelectionChanged');
+// Define the endpoint constant
+const LIST_APPS_ENDPOINT = '/rest/admin/apps';
+
+/**
+ * Get all apps with corresponding metadata.
+
+ * @see - org.researchspace.rest.endpoint.AppAdminEndpoint
+ */
+export async function getAllApps(): Promise<MetaObject[]> {
+  const response = await fetch(LIST_APPS_ENDPOINT);
+
+  if (!response.ok) {
+    throw new Error('Network response was not ok ' + response.statusText);
+  }
+
+  const data: MetaObject[] = await response.json();
+  return data;
+}

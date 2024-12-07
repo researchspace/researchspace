@@ -697,23 +697,10 @@
     {{/default}}
   {{/switch}}
 
-  {{#if (or allowResourceDelete imageAnnotation)}} 
-    {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
-      <hr>
-      <bs-menu-item>
-        <rs-icon icon-type="rounded" icon-name="delete" class="icon-left" symbol="true"></rs-icon>            
-        <mp-graph-store-action title="Delete" 
-                                action="DELETE" 
-                                graphuri="{{iri}}" 
-                                graph-description="{{label.value}}">
-          <span>Delete</span>          
-        </mp-graph-store-action>
-      </bs-menu-item>
-    {{else}}
+  {{#if (or allowResourceDelete imageAnnotation)}}     
       {{#if (not (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/User"))}}
         <hr>
         [[> deleteButton resourceFormIRI=resourceFormIRI]]
-      {{/if}}
     {{/if}}
   {{/if}}
   
@@ -795,6 +782,7 @@
                                       "viewId": "{{iri}}",
                                       "mode": "edit",
                                       "editable": true,
+                                      "resourceConfig":"{{resourceConfig}}",
                                       "node": "{{iri}}"
                           }'>
         </inline-template> 

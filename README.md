@@ -8,7 +8,7 @@
 - - -
 
 <p align="center">
-  <a href="https://drive.google.com/file/d/10W9iMj2w6I9iXvIiRBp9gS1YrF_FG8Ix/view?usp=sharing">
+  <a href="https://nightly.link/researchspace/researchspace/workflows/main/master/zip-bundle.zip">
     <img src="https://img.shields.io/badge/download-zip-blue" height="30px"></a> 
   <a href="https://hub.docker.com/repository/docker/researchspace/platform-ci/general">
     <img src="https://img.shields.io/badge/docker-researchspace%2Fplatform--ci%3Alatest-blue" height="30px"></a>
@@ -107,7 +107,7 @@ Latest docker images for ResearchSpace are available on [Docker Hub](https://hub
 
 <!-- Download the latest ZIP bundle from the latest [CI build](https://github.com/researchspace/researchspace/actions?query=branch%3Amaster) artefacts and follow instructions in the README file inside the ZIP.-->
 
-[Download Release](https://drive.google.com/file/d/10W9iMj2w6I9iXvIiRBp9gS1YrF_FG8Ix/view?usp=sharing) - empty ResearchSpace bundle with [blazegraph triplestore](https://blazegraph.com/) and [digilib](https://robcast.github.io/digilib/) IIIF viewer.
+[Download Release](https://nightly.link/researchspace/researchspace/workflows/main/master/zip-bundle.zip) - empty ResearchSpace bundle with [blazegraph triplestore](https://blazegraph.com/) and [digilib](https://robcast.github.io/digilib/) IIIF viewer.
 
 # Browser Compatibility
 The ResearchSpace platform's **browser compatibility** is **Google Chrome (minimum version 53)** and **Mozilla Firefox (minimum version 58)**.

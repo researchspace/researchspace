@@ -17,8 +17,6 @@
  */
 package org.researchspace.repository.sparql.qlever;
 
-import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.eclipse.rdf4j.repository.RepositoryException;
 import org.researchspace.repository.sparql.CustomSPARQLRepository;
 
 /**
@@ -27,15 +25,11 @@ import org.researchspace.repository.sparql.CustomSPARQLRepository;
  * @see https://github.com/ad-freiburg/qlever
  * @see QLeverRepositoryConnection
  * @author Artem Kozlov
+ * 
+ * @deprecated QLever now supports ASK, so there is no need in custom repository
  */
 public class QLeverRepository extends CustomSPARQLRepository {
     public QLeverRepository(String endpointUrl) {
         super(endpointUrl);
-    }
-
-    @Override
-    public RepositoryConnection getConnection() throws RepositoryException {
-        // qlever doesn't support quads, for now
-        return new QLeverRepositoryConnection(this, createHTTPClient(), false);
     }
 }

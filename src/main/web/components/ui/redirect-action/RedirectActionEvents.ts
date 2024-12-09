@@ -24,7 +24,7 @@ export interface RedirectActionEventData {
    * <mp-event-target-redirect/> listen to this event and
    * perform redirect action in response to the event
    */
-  'RedirectAction.perform': { iri?: string };
+  'RedirectAction.perform': { iri?: string; queryParams?: { [key: string]: string }  };
 }
 const event: EventMaker<RedirectActionEventData> = EventMaker;
 

@@ -98,18 +98,27 @@ export class RedirectAction extends Component<RedirectActionProps> {
   }
 
   componentDidMount() {
-    const { id, action, queryParams } = this.props;
+    let { id, action, queryParams } = this.props;
 
     this.cancellation.map(listen({ eventType: RedirectActionPerform, target: id })).observe({
       value: (result) => {
-        if (action === 'redirect' && !result.data.iri) {
-          addNotification({
-            level: 'error',
-            message:
-              'The component is working in the "redirect" mode' + ", but the catched event doesn't provide any IRI.",
-          });
+        queryParams = { ...queryParams, ...result.data?.queryParams };
+
+        if (action === 'reload') {
+          refresh();
+        } else if (action === 'redirect') {
+          if (!result.data.iri) {
+            addNotification({
+              level: 'error',
+              message:
+                'The component is working in the "redirect" mode' + ", but the catched event doesn't provide any IRI.",
+            });
+          } else {
+            navigateToResource(new Rdf.Iri(result.data.iri), queryParams).onValue((v) => v);
+          }
+        } else {
+          navigateToResource(Rdf.iri(action), queryParams).onValue((v) => v);
         }
-        performRedirectAction(new Rdf.Iri(result.data.iri), action, queryParams);
       },
       error: () => {
         addNotification({
@@ -130,13 +139,3 @@ export class RedirectAction extends Component<RedirectActionProps> {
 }
 
 export default RedirectAction;
-
-function performRedirectAction(subject: Rdf.Iri, action: RedirectActionType, queryParams?: { [key: string]: string }) {
-  if (action === 'reload') {
-    refresh();
-  } else if (action === 'redirect') {
-    navigateToResource(subject, queryParams).onValue((v) => v);
-  } else {
-    navigateToResource(Rdf.iri(action), queryParams).onValue((v) => v);
-  }
-}

@@ -185,8 +185,17 @@
                       </template>
                     </mp-event-target-template-render>
 
-                    <mp-event-proxy id='{{viewId}}-update-tree-on-graph-action-delete' 
-                                    on-event-types='["GraphAction.Delete"]' 
+                 [[!--   <mp-event-proxy  id='{{viewId}}-update-tree-on-graph-action-delete' 
+                                          on-event-types='["GraphAction.Delete"]' 
+                                          proxy-event-type='Component.TemplateUpdate' 
+                                          proxy-targets='["{{viewId}}-entity-editor-area"]'
+                                          additional-data='{"collectionDeleted": "true"}'
+                          ></mp-event-proxy>
+                  --]]
+
+                    <mp-event-proxy id='{{viewId}}-update-tree-on-authority-delete' 
+                                    on-event-source='{{collection}}-resource-form'
+                                    on-event-type='Form.ResourceRemoved'
                                     proxy-event-type='Component.TemplateUpdate' 
                                     proxy-targets='["{{viewId}}-entity-editor-area"]'
                                     additional-data='{"collectionDeleted": "true"}'
@@ -408,7 +417,6 @@
                                             >
                             <button class="btn btn-default btn-textAndIcon" title="Refresh form">
                               <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
-                                Refresh
                             </button>
                           </mp-event-trigger>
                         {{/if}}
@@ -479,6 +487,7 @@
 
                         <template id='template'>
                           <div>
+                          [[!--  
                             {{#if (eq resourceConfiguration "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
                               <mp-event-proxy id='{{viewId}}-update-form-on-graph-action-delete' 
                                               on-event-types='["GraphAction.Delete"]' 
@@ -488,6 +497,7 @@
                                                                 "label": "{{bindings.0.label.value}}" }'
                               ></mp-event-proxy>
                             {{/if}}
+                          --]]
                             <mp-event-proxy id='{{viewId}}-tree-refresh-on-delete' 
                                             on-event-source='{{iri}}-resource-form' 
                                             on-event-types='["Form.ResourceRemoved"]'
@@ -501,6 +511,7 @@
 
                         <template id="noResults">
                           <div>
+                          [[!-- 
                             {{#if (eq resourceConfiguration "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
                               <mp-event-proxy id='{{viewId}}-noResults-on-graph-action-delete' 
                                               on-event-types='["GraphAction.Delete"]' 
@@ -510,6 +521,7 @@
                                                                 "label": "{{label}}" }'
                               ></mp-event-proxy>
                             {{/if}}
+                          --]]
 
                             <mp-event-proxy id='{{viewId}}-noResults-tree-refresh-on-delete' 
                                             on-event-source='{{iri}}-resource-form' 

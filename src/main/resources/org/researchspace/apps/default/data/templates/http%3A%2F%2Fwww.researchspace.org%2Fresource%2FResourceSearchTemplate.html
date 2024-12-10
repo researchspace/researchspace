@@ -1,10 +1,24 @@
+[[!-- Close Delete dialog window once resource delete submitted on dropdown action --]]
+<mp-event-proxy id='update-ResourceSearchPage-on-resourceForm-deleted' 
+                on-event-types='["Form.ResourceRemoved"]'
+                proxy-event-type='OverlayDialog.Close' 
+                proxy-targets='["[[urlParam "viewid" escape=false]]-delete-resource-dialog"]'
+></mp-event-proxy>  
+
 <mp-event-target-template-render id="[[urlParam 'resourceconfig' escape=false]]-resourceSearch-frame" template='{{> template}}'>
   <template id='template'>
 
     <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-searchPage-on-form-actions'
-                    on-event-types='["Form.ResourceUpdated", "Form.ResourceRemoved"]'      
+                    on-event-types='["Form.ResourceUpdated"]'      
                     proxy-event-type='Component.TemplateUpdate' 
                     proxy-targets='["[[urlParam "resourceconfig" escape=false]]-resourceSearch-frame"]'>
+    ></mp-event-proxy>
+
+    <mp-event-proxy id='[[urlParam "viewid" escape=false]]-delete-searchPage-on-form-actions'
+                    on-event-types='["Form.ResourceRemoved"]'      
+                    proxy-event-type='Component.TemplateUpdate' 
+                    proxy-targets='["[[urlParam "resourceconfig" escape=false]]-resourceSearch-frame"]'
+                    additional-data='{"resourceDeleted": true, "iri": "{{iri}}"}'>
     ></mp-event-proxy>
 
     <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-searchPage-on-ontodia-data-changed'
@@ -72,13 +86,15 @@
       ></mp-event-proxy>
     {{/if}}
   
-    {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
-      <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-AuthorityDocumentSearch-on-delete'
-                      on-event-types='["GraphAction.Delete"]'    
-                      proxy-event-type='Component.TemplateUpdate' 
-                      proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document-resourceSearch-frame"]'
-      ></mp-event-proxy>
-    {{/if}}
+    [[!--
+      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
+        <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-AuthorityDocumentSearch-on-delete'
+                        on-event-types='["GraphAction.Delete"]'    
+                        proxy-event-type='Component.TemplateUpdate' 
+                        proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document-resourceSearch-frame"]'
+        ></mp-event-proxy>
+      {{/if}}
+    --]]
 
     [[!-- WARNING: any KPs used for search has to have a domain matching the resource ontology class --]]
     [[#if (urlParam "searchkpcategory")]]

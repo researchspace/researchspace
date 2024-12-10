@@ -1,5 +1,12 @@
 [[!-- CUSTOM HOMEPAGE --]]
 
+[[!-- Close Delete dialog window once resource delete submitted on dropdown action --]]
+<mp-event-proxy id='homepage-close-removal-dialog' 
+                on-event-types='["Form.ResourceRemoved"]'
+                proxy-event-type='OverlayDialog.Close' 
+                proxy-targets='["homepage-delete-resource-dialog"]'
+></mp-event-proxy>  
+
 [[!-- Update homepage on actions --]]
 <mp-event-proxy id='update-homepage-on-actions'
                 on-event-types='[ "Form.ResourceCreated", 
@@ -331,10 +338,10 @@
                                       query='SELECT DISTINCT ?subject ?iri WHERE {
                                                   BIND(?subject as ?iri) .
                                               } ORDER BY DESC(?date)
-                                              LIMIT 30'
+                                              LIMIT 20'
                                       tuple-template='{{> gridItem }}'
                                       options='{"showFilter":false,
-                                                "resultsPerPage":30
+                                                "resultsPerPage": 20
                                               }'
                       >
                         <template id='gridItem'>
@@ -644,7 +651,7 @@
                                             ?descriptionAppellation crm:P190_has_symbolic_content ?description .
                                           }
                                         } ORDER BY ?projectName
-                                          LIMIT 100'
+                                          LIMIT 10'
                               
                                   options='{"showFilter":false,
                                             "resultsPerPage":100,

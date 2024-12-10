@@ -1,12 +1,4 @@
 {{#bind viewId=dashboardId}}
-    <mp-event-proxy id='{{iri}}-refresh-narrativeResources-on-resourceForm-deleted'
-                    on-event-source='{{iri}}-resource-form' 
-                    on-event-types='["Form.ResourceRemoved"]'      
-                    additional-data='{"resourceDeleted": true, "iri": "{{iri}}"}'
-                    proxy-event-type='Component.TemplateUpdate' 
-                    proxy-targets='["{{iri}}-resources-in-narrative-frame"]'
-    ></mp-event-proxy>
-
     [[!-- Update on resourceForm actions, set actions, narrative updated, map saved --]]
     <mp-event-proxy id='{{iri}}-update-narrativeResources-on-actions'
                     on-event-types='["Form.ResourceUpdated", 
@@ -18,9 +10,18 @@
                                     "Ontodia.DiagramSaved",
                                     "Ontodia.DiagramDataPersisted"
                                     ]'         
+                    additional-data='{"iri": "{{iri}}"}'
                     proxy-event-type='Component.TemplateUpdate' 
                     proxy-targets='["{{iri}}-resources-in-narrative-frame"]'
     ></mp-event-proxy> 
+
+    <mp-event-proxy id='{{iri}}-refresh-narrativeResources-on-resourceForm-deleted'
+                    on-event-source='{{iri}}-resource-form' 
+                    on-event-types='["Form.ResourceRemoved"]'      
+                    additional-data='{"resourceDeleted": true, "iri": "{{iri}}"}'
+                    proxy-event-type='Component.TemplateUpdate' 
+                    proxy-targets='["{{iri}}-resources-in-narrative-frame"]'
+    ></mp-event-proxy>
 
     <mp-event-target-template-render id="{{iri}}-resources-in-narrative-frame" template='{{> template}}'>
         <template id='template'>

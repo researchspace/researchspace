@@ -213,11 +213,16 @@ export function GenericFunctions(handlebars) {
     },
   
     uniqProviders: function(provenance: any) {
-      let providers = provenance.flatMap(prov => 
-          prov['https://artresearch.net/resource/field_definition/pharos_model/provider'].values.map(provider => ({
+      let providers = provenance.flatMap(prov => {
+          if (prov['https://artresearch.net/resource/field_definition/pharos_model/provider']) {
+            return prov['https://artresearch.net/resource/field_definition/pharos_model/provider'].values.map(provider => ({
               label: provider.label,
               icon: provider['https://artresearch.net/resource/field_definition/pharos_model/provider_icon'].values[0]['@value']
-          }))
+            }))
+          } else {
+            return [];
+          }
+        }
       );
       return _.uniqBy(providers, 'icon');
     },

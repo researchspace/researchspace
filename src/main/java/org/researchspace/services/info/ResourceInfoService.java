@@ -276,10 +276,14 @@ public class ResourceInfoService implements PlatformCache {
         if (pattern != null) {
             queryBuilder.append(generateValuesClause(field, context)).append("\n");
             queryBuilder.append(pattern).append("\n");
-            if (!isProvenance) {
+            if (!isProvenance && !hasExplicitProvenanceBinding(pattern)) {
                 queryBuilder.append(generateProvenanceBind(pattern)).append("\n");
             }
         }
+    }
+
+    private boolean hasExplicitProvenanceBinding(String pattern) {
+        return pattern.contains("?provUri");
     }
 
     private String generateProvenanceBind(String pattern) {

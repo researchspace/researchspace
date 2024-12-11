@@ -26,10 +26,9 @@
                 <div style="flex: 1;"> 
                   <div class="success-documentation-section-title">Success!</div>
                   <div class="success-documentation-section-content">
-                    <span style="text-transform: capitalize;">
-                      <mp-label iri='{{iri}}'></mp-label>
+                    <span>
+                      {{#if label}}{{label}}{{else}}<mp-label iri='{{iri}}'></mp-label>{{/if}} has been deleted.
                     </span>
-                    <span> has been deleted.</span>
                   </div>
                 </div>
                 
@@ -193,13 +192,28 @@
                           ></mp-event-proxy>
                   --]]
 
-                    <mp-event-proxy id='{{viewId}}-update-tree-on-authority-delete' 
-                                    on-event-source='{{collection}}-resource-form'
-                                    on-event-type='Form.ResourceRemoved'
-                                    proxy-event-type='Component.TemplateUpdate' 
-                                    proxy-targets='["{{viewId}}-entity-editor-area"]'
-                                    additional-data='{"collectionDeleted": "true"}'
-                    ></mp-event-proxy>
+                    <semantic-query query='SELECT * WHERE {
+                                              BIND("{{viewId}}" as ?viewId) . 
+                                              BIND(<{{collection}}> as ?collection) .
+                                              ?collection crm:P1_is_identified_by ?appellation . 
+                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                              ?appellation crm:P190_has_symbolic_content ?label .
+                                            }'
+                                      template='{{> template}}'>
+                          
+                        <template id="template">
+                          <mp-event-proxy id='{{bindings.0.viewId.value}}-update-tree-on-authority-delete' 
+                                          on-event-source='{{bindings.0.collection.value}}-resource-form'
+                                          on-event-type='Form.ResourceRemoved'
+                                          proxy-event-type='Component.TemplateUpdate' 
+                                          proxy-targets='["{{bindings.0.viewId.value}}-entity-editor-area"]'
+                                          additional-data='{"collectionDeleted": "true",
+                                                              "iri": "{{bindings.0.iri.value}}",
+                                                              "label": "{{bindings.0.label.value}}"
+                                                            }'
+                          ></mp-event-proxy>
+                      </template>
+                    </semantic-query>
                   </div>
                 </div>
               </mp-splitpane-sidebar-open>
@@ -357,14 +371,9 @@
                                 <div style="flex: 1;"> 
                                   <div class="success-documentation-section-title">Success!</div>
                                   <div class="success-documentation-section-content">
-                                    <span style="text-transform: capitalize;">
-                                      {{#if label}}
-                                        {{label}}
-                                      {{else}}
-                                        <mp-label iri='{{iri}}'></mp-label>
-                                      {{/if}}
+                                    <span>
+                                      {{#if label}}{{label}}{{else}}<mp-label iri='{{iri}}'></mp-label>{{/if}} has been deleted.
                                     </span>
-                                    <span> has been deleted.</span>
                                   </div>
                                 </div>
                                 
@@ -504,6 +513,7 @@
                                             proxy-event-type='Component.TemplateUpdate' 
                                             proxy-targets='[{{#if collection}}"{{collection}}-mytree",{{/if}} "{{viewId}}-term-forms"]'
                                             additional-data='{"mode": "deleted", 
+                                                              "iri": "{{iri}}",
                                                               "label": "{{bindings.0.label.value}}" }'
                             ></mp-event-proxy>
                           </div>

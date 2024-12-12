@@ -697,23 +697,10 @@
     {{/default}}
   {{/switch}}
 
-  {{#if (or allowResourceDelete imageAnnotation)}} 
-    {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
+  {{#if (or allowResourceDelete imageAnnotation)}}     
+    {{#if (not (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/User"))}}
       <hr>
-      <bs-menu-item>
-        <rs-icon icon-type="rounded" icon-name="delete" class="icon-left" symbol="true"></rs-icon>            
-        <mp-graph-store-action title="Delete" 
-                                action="DELETE" 
-                                graphuri="{{iri}}" 
-                                graph-description="{{label.value}}">
-          <span>Delete</span>          
-        </mp-graph-store-action>
-      </bs-menu-item>
-    {{else}}
-      {{#if (not (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/User"))}}
-        <hr>
-        [[> deleteButton resourceFormIRI=resourceFormIRI]]
-      {{/if}}
+      [[> deleteButton resourceFormIRI=resourceFormIRI]]
     {{/if}}
   {{/if}}
   
@@ -736,7 +723,7 @@
   {{/if}} 
 
   <mp-overlay-dialog show='{{#if delete}}true{{else}}false{{/if}}' 
-                      id='{{viewId}}-delete-resource-dialog-{{iri}}' 
+                      id='{{viewId}}-delete-resource-dialog' 
                       title="Delete {{resourceName}}" type="modal" bs-size="large">
     <mp-overlay-dialog-trigger>
       <bs-menu-item>
@@ -745,13 +732,14 @@
       </bs-menu-item>
     </mp-overlay-dialog-trigger>
     <mp-overlay-dialog-content>
+
       <div>
         <p>Are you sure you want to delete <strong><mp-label iri="{{iri}}"></mp-label></strong> ?</p>
       
         <div>
-          <semantic-query query='SELECT DISTINCT ?resource ?label  
+          <semantic-query query='SELECT DISTINCT ?resource ?label 
                                   WHERE {
-                                      <{{iri}}> ?p ?resource .
+                                      ?resource ?p <{{iri}}> .
                                     { 
                                       ?resource crm:P1_is_identified_by ?appellation .
                                       ?appellation a crm:E41_Appellation .
@@ -767,22 +755,40 @@
                                     } UNION {
                                       ?resource crm:P190_has_symbolic_content ?label .
                                     }
-                                  }'
+                                  } ORDER BY ?label 
+                                    LIMIT 21'
                                 template='{{> referredByTemplate}}'>
 
               <template id='referredByTemplate'>
-                Some resources in the system link to it:
+                Some resources in the system link to it{{#if bindings.20.resource.value}} (only 20 visualised below){{/if}}:
                 <ul>
-                  {{#each bindings}}
-                    <li>
-                      <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames" 
-                                      draggable="false"
-                                      urlqueryparam-view="resource-editor"
-                                      urlqueryparam-resource-iri="{{resource.value}}">
-                        <div class="text-link">{{label.value}}</div>
-                      </semantic-link>
-                    </li>
-                  {{/each}}
+                  {{#if bindings.20.resource.value}}
+                    {{#each bindings}}
+                      {{#if @last}}
+                      {{else}}
+                        <li>
+                          <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                          draggable="false"
+                                          title="{{label.value}}"
+                                          urlqueryparam-view="resource-editor"
+                                          urlqueryparam-resource-iri="{{resource.value}}">
+                            <div class="text-link-action">{{label.value}}</div>
+                          </semantic-link>
+                        </li>
+                      {{/if}}
+                    {{/each}}
+                  {{else}}
+                    {{#each bindings}}
+                      <li>
+                        <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                        draggable="false"
+                                        urlqueryparam-view="resource-editor"
+                                        urlqueryparam-resource-iri="{{resource.value}}">
+                          <div class="text-link-action">{{label.value}}</div>
+                        </semantic-link>
+                      </li>
+                    {{/each}}
+                  {{/if}}
                 </ul>
               </template>
           </semantic-query>
@@ -795,6 +801,7 @@
                                       "viewId": "{{iri}}",
                                       "mode": "edit",
                                       "editable": true,
+                                      "resourceConfig":"{{resourceConfig}}",
                                       "node": "{{iri}}"
                           }'>
         </inline-template> 
@@ -813,7 +820,7 @@
       <div class="form-btn-group">
         <mp-event-trigger id='{{iri}}-cancel-modal' 
                           type='OverlayDialog.Close' 
-                          targets='["{{viewId}}-delete-resource-dialog-{{iri}}"]'>
+                          targets='["{{viewId}}-delete-resource-dialog"]'>
           <button class="btn btn-default">Cancel</button>
         </mp-event-trigger>
 
@@ -825,15 +832,6 @@
         </mp-event-trigger>  
       </div>
 
-      [[!-- Refresh Search page for a resource removed from search page - dropdown action --]]
-      <mp-event-proxy id='{{iri}}-update-ResourceSearchPage-on-resourceForm-deleted-{{viewId}}'
-                      on-event-source='{{iri}}-resource-form' 
-                      on-event-types='["Form.ResourceRemoved"]'      
-                      proxy-event-type='Component.TemplateUpdate' 
-                      additional-data='{"resourceDeleted": true, "iri": "{{iri}}"}'
-                      proxy-targets='["{{resourceConfig}}-resourceSearch-frame"]'
-      ></mp-event-proxy> 
-
       [[!-- Listen Form.ResourceRemoving to display a 'please wait' message while waiting the delete --]]
       <mp-event-proxy id='{{iri}}-resource-removing-{{viewId}}' 
                       on-event-source='{{iri}}-resource-form' 
@@ -841,16 +839,9 @@
                       proxy-event-type='Component.TemplateUpdate' 
                       additional-data='{"resourceDeleting": true, "iri": "{{iri}}"}'
                       proxy-targets='["{{iri}}-deleting-area-{{viewId}}"]'
-      ></mp-event-proxy> 
-
-      [[!-- Close Delete dialog window once delete submitted --]]
-      <mp-event-proxy id='{{iri}}-close-removal-dialog' 
-                        on-event-source='{{iri}}-resource-form' 
-                        on-event-types='["Form.ResourceRemoved"]'
-                        proxy-event-type='OverlayDialog.Close' 
-                        proxy-targets='["{{viewId}}-delete-resource-dialog-{{iri}}"]'
-      ></mp-event-proxy>       
+      ></mp-event-proxy>      
       
     </mp-overlay-dialog-content>
   </mp-overlay-dialog>
 [[/inline]]
+

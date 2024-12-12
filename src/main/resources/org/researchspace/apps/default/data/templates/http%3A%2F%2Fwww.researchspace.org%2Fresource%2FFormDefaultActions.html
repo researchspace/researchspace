@@ -190,32 +190,58 @@
           </p>
 
           <div>
-            <semantic-query 
-                            query='
-                              SELECT DISTINCT ?resource ?label  
-                              WHERE {
-                                ?resource ?p <{{node}}> .
-                                OPTIONAL {<{{node}}> skos:prefLabel ?nodeLabel .}
-                                OPTIONAL {<{{node}}> rdfs:label ?nodeLabel .}
-                
-                                OPTIONAL {
-                                  ?resource rdfs:label ?label .
-                                }
-                                OPTIONAL {
-                                  ?resource skos:prefLabel ?label .
-                                }
-                              }
-                            '
-                            template='{{> referredByTemplate node=node}}'
+            <semantic-query query='SELECT DISTINCT ?resource ?label  
+                                    WHERE {
+                                      ?resource ?p <{{node}}> .
+                                      { 
+                                        ?resource crm:P1_is_identified_by ?appellation .
+                                        ?appellation a crm:E41_Appellation .
+                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                        ?appellation crm:P190_has_symbolic_content ?label .
+                                      } UNION {
+                                        ?resource crm:P170i_time_is_defined_by ?timePrimitive .
+                                        ?timePrimitive a crm:E61_Time_Primitive .
+                                        ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
+                                        ?timePrimitive crm:P190_has_symbolic_content ?label .
+                                      } UNION {
+                                        ?resource skos:prefLabel ?label .
+                                      } UNION {
+                                        ?resource crm:P190_has_symbolic_content ?label .
+                                      }
+                                    } ORDER BY ?label 
+                                      LIMIT 21'
+                            template='{{> referredByTemplate}}'
             >
               <template id='referredByTemplate'>
-                Some resources in the system link to it:
+                Some resources in the system link to it{{#if bindings.20.resource.value}} (only 20 visualised below){{/if}}:
                 <ul>
-                  {{#each bindings}}
-                    <li>
-                      <semantic-link iri='{{resource.value}}'>{{label.value}}</semantic-link>
-                    </li>
-                  {{/each}}
+                  {{#if bindings.20.resource.value}}
+                    {{#each bindings}}
+                      {{#if @last}}
+                      {{else}}
+                        <li>
+                          <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                          title="{{label.value}}"
+                                          draggable="false"
+                                          urlqueryparam-view="resource-editor"
+                                          urlqueryparam-resource-iri="{{resource.value}}">
+                            <div class="text-link-action">{{label.value}}</div>
+                          </semantic-link>
+                        </li>
+                      {{/if}}
+                    {{/each}}
+                  {{else}}
+                    {{#each bindings}}
+                      <li>
+                        <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                        draggable="false"
+                                        urlqueryparam-view="resource-editor"
+                                        urlqueryparam-resource-iri="{{resource.value}}">
+                          <div class="text-link-action">{{label.value}}</div>
+                        </semantic-link>
+                      </li>
+                    {{/each}}
+                  {{/if}}
                 </ul>
               </template>
             </semantic-query>

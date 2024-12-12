@@ -58,6 +58,8 @@ import * as TabsEvents from '../ui/tabs/TabEvents'
 import { SparqlUtil, SparqlClient } from 'platform/api/sparql';
 import { string } from 'prop-types';
 import { LdpService } from 'platform/api/services/ldp';
+import { RDFGraphStoreService } from 'platform/api/services/rdf-graph-store';
+import * as GraphActionEvents from 'platform/components/admin/rdf-upload/GraphActionEvents';
 
 interface State {
   readonly model?: CompositeValue;
@@ -463,7 +465,9 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
       .remove(this.initialState.model)
       .observe({
         value: () => {
-          // if item to be removed is a setItem also delete its connected setItems
+          // if item to be removed is also a setItem also delete its connected setItems 
+          // (several sets can contain setItems connected to the resource to be removed)
+          // to delete a setItem, one needs to identify the parent set
           this.getSetIris(itemToRemove)
                 .onValue(f => {
                   f.results.bindings.map(binding => {
@@ -512,14 +516,42 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
               error: () => {}
             })
           ;     
-      });   
+      });
+
+    this.executeAskIsAuthorityDocumentQuery(itemToRemove)
+      .onValue(answer => {
+        if (answer) {
+          //do a delete of the whole graph 
+          RDFGraphStoreService.deleteGraph({ targetGraph: itemToRemove, repository: "authorities"})
+            .onValue((_) => {
+              // FIRE EVENT
+              trigger({
+                eventType: GraphActionEvents.GraphActionSuccess,
+                source: Math.random().toString()
+              }); })
+            .onError((error: string) => {
+              addNotification({
+                level: 'error',
+                message: error,
+              });
+            });
+        }  
+      });  
   }
 
-   private  executeAskIsResourceQuery(resourceIri: Rdf.Iri): Kefir.Property<boolean> {
+  private  executeAskIsResourceQuery(resourceIri: Rdf.Iri): Kefir.Property<boolean> {
       const IS_LDP_RESOURCE_QUERY = SparqlUtil.Sparql`ASK { ?subject <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/ldp#Resource>}`;
 
       return SparqlClient.ask(
             SparqlClient.setBindings(IS_LDP_RESOURCE_QUERY, { subject: resourceIri }),
+                                    {context: {repository:"default"} });
+  }
+
+  private  executeAskIsAuthorityDocumentQuery(resourceIri: Rdf.Iri): Kefir.Property<boolean> {
+      const IS_AUTHORITY_DOCUMENT_QUERY = SparqlUtil.Sparql`ASK { ?subject <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.cidoc-crm.org/cidoc-crm/E32_Authority_Document>}`;
+      
+      return SparqlClient.ask(
+            SparqlClient.setBindings(IS_AUTHORITY_DOCUMENT_QUERY, { subject: resourceIri }),
                                     {context: {repository:"default"} });
   }
 

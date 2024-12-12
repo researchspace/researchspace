@@ -5,13 +5,25 @@
 
 <div style='flex: 1 1 0px; overflow: hidden; display: flex; flex-direction: column;'>
   {{#if iri}}
-    <mp-event-proxy id='{{ontodiaVariable}}-update-map-on-resourceForm-deleted'
-                    on-event-source='{{iri}}-resource-form' 
-                    on-event-types='["Form.ResourceRemoved"]'      
-                    proxy-event-type='Component.TemplateUpdate' 
-                    additional-data='{"resourceDeleted": true, "iri": "{{iri}}"}'
-                    proxy-targets='["{{ontodiaVariable}}-map-render-area"]'
-    ></mp-event-proxy>
+      <semantic-query query='SELECT * WHERE {
+                            BIND(<{{iri}}> as ?iri) .
+                            ?iri crm:P190_has_symbolic_content ?label .
+                          }'
+                    template='{{> template}}'>
+                    
+        <template id="template">
+          <mp-event-proxy id='{{ontodiaVariable}}-update-map-on-resourceForm-deleted'
+                      on-event-source='{{bindings.0.iri.value}}-resource-form' 
+                      on-event-types='["Form.ResourceRemoved"]'      
+                      proxy-event-type='Component.TemplateUpdate' 
+                      additional-data='{"resourceDeleted": true, 
+                                        "iri": "{{bindings.0.iri.value}}",
+                                        "label": "{{bindings.0.label.value}}"
+                                        }'
+                      proxy-targets='["{{ontodiaVariable}}-map-render-area"]'
+          ></mp-event-proxy>
+        </template>
+    </semantic-query>
 
     <mp-event-proxy id='{{ontodiaVariable}}-update-map-on-toolbar-refresh'
                     on-event-source='toolbar-{{iri}}' 
@@ -31,7 +43,9 @@
             <div style="flex: 1;"> 
               <div class="success-documentation-section-title">Success!</div>
               <div class="success-documentation-section-content">
-                <span><mp-label iri='{{iri}}'></mp-label> has been deleted.</span>
+                <span>
+                  {{#if label}}{{label}}{{else}}<mp-label iri='{{iri}}'></mp-label>{{/if}} has been deleted.
+                </span>
               </div>
             </div>
           </div>

@@ -1,12 +1,4 @@
 {{#bind viewId=dashboardId}}
-    <mp-event-proxy id='{{iri}}-refresh-narrativeResources-on-resourceForm-deleted'
-                    on-event-source='{{iri}}-resource-form' 
-                    on-event-types='["Form.ResourceRemoved"]'      
-                    additional-data='{"resourceDeleted": true, "iri": "{{iri}}"}'
-                    proxy-event-type='Component.TemplateUpdate' 
-                    proxy-targets='["{{iri}}-resources-in-narrative-frame"]'
-    ></mp-event-proxy>
-
     [[!-- Update on resourceForm actions, set actions, narrative updated, map saved --]]
     <mp-event-proxy id='{{iri}}-update-narrativeResources-on-actions'
                     on-event-types='["Form.ResourceUpdated", 
@@ -18,9 +10,30 @@
                                     "Ontodia.DiagramSaved",
                                     "Ontodia.DiagramDataPersisted"
                                     ]'         
+                    additional-data='{"iri": "{{iri}}"}'
                     proxy-event-type='Component.TemplateUpdate' 
                     proxy-targets='["{{iri}}-resources-in-narrative-frame"]'
     ></mp-event-proxy> 
+
+    <semantic-query query='SELECT * WHERE { 
+                            BIND(<{{iri}}> as ?iri) .
+                            ?iri crm:P190_has_symbolic_content ?label .
+                         }'
+                    template='{{> template}}'>
+                    
+        <template id="template">
+            <mp-event-proxy id='{{bindings.0.iri.value}}-refresh-narrativeResources-on-resourceForm-deleted'
+                            on-event-source='{{bindings.0.iri.value}}-resource-form' 
+                            on-event-types='["Form.ResourceRemoved"]'      
+                            additional-data='{"resourceDeleted": true, 
+                                                "iri": "{{bindings.0.iri.value}}",
+                                                "label": "{{bindings.0.label.value}}"
+                                            }'
+                            proxy-event-type='Component.TemplateUpdate' 
+                            proxy-targets='["{{bindings.0.iri.value}}-resources-in-narrative-frame"]'
+            ></mp-event-proxy>
+        </template>
+    </semantic-query>
 
     <mp-event-target-template-render id="{{iri}}-resources-in-narrative-frame" template='{{> template}}'>
         <template id='template'>
@@ -33,7 +46,9 @@
                 <div style="flex: 1;"> 
                     <div class="success-documentation-section-title">Success!</div>
                     <div class="success-documentation-section-content">
-                    <span><mp-label iri='{{iri}}'></mp-label> has been deleted.</span>
+                        <span>
+                            {{#if label}}{{label}}{{else}}<mp-label iri='{{iri}}'></mp-label>{{/if}} has been deleted.
+                        </span>
                     </div>
                 </div>
                 </div>

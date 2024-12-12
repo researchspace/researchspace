@@ -1,85 +1,5 @@
 <mp-event-target-template-render id="[[urlParam 'resourceconfig' escape=false]]-resourceSearch-frame" template='{{> template}}'>
   <template id='template'>
-
-    <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-searchPage-on-form-actions'
-                    on-event-types='["Form.ResourceUpdated", "Form.ResourceRemoved"]'      
-                    proxy-event-type='Component.TemplateUpdate' 
-                    proxy-targets='["[[urlParam "resourceconfig" escape=false]]-resourceSearch-frame"]'>
-    ></mp-event-proxy>
-
-    <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-searchPage-on-ontodia-data-changed'
-                    on-event-type='Ontodia.DiagramDataPersisted'
-                    proxy-event-type='Component.TemplateUpdate' 
-                    proxy-targets='["[[urlParam "resourceconfig" escape=false]]-resourceSearch-frame"]'>
-    </mp-event-proxy>
-
-    {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
-      <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-setSearch-on-set-modification'
-                      on-event-types='["Components.SetManagement.SetAdded",
-                                        "Components.SetManagement.SetRenamed",
-                                        "Components.SetManagement.SetRemoved"]'
-                      proxy-event-type='Component.TemplateUpdate' 
-                      proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Set-resourceSearch-frame"]'>
-      </mp-event-proxy>
-    {{/if}}
-
-    {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")}}
-      <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-semanticChartSearch-on-chart-creation'
-                      on-event-types='["Components.SetManagement.SetAdded"]'
-                      proxy-event-type='Component.TemplateUpdate' 
-                      proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart-resourceSearch-frame"]'>
-      </mp-event-proxy>
-    {{/if}}
-
-    {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline")}}
-      <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-semanticTimelineSearch-on-timeline-creation'
-                      on-event-types='["Components.SetManagement.SetAdded"]'
-                      proxy-event-type='Component.TemplateUpdate' 
-                      proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline-resourceSearch-frame"]'>
-      </mp-event-proxy>
-    {{/if}}
-
-    {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image")}}
-      <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-ImageSearch-on-OverlayComparison-created' 
-                      on-event-types='["OverlayComparison.Created"]'
-                      proxy-event-type='Component.TemplateUpdate' 
-                      proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Image-resourceSearch-frame"]'
-                      additional-data='{"imageOverlayCreated": true }'>
-      </mp-event-proxy>
-    {{/if}}
-
-    {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation")}}
-      <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-ImageAnnotationSearch-on-IIIFViewer-modification' 
-                      on-event-types='["IIIFViewer.RegionCreated", "IIIFViewer.RegionUpdated", "IIIFViewer.RegionRemoved"]'
-                      proxy-event-type='Component.TemplateUpdate' 
-                      proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation-resourceSearch-frame"]'
-      ></mp-event-proxy>
-    {{/if}}
-
-    {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map")}}
-      <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-KMSearch-on-diagram-saved'
-                      on-event-type='Ontodia.DiagramSaved' 
-                      proxy-event-type='Component.TemplateUpdate' 
-                      proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map-resourceSearch-frame"]'
-      ></mp-event-proxy>
-    {{/if}}
-
-    {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}
-      <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-SNSearch-on-narrative-created-or-updated'
-                      on-event-types='["Narrative.Created", "Narrative.Updated"]'    
-                      proxy-event-type='Component.TemplateUpdate' 
-                      proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative-resourceSearch-frame"]'
-      ></mp-event-proxy>
-    {{/if}}
-  
-    {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
-      <mp-event-proxy id='[[urlParam "viewid" escape=false]]-update-AuthorityDocumentSearch-on-delete'
-                      on-event-types='["GraphAction.Delete"]'    
-                      proxy-event-type='Component.TemplateUpdate' 
-                      proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document-resourceSearch-frame"]'
-      ></mp-event-proxy>
-    {{/if}}
-
     [[!-- WARNING: any KPs used for search has to have a domain matching the resource ontology class --]]
     [[#if (urlParam "searchkpcategory")]]
       <semantic-search config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> . ?field <http://www.researchspace.org/resource/system/fields/category> ?category . }" category=(urlParam "searchkpcategory" escape=false))]]'>
@@ -144,27 +64,21 @@
               </template>
 
               <template id='http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart'>
-                <div></div>
               </template>
 
               <template id='http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline'>
-                <div></div>
               </template>
 
               <template id='http://www.researchspace.org/resource/system/resource_configurations_container/data/Set'>
-                <div></div>
               </template>
 
               <template id='http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item'>
-                <div></div>
               </template>
 
               <template id='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'>
-                <div></div>
               </template>
 
               <template id='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation'>
-                <div></div>
               </template>
 
               <template id='default'>

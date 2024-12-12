@@ -26,10 +26,9 @@
                 <div style="flex: 1;"> 
                   <div class="success-documentation-section-title">Success!</div>
                   <div class="success-documentation-section-content">
-                    <span style="text-transform: capitalize;">
-                      <mp-label iri='{{iri}}'></mp-label>
+                    <span>
+                      {{#if label}}{{label}}{{else}}<mp-label iri='{{iri}}'></mp-label>{{/if}} has been deleted.
                     </span>
-                    <span> has been deleted.</span>
                   </div>
                 </div>
                 
@@ -185,12 +184,36 @@
                       </template>
                     </mp-event-target-template-render>
 
-                    <mp-event-proxy id='{{viewId}}-update-tree-on-graph-action-delete' 
-                                    on-event-types='["GraphAction.Delete"]' 
-                                    proxy-event-type='Component.TemplateUpdate' 
-                                    proxy-targets='["{{viewId}}-entity-editor-area"]'
-                                    additional-data='{"collectionDeleted": "true"}'
-                    ></mp-event-proxy>
+                 [[!--   <mp-event-proxy  id='{{viewId}}-update-tree-on-graph-action-delete' 
+                                          on-event-types='["GraphAction.Delete"]' 
+                                          proxy-event-type='Component.TemplateUpdate' 
+                                          proxy-targets='["{{viewId}}-entity-editor-area"]'
+                                          additional-data='{"collectionDeleted": "true"}'
+                          ></mp-event-proxy>
+                  --]]
+
+                    <semantic-query query='SELECT * WHERE {
+                                              BIND("{{viewId}}" as ?viewId) . 
+                                              BIND(<{{collection}}> as ?collection) .
+                                              ?collection crm:P1_is_identified_by ?appellation . 
+                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                              ?appellation crm:P190_has_symbolic_content ?label .
+                                            }'
+                                      template='{{> template}}'>
+                          
+                        <template id="template">
+                          <mp-event-proxy id='{{bindings.0.viewId.value}}-update-tree-on-authority-delete' 
+                                          on-event-source='{{bindings.0.collection.value}}-resource-form'
+                                          on-event-type='Form.ResourceRemoved'
+                                          proxy-event-type='Component.TemplateUpdate' 
+                                          proxy-targets='["{{bindings.0.viewId.value}}-entity-editor-area"]'
+                                          additional-data='{"collectionDeleted": "true",
+                                                              "iri": "{{bindings.0.iri.value}}",
+                                                              "label": "{{bindings.0.label.value}}"
+                                                            }'
+                          ></mp-event-proxy>
+                      </template>
+                    </semantic-query>
                   </div>
                 </div>
               </mp-splitpane-sidebar-open>
@@ -348,14 +371,9 @@
                                 <div style="flex: 1;"> 
                                   <div class="success-documentation-section-title">Success!</div>
                                   <div class="success-documentation-section-content">
-                                    <span style="text-transform: capitalize;">
-                                      {{#if label}}
-                                        {{label}}
-                                      {{else}}
-                                        <mp-label iri='{{iri}}'></mp-label>
-                                      {{/if}}
+                                    <span>
+                                      {{#if label}}{{label}}{{else}}<mp-label iri='{{iri}}'></mp-label>{{/if}} has been deleted.
                                     </span>
-                                    <span> has been deleted.</span>
                                   </div>
                                 </div>
                                 
@@ -408,7 +426,6 @@
                                             >
                             <button class="btn btn-default btn-textAndIcon" title="Refresh form">
                               <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
-                                Refresh
                             </button>
                           </mp-event-trigger>
                         {{/if}}
@@ -479,6 +496,7 @@
 
                         <template id='template'>
                           <div>
+                          [[!--  
                             {{#if (eq resourceConfiguration "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
                               <mp-event-proxy id='{{viewId}}-update-form-on-graph-action-delete' 
                                               on-event-types='["GraphAction.Delete"]' 
@@ -488,12 +506,14 @@
                                                                 "label": "{{bindings.0.label.value}}" }'
                               ></mp-event-proxy>
                             {{/if}}
+                          --]]
                             <mp-event-proxy id='{{viewId}}-tree-refresh-on-delete' 
                                             on-event-source='{{iri}}-resource-form' 
                                             on-event-types='["Form.ResourceRemoved"]'
                                             proxy-event-type='Component.TemplateUpdate' 
                                             proxy-targets='[{{#if collection}}"{{collection}}-mytree",{{/if}} "{{viewId}}-term-forms"]'
                                             additional-data='{"mode": "deleted", 
+                                                              "iri": "{{iri}}",
                                                               "label": "{{bindings.0.label.value}}" }'
                             ></mp-event-proxy>
                           </div>
@@ -501,6 +521,7 @@
 
                         <template id="noResults">
                           <div>
+                          [[!-- 
                             {{#if (eq resourceConfiguration "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
                               <mp-event-proxy id='{{viewId}}-noResults-on-graph-action-delete' 
                                               on-event-types='["GraphAction.Delete"]' 
@@ -510,6 +531,7 @@
                                                                 "label": "{{label}}" }'
                               ></mp-event-proxy>
                             {{/if}}
+                          --]]
 
                             <mp-event-proxy id='{{viewId}}-noResults-tree-refresh-on-delete' 
                                             on-event-source='{{iri}}-resource-form' 

@@ -118,6 +118,8 @@ public class LabelCacheTest extends AbstractRepositoryBackedIntegrationTest {
         namespaceRule.set("rdfs", RDFS.NAMESPACE);
         namespaceRule.set("skos", SKOS.NAMESPACE);
         namespaceRule.set("myns", CUSTOM_NAMESPACE);
+
+        setUIConfigurationParameter("preferredLabelsResolutionStrategy", "PREFERR_LANGUAGE");
     }
 
     @After

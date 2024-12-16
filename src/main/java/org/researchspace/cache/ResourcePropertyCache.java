@@ -138,10 +138,10 @@ public abstract class ResourcePropertyCache<Key, Property> implements PlatformCa
     protected CacheBuilder<Object, Object> createCacheBuilder() {
         if (cacheManager().isPresent()) {
             return cacheManager().get().newBuilder(cacheId, cacheBuilder -> {
-                cacheBuilder.maximumSize(1000).expireAfterAccess(30, TimeUnit.MINUTES);
+                cacheBuilder.maximumSize(10000);
             });
         }
-        return CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30, TimeUnit.MINUTES);
+        return CacheBuilder.newBuilder().maximumSize(10000);
     }
 
     protected Optional<CacheManager> cacheManager() {

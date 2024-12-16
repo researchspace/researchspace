@@ -365,7 +365,7 @@ module SparqlClient {
    *
    * @see http://www.w3.org/TR/sparql11-results-json/#select-encode-terms
    */
-  function sparqlSelectBindingValueToRdf(binding: SparqlSelectBinding): Rdf.Node {
+  export function sparqlSelectBindingValueToRdf(binding: SparqlSelectBinding): Rdf.Node {
     if (binding.type === 'uri') {
       return Rdf.iri(binding.value);
     } else if (binding.type === 'literal') {

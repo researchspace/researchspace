@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.repository.Repository;
@@ -31,6 +32,7 @@ import javax.inject.Inject;
 
 public class ResourceInfoService implements PlatformCache {
 
+    private static final int MAX_RECURSION_DEPTH = 5000;
     public static final StoragePath INFO_PROFILES = StoragePath.parse("config/resource-info-profiles");
 
     private final FieldDefinitionManager fieldDefinitionManager;
@@ -145,19 +147,32 @@ public class ResourceInfoService implements PlatformCache {
     }
 
     public String getResourceInfo(IRI iri, String profileName, String repositoryId, String preferredLanguage) {
-        ResourceInfoProfile profile = this.profiles.get(profileName);
-        Repository repo = this.repositoryManager.getRepository(repositoryId);
-
-        // Initialize context
-        Context initialContext = new Context();
-        initialContext.addVariable(profile.getSubject(), iri);
-
-        // Process profile
-        List<BindingSet> allBindings = processProfile(profile, repo, preferredLanguage, initialContext);
-
-        // Build final JSON
-        return buildFinalJson(iri, allBindings, repo, preferredLanguage);
+//        long startTime = System.currentTimeMillis();
+//        System.out.println("ResourceInfo for: " + iri.stringValue());
+        
+        try {
+            ResourceInfoProfile profile = this.profiles.get(profileName);
+            Repository repo = this.repositoryManager.getRepository(repositoryId);
+    
+            Context initialContext = new Context();
+            initialContext.addVariable(profile.getSubject(), iri);
+    
+            List<BindingSet> allBindings = processProfile(profile, repo, preferredLanguage, initialContext);
+    
+            String result = buildFinalJson(iri, allBindings, repo, preferredLanguage);
+            
+  //          long executionTime = System.currentTimeMillis() - startTime;
+  //          System.out.println("ResourceInfo for: " + iri.stringValue() +" executed in " + executionTime + "ms for IRI: " + iri);
+            
+            return result;
+        } catch (Exception e) {
+    //        long executionTime = System.currentTimeMillis() - startTime;
+    //        System.out.println("getResourceInfo failed in " + executionTime + "ms for IRI: " + iri + ": " + e.getMessage());
+                System.out.println("getResourceInfo failed in for IRI: " + iri + ": " + e.getMessage());
+                return "";
+        }
     }
+    
 
     private List<BindingSet> processProfile(ResourceInfoProfile profile, Repository repo, String preferredLanguage,
             Context initialContext) {
@@ -171,7 +186,7 @@ public class ResourceInfoService implements PlatformCache {
 
         for (List<ResourceInfoProfileField> level : levels) {
             String query = buildLevelQuery(level, context, nodeMap, false);
-            System.out.println(query);
+            //System.out.println(query);
             List<BindingSet> levelBindings = executeQuery(repo, query);
             allBindings.addAll(levelBindings);
             context = updateContext(context, levelBindings, nodeMap);
@@ -194,8 +209,7 @@ public class ResourceInfoService implements PlatformCache {
                 String query = buildLevelQuery(level, provenanceContext, provenanceNodeMap, true); // Pass a flag
                                                                                                    // indicating this is
                                                                                                    // for provenance
-
-                System.out.println(query);
+                //System.out.println(query);
                 List<BindingSet> levelBindings = executeQuery(repo, query);
                 allBindings.addAll(levelBindings);
                 provenanceContext = updateContext(provenanceContext, levelBindings, provenanceNodeMap);
@@ -360,46 +374,57 @@ public class ResourceInfoService implements PlatformCache {
     private String generateValuesClause(ResourceInfoProfileField field, Context context) {
         List<String> sparqlVars = new ArrayList<>();
         List<String> localVars = new ArrayList<>();
+        List<String> constantSparqlVars = new ArrayList<>();
+        List<Value> constantValues = new ArrayList<>();
 
         // Add subject
         sparqlVars.add("subject");
         localVars.add(field.getSubject());
 
-        // Add params
+        // Add params, separating constants and non-constants
         if (field.getParams() != null) {
             for (ResourceInfoInputMapping param : field.getParams()) {
-                sparqlVars.add(param.getSparqlVar());
-                localVars.add(param.getLocalVar());
+                if (param.getConstant() != null) {
+                    constantSparqlVars.add(param.getSparqlVar());
+                    constantValues.add(SimpleValueFactory.getInstance().createIRI(param.getConstant()));
+                } else {
+                    sparqlVars.add(param.getSparqlVar());
+                    localVars.add(param.getLocalVar());
+                }
             }
         }
 
         List<Map<String, Value>> combinations = context.getCombinations(localVars);
-
         if (combinations.isEmpty()) {
             return "";
         }
 
         StringBuilder valuesClause = new StringBuilder("VALUES (");
+        // Add non-constant vars
         for (String var : sparqlVars) {
+            valuesClause.append("?").append(var).append(" ");
+        }
+        // Add constant vars
+        for (String var : constantSparqlVars) {
             valuesClause.append("?").append(var).append(" ");
         }
         valuesClause.append(") {\n");
 
         for (Map<String, Value> combination : combinations) {
             valuesClause.append("  (");
+            // Add values for non-constant vars
             for (int i = 0; i < sparqlVars.size(); i++) {
-                String localVar = localVars.get(i);
-                Value value = combination.get(localVar);
-                if (value != null) {
-                    valuesClause.append(formatValue(value)).append(" ");
-                } else {
-                    valuesClause.append("UNDEF ");
-                }
+                Value value = combination.get(localVars.get(i));
+                valuesClause.append(formatValue(value)).append(" ");
+            }
+            // Add constant values
+            for (Value constantValue : constantValues) {
+                valuesClause.append(formatValue(constantValue)).append(" ");
             }
             valuesClause.append(")\n");
         }
-        valuesClause.append("}");
 
+        valuesClause.append("}");
         return valuesClause.toString();
     }
 
@@ -466,6 +491,11 @@ public class ResourceInfoService implements PlatformCache {
         Map<IRI, Optional<Literal>> fieldLabels = labelCache.getLabels(fieldIris,
                 repositoryManager.getAssetRepository(), preferredLanguage);
 
+        Optional<Literal> rootLabel = labels.get(rootIri);
+        if (rootLabel.isPresent()) {
+          rootNode.put("label", rootLabel.get().stringValue());
+        }
+
         // Create an index of bindings by subject
         Map<IRI, List<BindingSet>> bindingIndex = new HashMap<>();
         for (BindingSet binding : allBindings) {
@@ -484,7 +514,13 @@ public class ResourceInfoService implements PlatformCache {
         Deque<Pair<ObjectNode, IRI>> stack = new ArrayDeque<>();
         stack.push(new Pair<>(rootNode, rootIri));
 
+        int depth = 0;
         while (!stack.isEmpty()) {
+            if (depth > MAX_RECURSION_DEPTH) {
+                throw new RuntimeException("Maximum recursion depth exceeded.");
+            }
+            depth++;
+    
             Pair<ObjectNode, IRI> current = stack.pop();
             ObjectNode currentNode = current.getLeft();
             IRI currentIri = current.getRight();

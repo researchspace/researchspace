@@ -71,7 +71,14 @@ export interface SemanticTreeConfig {
    * }
    * ```
    */
-  query: string;
+  query?: string;
+
+ /**
+   * Optional array of bindings to use instead of executing SPARQL query.
+   * Each item will be converted to proper SPARQL bindings.
+   */
+    data?: any[];
+
 
   /**
    * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link>
@@ -199,6 +206,28 @@ export class SemanticTree extends Component<Props, State> {
   }
 
   private loadData(props: Props) {
+    if (props.data) {
+      // Convert raw data to SPARQL bindings
+      const bindings = props.data.map(item => {
+        const binding = {};
+        Object.keys(item).forEach(key => {
+          binding[key] = SparqlClient.sparqlSelectBindingValueToRdf(item[key]);
+        });
+        return binding;
+      });
+  
+      // Process bindings directly
+      this.processSparqlResult({
+        head: { vars: Object.keys(bindings[0] || {}), link: null },
+        results: { bindings, distinct: true, ordered: true }
+      });
+  
+      if (props.id) {
+        trigger({ eventType: BuiltInEvents.ComponentLoaded, source: props.id });
+      }
+      return;
+    } 
+
     const context = this.context.semanticContext;
     this.querying = this.cancellation.deriveAndCancel(this.querying);
     const loading =

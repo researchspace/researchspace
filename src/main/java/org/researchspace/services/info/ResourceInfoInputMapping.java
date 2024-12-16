@@ -9,6 +9,17 @@ public class ResourceInfoInputMapping {
     @JsonProperty("local_var")
     private String localVar;
 
+    @JsonProperty("constant")
+    private String constant;
+
+    public String getConstant() {
+        return constant;
+    }
+
+    public void setConstant(String constant) {
+        this.constant = constant;
+    }
+
     public String getSparqlVar() {
         return sparqlVar;
     }

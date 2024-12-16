@@ -271,7 +271,14 @@ public class RepositoryManager implements RepositoryManagerInterface {
             initializeRepository(repConfig, false);
         }
 
-        this.initializeHelperRepository(repositoryConfigs, ASSET_REPOSITORY_ID);
+        if (repositoryConfigs.containsKey(ASSET_REPOSITORY_ID)) {
+            initializeRepository(repositoryConfigs.get(ASSET_REPOSITORY_ID), false);
+        }
+
+        if (repositoryConfigs.containsKey("rs-config")) {
+            initializeRepository(repositoryConfigs.get("rs-config"), false);
+        }
+
         this.initializeHelperRepository(repositoryConfigs, TEST_REPOSITORY_ID);
     }
 

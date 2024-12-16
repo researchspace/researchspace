@@ -224,7 +224,7 @@ export function GenericFunctions(handlebars) {
           }
         }
       );
-      return _.uniqBy(providers, 'icon');
+      return _.orderBy(_.uniqBy(providers, 'icon'), 'icon');
     },
 
     isEmpty: _.isEmpty,

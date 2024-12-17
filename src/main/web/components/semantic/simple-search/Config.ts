@@ -18,7 +18,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export interface SemanticSimpleSearchBaseConfig {
+import { KeywordSearchConfig } from "platform/components/shared/KeywordSearchConfig";
+
+export interface SemanticSimpleSearchBaseConfig extends KeywordSearchConfig {
   /**
    * SPARQL SELECT query string. Needs to have a variable named as `__token__`(can be customized with searchTermVariable) that will be replaces with the user input.
    */
@@ -37,32 +39,9 @@ export interface SemanticSimpleSearchBaseConfig {
   searchTermVariable?: string;
 
   /**
-   * Minimum number of input characters that triggers the search.
-   *
-   * @default 3
-   */
-  minSearchTermLength?: number;
-
-  /**
    * Input placeholder.
    */
   placeholder?: string;
-
-  /**
-   * A flag determining whether any special Lucene syntax will be escaped.
-   * When `false` lucene syntax in the user input is not escaped.
-   *
-   * @default true
-   */
-  escapeLuceneSyntax?: boolean;
-
-  /**
-   * A flag determining whether the user input is tokenized by whitespace into words postfixed by `*`.
-   * E.g. the search for `Hello World` becomes `Hello* World*`.
-   *
-   * @default true
-   */
-  tokenizeLuceneQuery?: boolean;
 
   /**
    * Initial input to be shown in the input field.

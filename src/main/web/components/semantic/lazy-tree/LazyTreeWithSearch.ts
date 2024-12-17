@@ -24,12 +24,12 @@ import { Node, SparqlNodeModel, sealLazyExpanding } from './SparqlNodeModel';
 import { LazyTreeSelector, LazyTreeSelectorProps } from './LazyTreeSelector';
 
 import * as styles from './LazyTreeWithSearch.scss';
+import { defaultKeywordSearchConfig, KeywordSearchConfig, textConfirmsToConfig } from 'platform/components/shared/KeywordSearchConfig';
 
 const ITEMS_LIMIT = 200;
-const MIN_SEARCH_TERM_LENGTH = 4;
 const SEARCH_DELAY_MS = 300;
 
-export interface LazyTreeWithSearchProps {
+export interface LazyTreeWithSearchProps extends KeywordSearchConfig {
   rootsQuery: string;
   childrenQuery: string;
   parentsQuery: string;
@@ -61,6 +61,11 @@ interface SearchResult {
 }
 
 export class LazyTreeWithSearch extends Component<LazyTreeWithSearchProps, State> {
+  static defaultProps: Partial<LazyTreeWithSearchProps> = {
+    ... defaultKeywordSearchConfig
+  };
+
+
   private readonly cancellation = new Cancellation();
   private search = this.cancellation.derive();
 
@@ -165,7 +170,7 @@ export class LazyTreeWithSearch extends Component<LazyTreeWithSearchProps, State
   }
 
   private searchFor(text: string) {
-    if (text.length >= MIN_SEARCH_TERM_LENGTH) {
+    if (textConfirmsToConfig(text, this.props)) {
       this.setState({ searchText: text, searching: true });
 
       this.search = this.cancellation.deriveAndCancel(this.search);
@@ -181,8 +186,10 @@ export class LazyTreeWithSearch extends Component<LazyTreeWithSearchProps, State
   }
 
   private performSearch(text: string) {
+    const { escapeLuceneSyntax, tokenizeLuceneQuery, minTokenLength } = this.props;
+
     const parametrized = SparqlClient.setBindings(this.state.searchQuery, {
-      __token__: SparqlUtil.makeLuceneQuery(text),
+      __token__: SparqlUtil.makeLuceneQuery(text, escapeLuceneSyntax, tokenizeLuceneQuery, minTokenLength),
     });
     return Kefir.later(SEARCH_DELAY_MS, {})
       .flatMap<SparqlClient.SparqlSelectResult>(() => SparqlClient.select(parametrized, { context: this.context.semanticContext }))

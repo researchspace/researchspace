@@ -66,7 +66,8 @@ function textDisjunct(config: SemanticSearchConfig, conjunct: Model.Conjunct) {
     const val = SparqlUtil.makeLuceneQuery(
       disjunct.value,
       patternConfig.escapeLuceneSyntax,
-      patternConfig.tokenizeLuceneQuery
+      patternConfig.tokenizeLuceneQuery,
+      patternConfig.minTokenLength,
     );
     return { [SEMANTIC_SEARCH_VARIABLES.RESOURCE_VAR]: val };
   };

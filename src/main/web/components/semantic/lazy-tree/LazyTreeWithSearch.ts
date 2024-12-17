@@ -25,6 +25,7 @@ import { LazyTreeSelector, LazyTreeSelectorProps } from './LazyTreeSelector';
 
 import * as styles from './LazyTreeWithSearch.scss';
 import { defaultKeywordSearchConfig, KeywordSearchConfig, textConfirmsToConfig } from 'platform/components/shared/KeywordSearchConfig';
+import { Action } from 'platform/components/utils';
 
 const ITEMS_LIMIT = 200;
 const SEARCH_DELAY_MS = 300;
@@ -40,6 +41,9 @@ export interface LazyTreeWithSearchProps extends KeywordSearchConfig {
   initialSelection?: ReadonlyArray<Rdf.Iri | string>;
   multipleSelection?: boolean;
   infoTemplate?: string;
+
+  // number of ms to wait before tiggering text search query
+  debounce?: number;
 }
 
 interface State {
@@ -62,12 +66,14 @@ interface SearchResult {
 
 export class LazyTreeWithSearch extends Component<LazyTreeWithSearchProps, State> {
   static defaultProps: Partial<LazyTreeWithSearchProps> = {
+    debounce: SEARCH_DELAY_MS,
     ... defaultKeywordSearchConfig
   };
 
 
   private readonly cancellation = new Cancellation();
   private search = this.cancellation.derive();
+  private keys: Action<string>;
 
   constructor(props: LazyTreeWithSearchProps, context) {
     super(props, context);
@@ -76,6 +82,8 @@ export class LazyTreeWithSearch extends Component<LazyTreeWithSearchProps, State
       forest: Node.readyToLoadForest,
       confirmedSelection: TreeSelection.empty(Node.emptyForest),
     };
+
+    this.keys = Action<string>('');
   }
 
   private createQueryModel(props: LazyTreeWithSearchProps): Partial<State> {
@@ -96,7 +104,8 @@ export class LazyTreeWithSearch extends Component<LazyTreeWithSearchProps, State
   }
 
   componentDidMount() {
-    console.log('mountinc tree')
+    this.initialize();
+
     const { initialSelection } = this.props;
     if (initialSelection && initialSelection.length !== 0) {
       const selection = initialSelection.map(s => typeof s === 'string' ? Rdf.iri(s) : s);
@@ -104,10 +113,27 @@ export class LazyTreeWithSearch extends Component<LazyTreeWithSearchProps, State
     }
   }
 
+  initialize() {
+    const keysProp = this.keys.$property.debounce(this.props.debounce);
+
+    const conformingKeys = keysProp.filter((str) => textConfirmsToConfig(str, this.props));
+    const nonConformingKeys = keysProp.filter((str) => !textConfirmsToConfig(str, this.props));
+
+    keysProp.flatMapLatest(text => {
+      if (!textConfirmsToConfig(text, this.props)) {
+        return Kefir.constant({ searchResult: undefined, searching: false });
+      } else {
+        this.setState({ searching: true });
+        return this.performSearch(text)
+          .map(searchResult => ({ searchResult, searching: false }))
+          .mapErrors(error => ({ searchResult: { error }, searching: false }));
+      }
+    })
+    .onValue(state => this.setState(state));
+  }
+
   componentWillReceiveProps(newProps: LazyTreeWithSearchProps) {
-    console.log('tree get new props')
     if (newProps.rootsQuery !== this.props.rootsQuery) {
-      console.log('roots qury changed')
       this.setState({
         ...this.createQueryModel(newProps),
         forest: Node.readyToLoadForest,  
@@ -119,7 +145,6 @@ export class LazyTreeWithSearch extends Component<LazyTreeWithSearchProps, State
   }
 
   componentWillUnmount() {
-    console.log('unmounting tree')
     this.cancellation.cancelAll();
   }
 
@@ -164,35 +189,25 @@ export class LazyTreeWithSearch extends Component<LazyTreeWithSearchProps, State
       inputClassName: styles.input,
       value: this.state.searchText || '',
       placeholder: this.props.placeholder,
-      onChange: (e) => this.searchFor(e.currentTarget.value),
+      onChange: (e) => this.onKeyPress(e.currentTarget.value),
       onClear: () => this.setState({ searchText: '', searchResult: undefined }),
     });
   }
 
-  private searchFor(text: string) {
-    if (textConfirmsToConfig(text, this.props)) {
-      this.setState({ searchText: text, searching: true });
-
-      this.search = this.cancellation.deriveAndCancel(this.search);
-      this.search.map(this.performSearch(text)).observe({
-        value: (searchResult) => this.setState({ searchResult, searching: false }),
-        error: (error) => this.setState({ searchResult: { error }, searching: false }),
-      });
-    } else if (text.length === 0) {
-      this.setState({ searchText: '', searchResult: undefined });
-    } else {
-      this.setState({ searchText: text, searchResult: undefined });
-    }
+  onKeyPress = (searchText: string) => {
+    this.setState({searchText}, () => this.keys(this.state.searchText));
   }
 
-  private performSearch(text: string) {
+  performSearch = (text: string) => {
     const { escapeLuceneSyntax, tokenizeLuceneQuery, minTokenLength } = this.props;
 
     const parametrized = SparqlClient.setBindings(this.state.searchQuery, {
       __token__: SparqlUtil.makeLuceneQuery(text, escapeLuceneSyntax, tokenizeLuceneQuery, minTokenLength),
     });
-    return Kefir.later(SEARCH_DELAY_MS, {})
-      .flatMap<SparqlClient.SparqlSelectResult>(() => SparqlClient.select(parametrized, { context: this.context.semanticContext }))
+
+    return this.search.map(
+        SparqlClient.select(parametrized, { context: this.context.semanticContext })
+      )
       .flatMap<SearchResult>((result) =>
         this.restoreTreeFromLeafNodes(result.results.bindings).map((forest) => ({
           forest,

@@ -75,6 +75,7 @@ export class SemanticSearch extends Component<Props, State> {
     },
     limit: SearchDefaults.ResultLimit,
     selectorMode: 'stack',
+    saveStateInBrowserHistory: false,
   };
 
   private readonly cancellation = new Cancellation();
@@ -349,40 +350,44 @@ export class SemanticSearch extends Component<Props, State> {
   }
 
   private saveStateIntoHistory = (state: RawState) => {
-    const previousState = this.state.searchProfileStore
-      .map((store) => this.getStateFromHistory(store))
-      .getOrElse(Maybe.Nothing<RawState>());
+    if (this.props.saveStateInBrowserHistory) {
+      const previousState = this.state.searchProfileStore
+        .map((store) => this.getStateFromHistory(store))
+        .getOrElse(Maybe.Nothing<RawState>());
 
-    const compressed = serializeSearch(
-      state.search || previousState.map((s) => s.search).getOrElse(undefined),
-      state.facet || previousState.map((s) => s.facet).getOrElse(undefined),
-      state.result,
-      state.datasets,
-      state.alignment,
-    );
+      const compressed = serializeSearch(
+        state.search || previousState.map((s) => s.search).getOrElse(undefined),
+        state.facet || previousState.map((s) => s.facet).getOrElse(undefined),
+        state.result,
+        state.datasets,
+        state.alignment,
+      );
 
-    if (compressed === this.serializedState) {
-      return;
+      if (compressed === this.serializedState) {
+        return;
+      }
+      this.serializedState = compressed;
+
+      this.savingState.cancelAll();
+      this.savingState = this.cancellation.derive();
+
+      // when updating query string we need to make sure that we keep all
+      // other query parameters, e.g repository
+      const currentUrl = getCurrentUrl().clone();
+      currentUrl.removeSearch(SAVED_STATE_QUERY_KEY).addSearch({ [SAVED_STATE_QUERY_KEY]: compressed });
+      this.savingState.map(Kefir.constant(currentUrl)).onValue((url) => {
+        window.history.replaceState({}, '', url.toString());
+      });
     }
-    this.serializedState = compressed;
-
-    this.savingState.cancelAll();
-    this.savingState = this.cancellation.derive();
-
-    // when updating query string we need to make sure that we keep all
-    // other query parameters, e.g repository
-    const currentUrl = getCurrentUrl().clone();
-    currentUrl.removeSearch(SAVED_STATE_QUERY_KEY).addSearch({ [SAVED_STATE_QUERY_KEY]: compressed });
-    this.savingState.map(Kefir.constant(currentUrl)).onValue((url) => {
-      window.history.replaceState({}, '', url.toString());
-    });
   };
 
   private clearCurrentHistoryItem() {
-    this.savingState.cancelAll();
-    const currentUri = getCurrentUrl();
-    if (SAVED_STATE_QUERY_KEY in currentUri.query(true)) {
-      window.history.replaceState({}, '', currentUri.clone().removeQuery(SAVED_STATE_QUERY_KEY).toString());
+    if (this.props.saveStateInBrowserHistory) {
+      this.savingState.cancelAll();
+      const currentUri = getCurrentUrl();
+      if (SAVED_STATE_QUERY_KEY in currentUri.query(true)) {
+        window.history.replaceState({}, '', currentUri.clone().removeQuery(SAVED_STATE_QUERY_KEY).toString());
+      }
     }
   }
 

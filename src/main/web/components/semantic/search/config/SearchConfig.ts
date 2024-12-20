@@ -428,6 +428,16 @@ export interface SemanticSearchConfig {
    * Compressed JSON representation of the search state. Can be used to load saved search.
    */
   initialState?: string;
+
+  /**
+   * If true adds current search state as semanticSearch URL query paramter
+   * to the current page URL. And updates it every time search is updated.
+   * 
+   * Should be enabled if one requires back browser button to restore previous search state.
+   * 
+   * @default false
+   */
+  saveStateInBrowserHistory?: boolean;
 }
 
 /**

@@ -41,7 +41,6 @@ import {
   TextDisjunct,
   DisjunctIndex,
   RelationKey,
-  GraphScopeSearch,
 } from './Model';
 import { Dataset, Alignment } from '../datasets/Model';
 
@@ -51,7 +50,6 @@ export interface RawState {
   result: { [componentId: string]: object };
   datasets: Array<Dataset>;
   alignment: Data.Maybe<Alignment>;
-  graphScopeSearch: Data.Maybe<GraphScopeSearch>;
 }
 
 export interface SerializedState {
@@ -60,7 +58,6 @@ export interface SerializedState {
   result: object;
   datasets: object;
   alignment: object;
-  graphScopeSearch: object;
 }
 
 interface SerializedSearch {
@@ -92,7 +89,6 @@ export class Serializer {
       result: state.result ? serialize(state.result) : undefined,
       datasets: state.datasets ? serialize(state.datasets) : undefined,
       alignment: state.alignment ? serialize(state.alignment) : undefined,
-      graphScopeSearch: state.graphScopeSearch ? serialize(state.graphScopeSearch) : undefined,
     };
   }
 
@@ -153,9 +149,6 @@ export class Deserializer {
         result: {},
         datasets: [],
         alignment: Maybe.Nothing<Alignment>(),
-        graphScopeSearch: state.graphScopeSearch
-          ? deserialize<Data.Maybe<GraphScopeSearch>>(state.graphScopeSearch)
-          : Maybe.Nothing<GraphScopeSearch>(),
       };
     }
     const result = state.result ? (deserialize(state.result) as any) : undefined;
@@ -165,9 +158,6 @@ export class Deserializer {
       result: result || {},
       datasets: state.datasets ? deserialize<Array<Dataset>>(state.datasets) : [],
       alignment: state.alignment ? deserialize<Data.Maybe<Alignment>>(state.alignment) : Maybe.Nothing<Alignment>(),
-      graphScopeSearch: state.graphScopeSearch
-        ? deserialize<Data.Maybe<GraphScopeSearch>>(state.graphScopeSearch)
-        : Maybe.Nothing<GraphScopeSearch>(),
     };
   }
 
@@ -362,7 +352,6 @@ export function serializeSearch(
   result?: { [componentId: string]: object },
   datasets?: Array<Dataset>,
   alignment?: Data.Maybe<Alignment>,
-  graphScopeSearch?: Data.Maybe<GraphScopeSearch>
 ): string {
   const serialized = new Serializer().serializeState({
     search: baseQuery,
@@ -370,7 +359,6 @@ export function serializeSearch(
     result: result,
     datasets,
     alignment,
-    graphScopeSearch,
   });
 
   const packed = packState(serialized);

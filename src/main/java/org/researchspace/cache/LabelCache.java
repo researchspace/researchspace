@@ -109,7 +109,7 @@ public class LabelCache {
         @Override
         protected CacheBuilder<Object, Object> createCacheBuilder() {
             return cacheManager.newBuilder(CACHE_ID,
-                    cacheBuilder -> cacheBuilder.maximumSize(100000).expireAfterAccess(6, TimeUnit.HOURS));
+                    cacheBuilder -> cacheBuilder.maximumSize(config.getEnvironmentConfig().getLabelsCacheSize()));
         };
 
         /**
@@ -132,7 +132,7 @@ public class LabelCache {
                 return Collections.emptyMap();
             }
 
-            int batchSize = 1000;
+            int batchSize = config.getEnvironmentConfig().getLabelsBatchSize();
             int numberOfThreads = 5;
 
             // if less than batch size items are requested, immediately execute
@@ -149,7 +149,11 @@ public class LabelCache {
             } finally {
                 executorService.shutdown();
                 try {
-                    executorService.awaitTermination(30, TimeUnit.SECONDS);
+                    if (!executorService.awaitTermination(30, TimeUnit.SECONDS)) {
+                        executorService.shutdownNow();
+                        // Handle the case where tasks did not terminate in time
+                        throw new RuntimeException("Timeout while querying repository for labels");
+                    }
                 } catch (InterruptedException e1) {
                     logger.warn("Failed to wait for label computation: " + e1.getMessage());
                     executorService.shutdownNow();

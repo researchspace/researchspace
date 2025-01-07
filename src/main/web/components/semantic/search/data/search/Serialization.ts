@@ -128,9 +128,8 @@ export class Serializer {
   };
 
   private serializeResource(resource: Resource): any {
-    // TODO: optimize here
-    return serialize(resource);
-    // return this.compactIRI(disjunct.value.iri);
+    //return serialize(resource);
+    return this.compactIRI(resource.iri);
   }
 
   private compactIRI(iri: Rdf.Iri): string {
@@ -265,9 +264,12 @@ export class Deserializer {
     return relation;
   }
 
-  private deserializeResource(resource: any): Resource {
-    // TODO: optimize here
-    return deserialize<Resource>(resource);
+  private deserializeResource(resource: string): Resource {
+    const iri = this.expandIri(resource);
+    return {
+      iri,
+    } as any;
+    //return deserialize<Resource>(resource);
     // return (?? load by IRI here ??)
   }
 
@@ -360,8 +362,14 @@ export function serializeSearch(
     datasets,
     alignment,
   });
+  console.log("encoding unpacked json")
+  console.log(serialized)
+
 
   const packed = packState(serialized);
   const packedJson = JSON.stringify(packed);
+
+  console.log("encoding packed json")
+  console.log(packed)
   return compressToEncodedURIComponent(packedJson);
 }

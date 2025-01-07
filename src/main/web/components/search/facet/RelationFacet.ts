@@ -102,11 +102,11 @@ export class RelationFacetComponent extends Component<RelationFacetProps, Relati
   }
 
   componentDidMount() {
-    console.log('mounting relation/tree' + this.props.relation.iri.value)
+    //console.log('mounting relation/tree' + this.props.relation.iri.value)
   }
 
   componentWillUnmount() {
-    console.log('unmounting relation/tree ' + this.props.relation.iri.value)
+    //console.log('unmounting relation/tree ' + this.props.relation.iri.value)
   }
   /*
   shouldComponentUpdate(nextProps: RelationFacetProps, nextState: RelationFacetState): boolean {
@@ -143,8 +143,8 @@ export class RelationFacetComponent extends Component<RelationFacetProps, Relati
 */
 
 componentWillReceiveProps(newProps: RelationFacetProps) {
-  console.log('relation facet nowe props ' + newProps.relation.iri.value);
-  console.log(newProps);
+  //console.log('relation facet nowe props ' + newProps.relation.iri.value);
+  //console.log(newProps);
 }
 
   render() {
@@ -194,9 +194,9 @@ componentWillReceiveProps(newProps: RelationFacetProps) {
   }
 
   private renderHierarchy(viewState: FacetViewState) {
-    console.log(
-      viewState.values.values
-    );
+    //console.log(
+    //  viewState.values.values
+    //);
 
     const initialSelection = viewState.selectedValues.get(this.props.relation) as List<Resource> || List();
 
@@ -267,7 +267,6 @@ componentWillReceiveProps(newProps: RelationFacetProps) {
     } else if (showNoFacetValuesWarning) {
       return D.div({ className: 'facet__relation__values' }, D.em({}, 'Values not found...'));
     } else {
-      console.log('render facet values for ' + this.props.relation.iri.value)
       return D.div(
         { className: 'facet__relation__values' },
         showTooManyFacetValuesWarning

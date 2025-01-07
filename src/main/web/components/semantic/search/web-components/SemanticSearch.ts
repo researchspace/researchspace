@@ -75,7 +75,7 @@ export class SemanticSearch extends Component<Props, State> {
     },
     limit: SearchDefaults.ResultLimit,
     selectorMode: 'stack',
-    saveStateInBrowserHistory: false,
+    saveStateInBrowserHistory: true,
   };
 
   private readonly cancellation = new Cancellation();
@@ -337,7 +337,11 @@ export class SemanticSearch extends Component<Props, State> {
     try {
       const packedJson = decompressFromEncodedURIComponent(compressed);
       const packed = JSON.parse(packedJson);
+      console.log("decoding packed json")
+      console.log(packed)
       const serialized = unpackState(packed);
+      console.log("decoding unpacked state json")
+      console.log(serialized)
       const raw = new Deserializer(profileStore).deserializeState(serialized);
       return Maybe.Just(raw);
     } catch (error) {

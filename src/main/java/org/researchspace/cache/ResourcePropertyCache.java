@@ -126,7 +126,6 @@ public abstract class ResourcePropertyCache<Key, Property> implements PlatformCa
      * 
      * <ul>
      * <li>maximumSize: 1000</li>
-     * <li>expireAfterAccess: 30 minutes</li>
      * </ul>
      * 
      * <p>

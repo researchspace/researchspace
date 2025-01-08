@@ -17,7 +17,7 @@
 
 package org.researchspace.security.sso.utils;
 
-import org.apache.shiro.util.Factory;
+import org.apache.shiro.lang.util.Factory;
 
 /**
  * Construct instance SSO callback URL based on the config.environment.platformBaseIri, set in the active shiro-sso-*-default.ini file.

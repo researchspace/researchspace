@@ -19,7 +19,7 @@ package org.researchspace.security.sso.utils;
 
 import java.util.List;
 
-import org.apache.shiro.util.Factory;
+import org.apache.shiro.lang.util.Factory;
 
 /**
  * @see ConfigParameterStringValueFactory

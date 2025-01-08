@@ -29,13 +29,9 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.subject.Subject;
+import org.pac4j.jee.filter.LogoutFilter;
+import org.pac4j.jee.filter.SecurityFilter;
 import org.researchspace.config.Configuration;
-import org.researchspace.servlet.filter.CorsFilter;
-
-import io.buji.pac4j.filter.SecurityFilter;
-import io.buji.pac4j.filter.LogoutFilter;
 
 /**
  * Provides an SSO login endpoint

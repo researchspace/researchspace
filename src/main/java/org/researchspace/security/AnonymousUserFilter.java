@@ -29,9 +29,12 @@ import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.apache.shiro.web.servlet.AdviceFilter;
 
+import com.google.inject.Singleton;
+
 /**
  * @author Johannes Trame <jt@metaphacts.com>
  */
+@Singleton
 public class AnonymousUserFilter extends AdviceFilter {
 
     @Inject

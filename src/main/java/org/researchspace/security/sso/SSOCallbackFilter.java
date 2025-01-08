@@ -31,7 +31,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
-import io.buji.pac4j.filter.CallbackFilter;
+import org.pac4j.jee.filter.CallbackFilter;
 
 /**
  * Proxies SSO callbacks to the filter from pac4j configuration.

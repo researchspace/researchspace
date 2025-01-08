@@ -20,6 +20,7 @@
 package org.researchspace.security;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
@@ -44,6 +45,7 @@ import org.researchspace.servlet.filter.CorsFilter;
  *
  * @author Artem Kozlov <ak@metaphacts.com>
  */
+@Singleton
 public class OptionalBasicAuthFilter extends BasicHttpAuthenticationFilter {
 
     @Inject

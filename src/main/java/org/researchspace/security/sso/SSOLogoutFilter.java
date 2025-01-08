@@ -30,7 +30,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-import io.buji.pac4j.filter.LogoutFilter;
+import org.pac4j.jee.filter.LogoutFilter;
 
 /**
  * @author Artem Kozlov {@literal <ak@metaphacts.com>}

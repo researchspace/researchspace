@@ -1,19 +1,21 @@
 import * as React from 'react';
+import { Component, ComponentProps, ComponentContext } from 'platform/api/components';
+import { createElement } from 'react';
+import { TemplateItem } from 'platform/components/ui/template';
 
-interface InfiniteScrollProps {
+interface InfiniteScrollProps extends ComponentProps {
   itemHeight: string;
-  children: React.ReactNode;
+  values: Array<Object>;
   batchSize?: number;
   preloadThreshold?: number; // Percentage of the container height to trigger preloading
 }
 
 interface InfiniteScrollState {
-  visibleChildren: React.ReactNode[];
-  allChildren: React.ReactNode[];
+  visibleValues: Object[];
   hasMore: boolean;
 }
 
-class InfiniteScroll extends React.Component<InfiniteScrollProps, InfiniteScrollState> {
+class InfiniteScroll extends Component<InfiniteScrollProps, InfiniteScrollState> {
   private containerRef: React.RefObject<HTMLDivElement>;
   private contentRef: React.RefObject<HTMLDivElement>;
   
@@ -27,22 +29,21 @@ class InfiniteScroll extends React.Component<InfiniteScrollProps, InfiniteScroll
     this.containerRef = React.createRef();
     this.contentRef = React.createRef();
     this.state = {
-      visibleChildren: [],
-      allChildren: [],
+      visibleValues: [],
       hasMore: true,
     };
   }
 
   componentDidMount() {
-    this.initializeChildren();
+    this.initializeValues();
     this.attachScrollListener();
   }
 
   componentDidUpdate(prevProps: InfiniteScrollProps) {
-    if (prevProps.children !== this.props.children) {
-      this.initializeChildren();
+    if (prevProps.values !== this.props.values) {
+      this.initializeValues();
     }
-  }
+  }  
 
   componentWillUnmount() {
     this.detachScrollListener();
@@ -75,14 +76,14 @@ class InfiniteScroll extends React.Component<InfiniteScrollProps, InfiniteScroll
     return document.documentElement;
   }
 
-  initializeChildren() {
-    const allChildren = React.Children.toArray(this.props.children);
+  initializeValues() {
+    const allValues = this.props.values;
     this.setState({
-      allChildren,
-      visibleChildren: allChildren.slice(0, this.props.batchSize),
-      hasMore: allChildren.length > this.props.batchSize!,
+      visibleValues: allValues.slice(0, this.props.batchSize),
+      hasMore: allValues.length > this.props.batchSize!,
     });
   }
+
 
   handleScroll = () => {
     const scrollParent = this.getScrollParent();
@@ -98,27 +99,40 @@ class InfiniteScroll extends React.Component<InfiniteScrollProps, InfiniteScroll
   }
 
   loadMoreItems = () => {
-    const { visibleChildren, allChildren } = this.state;
-    const nextBatch = allChildren.slice(
-      visibleChildren.length, 
-      visibleChildren.length + this.props.batchSize!
+    const { visibleValues } = this.state;
+    const allValues = this.props.values;
+    const nextBatch = allValues.slice(
+      visibleValues.length,
+      visibleValues.length + this.props.batchSize!
     );
-    
-    this.setState(prevState => ({
-      visibleChildren: [...prevState.visibleChildren, ...nextBatch],
-      hasMore: visibleChildren.length + nextBatch.length < allChildren.length,
-    }));
-  }
+  
+    this.setState(prevState => {
+      const newVisibleValues = [...prevState.visibleValues, ...nextBatch];
+      return {
+        visibleValues: newVisibleValues,
+        hasMore: newVisibleValues.length < allValues.length,
+      };
+    });
+  };  
 
   render() {
     const { itemHeight } = this.props;
-    const { visibleChildren, allChildren, hasMore } = this.state;
-    const totalHeight = parseFloat(itemHeight) * allChildren.length;
+    const { visibleValues, hasMore } = this.state;
+    const totalHeight = parseFloat(itemHeight) * this.props.values.length;
 
+    console.log(visibleValues)
     return (
       <div ref={this.containerRef} style={{ height: `${totalHeight}px`, position: 'relative' }}>
         <div ref={this.contentRef} style={{ position: 'absolute', top: 0, left: 0, right: 0 }}>
-          {visibleChildren}
+          {visibleValues.map((item, index) => (
+            React.createElement(TemplateItem, {
+              key: index,
+              template: {
+                source: this.getTemplateString(),
+                options: item,
+              },
+            })
+          ))}
           {hasMore && (
             <div style={{ textAlign: 'center', padding: '20px' }}>
               Loading more items...
@@ -128,6 +142,21 @@ class InfiniteScroll extends React.Component<InfiniteScrollProps, InfiniteScroll
       </div>
     );
   }
+
+  private getTemplateString = (): string => {
+    const template = this.props.template;
+    if (template) {
+      return template;
+    }
+
+    // Try to get default "<template>" element with id 'template' from the local scope
+    const localScope = this.props.markupTemplateScope;
+    const partial = localScope ? localScope.getPartial('template') : undefined;
+    if (partial) {
+      return partial.source;
+    }
+    return '';
+  };
 }
 
 export default InfiniteScroll;

@@ -5,6 +5,7 @@ import { Component } from 'platform/api/components';
 
 export interface Props {
   iiifManifestUrl: string;
+  showNavigationControl?: boolean;
 }
 
 interface State {
@@ -13,6 +14,10 @@ interface State {
 
 export class OpenSeadragonIIIFViewer extends Component<Props, State> {
   private viewer: OpenSeadragon.Viewer;
+
+  static defaultProps: Partial<Props> = {
+    showNavigationControl: false,
+  };
 
   constructor(props: Props, context: any) {
     super(props, context);
@@ -90,7 +95,8 @@ export class OpenSeadragonIIIFViewer extends Component<Props, State> {
       this.viewer = OpenSeadragon({
         element: this.viewerElement,
         autoResize: true,
-        showNavigationControl: false,
+        showNavigationControl: this.props.showNavigationControl,
+        homeFillsViewer: true,
         tileSources: [tileSource]
       });
       window.dispatchEvent(new Event('resize'));

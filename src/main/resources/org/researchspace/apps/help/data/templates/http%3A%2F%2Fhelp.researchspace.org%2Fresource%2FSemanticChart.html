@@ -8,90 +8,84 @@
   <li>
     <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
   </li>
-  <li class="active">Chart Component</li>
+  <li class="active">Semantic chart</li>
 </ol>
 
 <div class="page documentation">
   <div class='page__body'>
-    <h1> Chart Component </h1>
-    <div class="documentation__intro">
-      <div class="documentation__intro__description">
-          Powerful component for rendering line, bar, pie, donut or radar charts.
-      </div>
-      <div class="documentation__intro__demo" style="height:400px;">
-        <mp-component-toolbar>
-          <mp-component-toolbar-actions>
-            <semantic-chart-type-selector />
-          </mp-component-toolbar-actions>
-          <mp-component-toolbar-component>
-            <semantic-chart type='bar' query='
-              PREFIX person: <http://example.com/person/>
-              PREFIX org: <http://example.com/org/>
-              SELECT ?one (COUNT(distinct ?someone) as ?renown) (COUNT(distinct ?org) as ?memberships) WHERE {
+    <h2>Semantic chart</h2>
+    <p>Powerful component for rendering line, bar, pie, donut or radar charts.</p>
+    <mp-component-toolbar>
+      <mp-component-toolbar-actions>
+        <semantic-chart-type-selector />
+      </mp-component-toolbar-actions>
+      <mp-component-toolbar-component>
+        <semantic-chart type='bar' query='
+          PREFIX person: <http://example.com/person/>
+          PREFIX org: <http://example.com/org/>
+          SELECT ?one (COUNT(distinct ?someone) as ?renown) (COUNT(distinct ?org) as ?memberships) WHERE {
+              {
+                SELECT * WHERE {
+                  VALUES (?someone ?one)
                   {
-                    SELECT * WHERE {
-                      VALUES (?someone ?one)
-                      {
-                        (person:alice person:bob)
-                        (person:alice person:carol)
-                        (person:carol person:bob)
-                        (person:carol person:mike)
-                        (person:mike person:carol)
-                        (person:mike person:alice)
-                        (person:bob person:carol)
-                        (person:bob person:mike)
-                      }
-                    }
+                    (person:alice person:bob)
+                    (person:alice person:carol)
+                    (person:carol person:bob)
+                    (person:carol person:mike)
+                    (person:mike person:carol)
+                    (person:mike person:alice)
+                    (person:bob person:carol)
+                    (person:bob person:mike)
                   }
-                  {
-                    SELECT * WHERE {
-                      VALUES (?one ?org)
-                      {
-                        (person:alice org:W3C)
-                        (person:alice org:IEEE)
-                        (person:alice org:IETF)
-                        (person:carol org:W3C)
-                        (person:mike org:IEEE)
-                        (person:mike org:IETF)
-                      }
-                    }
                 }
               }
-              GROUP BY ?one
-              ORDER BY ?one
-            ' sets='[
-              {"dataSetName": "Renown", "category": "one", "value": "renown"},
-              {"dataSetName": "Memberships", "category": "one", "value": "memberships"}
-            ]'></semantic-chart>
-          </mp-component-toolbar-component>
-        </mp-component-toolbar>
-      </div>
-    </div>
-
-    <h2>Recommended Usage</h2>
+              {
+                SELECT * WHERE {
+                  VALUES (?one ?org)
+                  {
+                    (person:alice org:W3C)
+                    (person:alice org:IEEE)
+                    (person:alice org:IETF)
+                    (person:carol org:W3C)
+                    (person:mike org:IEEE)
+                    (person:mike org:IETF)
+                  }
+                }
+            }
+          }
+          GROUP BY ?one
+          ORDER BY ?one
+        ' sets='[
+          {"dataSetName": "Renown", "category": "one", "value": "renown"},
+          {"dataSetName": "Memberships", "category": "one", "value": "memberships"}
+        ]'></semantic-chart>
+      </mp-component-toolbar-component>
+    </mp-component-toolbar>
+   
+    <h4>Recommended Usage</h4>
     The chart widget is a simple, yet powerful tool, to visualize trends and relationships between numbers, ratios, or proportions.
     As all data is being presented to the user at once, appropriate filtering or aggregation should be applied to limit the amount of data to be displayed.
 
-    <h2> Rendering libraries</h2>
+    <h4>Rendering libraries</h4>
     Charts can be rendered by two libraries:
     <ul>
       <li>ChartJS <a href="http://chartjs.org/">chartjs.org</a></li>
-      <li>Highcharts <a href="http://highcharts.com">highcharts.com</a> (see <semantic-link title="Highcharts Examples" iri="http://help.researchspace.org/resource/HighchartsExamples">additional examples</semantic-link>)</li>
+      <li>Highcharts <a href="http://highcharts.com">highcharts.com</a> (see <semantic-link title="Highcharts Examples" iri="http://help.researchspace.org/resource/HighchartsExamples" target="_blank">additional examples</semantic-link>)</li>
     </ul>
 
     Data definition is the same among both libraries, but the provisioning of user styles is quite different. However, for the individual libraries the syntax and structure is the same as in the official library documentations (Highcharts 5.x, ChartJS 2.x) .
     In any case, default styling is provided for each library and one could omit styling at all.
 
-    <h3>Limitations</h3>
+    <h4>Limitations</h4>
     <ul>
       <li>Both libraries will work reasonably fast if the quantity of data is limited based on visual perception limits.</li>
     </ul>
-
-    <h2>Configuration</h2>
+    <hr class="divider">
+    <h3>Configuration</h3>
     <mp-documentation type="SemanticChartConfig"></mp-documentation>
-
-    <h2>Examples</h2>
-    <h3>Sample dataset</h3>
+    <hr class="divider">
+    <h3>Examples</h3>
+    <h4>Sample dataset</h4>
     <mp-code-block mode='text/turtle'>
 <![CDATA[
     @prefix foaf: <http://xmlns.com/foaf/0.1/> .
@@ -118,7 +112,7 @@
     </mp-code-block>
 
 
-    <h3>Simple bar chart</h3>
+    <h4>Simple bar chart</h4>
     <div>
         <mp-code-example>
 <![CDATA[
@@ -149,7 +143,7 @@
         </mp-code-example>
     </div>
 
-    <h3>Stacked bar charts with multiple series using <code>sets</code> configuration and styling</h3>
+    <h4>Stacked bar charts with multiple series using <code>sets</code> configuration and styling</h4>
     <mp-code-example>
 <![CDATA[
       <semantic-chart
@@ -227,7 +221,7 @@
 ]]>
     </mp-code-example>
 
-    <h3>Stacked bar charts with multiple series using <code>multi-data-set</code> configuration</h3>
+    <h4>Stacked bar charts with multiple series using <code>multi-data-set</code> configuration</h4>
 		<mp-code-example>
 <![CDATA[
 			<semantic-chart type='bar'
@@ -268,7 +262,7 @@
 ]]>
 		</mp-code-example>
 
-    <h3>Simple pie chart</h3>
+    <h4>Simple pie chart</h4>
     <div>
       <mp-code-example>
 <![CDATA[
@@ -299,7 +293,7 @@
         </mp-code-example>
     </div>
 
-    <h3>Line chart with multiple series</h3>
+    <h4>Line chart with multiple series</h4>
     <div>
         <mp-code-example>
 <![CDATA[
@@ -349,7 +343,7 @@
         </mp-code-example>
     </div>
 
-    <h3>Bubble chart</h3>
+    <h4>Bubble chart</h4>
     <div>
       <mp-code-example>
 <![CDATA[
@@ -381,7 +375,7 @@
         </mp-code-example>
     </div>
 
-    <h3>Pivot example</h3>
+    <h4>Pivot example</h4>
     <div>
         <mp-code-example>
 <![CDATA[
@@ -408,7 +402,7 @@
         </mp-code-example>
     </div>
 
-    <h3>Styling example</h3>
+    <h4>Styling example</h4>
     <div>
       <mp-code-example>
 <![CDATA[
@@ -464,7 +458,7 @@
         </mp-code-example>
     </div>
 
-    <h3>Toggleable Chart Type</h3>
+    <h4>Toggleable Chart Type</h4>
     <div>
         <mp-code-example>
 <![CDATA[
@@ -495,7 +489,7 @@
         </mp-code-example>
     </div>
 
-    <h3>Custom tooltip</h3>
+    <h4>Custom tooltip</h4>
     <mp-code-example>
 <![CDATA[
   <mp-component-toolbar>
@@ -533,7 +527,7 @@
             {{/inline}}
             {{#if category}}
               <div>
-                <h3>
+                <h4>
                 	{{> @marker style=category.markerStyle class=category.markerClass}}
                   {{#if category.iri}}
                     <semantic-link iri='{{category.iri}}'>
@@ -542,7 +536,7 @@
                   {{else}}
                     {{category.label}}
                   {{/if}}
-                </h3>
+                </h4>
               </div>
             {{/if}}
             <ul class="list-unstyled">
@@ -565,7 +559,7 @@
 ]]>
     </mp-code-example>
 
-    <h3>Custom colors</h3>
+    <h4>Custom colors</h4>
     <mp-code-example>
 <![CDATA[
 <semantic-chart 

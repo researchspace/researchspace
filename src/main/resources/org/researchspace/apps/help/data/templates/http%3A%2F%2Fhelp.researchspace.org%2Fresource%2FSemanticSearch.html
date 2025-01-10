@@ -8,28 +8,25 @@
   <li>
     <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
   </li>
-  <li class="active">Structured Search Component</li>
+  <li class="active">Semantic structured search</li>
 </ol>
 
 <div class="page">
   <div class="page__body">
-  <h1> Structured Search Component </h1>
-  <div class="documentation__intro">
-    <div class="documentation__intro__description">
-      Customizable interface for structured search that allows the user to:
-      <ul>
-        <li>define complex information needs in an incremental way</li>
-      	<li>refine the set of search results using facets</li>
-      	<li>visualize the search results in different ways</li>
-      </ul>
-      <p>Structured search is realized not by means of a single, monolithic component, but as an environment where different functionalities (e.g., query definition, faceted browsing of results, and visualization) can be dynamically composed and exchanged.</p>
-    </div>
-    <div class="documentation__intro__demo">
-			<img src="/assets/images/help/structured-search-life-sciences.png" height=400px />
-    </div>
+  <h2>Semantic structured search</h2>
+  <div>
+    Customizable interface for structured search that allows the user to:
+    <ul>
+      <li>define complex information needs in an incremental way</li>
+      <li>refine the set of search results using facets</li>
+      <li>visualize the search results in different ways</li>
+    </ul>
+    <p>Structured search is realized not by means of a single, monolithic component, but as an environment where different functionalities (e.g., query definition, faceted browsing of results, and visualization) can be dynamically composed and exchanged.</p>
   </div>
-  <div style="clear:both;"></div>
-  <h2> Structured Search Environment </h2>
+  <img src="/assets/images/help/structured-search-life-sciences.png" height=400px />
+
+  <hr class="divider">
+  <h3>Structured Search Environment</h3>
   <p>The structured search environment represents the main wrapper component defining the parameters of the whole search scenario. The environment consists of the following sections:</p>
   <ul>
     <li><b>Search definition</b> components that allow the user to express her information need and generate the initial query.</li>
@@ -60,7 +57,7 @@
 ]]>
   </mp-code-block>
   
-  <h3>Search configuration</h3>
+  <h4>Search configuration</h4>
     <p>This configuration allows the specification of id or limit, but it is also contains the key configuration required to configure the search definition for the structured search.</p>
     <p>For simple cases only the search-profile has to be specified, containing all categories and relations to be used. See below example for an InlineSearchProfileConfig: </p>
     <mp-code-block>
@@ -176,7 +173,7 @@
   	<mp-documentation type="SemanticSearchConfig"></mp-documentation>
 
   
-  <h3>Search definition</h3>
+  <h4>Search definition</h4>
   <p>Search definition components help the user to express her information need. The UI components supporting search definition to capture this information need and express it as a SPARQL query to be executed against the graph database.</p>
   <p>
       Search definition can be realized by re-using component, that are designed for other search modalities such as the <code>semantic-search-query-keyword</code> or <code>semantic-search-query-constant</code> component. <br>
@@ -264,7 +261,7 @@
   <p><code>semantic-search-query-constant</code> configuration:</p>
   <mp-documentation type="SemanticSearchQueryConstantConfig"></mp-documentation>
 
-  <h3>Faceted filtering</h3>
+  <h4>Faceted filtering</h4>
   <p>
     The search request entered by the user and translated into SPARQL by the search definition components produces the initial set of results. This initial set of results can be explored and further refined by the user by using the faceted filtering capabilities. The faceted filtering stage generates an additional search clauses, that will be added to the original SPARQL query.
   </p>
@@ -276,7 +273,7 @@
   <p><code>semantic-search-facet</code> configuration:</p>
   <mp-documentation type="SemanticFacetConfig"></mp-documentation>
 
-  <h3>Results visualization</h3>
+  <h4>Results visualization</h4>
   <p>
     Visualization of search results in the ResearchSpace platform does not require any special UI components and is performed using the standard components for query visualization: both generic ones (e.g., <semantic-link iri="http://help.researchspace.org/resource/SemanticTable">table</semantic-link>) as well as datatype-specific (e.g., <semantic-link iri="http://help.researchspace.org/resource/SemanticMap">map</semantic-link> or <semantic-link iri="http://help.researchspace.org/resource/SemanticChart">chart</semantic-link>). 
   </p>
@@ -319,7 +316,8 @@ SELECT ?subject ?label WHERE {
 ]]>
   </mp-code-block>   
 
-  <h2> Search Profile </h2>
+  <hr class="divider">
+  <h3>Search Profile</h3>
   <p>
     One of the core concepts behind <code>semantic-search</code> is so called <b>Search Profile</b> - well defined set of <b>Categories</b> and <b>Relations</b> between them. 
   </p>
@@ -327,17 +325,18 @@ SELECT ?subject ?label WHERE {
     To define Category one needs to provide some basic metadata about it using some well known RDF vocabularies like RDFS (<code>rdfs:label</code>), schema.org (<code>schema:thumbnail</code>), as well as custom platform vocabulary (<code>ssp:Category</code>, <code>ssp:Relation</code>, <code>ssp:hasDomain</code>, <code>ssp:hasRange</code>, <code>ssp:Order</code>). See sample profile for Wikidata Life-science Data at the bottom of the page.
   </p>
   
-  <h3> Materialized Categories/Relations </h3>
+  <h4>Materialized Categories/Relations</h4>
   <p>
     In the simple case one can think about <b>category</b> as an instance of <a href="https://www.w3.org/TR/rdf-schema/#ch_class">rdfs:Class</a> or <a href="https://www.w3.org/TR/owl2-syntax/#Classes">owl:Class</a> and <b>relation</b> correspondingly <a href="https://www.w3.org/TR/rdf-schema/#ch_property">rdf:Property</a> or <a href="https://www.w3.org/TR/rdf-schema/#ch_property">owl:ObjectProperty</a>.
     Basically the most simple kind of data schema.
   </p>
   
-  <h3> Virtual Categories/Relations </h3>
+  <h4>Virtual Categories/Relations</h4>
   <p>It is also possible to use search over the data where there is no direct relation between data points, e.g where relations correspond to some property path in the data.</p>
   
-  <h2> Examples </h2>
-  <h3>Simple Search</h3>
+  <hr class="divider">
+  <h3>Examples</h3>
+  <h4>Simple Search</h4>
   <p>
     See how <code>semantic-search-query-keyword</code> can be used together with facets in <b>Search with Facets</b> and <b>Wikidata Life Sciences</b> section.
   </p>
@@ -390,7 +389,7 @@ SELECT ?subject ?label WHERE {
 ]]>
   </mp-code-example>
 
-  <h3>Constant Search</h3>
+  <h4>Constant Search</h4>
   <p>Useful to show different visualizations for the same base query, or show only facets without the main search.</p>
   <p>
     See how <code>semantic-search-query-constant</code> can be used together with facets in <b>Search with Facets</b> and <b>Wikidata Life Sciences</b> section.
@@ -443,7 +442,7 @@ SELECT ?subject ?label WHERE {
 ]]>
   </mp-code-example>  
     <br/>
-  <h3> Search with Facets </h3>
+  <h4>Search with Facets</h4>
   
   <ul>
     <li>
@@ -457,7 +456,7 @@ SELECT ?subject ?label WHERE {
     </li>
   </ul>
   
-  <h3> Wikidata Life Sciences </h3>
+  <h4>Wikidata Life Sciences</h4>
   <p>
    Examples of the structured semantic search environment configured for the life sciences domain data from <a href="http://www.wikidata.org/">Wikidata</a>.
   </p>

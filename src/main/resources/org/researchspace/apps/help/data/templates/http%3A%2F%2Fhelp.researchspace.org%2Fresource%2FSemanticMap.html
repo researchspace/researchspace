@@ -8,42 +8,39 @@
   <li>
     <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
   </li>
-  <li class="active">Map Component</li>
+  <li class="active">Semantic map</li>
 </ol>
 
 <div class="page">
     <div class='page__body'>
-      <h1> Map Component </h1>
-    <div class="documentation__intro">
-      <div class="documentation__intro__description">
-          Used for displaying spatial data on a map.
+      <h2>Semantic map</h2>
+      <div>
+        Used for displaying spatial data on a map.
           <ul>
             <li>WKT point/polygons are supported, however, currently only be approximated as simple markers on the map. </li>
             <li>Coordinates are assumed to be in EPSG:4326 (WGS84) and will be transformed internally to EPSG:3857</li>
           </ul>
       </div>
-      <div class="documentation__intro__demo" 
-      style='height: 35vw;'>
-       <semantic-map
-            query='
-              SELECT ?lat ?lng ?description ?link ?icon WHERE {
-                VALUES(?lat ?lng ?description ?link ?icon) {
-                  ("51.5195" "-0.1269" "The British Museum" <http://www.wikidata.org/entity/Q6373> "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/British_Museum_logo.svg/640px-British_Museum_logo.svg.png")
-                  ("51.9500" "7.6240" "Münster City" <http://www.wikidata.org/entity/Q2742>  "/assets/images/icons/rs-icons/place.svg")
-                }
-              }
-            '
-            tuple-template='<b>{{description.value}}</b> <img style="width: 89px" src="{{icon.value}}" /> <br><a href="{{link.value}}" target="_blank">Open in wikidata</a>'
-            ></semantic-map>
-      </div>
-    </div>
-
-    <h2>Configuration </h2>
+      <div style='height: 300px;'>
+        <semantic-map
+             query='
+               SELECT ?lat ?lng ?description ?link ?icon WHERE {
+                 VALUES(?lat ?lng ?description ?link ?icon) {
+                   ("51.5195" "-0.1269" "The British Museum" <http://www.wikidata.org/entity/Q6373> "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/British_Museum_logo.svg/640px-British_Museum_logo.svg.png")
+                   ("51.9500" "7.6240" "Münster City" <http://www.wikidata.org/entity/Q2742>  "/assets/images/icons/rs-icons/place.svg")
+                 }
+               }
+             '
+             tuple-template='<b>{{description.value}}</b> <img style="width: 89px" src="{{icon.value}}" /> <br><a href="{{link.value}}" target="_blank">Open in wikidata</a>'
+         ></semantic-map>
+       </div>
+    <hr class="divider">
+    <h3>Configuration</h3>
     <mp-documentation type="SemanticMapConfig"></mp-documentation>
+    <hr class="divider">
+    <h3>Examples</h3>
 
-    <h2>Examples </h2>
-
-    <h3>Map using latitude and longitude</h3>
+    <h4>Map using latitude and longitude</h4>
     <div>
     <mp-code-example>
 <![CDATA[
@@ -64,7 +61,7 @@
     </mp-code-example>
     </div>
 
-    <h3>Map using WKT Point Literal</h3>
+    <h4>Map using WKT Point Literal</h4>
     <div class="documentation">
     <mp-code-example>
 <![CDATA[
@@ -84,8 +81,8 @@
     </mp-code-example>
     </div>
 
-    <h3>Map with inital zoom level</h3>
-    <h4>Map with initial zoom set to maximum (fix-zoom-level=16) and marker popup shows a picture using the tuple-template</h4>
+    <h4>Map with inital zoom level</h4>
+    <div>Map with initial zoom set to maximum (fix-zoom-level=16) and marker popup shows a picture using the tuple-template</div>
     <div class="documentation">
     <mp-code-example>
 <![CDATA[
@@ -105,7 +102,7 @@
     </mp-code-example>
     </div>
 
-    <h3>Map using WKT Polygons</h3>
+    <h4>Map using WKT Polygons</h4>
     <div>
       <mp-code-example>
         <![CDATA[
@@ -126,7 +123,7 @@
       </mp-code-example>
     </div>
       
-    <h3>Clusters</h3>
+    <h4>Clusters</h4>
     <div>
       <mp-code-example>
         <![CDATA[
@@ -150,7 +147,7 @@
       </mp-code-example>
     </div>
 
-    <h3>Clusters + polygons + color customization</h3>
+    <h4>Clusters + polygons + color customization</h4>
     <div>
       <mp-code-example>
         <![CDATA[

@@ -15,13 +15,16 @@
 
 <div class="page">
   <div class='page__body'>
-    <h1>Semantic Context</h1>
+    <h2>Semantic Context</h2>
     <p>
       The <code><semantic-context/></code> component can be used to selectively wrap individual <b>visualization components</b> in order to change their execution context, i.e. to instruct components to execute queries against particular repositories (other than the default), named graphs (as far as supported by the database) or to inject binding values into queries.
     </p>
+    <hr class="divider">
+    <h3>Configuration</h3>
     <mp-documentation type="SemanticConfigProps"></mp-documentation>
-    <h2>Context Inheritance</h2>
-    The <code><semantic-context/></code> is automatically inherited to all child HTML nodes.  
+    <hr class="divider">
+    <h3>Context Inheritance</h3>
+    <p>The <code><semantic-context/></code> is automatically inherited to all child HTML nodes.</p>  
 <pre>
 <code>
 <div> <!-- the root page-div has a default semantic context -->
@@ -44,52 +47,29 @@
 </div>
 </code>
 </pre>
-
-    <h2>Supported Components</h2>
+<hr class="divider">
+    <h3>Supported Components</h3>
     For the time being only the components below support listening to the semantic-context. This is rather a well-informed design constraint (c.f. section below), than an inherent technical limitation. 
     <ul>
-      <li> 
-        <semantic-link iri="[[resolvePrefix "Help:SemanticQuery"]]">semantic-query</semantic-link>
-      </li>
-      <li>
-         <semantic-link iri="[[resolvePrefix "Help:SemanticTable"]]">semantic-table</semantic-link>
-      </li>
-      <li>
-         <semantic-link iri="[[resolvePrefix "Help:SemanticTree"]]">semantic-tree</semantic-link>
-      </li>
-      <li>
-         <semantic-link iri="[[resolvePrefix "Help:SemanticTimeline"]]">semantic-timeline</semantic-link>
-      </li>
-      <li>
-         <semantic-link iri="[[resolvePrefix "Help:SemanticGraph"]]">semantic-graph</semantic-link>
-      </li>
-      <li>
-         <semantic-link iri="[[resolvePrefix "Help:SemanticMap"]]">semantic-map</semantic-link>
-      </li>
-      <li>
-         <semantic-link iri="[[resolvePrefix "Help:SemanticSimpleSearch"]]">semantic-simple-search</semantic-link>
-      </li>
-      <li>
-         <semantic-link iri="[[resolvePrefix "Help:Ontodia"]]">ontodia</semantic-link>
-      </li>
-      <li>
-         <semantic-link iri="[[resolvePrefix "Help:MPComponents"]]">semantic-link</semantic-link>
-      </li>   
-      <li>
-         <semantic-link iri="[[resolvePrefix "Help:MPComponents"]]">mp-label</semantic-link>
-      </li>
+      <li><code><semantic-link /></code></li>
+      <li><code><semantic-query /></code></li>
+      <li><code><semantic-table /></code></li>
+      <li><code><semantic-tree /></code></li>
+      <li><code><semantic-timeline /></code></li>
+      <li><code><semantic-graph /></code></li>
+      <li><code><semantic-map /></code></li>
+      <li><code><semantic-simple-search /></code></li>
+      <li><code><mp-label /></code></li>
+      <li><code><ontodia /></code></li>
     </ul>
+
     <b>Currently, the following components explicitly do not support the semantic-context:</b>
     <ul>
-      <li> 
-        <semantic-link iri="[[resolvePrefix "Help:SemanticSearch"]]">semantic-search</semantic-link> (Search Framework)
-      </li>
-      <li>
-         <semantic-link iri="[[resolvePrefix "Help:SemanticForm"]]">semantic-form</semantic-link>
-      </li>
+      <li><code><semantic-search /></code></li>
+      <li><code><semantic-form /></code></li>
     </ul>
-    
-   	<h2>Constraints</h2>
+    <hr class="divider">
+   	<h3>Constraints</h3>
     <p>
       By design, the <code><semantic-context/></code> component currently only works for simple, read-only visualization and result rendering components (c.f. list of supported components above).
     </p>
@@ -106,10 +86,10 @@
          Defining the semantics and behavior of the semantic-context on inherently nested authoring or search-framework components is far from trival, i.e. what is the semantic-context supposed to modify? The context from which existing form values would be fetched from? The auto-suggestion, value selection or validation queries would perform against? Or would it be the context to which the result is supposed to be saved to? The answer will be very different depending on the various use-cases.
       </li>
     </ul>
+    <hr class="divider">
+    <h3>Examples</h3>
     
-    <h2>Examples</h2>
-    
-    <h3>Example: Inheritance of semantic-context</h3>
+    <h4>Example: Inheritance of semantic-context</h4>
     <p>
       The query from the table below will execute against the <code>repository=assets</code> and also all children components like the <code><semantic-link/></code> will inherit the context. 
     </p>
@@ -132,7 +112,7 @@
 ]]>
 
         </mp-code-example>
-    <h3>Example: Overwriting semantic-context in child components</h3>
+    <h4>Example: Overwriting semantic-context in child components</h4>
     <p>
       The query from the table below will execute against the <code>repository=assets</code>. <b>However</b>, the semantic-context is again overwritten by wrapping the content of the table cell into <code><semantic-context repository="default"/></code>.
     </p>
@@ -159,7 +139,7 @@
         </mp-code-example>
     
 
-<h3>Example: Default Graphs, Named Graphs and Query Bindings</h3>
+<h4>Example: Default Graphs, Named Graphs and Query Bindings</h4>
     <p>
       The query from the table below:
     </p>

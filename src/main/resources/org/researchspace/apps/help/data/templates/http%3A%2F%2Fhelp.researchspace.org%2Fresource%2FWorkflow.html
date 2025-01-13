@@ -8,46 +8,34 @@
   <li>
     <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
   </li>
-  <li class="active">Workflow System</li>
+  <li class="active">Workflow system</li>
 </ol>
 
 <div class="page">
   <div class='page__body'>
-  <h1>Workflow System</h1>
-    <h2>1 Motivation and purpose</h2>
-    <ul>
-      <li>
-        Create simple workflow solution for the platform.
-      </li>
-      <li>
-        Enable researchspace to support simple workflow around some resources or data publication process.
-      </li>
-    </ul>
-    <h2>2 Assumptions</h2>
+  <h2>Workflow system</h2>
+  [[> dataUploadingTutorial]]
+  <p>The workflow system allows to create simple workflow solutions around some resources or data publication processes.</p>
+  <p>
+    The workflow is intended as a publication process that goes through several stages or, so called, 
+    steps with tasks for each step assigned to specific users of the system. The workflow is defined on two levels:
+  </p>
+  <ul>
+    <li>
+      Workflow ontology. It describes the basic concepts of workflow as a domain, steps, transitions 
+      between them, assignees and how these concepts are related.
+    </li>
+    <li>
+      Workflow definition. It is an RDF file or a resource that defines the particular instance of 
+      workflow. In this file one can set up a number of steps and rules for transitioning between them.
+    </li>
+  </ul>
+  <hr class="divider">
+    <h4>Workflow ontology</h4>
     <p>
-      The primary goal is not to replicate existing complex workflow systems, since it may be that interfacing with them would be a better option. The focus of this development is to offer a solution for managing the data or resource publication process.
+      The workflow ontology is presented on the diagram below, switch the tab to <b>RDF/Turtle</b> to see the ontology serialized in RDF.
     </p>
-    <h2>3 What is workflow</h2>
-    <p>
-      It is assumed that workflow is a publication process that goes through the several stages or, so called, steps with tasks for each step assigned to specific users of the system.
-    </p>
-    <h2>4 Defining workflows</h2>
-    <p>
-      Workflow is defined on two levels:
-    </p>
-    <ul>
-      <li>
-        Workflow ontology. It describes the basic concepts of workflow as a domain, steps, transitions between them, assignees and how these concepts are related
-      </li>
-      <li>
-        Workflow definition. It is an RDF file or a resource that defines the particular instance of workflow. In this file one can set up a number of steps and rules for transitioning between them
-      </li>
-    </ul>
-    <h3>4.1 Workflow ontology</h3>
-    <p>
-      The workflow ontology is presented on the diagram below, switch the tab to <b>RDF/Turtle</b> to see the ontology serialized in RDF
-    </p>
-    <bs-tabs unmount-on-exit=false>
+    <bs-tabs unmount-on-exit=false default-active-key='2'>
       <bs-tab event-key="1" title="Ontology diagram">
         <div style='height: 500px; margin: 20px 0;'>
           <ontodia settings=nostats
@@ -154,11 +142,11 @@
       </bs-tab>
     </bs-tabs>
 
-    <h3>4.2 Workflow definition</h3>
+    <h4>Workflow definition</h4>
     <p>
       The Workflow Definition specifies possible Workflow Steps and their transitions. Also it provides the <code>assigneeQuery</code> property which is a SPARQL Select query that is used to query possible assignees for a particular workflow step. To import a workflow definition one needs to prepare an RDF file in the TriG format that contains the whole Workflow Definition Container (which has the default URI <code>Platform:workflowDefinitionContainer</code>) and the definition, then import the container on the <semantic-link iri="[[resolvePrefix "Platform:rootContainer"]]">LDP</semantic-link> page. An example of the Workflow Definition is presented on the following diagram. Navigate to a <b>RDF/Turtle</b> to see the definition serialized in the TriG format.
     </p>
-    <bs-tabs unmount-on-exit=false>
+    <bs-tabs unmount-on-exit=false default-active-key='2'>
       <bs-tab event-key="1" title="Workflow example-definition diagram">
         <div style='height: 500px; margin: 20px 0;'>
           <ontodia settings=nostats
@@ -233,7 +221,8 @@
       </bs-tab>
     </bs-tabs>
 
-    <h2>5 Workflow Instantiations</h2>
+    <hr class="divider">
+    <h3>Workflow instantiations</h3>
     <p>
       These are the particular instances of workflow of the publication process related to a specific resource.
     </p>
@@ -256,7 +245,8 @@
       <figcaption><small>Fig. 1. The diagram of relations between workflow ontology, workflow definition and workflow instantiations.</small></figcaption>
     </figure>
 
-    <h2>6 Workflow UI Component</h2>
+    <hr class="divider">
+    <h3>Workflow UI component</h3>
     <p>
       <code><mp-workflow-manager /></code> allows managing Workflow Instantiations. The component requires the following properties:
     </p>
@@ -296,7 +286,9 @@
     <p>
       The user can select the step as a next job that should be done to resource and the user which will be tasked with this job. The workflow instantiation will be advanced to the new status by click on the "Assign" button.
     </p>
-    <h3>6.1 Managing multiple Workflow Instantiations</h3>
+
+    <hr class="divider">
+    <h4>Managing multiple Workflow Instantiations</h4>
     <p>
       Workflow UI Component supports working with multiple Workflow Instantiations at the same time, it can be used together with <code><mp-selection-group /></code>, <code><mp-selection-toggle /></code> and the special workflow wrapper component <code><mp-workflow-selection-action /></code> to perform actions with the selected Workflow Instantiations.
     </p>
@@ -320,8 +312,9 @@
       ]]>
     </mp-code-block>
 
-    <h2>7 Create Workflow Component</h2>
-    <p>
+    <hr class="divider">
+    <h3>Workflow create component</h3>
+    <div>
       <code><mp-workflow-create /></code> allows to instantiate workflows for resources.
       Component creates the workflow instantiation for a target resource.
       There are two modes of using this component:
@@ -331,16 +324,17 @@
         <code>data: {iri: string}</code> and creates instantiations in response to the event.</li>
         The component uses the following set of properties:
       </ul>
-    </p>
+    </div>
     <mp-documentation type="WorkflowCreateConfig"></mp-documentation>
 
-    <h3>7.1 Examples for Create Workflow Component</h3>
-    [[> dataUploadingTutorial]]
+    <hr class="divider">
+    <h4>Examples for Create Workflow Component</h4>
+
     <semantic-context repository='assets'>
       <semantic-if query='ASK { <http://example.com/workflow/definition-1> a <http://www.researchspace.org/resource/system/workflow#WorkflowDefinition> }'>
         <template id='then'>
           <div>
-            <h3>7.1.1 WorkflowCreateComponent</h3>
+            <h4>WorkflowCreateComponent</h4>
             Instantiate workflow for this subject with UI:
             <div style='border: 1px dotted black; padding: 5px; margin: 10px 0; width: max-content;'>
               http://example.com/book/javascript: Java Script
@@ -363,7 +357,7 @@
               </div>
             </mp-code-example>
 
-            <h3>7.1.2 TriggerButton + WorkflowCreateComponent</h3>
+            <h4>TriggerButton + WorkflowCreateComponent</h4>
             Instantiate workflow for this subject from event:
             <div style='border: 1px dotted black; padding: 5px; margin: 10px 0; width: max-content;'>
               http://example.com/book/java: Java
@@ -389,7 +383,7 @@
               </div>
             </mp-code-example>
 
-            <h3>7.1.3 Form + WorkflowCreateComponent + Redirect</h3>
+            <h4>Form + WorkflowCreateComponent + Redirect</h4>
             Here we perform next steps:
             <ol>
               <li>Create a new entity using Form and fire 'Form.ResourceCreated' event</li>
@@ -454,10 +448,12 @@
       </semantic-if>
     </semantic-context>
 
-    <h3>7.2 Existing workflows</h3>
+    <hr class="divider">
+    <h4>Existing workflows</h4>
     [[> existingWorflows]]
 
-    <h2>8 Current limitations</h2>
+    <hr class="divider">
+    <h3>Current limitations</h3>
     <ul>
       <li>
         There are no tools to create/edit workflow definitions. If one needs to change a definition, he have to export it, manually makes changes in the RDF file, remove the old definition form the platform and import the new one.

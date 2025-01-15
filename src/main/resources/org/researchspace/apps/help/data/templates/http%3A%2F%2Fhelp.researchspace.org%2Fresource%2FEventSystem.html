@@ -48,20 +48,21 @@
       The platform provides the set of generic events:
     </p>
     <mp-documentation type="BuiltInEventData" disable-transform-attributes=true hide-required-label=true></mp-documentation>
+    <br>
     <p>
       The <code>Component.Loaded</code> event could be used in case some action should be produced after a component has loaded data, e.g. to go to the next step of a guided tour. Here is the list of components which trigger this event:
     </p>
     <ul>
-      <li><code><semantic-carousel /></code></li>
-      <li><code><semantic-chart /></code></li>
-      <li><code><semantic-graph /></code></li>
-      <li><code><semantic-map /></code></li>
-      <li><code><semantic-search /></code></li>
-      <li><code><semantic-search-facet /></code></li>
-      <li><code><semantic-table /></code></li>
-      <li><code><semantic-timeline /></code></li>
-      <li><code><semantic-tree /></code></li>
-      <li><code><ontodia /></code></li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<emantic-carousel>"]]</li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<semantic-chart>"]]</li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<semantic-graph>"]]</li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<semantic-map>"]]</li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<semantic-search>"]]</li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<semantic-search-facet>"]]</li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<semantic-table>"]]</li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<semantic-timeline>"]]</li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<semantic-tree>"]]</li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<ontodia>"]]</li>
     </ul>
 
     <hr class="divider">
@@ -73,28 +74,30 @@
 
     <h3>Trigger component</h3>
     <p>
-      <code><mp-event-trigger /></code> - triggers an event by click on the child component.
+      [[> Help:CodeHighlightPartial codeContent="<mp-event-trigger>"]] - triggers an event by click on the child component.
     </p>
     <mp-documentation type="EventTriggerConfig"></mp-documentation>
 
     <hr class="divider">
     <h3>Proxy component</h3>
     <p>
-      <code><mp-event-proxy /></code> - listens to a specified event, and when it happens triggers some other event, could be used in case one need to produce some action after another one, e.g. to refresh a component after data saving.
+      [[> Help:CodeHighlightPartial codeContent="<mp-event-proxy>"]] - listens to a specified event, and when it happens triggers some other event, could be used in case one need to produce some action after another one, e.g. to refresh a component after data saving.
     </p>
     <mp-documentation type="EventProxyConfig"></mp-documentation>
     <hr class="divider">
     <h3>Target components</h3>
     <p>
-      <code><mp-event-target-refresh /></code> - refreshes the child component when receiving the <code>Component.Refresh</code> event.
+      [[> Help:CodeHighlightPartial codeContent="<mp-event-target-refresh>"]] - refreshes the child component when receiving the <code>Component.Refresh</code> event.
     </p>
     <mp-documentation type="EventTargetRefreshConfig"></mp-documentation>
+    <br>
     <p>
-      <code><mp-event-target-template-render /></code> - refreshes the template component and passes it new properties when receiving the <code>Component.TemplateUpdate</code> event.
+      [[> Help:CodeHighlightPartial codeContent="<mp-event-target-template-render>"]] - refreshes the template component and passes it new properties when receiving the <code>Component.TemplateUpdate</code> event.
     </p>
     <mp-documentation type="EventTargetTemplateRenderConfig"></mp-documentation>
+    <br>
     <p>
-      <code><mp-event-target-redirect/></code> - Component which provides redirect feature. In response to the event <code>RedirectAction.perform</code> component perform redirect/reload operation where the IRI of the target resource can be passed via parameters or together with event.
+      [[> Help:CodeHighlightPartial codeContent="<mp-event-target-redirect>"]] - Component which provides redirect feature. In response to the event <code>RedirectAction.perform</code> component perform redirect/reload operation where the IRI of the target resource can be passed via parameters or together with event.
     </p>
     <mp-event-target-redirect
       id='redirect-to-resource'
@@ -102,6 +105,7 @@
     ></mp-event-target-redirect>
     <mp-documentation type="RedirectActionProps"></mp-documentation>
 
+    <br>
     <bs-alert bs-style='info'>
       <strong>Info!</strong>
       Besides the generic events and components, the platform provides specialized ones for different use cases that will be documented here in the future.
@@ -123,8 +127,9 @@
     <mp-code-example>
     <![CDATA[
 			<mp-event-trigger id='dom-refresh' type='Component.Refresh' targets='["some-element"]'>
-				<button class='btn btn-default'>Refresh</button>
+				<button class='btn btn-default' style="margin-bottom:15px;">Refresh</button>
 			</mp-event-trigger>
+      
 			<mp-event-target-refresh id='some-element'>
 				<semantic-query query='SELECT * {BIND(NOW() as ?update)}'></semantic-query>
 			</mp-event-target-refresh>
@@ -275,8 +280,10 @@
           }
         ]'>
         <semantic-form-text-input for='name'></semantic-form-text-input>
-        <button name='submit' class='btn btn-primary'>Create</button>
-        <button name='reset' class='btn btn-default'>Reset</button>
+        <div style="margin-top:15px; display:flex; gap: 5px;">
+          <button name='reset' class='btn btn-default'>Reset</button>
+          <button name='submit' class='btn btn-action'>Create</button>
+        </div>
       </semantic-form>
       <mp-event-proxy id='form-resource-created' on-event-type='Form.ResourceUpdated'
         proxy-event-type='RedirectAction.perform' proxy-targets='["redirect-to-resource"]'>
@@ -294,6 +301,7 @@
     	Ontodia Component supports the following events:
     </p>
     <mp-documentation type="OntodiaEventData" disable-transform-attributes=true hide-required-label=true></mp-documentation>
+    <br>
     <h4>Example: Focus on an element</h4>
     <mp-code-example>
 <![CDATA[

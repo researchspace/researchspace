@@ -9,10 +9,10 @@
 <hr class="divider">
 
 <h3 id="rs-doc_thumbnail">Resource thumbnail</h3>
-<p>The <code><mp-resource-thumbnail></mp-resource-thumbnail></code> component queries and displays a thumbnail 
+<p>The [[> Help:CodeHighlightPartial codeContent="<mp-resource-thumbnail>"]] component queries and displays a thumbnail 
   image for a specified resource. The component uses the global ThumbnailService, 
   which can be configured using the UI configuration preferredThumbnails property 
-  (see <semantic-link title="Documentation" uri="Help:BasicSystemConfiguration">basic system configuration</semantic-link>).</p>
+  (see <semantic-link title="Documentation" uri="Help:BasicSystemConfiguration" class="text-underline" target="_blank">system configuration</semantic-link>).</p>
 
 <h4>Example: Fallback Image</h4>
 <div>The <code>noImageUri</code> property defines an image that the component will display if the resource does not have any thumbnail.</div>
@@ -23,7 +23,7 @@
 </mp-code-example>
 
 <h4>Example: Fallback Component</h4>
-<div>The <code><mp-resource-thumbnail-fallback></mp-resource-thumbnail-fallback></code> component has the same purpose as the 
+<div>The [[> Help:CodeHighlightPartial codeContent="<mp-resource-thumbnail-fallback>"]] component has the same purpose as the 
   <code>noImageUri</code> property, but it defines a fallback HTML-element.
 <div>
 <mp-code-example>
@@ -39,77 +39,51 @@
 
 <hr class="divider">
 
-<h3 id="rs-doc_modal">Modal dialog / Overlay</h3>
-<div>The <code><mp-overlay-dialog></mp-overlay-dialog></code> to open some content in a modal dialog or overlay. 
-  A dialog is just a variant of on overlay. By default the attribute <code>type</code> is set to <code>type=modal</code>. 
-  Setting it to <code>type=lightbox</code> will create an lightbox overlay instead of modal dialog. 
-  Arbitrary elements can be wrapped into <code><mp-overlay-dialog-trigger></mp-overlay-dialog-trigger></code> 
-  element to open (trigger) the dialog/overlay showing any elements specified within 
-  <code><mp-overlay-dialog-content></mp-overlay-dialog-content></code> element.</div>
-    
-<h4>Example: Modal with Link as Trigger</h4>
+<h3 id="rs-doc_label">Resource label</h3>
+<p>The [[> Help:CodeHighlightPartial codeContent="<mp-label>"]]
+  component displays the label of the specified resource. It uses the global label resolution, 
+  which can be configured using the UI configuration property <code>preferredLabels</code>
+  (see <semantic-link iri='http://help.researchspace.org/resource/BasicSystemConfiguration' class="text-underline" target="_blank">system configuration</semantic-link>).</p>
+<h4>Example</h4>
 <div>
 <mp-code-example>
 <![CDATA[
-<mp-overlay-dialog title="My Dialog">
-  <mp-overlay-dialog-trigger><a>Show in Dialog</a></mp-overlay-dialog-trigger>
-  <mp-overlay-dialog-content>
-  	Content of the Dialog
-  </mp-overlay-dialog-content>
-</mp-overlay-dialog>
-]]>
-</mp-code-example>
-</div>
-
-<h4>Example: Large Modal with Button as Trigger</h4>
-<div>
-<mp-code-example>
-<![CDATA[
-<mp-overlay-dialog title="My Dialog" type="modal" bs-size="large">
-  <mp-overlay-dialog-trigger><button class="btn btn-primary">Show in Dialog</button></mp-overlay-dialog-trigger>
-  <mp-overlay-dialog-content>
- 	 Content of the Dialog
-  </mp-overlay-dialog-content>
-</mp-overlay-dialog>
-]]>
-</mp-code-example>
-</div>
-
-<h4>Example: Overlay with Button as Trigger</h4>
-<div>
-<mp-code-example>
-<![CDATA[
-<mp-overlay-dialog title="My Dialog" type="lightbox">
-  <mp-overlay-dialog-trigger><button class="btn btn-primary">Show in Overlay</button></mp-overlay-dialog-trigger>
-  <mp-overlay-dialog-content>
-  	Content of the Overlay
-  </mp-overlay-dialog-content>
-</mp-overlay-dialog>
+<mp-label iri="http://example.com/person/alice" style="font-size: 1.3em;"></mp-label>
 ]]>
 </mp-code-example>
 </div>
 
 <hr class="divider">
 
-<h3 id="rs-doc_pageLoader">Page loader</h3>
-<div>The <code><mp-page-loader></mp-page-loader></code> component behaves similar to a 
-  server-side page include with the difference that the loading and rendering is 
-  done asynchronously on client side. The requested page is compiled in backend 
-  with the context of the current resource (same as an include).
-</div>
-    
-<h4>Example: Loading a page asynchronously in a modal dialog</h4>
+<h3 id="rs-doc_highlight">Highlight</h3>
+<p>The <mp-highlight> visually highlights all occurrences of a term in a given text.</p>
+  <h4>Example</h4>
+  <div>
+  <mp-code-example>
+    <mp-highlight highlight="Florence">Florence is a city in Tuscany.</mp-highlight>
+  </mp-code-example>
+  </div>
+
+<hr class="divider">
+
+<h3 id="rs-doc_anchorLink">Anchor link</h3>
+<div>The [[> Help:CodeHighlightPartial codeContent="<mp-anchor>"]] component scrolls the page to the target element with smooth animation.</div>
+
+<h4>Example: Default</h4>
 <div>
-<mp-code-example>
-<![CDATA[
-<mp-overlay-dialog title="Homepage content" type="modal" bs-size="large">
-  <mp-overlay-dialog-trigger><a>Show homepage in Dialog</a></mp-overlay-dialog-trigger>
-  <mp-overlay-dialog-content>
-    <div width="1000px"><mp-page-loader iri="http://www.researchspace.org/resource/Start"></mp-page-loader></div>
-  </mp-overlay-dialog-content>
-</mp-overlay-dialog>
-]]>
-</mp-code-example>
+<mp-code-block mode='text/html'>
+  <![CDATA[
+<mp-anchor to='#target1'>anchor link</mp-anchor>
+<div id='target1'>target element</div>
+]]></mp-code-block>
+</div>
+
+<h4>Example: Custom offset and duration</h4>
+<div>
+<mp-code-block mode='text/html'><![CDATA[
+<mp-anchor to='#target2' animate='{"offset": -104, "duration": 100}'>anchor link</mp-anchor>
+<div id='target2'>target element</div>
+]]></mp-code-block>
 </div>
 
 <hr class="divider">
@@ -139,8 +113,106 @@
 <mp-code-example>
 <![CDATA[
 <mp-text-truncate lines=3 expand='<span>...<a>read more</a></span>' collapse='<span>(<a>show less</a>)</span>'>
-	Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi vel mauris sollicitudin, tristique mauris quis, tempor risus. Maecenas id turpis eget nibh aliquet venenatis. Duis in feugiat sapien, quis placerat enim. Pellentesque ac auctor risus. Sed placerat iaculis turpis in tristique. Proin dolor ex, malesuada nec purus a, viverra efficitur ex. Donec at augue ac urna fermentum cursus. Suspendisse quis feugiat nunc. Morbi ultrices, tellus vitae hendrerit dignissim, nisi leo efficitur ipsum, non varius sapien felis quis nunc. In eu risus aliquam, pellentesque purus in, imperdiet libero. Suspendisse sollicitudin ex a interdum interdum. Aenean nulla odio, pharetra et ligula quis, venenatis finibus mi. Quisque sit amet nisl nec lorem laoreet facilisis sed sed augue. Pellentesque varius consectetur gravida.
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi vel mauris sollicitudin, tristique mauris quis, tempor risus. Maecenas id turpis eget nibh aliquet venenatis. Duis in feugiat sapien, quis placerat enim. Pellentesque ac auctor risus. Sed placerat iaculis turpis in tristique. Proin dolor ex, malesuada nec purus a, viverra efficitur ex. Donec at augue ac urna fermentum cursus. Suspendisse quis feugiat nunc. Morbi ultrices, tellus vitae hendrerit dignissim, nisi leo efficitur ipsum, non varius sapien felis quis nunc. In eu risus aliquam, pellentesque purus in, imperdiet libero. Suspendisse sollicitudin ex a interdum interdum. Aenean nulla odio, pharetra et ligula quis, venenatis finibus mi. Quisque sit amet nisl nec lorem laoreet facilisis sed sed augue. Pellentesque varius consectetur gravida.
 </mp-text-truncate>
+]]>
+</mp-code-example>
+</div>
+
+<hr class="divider">
+
+<h3 id="rs-doc_copyClipboard">Copy to clipboard</h3>
+<div>The [[> Help:CodeHighlightPartial codeContent="<mp-copy-to-clipboard>"]] component copies text to clipboard.</div>
+    
+<h4>Example: Default</h4>
+<div>
+<mp-code-example>
+<mp-copy-to-clipboard text='text'>
+  <button class='btn btn-default'><i class='fa fa-copy'></i></button>
+</mp-copy-to-clipboard>
+</mp-code-example>
+</div>
+
+<h4>Example: Custom notification message</h4>
+<div>
+<mp-code-example>
+<mp-copy-to-clipboard text='text' message='Custom message'>
+  <button class='btn btn-default'><i class='fa fa-copy'></i></button>
+</mp-copy-to-clipboard>
+</mp-code-example>
+</div>
+
+<hr class="divider">
+
+<h3 id="rs-doc_modal">Modal dialog / Overlay</h3>
+<div>The [[> Help:CodeHighlightPartial codeContent="<mp-overlay-dialog>"]] to open some content in a modal dialog or overlay. 
+  A dialog is just a variant of on overlay. By default the attribute <code>type</code> is set to <code>type=modal</code>. 
+  Setting it to <code>type=lightbox</code> will create an lightbox overlay instead of modal dialog. 
+  Arbitrary elements can be wrapped into [[> Help:CodeHighlightPartial codeContent="<mp-overlay-dialog-trigger>"]]
+  element to open (trigger) the dialog/overlay showing any elements specified within 
+  [[> Help:CodeHighlightPartial codeContent="<mp-overlay-dialog-content>"]] element.</div>
+    
+<h4>Example: Modal with Link as Trigger</h4>
+<div>
+<mp-code-example>
+<![CDATA[
+<mp-overlay-dialog title="My Dialog">
+  <mp-overlay-dialog-trigger><a>Show in Dialog</a></mp-overlay-dialog-trigger>
+  <mp-overlay-dialog-content>
+  	Content of the Dialog
+  </mp-overlay-dialog-content>
+</mp-overlay-dialog>
+]]>
+</mp-code-example>
+</div>
+
+<h4>Example: Large Modal with Button as Trigger</h4>
+<div>
+<mp-code-example>
+<![CDATA[
+<mp-overlay-dialog title="My Dialog" type="modal" bs-size="large">
+  <mp-overlay-dialog-trigger><button class="btn btn-default">Show in Dialog</button></mp-overlay-dialog-trigger>
+  <mp-overlay-dialog-content>
+ 	 Content of the Dialog
+  </mp-overlay-dialog-content>
+</mp-overlay-dialog>
+]]>
+</mp-code-example>
+</div>
+
+<h4>Example: Overlay with Button as Trigger</h4>
+<div>
+<mp-code-example>
+<![CDATA[
+<mp-overlay-dialog title="My Dialog" type="lightbox">
+  <mp-overlay-dialog-trigger><button class="btn btn-default">Show in Overlay</button></mp-overlay-dialog-trigger>
+  <mp-overlay-dialog-content>
+  	Content of the Overlay
+  </mp-overlay-dialog-content>
+</mp-overlay-dialog>
+]]>
+</mp-code-example>
+</div>
+
+<hr class="divider">
+
+<h3 id="rs-doc_pageLoader">Page loader</h3>
+<div>The [[> Help:CodeHighlightPartial codeContent="<mp-page-loader>"]] component behaves similar to a 
+  server-side page include with the difference that the loading and rendering is 
+  done asynchronously on client side. The requested page is compiled in backend 
+  with the context of the current resource (same as an include).
+</div>
+    
+<h4>Example: Loading a page asynchronously in a modal dialog</h4>
+<div>
+<mp-code-example>
+<![CDATA[
+<mp-overlay-dialog title="Homepage content" type="modal" bs-size="large">
+  <mp-overlay-dialog-trigger><a>Show homepage in Dialog</a></mp-overlay-dialog-trigger>
+  <mp-overlay-dialog-content>
+    <div width="1000px"><mp-page-loader iri="http://www.researchspace.org/resource/Start"></mp-page-loader></div>
+  </mp-overlay-dialog-content>
+</mp-overlay-dialog>
 ]]>
 </mp-code-example>
 </div>
@@ -175,7 +247,7 @@
   query="CONSTRUCT {?a ?b ?c} WHERE {?a ?b ?c} LIMIT 10"
   header="application/ld+json"
   filename="mygraphresult.json">
-  <button class="btn btn-primary">Download JSON-LD</button>
+  <button class="btn btn-default">Download JSON-LD</button>
 </mp-sparql-download>
 ]]>
 </mp-code-example>
@@ -183,60 +255,15 @@
 
 <hr class="divider">
 
-<h3 id="rs-doc_copyClipboard">Copy to clipboard</h3>
-<div>The <code><mp-copy-to-clipboard></mp-copy-to-clipboard></code> component copies text to clipboard.</div>
-    
-<h4>Example: Default</h4>
-<div>
-<mp-code-example>
-<mp-copy-to-clipboard text='text'>
-  <button class='btn btn-primary'><i class='fa fa-copy'></i></button>
-</mp-copy-to-clipboard>
-</mp-code-example>
-</div>
-
-<h4>Example: Custom notification message</h4>
-<div>
-<mp-code-example>
-<mp-copy-to-clipboard text='text' message='Custom message'>
-  <button class='btn btn-primary'><i class='fa fa-copy'></i></button>
-</mp-copy-to-clipboard>
-</mp-code-example>
-</div>
-
-<hr class="divider">
-
 <h3 id="rs-doc_hasPermission">Has permission</h3>
-<div>The <code><mp-has-permission></mp-has-permission></code> component displays child component if user has the required permission, otherwise displays nothing.</div>    
+<div>The [[> Help:CodeHighlightPartial codeContent="<mp-has-permission>"]] component displays child component if user has the required permission, otherwise displays nothing.</div>    
 <div>  
-<mp-code-example>
-<mp-has-permission permission='sparql:update'>
-  <div>This will be rendered if the currently logged-in user has the permission "sparql:update"</div>
-</mp-has-permission>
-</mp-code-example>
+  <mp-code-example>
+    <mp-has-permission permission='sparql:update'>
+      <div>This will be rendered if the currently logged-in user has the permission "sparql:update"</div>
+    </mp-has-permission>
+  </mp-code-example>
 </div>  
-
-<hr class="divider">
-
-<h3 id="rs-doc_anchorLink">Anchor link</h3>
-<div>The <code><mp-anchor /></code> component scrolls the page to the target element with smooth animation.</div>
-
-<h4>Example: Default</h4>
-<div>
-<mp-code-block mode='text/html'>
-  <![CDATA[
-<mp-anchor to='#target1'>anchor link</mp-anchor>
-<div id='target1'>target element</div>
-]]></mp-code-block>
-</div>
-
-<h4>Example: Custom offset and duration</h4>
-<div>
-<mp-code-block mode='text/html'><![CDATA[
-<mp-anchor to='#target2' animate='{"offset": -104, "duration": 100}'>anchor link</mp-anchor>
-<div id='target2'>target element</div>
-]]></mp-code-block>
-</div>
 
 <hr class="divider">
 
@@ -249,38 +276,38 @@
 <div>By default the template is fully re-rendered when panel is flipped, but it can be disabled with <code>refresh-on-change="false"</code> attribute.</div>
 <div>
 <mp-code-example>
-<two-side-panel id='first-flip-panel' 
-                front-variables='{"A": "A Value"}'
-                back-variables='{"B": "B Value"}'
->
-  <template id='front'>
-    <div>Front Side. Variable A: {{A}}</div>
-    <mp-event-trigger id='first-flip-panel-front' 
-                      type='TwoSidePanel.ShowBack' 
-                      targets='["first-flip-panel"]'
-                      >
-      <button class="btn btn-primary">Show Back</button>
-    </mp-event-trigger>
-    <mp-event-trigger id='first-flip-panel-front' 
-                      type='TwoSidePanel.ShowBack' 
-                      targets='["first-flip-panel"]'
-                      data='{"B": "Alternative B Value"}'
-                      >
-      <button class="btn btn-primary" style="margin-left: 10px;">
-        Show Back with Variable
-      </button>
-    </mp-event-trigger>
-  </template>
-  <template id='back'>
-    <div>Back Side. Variable B: {{B}}</div>
-    <mp-event-trigger id='first-flip-panel-back' 
-                      type='TwoSidePanel.ShowFront' 
-                      targets='["first-flip-panel"]'
-                      >
-      <button class="btn btn-primary">Show Front</button>
-    </mp-event-trigger>
-  </template>
-</two-side-panel>
+  <two-side-panel id='first-flip-panel' 
+                  front-variables='{"A": "A Value"}'
+                  back-variables='{"B": "B Value"}'
+  >
+    <template id='front'>
+      <p>Front Side. Variable A: {{A}}</p>
+      <mp-event-trigger id='first-flip-panel-front' 
+                        type='TwoSidePanel.ShowBack' 
+                        targets='["first-flip-panel"]'
+                        >
+        <button class="btn btn-default">Show Back</button>
+      </mp-event-trigger>
+      <mp-event-trigger id='first-flip-panel-front' 
+                        type='TwoSidePanel.ShowBack' 
+                        targets='["first-flip-panel"]'
+                        data='{"B": "Alternative B Value"}'
+                        >
+        <button class="btn btn-default" style="margin-left: 10px;">
+          Show Back with Variable
+        </button>
+      </mp-event-trigger>
+    </template>
+    <template id='back'>
+      <p>Back Side. Variable B: {{B}}</p>
+      <mp-event-trigger id='first-flip-panel-back' 
+                        type='TwoSidePanel.ShowFront' 
+                        targets='["first-flip-panel"]'
+                        >
+        <button class="btn btn-default">Show Front</button>
+      </mp-event-trigger>
+    </template>
+  </two-side-panel>
 </mp-code-example>
 </div>
 
@@ -288,7 +315,6 @@
 
 <h3 id="rs-doc_splitPane">Split pane</h3>
 <div>Allows to split an html-element into two panes, supports dynamic resizing.</div>
-
 
 <mp-splitpane min-size=35 dock=true>
   <div data-flex-layout="column top-stretch" style="border-right: 1px solid #dee1e3; background: #f5f5f5; height: auto">
@@ -309,10 +335,7 @@
   </div>
 
   <div style="padding-left: 30px;">
-
-
     <h4>Configuration</h4>
-    <div class="alert alert-danger">MISSING CONFIG TABLE</div>
   [[!--  <mp-documentation type="SplitPaneConfig"></mp-documentation> --]]
 
     <h4>Basic example</h4>
@@ -328,7 +351,7 @@
           </div>
         </mp-splitpane>
         ]]>
-</mp-code-example>
+      </mp-code-example>
     </div>
 
     <h4>Example: Toggle on/off buttons</h4>
@@ -390,6 +413,5 @@
 ]]>
       </mp-code-block>
     </div>
-
   </div>
 </mp-splitpane>

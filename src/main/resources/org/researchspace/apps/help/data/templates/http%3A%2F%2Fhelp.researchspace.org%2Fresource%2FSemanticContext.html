@@ -15,16 +15,16 @@
 
 <div class="page">
   <div class='page__body'>
-    <h2>Semantic Context</h2>
+    <h1>Semantic Context</h1>
     <p>
-      The <code><semantic-context/></code> component can be used to selectively wrap individual <b>visualization components</b> in order to change their execution context, i.e. to instruct components to execute queries against particular repositories (other than the default), named graphs (as far as supported by the database) or to inject binding values into queries.
+      The [[> Help:CodeHighlightPartial codeContent="<semantic-context>"]] component can be used to selectively wrap individual <b>visualization components</b> in order to change their execution context, i.e. to instruct components to execute queries against particular repositories (other than the default), named graphs (as far as supported by the database) or to inject binding values into queries.
     </p>
-    <hr class="divider">
-    <h3>Configuration</h3>
+    <br>
+    <h2>Configuration</h2>
     <mp-documentation type="SemanticConfigProps"></mp-documentation>
     <hr class="divider">
-    <h3>Context Inheritance</h3>
-    <p>The <code><semantic-context/></code> is automatically inherited to all child HTML nodes.</p>  
+    <h2>Context Inheritance</h2>
+    <p>The [[> Help:CodeHighlightPartial codeContent="<semantic-context>"]] is automatically inherited to all child HTML nodes.</p>  
 <pre>
 <code>
 <div> <!-- the root page-div has a default semantic context -->
@@ -48,30 +48,30 @@
 </code>
 </pre>
 <hr class="divider">
-    <h3>Supported Components</h3>
+    <h2>Supported Components</h2>
     For the time being only the components below support listening to the semantic-context. This is rather a well-informed design constraint (c.f. section below), than an inherent technical limitation. 
     <ul>
-      <li><code><semantic-link /></code></li>
-      <li><code><semantic-query /></code></li>
-      <li><code><semantic-table /></code></li>
-      <li><code><semantic-tree /></code></li>
-      <li><code><semantic-timeline /></code></li>
-      <li><code><semantic-graph /></code></li>
-      <li><code><semantic-map /></code></li>
-      <li><code><semantic-simple-search /></code></li>
-      <li><code><mp-label /></code></li>
-      <li><code><ontodia /></code></li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<semantic-link>"]]</li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<semantic-query>"]]</li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<semantic-table>"]]</li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<semantic-tree>"]]</li>   
+      <li>[[> Help:CodeHighlightPartial codeContent="<semantic-timeline>"]]</li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<semantic-graph>"]]</li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<semantic-map>"]]</li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<semantic-simple-search>"]]</li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<mp-label>"]]</li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<ontodia>"]]</li>
     </ul>
 
     <b>Currently, the following components explicitly do not support the semantic-context:</b>
     <ul>
-      <li><code><semantic-search /></code></li>
-      <li><code><semantic-form /></code></li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<semantic-search>"]]</li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<semantic-form>"]]</li>
     </ul>
     <hr class="divider">
-   	<h3>Constraints</h3>
+   	<h2>Constraints</h2>
     <p>
-      By design, the <code><semantic-context/></code> component currently only works for simple, read-only visualization and result rendering components (c.f. list of supported components above).
+      By design, the [[> Help:CodeHighlightPartial codeContent="<semantic-context>"]] component currently only works for simple, read-only visualization and result rendering components (c.f. list of supported components above).
     </p>
     <p>
       Changing the context of individual components is a very powerful and complex endeavor.
@@ -87,11 +87,12 @@
       </li>
     </ul>
     <hr class="divider">
-    <h3>Examples</h3>
-    
-    <h4>Example: Inheritance of semantic-context</h4>
+    <h2>Examples</h2>
+    <br>
+    <h3>Example: Inheritance of semantic-context</h3>
     <p>
-      The query from the table below will execute against the <code>repository=assets</code> and also all children components like the <code><semantic-link/></code> will inherit the context. 
+      The query from the table below will execute against the <code>repository=assets</code> and also all children components 
+      like the [[> Help:CodeHighlightPartial codeContent="<semantic-link>"]] will inherit the context. 
     </p>
    	This means:
     <ul>
@@ -112,7 +113,7 @@
 ]]>
 
         </mp-code-example>
-    <h4>Example: Overwriting semantic-context in child components</h4>
+    <h3>Example: Overwriting semantic-context in child components</h3>
     <p>
       The query from the table below will execute against the <code>repository=assets</code>. <b>However</b>, the semantic-context is again overwritten by wrapping the content of the table cell into <code><semantic-context repository="default"/></code>.
     </p>
@@ -139,7 +140,7 @@
         </mp-code-example>
     
 
-<h4>Example: Default Graphs, Named Graphs and Query Bindings</h4>
+<h3>Example: Default Graphs, Named Graphs and Query Bindings</h3>
     <p>
       The query from the table below:
     </p>
@@ -152,11 +153,18 @@
         will be limited to a default graph, which is a merge graph of <code>http://graph1</code> , <code>http://graph2</code> and <code>http://graph3</code>, i.e. only statements from these graphs will be matched
       </li>
       <li>
-        additionally, all <code>GRAPH ?var{}</code> clauses will be limited to the named graphs <code>http://graph1</code> and <code>http://graph2</code>
+        additionally, all <code>GRAPH ?var{}</code> clauses will be limited to 
+        the named graphs <code>http://graph1</code> and <code>http://graph2</code>
       </li>
     </ul>
     <p>
-      <b>Please note</b> that the semantics of named graphs and default graphs can be challenging to understand and also may vary across database implementations (for example, what is defined as default graph, if no default graphs are explicitly enumerated). Please refer to the <a href='https://www.w3.org/TR/rdf-sparql-query/#unnamedGraph' target='_blank'> official SPARQL 1.1 specification </a> for further details and explanation. Additionally, the interface and implementation for the <code>bindings</code> injection <b>is not yet stable</b>, i.e. may change or might be removed at any point in time without notice.
+      <b>Please note</b> that the semantics of named graphs and default graphs can be 
+      challenging to understand and also may vary across database implementations (for example, 
+      what is defined as default graph, if no default graphs are explicitly enumerated). Please 
+      refer to the <a href='https://www.w3.org/TR/rdf-sparql-query/#unnamedGraph' target='_blank'> official 
+        SPARQL 1.1 specification </a> for further details and explanation. 
+      Additionally, the interface and implementation for the <code>bindings</code> injection <b>is not 
+        yet stable</b>, i.e. may change or might be removed at any point in time without notice.
     </p>
     <mp-code-example>
 <![CDATA[

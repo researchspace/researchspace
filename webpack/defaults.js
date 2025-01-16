@@ -73,6 +73,7 @@ module.exports = function() {
             "components/forms/inputs/drop"
         ],
         jsonSchemTypes: [
+            "DraggableProps",
             "TextAnnotationTemplateBindings",
             "TextAnnotationTypeOptions",
             "TextAnnotationWorkspaceProps",

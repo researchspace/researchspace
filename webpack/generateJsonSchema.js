@@ -43,10 +43,10 @@ const base = path.join(__dirname, '../src/main/web/schemas');
 
 defaults.PROJECT.jsonSchemTypes.forEach(
     t => {
-        console.log('Generateing JSON Schema for: ' + t);
+        console.log('Generating JSON Schema for: ' + t);
         const definition = tjs.generateSchema(program, t, args);
         if (definition === null) {
-            throw new Error(`Can't generae JSON Schema for ${t}, make sure that there are no typescript compilation errors`);
+            throw new Error(`Can't generate JSON Schema for ${t}, make sure that there are no typescript compilation errors`);
         }
 
         const json = stringify(definition, {space: 4}) + "\n\n";

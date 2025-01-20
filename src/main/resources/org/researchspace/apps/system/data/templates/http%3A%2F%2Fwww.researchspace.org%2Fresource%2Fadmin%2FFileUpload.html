@@ -11,10 +11,12 @@
 <div class="page rs-fileUpload" style="  padding-bottom: 40px;">
   
   [[> rsp:adminPageHeader title="File Upload" materialIcon="upload_file"]]
+
   
-  <div class="container-fluid">
-      <bs-row class="row-center">
-        <bs-col xs=12 sm=11 md=10 lg=9 class='rs-col-xl-8'>
+    <div class="container-fluid">
+        <bs-row class="row-center">
+          <bs-col xs=12 sm=11 md=10 lg=9 class='rs-col-xl-8'>
+            [[#if (hasPermission "sparql:update")]]
               <bs-alert bs-style="info">
                 <b>Please note:</b>
                   <ul>
@@ -35,8 +37,21 @@
                 default-object-kind="assets"
               >
               </mp-direct-file-uploader>
-    
- 				 </bs-col>   
-      </bs-row> <!--  close row -->
-  </div>
+            [[else]]
+              <div class="warning-documentation-section warning-documentation-section-withIcon">
+                <div class="warning-documentation-section-icon-container">
+                  <rs-icon icon-type="rounded" icon-name="lock" symbol="true"></rs-icon>
+                </div>
+                <div> 
+                  <div class="warning-documentation-section-title">Permission denied!</div>
+                  <div class="warning-documentation-section-content">
+                    <div>You don't have permission to upload files in the system</div>
+                  </div>
+                </div>
+              </div>
+            [[/if]]
+          </bs-col>   
+        </bs-row> <!--  close row -->
+    </div>
+
 </div>

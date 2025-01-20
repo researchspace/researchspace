@@ -19,34 +19,44 @@
         <h1>Data import</h1>
         <hr style="margin-top:0px;" />
         [[#if (hasPermission "sparql:update")]]
-        <div class="documentation-section documentation-section-withIcon" style="margin: 20px 0;">
-          <div class="documentation-section-icon-container">
-            <i class="fa fa-info"></i>
-          </div>
+          <div class="documentation-section documentation-section-withIcon" style="margin: 20px 0;">
+            <div class="documentation-section-icon-container">
+              <i class="fa fa-info"></i>
+            </div>
 
-          <div style="flex: 1;"> 
-            <div class="documentation-section-title" style="margin-bottom: 5px;">Info</div>
-            <div class="documentation-section-content" style="margin-bottom: 5px;"> 
-              The data import via drag&amp;drop file upload should only be used for smaller files.
+            <div style="flex: 1;"> 
+              <div class="documentation-section-title" style="margin-bottom: 5px;">Info</div>
+              <div class="documentation-section-content" style="margin-bottom: 5px;"> 
+                The data import via drag&amp;drop file upload should only be used for smaller files.
+              </div>
+              <div class="documentation-section-content" style="margin-bottom: 5px;"> 
+                All communication is done via HTTP and as such there are several limiting parameters, for example,
+                the maximum body size a client may post against the webserver (e.g. tomcat, jetty or nginx default
+                configuration
+                is usually around 2 MBs).
+                
+              </div>
+              <div class="documentation-section-content">
+                For loading larger datasets it is generally recommended to load the data via dedicated (but usually
+                proprietary)
+                graph database APIs. See also 
+                <semantic-link iri='[[resolvePrefix "Help:WorkingWithData"]]' class="text-underline" target="_blank">Working with data</semantic-link>.
+              </div>
             </div>
-            <div class="documentation-section-content" style="margin-bottom: 5px;"> 
-              All communication is done via HTTP and as such there are several limiting parameters, for example,
-              the maximum body size a client may post against the webserver (e.g. tomcat, jetty or nginx default
-              configuration
-              is usually around 2 MBs).
-              
+          </div> 
+          <mp-rdf-upload></mp-rdf-upload>
+        [[else]]
+          <div class="warning-documentation-section warning-documentation-section-withIcon" style="margin: 20px 0;">
+            <div class="warning-documentation-section-icon-container">
+              <rs-icon icon-type="rounded" icon-name="lock" symbol="true"></rs-icon>
             </div>
-            <div class="documentation-section-content">
-              For loading larger datasets it is generally recommended to load the data via dedicated (but usually
-              proprietary)
-              graph database APIs. See also <semantic-link iri="http://help.researchspace.org/resource/WorkingWithData">
-              </semantic-link>.
+            <div> 
+              <div class="warning-documentation-section-title">Permission denied!</div>
+              <div class="warning-documentation-section-content">
+                <div>You don't have permission to upload data in the system</div>
+              </div>
             </div>
           </div>
-        </div> 
-        <mp-rdf-upload></mp-rdf-upload>
-        [[else]]
-        <i>No permission for uploading or modifying data.</i>
         [[/if]]
 
 

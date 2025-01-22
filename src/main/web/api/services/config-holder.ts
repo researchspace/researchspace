@@ -147,6 +147,7 @@ export class ConfigHolderClass {
 
 export interface EnvironmentConfig {
   readonly resourceUrlMapping?: StringValue;
+  readonly platformBaseIri?: StringValue;
 }
 
 interface RawUIConfig {

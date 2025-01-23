@@ -31,10 +31,12 @@ import org.apache.shiro.web.subject.WebSubjectContext;
 public class CustomWebSubjectFactory extends DefaultWebSubjectFactory {
     @Override
     public Subject createSubject(SubjectContext context) {
-        WebSubjectContext wsc = (WebSubjectContext) context;
-        HttpServletRequest request = (HttpServletRequest) wsc.resolveServletRequest();
-        if (OptionalBasicAuthFilter.isAuthorizationAttempt(request)) {
-            wsc.setSessionCreationEnabled(false);
+        if (context instanceof WebSubjectContext) {
+            WebSubjectContext wsc = (WebSubjectContext) context;
+            HttpServletRequest request = (HttpServletRequest) wsc.resolveServletRequest();
+            if (request != null && OptionalBasicAuthFilter.isAuthorizationAttempt(request)) {
+                wsc.setSessionCreationEnabled(false);
+            }
         }
 
         return super.createSubject(context);

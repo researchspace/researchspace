@@ -23,8 +23,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.HttpHeaders;
 
-import org.apache.shiro.session.Session;
 import org.apache.shiro.web.filter.authc.BasicHttpAuthenticationFilter;
 import org.researchspace.config.Configuration;
 import org.researchspace.servlet.filter.CorsFilter;
@@ -65,30 +66,29 @@ public class OptionalBasicAuthFilter extends BasicHttpAuthenticationFilter {
     /**
      * Overwrites
      * {@link BasicHttpAuthenticationFilter#onPreHandle(ServletRequest, ServletResponse, Object)}
-     * in order to remove the session created by any follow-up session based filter
-     * in the chain.
+     * in order to disable basic auth login challange, we don't need that.
+     * Basic auth shouldn't be used from a browser or any other similar user agent.
      */
     @Override
     protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws Exception {
-        boolean loggedIn = false;
         // check if request has authorization header
         if (isLoginAttempt(request, response)) {
-            // try to login with authorization header in the request
-            loggedIn = executeLogin(request, response);
-            if (!loggedIn) {
-                // if failed send basic auth login challenge
-                return this.sendChallenge(request, response);
-            } else {
-                // if basic auth login was successful and we have session based filter in the
-                // chain,
-                // we need to remove the session, because it doesn't make any sense
-                // to create session for basic auth request.
-                Session existingSession = this.getSubject(request, response).getSession(false);
-                if (existingSession != null) {
-                    existingSession.stop();
-                }
-            }
+            return super.onAccessDenied(request, response);
+        } else {
+            // it means we are not dealing with basic auth, pass on request to authc filter
+            return true;
         }
-        return true;
+    }
+
+    /**
+     * Check if request is basic auth authorization attempt.
+     */
+    public static boolean isAuthorizationAttempt(HttpServletRequest request) {
+        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if ( authHeader != null) {
+            return authHeader.toLowerCase().startsWith(HttpServletRequest.BASIC_AUTH.toLowerCase());
+        } else {
+            return false;
+        }
     }
 }

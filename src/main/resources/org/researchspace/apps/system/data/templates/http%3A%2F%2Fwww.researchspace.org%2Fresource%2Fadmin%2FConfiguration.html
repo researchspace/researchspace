@@ -15,87 +15,96 @@
   <div class="container-fluid" style="margin-bottom: 40px;">
         <bs-row class="row-center">
           <bs-col xs=12 sm=11 md=10 lg=9 class="rs-col-xl-8">
-            
-                [[#if (hasPermission "api:config:*:*:read")]]
-                <mp-event-target-template-render id='documentation-systemConfig' template='{{> template}}'>
-                  <template id='template'>
-                    {{#if hideMessage}}
-                    {{else}}
-                      <div style="margin-bottom: 20px;">
-                        <div class="documentation-section documentation-section-withIcon">
-                          <div class="documentation-section-icon-container">
-                            <i class="fa fa-info"></i>
+            [[#if (hasPermission "api:config:*:*:read")]]
+              <mp-event-target-template-render id='documentation-systemConfig' template='{{> template}}'>
+                <template id='template'>
+                  {{#if hideMessage}}
+                  {{else}}
+                    <div style="margin-bottom: 20px;">
+                      <div class="documentation-section documentation-section-withIcon">
+                        <div class="documentation-section-icon-container">
+                          <i class="fa fa-info"></i>
+                        </div>
+      
+                        <div style="flex: 1;"> 
+                          <div class="documentation-section-title">Shadowed properties can't be modified</div>
+                          <div class="documentation-section-content">
+                            Properties that are marked as <b>Shadowed</b> in the tables below have been overriden by system parameters
+                            (by passing in "-Dconfig.&lt;GroupId&gt;.&lt;ParamId&gt;" when starting the server). Shadowed parameters cannot
+                            be modified through the User Interface.
                           </div>
-        
-                          <div style="flex: 1;"> 
-                            <div class="documentation-section-title">Shadowed properties can't be modified</div>
-                            <div class="documentation-section-content">
-                              Properties that are marked as <b>Shadowed</b> in the tables below have been overriden by system parameters
-                              (by passing in "-Dconfig.&lt;GroupId&gt;.&lt;ParamId&gt;" when starting the server). Shadowed parameters cannot
-                              be modified through the User Interface.
-                            </div>
-                          </div>
-                          <mp-event-trigger id='{{viewId}}-documentation-systemConfig-close-trigger'
-                                            type='Component.TemplateUpdate'
-                                            data='{ "hideMessage": "true" }'
-                                            targets='["documentation-systemConfig"]'
-                                      >
-                              <button class="btn btn-documentation">
-                                <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
-                              </button>
-                          </mp-event-trigger>
-                        </div> 
-                      </div>
-                    {{/if}}
-                  </template>
-                </mp-event-target-template-render>
-
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-
-                  <mp-collapsible-div expanded=false>
-                    <mp-collapsible-div-trigger>
-                      <span>UI Configuration</span>
-                    </mp-collapsible-div-trigger>
-                  <mp-collapsible-div-content>
-                    <mp-admin-config-manager editable=true group="ui"></mp-admin-config-manager>
-                  </mp-collapsible-div-content>
-                  </mp-collapsible-div>
-
-                  <mp-collapsible-div expanded=false>
-                    <mp-collapsible-div-trigger>
-                      <span>Environment Configuration</span>
-                    </mp-collapsible-div-trigger>
-                  <mp-collapsible-div-content>
-                    <mp-admin-config-manager editable=false group="environment"></mp-admin-config-manager>
-                  </mp-collapsible-div-content>
-                  </mp-collapsible-div>
-
-                  <mp-collapsible-div expanded=false>
-                    <mp-collapsible-div-trigger>
-                      <span>Global Configuration</span>
-                    </mp-collapsible-div-trigger>
-                  <mp-collapsible-div-content>
-                    <div>
-                      <mp-admin-config-manager editable=true group="global"></mp-admin-config-manager>
+                        </div>
+                        <mp-event-trigger id='{{viewId}}-documentation-systemConfig-close-trigger'
+                                          type='Component.TemplateUpdate'
+                                          data='{ "hideMessage": "true" }'
+                                          targets='["documentation-systemConfig"]'
+                                    >
+                            <button class="btn btn-documentation">
+                              <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
+                            </button>
+                        </mp-event-trigger>
+                      </div> 
                     </div>
-                  </mp-collapsible-div-content>
-                  </mp-collapsible-div>
+                  {{/if}}
+                </template>
+              </mp-event-target-template-render>
 
-                  <mp-collapsible-div expanded=false>
-                    <mp-collapsible-div-trigger>
-                      <span>Data Quality Configuration</span>
-                    </mp-collapsible-div-trigger>
-                  <mp-collapsible-div-content>
-                    <div>
-                      <mp-admin-config-manager editable=true group="dataQuality"></mp-admin-config-manager>
-                    </div>
-                  </mp-collapsible-div-content>
-                  </mp-collapsible-div>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+
+                <mp-collapsible-div expanded=false>
+                  <mp-collapsible-div-trigger>
+                    <span>UI Configuration</span>
+                  </mp-collapsible-div-trigger>
+                <mp-collapsible-div-content>
+                  <mp-admin-config-manager editable=true group="ui"></mp-admin-config-manager>
+                </mp-collapsible-div-content>
+                </mp-collapsible-div>
+
+                <mp-collapsible-div expanded=false>
+                  <mp-collapsible-div-trigger>
+                    <span>Environment Configuration</span>
+                  </mp-collapsible-div-trigger>
+                <mp-collapsible-div-content>
+                  <mp-admin-config-manager editable=false group="environment"></mp-admin-config-manager>
+                </mp-collapsible-div-content>
+                </mp-collapsible-div>
+
+                <mp-collapsible-div expanded=false>
+                  <mp-collapsible-div-trigger>
+                    <span>Global Configuration</span>
+                  </mp-collapsible-div-trigger>
+                <mp-collapsible-div-content>
+                  <div>
+                    <mp-admin-config-manager editable=true group="global"></mp-admin-config-manager>
+                  </div>
+                </mp-collapsible-div-content>
+                </mp-collapsible-div>
+
+                <mp-collapsible-div expanded=false>
+                  <mp-collapsible-div-trigger>
+                    <span>Data Quality Configuration</span>
+                  </mp-collapsible-div-trigger>
+                <mp-collapsible-div-content>
+                  <div>
+                    <mp-admin-config-manager editable=true group="dataQuality"></mp-admin-config-manager>
+                  </div>
+                </mp-collapsible-div-content>
+                </mp-collapsible-div>
+              </div>
+            [[else]]
+              <div class="warning-documentation-section warning-documentation-section-withIcon">
+                <div class="warning-documentation-section-icon-container">
+                  <rs-icon icon-type="rounded" icon-name="lock" symbol="true"></rs-icon>
                 </div>
-                [[else]]
-                No permission to read or change configuration.
-                [[/if]]
-              </bs-col>   
+                <div> 
+                  <div class="warning-documentation-section-title">Permission denied!</div>
+                  <div class="warning-documentation-section-content">
+                    <div>You don't have permission to upload data in the system</div>
+                  </div>
+                </div>
+              </div>
+            [[/if]]
+          </bs-col>   
         </bs-row> <!--  close row -->
   </div>           
 </div>

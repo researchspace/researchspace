@@ -40,7 +40,7 @@
                     <div class="documentation-section-content">
                       Every app has exactly one associated storage. The storage ID is equal to the app ID. <br>
                       If no explicit storage is defined for an 
-                      <semantic-link title="Apps" iri='[[resolvePrefix "Help:Apps"]]'>app</semantic-link>, 
+                      <semantic-link title="Apps" iri='[[resolvePrefix "Help:AppsMechanism"]]' class="text-underline" target="_blank">app</semantic-link>, 
                       the platform creates a standard, non-versioned file storage
                       within the root directory of the respective app.
                     </div>
@@ -62,42 +62,50 @@
 
         <mp-json-renderer get-url='/rest/admin/apps'></mp-json-renderer>
 
-        <mp-overlay-dialog title="Upload & deploy App" type="modal" >
-          <mp-overlay-dialog-trigger>
-            <button class="btn btn-action btn-textAndIcon" title="Import" style="margin-top: 10px;">
-              <rs-icon icon-type='rounded' icon-name='upload' symbol='true'></rs-icon>
-              <span>Upload & deploy App</span>
-            </button>
-          </mp-overlay-dialog-trigger>
-          <mp-overlay-dialog-content>
-            <div>
-              <bs-alert bs-style="info">
-                <strong>Info!</strong><br />
-                <p>
-                  Apps need a platform restart in order to be installed properly. Refer to the <semantic-link title="App Deployment" iri='[[resolvePrefix "Help:AppDeployment"]]'>
-                    app deployment</semantic-link> help for further details.
-                </p>
-              </bs-alert>
+        [[#if (hasPermission "app:upload")]]
+          <mp-overlay-dialog title="Upload & deploy App" type="modal" >
+            <mp-overlay-dialog-trigger>
+              <button class="btn btn-action btn-textAndIcon" title="Import" style="margin-top: 10px;">
+                <rs-icon icon-type='rounded' icon-name='upload' symbol='true'></rs-icon>
+                <span>Upload & deploy App</span>
+              </button>
+            </mp-overlay-dialog-trigger>
+            <mp-overlay-dialog-content>
+              <div>
+                  <div class="documentation-section documentation-section-withIcon" style="margin-bottom: 10px;">
+                    <div class="documentation-section-icon-container">
+                      <i class="fa fa-info"></i>
+                    </div>
 
-              [[#if (hasPermission "app:upload")]]
-              <mp-app-upload></mp-app-upload>
-              [[else]]
-                <bs-alert bs-style="warning">
-                  <strong>No permission!</strong><br />
-                  <p>
-                    You do not have the required permission to upload apps.
-                  </p>
-                </bs-alert>
-              [[/if]]
-            </div>
-          </mp-overlay-dialog-content>
-        </mp-overlay-dialog>
+                    <div style="flex: 1;"> 
+                      <div class="documentation-section-title">Info</div>
+                      <div class="documentation-section-content">
+                        Apps need a platform restart in order to be installed properly. Refer to the 
+                      <semantic-link title="App Deployment" iri='[[resolvePrefix "Help:AppDeployment"]]' class="text-underline" target="_blank">
+                        app deployment</semantic-link> help for further details.
+                      </div>
+                    </div>
+                  </div>
+                  <mp-app-upload></mp-app-upload>
+              </div>
+            </mp-overlay-dialog-content>
+          </mp-overlay-dialog>
+        [[/if]]
 
         <h1 style="margin-top:40px;">Connected Storages</h1>
         <hr style="margin-top:0px;" />
-        <div class="page__section-container">
-          Storages in ascending order of priority (for more details look at <semantic-link title="Apps"
-          iri='[[resolvePrefix "Help:Storage"]]'>Storage documentation page</semantic-link>)
+        <div class="documentation-section documentation-section-withIcon" style="margin-bottom: 10px;">
+          <div class="documentation-section-icon-container">
+            <i class="fa fa-info"></i>
+          </div>
+
+          <div style="flex: 1;"> 
+            <div class="documentation-section-title">Info</div>
+            <div class="documentation-section-content">
+              Storages in ascending order of priority (for more details look at <semantic-link title="Apps"
+              iri='[[resolvePrefix "Help:Storage"]]' class="text-underline" target="_blank">Storage guide</semantic-link>)
+            </div>
+          </div>
         </div>
 
         <mp-json-renderer get-url='/rest/admin/storages' template='{{> storages}}'>

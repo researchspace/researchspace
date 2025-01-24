@@ -79,8 +79,9 @@
     In <i>3.2.0</i> the Docker container has been optimized:
     <ul>
       <li>The Jetty web server does not run as <code>root</code> and no longer changes file ownership in volumes so the (existing) file permissions matter!</li>
-      <li>The <code>docker-compose</code> files have been adjusted accordingly. Any local copy should be updated to the latest version from our public <a href="https://bitbucket.org/metaphacts/researchspace-docker-compose" target="_blank">docker-compose GIT repository</a> before using it with the released <i>3.2.0</i> Docker container!</li>
-      <li>See <a title="Installation and Deployment" href="/resource/Help:Installation#docker-volumes">Installation and Deployment</a> for using volumes and best practices on file permissions.</li>
+      <li>The <code>docker-compose</code> files have been adjusted accordingly. Any local copy should be updated to the latest version from our 
+        public <a href="https://bitbucket.org/metaphacts/researchspace-docker-compose" class="text-underline" target="_blank">docker-compose GIT repository</a> before using it with the released <i>3.2.0</i> Docker container!</li>
+      <li>See <a title="Installation and Deployment" href="/resource/Help:Installation#docker-volumes" class="text-underline" target="_blank">Installation and Deployment</a> for using volumes and best practices on file permissions.</li>
     </ul>
     
     <h3>Upgrade Notes</h3>
@@ -96,7 +97,7 @@
     </table>
     
     <br/>
-    <p>Refer to the <semantic-link title="Help Security" iri='[[resolvePrefix "Help:Security"]]'>security documentation</semantic-link> for further details.</p>
+    <p>Refer to the <semantic-link title="Help Security" iri='[[resolvePrefix "Help:Security"]]' class="text-underline" target="_blank">security documentation</semantic-link> for further details.</p>
  
 
     <hr>
@@ -132,13 +133,15 @@
       At the platform's inital start <code>/runtime-data</code> will be empty, except for a single file <code>/runtime-data/config/shiro.ini</code>, which is the default security configuration file. All other default files and configurations are now binary bundled. This means that if you make additions or changes to your platform instance during runtime, those additions or changes will appear in isolation in the <code>/runtime-data</code> folders and selectively shadow the defaults, i.e. files won't physically be mixed with platform's default settings as in the previous versions.
     </p>
    <p>
-     Some folders in the basic app structure have been deprecated and simplified. This affects in particular the <code>/images</code> and <code>/resources</code> folder. platform will create a so called "fallback" storage to maintain downward compatibility with your old apps. However, with migrating to 3.0.0 it is strongly recommended to move these folders to the new location (see <semantic-link title="Documentation" iri="[[resolvePrefix "Help:Apps"]]">Help:Apps</semantic-link> for details), since the "fallback" storages will blow-up the storage list artificially.
+     Some folders in the basic app structure have been deprecated and simplified. This affects in particular the <code>/images</code> and <code>/resources</code> folder. platform will create a so called "fallback" storage to maintain downward compatibility with your old apps. However, with migrating to 3.0.0 it is strongly recommended to move these 
+     folders to the new location (see <semantic-link title="Documentation" iri="[[resolvePrefix 'Help:Apps']]" class="text-underline" target="_blank">Help:Apps</semantic-link> for details), since the "fallback" storages will blow-up the storage list artificially.
     </p>
 
     <p>
       For migrating artefacts from old platform installations (&#60;= 2.4.0), it is highly recommended to extract / copy only your customizations and to <b>NOT</b> simply copy/move the entire <code>/data</code> and <code>/config</code> folders from your old to the new installation.<br>
       You may run, for example, <code>find /data/templates /config  -newermt "Dec 11, 2017" | zip extract.zip -@</code> to extract all changed files after a certain date (typically the date of the deployment, i.e. run <code>ls -all /data/templates</code> to see all files and modification dates) into a zip file. It is recommended to clean this initial extract, i.e. to reduce, for example, the entries in <code>/config/namespaces.prop</code> to your domain / use-case specific entries to not shadow any defaults.<br>
-      LDP assets (for example, queries or fields) from your old installation can be exported using the <semantic-link title="LDP" iri='[[resolvePrefix "Platform:rootContainer"]]'>the LDP Container export</semantic-link>. Importing the container into the new installation through the LDP admin interface will save these LDP artefacts as *.trig files to the <code>/runtime-data/ldp</code> folder, i.e. they become part of the runtime app and can be extracted / ported to other installations as all other app artefacts.
+      LDP assets (for example, queries or fields) from your old installation can be exported 
+      using the <semantic-link title="LDP" iri='http://127.0.0.1:10214/resource/Platform:rootContainer' class="text-underline" target="_blank">the LDP Container export</semantic-link>. Importing the container into the new installation through the LDP admin interface will save these LDP artefacts as *.trig files to the <code>/runtime-data/ldp</code> folder, i.e. they become part of the runtime app and can be extracted / ported to other installations as all other app artefacts.
     </p>
     
   </div>

@@ -13,17 +13,25 @@
   [[> rsp:adminPageHeader title="Repositories" materialIcon="dns"]]
   
   <div class="container-fluid">
-      <bs-row class="row-center">
-        <bs-col xs=12 sm=11 md=10 lg=9 class="rs-col-xl-8" style="padding-bottom: 30px;">
-  
-            [[#if (hasPermission "repository-config:view")]]
-              <mp-admin-repository-mgmt></mp-admin-repository-mgmt>
-            [[else]]
-              <i>No permission to view repository configurations</i>
-            [[/if]]
-          
-           </bs-col>   
-      </bs-row> <!--  close row -->
+    <bs-row class="row-center">
+      <bs-col xs=12 sm=11 md=10 lg=9 class="rs-col-xl-8" style="padding-bottom: 30px;">
+        [[#if (hasPermission "repository-config:view")]]
+          <mp-admin-repository-mgmt></mp-admin-repository-mgmt>
+        [[else]]
+          <div class="warning-documentation-section warning-documentation-section-withIcon">
+            <div class="warning-documentation-section-icon-container">
+              <rs-icon icon-type="rounded" icon-name="lock" symbol="true"></rs-icon>
+            </div>
+            <div> 
+              <div class="warning-documentation-section-title">Permission denied!</div>
+              <div class="warning-documentation-section-content">
+                <div>You don't have permission to view repository configurations.</div>
+              </div>
+            </div>
+          </div>
+        [[/if]]
+      </bs-col>   
+    </bs-row> <!--  close row -->
   </div>
 
 </div>

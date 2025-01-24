@@ -24,17 +24,23 @@
         Most of the operations defined here can be performed using that interface, but for some clients or servers, this interface may be easier to implement or work with. <br>
         [...]
       </p>
-      <footer><a href="https://www.w3.org/TR/sparql11-http-rdf-update/" target="_blank">Abstract from the W3C "SPARQL 1.1 Graph Store HTTP Protocol" Recommendation </a></footer>
+      <footer><a href="https://www.w3.org/TR/sparql11-http-rdf-update/" class="text-underline" target="_blank">Abstract from the W3C "SPARQL 1.1 Graph Store HTTP Protocol" Recommendation </a></footer>
     </blockquote>
     <p>
-      The standard interface for querying and manipulating RDF data through the ResearchSpace platform is the standard <a href="/sparql">SPARQL interface</a> (<code>/sparql</code>) implementing the <a href="https://www.w3.org/TR/sparql11-query/" target="_blank">SPARQL 1.1 protocol</a>.
+      The standard interface for querying and manipulating RDF data through the ResearchSpace platform is the standard 
+      <a href="/sparql" class="text-underline" target="_blank">SPARQL interface</a> 
+      (<code>/sparql</code>) implementing the 
+      <a href="https://www.w3.org/TR/sparql11-query/" class="text-underline" target="_blank">SPARQL 1.1 protocol</a>.
     </p>
     <p>
      However, loading RDF statements through the SPARQL interface usually means that a client needs to parse or generate RDF statements from local files and need to translate them into SPARQL 1.1 Update commands in order to be execute against a SPARQL 1.1 endpoint.
       Similarly, a client may need to translate and enumerate all statements in SPARQL 1.1 Update commands for modification or deletion.
     </p>
     <p>
-      To ease this process for some clients and specific use-cases, the ResearchSpace platform implements additionally the <a href="https://www.w3.org/TR/sparql11-http-rdf-update/" target="_blank">SPARQL 1.1 Graph Store HTTP Protocol</a> which is accessible via the context path <code>/rdf-graph-store</code> .
+      To ease this process for some clients and specific use-cases, the ResearchSpace 
+      platform implements additionally the 
+      <a href="https://www.w3.org/TR/sparql11-http-rdf-update/" class="text-underline" target="_blank">SPARQL 1.1 
+        Graph Store HTTP Protocol</a> which is accessible via the context path <code>/rdf-graph-store</code> .
     </p>
 
     <p>
@@ -55,7 +61,8 @@
     <h2>Operations</h2>
 
     <p>
-      For the sake of demonstration, we provide small examples using the official <a href="http://xmlns.com/foaf/spec/index.rdf" blank="_target">FOAF vocabulary file</a> (serialized in RDF/XML). 
+      For the sake of demonstration, we provide small examples using the 
+      official <a href="http://xmlns.com/foaf/spec/index.rdf" class="text-underline" target="_blank">FOAF vocabulary file</a> (serialized in RDF/XML). 
       If you want to perform the examples on your own, you can simply download the RDF file in the browser (<code>"Save Link as .." -> "foaf.rdf"</code>) or using curl i.e. <code mode='text/x-sh'>curl http://xmlns.com/foaf/spec/index.rdf > foaf.rdf</code>
     </p>
 
@@ -105,7 +112,7 @@ curl -u admin:admin --data-urlencode 'query=SELECT (COUNT(*) AS ?nrTriples) WHER
     <b>Example:</b> Merging into an existing graph<br>
     <p>
       For the sake of demonstration, we are going to post a second RDF file using the same graph identifier. 
-      Therefore, we download the <a href="https://www.w3.org/ns/dcat.rdf" target="_blank">DCAT vocabulary file</a> (<code>curl https://www.w3.org/ns/dcat.rdf > dcat.rdf</code>) and post it against the  <code>/rdf-graph-store</code>  while specifying the previous <code>?graph=&lt;http://my.foaf.graph/&gt;</code> graph as target.
+      Therefore, we download the <a href="https://www.w3.org/ns/dcat.rdf" class="text-underline" target="_blank">DCAT vocabulary file</a> (<code>curl https://www.w3.org/ns/dcat.rdf > dcat.rdf</code>) and post it against the  <code>/rdf-graph-store</code>  while specifying the previous <code>?graph=&lt;http://my.foaf.graph/&gt;</code> graph as target.
     </p>
     <mp-code-block mode='text/x-sh'>
 curl -v -u admin:admin -X POST -H 'Content-Type: application/xml' --data-binary '@dcat.rdf' http://127.0.0.1:10214/rdf-graph-store?graph=http%3A%2F%2Fmy.foaf.graph%2F
@@ -178,7 +185,8 @@ curl -v -u admin:admin -X PUT -H 'Content-Type: application/xml' --data-binary '
     <h3>DELETE - Delete a Named Graph</h3>
 
       <p>
-        Simple call to delete one entire graph from the repository. Returns a <code>404 Not Found</code> code if the specified graph does not exist.
+        Simple call to delete one entire graph from the repository. 
+        Returns a <code>404 Not Found</code> code if the specified graph does not exist.
       </p>
       <b>Example: </b>
       <mp-code-block mode='text/x-sh'>
@@ -187,17 +195,25 @@ curl -v -u admin:admin -X DELETE http://127.0.0.1:10214/rdf-graph-store?graph=ht
     
     <h3>PATCH - Updating RDF data within a Named Graph</h3>
       <code>Please note that for the time being PATCH is not supported.</code><br>
-      This section is informative within the official W3C documentation. Effectively, there are two options for updating RDF statements within one Named Graph without replacing the entire graph:
+      This section is informative within the official W3C documentation. Effectively, 
+      there are two options for updating RDF statements within one Named Graph without replacing the entire graph:
       <ul>
-      <li>Using <code>POST</code> against the Graph Store API to add RDF statements to an existing Named Graph, which will result into a merge of statements.</li>
-      <li>Using SPARQL 1.1 Update commands executed against the <a href="/sparql">SPARQL interface</a> (<code>/sparql</code>), which would be more or less the same as the informative W3C proposal for the PATCH command.</li>
+      <li>Using <code>POST</code> against the Graph Store API to add RDF statements 
+        to an existing Named Graph, which will result into a merge of statements.</li>
+      <li>Using SPARQL 1.1 Update commands executed against the 
+        <a href="/sparql" class="text-underline" target="_blank">SPARQL 
+          interface</a> (<code>/sparql</code>), which would be more or less 
+          the same as the informative W3C proposal for the PATCH command.</li>
       </ul>
 
     <h3>Proprietary Extensions</h3>
 
     <h3>Repository Support</h3>
     <p>
-      All requests will operate by default on platform's <code>default</code> repository. However, the ResearchSpace platform enables to execute the requests against any repository registered within the repository manager (c.f. <semantic-link iri="http://help.researchspace.org/resource/RepositoryManager">Help Repository Manager</semantic-link>). The repository can be specified by simply adding a request parameter <code>repository={repositoryID}</code> to the request.
+      All requests will operate by default on platform's <code>default</code> repository. 
+      However, the ResearchSpace platform enables to execute the requests against any 
+      repository registered within the repository manager 
+      (c.f. <semantic-link iri="http://help.researchspace.org/resource/RepositoryManager" class="text-underline" target="_blank">Repository manager</semantic-link>). The repository can be specified by simply adding a request parameter <code>repository={repositoryID}</code> to the request.
     </p>
     <b>Example: </b><br>
     <mp-code-block mode='text/x-sh'>
@@ -205,10 +221,17 @@ curl -v -u admin:admin -X DELETE http://127.0.0.1:10214/rdf-graph-store?graph=ht
     </mp-code-block>
 
     <h3>Support for TRIG, TRIX and NQUADS</h3>
-    The SPARQL 1.1 Graph Store HTTP Protocol specification is not specific about cases where RDF based serialization are posted against the Graph Store API, which do support quad encodings (namely TRIG, TRIX and NQuads). By default, the ResearchSpace platform ignores the graphs as encoded in the serialization and loads all statements into the graph as specified in the request parameters. However, by appending the proprietary request parameter <code>keepSourceGraphs=true</code>, the <code>POST</code> operation can be instructed to preserve the named graphs as specified in the serialization. Please note, that this is only working for <code>POST</code>.
+    The SPARQL 1.1 Graph Store HTTP Protocol specification is not specific about 
+    cases where RDF based serialization are posted against the Graph Store API, 
+    which do support quad encodings (namely TRIG, TRIX and NQuads). By default, 
+    the ResearchSpace platform ignores the graphs as encoded in the serialization 
+    and loads all statements into the graph as specified in the request parameters. 
+    However, by appending the proprietary request parameter <code>keepSourceGraphs=true</code>, 
+    the <code>POST</code> operation can be instructed to preserve the named graphs as 
+    specified in the serialization. Please note, that this is only working for <code>POST</code>.
 
     <h2>Security</h2>
-    Please refer to <semantic-link iri="http://help.researchspace.org/resource/BasicSystemConfiguration">system configuration</semantic-link>, where the basic <code>"sparql:graphstore:*"</code> permission strings are specified. For the time being, permissions can only be assigned to the operations in general, but not to individual graphs. However, it is possible to extend this mechanism.
+    Please refer to <semantic-link iri="http://help.researchspace.org/resource/BasicSystemConfiguration" class="text-underline" target="_blank">system configuration</semantic-link>, where the basic <code>"sparql:graphstore:*"</code> permission strings are specified. For the time being, permissions can only be assigned to the operations in general, but not to individual graphs. However, it is possible to extend this mechanism.
 
   </div>
 </div>

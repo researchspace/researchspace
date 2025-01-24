@@ -35,14 +35,17 @@
     <mp-documentation type='DashboardViewConfig' disable-transform-attributes=true></mp-documentation>
 
     <h3>1.3 Resources pane</h3>
-    <p>Provides resources to be used in the dashboard, it can be any UI component, e.g. mp-set-management, semantic-table, semantic-tree, etc. Resources can be dragged from the Resources pane and dropped onto a specific view to display it there. To do so, the <code><mp-draggable /></code> component can be used, it takes inner HTML, which it receives as a child element, and makes it automatically draggable. Child element could be any HTML-element but strictly not an text node.</p>
+    <p>Provides resources to be used in the dashboard, it can be any UI component, 
+      e.g. mp-set-management, semantic-table, semantic-tree, etc. Resources can be 
+      dragged from the Resources pane and dropped onto a specific view to display it there. 
+      To do so, the [[> Help:CodeHighlightPartial codeContent="<mp-draggable>"]] component can be used, it takes 
+      inner HTML, which it receives as a child element, and makes it automatically draggable. 
+      Child element could be any HTML-element but strictly not an text node.</p>
 
     <h2>2 Events in Dashboard</h2>
-    <p>Dashboard provides the set of events (read more about the event system <semantic-link-container uri='[[resolvePrefix "Help:EventSystem"]]'><a>here</a></semantic-link-container>):</p>
-    <style>
-      dt { margin-left: 1em; }
-      dd { margin-left: 3em; }
-    </style>
+    <p>Dashboard provides the following set of events (read more about events in the 
+      <semantic-link iri="[[resolvePrefix 'Help:EventSystem']]" target="_blank" class="text-underline">event guide</semantic-link>):</p>
+
     <dl>
       <dt><code>Dashboard.StatusChanged: { hasChanges: boolean }</code></dt>
       <dd>Event which should be triggered when the data under the management of the component specified for particular View.</dd>
@@ -52,7 +55,7 @@
 
     <h3>2.1 Dashboard.StatusChanged</h3>
     <p>Can be used to highlight a frame if a child component has unsaved data. 
-      To do so, you can use the <code><mp-event-proxy /></code> component to propagate 
+      To do so, you can use the [[> Help:CodeHighlightPartial codeContent="<mp-event-proxy>"]] component to propagate 
       the event from the child component to the dashboard.</p>
     <mp-code-block mode='text/html'>
     <![CDATA[
@@ -65,7 +68,8 @@
     ]]></mp-code-block>
 
     <h3>2.2 Dashboard.ResourceChanged</h3>
-    <p>Can be used to re-populate a component with a new resource. To do so, you can use the <code><mp-event-proxy /></code> component to propagate the event from the child component to the dashboard.</p>
+    <p>Can be used to re-populate a component with a new resource. To do so, you can use the 
+      [[> Help:CodeHighlightPartial codeContent="<mp-event-proxy>"]] component to propagate the event from the child component to the dashboard.</p>
     <mp-code-block mode='text/html'>
     <![CDATA[
     <mp-event-proxy id='ontodia-saved'
@@ -78,10 +82,12 @@
 
     <h2>3 Example</h2>
     Here is a simple demo of the dashboard.
-    <mp-code-example>
+    <mp-code-block>
     <![CDATA[
     <div style='height: 500px'>
-      <rs-dashboard views='[{
+      <rs-dashboard 
+      home-page-iri="http://www.researchspace.org/resource/Start"
+      views='[{
         "id": "view-1",
         "label": "View 1",
         "description": "Description",
@@ -150,17 +156,19 @@
       </rs-dashboard>
     </div>
     ]]>
-    </mp-code-example>
+    </mp-code-block>
     
     <h2>4 Linked Views</h2>
     <p>Dashboard allows linking two or more views by defining the <code>linked-views</code> property of the Dashboard component. This will add a new item to the Dashboard Items. When one drops a resource on the item, linked views will be initiated in separated frames. Each linked view has the following properties:</p>
     <mp-documentation type='DashboardLinkedViewConfig' disable-transform-attributes=true></mp-documentation>
     
     <h2>5 Example: Refresh one frame by an action in another frame</h2>
-    <mp-code-example>
+    <mp-code-block>
     <![CDATA[
     <div style='height: 500px'>
-      <rs-dashboard views='[{
+      <rs-dashboard 
+      home-page-iri="http://www.researchspace.org/resource/Start"
+      views='[{
         "id": "view-1",
         "label": "View 1",
         "description": "Description",
@@ -225,6 +233,6 @@
       </rs-dashboard>
     </div>
     ]]>
-    </mp-code-example>
+    </mp-code-block>
   </div>
 </div>

@@ -1,60 +1,59 @@
-[[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/fieldDefinitionContainer>:read:any")]]
+<ol class="page-breadcrumb">
+<li>
+    <mp-link title="Home" url="resource/Start">Home</mp-link>
+</li>
+<li>
+    <semantic-link title="Administration" iri='[[resolvePrefix "rsp:admin"]]'>Administration</semantic-link>
+</li>
+<li class="active">Knowledge Patterns</li>
+</ol>
 
-    <ol class="page-breadcrumb">
-        <li>
-            <mp-link title="Home" url="resource/Start">Home</mp-link>
-        </li>
-        <li>
-            <semantic-link title="Administration" iri='[[resolvePrefix "rsp:admin"]]'>Administration</semantic-link>
-        </li>
-        <li class="active">Knowledge Patterns</li>
-    </ol>
+<div class="page rs-fields">
 
-    <div class="page rs-fields">
+<style>
 
-        <style>
+    input[type="checkbox"] {
+        margin: 2px 8px 0 0;
+    }
+    
+</style>
 
-         input[type="checkbox"] {
-             margin: 2px 8px 0 0;
-         }
-         
-        </style>
-        
-        [[> rsp:adminPageHeader title="Knowledge Patterns" materialIcon="list"]]
-        
-        <div class="container-fluid" style="margin-bottom:40px;">
-            <bs-row class="row-center">
-                <bs-col xs=12 sm=11 md=10 lg=9 class="rs-col-xl-8 pr-0">
+    [[> rsp:adminPageHeader title="Knowledge Patterns" materialIcon="list"]]
+
+    <div class="container-fluid" style="margin-bottom:40px;">
+        <bs-row class="row-center">
+            <bs-col xs=12 sm=11 md=10 lg=9 class="rs-col-xl-8 pr-0">
+                [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/fieldDefinitionContainer>:read:any")]]
                     <mp-event-target-template-render id='documentation-kpPage' template='{{> template}}'>
                         <template id='template'>
-                          {{#if hideMessage}}
-                          {{else}}
+                        {{#if hideMessage}}
+                        {{else}}
                             <div style="margin-bottom: 20px;">
-                              <div class="documentation-section documentation-section-withIcon">
+                            <div class="documentation-section documentation-section-withIcon">
                                 <div class="documentation-section-icon-container">
-                                  <i class="fa fa-info"></i>
+                                <i class="fa fa-info"></i>
                                 </div>
-              
+            
                                 <div style="flex: 1;"> 
-                                  <div class="documentation-section-title">What is a knowledge pattern?</div>
-                                  <div class="documentation-section-content">
-                                    Consult <semantic-link iri='[[resolvePrefix "Help:SemanticForm"]]'>Semantic Form</semantic-link> help page for further details.
-                                  </div>
+                                <div class="documentation-section-title">What is a knowledge pattern?</div>
+                                <div class="documentation-section-content">
+                                    Consult <semantic-link iri='[[resolvePrefix "Help:SemanticForm"]]' class="text-underline" target="_blank">Semantic form guide</semantic-link> for further details.
+                                </div>
                                 </div>
                                 <mp-event-trigger id='{{viewId}}-documentation-kpPage-close-trigger'
-                                                  type='Component.TemplateUpdate'
-                                                  data='{ "hideMessage": "true" }'
-                                                  targets='["documentation-kpPage"]'
+                                                type='Component.TemplateUpdate'
+                                                data='{ "hideMessage": "true" }'
+                                                targets='["documentation-kpPage"]'
                                             >
                                     <button class="btn btn-documentation">
-                                      <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
+                                    <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
                                     </button>
                                 </mp-event-trigger>
-                              </div> 
+                            </div> 
                             </div>
-                          {{/if}}
+                        {{/if}}
                         </template>
-                      </mp-event-target-template-render>
+                    </mp-event-target-template-render>
 
                     <mp-selection-group>
                         <div>
@@ -70,8 +69,8 @@
                             
                             <semantic-context repository='assets'>
                                 <semantic-search optimizer='none'
-                                                 selector-mode='dropdown'
-                                                 search-profile='{
+                                                selector-mode='dropdown'
+                                                search-profile='{
                                                             "categories": [
                                                                 {"iri": "<http://www.researchspace.org/resource/system/fields/Field>", "label": "Field"},
                                                                 {"iri": "<http://www.w3.org/2000/01/rdf-schema#Class>", "label": "Type"},
@@ -83,7 +82,7 @@
                                                                     "iri": "<http://www.researchspace.org/resource/system/fields/ontology>", 
                                                                     "label": "ontology", 
                                                                     "hasDomain": "<http://www.researchspace.org/resource/system/fields/Field>", 
-   								                                    "hasRange": "<http://www.w3.org/2002/07/owl#Ontology>"
+                                                                    "hasRange": "<http://www.w3.org/2002/07/owl#Ontology>"
                                                                 },
                                                                 {
                                                                     "iri": "<http://www.researchspace.org/resource/system/fields/category>", 
@@ -115,7 +114,7 @@
                                                                     "hasDomain": "<http://www.researchspace.org/resource/system/fields/Field>", 
                                                                     "hasRange": "<http://www.w3.org/2000/01/rdf-schema#Class>"
                                                                 }  
-                                                             ]
+                                                            ]
                                                             }'
                                                             
                                     relations='{
@@ -152,8 +151,8 @@
                                                                         "valuesQuery": " SELECT ?value ?label (COUNT(DISTINCT $subject) AS ?count) WHERE {
                                                                                             ?subject <http://www.researchspace.org/resource/system/fields/xsdDatatype> ?value .
                                                                                             BIND(STRAFTER(STR(?value), \"#\") AS ?label) .
-                                                                                         } GROUP BY ?value ?label
-                                                                                         ORDER BY ASC(?label) 
+                                                                                        } GROUP BY ?value ?label
+                                                                                        ORDER BY ASC(?label) 
                                                                                         ",
                                                                     "tupleTemplate": "<span><mp-highlight highlight=\"{{highlight}}\">{{label.value}}</mp-highlight> ({{count.value}})</span>"
                                                                     }
@@ -183,14 +182,23 @@
                             </semantic-context>
                         </div>
                     </mp-selection-group>
-                </bs-col>   
-            </bs-row> <!--  close row -->
-        </div>
-        
+                    [[else]]
+                        <div class="warning-documentation-section warning-documentation-section-withIcon">
+                            <div class="warning-documentation-section-icon-container">
+                                <rs-icon icon-type="rounded" icon-name="lock" symbol="true"></rs-icon>
+                            </div>
+                            <div> 
+                                <div class="warning-documentation-section-title">Permission denied!</div>
+                                <div class="warning-documentation-section-content">
+                                    <div>You don't have permission to view Knowledge patterns.</div>
+                                </div>
+                            </div>
+                      </div>
+                    [[/if]]
+            </bs-col>   
+        </bs-row> <!--  close row -->
     </div>
 
-    [[else]]
+</div>
 
-    <p>No Permission</p>
 
-    [[/if]]

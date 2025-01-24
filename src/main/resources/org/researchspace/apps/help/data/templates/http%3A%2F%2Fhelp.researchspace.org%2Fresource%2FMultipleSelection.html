@@ -1,19 +1,11 @@
-<ol class="page-breadcrumb">
-  <li>
-    <mp-link title="Home" url="/">Home</mp-link>
-  </li>
-  <li>
-    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
-  </li>
-  <li>
-    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
-  </li>
-  <li class="active">Multiple Selection</li>
-</ol>
-
-<div class='page'>
-  <div class='page__body'>
-    <h3 id="rs-doc_multiSelection">Multiple Selection</h3>
+[[#if includedTemplate]]
+  <h3 id="rs-doc_multiSelection">Multiple selection</h3>
+[[else]]
+  <div class="page__grid-container help-page-container">
+    <div class='page__content-container'>
+      <h1 id="rs-doc_multiSelection">Multiple selection</h1>
+[[/if]]
+    
     <p>The platform provides the set of components that allow selecting multiple resources and performing actions with them:</p>
     <ul>
       <li>
@@ -64,40 +56,45 @@
         <p>CSS class</p>
       </dd>
     </dl>
-    <h4>Example</h4>
+    <h4>Example multiple selection</h4>
     <mp-code-block mode='text/html'>
-<![CDATA[
-	<mp-selection-group>
-		<div>
-	    <mp-selection-action-choice id='demo' selection='demo'>
-	      <!-- Possible actions -->
-	    </mp-selection-action-choice>
-	    <semantic-table
-	      query="[[>Help:SemanticTableSampleQuery]]"
-	      column-configuration='[
-	        {
-	          "variableName": "s",
-	          "displayName": "Subject",
-	          "cellTemplate": "{{> subjectTemplate}}"
-	        }, 
-	        {"variableName": "p", "displayName": "Predicate"},  
-	        {"variableName": "o", "displayName": "Object"}
-	      ]'
-	      options='{
-	        "showFilter":false
-	      }'
-	      number-of-displayed-rows=2
-	    >
-	      <template id='subjectTemplate'>
-	        <div>
-	          <mp-selection-toggle selection='demo' tag='{{s.value}}'></mp-selection-toggle>
-	          <semantic-link iri='{{s.value}}' style='margin-left: 10px'></semantic-link>
-	        </div>
-	      </template>
-	    </semantic-table>
-		</div>
-	</mp-selection-group>
-]]>
+    <![CDATA[
+<mp-selection-group>
+  <div>
+    <mp-selection-action-choice id='demo' selection='demo'>
+      <!-- Possible actions -->
+    </mp-selection-action-choice>
+    <semantic-table
+      query="[[>Help:SemanticTableSampleQuery]]"
+      column-configuration='[
+        {
+          "variableName": "s",
+          "displayName": "Subject",
+          "cellTemplate": "{{> subjectTemplate}}"
+        }, 
+        {"variableName": "p", "displayName": "Predicate"},  
+        {"variableName": "o", "displayName": "Object"}
+      ]'
+      options='{
+        "showFilter":false
+      }'
+      number-of-displayed-rows=2
+    >
+      <template id='subjectTemplate'>
+        <div>
+          <mp-selection-toggle selection='demo' tag='{{s.value}}'></mp-selection-toggle>
+          <semantic-link iri='{{s.value}}' style='margin-left: 10px'></semantic-link>
+        </div>
+      </template>
+    </semantic-table>
+  </div>
+</mp-selection-group>
+      ]]>
     </mp-code-block>
+
+    
+[[#if includedTemplate]]
+[[else]]
   </div>
 </div>
+[[/if]]

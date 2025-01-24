@@ -66,13 +66,13 @@ export class CodeBlock extends Component<CodeBlockProps, {}> {
     return (
       <div className={styles.holder}>
         <div className={styles.modeLabel}>{this.getCodeModeText(mode)}</div>
+        <ButtonGroup>
+            {this.copyButton(codeText, showCopyButton)}
+            {this.showRunQueryButton(codeText)}
+          </ButtonGroup>
         <pre>
           <CodeHighlightComponent mode={mode} codeText={codeText} />
         </pre>
-        <ButtonGroup>
-          {this.copyButton(codeText, showCopyButton)}
-          {this.showRunQueryButton(codeText)}
-        </ButtonGroup>
       </div>
     );
   }
@@ -81,7 +81,7 @@ export class CodeBlock extends Component<CodeBlockProps, {}> {
     if (showCopyButton) {
       return (
         <CopyToClipboard text={text}>
-          <Button bsStyle="primary">Copy to Clipboard</Button>
+          <Button bsStyle="default">Copy</Button>
         </CopyToClipboard>
       );
     } else {
@@ -95,7 +95,7 @@ export class CodeBlock extends Component<CodeBlockProps, {}> {
     if (mode === 'application/sparql-query' && showRunQueryButton) {
       const url = `/sparql?query=${encodeURIComponent(text)}&repository=${repository}`;
       return (
-        <a style={{ marginLeft: 10 }} target="_blank" href={url} className="btn btn-primary run-query-button">
+        <a style={{ }} target="_blank" href={url} className="btn btn-default">
           Run Query
         </a>
       );

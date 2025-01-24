@@ -42,7 +42,7 @@ export interface DashboardViewConfig {
    */
   id: string;
   /**
-   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is used to render the view when users drop a resource on it. Expects <code>{{iri}}</code> and <code>{{dashboardId}}</code> (or a variable specified in <code>frameVariable</code>) as context variables.
+   * <semantic-link iri='http://help.researchspace.org/resource/TemplatingSystem' target="_blank">Template</semantic-link> which is used to render the view when users drop a resource on it. Expects <code>{{iri}}</code> and <code>{{dashboardId}}</code> (or a variable specified in <code>frameVariable</code>) as context variables.
    */
   template: string;
   /**
@@ -83,11 +83,11 @@ export interface DashboardViewConfig {
    */
   frameVariable?: string;
   /**
-   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> for the label of a frame, it is used in the frame controller. By default the <code><mp-label></mp-label></code> component is used. Expects <code>{{iri}}</code> and <code>{{dashboardId}}</code> (or a variable specified in <code>frameVariable</code>) as context variables.
+   * <semantic-link iri='http://help.researchspace.org/resource/TemplatingSystem' target="_blank">Template</semantic-link> for the label of a frame, it is used in the frame controller. By default the <code><mp-label></mp-label></code> component is used. Expects <code>{{iri}}</code> and <code>{{dashboardId}}</code> (or a variable specified in <code>frameVariable</code>) as context variables.
    */
   itemLabelTemplate?: string;
   /**
-   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> for the body of a frame item. If it is specified, it will applied to the contents of the frame item displayed as dropdown of the frame controller. Expects <code>{{iri}}</code> and <code>{{dashboardId}}</code> (or a variable specified in <code>frameVariable</code>) as context variables.
+   * <semantic-link iri='http://help.researchspace.org/resource/TemplatingSystem' target="_blank">Template</semantic-link> for the body of a frame item. If it is specified, it will applied to the contents of the frame item displayed as dropdown of the frame controller. Expects <code>{{iri}}</code> and <code>{{dashboardId}}</code> (or a variable specified in <code>frameVariable</code>) as context variables.
    */
   itemBodyTemplate?: string;
 

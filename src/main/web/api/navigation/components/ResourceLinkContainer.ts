@@ -27,9 +27,7 @@ import { isSimpleClick } from './ResourceLink';
 import { BuiltInEvents, trigger } from 'platform/api/events';
 import { ConfigHolder } from 'platform/api/services/config-holder';
 
-/**
- * See 'Link'.
- */
+
 export interface ResourceLinkContainerConfig {
   /**
    * resource IRI to navigate

@@ -26,7 +26,7 @@ import { Spinner } from 'platform/components/ui/spinner';
 import { CodeBlock } from './CodeBlock';
 import * as styles from './CodeExample.scss';
 
-interface Props {
+interface CodeExampleProps {
   codeText: string;
   showCodeByDefault?: boolean;
   showCopyButton?: boolean;
@@ -44,7 +44,7 @@ interface State {
  * @example
  *    <mp-code-example><semantic-table>...</semantic-table></mp-code-example>
  */
-export class CodeExample extends React.Component<Props, State> {
+export class CodeExample extends React.Component<CodeExampleProps, State> {
   static defaultProps = {
     showCodeByDefault: false,
     showCopyButton: true,
@@ -63,7 +63,7 @@ export class CodeExample extends React.Component<Props, State> {
     this.loadCode(this.props.codeText);
   }
 
-  componentWillReceiveProps(props: Props) {
+  componentWillReceiveProps(props: CodeExampleProps) {
     if (props.codeText !== this.props.codeText) {
       this.loadCode(props.codeText);
     }

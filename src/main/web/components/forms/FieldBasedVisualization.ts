@@ -53,7 +53,7 @@ export interface FieldBasedVisualizationConfig {
   fields: FieldDefinitionProp[];
 
   /**
-   * <semantic-link iri='http://help.researchspace.org/resource/Help:FrontendTemplating'>Template</semantic-link>, that gets the `fields` value with the list of field definitions injected as template context.
+   * <semantic-link iri='http://help.researchspace.org/resource/Help:TemplatingSystem'>Template</semantic-link>, that gets the `fields` value with the list of field definitions injected as template context.
    * [each helper](http://handlebarsjs.com/builtin_helpers.html#iteration) can be used to iterate over the fields.
    *
    * Every field has corresponding metadata (label, xsdDatatype, etc.), as well as list of `values`.

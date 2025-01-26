@@ -29,26 +29,7 @@ import * as Kefir from 'kefir';
 import { Rdf } from 'platform/api/rdf';
 import { titleHolder } from 'platform/components/text-editor/TextEditor.scss';
 
-/**
- * Component to trigger the download of a SPARQL result set.
- * Downloading starts when the child element has been clicked,
- * therefore component should contain only one child element.
- * Child element could be any HTML-element (not text node).
- *
- * @example
- * <mp-sparql-download query="SELECT * WHERE {?a ?b ?c} LIMIT 10"
- *                     header="application/sparql-results+json">
- *     <button>Download SPARQL JSON</button>
- * </mp-sparql-download>
- *
- * @example
- * <mp-sparql-download query="SELECT * WHERE {?a ?b ?c} LIMIT 10"
- *                     header="text/csv"
- *                     filename="myresult.csv">
- *     <a href="#">Download CSV</a>
- * </mp-sparql-download>
- */
-export interface Props {
+export interface SparqlDownloadProps {
   /**
    * SPARQL SELECT OR CONSTRUCT query
    */
@@ -68,7 +49,27 @@ export interface Props {
   downloadResourceIri?: string;
 }
 
-class SparqlDownloadComponent extends Component<Props, {}> {
+/**
+ * Component to trigger the download of a SPARQL result set.
+ * Downloading starts when the child element has been clicked,
+ * therefore component should contain only one child element.
+ * Child element could be any HTML-element (not text node).
+ *
+ * @example
+ * <mp-sparql-download query="SELECT * WHERE {?a ?b ?c} LIMIT 10"
+ *                     header="application/sparql-results+json">
+ *     <button>Download SPARQL JSON</button>
+ * </mp-sparql-download>
+ *
+ * @example
+ * <mp-sparql-download query="SELECT * WHERE {?a ?b ?c} LIMIT 10"
+ *                     header="text/csv"
+ *                     filename="myresult.csv">
+ *     <a href="#">Download CSV</a>
+ * </mp-sparql-download>
+ */
+
+class SparqlDownloadComponent extends Component<SparqlDownloadProps, {}> {
   private subscription: Kefir.Subscription;
   private onSave = (event: React.SyntheticEvent<any>) => {
     event.preventDefault();

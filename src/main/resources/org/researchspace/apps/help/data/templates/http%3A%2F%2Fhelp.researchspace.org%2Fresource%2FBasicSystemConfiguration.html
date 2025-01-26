@@ -47,7 +47,7 @@
           <td>enableUiComponentBasedSecurity</td>
           <td>boolean</td>
           <td>false</td>
-          <td style="color: red;">????</td>
+          <td style="color: red;">If this is set to true one can check the ACL permission ui:component:view:* to determine if a particular component can be shown.</td>
         </tr>
         <tr>
           <td>preferredLabels</td>
@@ -190,56 +190,46 @@
           <td>enableLocalUsers</td>
           <td>boolean</td>
           <td>false</td>
-          <td style="color: red;">Specifies additional {@link CustomAsset} types that 
-            can be used in asset management. This is a list of type IRIs, 
-            representing the type of the identifying statement of the 
-            given asset (i.e. <code>{?assetIdentifier rdf:type %typeIri%}</code>). 
-            The individual values must be full IRI strings. Note that 
-            custom asset types are only detected after the build in 
-            types (i.e. vocabularies and ontologies).</td>
+          <td>Set it to <code>true</code> and the file specified by the <code>shiroConfig</code> will be used.</td>
         </tr>
         <tr>
           <td>maxSparqlHttpConnections</td>
           <td>integer</td>
           <td>true</td>
-          <td style="color: red;">
+          <td>
             The maximum number of HTTP connections for SPARQL repositories. 
-            The HTTP connections are globally managed by the repository manager. Default: <code>25</code>
+            The HTTP connections are globally managed by the repository manager. Default: <code>10</code>
           </td>
         </tr>
         <tr>
           <td>pagesUrlMapping</td>
           <td></td>
-          <td>string</td>
-          <td style="color: red;">??</td>
+          <td>true</td>
+          <td>Default: <code>/page/</code></td>
         </tr>
         <tr>
           <td>pathsToRewrite</td>
           <td>stringList</td>
           <td>true</td>
-          <td style="color: red;">
+          <td>
             List of request path prefixes which are rewritten 
             to allow canonical access to resources (i.e. resolvable IRIs). 
             Assuming the resource <code>https://example.com/person/foo</code> should 
             resolve to the resource's page: by configuring <code>/person/</code> as 
             pathsToRewrite, requests are redirected to the canonicalized 
             URL, i.e. <code>https://example.com/resource/?uri=http://example.com/person/foo</code>. 
-            The <code>performInternalForwardForResolvableResources</code> setting can be used 
-            to apply an internal forward instead of a browser redirect. 
-            Note that pathsToRewrite is evaluated relative to the configured <code>publicPath</code>.
+             Note that pathsToRewrite is evaluated relative to the configured <code>platformBaseIri</code>.
           </td>
         </tr>
         <tr>
           <td>platformBaseIri</td>
           <td>string</td>
           <td>false</td>
-          <td style="color: red;">
+          <td>
             Defines the base IRI for the platform. 
             The value is expected to not have a trailing SLASH. 
             If not specified explicitly, for LDP containers it is 
-            inferred from the client's request URL. If the platform 
-            is running under a different public path (see also setting <code>publicPath</code>) 
-            the value is to be included. 
+            inferred from the client's request URL. 
             Examples: <code>https://example.com</code>, <code>https://example.com/myproject</code>
           </td>
         </tr>
@@ -247,13 +237,13 @@
           <td>resourceUrlMapping</td>
           <td>string</td>
           <td></td>
-          <td style="color: red;">???</td>
+          <td>Default value is <code>/resource/</code></td>
         </tr>
         <tr>
           <td>securityConfigStorageId</td>
           <td>string</td>
           <td>true</td>
-          <td style="color: red;">
+          <td>
             Specifies the ID of an existing storage from which 
             security related configuration files (e.g., <code>shiro.ini</code>) are loaded.
           </td>
@@ -265,7 +255,7 @@
           <td>Authentication filter to apply. 
             Any combination of "anon" (Anonymous User),"authc" (FormBasedAuthentication),
             "authcBasic" (HTTP Basic Authentication). Default: <code>authcBasic, authc</code>
-          <span style="color: red;">
+            <span>
             Form based authentication with local users or LDAP 
             can be configured with <code>authc</code>, while SSO can be 
             activated by one of <code>oidc</code>, <code>oauth2</code>, 
@@ -285,13 +275,13 @@
           <td>shiroConfig</td>
           <td>string</td>
           <td>true</td>
-          <td style="color: red;">???</td>
+          <td>Default: shiro.ini</td>
         </tr>
         <tr>
           <td>shiroLDAPConfig</td>
           <td>string</td>
           <td>true</td>
-          <td style="color: red;"></td>
+          <td>Default: shiro-ldap.ini</td>
         </tr>
         <tr>
           <td>shiroSessionTimeoutSecs</td>
@@ -324,7 +314,7 @@
           <td>sso</td>
           <td></td>
           <td></td>
-          <td style="color: red;">???</td>
+          <td style="color: red;">SSO variant, currently we only support "keycloak" and "oidc"</td>
         </tr>
       </tbody>
     </table>

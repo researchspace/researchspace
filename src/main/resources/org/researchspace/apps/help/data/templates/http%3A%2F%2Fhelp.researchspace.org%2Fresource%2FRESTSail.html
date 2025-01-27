@@ -1,43 +1,30 @@
-<ol class="page-breadcrumb">
-  <li>
-    <mp-link title="Home" url="/">Home</mp-link>
-  </li>
-  <li>
-    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
-  </li>
-  <li>
-    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
-  </li>
-
-  <li class="active">REST Sail integration</li>
-</ol>
-
-<div class="page">
-  <div class='page__body'>
+<div class="page__grid-container help-page-container">
+  <div class='page__content-container'>
     <h1>REST Sail integration</h1>
 
-    This integration creates a general REST Sail that can be used to make <code>GET</code> or <code>POST</code> requests against different services. Users can create their configuration, consisting of two files: The repository configuration and the Service Descriptor. While the former is entitled to develop the Researchspace repository and define the base URL of the request, the latter manages the transformation from SPARQL triples into REST parameters.
+    <p>This integration creates a general REST Sail that can be used to make <code>GET</code> or <code>POST</code> 
+    requests against different services. Users can create their configuration, consisting of two files: 
+    The repository configuration and the Service Descriptor. While the former is entitled to develop 
+    the Researchspace repository and define the base URL of the request, the latter manages the transformation from SPARQL triples into REST parameters.</p>
 
-    <br><br>
-    The following sections describe a step-by-step implementation of the repository Library Cloud 
+    <p>The following sections describe a step-by-step implementation of the repository Library Cloud 
     used to request the <a href="https://wiki.harvard.edu/confluence/display/LibraryStaffDoc/LibraryCloud+APIs"
-    class="text-link-action" target="_blank">LibraryCloud APIs</a>.
+    class="text-link-action" target="_blank">LibraryCloud APIs</a>.</p>
     
-    A Sample App with only configurations can be downloaded from 
-    <a href="https://github.com/villaitatti/RESTSail-app" class="text-link-action" target="_blank">this github repository</a>.
+    <p>A Sample App with only configurations can be downloaded from 
+    <a href="https://github.com/villaitatti/RESTSail-app" class="text-link-action" target="_blank">this github repository</a>.</p>
 
-    <h2>1. Configuring REST Sail for Library Cloud</h2>
+    <hr class="divider">
+    <h2>Configuring REST Sail for Library Cloud</h2>
 
-    <strong>For this example, we show how to request <code>Title</code> and <code>Genre</code> from the 
-      <a href="https://wiki.harvard.edu/confluence/display/LibraryStaffDoc/LibraryCloud+APIs" class="text-link-action" target="_blank">LibraryCloud APIs</a>.</strong>
+    <p><strong>For this example, we show how to request <code>Title</code> and <code>Genre</code> from the 
+      <a href="https://wiki.harvard.edu/confluence/display/LibraryStaffDoc/LibraryCloud+APIs" class="text-link-action" target="_blank">LibraryCloud APIs</a>.</strong></p>
     
+    <p>The configuration phase passes through two steps: creating the configuration file and the service descriptor.</p>
 
-    <br><br>
-    The configuration phase passes through two steps: creating the configuration file and the service descriptor. 
-    <br>
-    The URL considered in this example is: <code>https://api.lib.harvard.edu/v2/items.json?setName=English+Crime+and+Execution+Broadsides</code>
-<br><br>
-    The body response is structured as follows:
+    <p>The URL considered in this example is: <code>https://api.lib.harvard.edu/v2/items.json?setName=English+Crime+and+Execution+Broadsides</code></p>
+
+    <p>The body response is structured as follows:</p>
 
     <mp-code-block mode='JSON'>
 {
@@ -92,25 +79,26 @@
                 }
             ],
         ...
+    }
+  }
+}
     </mp-code-block>
 
-    The root JSON file contains two children: pagination containing all the information about the request such as query and limit, and items and, in turn, mods having the actual response body. 
-    <br><br>
-    The request 
-    
-    It kept the objective of this example, i.e., the <code>Title</code> and the <code>Genre</code>, that are the ones we are interested on. 
+    <p>The root JSON file contains two children: pagination containing all the information about the
+     request such as query and limit, and items and, in turn, mods having the actual response body.
+     It kept the objective of this example, i.e., the <code>Title</code> and the <code>Genre</code>, that are the ones we are interested on. </p>
 
-    <h3>1.1. Create the configuration file</h3>
+     <br>
+    <h3>Create the configuration file</h3>
 
-    We can create the configuration file from the Repository panel located at <code>Administration > Repositories</code>. 
+    <p>We can create the configuration file from the Repository panel located at <code>Admin:Repositories</code>. 
     For more information on the configuration file and the properties available, 
-    refer to the <semantic-link iri="[[resolvePrefix 'Help:RepositoryManager']]" class="text-link-action" target="_blank">Repository 
-      Manager documentation page</semantic-link>.
-    <br>
-    The following Turtle code shows the Library Cloud configuration file content.
+    refer to the <semantic-link iri="[[resolvePrefix 'Help:RepositoryManager']]" class="text-link-action" target="_blank">Repository manager guide</semantic-link>.</p>
+
+    <p>The following Turtle code shows the Library Cloud configuration file content.</p>
 
     <mp-code-block mode='text/turtle'>
-      <![CDATA[
+    <![CDATA[
 @prefix repo: <http://www.openrdf.org/config/repository#> .
 @prefix sr: <http://www.openrdf.org/config/repository/sail#> .
 @prefix sail: <http://www.openrdf.org/config/sail#> .
@@ -131,19 +119,25 @@
     ] 
   ] .
       ]]>
-      </mp-code-block>
+    </mp-code-block>
 
-    <strong>Note: </strong> <code>ephedra:serviceUrl</code> must contain the URL for the request. The system will fire the SPARQL query and attach all the search parameters to this URL. <code>ephedra:httpMethod</code> is important as well. Its presence indicates the request type, such as <code>GET</code> or <code>POST</code>.
-    <br><br>
-    The last property is <code>ephedra:implementsService</code> that points to the Service Descriptor. <strong>Be sure both URIs are equal.</strong>
-    <h3>1.2. Configure Service Descriptor</h3>
-    The service descriptor is the file that contains all the configurations needed to handle the input and output parameter transformation. It includes the SPARQL patterns, which are the predicates to convert the SPARQL query to REST parameters and vice versa. This file also contains how to parse the response and encapsulate only some essential parts into the SPARQL query result. 
-<br><br>
-    The service descriptor used to handle the LibraryCloud example is the following:
+    <p><strong>Note: </strong> <code>ephedra:serviceUrl</code> must contain the URL for the request. 
+    The system will fire the SPARQL query and attach all the search parameters to this URL. <code>ephedra:httpMethod</code> 
+    is important as well. Its presence indicates the request type, such as <code>GET</code> or <code>POST</code>.</p>
+    
+    <p>The last property is <code>ephedra:implementsService</code> that 
+    points to the Service Descriptor. <strong>Be sure both URIs are equal.</strong></p>
+    <br>
+    <h3>Configure Service Descriptor</h3>
+    <p>The service descriptor is the file that contains all the configurations needed to handle 
+    the input and output parameter transformation. It includes the SPARQL patterns, 
+    which are the predicates to convert the SPARQL query to REST parameters and vice versa. 
+    This file also contains how to parse the response and encapsulate only some essential parts into the SPARQL query result.</p>
+
+    <p>The service descriptor used to handle the LibraryCloud example is the following:</p>
 
     <mp-code-block mode='text/turtle'>
-      <![CDATA[
-
+    <![CDATA[
 PREFIX sp: <http://spinrdf.org/sp#>
 PREFIX spin: <http://spinrdf.org/spin#>
 PREFIX spl: <http://spinrdf.org/spl#>
@@ -211,62 +205,64 @@ spin:column [
       ]]>
     </mp-code-block>
 
-    The <code>ephedra:hasSPARQLPattern</code> parameter is an array of parameters denoting how conversion from SPARQL must be handled. 
+   <p>The <code>ephedra:hasSPARQLPattern</code> parameter is an array of parameters denoting how conversion from SPARQL must be handled.</p>
     
     <mp-code-block  mode='text/turtle'>
-      <![CDATA[
+    <![CDATA[
 [
   sp:subject :_results ;
   sp:predicate lc:hasSetName ;
   sp:object :_setName
-]]]>
+]
+      ]]>
     </mp-code-block>
 
-    The previous code shows how the RDF triple must be formed. The predicate must be <code>lc:hasSetName</code>, 
+    <p>The previous code shows how the RDF triple must be formed. The predicate must be <code>lc:hasSetName</code>, 
     where the prefix is defined in the same file, and hasSetName is an arbitrary predicate name. 
     It means that the SPARQL subject is related to a element with <code>:_setName</code> as <code>spl:predicate</code>.
-
+    </p>
     <mp-code-block  mode='text/turtle'>
-      <![CDATA[
+    <![CDATA[
 spin:constraint [
   a spl:Argument ;
   rdfs:comment "search term" ;
   spl:predicate :_setName ;
   spl:valueType xsd:string
 ] ;
-  ]]>
+      ]]>
     </mp-code-block> 
     
-    The element with URI <code>:_setName</code> is described below as being of type <code>spl:Argument</code>, meaning this is a <strong>input parameter</strong>. 
-    the system will connect the string to the subject will be transformed into the query string parameter setName. 
+    <p>The element with URI <code>:_setName</code> is described below as being of type <code>spl:Argument</code>, meaning this is a <strong>input parameter</strong>. 
+    the system will connect the string to the subject will be transformed into the query string parameter setName.</p>
 
-    In the SPARQL query through the <code>lc:hasSetName</code> predicate, the system will connect the string to the subject will be transformed into the query string parameter <code>setName</code>. 
-
-    <br><br>
-
-    <strong>Note</strong> that the identifier's name must correspond precisely to the HTTP request parameter, without the <code>_</code> symbol. So, <code>:_setName</code> will be converted into <code>setName</code>. 
-
-    <br><br>
+    <p>In the SPARQL query through the <code>lc:hasSetName</code> predicate, the system will connect the string to 
+      the subject will be transformed into the query string parameter <code>setName</code>.</p>
 
 
-    For the case of output parameters, a <code>_results</code> parameter is <strong>required</strong> in the descriptor. 
-    If not explicitly declared, the system will use the root node as the JSON object to parse. Otherwise, it specifies the arbitrary JSON object or JSON array that contains the list of results. 
+    <p><strong>Note</strong> that the identifier's name must correspond precisely to 
+      the HTTP request parameter, without the <code>_</code> symbol. So, <code>:_setName</code> will be converted into <code>setName</code>. 
+    </p>
+
+    <p>For the case of output parameters, a <code>_results</code> parameter is <strong>required</strong> in the descriptor. 
+    If not explicitly declared, the system will use the root node as the JSON object to parse. Otherwise, it specifies the 
+    arbitrary JSON object or JSON array that contains the list of results. 
     It comes with the <code>ephedra:jsonPath</code> predicate that specifies its JSON path (for more information, 
-    refer to <a href="https://github.com/json-path/JsonPath" class="text-link-action" target="_blank">its documentation</a>). 
-    In this example, the results are stored in a JSON array reachable with a JSON path of <code>$.items.mods.[*]</code>.
+    refer to <a href="https://github.com/json-path/JsonPath" class="text-link-action" target="_blank">JSON path documentation</a>). 
+    In this example, the results are stored in a JSON array reachable with a JSON path of <code>$.items.mods.[*]</code>.</p>
 
-    <br><br>
+    <p>For all the other parameters of type <code>spin:Column</code>, which are the 
+    output parameters, the lookup will start from the new root, which is the one passed with <code>_results</code>.</p>
 
-    For all the other parameters of type <code>spin:Column</code>, which are the output parameters, the lookup will start from the new root, which is the one passed with <code>_results</code>.
+    <hr class="divider">
+    <h2>Use SPARQL to make requests</h2>
 
-    <h2>2. Use SPARQL to make requests</h2>
+    <p>The query MUST be executed against the repository created in the previous passage, i.e., <code>librarycloud</code>. Otherwise it will not work.</p>
 
-    The query MUST be executed against the repository created in the previous passage, i.e., <code>librarycloud</code>. Otherwise it will not work.
-    <br>
-    The query below shows how to request the LibraryCloud, using the service descriptor's predicates defined above.
+    <p>The query below shows how to request the LibraryCloud, using the service descriptor's predicates defined above.</p>
 
     <mp-code-block mode='SPARQL'>
-      <![CDATA[PREFIX lc: <http://www.researchspace.org/resource/assets/Ontologies/libraycloud#>
+    <![CDATA[
+PREFIX lc: <http://www.researchspace.org/resource/assets/Ontologies/libraycloud#>
 
 SELECT ?title ?genre WHERE {
   ?subject lc:hasSetName "English Crime and Execution Broadsides" .

@@ -1,18 +1,5 @@
-<ol class="page-breadcrumb">
-  <li>
-    <mp-link title="Home" url="/">Home</mp-link>
-  </li>
-  <li>
-    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
-  </li>
-  <li>
-    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
-  </li>
-  <li class="active">Repository Manager</li>
-</ol>
-
-<div class="page">
-  <div class='page__body'>
+<div class="page__grid-container help-page-container">
+  <div class='page__content-container'>
     <h1>Repository manager</h1>
     <p>The ResearchSpace platform works with the knowledge graph data stored in RDF repositories. 
       By default, the platform works with one specific repository, but it is able to access data 
@@ -32,16 +19,17 @@
       to configure the connections to RDF repositories. Each repository maintained by the 
       Repository Manager is referenced by a 
       string ID and its type and configuration parameters are described as an RDF graph 
-      using the <a href='http://docs.rdf4j.org/server-workbench-console/#_repository_configuration_templates_advanced' class="text-link-action" target="_blank">RDF4J 
-        repository configuration format</a> (see example below). Each 
-      configuration RDF graph must include an instance of type <i>rep:Repository</i> with the following mandatory properties:</p> 
-      <ul>
-        <li><code>rep:repositoryID</code>: the ID of the repository.</li>
-        <li><code>rdfs:label</code>: a human-readable description of the repository. </li>
-        <li><code>rep:repositoryImpl</code>: a link to the <i>repository 
-          implementation resource</i> defining the specific implementation of the 
-          concrete repository type.</li>
-    	</ul>
+      using the RDF4J repository configuration 
+      format (see example below). Each 
+      configuration RDF graph must include an instance of type <i>rep:Repository</i> 
+      with the following mandatory properties:</p> 
+    <ul>
+      <li><code>rep:repositoryID</code>: the ID of the repository.</li>
+      <li><code>rdfs:label</code>: a human-readable description of the repository. </li>
+      <li><code>rep:repositoryImpl</code>: a link to the <i>repository 
+        implementation resource</i> defining the specific implementation of the 
+        concrete repository type.</li>
+    </ul>
     <p>The repository implementation resource, in turn, must have one mandatory property:</p>
     <ul>
       <li><code>rep:repositoryType</code>: A string identifier of the specific 
@@ -52,7 +40,8 @@
       are required: for example, for a SPARQL endpoint one has to specify 
       the URL of the query endpoint, for a native RDF4J repository one has to 
       include the types of statement indices, etc.</p>
-    <mp-code-block mode="text/turtle"><![CDATA[
+    <mp-code-block mode="text/turtle">
+    <![CDATA[
 @prefix rep: <http://www.openrdf.org/config/repository#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix mph: <http://www.researchspace.org/resource/system/repository#> .
@@ -73,16 +62,19 @@
       the repository ID in the file name must match the one defined in the configuration graph. 
       The configuration files can be edited either directly on the disk or using the platform 
       <semantic-link iri="http://127.0.0.1:10214/resource/Admin:Repositories" 
-      class="text-link-action" target="_blank">Repository Manager UI</semantic-link>. 
+      class="text-link-action" target="_blank">Admin:Repositories</semantic-link>. 
       The platform reads the repository configuration files and initializes the repositories once at 
-      startup time. After adding or modifying a repository configuration, the system must be restarted for the changes to take effect.</p>
+      startup time. After adding or modifying a repository configuration, 
+      the system must be restarted for the changes to take effect.</p>
     
     <p>The platform has the following reserved repository IDs:</p>
     <ul>
       <li><i>default</i>: denotes the main repository. By default, all SPARQL queries 
-        are answered from this repository and all UI components are working with this repository.</li>
+        are answered from this repository and all UI components are working with this 
+        repository.</li>
       <li><i>assets</i>: auxiliary repository containing platform-internal metadata. 
-        This includes, for example, query templates stored in the query catalog, definition of fields, etc.</li>
+        This includes, for example, query templates stored in the query catalog, 
+        definition of fields, etc.</li>
     </ul>
     
     <p>The configuration of these repositories can still be changed using the configuration Turtle
@@ -206,35 +198,35 @@
     SPARQL query federation architecture that is able to send federated 
     queries over several repositories registered in the Repository Manager.
     <mp-code-block mode='text/turtle'>
-      <![CDATA[
-      @prefix rep: <http://www.openrdf.org/config/repository#> .
-      @prefix sail: <http://www.openrdf.org/config/sail#> .
-      @prefix sr: <http://www.openrdf.org/config/repository/sail#> .
-      @prefix sparqlr: <http://www.openrdf.org/config/repository/sparql#> .
-      @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-      @prefix mph: <http://www.researchspace.org/resource/system/repository#> .
-      @prefix mps: <http://www.researchspace.org/resource/system/service#> .
-      @prefix mpf: <http://www.researchspace.org/resource/system/repository/federation#> .
-      @prefix fedsail: <http://www.openrdf.org/config/sail/federation#> .
+    <![CDATA[
+@prefix rep: <http://www.openrdf.org/config/repository#> .
+@prefix sail: <http://www.openrdf.org/config/sail#> .
+@prefix sr: <http://www.openrdf.org/config/repository/sail#> .
+@prefix sparqlr: <http://www.openrdf.org/config/repository/sparql#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix mph: <http://www.researchspace.org/resource/system/repository#> .
+@prefix mps: <http://www.researchspace.org/resource/system/service#> .
+@prefix mpf: <http://www.researchspace.org/resource/system/repository/federation#> .
+@prefix fedsail: <http://www.openrdf.org/config/sail/federation#> .
 
-      [] a rep:Repository ;
-         rep:repositoryID "ephedra" ;
-         rdfs:label "Local Ephedra federation" ;
-         rep:repositoryImpl [
-            rep:repositoryType "researchspace:FederationSailRepository" ;
-            sr:sailImpl [
-                sail:sailType "researchspace:Federation" ;
-                mph:defaultMember "default" # Repository ID of the default member of the federation
-                fedsail:member [
-                  mph:delegateRepositoryID "{%Repository ID of the federation member|wikidata-text%}" ;
-                  mph:serviceReference {%URI to reference this federation member in a SERVICE clause|mpf:wikidata-text%}
-                ] ;
-                fedsail:member [
-                  mph:delegateRepositoryID "{%Repository ID of the federation member|assets%}" ;
-                  mph:serviceReference {%URI to reference this federation member in a SERVICE clause|mpf:assets%}
-                ] 
-            ] 
-         ] .
+[] a rep:Repository ;
+    rep:repositoryID "ephedra" ;
+    rdfs:label "Local Ephedra federation" ;
+    rep:repositoryImpl [
+      rep:repositoryType "researchspace:FederationSailRepository" ;
+      sr:sailImpl [
+          sail:sailType "researchspace:Federation" ;
+          mph:defaultMember "default" # Repository ID of the default member of the federation
+          fedsail:member [
+            mph:delegateRepositoryID "{%Repository ID of the federation member|wikidata-text%}" ;
+            mph:serviceReference {%URI to reference this federation member in a SERVICE clause|mpf:wikidata-text%}
+          ] ;
+          fedsail:member [
+            mph:delegateRepositoryID "{%Repository ID of the federation member|assets%}" ;
+            mph:serviceReference {%URI to reference this federation member in a SERVICE clause|mpf:assets%}
+          ] 
+      ] 
+    ] .
       ]]>
     </mp-code-block> 
     
@@ -255,7 +247,8 @@
       An example configuration of a wrapper repository is provided below.
     </p>
     
-    <mp-code-block mode="text/turtle"><![CDATA[
+    <mp-code-block mode="text/turtle">
+    <![CDATA[
 @prefix rep: <http://www.openrdf.org/config/repository#> .
 @prefix sparqlr: <http://www.openrdf.org/config/repository/sparql#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
@@ -268,7 +261,7 @@
     rep:repositoryType "researchspace:VirtuosoWrapperRepository" ;
     mph:delegateRepositoryID "{Virtuoso Repository ID}" ;
   ] .
-]]>
+      ]]>
     </mp-code-block>
     <p>This configuration defines a wrapper repository which 
       serves as a proxy to another one: a SPARQL repository 

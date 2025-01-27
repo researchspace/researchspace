@@ -1,20 +1,5 @@
-<ol class="page-breadcrumb">
-  <li>
-    <mp-link title="Home" url="/">Home</mp-link>
-  </li>
-  <li>
-    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
-  </li>
-  <li>
-    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
-  </li>
-  <li class="active">
-    Semantic Context
-  </li>
-</ol>
-
-<div class="page">
-  <div class='page__body'>
+<div class="page__grid-container help-page-container">
+  <div class='page__content-container'>
     <h1>Semantic Context</h1>
     <p>
       The [[> Help:CodeHighlightPartial codeContent="<semantic-context>"]] component can be used to selectively wrap individual <b>visualization components</b> in order to change their execution context, i.e. to instruct components to execute queries against particular repositories (other than the default), named graphs (as far as supported by the database) or to inject binding values into queries.
@@ -24,28 +9,30 @@
     <mp-documentation type="SemanticConfigProps"></mp-documentation>
     <hr class="divider">
     <h2>Context Inheritance</h2>
-    <p>The [[> Help:CodeHighlightPartial codeContent="<semantic-context>"]] is automatically inherited to all child HTML nodes.</p>  
+    <p>The [[> Help:CodeHighlightPartial codeContent="<semantic-context>"]] is automatically inherited 
+      to all child HTML nodes.</p>  
 <pre>
-<code>
-<div> <!-- the root page-div has a default semantic context -->
-  <semantic-context repository='assets'> <!-- overwrite page context for all child nodes -->
-    <semantic-table 
-      query="SELECT ?s {?s a ?type} LIMIT 10"
-    	column-configuration='[
-      	{"variableName": "s", "cellTemplate": " {{> myNestedInclude}}" }
-      ]'
-  	>
-    	<template id="myNestedInclude">
-      	<div>
-      		<semantic-context repository="default"> <!-- setting context back to default -->
-          	<semantic-link iri="{{s.value}}"></semantic-link>
-          </semantic-context>
-        </div>
-    	</template>
-    </semantic-table>
-  </semantic-context>
-</div>
-</code>
+  <code>
+    <!-- the root page-div has a default semantic context -->
+    <div> 
+       <!-- overwrite page context for all child nodes -->
+      <semantic-context repository='assets'>
+        <semantic-table 
+          query="SELECT ?s {?s a ?type} LIMIT 10"
+          column-configuration='[{"variableName": "s", "cellTemplate": " {{> myNestedInclude}}" }]'
+        >
+          <template id="myNestedInclude">
+            <div>
+              <!-- setting context back to default -->
+              <semantic-context repository="default"> 
+                <semantic-link iri="{{s.value}}"></semantic-link>
+              </semantic-context>
+            </div>
+          </template>
+        </semantic-table>
+      </semantic-context>
+    </div>
+  </code>
 </pre>
 <hr class="divider">
     <h2>Supported Components</h2>
@@ -63,7 +50,7 @@
       <li>[[> Help:CodeHighlightPartial codeContent="<ontodia>"]]</li>
     </ul>
 
-    <b>Currently, the following components explicitly do not support the semantic-context:</b>
+    <div>Currently, the following components explicitly <b>do not support the semantic-context</b>:</div>
     <ul>
       <li>[[> Help:CodeHighlightPartial codeContent="<semantic-search>"]]</li>
       <li>[[> Help:CodeHighlightPartial codeContent="<semantic-form>"]]</li>
@@ -76,7 +63,7 @@
     <p>
       Changing the context of individual components is a very powerful and complex endeavor.
       At the end of the day, the challenge of integrated data access is moved from the database or middleware 
-      (for example, through <semantic-link iri="[[resolvePrefix 'Help:Epehdra']]" class="text-link-action" target="_blank">Ephedra</semantic-link>) to the UI level. This poses various challenges, which can become hard to control and maintain for application developers:
+      (for example, through Ephedra) to the UI level. This poses various challenges, which can become hard to control and maintain for application developers:
     </p>
 		<ul>
     	<li>
@@ -99,7 +86,6 @@
     </ul>
     <hr class="divider">
     <h2>Examples</h2>
-    <br>
     <h3>Example: Inheritance of semantic-context</h3>
     <p>
       The query from the table below will execute against the <code>repository=assets</code> and also all children components 
@@ -115,18 +101,21 @@
       </li>
     </ul>
     <mp-code-example>
-<![CDATA[
+    <![CDATA[
 <semantic-context repository='assets'>
   <semantic-table 
     query="[[>Help:SemanticTableSampleQuery]]"
   ></semantic-table>
 </semantic-context>
-]]>
+      ]]>
+    </mp-code-example>
 
-        </mp-code-example>
+    <br>
     <h3>Example: Overwriting semantic-context in child components</h3>
     <p>
-      The query from the table below will execute against the <code>repository=assets</code>. <b>However</b>, the semantic-context is again overwritten by wrapping the content of the table cell into <code><semantic-context repository="default"/></code>.
+      The query from the table below will execute against the <code>repository=assets</code>. <b>However</b>, the 
+      semantic-context is again overwritten by wrapping the content of the table cell 
+      into <code><semantic-context repository="default"/></code>.
     </p>
    	This means:
     <ul>
@@ -138,20 +127,24 @@
       </li>
     </ul>
     <mp-code-example>
-<![CDATA[
+    <![CDATA[
 <semantic-context repository='assets'>
   <semantic-table 
     query="[[>Help:SemanticTableSampleQuery]]"
     column-configuration='[
-      {"variableName": "s", "displayName": "Subject", "cellTemplate": "<semantic-context repository=\"default\"><semantic-link iri=\"{{s.value}}\"></semantic-link></semantic-context></div>" }
+      {"variableName": "s", 
+      "displayName": "Subject", 
+      "cellTemplate": " <semantic-context repository=\"default\">
+                          <semantic-link iri=\"{{s.value}}\"></semantic-link>
+                        </semantic-context>" }
     ]'
   ></semantic-table>
 </semantic-context>
-]]>
-        </mp-code-example>
+      ]]>
+    </mp-code-example>
     
-
-<h3>Example: Default Graphs, Named Graphs and Query Bindings</h3>
+  <br>
+  <h3>Example: Default Graphs, Named Graphs and Query Bindings</h3>
     <p>
       The query from the table below:
     </p>
@@ -178,14 +171,21 @@
         yet stable</b>, i.e. may change or might be removed at any point in time without notice.
     </p>
     <mp-code-example>
-<![CDATA[
+    <![CDATA[
 <semantic-context repository='assets'
     named-graphs='["http://graph1", "http://graph2"]'
     default-graphs='["http://graph1", "http://graph2", "http://graph3"]'
     bindings='{"var1": "http://some-iri","var2": "\"42\"^^http://www.w3.org/2001/XMLSchema#integer"}'>
-	<semantic-table query="SELECT * WHERE { GRAPH ?g {?a a ?b} BIND(?var1 as ?binding1) BIND(?var2 as ?binding2) }" no-result-template='No result: Most likely you do not have graphs as specified in your repository.'></semantic-table>
+	<semantic-table query=" SELECT * WHERE { 
+                          GRAPH ?g {?a a ?b} 
+                          BIND(?var1 as ?binding1) 
+                          BIND(?var2 as ?binding2) 
+                          }" 
+                  no-result-template='No result: Most likely you do not have graphs 
+                                      as specified in your repository.'>
+  </semantic-table>
 </semantic-context>
-]]>
+      ]]>
     </mp-code-example>
   </div>
 

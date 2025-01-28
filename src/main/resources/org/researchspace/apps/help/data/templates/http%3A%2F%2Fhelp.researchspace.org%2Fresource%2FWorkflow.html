@@ -1,19 +1,6 @@
-<ol class="page-breadcrumb">
-  <li>
-    <mp-link title="Home" url="/">Home</mp-link>
-  </li>
-  <li>
-    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
-  </li>
-  <li>
-    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
-  </li>
-  <li class="active">Workflow system</li>
-</ol>
-
-<div class="page">
-  <div class='page__body'>
-  <h2>Workflow system</h2>
+<div class="page__grid-container help-page-container">
+  <div class='page__content-container'>
+  <h1>Workflow system</h1>
   [[> dataUploadingTutorial]]
   <p>The workflow system allows to create simple workflow solutions around some resources or data publication processes.</p>
   <p>
@@ -31,7 +18,7 @@
     </li>
   </ul>
   <hr class="divider">
-    <h4>Workflow ontology</h4>
+    <h2>Workflow ontology</h2>
     <p>
       The workflow ontology is presented on the diagram below, switch the tab to <b>RDF/Turtle</b> to see the ontology serialized in RDF.
     </p>
@@ -49,100 +36,98 @@
       </bs-tab>
       <bs-tab event-key="2" title="RDF/Turtle">
         <mp-code-block mode='text/turtle'>
-          <![CDATA[
-            @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-            @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-            @prefix owl: <http://www.w3.org/2002/07/owl#> .
-            @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-            @prefix : <http://www.researchspace.org/resource/system/workflow#>.
-            @prefix sp: <http://spinrdf.org/sp#> .
+        <![CDATA[
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix : <http://www.researchspace.org/resource/system/workflow#>.
+@prefix sp: <http://spinrdf.org/sp#> .
 
-            <http://www.researchspace.org/resource/system/workflow> a owl:Ontology;
-              rdfs:label "Platform Workflow Ontology".
+<http://www.researchspace.org/resource/system/workflow> a owl:Ontology;
+  rdfs:label "Platform Workflow Ontology".
 
-            #classes
+#classes
 
-            :Step a owl:Class;
-                rdfs:label "Workflow step".
+:Step a owl:Class;
+    rdfs:label "Workflow step".
 
-            :WorkflowDefinition a owl:Class;
-                rdfs:label "Workflow definition".
+:WorkflowDefinition a owl:Class;
+    rdfs:label "Workflow definition".
 
-            :WorkflowInstantiation a owl:Class;
-                rdfs:label "Workflow Instantiation".
+:WorkflowInstantiation a owl:Class;
+    rdfs:label "Workflow Instantiation".
 
-            :WorkflowState a owl:Class;
-                rdfs:label "Workflow State".
-            # properties
+:WorkflowState a owl:Class;
+    rdfs:label "Workflow State".
+# properties
 
-            :hasStep a owl:ObjectProperty;
-                rdfs:label "Has state";
-                rdfs:domain :WorkflowDefinition;
-                rdfs:range :Step.
+:hasStep a owl:ObjectProperty;
+    rdfs:label "Has state";
+    rdfs:domain :WorkflowDefinition;
+    rdfs:range :Step.
 
-            :nextStep a owl:ObjectProperty;
-                rdfs:label "Next workflow state";
-                rdfs:comment "Defines next workflow state in the workflow definition";
-                rdfs:range :Step;
-                rdfs:domain :Step.
+:nextStep a owl:ObjectProperty;
+    rdfs:label "Next workflow state";
+    rdfs:comment "Defines next workflow state in the workflow definition";
+    rdfs:range :Step;
+    rdfs:domain :Step.
 
-            :assigneeQuery a owl:ObjectProperty;
-                rdfs:label "Assignee Query";
-                rdfs:comment "SPARQL Select query returns possible assignees, expects '$assignee' projection variable.
-                    Special variables that will be substituted with user selected values:
-                    '?__newStep__' - new step IRI
-                    '?__workflowInstantiation__' - workflow instantiation IRI";
-                rdfs:domain :Step;
-                rdfs:range sp:Query.
+:assigneeQuery a owl:ObjectProperty;
+    rdfs:label "Assignee Query";
+    rdfs:comment "SPARQL Select query returns possible assignees, expects '$assignee' projection variable.
+        Special variables that will be substituted with user selected values:
+        '?__newStep__' - new step IRI
+        '?__workflowInstantiation__' - workflow instantiation IRI";
+    rdfs:domain :Step;
+    rdfs:range sp:Query.
 
+:subject a owl:ObjectProperty;
+    rdfs:domain :WorkflowInstantiation.
 
+:metadata a owl:ObjectProperty;
+    rdfs:domain :WorkflowInstantiation.
 
-            :subject a owl:ObjectProperty;
-                rdfs:domain :WorkflowInstantiation.
+:currentState a owl:ObjectProperty;
+    rdfs:domain :WorkflowInstantiation;
+    rdfs:range :WorkflowState.
 
-            :metadata a owl:ObjectProperty;
-                rdfs:domain :WorkflowInstantiation.
+:hasState a owl:ObjectProperty;
+    rdfs:domain :WorkflowInstantiation;
+    rdfs:range :WorkflowState.
 
-            :currentState a owl:ObjectProperty;
-                rdfs:domain :WorkflowInstantiation;
-                rdfs:range :WorkflowState.
+:step a owl:ObjectProperty;
+    rdfs:domain :WorkflowState;
+    rdfs:range :Step.
 
-            :hasState a owl:ObjectProperty;
-                rdfs:domain :WorkflowInstantiation;
-                rdfs:range :WorkflowState.
+:assignee a owl:ObjectProperty;
+    rdfs:comment "Current assignee of the workflow, could be a person or a group";
+    rdfs:domain :WorkflowState.
 
-            :step a owl:ObjectProperty;
-                rdfs:domain :WorkflowState;
-                rdfs:range :Step.
+:startTime a owl:DatatypeProperty;
+    rdfs:comment "Time of state creation";
+    rdfs:domain :WorkflowState;
+    rdfs:range xsd:datetime.
 
-            :assignee a owl:ObjectProperty;
-                rdfs:comment "Current assignee of the workflow, could be a person or a group";
-                rdfs:domain :WorkflowState.
+:endTime a owl:DatatypeProperty;
+    rdfs:comment "Time of state transition";
+    rdfs:domain :WorkflowState;
+    rdfs:range xsd:datetime.
 
-            :startTime a owl:DatatypeProperty;
-                rdfs:comment "Time of state creation";
-                rdfs:domain :WorkflowState;
-                rdfs:range xsd:datetime.
+:advancedBy a owl:ObjectProperty;
+    rdfs:comment "A person or a group who advanced the state";
+    rdfs:domain :WorkflowState.
 
-            :endTime a owl:DatatypeProperty;
-                rdfs:comment "Time of state transition";
-                rdfs:domain :WorkflowState;
-                rdfs:range xsd:datetime.
-
-            :advancedBy a owl:ObjectProperty;
-                rdfs:comment "A person or a group who advanced the state";
-                rdfs:domain :WorkflowState.
-
-            :hasDefinition a owl:ObjectProperty;
-                rdfs:comment "Specifies the definition of a workflow instantiation";
-                rdfs:domain :WorkflowInstantiation;
-                rdfs:range :WorkflowDefinition.
+:hasDefinition a owl:ObjectProperty;
+    rdfs:comment "Specifies the definition of a workflow instantiation";
+    rdfs:domain :WorkflowInstantiation;
+    rdfs:range :WorkflowDefinition.
           ]]>
         </mp-code-block>
       </bs-tab>
     </bs-tabs>
 
-    <h4>Workflow definition</h4>
+    <h3>Workflow definition</h3>
     <p>
       The Workflow Definition specifies possible Workflow Steps and their transitions. Also it 
       provides the <code>assigneeQuery</code> property which is a SPARQL Select query that 
@@ -168,69 +153,69 @@
       </bs-tab>
       <bs-tab event-key="2" title="RDF/Turtle">
         <mp-code-block mode='text/turtle'>
-          <![CDATA[
-            @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-            @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-            @prefix : <http://www.researchspace.org/resource/system/workflow#> .
-            @prefix sp: <http://spinrdf.org/sp#> .
-            @prefix ldp: <http://www.w3.org/ns/ldp#> .
-            @prefix workflow: <http://example.com/workflow/> .
-            @prefix person: <http://example.com/person/> .
-            @prefix Platform: <http://www.researchspace.org/resource/system/> .
-            @prefix prov: <http://www.w3.org/ns/prov#> .
+        <![CDATA[
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix : <http://www.researchspace.org/resource/system/workflow#> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix ldp: <http://www.w3.org/ns/ldp#> .
+@prefix workflow: <http://example.com/workflow/> .
+@prefix person: <http://example.com/person/> .
+@prefix Platform: <http://www.researchspace.org/resource/system/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
 
-            <http://www.researchspace.org/resource/system/workflowDefinitionContainer/context> {
-                Platform:workflowDefinitionContainer a ldp:Container, ldp:Resource , prov:Entity ;
-                    rdfs:label "Workflow Definitions Container" .
-            }
+<http://www.researchspace.org/resource/system/workflowDefinitionContainer/context> {
+    Platform:workflowDefinitionContainer a ldp:Container, ldp:Resource , prov:Entity ;
+        rdfs:label "Workflow Definitions Container" .
+}
 
-            <http://example.com/workflow/definition-1/context> {
-                Platform:workflowDefinitionContainer ldp:contains workflow:definition-1 .
+<http://example.com/workflow/definition-1/context> {
+    Platform:workflowDefinitionContainer ldp:contains workflow:definition-1 .
 
-                workflow:definition-1 a :WorkflowDefinition , ldp:Resource ;
-                    rdfs:label "Workflow Definition" ;
-                    :hasStep workflow:toDo,
-                             workflow:inProgress ,
-                             workflow:inReview ,
-                             workflow:done .
+    workflow:definition-1 a :WorkflowDefinition , ldp:Resource ;
+        rdfs:label "Workflow Definition" ;
+        :hasStep workflow:toDo,
+                  workflow:inProgress ,
+                  workflow:inReview ,
+                  workflow:done .
 
-                workflow:toDo a :WorkflowStep ;
-                    rdfs:label "To Do" ;
-                    :nextStep workflow:inProgress ;
-                    :assigneeQuery workflow:assigneeQuery .
+    workflow:toDo a :WorkflowStep ;
+        rdfs:label "To Do" ;
+        :nextStep workflow:inProgress ;
+        :assigneeQuery workflow:assigneeQuery .
 
-                workflow:inProgress a :WorkflowStep ;
-                    rdfs:label "In Progress" ;
-                    :nextStep workflow:inReview ;
-                    :assigneeQuery workflow:assigneeQuery .
+    workflow:inProgress a :WorkflowStep ;
+        rdfs:label "In Progress" ;
+        :nextStep workflow:inReview ;
+        :assigneeQuery workflow:assigneeQuery .
 
-                workflow:inReview a :WorkflowStep ;
-                    rdfs:label "In Review" ;
-                    :nextStep workflow:inProgress ,
-                              workflow:done ;
-                    :assigneeQuery workflow:assigneeQuery .
+    workflow:inReview a :WorkflowStep ;
+        rdfs:label "In Review" ;
+        :nextStep workflow:inProgress ,
+                  workflow:done ;
+        :assigneeQuery workflow:assigneeQuery .
 
-                workflow:done a :WorkflowStep ;
-                    rdfs:label "Done" ;
-                    :assigneeQuery workflow:assigneeQuery .
+    workflow:done a :WorkflowStep ;
+        rdfs:label "Done" ;
+        :assigneeQuery workflow:assigneeQuery .
 
-                workflow:assigneeQuery a sp:Query ;
-                    sp:text """PREFIX person: <http://example.com/person/>
-                      SELECT ?assignee WHERE {
-                        VALUES(?assignee) { (person:alice) (person:bob) }
-                    }""" .
-            }
+    workflow:assigneeQuery a sp:Query ;
+        sp:text """PREFIX person: <http://example.com/person/>
+          SELECT ?assignee WHERE {
+            VALUES(?assignee) { (person:alice) (person:bob) }
+        }""" .
+}
 
-            <http://www.researchspace.org/resource/system/workflowDefinitionContainer/context> {
-              _:node ldp:contains Platform:workflowDefinitionContainer .
-            }
+<http://www.researchspace.org/resource/system/workflowDefinitionContainer/context> {
+  _:node ldp:contains Platform:workflowDefinitionContainer .
+}
           ]]>
         </mp-code-block>
       </bs-tab>
     </bs-tabs>
 
     <hr class="divider">
-    <h3>Workflow instantiations</h3>
+    <h2>Workflow instantiations</h2>
     <p>
       These are the particular instances of workflow of the publication process related to a specific resource.
     </p>
@@ -255,7 +240,7 @@
     </figure>
 
     <hr class="divider">
-    <h3>Workflow UI component</h3>
+    <h2>Workflow UI component</h2>
     <p>
       [[> Help:CodeHighlightPartial codeContent="<mp-workflow-manager>"]] allows managing Workflow Instantiations.
          The component requires the following properties:
@@ -271,10 +256,10 @@
     </p>
 
     <mp-code-block mode='text/html'>
-      <![CDATA[
-          <mp-workflow-manager iris='["http://example.com/workflow/instantiation"]'
-            definition='http://example.com/workflow/definition-1'>
-          </mp-workflow-manager>
+    <![CDATA[
+<mp-workflow-manager iris='["http://example.com/workflow/instantiation"]'
+                    definition='http://example.com/workflow/definition-1'>
+</mp-workflow-manager>
       ]]>
     </mp-code-block>
     <p>
@@ -300,7 +285,7 @@
     </p>
 
     <hr class="divider">
-    <h4>Managing multiple Workflow Instantiations</h4>
+    <h3>Managing multiple Workflow Instantiations</h3>
     <p>
       Workflow UI Component supports working with multiple Workflow Instantiations at the same time, it can be used together with 
       [[> Help:CodeHighlightPartial codeContent="<mp-selection-group>"]], [[> Help:CodeHighlightPartial codeContent="<mp-selection-toggle>"]] and 
@@ -311,24 +296,24 @@
       Here is an example configuration of the Workflow Selection Action Component:
     </p>
     <mp-code-block mode='text/html'>
-      <![CDATA[
-        <mp-selection-group>
-          [[!-- checkblox --]]
-          <mp-selection-toggle selection="workflow-instantiations-selection"
-            tag="http://example.com/workflow/instantiation">
-          </mp-selection-toggle>
+    <![CDATA[
+<mp-selection-group>
+  [[!-- checkblox --]]
+  <mp-selection-toggle selection="workflow-instantiations-selection"
+    tag="http://example.com/workflow/instantiation">
+  </mp-selection-toggle>
 
-          [[!-- workflow manager --]]
-          <mp-workflow-selection-action selection="workflow-instantiations-selection">
-            <mp-workflow-manager definition='http://example.com/workflow/definition-1'>
-            </mp-workflow-manager>
-          </mp-workflow-selection-action>
-        </mp-selection-group>
+  [[!-- workflow manager --]]
+  <mp-workflow-selection-action selection="workflow-instantiations-selection">
+    <mp-workflow-manager definition='http://example.com/workflow/definition-1'>
+    </mp-workflow-manager>
+  </mp-workflow-selection-action>
+</mp-selection-group>
       ]]>
     </mp-code-block>
 
     <hr class="divider">
-    <h3>Workflow create component</h3>
+    <h2>Workflow create component</h2>
     <div>
       [[> Help:CodeHighlightPartial codeContent="<mp-workflow-create>"]] allows to instantiate workflows for resources.
       Component creates the workflow instantiation for a target resource.
@@ -343,7 +328,7 @@
     <mp-documentation type="WorkflowCreateConfig"></mp-documentation>
 
     <hr class="divider">
-    <h4>Examples for Create Workflow Component</h4>
+    <h3>Examples for Create Workflow Component</h3>
 
     <semantic-context repository='assets'>
       <semantic-if query='ASK { <http://example.com/workflow/definition-1> a <http://www.researchspace.org/resource/system/workflow#WorkflowDefinition> }'>
@@ -464,11 +449,11 @@
     </semantic-context>
 
     <hr class="divider">
-    <h4>Existing workflows</h4>
+    <h3>Existing workflows</h3>
     [[> existingWorflows]]
 
     <hr class="divider">
-    <h3>Current limitations</h3>
+    <h2>Current limitations</h2>
     <ul>
       <li>
         There are no tools to create/edit workflow definitions. If one needs to 

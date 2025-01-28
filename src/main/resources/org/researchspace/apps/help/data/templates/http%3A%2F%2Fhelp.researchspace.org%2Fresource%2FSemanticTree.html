@@ -1,29 +1,13 @@
-<ol class="page-breadcrumb">
-  <li>
-    <mp-link title="Home" url="/">Home</mp-link>
-  </li>
-  <li>
-    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
-  </li>
-  <li>
-    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
-  </li>
-  <li class="active">Semantic tree</li>
-</ol>
+<div class="page__grid-container help-page-container">
+  <div class='page__content-container'>
+    <h1>Semantic tree</h1>
+    
+    <p>Tree-based visualization, navigation and browsing through sub-tree structures with customizable node templates.</p>
 
-<div class="page">
-  <div class='page__body'>
-    <h2>Semantic tree</h2>
-    <div class="documentation__intro">
-      <div class="documentation__intro__description">
-         Tree-based visualization, navigation and browsing through sub-tree structures with customizable node templates.
-      </div>
-      <div class="documentation__intro__demo" id='demo1'>
-         <semantic-tree query='[[>Help:SemanticTreeSampleQuery]]'></semantic-tree>
-      </div>
-    </div>
+    <semantic-tree query='[[>Help:SemanticTreeSampleQuery]]'></semantic-tree>
 
-    <h3>Configuration</h3>
+    <br>
+    <h2>Configuration</h2>
     <mp-documentation type="SemanticTreeConfig"></mp-documentation>
     
     <br/>
@@ -34,41 +18,42 @@
       Please make use of the new syntax and start to migrate your existing configurations.
   	</bs-alert>
     <hr class="divider">
-    <h3>Examples</h3>
-    <h4>Basic Tree</h4>
+    <h2>Examples</h2>
+    <h3>Basic Tree</h3>
     <ul>
       <li>No explicit root node defined in configuration (tree will search for nodes without parent).</li>
       <li>No custom tuple-template defined default template is applied, will create a simple link.</li>
       <li>Tree is by default not collapsed and all subtrees are open.</li>
     </ul>
     <div id='demo2'>
-      <mp-code-example>
+      <mp-code-example show-code-by-default='true'>
 <![CDATA[
 <semantic-tree query="[[>Help:SemanticTreeSampleQuery]]"></semantic-tree>
-]]>
+        ]]>
       </mp-code-example>
     </div>
 
-    <h4>Custom templates for tree nodes </h4>
+    <br>
+    <h3>Custom templates for tree nodes </h3>
     <div>
       Specifies a custom <code>tuple-template</code> to format the rendering of each node element in the tree.
     </div>
     <div>
-      <mp-code-example>
-<![CDATA[
-<semantic-tree
-query="[[>Help:SemanticTreeSampleQuery]]"
-tuple-template='{{> node}}'
->
-<template id='node'>
-  <span><semantic-link iri="{{node.value}}"></semantic-link> &nbsp; <rs-icon icon-type="rounded" icon-name="help" symbol="true" style="margin-right: 5px"></rs-icon></span>
-</template>
+      <mp-code-example show-code-by-default='true'>
+      <![CDATA[
+<semantic-tree  query="[[>Help:SemanticTreeSampleQuery]]"
+                tuple-template='{{> node}}'>
+
+  <template id='node'>
+    <semantic-link iri="{{node.value}}"></semantic-link>
+  </template>
 </semantic-tree>
-]]>
+        ]]>
       </mp-code-example>
     </div>
 
-    <h4>All Nodes collapsed </h4>
+    <br>
+    <h3>All Nodes collapsed</h3>
     <div>
       <p>... except all nodes on the path to the nodes as specified in the <code>keys-opened</code> array.</p>
       <p>Both <code>collapsed</code> and <code>keys-opened</code> options applicable only to <code>html</code>
@@ -76,19 +61,18 @@ tuple-template='{{> node}}'
     </div>
     <div>
       <mp-code-example>
-<![CDATA[
-<semantic-tree
-query="[[>Help:SemanticTreeSampleQuery]]"
-provider='d3-collapsible-tree'
-collapsed=true
-keys-opened='["http://help.researchspace.org/resource/Installation"]'
->
+      <![CDATA[
+<semantic-tree query="[[>Help:SemanticTreeSampleQuery]]"
+              provider='d3-collapsible-tree'
+              collapsed=true
+              keys-opened='["http://help.researchspace.org/resource/Installation"]'>
 </semantic-tree>
-]]>
+        ]]>
       </mp-code-example>
     </div>
 
-    <h4>Render only a subtree / explicit root node</h4>
+    <br>
+    <h3>Render only a subtree / explicit root node</h3>
     <div>
       <p>Uses the nodes as specified in the <code>roots</code> array to select the root nodes(s) for the tree rendering.</p>
       <p>By default the tree will consider those nodes as roots nodes, which do not have a parent (i.e. parent is unbound/UNDEF).
@@ -97,30 +81,30 @@ keys-opened='["http://help.researchspace.org/resource/Installation"]'
     </div>
     <div>
       <mp-code-example>
-<![CDATA[
-<semantic-tree
-query="[[>Help:SemanticTreeSampleQuery]]"
-provider='d3-dendrogram'
-roots='["http://help.researchspace.org/resource/Components"]'
+      <![CDATA[
+<semantic-tree query="[[>Help:SemanticTreeSampleQuery]]"
+                provider='d3-dendrogram'
+                roots='["http://help.researchspace.org/resource/SemanticSearch"]'
 ></semantic-tree>
-]]>
+      ]]>
       </mp-code-example>
     </div>
 
-    <h4>Sankey diagram</h4>
+    <br>
+    <h3>Sankey diagram</h3>
     <p>Renders arbitrary direct acyclic graph (DAG) as sankey diagram.</p>
     <div>
       <mp-code-example>
-<![CDATA[
-<semantic-tree
-query="[[>Help:SemanticTreeDAGQuery]]"
-provider='d3-sankey'
+      <![CDATA[
+<semantic-tree  query="[[>Help:SemanticTreeDAGQuery]]"
+                provider='d3-sankey'
 ></semantic-tree>
-]]>
+        ]]>
       </mp-code-example>
     </div>
 
-    <h4>Rendering direct acyclic graph (DAG) as tree</h4>
+    <br>
+    <h3>Rendering direct acyclic graph (DAG) as tree</h3>
     <div>Tree component supports rendering directed graphs in a tree form. However, there are the following restrictions:
       <ol>
         <li>If the graph has any cycles, some edges will be removed to make it acyclic.</li>
@@ -133,12 +117,11 @@ provider='d3-sankey'
     </div>
     <div>
       <mp-code-example>
-<![CDATA[
-<semantic-tree
-query="[[>Help:SemanticTreeDAGQuery]]"
-provider='d3-dendrogram'
+      <![CDATA[
+<semantic-tree  query="[[>Help:SemanticTreeDAGQuery]]"
+                provider='d3-dendrogram'
 ></semantic-tree>
-]]>
+        ]]>
       </mp-code-example>
     </div>
   </div>

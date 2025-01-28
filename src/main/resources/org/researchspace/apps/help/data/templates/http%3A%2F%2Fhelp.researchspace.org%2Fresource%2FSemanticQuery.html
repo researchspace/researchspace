@@ -1,19 +1,6 @@
-<ol class="page-breadcrumb">
-  <li>
-    <mp-link title="Home" url="/">Home</mp-link>
-  </li>
-  <li>
-    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
-  </li>
-  <li>
-    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
-  </li>
-  <li class="active">Semantic query</li>
-</ol>
-
-<div class="page documentation">
-  <div class='page__body'>
-    <h2>Semantic query</h2>
+<div class="page__grid-container help-page-container">
+  <div class='page__content-container'>
+    <h1>Semantic query</h1>
     <div class="documentation__intro">
       <div class="documentation__intro__description">
         The semantic query component is the most powerful and flexible component to query and render SPARQL SELECT query results.
@@ -45,7 +32,6 @@
                     {{#each bindings}}
                     <li>
                       <semantic-link iri="{{person.value}}" target="_blank">
-                        <rs-icon icon-type="rounded" icon-name="account_box" symbol="true" style="margin-right: 5px"></rs-icon>
                         {{name.value}}
                       </semantic-link>
                     </li>
@@ -58,18 +44,19 @@
     </div>
     <div style="clear:both;"></div>
 
-    <h3>Configuration</h3>
+    <h2>Configuration</h2>
     <mp-documentation type="SemanticQueryConfig"></mp-documentation>
     <hr class="divider">
-    <h3>Examples</h3>
-    <h4>No (Default) Template</h4>
+    <h2>Examples</h2>
+
+    <h3>No (Default) Template</h3>
     
-    <div>
+    <p>
       If no <code>template</code> is defined, all tuples for the <b>first projection variable</b> will we rendered as a comma-separated list.
-    </div>
+    </p>
     <div id='demo2'>
-      <mp-code-example>
-<![CDATA[
+      <mp-code-example show-code-by-default='true'>
+      <![CDATA[
 <semantic-query 
 query='
   PREFIX foaf: <http://xmlns.com/foaf/0.1/>
@@ -81,92 +68,89 @@ query='
       (person:bob "Bob")
       (person:mike "Mike")
     }
-  }
-'
-></semantic-query>
-]]>       
+  }'>
+</semantic-query>
+        ]]>       
       </mp-code-example>
     </div>
 
-    <h4>HTML List</h4>
-    <div>
+    <br>
+    <h3>HTML List</h3>
+    <p>
         Renders as list with custom list entries
-    </div>
+    </p>
     <div id='demo3'>
-      <mp-code-example>
+      <mp-code-example show-code-by-default='true'>
 <![CDATA[
 <semantic-query 
-query='
-  PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-  PREFIX person: <http://example.com/person/> 
-  SELECT ?person ?name WHERE {                    
-    VALUES (?person ?name) { 
-      (person:alice "Alice")
-      (person:carol "Carol")
-      (person:bob "Bob")
-      (person:mike "Mike")
-    }
-  }
-' 
-template='{{> template}}'
->
-<template id='template'>
+  query='
+    PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+    PREFIX person: <http://example.com/person/> 
+    SELECT ?person ?name WHERE {                    
+      VALUES (?person ?name) { 
+        (person:alice "Alice")
+        (person:carol "Carol")
+        (person:bob "Bob")
+        (person:mike "Mike")
+      }
+    }' 
+  template='{{> template}}'>
+
+  <template id='template'>
     <b>My List:</b>
     <ul>
       {{#each bindings}}
         <li>
           <semantic-link iri="{{person.value}}">
-            <rs-icon icon-type="rounded" icon-name="account_box" symbol="true" style="margin-right: 5px"></rs-icon>
             {{name.value}}
           </semantic-link>
         </li>
       {{/each}}
     </ul>
-</template>
+  </template>
 </semantic-query>
-]]>
+        ]]>
       </mp-code-example>
     </div>
 
-    <h4>Comma Separated Value List</h4>
-    <div>
+    <br>
+    <h3>Comma Separated Value List</h3>
+    <p>
       Rendering as comma separated list. Renders no comma after the last item, but an "and" using handlebars.js's <code>{{#if @last}}</code> expression.
       In addition, the template will be rendered as inline element by passing the style string <code>style="display: inline;"</code> down to the template item.
-    </div>
+    </p>
     <div id='demo4'>
-      <mp-code-example>
-<![CDATA[
+      <mp-code-example show-code-by-default='true'>
+      <![CDATA[
 <semantic-query 
-query='
-  PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-  PREFIX person: <http://example.com/person/> 
-  SELECT ?person ?name WHERE {                    
-    VALUES (?person ?name) { 
-      (person:alice "Alice")
-      (person:carol "Carol")
-      (person:bob "Bob")
-      (person:mike "Mike")
-    }
-  }
-' 
-template='{{> template}}'
-style='display: inline;'
->
-<template id='template'>
-  <div>
-    {{#each bindings}}
-      {{#if @first}} {{else}} {{#if @last}} and {{else}}, {{/if}} {{/if}}
-      <semantic-link title="{{name.value}}" iri="{{person.value}}">
-        {{name.value}}
-      </semantic-link>
-      
-    {{/each}} are persons on my list.
-  </div>
-</template>
+  query='
+    PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+    PREFIX person: <http://example.com/person/> 
+    SELECT ?person ?name WHERE {                    
+      VALUES (?person ?name) { 
+        (person:alice "Alice")
+        (person:carol "Carol")
+        (person:bob "Bob")
+        (person:mike "Mike")
+      }
+    }' 
+  template='{{> template}}'
+  style='display: inline;'>
+
+  <template id='template'>
+    <div>
+      {{#each bindings}}
+        {{#if @first}} {{else}} {{#if @last}} and {{else}}, {{/if}} {{/if}}
+        <semantic-link title="{{name.value}}" iri="{{person.value}}">
+          {{name.value}}
+        </semantic-link>
+      {{/each}} are persons on my list.
+    </div>
+  </template>
+
 </semantic-query>
-]]>
+        ]]>
       </mp-code-example>
     </div>
-      
   </div>
 </div>

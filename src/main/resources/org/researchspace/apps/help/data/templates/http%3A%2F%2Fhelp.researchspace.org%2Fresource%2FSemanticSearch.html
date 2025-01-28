@@ -1,19 +1,6 @@
-<ol class="page-breadcrumb">
-  <li>
-    <mp-link title="Home" url="/">Home</mp-link>
-  </li>
-  <li>
-    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
-  </li>
-  <li>
-    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
-  </li>
-  <li class="active">Semantic structured search</li>
-</ol>
-
-<div class="page">
-  <div class="page__body">
-  <h2>Semantic structured search</h2>
+<div class="page__grid-container help-page-container">
+  <div class='page__content-container'>
+  <h1>Semantic structured search</h1>
   <div>
     Customizable interface for structured search that allows the user to:
     <ul>
@@ -26,7 +13,7 @@
   <img src="/assets/images/help/structured-search-life-sciences.png" height=400px />
 
   <hr class="divider">
-  <h3>Structured Search Environment</h3>
+  <h2>Structured Search Environment</h2>
   <p>The structured search environment represents the main wrapper component defining the parameters of the whole search scenario. The environment consists of the following sections:</p>
   <ul>
     <li><b>Search definition</b> components that allow the user to express her information need and generate the initial query.</li>
@@ -42,7 +29,7 @@
     It is possible to use any UI components inside semantic-search, e.g tabs, popups, alerts, etc, but when one strips down all these details, typically <code>semantic-search</code> definition looks like:
   </p>
   <mp-code-block>
-<![CDATA[
+  <![CDATA[
 <semantic-search> <!-- 1. search configuration -->
   <semantic-search-query-builder><!-- 2. search definition --></semantic-search-query-builder> 
 
@@ -54,14 +41,15 @@
     </semantic-search-result>
   </semantic-search-result-holder>
 </semantic-search>
-]]>
+    ]]>
   </mp-code-block>
   
-  <h4>Search configuration</h4>
+  <br>
+  <h3>Search configuration</h3>
     <p>This configuration allows the specification of id or limit, but it is also contains the key configuration required to configure the search definition for the structured search.</p>
     <p>For simple cases only the search-profile has to be specified, containing all categories and relations to be used. See below example for an InlineSearchProfileConfig: </p>
     <mp-code-block>
-<![CDATA[
+    <![CDATA[
 <semantic-search
 	search-profile='{
 		"categories": [{
@@ -88,12 +76,12 @@
       }]
 	}'
 >
-]]>
+      ]]>
   	</mp-code-block>
     <p>It is recommended to start with the definition of the <b>relations</b> and then make sure that all categories as used in <b>hasDomain</b> and 		<b>hasRange</b> are defined in the <b>categories</b> block. Missing a categorie which is used in a relation will result in error <b>Cannot read property 'iri' of undefined</b></p>
     <p>Above example will not work for the selection of the height, as the <b>categories</b> parameter by default only expects resources in <b>hasRange</b> for any <b>relations</b> in the <b>search-profile</b>. We have to overwrite the <b>categories</b> parameter as shown in below example if any literals will be used:</p>
     <mp-code-block>
-<![CDATA[
+    <![CDATA[
 <semantic-search
 	categories='{
   	"<http://www.w3.org/2001/XMLSchema#Decimal>": [{
@@ -107,11 +95,11 @@
   }'         
   search-profile='{
 ...
-]]>
+      ]]>
   	</mp-code-block>
     <p>Below is another example for a date.</p>
     <mp-code-block>
-<![CDATA[
+    <![CDATA[
 <semantic-search
 	categories='{
   	"<http://www.w3.org/2001/XMLSchema#date>": [{
@@ -143,11 +131,11 @@
       }]
    }'
 >
-]]>
+      ]]>
   	</mp-code-block>
     <p>It is also possible to define more complex relations by overwriting the <b>relations</b> parameter, for example to use property paths or to modify the results before displaying. Below code shows one example each, to define a relation with a resource and to define a relation with a literal in the range position.</p>
     <mp-code-block>
-<![CDATA[
+    <![CDATA[
 <semantic-search
   relations='{
 		"<http://www.researchspace.org/resource/system/sample/fan_of>": [{
@@ -165,15 +153,15 @@
 	}'
 	search-profile='{
 ...
-]]>
+      ]]>
   	</mp-code-block>
     <p>Please note that it is required for <b>resources</b> to bind <b>?subject</b> and <b>?__value__</b>, while literals (including numeric-range) require <b>?subject</b> and <b>?literal</b> and date-range requires <b>?subject</b> and <b>?date</b>. Additionally, numeric-range and date-range will be displayed as a slider and require <b>?__numericRangeEndValue___</b> and <b>?__numericRangeBeginValue___</b> or <b>?__dateEndValue__</b> and <b>?__dateBeginValue__</b> respectively (usually bound within a filter as seen in the example).</p>
     
   	<p><code>semantic-search</code> configuration:</p>
   	<mp-documentation type="SemanticSearchConfig"></mp-documentation>
 
-  
-  <h4>Search definition</h4>
+  <br>
+  <h3>Search definition</h3>
   <p>Search definition components help the user to express her information need. The UI components supporting search definition to capture this information need and express it as a SPARQL query to be executed against the graph database.</p>
   <p>
       Search definition can be realized by re-using component, that are designed for other search modalities such as the <code>semantic-search-query-keyword</code> or <code>semantic-search-query-constant</code> component. <br>
@@ -182,7 +170,7 @@
   <p>Please note that the queries for all of these need to be adjusted depending on the underlying graph database.</p>
   <p><code>semantic-search-query-builder</code> includes the default <b>resource-selector</b> configuration for <b>blazegraph</b> and below is the example for Stardog</p>
   <mp-code-block>
-<![CDATA[
+  <![CDATA[
 <semantic-search-query-builder
 	resource-selector='{
 		"query":"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -197,7 +185,7 @@
    	"noSuggestionsTemplate": "<div class=\"suggestion-no-matches\">no matches found</div>"
 	}'
 ></semantic-search-query-builder>
-]]>
+    ]]>
   </mp-code-block>   
   <p><code>semantic-search-query-builder</code> configuration:</p>
   <mp-documentation type="SemanticQueryBuilderConfig"></mp-documentation>
@@ -205,7 +193,7 @@
   <p><code>semantic-search-query-keyword</code> does not have a default implementation, so please use below examples per database.</p>
   <p>Amazon Neptune</p>
   <mp-code-block>
-<![CDATA[
+  <![CDATA[
 <semantic-search-query-keyword
 	query='
   	PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -214,14 +202,13 @@
     	?subject rdfs:label|skos:prefLabel ?label .
       FILTER(REGEX(?label, ?__token__, "i"))
       BIND(STRLEN(?label) as ?length)
-    } ORDER BY DESC(?score) ?length
-	'
+    } ORDER BY DESC(?score) ?length'
 ></semantic-search-query-keyword>
-]]>
+    ]]>
   </mp-code-block> 
   <p>Stardog</p>
   <mp-code-block>
-<![CDATA[
+  <![CDATA[
 <semantic-search-query-keyword
 	query='
   	PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -230,14 +217,13 @@
     	?subject rdfs:label|skos:prefLabel ?label .
       (?label ?score) <tag:stardog:api:property:textMatch> ?__token__ .
       BIND(STRLEN(?label) as ?length)
-    } ORDER BY DESC(?score) ?length
-	'
+    } ORDER BY DESC(?score) ?length'
 ></semantic-search-query-keyword>
-]]>
+    ]]>
   </mp-code-block> 
   <p>Blazegraph</p>
   <mp-code-block>
-<![CDATA[
+  <![CDATA[
 <semantic-search-query-keyword
 	query='
   	PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -249,10 +235,9 @@
              bds:relevance ?score ;
              bds:matchAllTerms "true" .
       BIND(STRLEN(?label) as ?length)
-    } ORDER BY DESC(?score) ?length
-	'
+    } ORDER BY DESC(?score) ?length'
 ></semantic-search-query-keyword>
-]]>
+    ]]>
   </mp-code-block> 
     
   <p><code>semantic-search-query-keyword</code> configuration:</p>
@@ -261,19 +246,28 @@
   <p><code>semantic-search-query-constant</code> configuration:</p>
   <mp-documentation type="SemanticSearchQueryConstantConfig"></mp-documentation>
 
-  <h4>Faceted filtering</h4>
+  <br>
+  <h3>Faceted filtering</h3>
   <p>
-    The search request entered by the user and translated into SPARQL by the search definition components produces the initial set of results. This initial set of results can be explored and further refined by the user by using the faceted filtering capabilities. The faceted filtering stage generates an additional search clauses, that will be added to the original SPARQL query.
+    The search request entered by the user and translated into SPARQL by the search 
+    definition components produces the initial set of results. This initial set of 
+    results can be explored and further refined by the user by using the faceted 
+    filtering capabilities. The faceted filtering stage generates an additional search clauses, 
+    that will be added to the original SPARQL query.
   </p>
   <p>
   <p>
-    Facets are populated based on the content of the initial result set and reflect the actual categories and relations of the instances returned by the original query. Depending on the  category ranges of the relations the facets can be visualized using different UI components (e.g., checkbox for resources and sliders for time and numerical values)
+    Facets are populated based on the content of the initial result set and reflect 
+    the actual categories and relations of the instances returned by the original query. 
+    Depending on the  category ranges of the relations the facets can be visualized using
+     different UI components (e.g., checkbox for resources and sliders for time and numerical values)
   </p>
 
   <p><code>semantic-search-facet</code> configuration:</p>
   <mp-documentation type="SemanticFacetConfig"></mp-documentation>
 
-  <h4>Results visualization</h4>
+  <br>
+  <h3>Results visualization</h3>
   <p>
     Visualization of search results in the ResearchSpace platform does not require any special UI 
     components and is performed using the standard components for query visualization: 
@@ -291,18 +285,26 @@
   </p>
   
   <p>
-    The injected sub-query does always have only one projection variable, by convention <code>?subject</code> is used as a variable, however, this can be adjusted in the corresponding base query component. Independently from the projection variable in the base query, it is always possible to use <code>?subject</code> variable in the result visualizaiton query to refer to the result. If the projection variable in the base-query is not named <code>subject</code>, an additional bind clause will be injected to bind it to <code>?subject</code>.
+    The injected sub-query does always have only one projection variable, 
+    by convention <code>?subject</code> is used as a variable, however, 
+    this can be adjusted in the corresponding base query component. 
+    Independently from the projection variable in the base query, it is 
+    always possible to use <code>?subject</code> variable in the result 
+    visualizaiton query to refer to the result. If the projection variable 
+    in the base-query is not named <code>subject</code>, an additional bind 
+    clause will be injected to bind it to <code>?subject</code>.
   </p>
   
   <p>
-    For example, let's say that we want to display all query results together with corresponding <code>rdfs:label</code> in the table. The config can look like:
+    For example, let's say that we want to display all query results together
+     with corresponding <code>rdfs:label</code> in the table. The config can look like:
   </p>
   <mp-code-block>
-<![CDATA[
+  <![CDATA[
 <semantic-search-result>
   <semantic-table it='table' query='SELECT ?subject ?label WHERE {?subject rdfs:label ?label}'></semantic-table>
 </semantic-search-result>
-]]>
+    ]]>
   </mp-code-block>
   <p>
     When the search is executed by the user, the actual query that will be executed by the table will look like:
@@ -317,11 +319,11 @@ SELECT ?subject ?label WHERE {
   }
   ?subject rdfs:label ?label
 }
-]]>
+    ]]>
   </mp-code-block>   
 
   <hr class="divider">
-  <h3>Search Profile</h3>
+  <h2>Search Profile</h2>
   <p>
     One of the core concepts behind <code>semantic-search</code> is so called <b>Search Profile</b> - well defined set of <b>Categories</b> and <b>Relations</b> between them. 
   </p>
@@ -329,7 +331,7 @@ SELECT ?subject ?label WHERE {
     To define Category one needs to provide some basic metadata about it using some well known RDF vocabularies like RDFS (<code>rdfs:label</code>), schema.org (<code>schema:thumbnail</code>), as well as custom platform vocabulary (<code>ssp:Category</code>, <code>ssp:Relation</code>, <code>ssp:hasDomain</code>, <code>ssp:hasRange</code>, <code>ssp:Order</code>). See sample profile for Wikidata Life-science Data at the bottom of the page.
   </p>
   
-  <h4>Materialized Categories/Relations</h4>
+  <h3>Materialized Categories/Relations</h3>
   <p>
     In the simple case one can think about <b>category</b> as an instance 
     of <a href="https://www.w3.org/TR/rdf-schema/#ch_class" class="text-link-action" target="_blank">rdfs:Class</a> 
@@ -340,17 +342,17 @@ SELECT ?subject ?label WHERE {
     Basically the most simple kind of data schema.
   </p>
   
-  <h4>Virtual Categories/Relations</h4>
+  <h3>Virtual Categories/Relations</h3>
   <p>It is also possible to use search over the data where there is no direct relation between data points, e.g where relations correspond to some property path in the data.</p>
   
   <hr class="divider">
-  <h3>Examples</h3>
-  <h4>Simple Search</h4>
+  <h2>Examples</h2>
+  <h3>Simple Search</h3>
   <p>
     See how <code>semantic-search-query-keyword</code> can be used together with facets in <b>Search with Facets</b> and <b>Wikidata Life Sciences</b> section.
   </p>
   <mp-code-example>
-<![CDATA[
+  <![CDATA[
 <semantic-search>
   <semantic-search-query-keyword 
     query='
@@ -386,7 +388,7 @@ SELECT ?subject ?label WHERE {
         options='{"showFilter": false}'
       >
         <template id='resultTemplate'>
-          <div style="float:left;width:200px;height:170px;" class="panel panel-default text-center" title="{{subject.value}}">
+          <div style="float:left;width:200px;height:193px; margin:0" class="panel panel-default text-center" title="{{subject.value}}">
             <div class="panel-body"><img src="{{image.value}}" style="width:150px;"/></div>
             <div class="panel-footer" style="position: relative">{{label.value}}</div>
           </div>       
@@ -395,16 +397,17 @@ SELECT ?subject ?label WHERE {
     </semantic-search-result>
   </semantic-search-result-holder>
 </semantic-search>
-]]>
+    ]]>
   </mp-code-example>
 
-  <h4>Constant Search</h4>
+  <br>
+  <h3>Constant Search</h3>
   <p>Useful to show different visualizations for the same base query, or show only facets without the main search.</p>
   <p>
     See how <code>semantic-search-query-constant</code> can be used together with facets in <b>Search with Facets</b> and <b>Wikidata Life Sciences</b> section.
   </p>
   <mp-code-example>
-<![CDATA[
+  <![CDATA[
 <semantic-search>
   <semantic-search-query-constant 
     query='
@@ -439,19 +442,19 @@ SELECT ?subject ?label WHERE {
         options='{"showFilter": false}'
       >
         <template id='resultTemplate'>
-          <div style="float:left;width:200px;height:170px;" class="panel panel-default text-center" title="{{subject.value}}">
-            <div class="panel-body"><img src="{{image.value}}" style="width:150px;"/></div>
-            <div class="panel-footer" style="position: relative">{{label.value}}</div>
+          <div style="float:left;width:200px;height:193px;line-height:1.2;" class="panel panel-default text-center" title="{{subject.value}}">
+            <div class="panel-body" style="padding:0px;line-height:1.2;"><img src="{{image.value}}" style="width:150px;"/></div>
+            <div class="panel-footer" style="position: relative; line-height:1.2;">{{label.value}}</div>
           </div>       
         </template>
       </semantic-table>
     </semantic-search-result>
   </semantic-search-result-holder>
 </semantic-search>
-]]>
+    ]]>
   </mp-code-example>  
-    <br/>
-  <h4>Search with Facets</h4>
+
+  <h3>Search with Facets</h3>
   
   <ul>
     <li>
@@ -465,7 +468,7 @@ SELECT ?subject ?label WHERE {
     </li>
   </ul>
   
-  <h4>Wikidata Life Sciences</h4>
+  <h3>Wikidata Life Sciences</h3>
   <p>
    Examples of the structured semantic search environment configured for the life sciences domain data from 
    <a href="http://www.wikidata.org/" class="text-link-action" target="_blank">Wikidata</a>.

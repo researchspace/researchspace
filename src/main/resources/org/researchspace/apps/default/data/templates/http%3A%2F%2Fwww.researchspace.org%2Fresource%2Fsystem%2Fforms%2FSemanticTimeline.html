@@ -7,6 +7,13 @@
 
                             entity_image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
                             entity_image="http://www.researchspace.org/pattern/system/entity/images"
+                            entity_document="http://www.researchspace.org/pattern/system/entity/documents"
+                            entity_video="http://www.researchspace.org/pattern/system/entity/subject_of_video"
+                            entity_audio="http://www.researchspace.org/pattern/system/entity/subject_of_audio"
+                            entity_3d_model="http://www.researchspace.org/pattern/system/entity/subject_of_3Dmodel"
+                            entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
+                            entity_represents_range="http://www.researchspace.org/pattern/system/entity/represents_range"
+                            entity_web_URL="http://www.researchspace.org/pattern/system/entity/web_URL_embed"
                             
                             entity_description="http://www.researchspace.org/pattern/system/entity/description"
                             entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
@@ -70,7 +77,7 @@
                                                             nested-form-templates='[[> Platform:NestedFormTemplates_appellations]]'>
                         </semantic-form-autocomplete-input>             
                     </div>
-                    [[> rsp:FormAssetSidebar imagesOnly=true]]
+                    [[> rsp:FormAssetSidebar]]
                 </div>
             </rs-tab>
 
@@ -561,7 +568,7 @@
             </rs-tab> 
     
             {{#if node}}
-                <rs-tab event-key="metadata" title="Metadata">
+                <rs-tab event-key="metadata" title="Metadata" tab-class-name="tab-right">
                     <semantic-query  query='SELECT ?timeline ?modifiedByUser ?modifiedByUserFullName ?modifiedAtTime WHERE {
                                                 BIND(<{{node}}> AS ?timeline)
                 
@@ -632,22 +639,22 @@
                                             type="modal" 
                                             class="modal-xlSize preview_modal"
                                             title="Timeline preview">
-                        <mp-overlay-dialog-trigger>
-                            <button class="btn btn-icon" title="Preview">
-                                <rs-icon icon-type="rounded" icon-name="fullscreen" symbol="true"></rs-icon>
-                            </button>
-                        </mp-overlay-dialog-trigger>
-        
-                        <mp-overlay-dialog-content>
-                            <inline-template    template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
-                                                options='{  "resource": "{{node}}", 
-                                                            "resourceConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline", 
-                                                            "resourceConfigLabel": "Timeline",
-                                                            "resourceDetailSection": false
-                                                        }'
-                                >
-                            </inline-template> 
-                        </mp-overlay-dialog-content>
+                            <mp-overlay-dialog-trigger>
+                                <button class="btn btn-icon" title="Preview">
+                                    <rs-icon icon-type="rounded" icon-name="fullscreen" symbol="true"></rs-icon>
+                                </button>
+                            </mp-overlay-dialog-trigger>
+            
+                            <mp-overlay-dialog-content>
+                                <inline-template    template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
+                                                    options='{  "resource": "{{node}}", 
+                                                                "resourceConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline", 
+                                                                "resourceConfigLabel": "Timeline",
+                                                                "resourceDetailSection": false
+                                                            }'
+                                    >
+                                </inline-template> 
+                            </mp-overlay-dialog-content>
                         </mp-overlay-dialog>
 
                         <mp-event-trigger   id='{{viewId}}-timeline-add-frame-trigger' 

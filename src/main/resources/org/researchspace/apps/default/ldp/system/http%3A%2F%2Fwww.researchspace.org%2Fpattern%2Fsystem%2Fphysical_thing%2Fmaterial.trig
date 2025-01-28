@@ -11,7 +11,7 @@
     <http://www.cidoc-crm.org/cidoc-crm/E27_Site>,
     <http://www.cidoc-crm.org/cidoc-crm/E20_Biological_Object>,
     <http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object>,
-    <http://www.cidoc-crm.org/cidoc-crm/E78_Collection>;
+    <http://www.cidoc-crm.org/cidoc-crm/E78_Curated_Holding>;
     <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-7f3b326bc44c452bbec7b66908d56809-htcay;
     <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-7f3b326bc44c452bbec7b66908d56809-db9iqb;
     <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
@@ -41,6 +41,7 @@
     <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
     $value a crm:E57_Material .
     $value skos:prefLabel ?label .
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
   FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ASC(?label)
   LIMIT 10""" .

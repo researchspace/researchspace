@@ -1150,48 +1150,43 @@ fieldset[disabled] .form-control {
   }
 }
 
-.form-2column-flex {
-
-  display: flex; 
-  align-items:stretch; 
-  column-gap:40px; 
-  flex-flow: wrap;
-  min-height: 100%;
-}
-
 .form-2column-container {
 
   display: grid;
-  grid-template-columns: 3fr 1.5fr;
-  gap: 40px;
-
+  grid-template-columns: 450px auto;
+  gap: 30px;
   min-height: 100%;
 
-  @media screen and (max-width: 991px) {
+}
+
+.tab-pane:has(.form-2column-container) {
+
+  container-name: form-2column-container;
+  container-type: inline-size;
+}
+
+@container form-2column-container (width <= 950px) {
+
+  .form-2column-container {
     grid-template-columns: 100%;
-    gap: 10px;
+    gap: 0px;
   }
 }
 
-.form-3column-container {
+/* .form-3column-container {
 
   display: grid;
   grid-template-columns: 1fr 250px 1fr;
   column-gap: 40px;
 
   min-height: 100%;
-
-  @media screen and (max-width: 991px) {
-    grid-template-columns: 100%;
-
-  }
-}
+} */
 
 .formFileUpload-container {
   margin-top: 20px;
   margin-bottom: 0; 
   padding-top: 0; 
-  width: 400px;
+//  width: 400px;
 
   .FileManager--selectorContainer {
     border: 1px solid $input-border-color;
@@ -1248,11 +1243,6 @@ fieldset[disabled] .form-control {
     height: 100%;
     overflow-y: auto;
     padding: 0 20px 0 0;
-
-    &.tab_height-auto {
-
-      height: auto;
-    }
   }
 }
 
@@ -1625,27 +1615,75 @@ fieldset[disabled] .form-control {
   }
 }
 
-.resource-editView-form-container .semantic-form-container-OverflowAuto,
-.semantic-form-container-OverflowAuto {
+.resource-editView-form-container {
 
   & .semantic-form {
     overflow: auto;
   }
 }
 
-.resource-finder-configuration-container,
-.resource-card-configuration-container,
-.hierarchyView-form-container {
+.resource-finder-configuration-container {
 
   display: grid;
   grid-template-columns: 1fr 2fr;
   gap: 40px;
 
   min-height: 100%;
+  padding-top: 10px;
 
-  @media screen and (max-width: 1200px) {
+  grid-template-areas: 'preview details';
+
+  .resource-finder-preview {
+    grid-area: preview;
+    padding-top: 10px; 
+    margin-bottom: 0; 
+    display: flex; 
+    flex-direction: column;
+  }
+
+  .resource-finder-details {
+    grid-area: details;
+ //   display: flex; 
+ //   flex-direction: column;
+ //   margin-top: 10px;
+  }
+}
+
+.tab-pane:has(.resource-finder-configuration-container) {
+
+  container-name: finder-configuration-container;
+  container-type: inline-size;
+}
+
+@container finder-configuration-container (width <= 1000px) {
+
+  .resource-finder-configuration-container {
     grid-template-columns: 100%;
-    gap: 10px;
+    gap: 15px;
+
+    grid-template-areas: 'details' 
+                          'preview';
+  }
+}
+
+.hierarchyView-form-container {
+
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 30px;
+}
+
+.tab-pane:has(.hierarchyView-form-container) {
+  container-name: form-hierarchyView-container;
+  container-type: inline-size;
+}
+
+@container form-hierarchyView-container (width <= 1000px) {
+
+  .hierarchyView-form-container {
+    grid-template-columns: 100%;
+    gap: 0;
+    min-width: 100%;
   }
 }
 
@@ -1657,11 +1695,35 @@ fieldset[disabled] .form-control {
 }
 
 .resource-finder-form-container {
-  & .semantic-form {
+  
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 
-    height: 100% !important;
+    .semantic-form-input-decorator {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .semantic-form-input-decorator__container {
+      height: 100%;
+      flex: 1;
+
+      .semantic-form-input-decorator__input {
+        height: 100%;
+
+        .cardinality-support {
+          height: 100%;
+
+          .cardinality-support__group-instance.cardinality-support_no-header {
+            height: 100%;
+          }
+        }
+      }
+    }
   }
-}
+
 
 .inline-composite-container {
 
@@ -1862,3 +1924,15 @@ fieldset[disabled] .form-control {
   width: 100%;
 }
 
+.tab-content:has(.form-details-container) {
+  container-name: form-details-container;
+  container-type: inline-size;
+}
+
+@container form-details-container (width <= 1000px) {
+
+  .form-details-container {
+    grid-template-columns: 100%;
+    gap: 0;
+  }
+}

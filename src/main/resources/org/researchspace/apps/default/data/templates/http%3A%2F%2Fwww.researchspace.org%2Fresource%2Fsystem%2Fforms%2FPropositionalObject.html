@@ -1,5 +1,5 @@
 <semantic-form [[> rsp:FormDefaults]] 
-                persistence='{"type": "sparql","targetInsertGraphIri":"{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
+                persistence='{"type": "sparql", "targetInsertGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}", "repository":"{{#if scheme}}authorities{{else}}default{{/if}}"}'
                 new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/propositional_object/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
                 fields='[[fieldDefinitions
                             classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
@@ -207,22 +207,38 @@
                         </semantic-form-tree-picker-input> 
                     {{else}}
                         <div class="hierarchyView-form-container">
+                            <div class="page__section-container formHierarchyInputs-container">    
+
+                                <semantic-form-autocomplete-input   for='propositional_object_is_component_of' 
+                                                                    label="Part of" 
+                                                                    placeholder="Select the item of which the propositional object is structural part of" 
+                                                                    nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
+                                </semantic-form-autocomplete-input>
+
+                                <semantic-form-autocomplete-input   for='propositional_object_has_component' 
+                                                                    label="Components" 
+                                                                    placeholder="Select component (structural part) of the propositional object" 
+                                                                    nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'>
+                                </semantic-form-autocomplete-input>
+                            </div>
                             <mp-event-target-template-render id='{{viewId}}-propositionalObject-componentsView' template='{{> propositionalObjectComponents}}'>
                                 <template id='propositionalObjectComponents'>
                                     <div class="page__section-container formHierarchyView-container">
                                         <div class="form-header-withButtons">
-                                            <h4>Components</h4>
-                                            <div class="btn-form-actions"> 
-                                                <mp-event-trigger id='{{viewId}}-propositionalObject-componentsView-refresh-trigger' 
-                                                                type='Component.TemplateUpdate' 
-                                                                targets='["{{viewId}}-propositionalObject-componentsView"]'
-                                                                >
-                                                <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
-                                                    <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
-                                                    Refresh
-                                                </button>
-                                                </mp-event-trigger>
-                                            </div>
+                                            <h4>Components hierarchy</h4>
+                                            {{#if node}}
+                                                <div class="btn-form-actions"> 
+                                                    <mp-event-trigger id='{{viewId}}-propositionalObject-componentsView-refresh-trigger' 
+                                                                    type='Component.TemplateUpdate' 
+                                                                    targets='["{{viewId}}-propositionalObject-componentsView"]'
+                                                                    >
+                                                    <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
+                                                        <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
+                                                        Refresh
+                                                    </button>
+                                                    </mp-event-trigger>
+                                                </div>
+                                            {{/if}}
                                         </div>
                                         <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
                                             {{#if node}}
@@ -279,21 +295,6 @@
                                     </div>
                                 </template>
                             </mp-event-target-template-render>
-
-                            <div class="page__section-container formHierarchyInputs-container">    
-
-                                <semantic-form-autocomplete-input   for='propositional_object_is_component_of' 
-                                                                    label="Part of" 
-                                                                    placeholder="Select the item of which the propositional object is structural part of" 
-                                                                    nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
-                                </semantic-form-autocomplete-input>
-
-                                <semantic-form-autocomplete-input   for='propositional_object_has_component' 
-                                                                    label="Components" 
-                                                                    placeholder="Select component (structural part) of the propositional object" 
-                                                                    nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'>
-                                </semantic-form-autocomplete-input>
-                            </div>
                         </div>
                     {{/if}}
 
@@ -329,6 +330,7 @@
                                                             }
                                                         ]'> 
                     </semantic-form-autocomplete-input>
+                    [[> rsp:ThingDimensionTable]]
                 </rs-tab>
 
                 <rs-tab event-key="event" title="Events">

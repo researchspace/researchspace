@@ -150,11 +150,11 @@ export class ElementTypeSelector extends React.Component<Props, State> {
     }
     return (
       <div className={`${CLASS_NAME}__control-row`}>
-        <label>Entity Type</label>
+        <label>Resource Type</label>
         {elementTypes ? (
           <select className="ontodia-form-control" value={value} onChange={this.onElementTypeChange}>
             <option value={PLACEHOLDER_ELEMENT_TYPE} disabled={true}>
-              Select entity type
+              Select resource type
             </option>
             {elementTypes.map(this.renderPossibleElementType)}
           </select>
@@ -222,7 +222,7 @@ export class ElementTypeSelector extends React.Component<Props, State> {
             value={searchString}
             onChange={(e) => this.setState({ searchString: (e.target as HTMLInputElement).value })}
             className={`ontodia-form-control ${CLASS_NAME}__search-input`}
-            placeholder="Search for..."
+            placeholder="Search existing resource to connect"
             autoFocus
           />
         </div>
@@ -231,7 +231,7 @@ export class ElementTypeSelector extends React.Component<Props, State> {
         ) : (
           <div>
             <div className={`${CLASS_NAME}__separator`}>
-              <span className={`${CLASS_NAME}__separator-text`}>or create new entity</span>
+              <span className={`${CLASS_NAME}__separator-text`}>or create new resource</span>
             </div>
             {this.renderElementTypeSelector()}
           </div>

@@ -1,5 +1,5 @@
 <bs-dropdown-menu class="resource-actions__dropdown-menu {{#if clipboardCard}}resource-card__dropdown-multitle-actions{{/if}}
-                        {{#if dragAndDropInputCard}}resource-card__dropdown-small{{/if}}
+                        {{#if dragAndDropInputCard}}resource-card__dropdown-dragAndDropInputCard{{/if}}
                         {{#if knowledgeMapCard}}resource-card__dropdown-km{{/if}}">
 
   {{#if hidePreview}}
@@ -429,78 +429,80 @@
     {{/if}}
   {{/if}}
 
+
   {{#if (not (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation"))}}
-    <semantic-if  query=' PREFIX ontodia: <http://ontodia.org/schema/v1#>
-                          PREFIX ldp: <http://www.w3.org/ns/ldp#>
-                          ASK {
-                                {
-                                  <{{iri}}> a ontodia:Diagram .
-                                  <{{iri}}> ontodia:layoutData/ontodia:hasElement/ontodia:resource ?resource .
-                                  { ?resource crm:P138i_has_representation|rs:PX_has_main_representation ?image .} UNION { ?resource a rs:EX_Digital_Image . }
-                                } UNION {
-                                  <{{iri}}> a Platform:Set .
-                                  <{{iri}}> ldp:contains / Platform:setItem ?resource .
-                                  { ?resource crm:P138i_has_representation|rs:PX_has_main_representation ?image .} UNION { ?resource a rs:EX_Digital_Image . }
-                                } UNION {
-                                  <{{iri}}> crm:P138i_has_representation|rs:PX_has_main_representation ?image .
-                                } UNION {
-                                  <{{iri}}> a rs:EX_Digital_Image .
-                                }
-                              }'
-                  then='{{> then}}'>
+    {{#if hideAnnotations}}
+    {{else}}
+      <semantic-if  query=' PREFIX ontodia: <http://ontodia.org/schema/v1#>
+                            PREFIX ldp: <http://www.w3.org/ns/ldp#>
+                            ASK {
+                                  {
+                                    <{{iri}}> a ontodia:Diagram .
+                                    <{{iri}}> ontodia:layoutData/ontodia:hasElement/ontodia:resource ?resource .
+                                    { ?resource crm:P138i_has_representation|rs:PX_has_main_representation ?image .} UNION { ?resource a rs:EX_Digital_Image . }
+                                  } UNION {
+                                    <{{iri}}> a Platform:Set .
+                                    <{{iri}}> ldp:contains / Platform:setItem ?resource .
+                                    { ?resource crm:P138i_has_representation|rs:PX_has_main_representation ?image .} UNION { ?resource a rs:EX_Digital_Image . }
+                                  } UNION {
+                                    <{{iri}}> crm:P138i_has_representation|rs:PX_has_main_representation ?image .
+                                  } UNION {
+                                    <{{iri}}> a rs:EX_Digital_Image .
+                                  }
+                                }'
+                    then='{{> then}}'>
 
-      <template id='then'>
-        <mp-event-trigger id='{{viewId}}-image-annotation-add-frame-trigger' 
-                          type='Dashboard.AddFrame' 
-                          data='{"resourceIri": "{{iri}}", 
-                                  "viewId": "image-annotation", 
-                                  "frameId": "{{viewId}}"}' 
-                          targets='["thinking-frames"]'>
+        <template id='then'>
+          <mp-event-trigger id='{{viewId}}-image-annotation-add-frame-trigger' 
+                            type='Dashboard.AddFrame' 
+                            data='{"resourceIri": "{{iri}}", 
+                                    "viewId": "image-annotation", 
+                                    "frameId": "{{viewId}}"}' 
+                            targets='["thinking-frames"]'>
+              <bs-menu-item>
+                <rs-icon icon-type="rounded" icon-name="photo_size_select_large" class="icon-left" symbol="true"></rs-icon>
+                {{#if (or (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map") 
+                          (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") )}}
+                  <span>Image of resources view / annotations</span>
+                {{else}}
+                  <span>Image view / annotations</span>
+                {{/if}}
+              </bs-menu-item>
+          </mp-event-trigger>
+          <hr>
+        </template>
+      </semantic-if>
+
+      <semantic-if  query=' PREFIX ontodia: <http://ontodia.org/schema/v1#>
+                            PREFIX ldp: <http://www.w3.org/ns/ldp#>
+                            ASK {
+                                  {
+                                    <{{iri}}> a ontodia:Diagram .
+                                    <{{iri}}> ontodia:layoutData/ontodia:hasElement/ontodia:resource ?resource .
+                                    ?resource a rs:EX_Digital_Image .
+                                  } UNION {
+                                    <{{iri}}> a Platform:Set .
+                                    <{{iri}}> ldp:contains / Platform:setItem ?resource .
+                                    ?resource a rs:EX_Digital_Image .
+                                  } UNION {
+                                    <{{iri}}> a rs:EX_Digital_Image .
+                                  }
+                                }'
+                    then='{{> then}}'>
+
+        <template id='then'>
+          <semantic-link-container  uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                    urlqueryparam-view='image-graph-authoring' 
+                                    urlqueryparam-resource='{{iri}}'>
             <bs-menu-item>
-              <rs-icon icon-type="rounded" icon-name="photo_size_select_large" class="icon-left" symbol="true"></rs-icon>
-              {{#if (or (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map") 
-                        (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") )}}
-                <span>Image of resources view / annotations</span>
-              {{else}}
-                <span>Image view / annotations</span>
-              {{/if}}
+              <rs-icon icon-type="rounded" icon-name="wallpaper" class="icon-left" symbol="true"></rs-icon>
+              <span>Image graph authoring</span>
             </bs-menu-item>
-        </mp-event-trigger>
-        <hr>
-      </template>
-
-    </semantic-if>
-
-    <semantic-if  query=' PREFIX ontodia: <http://ontodia.org/schema/v1#>
-                          PREFIX ldp: <http://www.w3.org/ns/ldp#>
-                          ASK {
-                                {
-                                  <{{iri}}> a ontodia:Diagram .
-                                  <{{iri}}> ontodia:layoutData/ontodia:hasElement/ontodia:resource ?resource .
-                                  ?resource a rs:EX_Digital_Image .
-                                } UNION {
-                                  <{{iri}}> a Platform:Set .
-                                  <{{iri}}> ldp:contains / Platform:setItem ?resource .
-                                  ?resource a rs:EX_Digital_Image .
-                                } UNION {
-                                  <{{iri}}> a rs:EX_Digital_Image .
-                                }
-                              }'
-                  then='{{> then}}'>
-
-      <template id='then'>
-        <semantic-link-container  uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                  urlqueryparam-view='image-graph-authoring' 
-                                  urlqueryparam-resource='{{iri}}'>
-          <bs-menu-item>
-            <rs-icon icon-type="rounded" icon-name="wallpaper" class="icon-left" symbol="true"></rs-icon>
-            <span>Image graph authoring</span>
-          </bs-menu-item>
-        </semantic-link-container> 
-        <hr>
-      </template>
-    </semantic-if>
-    
+          </semantic-link-container> 
+          <hr>
+        </template>
+      </semantic-if>
+    {{/if}}
   {{else}}
     {{#if (not imageAnnotation)}}
       <semantic-query query='SELECT DISTINCT ?image WHERE {
@@ -525,20 +527,18 @@
             <hr>
           </template>
       </semantic-query>
-      
     {{/if}}
   {{/if}}
 
   {{#if (not (eq resourceLabel "Knowledge map"))}}
-    
-      <semantic-link-container  uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                urlqueryparam-view='knowledge-map' 
-                                urlqueryparam-resource='{{iri}}'>
-          <bs-menu-item>
-            <rs-icon icon-type="rounded" icon-name="hub" class="icon-left" symbol="true"></rs-icon>
-            <span>Open in Knowledge map</span>
-          </bs-menu-item>
-      </semantic-link-container>
+    <semantic-link-container  uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                              urlqueryparam-view='knowledge-map' 
+                              urlqueryparam-resource='{{iri}}'>
+        <bs-menu-item>
+          <rs-icon icon-type="rounded" icon-name="hub" class="icon-left" symbol="true"></rs-icon>
+          <span>Open in Knowledge map</span>
+        </bs-menu-item>
+    </semantic-link-container>
     <hr>
   {{/if}}
 

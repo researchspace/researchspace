@@ -2,7 +2,7 @@
 <http://www.researchspace.org/pattern/system/collection/curator/context> {
   <http://www.researchspace.org/pattern/system/collection/curator> a <http://www.researchspace.org/resource/system/fields/Field>,
       <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E78_Collection>;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E78_Curated_Holding>;
     <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/curated_collection>;
     <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-b2514bf900c44da19ffba6c9360ce55a-wjysv;
     <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
@@ -26,6 +26,7 @@
   ?appellation a crm:E41_Appellation .
   ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
   ?appellation crm:P190_has_symbolic_content ?label .
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
   FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ASC(?label) 
   LIMIT 10 """ .

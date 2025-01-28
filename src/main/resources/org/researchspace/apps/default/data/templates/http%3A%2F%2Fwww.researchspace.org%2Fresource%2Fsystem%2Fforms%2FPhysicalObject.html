@@ -1,5 +1,5 @@
 <semantic-form [[> rsp:FormDefaults]] 
-                persistence='{"type": "sparql","targetInsertGraphIri":"{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
+                persistence='{"type": "sparql", "targetInsertGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}", "repository":"{{#if scheme}}authorities{{else}}default{{/if}}"}'
                 new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/physical_object/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
                 fields='[[fieldDefinitions
                             classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
@@ -299,22 +299,45 @@
                     </div>
                 {{else}}
                     <div class="hierarchyView-form-container">
+                        <div class="page__section-container formHierarchyInputs-container">    
+                            <semantic-form-autocomplete-input   for='physical_thing_part_of' 
+                                                                label="Part of" 
+                                                                placeholder="Select the item of which the physical object is part of" 
+                                                                nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
+                            </semantic-form-autocomplete-input>
+
+                            <div class="form-inline-inputs">
+                                <div style="flex: 1;">
+                                    <semantic-form-autocomplete-input   for='physical_thing_component' 
+                                                                        label="Components" 
+                                                                        placeholder="Select component of the physical object" 
+                                                                        nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'>
+                                    </semantic-form-autocomplete-input>
+                                </div>
+                                <div style="min-width: 30%;">
+                                    <semantic-form-text-input for="physical_object_number_of_parts" label="Number of components/parts" placeholder="Enter number of components"></semantic-form-text-input>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <mp-event-target-template-render id='{{viewId}}-physicalThing-componentsView' template='{{> physicalThingComponents}}'>
                             <template id='physicalThingComponents'>
                                 <div class="page__section-container formHierarchyView-container">
                                     <div class="form-header-withButtons">
-                                        <h4>Components</h4>
-                                        <div class="btn-form-actions"> 
-                                            <mp-event-trigger id='{{viewId}}-physicalThing-componentsView-refresh-trigger' 
-                                                            type='Component.TemplateUpdate' 
-                                                            targets='["{{viewId}}-physicalThing-componentsView"]'
-                                                            >
-                                            <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
-                                                <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
-                                                Refresh
-                                            </button>
-                                            </mp-event-trigger>
-                                        </div>
+                                        <h4>Components hierarchy</h4>
+                                        {{#if node}}
+                                            <div class="btn-form-actions"> 
+                                                <mp-event-trigger id='{{viewId}}-physicalThing-componentsView-refresh-trigger' 
+                                                                type='Component.TemplateUpdate' 
+                                                                targets='["{{viewId}}-physicalThing-componentsView"]'
+                                                                >
+                                                <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
+                                                    <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
+                                                    Refresh
+                                                </button>
+                                                </mp-event-trigger>
+                                            </div>
+                                        {{/if}}
                                     </div>
                                     <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
                                         {{#if node}}
@@ -367,27 +390,6 @@
                                 </div>
                             </template>
                         </mp-event-target-template-render>
-
-                        <div class="page__section-container formHierarchyInputs-container">    
-                            <semantic-form-autocomplete-input   for='physical_thing_part_of' 
-                                                                label="Part of" 
-                                                                placeholder="Select the item of which the physical object is part of" 
-                                                                nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
-                            </semantic-form-autocomplete-input>
-
-                            <div class="form-inline-inputs">
-                                <div style="flex: 1;">
-                                    <semantic-form-autocomplete-input   for='physical_thing_component' 
-                                                                        label="Components" 
-                                                                        placeholder="Select component of the physical object" 
-                                                                        nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'>
-                                    </semantic-form-autocomplete-input>
-                                </div>
-                                <div style="min-width: 30%;">
-                                    <semantic-form-text-input for="physical_object_number_of_parts" label="Number of components/parts" placeholder="Enter number of components"></semantic-form-text-input>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 {{/if}}
 
@@ -446,12 +448,6 @@
                                                     }'>
                 </semantic-form-tree-picker-input>
 
-                <semantic-form-autocomplete-input   for='thing_general_use' 
-                                                    label="Had as general use" 
-                                                    placeholder="Select the type of use that the physical object was actually employed for" 
-                                                    nested-form-templates='[[> Platform:NestedFormTemplates_types]]'>
-                </semantic-form-autocomplete-input>
-
                 <semantic-form-autocomplete-input   for='thing_dimension' 
                                                     label="Dimension" 
                                                     placeholder="Select dimension" 
@@ -468,7 +464,8 @@
                                                         }
                                                     ]'> 
                 </semantic-form-autocomplete-input>
-
+                [[> rsp:ThingDimensionTable]]
+                
                 <semantic-form-autocomplete-input   for='physical_thing_material' 
                                                     label="Material" 
                                                     placeholder="Select material of which the physical object is composed" 
@@ -491,6 +488,12 @@
                                                                             {{{{/raw}}}}"
                                                         }
                                                     ]'> 
+                </semantic-form-autocomplete-input>
+
+                <semantic-form-autocomplete-input   for='thing_general_use' 
+                                                    label="Had as general use" 
+                                                    placeholder="Select the type of use that the physical object was actually employed for" 
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_types]]'>
                 </semantic-form-autocomplete-input>
 
             </rs-tab>

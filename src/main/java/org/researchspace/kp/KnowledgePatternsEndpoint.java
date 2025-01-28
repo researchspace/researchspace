@@ -21,6 +21,7 @@
 package org.researchspace.kp;
 
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -75,19 +76,27 @@ public class KnowledgePatternsEndpoint {
     @POST
     @Path("/generateKps")
     public Response generateKps(@QueryParam("ontologyIri") IRI ontologyIri) {
-        pg.generateKnowledgePatternsFromOntology(ontologyIri);
-        return Response.ok().build();
+        try {
+            pg.generateKnowledgePatternsFromOntology(ontologyIri);
+            return Response.ok().build();
+        } catch(IOException exception) {
+            return Response.noContent().build();
+        }
     }
 
     @GET
     @Path("/getGeneratedKpsAndResponse")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getGeneratedKps(@QueryParam("ontologyIri") IRI ontologyIri) {
-        int numberOfKPsGenerated = pg.generateKnowledgePatternsFromOntology(ontologyIri);
+        try {
+            int numberOfKPsGenerated = pg.generateKnowledgePatternsFromOntology(ontologyIri);
 
-        Map<String, Object> json = new HashMap<String, Object>();;
-        json.put("kp_count", numberOfKPsGenerated);
-        return Response.ok().entity(json).build();
+            Map<String, Object> json = new HashMap<String, Object>();;
+            json.put("kp_count", numberOfKPsGenerated);
+            return Response.ok().entity(json).build();
+        } catch(IOException exception) {
+            return Response.noContent().build();
+        }
     }
 
 

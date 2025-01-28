@@ -1,12 +1,13 @@
 <semantic-form  [[> rsp:FormDefaults]] 
-                persistence='{"type": "sparql", "targetInsertGraphIri": "{{scheme}}"}'
-                new-subject-template='{{scheme}}/data/{{{{raw}}}}{{resource_name}}{{{{/raw}}}}'
+                persistence='{"type": "sparql", "targetInsertGraphIri": "{{scheme}}", "repository":"configurations"}'                
+                new-subject-template='http://www.researchspace.org/resource/system/resource_configurations_container/data/{{{{raw}}}}{{resource_name}}{{{{/raw}}}}'
                 fields='[[
                 fieldDefinitions
                   classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                   resource_configuration_is_listed_in="http://www.researchspace.org/pattern/system/entity/is_listed_in"
                   resource_configuration_has_type="http://www.researchspace.org/pattern/system/entity/has_all_types"
-                  
+                  entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
+
                   resource_configuration_type_system="http://www.researchspace.org/pattern/system/resource_configuration/configuration_type"
                   
                   resource_name="http://www.researchspace.org/pattern/system/resource_configuration/resource_name"
@@ -20,7 +21,6 @@
 
                   resource_card_icon="http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon"
 
-                  resource_list_in_authority="http://www.researchspace.org/pattern/system/resource_configuration/resource_list_in_authority"
                   resource_membership_property="http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property"
                   resource_broader_property="http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property"
                   resource_order_sparql_pattern="http://www.researchspace.org/pattern/system/resource_configuration/resource_order_sparql_pattern"
@@ -36,7 +36,9 @@
                   resource_has_navigation_menu="http://www.researchspace.org/pattern/system/resource_configuration/resource_has_navigation_menu"
                   has_facet_kp="http://www.researchspace.org/pattern/system/resource_configuration/has_facet_kp"
                   entity_has_view="http://www.researchspace.org/pattern/system/resource_configuration/has_view"
-               ]]'
+                  
+                  navigation_item_refers_to_configuration="http://www.researchspace.org/pattern/system/resource_configuration/referred_to_by"
+                ]]'
                >
 
     <div class='resource-editView-formHeader'>
@@ -107,14 +109,14 @@
 
               <template id='template'>
                 {{#if (not resource_type)}}
-                  <mp-popover title="Error">
+                  <mp-popover title="Error in ontology class">
                     <mp-popover-trigger placement="bottom" trigger='["click","hover","focus"]'> 
-                      <div class="badge badge--danger" style="width: 36px; height: 36px;">
-                        <rs-icon icon-type="rounded" icon-name="block" symbol="true" style="font-size: 20px;"></rs-icon>
+                      <div class="badge badge--danger" style="height: 36px; padding: 0px 10px 0 5px;">
+                        <rs-icon icon-type="rounded" icon-name="priority_high" symbol="true" style="font-size: 20px;"></rs-icon>Ontology class
                       </div>
                     </mp-popover-trigger>
                     <mp-popover-content>
-                      <b>A configuration for <mp-label iri='{{resource_ontology_class}}' style="text-transform: uppercase;"></mp-label> already exists!</b>
+                      <b>A configuration for class <mp-label iri='{{resource_ontology_class}}' style="text-transform: uppercase;"></mp-label> already exists!</b>
                       <div>Don't create a new configuration for ontology class <mp-label iri='{{resource_ontology_class}}'></mp-label>, but just 
                         modify the existing <span style="text-transform: uppercase;">{{bindings.0.resourceConfigurationName.value}}</span> system configuration. Otherwise a custom configuration can be created adding a configuration Type.</div>
                     </mp-popover-content>
@@ -123,6 +125,82 @@
               </template>
             </semantic-query>
           {{/if}}
+
+          <semantic-if query='ASK { <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?membership . }'
+                        else='{{> else}}'>
+
+              <template id='else'>
+                <semantic-if query='ASK {
+                                          {
+                                            <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property> ?broader .
+                                          }
+                                          UNION
+                                          {
+                                            <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_order_sparql_pattern> ?listOrder .
+                                          }
+                                        }'
+                              then='{{> then}}'>
+
+                  <template id='then'>
+                    <mp-popover title="Missing membership in the authority document">
+                      <mp-popover-trigger placement="bottom" trigger='["click","hover","focus"]'> 
+                        <div class="badge badge--danger" style="height: 36px; padding: 0px 10px 0 5px;">
+                          <rs-icon icon-type="rounded" icon-name="priority_high" symbol="true" style="font-size: 20px;"></rs-icon>Authority
+                        </div>
+                      </mp-popover-trigger>
+                      <mp-popover-content>
+                        <div>When a resource can be listed in authority document a membership in the authority must be defined.</div>
+                      </mp-popover-content>
+                    </mp-popover>
+                  </template>
+                </semantic-if>
+              </template>
+
+          </semantic-if>
+
+          <semantic-if  query='ASK { ?navigationItem a <http://www.researchspace.org/resource/system/FinderNavigationItem> . 
+                                      ?navigationItem crm:P67_refers_to <{{node}}> . 
+                                      ?navigationItem <http://www.researchspace.org/pattern/system/navigation_item/menu_section_type> ?finderSection .}'
+                        else='{{> else}}'>
+
+            <template id='else'>
+              <semantic-if query='ASK {
+                                        {
+                                          ?navigationItem a <http://www.researchspace.org/resource/system/FinderNavigationItem> . 
+                                          ?navigationItem crm:P67_refers_to <{{node}}> . 
+                                          ?navigationItem  <http://www.researchspace.org/pattern/system/navigation_item/order_in_menu_section> ?order .
+                                        }
+                                        UNION
+                                        {
+                                          ?navigationItem a <http://www.researchspace.org/resource/system/FinderNavigationItem> . 
+                                          ?navigationItem crm:P67_refers_to <{{node}}> . 
+                                          ?navigationItem <http://www.researchspace.org/pattern/system/navigation_item/broader_resource_configuration> ?broader .
+                                        }
+                                        UNION
+                                        {
+                                          ?navigationItem a <http://www.researchspace.org/resource/system/FinderNavigationItem> . 
+                                          ?navigationItem crm:P67_refers_to <{{node}}> . 
+                                          ?navigationItem <http://www.researchspace.org/pattern/system/navigation_item/resource_icon> ?icon .
+                                        }
+                                      }'
+                              then='{{> then}}'>
+
+                  <template id='then'>
+                    <mp-popover title="Missing finder section">
+                      <mp-popover-trigger placement="bottom" trigger='["click","hover","focus"]'> 
+                        <div class="badge badge--danger" style="height: 36px; padding: 0px 10px 0 5px;">
+                          <rs-icon icon-type="rounded" icon-name="priority_high" symbol="true" style="font-size: 20px;"></rs-icon>Finder
+                        </div>
+                      </mp-popover-trigger>
+                      <mp-popover-content>
+                        <div>For a resource displayed in finder the finder section must be defined.</div>
+                      </mp-popover-content>
+                    </mp-popover>
+                  </template>
+                </semantic-if>
+            </template>
+          </semantic-if>
+
           <mp-copy-to-clipboard text='{{node}}' message='IRI has been copied'>
             <button class="btn btn-default btn-textAndIcon" title="Copy IRI">
               <rs-icon icon-type="rounded" icon-name="content_copy" symbol="true"></rs-icon>
@@ -130,6 +208,7 @@
             </button>
           </mp-copy-to-clipboard>
         {{/ifCond}}
+
         <mp-event-trigger id='{{viewId}}-form-refresh-trigger' 
                           type='Component.TemplateUpdate' 
                           targets='["{{viewId}}-resource-config-term-forms"]'
@@ -144,38 +223,6 @@
           </button>
         </mp-event-trigger>
 
-     [[!--  
-          <semantic-if query='ASK { <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_list_in_authority> ?value . }'
-                      then='{{> then}}'>
-
-          <template id='then'>
-            <mp-popover>
-              <mp-popover-trigger placement="bottom" trigger='["click","hover","focus"]'> 
-                <div class="badge badge--secondary badge-inlineButton">Authority</div>
-              </mp-popover-trigger>
-              <mp-popover-content>
-                Resource can be listed in Authority document.
-              </mp-popover-content>
-            </mp-popover>
-          </template>
-          </semantic-if>
-
-          <semantic-if query='ASK { <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_in_finder> ?value . }'
-                      then='{{> then}}'>
-
-            <template id='then'>
-              <mp-popover>
-                <mp-popover-trigger placement="bottom" trigger='["click","hover","focus"]'> 
-                  <div class="badge badge--secondary badge-inlineButton">Finder</div>
-                </mp-popover-trigger>
-                <mp-popover-content>
-                  Resource is displayed in Finder.
-                </mp-popover-content>
-              </mp-popover>
-            </template>
-          </semantic-if>
- --]]
-
       </div>
     </div>
 
@@ -184,6 +231,7 @@
       <rs-tab event-key="detail" title="Resource details">
 
         <semantic-form-hidden-input for="resource_configuration_has_type"></semantic-form-hidden-input>
+        <semantic-form-hidden-input for="resource_in_finder"></semantic-form-hidden-input>
 
         <div class="form-section-header">
         [[!--  <h4>Resource details</h4> --]]
@@ -193,7 +241,7 @@
 
         <semantic-form-hidden-input for="classtype" default-values='["http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object", "http://www.researchspace.org/resource/system/resource_configuration"]'></semantic-form-hidden-input>
         <semantic-form-hidden-input for="resource_configuration_is_listed_in" default-value="http://www.researchspace.org/resource/system/resource_configurations_container"> </semantic-form-hidden-input>
-      
+       
         <div class="form-section-content page__section-container">
           <semantic-form-text-input for="resource_name" placeholder="Enter the resource name (e.g. Place, Actor, Collection item, Concept, etc.)" label="Name"></semantic-form-text-input>
 
@@ -241,11 +289,11 @@
                     <div>
                       <div class="danger-documentation-section danger-documentation-section-withIcon" style="margin-top: 5px;">
                         <div class="danger-documentation-section-icon-container">
-                          <rs-icon icon-type="rounded" icon-name="block" symbol="true"></rs-icon>
+                          <rs-icon icon-type="rounded" icon-name="priority_high" symbol="true"></rs-icon>
                         </div>
                 
                         <div> 
-                          <div class="danger-documentation-section-title">A configuration for <mp-label iri='{{resource_ontology_class}}' style="text-transform: uppercase;"></mp-label> already exists!</div>
+                          <div class="danger-documentation-section-title">A configuration for class <mp-label iri='{{resource_ontology_class}}' style="text-transform: uppercase;"></mp-label> already exists!</div>
                           <div class="danger- documentation-section-content">Don't create a new configuration for ontology class <mp-label iri='{{resource_ontology_class}}'></mp-label>, but just 
                             modify the existing <span style="text-transform: uppercase;">{{bindings.0.resourceConfigurationName.value}}</span> system configuration. Otherwise a custom configuration can be created adding a configuration Type below.</div>
                         </div>
@@ -337,7 +385,7 @@
                 <span class="badge badge-text-link" style="height: 26.5px;">
                   <a class="btn-textAndIcon"
                       target="_blank" 
-                      href="https://fonts.google.com/icons?icon.set=Material+Icons"
+                      href="https://fonts.google.com/icons?icon.set=Material+Symbols"
                       title="Google material icons">
                       <rs-icon icon-type="rounded" icon-name="search" class="icon-left" symbol="true"></rs-icon>
                       <span>Search icon</span> 
@@ -364,65 +412,7 @@
 
         </rs-tab>
       {{/if}}
-      
-      [[!--
-      <rs-tab event-key="card" title="Resource card">
 
-        <div class="form-section-header">
-          Customise the resource cards (vertical and horizontal view), defining the preferred icon and label, the display of ontology class, related images, maps,
-          or any other resource data of interest (to be defined as custom SPARQL patterns).
-        </div>
-
-        <div class="resource-card-configuration-container">
-
-          <div class="page__section-container" style="padding-top: 10px; margin-bottom: 0; margin-top: 10px; display: flex; flex-direction: column;">
-            <div class="form-header-withButtons" style="height: 41px;">
-              <h4>Card preview</h4>
-            </div>
-            <div style="flex: 1;">
-              card
-            </div>
-          </div>
-
-          <div style="display: flex; flex-direction: column;">
-            <div class="form-section-content page__section-container">
-
-              <div style="display: flex; align-items: baseline; justify-content: space-between; margin-top: -20px;">
-                <div class="customFormHeader">Resource icon</div>
-                <div class="btn-inline-container">
-                  <span class="badge badge-text-link" style="height: 26.5px;">
-                    <a class="btn-textAndIcon"
-                        target="_blank" 
-                        href="https://fonts.google.com/icons?icon.set=Material+Icons"
-                        title="Google material icons">
-                        <rs-icon icon-type="rounded" icon-name="search" class="icon-left" symbol="true"></rs-icon>
-                        <span>Search icon</span> 
-                    </a>
-                  </span>
-                  <mp-popover title="Resource icon">
-                    <mp-popover-trigger placement="bottom" trigger='["hover", "click"]'>
-                      <div class="badge">
-                        <rs-icon icon-type="rounded" icon-name="question_mark" symbol="true"></rs-icon>
-                      </div>
-                    </mp-popover-trigger>
-                    <mp-popover-content>
-                        <div>
-                          <p>Select an icon for the resource from Google Material Icons. Then enter here only the icon name.</p>
-                          <p>Example: to use the icon named 'date range' enter here the name 'date_range'</p>
-                        </div>
-                    </mp-popover-content>
-                  </mp-popover>
-                </div>
-              </div>
-              <semantic-form-text-input for="resource_card_icon" render-header="false" placeholder="Enter resource icon (as Google Material icon name)"> </semantic-form-text-input>
-        
-            </div>
-          </div>
-
-        </div>
-
-      </rs-tab>
-      --]]
       [[!--
       <rs-tab event-key="context" title="Resource context page" class-name="" disabled="{{#if node}}false{{else}}true{{/if}}">
         <div class="form-section-header">
@@ -505,196 +495,128 @@
       )}}
       {{else}}
         <rs-tab event-key="authority" title="Resource in authority document" disabled="{{#if node}}false{{else}}true{{/if}}">
-          <div class="form-section-header">
-
-            <div>Define if the resource can be listed in authority documents, 
-              the type of membership in the authority (mandatory field), the relation with a broader resource 
-              and the list order.</div>
-          </div>
-
-          <div class="form-section-content page__section-container">
-            <div class="menu-toggle toggle-label-right">
-                <semantic-form-checkbox-input custom-source="list_in_authority__toogle" class="toggle" for='resource_list_in_authority' label="List in authority document"></semantic-form-checkbox-input>
+          {{#if node}}
+            <div class="form-section-header">
+              <div>Define if the resource can be listed in authority documents, 
+                the type of membership in the authority (mandatory field), the relation with a broader resource 
+                and the list order.</div>
             </div>
-          </div>
 
-          <mp-event-proxy id='{{viewId}}-resourceVocabulary-onToggleSelection-proxy' 
-                          on-event-source="list_in_authority__toogle"
-                          on-event-type='Components.Selection.Toggle'
-                          proxy-event-type='Component.TemplateUpdate' 
-                          proxy-targets='["{{viewId}}-resourceVocabulary-config-formContainer"]'>
-          </mp-event-proxy>
+            <div class="page__section-container" style="padding-top: 10px; margin-bottom: 0; margin-top:10px;"> 
+              <semantic-form-tree-picker-input  for="resource_membership_property" 
+                                                label="Membership in the authority document" 
+                                                placeholder="Enter a property that define the membership of the resource in the authority document (e.g. skos:inScheme, crm:P71i_is_listed_in)"
+                                                close-dropdown-on-selection='true'
+              >
+              </semantic-form-tree-picker-input>
 
-          <mp-event-proxy id='{{viewId}}-resourceVocabulary-onFormSave-proxy' 
-                          on-event-source='{{viewId}}-resourceVocabulary-configuration-form'
-                          on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
-                          additional-data='{"authorityConfigSaved": "true" }'
-                          proxy-event-type='Component.TemplateUpdate' 
-                          proxy-targets='["{{viewId}}-resourceVocabulary-config-formContainer"]'>
-          </mp-event-proxy>
+              <semantic-if query='ASK { <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?membership .}'
+                            else='{{> else}}'>
 
-          <mp-event-proxy id='{{viewId}}-resourceVocabulary-onToggleFalse-proxy' 
-                          on-event-source="list_in_authority__toogle"
-                          on-event-type='Components.Selection.Toggle'
-                          on-event-data='{"value": false}'
-                          data='{"iri": "{{node}}"}'
-                          proxy-event-type='Form.RemoveResource' 
-                          proxy-targets='["{{viewId}}-resourceVocabulary-configuration-form"]'>
-          </mp-event-proxy>
+                <template id='else'>
+                  <semantic-if query='ASK {
+                                            {
+                                              <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property> ?broader .
+                                            }
+                                            UNION
+                                            {
+                                              <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_order_sparql_pattern> ?listOrder .
+                                            }
+                                          }'
+                                then='{{> then}}'
+                                else='{{> else}}'>
 
-          <mp-event-proxy id='{{viewId}}-resourceVocabulary-onDeleteResource-proxy' 
-                          on-event-source='{{viewId}}-resource-removal' 
-                          on-event-type='Form.RemoveResource'
-                          data='{"iri": "{{node}}"}'
-                          proxy-event-type='Form.RemoveResource' 
-                          proxy-targets='["{{viewId}}-resourceVocabulary-configuration-form"]'>
-          </mp-event-proxy>
-
-          <mp-event-target-template-render id='{{viewId}}-resourceVocabulary-config-formContainer' template='{{> vocabularyConfigForm}}'>
-            <template id='vocabularyConfigForm'>
-              
-              {{#if (not (eq value true))}}
-                {{#if (not (eq value false))}}
-                  {{#if (or list_in_authority_document authorityConfigSaved)}} 
-                    [[> resourceAuthorityConfig_form]]
-                  {{/if}}
-                {{/if}}
-              {{else}}
-                {{#if (eq value true) }}
-                  [[> resourceAuthorityConfig_form]]
-                {{/if}}
-              {{/if}}
-
-              [[#*inline "resourceAuthorityConfig_form"]]
-              <div class="semantic-form-container-OverflowAuto">
-                <semantic-form id='{{viewId}}-resourceVocabulary-configuration-form' 
-                              post-action="event"
-                              subject='{{node}}'
-                              persistence='{"type": "sparql", "targetInsertGraphIri": "{{scheme}}"}'
-                              fields='[[ fieldDefinitions
-                                          resource_membership_property="http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property"
-                                          resource_broader_property="http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property"
-                                          resource_order_sparql_pattern="http://www.researchspace.org/pattern/system/resource_configuration/resource_order_sparql_pattern"
-                                      ]]'
-                            >
-                  <div class="page__section-container" style="padding-top: 10px; margin-bottom: 0;"> 
-                    <div class="form-header-withButtons">
-                      <h4>Resource in authority document - configuration</h4>
-                      <div class="btn-form-actions"> 
-                        <button name="reset" class="btn btn-sm btn-default">Reset</button>
-                        <button name="submit" class="btn btn-sm btn-action">Save configuration</button>
+                    <template id='then'>
+                      <div class="danger-documentation-section danger-documentation-section-withIcon" style="margin-top: 5px;">
+                        <div class="danger-documentation-section-icon-container">
+                          <rs-icon icon-type="rounded" icon-name="priority_high" symbol="true"></rs-icon>
+                        </div>
+                
+                        <div> 
+                          <div class="danger-documentation-section-title">Missing membership!</div>
+                          <div class="danger- documentation-section-content">Membership is required to list the resource in authority document.</div>
+                        </div>
                       </div>
-                    </div>
+                    </template>
 
-                    <div>
-                      <semantic-form-tree-picker-input  for="resource_membership_property" 
-                                                        label="Membership in the authority document" 
-                                                        placeholder="Enter a property that define the membership of the resource in the authority document (e.g. skos:inScheme, crm:P71i_is_listed_in)"
-                                                        close-dropdown-on-selection='true'
-                      >
-                      </semantic-form-tree-picker-input>
-
-                      {{#if value}}
-                        <div class="warning-documentation-section warning-documentation-section-withIcon" style="margin-top: 5px;">
-                          <div class="warning-documentation-section-icon-container">
-                            <rs-icon icon-type="rounded" icon-name="priority_high" symbol="true"></rs-icon>
-                          </div>
-                  
-                          <div> 
-                            <div class="warning-documentation-section-title">Membership required!</div>
-                            <div class="warning-documentation-section-content">
-                              To use the resource in an authority document a membership property must be defined above.
-                            </div>
+                    <template id='else'>
+                      <div class="documentation-section documentation-section-withIcon" style="margin-top: 5px;">
+                        <div class="documentation-section-icon-container">
+                          <i class="fa fa-info"></i>
+                        </div>
+            
+                        <div style="flex: 1;"> 
+                          <div class="documentation-section-title">Membership is required to list the resource in authority document.</div>
+                          <div class="documentation-section-content"> 
+                            To use the resource in an authority document a membership property must be defined above.
                           </div>
                         </div>
-                      {{else}}
-                        <semantic-if query='ASK { <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_list_in_authority> ?listInAuthority .
-                                            FILTER NOT EXISTS {  <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?membership .}
+                      </div> 
+                    </template>
+                  </semantic-if>
+                </template>
+              </semantic-if>
 
-                                      }'
-                                      then='{{> then}}'>
+              <semantic-form-tree-picker-input for="resource_broader_property" 
+                                                label="Broader resource property" 
+                                                placeholder="Enter a property that define the relation with a broader resource in the list (e.g. skos:broader, crm:P127_has_broader_term, crm:P89_falls_within)"
+                                                close-dropdown-on-selection='true'>
+              </semantic-form-tree-picker-input>
 
-                          <template id='then'>
-                            <div class="danger-documentation-section danger-documentation-section-withIcon" style="margin-top: 5px;">
-                              <div class="danger-documentation-section-icon-container">
-                                <rs-icon icon-type="rounded" icon-name="block" symbol="true"></rs-icon>
-                              </div>
-                      
-                              <div> 
-                                <div class="danger-documentation-section-title">Missing membership!</div>
-                                <div class="danger- documentation-section-content">Membership is required to list the resource in authority document.</div>
-                              </div>
-                            </div>
-                          </template>
-                        </semantic-if>
-                      {{/if}}
-
-                      <semantic-form-tree-picker-input for="resource_broader_property" 
-                                                        label="Broader resource property" 
-                                                        placeholder="Enter a property that define the relation with a broader resource in the list (e.g. skos:broader, crm:P127_has_broader_term, crm:P89_falls_within)"
-                                                        close-dropdown-on-selection='true'                      
-                        >
-                      </semantic-form-tree-picker-input>
-
-                      <semantic-form-text-input for="resource_order_sparql_pattern" label="List order (SPARQL pattern)" placeholder="Enter a SPARQL pattern to get the order in the list"> </semantic-form-text-input>
-                    </div>
-                
-                  </div>
-                </semantic-form>  
-              </div>
-              [[/inline]]
-              
-            </template>
-          </mp-event-target-template-render>
+              <semantic-form-text-input for="resource_order_sparql_pattern" label="List order (SPARQL pattern)" placeholder="Enter a SPARQL pattern to get the order in the list"> </semantic-form-text-input>
+            </div>
+          {{/if}}
         </rs-tab> 
       {{/if}}
       
       {{#if (not (eq resourceConfiguration "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item"))}}
-        <rs-tab event-key="search" title="Search" tab-class-name="tab-right" disabled="{{#if node}}false{{else}}true{{/if}}">
-         <div>
-           <div class="form-section-header">
-            <div>Resource search page: define search view types and category of the knowledge pattern used to display filters.</div>
-          </div>
-    
-          <div class="form-section-content page__section-container">
-            <semantic-form-checklist-input for='resource_search_view_type' label="Search view" row="true" default-value="http://www.researchspace.org/resource/system/vocab/search_view_type/list"></semantic-form-checklist-input>
-              
-            <semantic-form-tree-picker-input  for="resource_search_facet_kpCategory" 
-                                              label="Search filters - Knowledge pattern category"
-                                              placeholder="Enter IRI of the category assigned to the knowledge patterns to be used as search filters"
-                                              close-dropdown-on-selection='false'
-                                              tree-patterns='{"scheme": "http://www.researchspace.org/resource/system/FieldCategories", 
-                                                              "schemePattern": "?item skos:inScheme <http://www.researchspace.org/resource/system/FieldCategories>",
-                                                              "relationPattern": "?item skos:broader ?parent"}'
-
-                                              scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                          "view": "authority-list",
-                                                                          "scheme": "http://www.researchspace.org/resource/system/FieldCategories",
-                                                                          "tooltip": "Open list of knowledge pattern categories"
-                                                                        }'
-                                              
-                                              nested-form-template='{{{{raw}}}}{{> forms:KPCategory nested=true editable=true mode="new"
-                                                                                    scheme="http://www.researchspace.org/resource/system/FieldCategories"
-                                                                                    entityType="knowledge pattern category" }}{{{{/raw}}}}'
-
-                                              query-item-label='SELECT ?label WHERE {
-                                                                  ?item skos:prefLabel ?label .
-                                                                }'
-                                            
-            ></semantic-form-tree-picker-input>
-
-          </div>
-        </div>
-
-
+        <rs-tab event-key="search" title="Search" disabled="{{#if node}}false{{else}}true{{/if}}">
+          {{#if (not node)}}
+            <semantic-form-hidden-input for='resource_search_view_type' default-value="http://www.researchspace.org/resource/system/vocab/search_view_type/list"></semantic-form-hidden-input>
+          {{/if}}
+          {{#if node}}
+            <div>
+              <div class="form-section-header">
+                <div>Resource search page: define search view types and category of the knowledge pattern used to display filters.</div>
+              </div>
         
+              <div class="form-section-content page__section-container">
+                <semantic-form-checklist-input for='resource_search_view_type' label="Search view" row="true" default-value="http://www.researchspace.org/resource/system/vocab/search_view_type/list"></semantic-form-checklist-input>
+                  
+                <semantic-form-tree-picker-input  for="resource_search_facet_kpCategory" 
+                                                  label="Search filters - Knowledge pattern category"
+                                                  placeholder="Enter IRI of the category assigned to the knowledge patterns to be used as search filters"
+                                                  close-dropdown-on-selection='false'
+                                                  tree-patterns='{"scheme": "http://www.researchspace.org/resource/system/FieldCategories", 
+                                                                  "schemePattern": "?item skos:inScheme <http://www.researchspace.org/resource/system/FieldCategories>",
+                                                                  "relationPattern": "?item skos:broader ?parent"}'
+
+                                                  scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                              "view": "authority-list",
+                                                                              "scheme": "http://www.researchspace.org/resource/system/FieldCategories",
+                                                                              "tooltip": "Open list of knowledge pattern categories"
+                                                                            }'
+                                                  
+                                                  nested-form-template='{{{{raw}}}}{{> forms:KPCategory nested=true editable=true mode="new"
+                                                                                        scheme="http://www.researchspace.org/resource/system/FieldCategories"
+                                                                                        entityType="knowledge pattern category" }}{{{{/raw}}}}'
+
+                                                  query-item-label='SELECT ?label WHERE {
+                                                                      ?item skos:prefLabel ?label .
+                                                                    }'
+                                                
+                ></semantic-form-tree-picker-input>
+
+              </div>
+            </div>
+
             <div class="form-section-header">
             <div>List view: customise title and content of one or more of the 4 columns on display.</div>
-          </div>
+            </div>
 
             <div class="form-section-content page__section-container">
-            <div class="customFormHeader" style="padding-top: 0;">List view column</div>
-            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <div class="customFormHeader" style="padding-top: 0;">List view column</div>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
 
               <semantic-form-composite-input  for="resource_search_listView_column1"
                                               label="Column 1"  
@@ -825,143 +747,186 @@
                   </div>
                 </div>
               </semantic-form-composite-input>
+              </div>
             </div>
-          </div>
-        
+          {{/if}}
         </rs-tab>
       {{/if}}
 
       {{#if (not (eq resourceConfiguration "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item"))}}
         <rs-tab event-key="finder" title="Finder" disabled="{{#if node}}false{{else}}true{{/if}}">
 
-          <div class="form-section-header">
-            [[!--  <h4>Resource - Display in Finder</h4> --]]
-            <div>Define if the resource is displayed in the system Finder. The Finder section <i>Favourites, Resources,</i> or <i>System</i>
-              must be defined to display the resource in Finder.</div> 
-          </div>
+          {{#if node}}
+            <div class="form-section-header">
+              [[!--  <h4>Resource - Display in Finder</h4> --]]
+              <div>Define if the resource is displayed in the system Finder. The Finder section <i>Favourites, Libraries,</i> or <i>System</i>
+                must be defined to display the resource in Finder.</div> 
+            </div>
 
-          <mp-event-proxy id='{{viewId}}-resourceFinder-onToggleSelection-proxy' 
-                          on-event-source="display_in_finder_toogle"
-                          on-event-type='Components.Selection.Toggle'
-                          proxy-event-type='Component.TemplateUpdate' 
-                          proxy-targets='["{{viewId}}-resourceFinder-config-formContainer"]'>
-          </mp-event-proxy>
+            <div class="resource-finder-configuration-container">
 
-          <mp-event-proxy id='{{viewId}}-resourceFinder-onFormSave-proxy' 
-                          on-event-source='{{viewId}}-resourceFinder-navigation-item-form'
-                          on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
-                          additional-data='{"finderConfigSaved": "true" }'
-                          proxy-event-type='Component.TemplateUpdate' 
-                          proxy-targets='["{{viewId}}-resourceFinder-config-formContainer",
-                                          "{{viewId}}-resourceFinder-finderPreviewContainer",
-                                          "system-finder-render"]'>
-          </mp-event-proxy>
-
-          <mp-event-proxy id='{{viewId}}-resourceFinder-onDeletedNavigationItem-proxy' 
-                          on-event-source='{{viewId}}-resourceFinder-navigation-item-form' 
-                          on-event-type='Form.ResourceRemoved'
-                          additional-data='{"navigationItemRemoved": "true" }'
-                          proxy-event-type='Component.TemplateUpdate'
-                          proxy-targets='["{{viewId}}-resourceFinder-finderPreviewContainer",
-                                          "system-finder-render"]'
-          ></mp-event-proxy>
-
-          {{#if navigation_menu_item}}
-            <mp-event-proxy id='{{viewId}}-resourceFinder-onToggleFalse-proxy' 
-                            on-event-source="display_in_finder_toogle"
-                            on-event-type='Components.Selection.Toggle'
-                            on-event-data='{"value": false}'
-                            data='{"iri": "{{navigation_menu_item}}"}'
-                            proxy-event-type='Form.RemoveResource' 
-                            proxy-targets='["{{viewId}}-resourceFinder-navigation-item-form"]'>
-            </mp-event-proxy>
-          
-            <mp-event-proxy id='{{viewId}}-resourceFinder-removeNavigationItem-proxy' 
-                            on-event-source='{{viewId}}-resource-removal' 
-                            on-event-type='Form.RemoveResource'
-                            data='{"iri": "{{navigation_menu_item}}"}'
-                            proxy-event-type='Form.RemoveResource' 
-                            proxy-targets='["{{viewId}}-resourceFinder-configuration-form"]'>
-            </mp-event-proxy>
-          {{/if}}
-
-          <div class="resource-finder-configuration-container">
-
-            <mp-event-target-template-render id='{{viewId}}-resourceFinder-finderPreviewContainer' template='{{> finderPreview}}'>
-              <template id='finderPreview'>
-                <div class="page__section-container" style="padding-top: 10px; margin-bottom: 0; margin-top: 10px; display: flex; flex-direction: column;">
-                  <div class="form-header-withButtons">
-                    <h4>Finder preview</h4>
-                  [[!--  <div class="btn-form-actions"> 
-                      <mp-event-trigger id='{{viewId}}-finderPreview-refresh-trigger' 
-                                        type='Component.TemplateUpdate' 
-                                        targets='["{{viewId}}-resourceFinder-finderPreviewContainer"]'
-                                        >
-                        <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh finder">
-                          <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
-                            Refresh
-                        </button>
-                      </mp-event-trigger>
-                    </div> --]]
-                  </div>
-                  <div style="flex: 1;">
-                    {{> rsp:Finder finderPreview=true finderItem=node }}
-                  </div>
+              <div class="page__section-container resource-finder-preview">
+                <div class="form-header-withButtons">
+                  <h4>Finder preview</h4>
                 </div>
-              </template>
-            </mp-event-target-template-render>
-
-            <div style="display: flex; flex-direction: column;">
-              <div class="form-section-content page__section-container">
-                <div class="menu-toggle toggle-label-right">
-                    <semantic-form-checkbox-input custom-source="display_in_finder_toogle" class="toggle" for='resource_in_finder' label="Display in Finder"></semantic-form-checkbox-input>
+                <div style="flex: 1;">
+                  {{> rsp:Finder finderPreview=true finderItem=node }}
                 </div>
               </div>
 
-              <mp-event-target-template-render id='{{viewId}}-resourceFinder-config-formContainer' template='{{> finderConfigForm}}'>
-                <template id='finderConfigForm'>
-                  {{#if (not (eq value true))}}
-                    {{#if (not (eq value false))}}
-                      {{#if (or display_in_finder finderConfigSaved)}} 
-                        [[> resourceFinderConfig_form]]
-                      {{/if}}
-                    {{/if}}
-                  {{else}}
-                    {{#if (eq value true) }}
-                      [[> resourceFinderConfig_form]]
-                    {{/if}}
-                  {{/if}}
+              <div class="resource-finder-details">                          
+                  <div class="resource-finder-form-container" style="flex: 1;">      
 
-                  [[#*inline "resourceFinderConfig_form"]]
-                    <div class="semantic-form-container-OverflowAuto resource-finder-form-container" style="flex: 1;">
-                      <inline-template template-iri='http://www.researchspace.org/resource/system/forms/NavigationItem'
-                                        options='{
-                                                  "formId": "{{viewId}}-resourceFinder-navigation-item-form",
-                                                  "navigationMenu": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Finder/navigation_menu",
-                                                  "navigationMenuType": "Finder",
-                                                  "navigationItem_classtype": "http://www.researchspace.org/resource/system/FinderNavigationItem",
-                                                  {{#if (or navigation_menu_item finderConfigSaved)}} 
-                                                    "node":
-                                                    {{#if navigation_menu_item}}
-                                                      "{{navigation_menu_item}}"
-                                                    {{else}}
-                                                      {{#if finderConfigSaved}}"{{iri}}"{{/if}}
-                                                    {{/if}}
-                                                    ,{{/if}}
-                                                  {{#if value}}"toogle_value": "{{value}}",{{/if}}
-                                                  "resourceConfiguration": "{{node}}",
-                                                  "mode":{{#if (or navigation_menu_item finderConfigSaved)}}"edit"{{else}}"new"{{/if}},
-                                                  "editable": true,
-                                                  "viewId": "{{viewId}}"
-                                                }'
-                      ></inline-template>
+                    <semantic-form-composite-input for="navigation_item_refers_to_configuration"
+                                                    new-subject-template='{{navigationMenu}}/navigation_item/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
+                                                    render-header="false"
+                                                    fields='[[fieldDefinitions
+                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                        inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
+                                                        
+                                                        navigation_item_menu_section_type="http://www.researchspace.org/pattern/system/navigation_item/menu_section_type"
+                                                        navigation_item_order_in_menu_section="http://www.researchspace.org/pattern/system/navigation_item/order_in_menu_section"
+                                                        navigation_item_broader_resource_configuration="http://www.researchspace.org/pattern/system/navigation_item/broader_resource_configuration"
+                                                        navigation_item_resource_icon="http://www.researchspace.org/pattern/system/navigation_item/resource_icon"
+                                                    ]]'>
+
+
+                      <div class="page__section-container" style="padding-top:10px; margin-bottom:0px; min-height: 100%;"> 
+                        <semantic-form-hidden-input for="classtype" default-values='["http://www.researchspace.org/resource/system/FinderNavigationItem"]'></semantic-form-hidden-input>
+                        <semantic-form-hidden-input for="inScheme" default-value="http://www.researchspace.org/resource/system/resource_configurations_container/data/Finder/navigation_menu"></semantic-form-hidden-input>
+                      
+                      <div>
+                        <div class="form-inline-inputs">
+                          <div style="flex: 1;">
+                            <semantic-form-tree-picker-input for='navigation_item_menu_section_type' 
+                                                              label="Finder section" 
+                                                              placeholder="Select section"
+                                                              close-dropdown-on-selection='true'
+                                                              tree-patterns='{"scheme": "http://www.researchspace.org/resource/system/vocab/navigation_menu_section", 
+                                                                              "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/vocab/navigation_menu_section>",
+                                                                              "labelPattern": "?item skos:prefLabel ?label"
+                                                                            }'>
+                            </semantic-form-tree-picker-input>     
+                          </div>
+
+                          <div style="flex: 1;">
+                            <semantic-form-text-input for="navigation_item_order_in_menu_section" label="Order in the section" placeholder="Enter order number"></semantic-form-text-input>
+                          </div>
+                        </div>
+
+                        <semantic-if  query='ASK { ?navigationItem a <http://www.researchspace.org/resource/system/FinderNavigationItem> . 
+                                                    ?navigationItem crm:P67_refers_to <{{node}}> . 
+                                                    ?navigationItem <http://www.researchspace.org/pattern/system/navigation_item/menu_section_type> ?finderSection .}'
+                                      else='{{> else}}'>
+
+                          <template id='else'>
+                            <semantic-if query='ASK {
+                                                      {
+                                                        ?navigationItem a <http://www.researchspace.org/resource/system/FinderNavigationItem> . 
+                                                        ?navigationItem crm:P67_refers_to <{{node}}> . 
+                                                        ?navigationItem  <http://www.researchspace.org/pattern/system/navigation_item/order_in_menu_section> ?order .
+                                                      }
+                                                      UNION
+                                                      {
+                                                        ?navigationItem a <http://www.researchspace.org/resource/system/FinderNavigationItem> . 
+                                                        ?navigationItem crm:P67_refers_to <{{node}}> . 
+                                                        ?navigationItem <http://www.researchspace.org/pattern/system/navigation_item/broader_resource_configuration> ?broader .
+                                                      }
+                                                      UNION
+                                                      {
+                                                        ?navigationItem a <http://www.researchspace.org/resource/system/FinderNavigationItem> . 
+                                                        ?navigationItem crm:P67_refers_to <{{node}}> . 
+                                                        ?navigationItem <http://www.researchspace.org/pattern/system/navigation_item/resource_icon> ?icon .
+                                                      }
+                                                    }'
+                                            then='{{> then}}'
+                                            else='{{> else}}'>
+
+                                <template id='then'>
+                                  <div class="danger-documentation-section danger-documentation-section-withIcon" style="margin-top: 5px;">
+                                    <div class="danger-documentation-section-icon-container">
+                                      <rs-icon icon-type="rounded" icon-name="priority_high" symbol="true"></rs-icon>
+                                    </div>
+                            
+                                    <div> 
+                                      <div class="danger-documentation-section-title">Missing finder section!</div>
+                                      <div class="danger- documentation-section-content">Finder section is required to display the resource in finder.</div>
+                                    </div>
+                                  </div>
+                                </template>
+
+                                <template id='else'>
+                                  <div class="documentation-section documentation-section-withIcon" style="margin-top: 5px;">
+                                    <div class="documentation-section-icon-container">
+                                      <i class="fa fa-info"></i>
+                                    </div>
+                            
+                                    <div style="flex: 1;"> 
+                                      <div class="documentation-section-title">Finder section is required to display the resource in finder.</div>
+                                      <div class="documentation-section-content">
+                                        To display the resource in Finder a section must be defined above.
+                                      </div>
+                                    </div>
+                                  </div>
+                                </template>
+                            </semantic-if>
+                          </template>
+                        </semantic-if>
+                        
+                        <semantic-form-tree-picker-input for='navigation_item_broader_resource_configuration' 
+                                                          label="Finder broader item" 
+                                                          placeholder="Select the broader item in finder"
+                                                          close-dropdown-on-selection='true'
+                                                          tree-patterns='{"scheme": "http://www.researchspace.org/resource/system/resource_configurations_container", 
+                                                                          "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/resource_configurations_container> .
+                                                                                            MINUS {?item crm:P2_has_type <http://www.researchspace.org/resource/system/System_Resource> }",
+                                                                          "labelPattern": "?item <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label"
+                                                                        }'
+
+                                                          query-item-label='SELECT ?label WHERE {
+                                                                              ?item <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label .
+                                                                            }'
+                        >
+                        </semantic-form-tree-picker-input> 
+
+                        <div style="display: flex; align-items: baseline; justify-content: space-between;">
+                          <div class="customFormHeader">Resource icon</div>
+                          <div class="btn-inline-container">
+                            <span class="badge badge-text-link" style="height: 26.5px;">
+                              <a class="btn-textAndIcon"
+                                  target="_blank" 
+                                  href="https://fonts.google.com/icons?icon.set=Material+Symbols"
+                                  title="Google material icons">
+                                  <rs-icon icon-type="rounded" icon-name="search" class="icon-left" symbol="true"></rs-icon>
+                                  <span>Search icon</span> 
+                              </a>
+                            </span>
+                            <mp-popover title="Resource icon">
+                              <mp-popover-trigger placement="bottom" trigger='["hover", "click"]'>
+                                <div class="badge">
+                                  <rs-icon icon-type="rounded" icon-name="question_mark" symbol="true"></rs-icon>
+                                </div>
+                              </mp-popover-trigger>
+                              <mp-popover-content>
+                                  <div>
+                                    <p>Select an icon for the resource from Google Material Icons. Then enter here only the icon name.</p>
+                                    <p>Example: to use the icon named 'date range' enter here the name 'date_range'</p>
+                                  </div>
+                              </mp-popover-content>
+                            </mp-popover>
+                          </div>
+                        </div>
+                        <semantic-form-text-input for="navigation_item_resource_icon" render-header="false" placeholder="Enter resource icon (as Google Material icon name)" default-value="{{#if resourceIcon}}{{resourceIcon}}{{/if}}"> </semantic-form-text-input>
+
+                      </div>
+                    
                     </div>
-                  [[/inline]]
-                </template>
-              </mp-event-target-template-render>
+                  </semantic-form-composite-input>
+
+                  </div>
+              </div>           
             </div>
-          
-          </div>
+          {{/if}}
         </rs-tab>
       {{/if}}
 
@@ -1001,12 +966,14 @@
         
         <semantic-form-checkbox-input for='entity_has_navigation'></semantic-form-checkbox-input>
     --]]  
+
+      [[> rsp:FormMetadataTab]]
     </rs-tabs>  
 
     [[!-- <semantic-form-errors></semantic-form-errors> --]]
 
     {{#if system_resource_config}}
-      [[> rsp:FormDefaultActions formEntity='configuration' hideDelete=true]]
+      [[> rsp:FormDefaultActions formEntity='configuration' hideDelete=false]]
     {{else}}
       [[> rsp:FormDefaultActions formEntity='configuration']] 
     {{/if}}

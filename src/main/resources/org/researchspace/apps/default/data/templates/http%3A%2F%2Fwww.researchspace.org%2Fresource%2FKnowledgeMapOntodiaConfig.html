@@ -20,12 +20,12 @@ uses client-side templates:
   }'
 
   [[#if (hasPermission "forms:ldp:*")]]
-    [[#if readonly]]
-      readonly='true'
-    [[/if]]
+    readonly='{{#if readonly}}true{{/if}}'
   [[else]]
     readonly='true'
   [[/if]]
+
+  hide-panels='{{#if readonly}}true{{/if}}'
 
   diagram='{{#if diagram}}{{diagram}}{{/if}}'
   iri='{{#if iri}}{{iri}}{{/if}}'
@@ -46,14 +46,16 @@ uses client-side templates:
       SELECT ?class ?label ?parent WHERE {
         GRAPH ?g {
           ?ontology a owl:Ontology .
-          ?class a owl:Class .
+          ?class a ?type .
+          FILTER(?type in (rdfs:Class, owl:Class))
           OPTIONAL {
           	?class rdfs:label ?label.
           }
 
           OPTIONAL {
           	?class rdfs:subClassOf ?p.
-         	  ?p a owl:Class .
+         	  ?p a ?subClassType .
+            FILTER(?subClassType in (rdfs:Class, owl:Class)) 
           }
           BIND(IF(BOUND(?p), ?p, ?ontology) AS ?parent)
         }
@@ -169,7 +171,7 @@ uses client-side templates:
                                                                                     <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding-left: 5px;' title='Open Image Annotation Library in new draggable tab'></rs-icon>
                                                                                 </semantic-link-container>
                                                                             </div>
-                                                                            <div>or click to upload</div>
+                                                                            <span>or </span><span class='text-link'>click to upload</span>
                                                                         </div>
                                                                     </div>"
                                             nested-form-template='{{{{raw}}}}{{> forms:Image_minimal nested=true editable=true mode="new"}}{{{{/raw}}}}'>
@@ -221,7 +223,7 @@ uses client-side templates:
         }}
       </div>
     {{else}}
-      <div style="width: 155px; height:200px">
+      <div style="width: 150px; height:190px">
         <div class="resource-card__kmTopButtons">
           <button name="edit" type="button" class="btn btn-default resource-card__button" title="Edit">
             <rs-icon icon-type="rounded" icon-name="edit" symbol="true"></rs-icon>

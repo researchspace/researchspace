@@ -81,6 +81,13 @@ interface BaseLazyTreeProps {
    * Placeholder string used in the input search
    */
   inputPlaceholder?: string
+
+  /**
+   * Render the item draggable
+   *
+   * @default true
+   */
+  draggable?: boolean
 }
 
 export type LazyTreeProps =
@@ -111,7 +118,8 @@ export class LazyTree extends Component<LazyTreeProps, State> {
   private treeSelectionRef: SemanticTreeInput;
 
   static defaultProps = {
-    pageSize: 50
+    pageSize: 50,
+    draggable: true
   }
 
   constructor(props: LazyTreeProps, context: any) {
@@ -166,7 +174,7 @@ export class LazyTree extends Component<LazyTreeProps, State> {
 
   renderTree() {
     const { patterns, forest, expandingToScroll, highlightedPath } = this.state;
-    const { focused, config } = this.props;
+    const { focused, config, draggable } = this.props;
     
     let highlightedNodes: ReadonlyArray<Node> = [];
     if (highlightedPath) {
@@ -179,7 +187,7 @@ export class LazyTree extends Component<LazyTreeProps, State> {
       forest,
       isLeaf: this.isLeaf,
       childrenOf: this.childrenOf,
-      renderItem: (node) => this.renderTreeNodeRow(node, highlightedNodes),
+      renderItem: (node) => this.renderTreeNodeRow(node, highlightedNodes, draggable),
       requestMore: this.requestMore,
       hideCheckboxes: true,
       onExpandedOrCollapsed: this.onExpandedOrCollapsed,
@@ -213,13 +221,15 @@ export class LazyTree extends Component<LazyTreeProps, State> {
     );
   }
 
-  private renderTreeNodeRow(node: Node, highlightedNodes: ReadonlyArray<Node>) {
-    const decoratorsClass = this.computeDecoratorsClass(node, highlightedNodes); 
+  private renderTreeNodeRow(node: Node, highlightedNodes: ReadonlyArray<Node>, isDraggable) {
+    const decoratorsClass = this.computeDecoratorsClass(node, highlightedNodes);
+    const treeNode = this.renderTreeNode(node, decoratorsClass)
     return (
       <span className={styles.alignmentNodeRow}>
-        <Draggable iri={node.iri.value}>
-          {this.renderTreeNode(node, decoratorsClass)}
-        </Draggable>
+        {
+          isDraggable ? <Draggable iri={node.iri.value}>{treeNode}</Draggable> : <span>{treeNode}</span>
+        }
+        
         {this.renderNodeInfoTemplate(node)}
       </span>
     );

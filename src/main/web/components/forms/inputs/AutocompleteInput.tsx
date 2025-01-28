@@ -281,6 +281,7 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
             urlqueryparam-view="resource-editor"
             urlqueryparam-open-as-drag-and-drop="true"
             urlqueryparam-resource={(this.props.value.value as Rdf.Iri).value}
+            draggable={false}
           >
             <Button className={`${CLASS_NAME}__open-in-new-tab`} title='Edit in new draggable tab'>
               <Icon iconType='rounded' iconName='read_more' symbol={true} />

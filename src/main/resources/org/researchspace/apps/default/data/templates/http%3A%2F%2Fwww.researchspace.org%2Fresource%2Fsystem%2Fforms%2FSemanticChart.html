@@ -7,6 +7,13 @@
 
                             entity_image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
                             entity_image="http://www.researchspace.org/pattern/system/entity/images"
+                            entity_document="http://www.researchspace.org/pattern/system/entity/documents"
+                            entity_video="http://www.researchspace.org/pattern/system/entity/subject_of_video"
+                            entity_audio="http://www.researchspace.org/pattern/system/entity/subject_of_audio"
+                            entity_3d_model="http://www.researchspace.org/pattern/system/entity/subject_of_3Dmodel"
+                            entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
+                            entity_represents_range="http://www.researchspace.org/pattern/system/entity/represents_range"
+                            entity_web_URL="http://www.researchspace.org/pattern/system/entity/web_URL_embed"
                             
                             entity_description="http://www.researchspace.org/pattern/system/entity/description"
                             entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
@@ -47,10 +54,9 @@
 
             <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
                 <rs-tab event-key="detail" title="Details">
-                    <div class="form-2column-flex">
+                    <div class="form-2column-container">
                         [[> chartSection ]]
-
-                        <div style="flex: 1;">
+                        <div>
                             <semantic-form-text-input for="entity_description" multiline=true label="Description" placeholder="Enter description/comment"></semantic-form-text-input>
         
                             <semantic-form-autocomplete-input   for="entity_preferred_id" 
@@ -70,16 +76,16 @@
                                                                 placeholder="Select other identifier" 
                                                                 nested-form-templates='[[> Platform:NestedFormTemplates_appellations]]'>
                             </semantic-form-autocomplete-input>
-                            [[> rsp:FormAssetSidebar imagesOnly=true]]
+                            [[> rsp:FormAssetSidebar]]
                         </div>
                     </div>
                 </rs-tab>
        
                 {{#if node}}
                     <rs-tab event-key="chartValues" title="Chart values">
-                        <div class="form-2column-flex">
+                        <div class="form-2column-container">
                             [[> chartSection ]]
-                            <div style="flex: 1;">
+                            <div>
                                 <semantic-query query='SELECT ?query WHERE {
                                                         <{{node}}> <http://www.researchspace.org/ontologies/persist/componentProps> ?prop .
                                                         ?prop <http://www.researchspace.org/ontologies/persist/components/semantic-chart/query> ?query .
@@ -603,7 +609,7 @@
                 </rs-tab> 
 
                 {{#if node}}
-                    <rs-tab event-key="metadata" title="Metadata">
+                    <rs-tab event-key="metadata" title="Metadata" tab-class-name="tab-right">
                         <semantic-query  query='SELECT ?chart ?modifiedByUser ?modifiedByUserFullName ?modifiedAtTime WHERE {
                                                     BIND(<{{node}}> AS ?chart)
                     
@@ -666,7 +672,7 @@
             </rs-tabs>
 
             [[#*inline "chartSection"]]
-                <div class="page__section-container" style="margin-top: 20px; width: 300px; padding-top: 0; height: fit-content; flex: 1;">
+                <div class="page__section-container" style="margin-top: 20px; margin-bottom: 0; padding-top: 0;">
                     <div style="display: flex; align-items: baseline; justify-content: space-between">
                         <div class="customFormHeader">Chart</div>
                         <div style="display: flex; align-items: center; column-gap: 3px;">

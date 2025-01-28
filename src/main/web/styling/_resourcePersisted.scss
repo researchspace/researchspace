@@ -18,6 +18,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+.Dashboard--template:has(.resource-persisted-container) {
+
+  container-name: resource-persisted-container;
+  container-type: inline-size;
+}
+
  .resource-persisted-container {
 
   height: 100%;
@@ -50,3 +56,16 @@
     overflow: hidden;
   }
  }
+
+ @container resource-persisted-container (width <= 950px) {
+
+  .resource-persisted-container {
+    grid-template-columns: 100%;
+    gap: 10px;
+    overflow: auto;
+  }
+
+  .resource-persisted-container:has(.SemanticTimeline--timeline) {
+    grid-template-rows: min-content auto;
+  }
+}

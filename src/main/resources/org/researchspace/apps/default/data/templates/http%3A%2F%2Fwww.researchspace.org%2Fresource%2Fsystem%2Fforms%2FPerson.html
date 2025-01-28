@@ -1,5 +1,5 @@
 <semantic-form [[> rsp:FormDefaults]] 
-                persistence='{"type": "sparql","targetInsertGraphIri":"{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
+                persistence='{"type": "sparql", "targetInsertGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}", "repository":"{{#if scheme}}authorities{{else}}default{{/if}}"}'
                 new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/person/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
                 fields='[[fieldDefinitions
                             classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
@@ -143,14 +143,18 @@
                                   
                       <template id='template'>
                           <div>
-                              <div style="display: flex; gap: 3px; margin-top: 20px;">
-                                  <div>Listed in authority document: </div>
-                                  <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                  urlqueryparam-view='authority-list' 
-                                                  urlqueryparam-resource-iri='{{bindings.0.authorityDocument.value}}'
-                                                  class="text-link">
-                                  {{bindings.0.authorityDocumentName.value}}
-                                  </semantic-link>
+                              <div style="margin-top: 20px;">
+                                  Listed in authority document:
+                                  {{#if scheme}}
+                                    {{bindings.0.authorityDocumentName.value}} 
+                                  {{else}}
+                                    <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                    urlqueryparam-view='authority-list' 
+                                                    urlqueryparam-resource-iri='{{bindings.0.authorityDocument.value}}'
+                                                    class="text-link">
+                                      {{bindings.0.authorityDocumentName.value}}
+                                    </semantic-link>
+                                  {{/if}}
                               </div>
                           </div>  
                       </template>
@@ -348,7 +352,7 @@
                       <semantic-form-hidden-input for="classtype" default-value='http://www.researchspace.org/ontology/Relationship'> </semantic-form-hidden-input>
                   
                       <div class="form-inline-inputs">
-                          <div>
+                          <div style="min-width: 350px;">
                               <semantic-form-tree-picker-input    for='relationship_type' 
                                                                   label="Type"
                                                                   render-header=false 

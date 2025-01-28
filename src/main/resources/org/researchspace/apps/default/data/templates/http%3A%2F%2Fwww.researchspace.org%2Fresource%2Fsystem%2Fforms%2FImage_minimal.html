@@ -1,7 +1,7 @@
 <semantic-form  id='{{#if formId}}{{formId}}{{else}}{{viewId}}-resource-form{{/if}}' 
                 post-action="event"
                 subject='{{node}}'
-                persistence='{"type": "sparql", "targetInsertGraphIri": "http://www.researchspace.org/assets/images"}'
+                persistence='{"type": "sparql", "targetInsertGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/assets/images{{/if}}", "repository":"{{#if scheme}}authorities{{else}}default{{/if}}"}'
                 new-subject-template='/image/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
                 fields='[[fieldDefinitions
                             classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
@@ -17,7 +17,7 @@
         
         {{#if resourceIri}}
             <semantic-form-hidden-input for='image_represents' default-value='{{resourceIri}}'> </semantic-form-hidden-input>
-            <div><span>Image for: </span> <mp-label iri="{{resourceIri}}" style="font-weight: 600;"></mp-label></div>
+            <div><span>Upload image for: </span> <mp-label iri="{{resourceIri}}" style="font-weight: 600;"></mp-label></div>
         {{/if}}
 
         <semantic-form-text-input for="entity_primary_appellation" label="Image name" placeholder="Enter image name"></semantic-form-text-input>
@@ -44,7 +44,7 @@
             >
             <div className='placeholder-item'>
                 <rs-icon icon-type='rounded' icon-name='upload' class='upload_icon' symbol='true'></rs-icon>
-                <p>{{#if onlyUpload}}Click to upload{{else}}Drag image or click to upload{{/if}}</p>
+                <p>{{#if onlyUpload}}Click to upload{{else}}Drag image <span>or </span><span class='text-link'>click to upload</span>{{/if}}</p>
                 <div>Supported format: .jpeg .jpg .tiff .bmp .png .svg+xml</div>
             </div>
             </semantic-form-file-input>

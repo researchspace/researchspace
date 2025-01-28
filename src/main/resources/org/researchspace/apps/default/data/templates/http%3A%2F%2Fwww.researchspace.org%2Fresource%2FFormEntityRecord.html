@@ -1,4 +1,4 @@
-<div style="visibility:hidden; height: 0;">
+<div style="visibility:hidden; height:0;">
     <semantic-form-composite-input for="entity_formRecord"
                                     render-header=false 
                                     new-subject-template="/entity_form_record" 
@@ -20,7 +20,7 @@
                                                 classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
                                                 entity_resource_type="http://www.researchspace.org/pattern/system/entity/resource_type"
                                                 
-                                                creation_at_some_time_within="http://www.researchspace.org/pattern/system/temporal_entity/at_some_time_within"
+                                                creation_at_some_time_within="http://www.researchspace.org/pattern/system/temporal_entity/creation_at_some_time_within"
                                                 creation_carried_out_by="http://www.researchspace.org/pattern/system/activity/carried_out_by"
                                                 creation_afterDataImport="http://www.researchspace.org/pattern/system/activity/continued_data_transfer"
                                                 creation_afterDataImport_withResourceSourceURI="http://www.researchspace.org/pattern/system/activity/continued_data_transfer_min1"
@@ -30,13 +30,10 @@
             <semantic-form-hidden-input for="classtype" default-value="http://www.ics.forth.gr/isl/CRMdig/D7_Digital_Machine_Event"></semantic-form-hidden-input>
             <semantic-form-hidden-input for="entity_resource_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation'></semantic-form-hidden-input>
                                 
-            {{#if node}}
-                <semantic-form-hidden-input for="creation_at_some_time_within"></semantic-form-hidden-input>
-                <semantic-form-hidden-input for="creation_carried_out_by"></semantic-form-hidden-input>
-            {{else}}
-                <semantic-form-hidden-input for="creation_at_some_time_within" default-value="{{currentDateTime 'YYYY-MM-DDTHH:mm:ss'}}"> </semantic-form-hidden-input>
-                <semantic-form-hidden-input for="creation_carried_out_by" default-value='[[userUri]]' ></semantic-form-hidden-input>
-            {{/if}}
+         
+            <semantic-form-hidden-input for="creation_at_some_time_within" default-value="{{currentDateTime 'YYYY-MM-DDTHH:mm:ss'}}"> </semantic-form-hidden-input>
+            <semantic-form-hidden-input for="creation_carried_out_by" default-value='[[userUri]]' ></semantic-form-hidden-input>
+   
 
             {{#if apiResourceURI}}
                 <semantic-form-composite-input  for="creation_afterDataImport_withResourceSourceURI"
@@ -80,7 +77,7 @@
         [[!--
         {{#if node}}
             <semantic-form-composite-input  for="entity_formRecord_modification"
-                                            render-header=false 
+                                            render-header=true
                                             new-subject-template="/entity_formRecord_modification/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
                                             fields='[[
                                                 fieldDefinitions
@@ -94,12 +91,12 @@
                 <semantic-form-hidden-input for="classtype" default-value="http://www.ics.forth.gr/isl/CRMdig/D7_Digital_Machine_Event"></semantic-form-hidden-input>
                 <semantic-form-hidden-input for="entity_resource_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_modification'></semantic-form-hidden-input>
                                     
-                <semantic-form-hidden-input for="modification_at_some_time_within" default-value="{{currentDateTime 'YYYY-MM-DDTHH:mm:ss'}}" force-defaults=true></semantic-form-hidden-input>
+                <semantic-form-text-input for="modification_at_some_time_within" default-value="{{currentDateTime 'YYYY-MM-DDTHH:mm:ss'}}" values='["{{currentDateTime 'YYYY-MM-DDTHH:mm:ss'}}"]' force-defaults=true></semantic-form-text-input>
                 <semantic-form-hidden-input for="modification_carried_out_by" default-value='[[userUri]]' force-defaults=true></semantic-form-hidden-input>
 
             </semantic-form-composite-input>
-        {{/if}}
-        --]]
+        {{/if}} --]]
+        
 
     </semantic-form-composite-input>
 </div>

@@ -18,10 +18,11 @@
  */
 
 import * as React from 'react';
-import { uniqueId, isEmpty } from 'lodash';
+import { uniqueId, isEmpty, keyBy } from 'lodash';
 import FlexLayout, { Model, Node, Action, Actions,
                      TabNode, Layout, TabSetNode,
                      DockLocation } from 'flexlayout-react';
+import { IJsonRowNode, IJsonTabNode, IJsonTabSetNode } from 'flexlayout-react/declarations/model/IJsonModel';
 
 import { setFrameNavigation } from 'platform/api/navigation';
 import { Component } from 'platform/api/components';
@@ -57,6 +58,8 @@ export interface Item {
   readonly label?: string;
 }
 
+type ViewNode = IJsonRowNode | IJsonTabSetNode | IJsonTabNode;
+type ViewLayout = IJsonRowNode;
 
 export interface DashboardLinkedViewConfig {
   
@@ -72,6 +75,47 @@ export interface DashboardLinkedViewConfig {
    * Linked views IDs.
    */
   viewIds: ReadonlyArray<string>;
+
+  /*
+   * View layout. Corresponds to FlexLayout layout attribute.
+   * See https://github.com/caplin/FlexLayout/tree/v0.5.13?tab=readme-ov-file#row-attributes
+   *
+   * Use config.viewId to reference the view in the tab element.
+   * 
+   * {
+   *   "type": "row",
+   *   "children": [
+   *     {
+   *       "type": "tabset",
+   *       "enableDrop": false,
+   *       "children": [
+   *         {
+   *           "type": "tab",
+   *           "config": {
+   *             "viewId": "put view id here"
+   *           },
+   *           "enableClose": false
+   *         }
+   *       ]
+   *     },
+   *     {
+   *       "type": "tabset",
+   *       "children": [
+   *         {
+   *           "type": "tab",
+   *           "config": {
+   *             "viewId": "put view id here"
+   *           }
+   *         }
+   *       ]
+   *     }
+   *   ]
+   * }
+   *
+   * @default '{"type": "row", "children": []}'
+   */
+  layout: IJsonRowNode;
+
   /**
    * Description of the view.
    */
@@ -584,26 +628,32 @@ export class DashboardComponent extends Component<Props, State> {
               linkedBy: itemId,
             }));
 
-            const newTabs = items.map(newItem => {
-              const viewConfig = this.props.views.find(({id}) => id === newItem.viewId);
-              return {
-				        "type": "tabset",
-                "enableDrop": false,
-                "config": {
-                  "type": "nested"
-                },
-				        "children": [
-                  {
-                    'type': 'tab',
-                    'name': newItem.label,
+            const viewIdToItem = keyBy(items, 'viewId');
+
+            let layout;
+            if (linkedView.layout) {
+              // we rewrite provided linked view layout to link it to individual views
+              layout = this.transformLayoutNode(linkedView.layout, (node) => {
+                if (node.type == 'tab') {
+                  const viewConfig = this.props.views.find(({id}) => id === node.config.viewId);
+
+                  return {
+                    'component': 'item',
                     'enableClose': false,
-                    'enableDrag': false,
-                    'component': "item", 'config': { 'itemId': newItem.id }, 'className': viewConfig?.iconName || viewConfig?.iconClass || 'no-icon-button', 'icon': 'add'}
-
-                ]
-              };
-            });
-
+                    'config': {
+                      'itemId': viewIdToItem[node.config.viewId].id,
+                    },
+                    'className': viewConfig?.iconName || viewConfig?.iconClass || 'no-icon-button', 'icon': 'add'
+                  };
+                } else if (node.type == 'tabset') {
+                  return {
+                    'config': {
+                      'type': 'nested'
+                    }, 
+                  }
+                }
+              });
+            }
 
             let linkedNodeTabId: string;
             prevState.layout.visitNodes(node => {
@@ -622,15 +672,13 @@ export class DashboardComponent extends Component<Props, State> {
 									    'tabSetTabLocation': 'bottom',
 								    },
 								    'borders': [],
-								    'layout': {
-                      'type': 'row',
-                      'children': newTabs
-                    }
+								    layout
                   }
                 }
               })
             );
 
+            newItems[index] = { ...item, viewId, resourceIri, label: linkedView.label };
             newItems.push(...items);
           } else {
             newItems[index] = { ...item, viewId, resourceIri };
@@ -639,6 +687,26 @@ export class DashboardComponent extends Component<Props, State> {
         return { items: newItems };
       }
     );
+  }
+
+  /**
+   * Rewrite flex layout recursively by applying enrichNode function to each node.
+   */
+  private transformLayoutNode = (node: any, enrichNode: (node: ViewNode) => Partial<ViewNode>): ViewNode => {
+    if (node.type == 'tab') {
+      const enrichedData = enrichNode(node);
+      return { ...node, ...enrichedData };
+    } else if (node.type == 'tabset') {
+      const enrichedData = enrichNode(node);
+      // If the node is a tabset, recursively process each child
+      const transformedChildren = node.children.map(child => this.transformLayoutNode(child, enrichNode));
+      return { ...node, ...enrichedData, children: transformedChildren };
+    } else if (node.type == 'row') {
+      // If the node has children, recursively process each child
+      const transformedChildren = node.children.map(child => this.transformLayoutNode(child, enrichNode));
+      return { ...node, children: transformedChildren };
+    }
+    return node;
   }
 
   private onStatusChange(itemId: string, isDirty: boolean) {
@@ -737,6 +805,7 @@ export class DashboardComponent extends Component<Props, State> {
       'close': <Icon iconType='rounded' iconName='close' symbol />,
       'maximize': <Icon iconType='rounded' iconName='fullscreen' symbol />,
       'restore': <Icon iconType='rounded' iconName='close_fullscreen' symbol />,
+      'popout': <Icon iconType='rounded' iconName='open_in_new' symbol />,
       'more': <Icon iconType='rounded' iconName='arrow_drop_down' symbol/>,
     });
 
@@ -763,16 +832,14 @@ export class DashboardComponent extends Component<Props, State> {
     }
   }
 
-  // private titleFactory = (node: TabNode) => {
-  //   console.log(this.state.items)
-  //   console.log(node.getConfig())
-  //   const item = this.state.items.find(item => item.id === node.getConfig());
-  //   if (item) {
-  //     return this.renderLabel(item);
-  //   } else {
-  //     return "Frame " + node.getConfig();
-  //   }
-  // }
+  private titleFactory = (node: TabNode) => {
+     const item = this.state.items.find(item => item.id === node.getConfig().itemId);
+     if (item) {
+       return item.label;
+     } else {
+      return node.getName();
+     }
+   }
 
   private onRenderTabSet = (node: TabSetNode, renderValues: {stickyButtons: React.ReactNode[]}) => {
     // we don't want to render new tab button for nested tabsets
@@ -797,8 +864,8 @@ export class DashboardComponent extends Component<Props, State> {
     const iiifViewerDashboardItems = []; 
 
     images.forEach(image => iiifViewerDashboardItems.push(image.id+"-image-annotation"));
-
-    const actions = [Actions.ADJUST_BORDER_SPLIT, Actions.ADJUST_SPLIT, Actions.MOVE_NODE, Actions.ADD_NODE, Actions.SELECT_TAB, Actions.DELETE_TAB]
+  //  console.log(action.type);
+    const actions = [Actions.ADJUST_BORDER_SPLIT, Actions.ADJUST_SPLIT, Actions.MOVE_NODE, Actions.ADD_NODE, Actions.SELECT_TAB, Actions.DELETE_TAB, Actions.MAXIMIZE_TOGGLE]
     if (actions.includes(action.type))
       trigger({
         eventType: LayoutChanged,
@@ -820,6 +887,7 @@ export class DashboardComponent extends Component<Props, State> {
         ref={this.layoutRef}
         model={this.state.layout}
         factory={this.factory}
+      //  titleFactory={this.titleFactory}
         onRenderTabSet={this.onRenderTabSet}
         onAction={this.onLayoutAction}
         icons={this.tabIcons()}

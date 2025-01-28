@@ -73,7 +73,7 @@
                       </div>
                       <div>
                         <div class="dropdown-item-title">Authority document</div>
-                        <div class="dropdown-item-description">Create, view and edit list of resources like vocabularies, thesauri, etc.</div>
+                        <div class="dropdown-item-description">Create, view and edit list of resources like authority documents, vocabularies, thesauri, etc.</div>
                       </div>
                     </bs-menu-item>
                   </semantic-link-container>
@@ -512,7 +512,7 @@
       <mp-anonymous-hidden alt='<li><a href="/login" title="login"></a></li>'>
         <mp-event-target-template-render id='header-profile-dropdown' template='\{{> template}}'>
           <template id='template'>
-            <semantic-query query='SELECT DISTINCT ?systemUser ?systemUserName ?actorFullName ?group ?groupFullName { 
+            <semantic-query query='SELECT DISTINCT ?systemUser ?systemUserName ?actorFullName ?group ?groupFullName ?image ?imageType { 
                                     BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
                                     BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?systemUserName)
 
@@ -534,6 +534,12 @@
                                       ?groupName a crm:E41_Appellation .
                                       ?groupName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                                       ?groupName crm:P190_has_symbolic_content ?groupFullName .
+                                    }
+
+                                    OPTIONAL {
+                                      ?systemUser rs:PX_has_main_representation ?image . 
+                                      ?image a ?imageType .
+                                      FILTER(?imageType in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
                                     }
                                   }'
                           template='\{{> template}}'>
@@ -633,10 +639,6 @@
                       <a href="https://www.youtube.com/channel/UCtUOzTB2vBG9ZimeDVrlULQ/featured" title="Youtube researchspace" target="_blank">
                         <i class="rs-icon rs-icon-youtube"></i>
                       </a>
-                      <a href="https://x.com/researchspace" title="X researchspace" target="_blank">
-                        <img src="/assets/images/logos/x-social-media-logo.svg">
-                      </a>
-
                       <a href="https://github.com/researchspace/researchspace" title="Github researchspace" target="_blank">
                         <i class="fa fa-github-square"></i>
                       </a>

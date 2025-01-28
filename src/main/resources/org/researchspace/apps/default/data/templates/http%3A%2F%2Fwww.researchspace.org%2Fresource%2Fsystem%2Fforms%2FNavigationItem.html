@@ -1,7 +1,8 @@
+[[!-- this form is not used anymore --]]
 <semantic-form  id='{{#if formId}}{{formId}}{{else}}{{viewId}}-resource-form{{/if}}' 
                 post-action="event"
                 subject='{{node}}'
-                persistence='{"type": "sparql", "targetInsertGraphIri": "{{navigationMenu}}"}'
+                persistence='{"type": "sparql", "targetGraphIri": "{{resourceConfiguration}}", "repository":"configurations"}'
                 new-subject-template='{{navigationMenu}}/navigation_item/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
                 fields='[[
                   fieldDefinitions
@@ -48,44 +49,6 @@
           <semantic-form-text-input for="navigation_item_order_in_menu_section" label="Order in the section" placeholder="Enter order number"></semantic-form-text-input>
         </div>
       </div>
-
-      {{#if toogle_value}}
-        <div class="warning-documentation-section warning-documentation-section-withIcon" style="margin-top: 5px;">
-          <div class="warning-documentation-section-icon-container">
-            <rs-icon icon-type="rounded" icon-name="priority_high" symbol="true"></rs-icon>
-          </div>
-  
-          <div> 
-            <div class="warning-documentation-section-title">Finder section required!</div>
-            <div class="warning-documentation-section-content">
-              To display the resource in Finder a section must be defined above.
-            </div>
-          </div>
-        </div>
-      {{else}}
-        <semantic-if query='ASK { <{{resourceConfiguration}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_in_finder> ?displayInFinder .
-                                  FILTER NOT EXISTS {  
-                                    ?navigationItem crm:P67_refers_to <{{resourceConfiguration}}> ;
-                                    a <http://www.researchspace.org/resource/system/FinderNavigationItem> ;
-                                    <http://www.researchspace.org/pattern/system/navigation_item/menu_section_type> ?finderSection .
-                                  }
-                            }'
-                      then='{{> then}}'>
-
-          <template id='then'>
-            <div class="danger-documentation-section danger-documentation-section-withIcon" style="margin-top: 5px;">
-              <div class="danger-documentation-section-icon-container">
-                <rs-icon icon-type="rounded" icon-name="block" symbol="true"></rs-icon>
-              </div>
-      
-              <div> 
-                <div class="danger-documentation-section-title">Missing finder section!</div>
-                <div class="danger- documentation-section-content">Finder section is required to display the resource in finder.</div>
-              </div>
-            </div>
-          </template>
-        </semantic-if>
-      {{/if}}
       
       <semantic-form-tree-picker-input for='navigation_item_broader_resource_configuration' 
                                         label="Finder broader item" 
@@ -109,7 +72,7 @@
           <span class="badge badge-text-link" style="height: 26.5px;">
             <a class="btn-textAndIcon"
                 target="_blank" 
-                href="https://fonts.google.com/icons?icon.set=Material+Icons"
+                href="https://fonts.google.com/icons?icon.set=Material+Symbols"
                 title="Google material icons">
                 <rs-icon icon-type="rounded" icon-name="search" class="icon-left" symbol="true"></rs-icon>
                 <span>Search icon</span> 
@@ -130,7 +93,7 @@
           </mp-popover>
         </div>
       </div>
-      <semantic-form-text-input for="navigation_item_resource_icon" render-header="false" placeholder="Enter resource icon (as Google Material icon name)"> </semantic-form-text-input>
+      <semantic-form-text-input for="navigation_item_resource_icon" render-header="false" placeholder="Enter resource icon (as Google Material icon name)" default-value="{{#if resourceIcon}}{{resourceIcon}}{{/if}}"> </semantic-form-text-input>
 
     </div>
   </div>

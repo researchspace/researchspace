@@ -21,10 +21,14 @@
   
   _:genid-540b7abec0a74e02b7be8d31a64137a5-j6yak9 a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
-    $subject crm:P67_refers_to $value .
-    $subject a <http://www.researchspace.org/resource/system/FinderNavigationItem> .
-    $value crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/resource_configurations_container> .
-    $value <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label .
+    $subject <http://www.cidoc-crm.org/cidoc-crm/P67_refers_to> ?resource_config .
+    ?resource_config a <http://www.researchspace.org/resource/system/resource_configuration> .
+    graph ?resource_config {
+      $subject crm:P67_refers_to $value .
+      $subject a <http://www.researchspace.org/resource/system/FinderNavigationItem> .
+      $value crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/resource_configurations_container> .
+      $value <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label .
+    }
 }""" .
   
   _:genid-540b7abec0a74e02b7be8d31a64137a5-tgmf1t a <http://spinrdf.org/sp#Query>;

@@ -118,7 +118,7 @@ export class RdfUpload extends Component<Props, State> {
     allowLoadByUrl: true,
     showAdvancedOptions: true,
     dropAreaTemplate: `<div class='${CLASS_NAME}__rdf-dropzone-content'>
-                        <rs-icon icon-type='rounded' icon-name='upload' symbol></rs-icon>
+                        <rs-icon icon-type='rounded' icon-name='upload' symbol='true'></rs-icon>
                         <div>Drag RDF file(s) or click to upload</div>
                       </div>`
   }

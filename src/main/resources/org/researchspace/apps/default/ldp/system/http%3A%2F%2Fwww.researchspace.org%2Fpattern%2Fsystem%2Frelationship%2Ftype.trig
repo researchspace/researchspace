@@ -34,10 +34,11 @@
 } WHERE {}""" .
   
   _:genid-ba2c26ae65354dc19a32aa2c973dc5d0-licv0q a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
   $subject crm:P2_has_type $value .
   ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/personal_relationship_type> .
-}""" .
+  ?value skos:prefLabel ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
   
   _:genid-ba2c26ae65354dc19a32aa2c973dc5d0-ao20j a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """DELETE { 

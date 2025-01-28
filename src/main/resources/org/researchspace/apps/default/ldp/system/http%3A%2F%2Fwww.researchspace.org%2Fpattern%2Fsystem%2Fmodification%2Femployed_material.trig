@@ -30,6 +30,7 @@
     <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
   ?value a crm:E57_Material .
   ?value skos:prefLabel ?label .
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
   FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ?label
   LIMIT 10""" .
@@ -39,7 +40,7 @@
   $subject crm:P126_employed $value . 
   $value a crm:E57_Material .
   $value skos:prefLabel ?label .
-}""" .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
   
   _:genid-b9ed4d8b810947e984d2957b8f8195c0-6v8thk a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """DELETE {

@@ -19,6 +19,11 @@
 
  // style for src/main/resources/org/researchspace/apps/default/data/templates/http%3A%2F%2Fwww.researchspace.org%2Fresource%2FImageAnnotationWorkspace.html
 
+ .Dashboard--viewContainer:has(.imageAnnotation__container) {
+    container-name: image-annotation-container;
+    container-type: inline-size;
+  }
+
 .imageAnnotation__container {
 
     width: 100%;
@@ -151,11 +156,14 @@
 
                     & > li {
                         height: 42px;
-
                         padding: 10px;
+                        
+                    
 
-                        &:first-of-type {
-                            margin-left: 10px;
+                        &:last-of-type {
+                            & > a span {
+                                width: max-content;
+                            }
                         }
 
                         & > a {
@@ -170,6 +178,11 @@
                                 cursor: pointer;
                                 font-size: 20px;
                                 opacity: .8;
+                            }
+
+                            & span {
+                                width: 120px;
+                                max-width: fit-content;
                             }
                         }
 
@@ -201,6 +214,38 @@
 
                 height: 100%;
                 overflow-y:auto;
+
+                & .imageAnnotation__resourceAnnotation-result-items-header {
+
+                    display: flex;
+                    align-items: flex-start;
+                    border-bottom: 1px solid $color-border;
+                    padding: 5px 10px;
+                    gap: 15px;
+
+                    & .imageAnnotation__resourceAnnotation-result-items-header-title {
+                        color: $color-secondary;
+                        font-weight: 600;
+                        font-size: 14.5px;
+                        display: block;
+                        flex: 1;
+                        align-self: center;
+                    }
+
+                    & .imageAnnotation__resourceAnnotation-result-items-header-actions {
+                        display: flex; 
+                        align-items: flex-start; 
+                        gap: 5px;
+                        align-self: center;
+                        
+                        .btn-default {
+                            align-items: center;
+                            background: transparent;
+                            display: flex;
+                            padding: 8px 5px;
+                        }
+                    }
+                }
     
                 & > .imageAnnotation__resourceAnnotation-result-item:last-child {
                     border-bottom: none;
@@ -249,5 +294,28 @@
            
     }
 }
+
+@container image-annotation-container (width <= 1000px) {
+
+    .Dashboard--template > div { 
+        padding-right: 5px;
+    }
+
+    .imageAnnotation__container {
+
+        grid-template-columns: 100%;
+        grid-template-rows: 70vh auto;
+        column-gap: 0;
+        grid-template-areas: 'viewer' 
+                             'resourceAnnotation';
+    
+        overflow: auto;
+        padding-right: 5px;
+    }
+
+    .imageAnnotation__container .imageAnnotation__resourceAnnotation-container {
+        padding: 0 0 0 3.5px;
+    }
+  }
 
 

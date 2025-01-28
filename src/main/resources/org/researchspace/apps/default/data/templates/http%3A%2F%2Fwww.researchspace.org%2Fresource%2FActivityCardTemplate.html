@@ -1,10 +1,8 @@
-<semantic-query query='SELECT DISTINCT  ?subject ?resourceConfig ?resourceLabel ?resourceType ?resourceIcon ?date ?resourceOntologyClass
-                                        ?modifiedActor ?systemModifiedActorName ?modifiedActorFullName
-                                        ?creationActor ?systemCreationActorName ?creationActorFullName
+<semantic-query query='SELECT DISTINCT  ?subject ?resourceConfig ?resourceLabel ?resourceType ?resourceIcon ?resourceOntologyClass
+                                        ?actor ?systemActorName ?actorFullName ?viewModification ?recordCreation ?recordModification ?viewModificationDate (MAX(?recordDate) AS ?latestRecordDate)
                                  WHERE {
 
                         BIND(<{{iri}}> as ?subject)
-                        BIND("{{date.value}}" as ?date)
 
                         ?subject a ?resourceOntologyClass .
                         ?resourceOntologyClass a owl:Class .
@@ -31,16 +29,9 @@
                               ?resourceConfigWithP2Icon, IF(BOUND(?resourceConfigWithoutP2Icon),?resourceConfigWithoutP2Icon,""))) AS ?resourceIcon)
                         
                         OPTIONAL {
-                          ?subject prov:wasAttributedTo ?modifiedActor .
-                          BIND(REPLACE(REPLACE(STR(?modifiedActor), STR(User:), ""), "%40", "@") as ?systemModifiedActorName) 
-
-                          OPTIONAL {
-                            ?modifiedActor crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
-                            ?modifiedActor crm:P1_is_identified_by ?actorName .
-                            ?actorName a crm:E41_Appellation .
-                            ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
-                            ?actorName crm:P190_has_symbolic_content ?modifiedActorFullName .
-                          }
+                          ?subject prov:wasAttributedTo ?actor .
+                          ?subject prov:generatedAtTime ?viewModificationDate .
+                          BIND("true" as ?viewModification) 
                         }
 
                         OPTIONAL {
@@ -50,22 +41,41 @@
                           ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
                           ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
 
-                          ?entityFormRecordCreation crm:P14_carried_out_by ?creationActor .
-                          BIND(REPLACE(REPLACE(STR(?creationActor), STR(User:), ""), "%40", "@") as ?systemCreationActorName) 
-
-                          OPTIONAL {
-                            ?creationActor crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
-                            ?creationActor crm:P1_is_identified_by ?creationActorName .
-                            ?creationActorName a crm:E41_Appellation .
-                            ?creationActorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
-                            ?creationActorName crm:P190_has_symbolic_content ?creationActorFullName .
-                          }
+                          ?entityFormRecordCreation crm:P4_has_time-span ?entityFormRecordCreationTimespan .
+                          ?entityFormRecordCreationTimespan crm:P82_at_some_time_within ?dateCreation .
+                          ?entityFormRecordCreation crm:P14_carried_out_by ?actor .
+                          BIND("true" as ?recordCreation)
                         }
-                      } LIMIT 1'
+
+                        OPTIONAL {
+                          ?subject crm:P129i_is_subject_of ?entityFormRecord .
+                          ?entityFormRecord a crmdig:D1_Digital_Object .
+                          ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                          ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordModification .
+                          ?entityFormRecordModification crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_modification> .
+
+                          ?entityFormRecordModification crm:P4_has_time-span ?entityFormRecordModificationTimespan .
+                          ?entityFormRecordModificationTimespan crm:P82_at_some_time_within ?dateModification .
+                          ?entityFormRecordModification crm:P14_carried_out_by ?actor .
+                          BIND("true" as ?recordModification)
+                        }
+
+                        BIND(REPLACE(REPLACE(STR(?actor), STR(User:), ""), "%40", "@") as ?systemActorName) 
+
+                        OPTIONAL {
+                          ?actor crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                          ?actor crm:P1_is_identified_by ?actorName .
+                          ?actorName a crm:E41_Appellation .
+                          ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                          ?actorName crm:P190_has_symbolic_content ?actorFullName .
+                        }
+
+                        BIND(IF(BOUND(?dateModification), ?dateModification, ?dateCreation) AS ?recordDate)
+
+                      } GROUP BY ?subject ?resourceConfig ?resourceLabel ?resourceType ?resourceIcon ?resourceOntologyClass ?actor ?systemActorName ?actorFullName ?viewModification ?recordCreation ?recordModification ?viewModificationDate
+                      LIMIT 1'
       
-                template='{{> template}}'
-                no-result-template='{{> noResults}}'
-        >
+                template='{{> template}}'>
 
     <template id='template'>
       <div class="activity-card-content">
@@ -102,27 +112,24 @@
 
         <div class="activity-card-data">
           <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
-            {{#if bindings.0.systemModifiedActorName.value}}
-              {{#if bindings.0.modifiedActorFullName.value}}
-                <div class="activity-card-actor-value text-truncate-line1">{{bindings.0.modifiedActorFullName.value}}</div>
+         
+              {{#if bindings.0.actorFullName.value}}
+                <div class="activity-card-actor-value text-truncate-line1">{{bindings.0.actorFullName.value}}</div>
               {{else}}
-                <div class="activity-card-actor-value text-truncate-line1">{{bindings.0.systemModifiedActorName.value}}</div>
+                <div class="activity-card-actor-value text-truncate-line1">{{bindings.0.systemActorName.value}}</div>
               {{/if}}
-            {{else if bindings.0.systemCreationActorName.value}}
-              {{#if bindings.0.creationActorFullName.value}}
-                <div class="activity-card-actor-value text-truncate-line1">{{bindings.0.creationActorFullName.value}}</div>
-              {{else}}
-                <div class="activity-card-actor-value text-truncate-line1">{{bindings.0.systemCreationActorName.value}}</div>
-              {{/if}}
-            {{/if}}
             
-            <div class="activity-card-date-value text-truncate-line1">{{dateTimeFormat bindings.0.date.value "LLL"}}</div>
+              <div class="activity-card-date-value text-truncate-line1">
+                {{#if bindings.0.viewModificationDate.value}}{{dateTimeFormat bindings.0.viewModificationDate.value "LLL"}}{{/if}}
+                {{#if bindings.0.latestRecordDate.value}}{{dateTimeFormat bindings.0.latestRecordDate.value "LLL"}}{{/if}}
+              </div>
+              
           </div>
 
-          {{#if bindings.0.modifiedActor.value}}
-            <div class="text-font-size__small text-truncate-line1">modified a {{bindings.0.resourceLabel.value}}</div>
-          {{else if bindings.0.creationActor.value}}
-            <div class="text-font-size__small text-truncate-line1">created a {{bindings.0.resourceLabel.value}}</div>
+          {{#if (or (eq bindings.0.viewModification.value "true") (eq bindings.0.recordModification.value "true"))}}
+            <div class="text-font-size__small text-truncate-line1">modified {{bindings.0.resourceLabel.value}}</div>
+          {{else if (eq bindings.0.recordCreation.value "true")}}
+            <div class="text-font-size__small text-truncate-line1">created {{bindings.0.resourceLabel.value}}</div>
           {{/if}}
           <mp-draggable iri='{{iri}}'>
             <div style="flex: 1; align-content: center;">

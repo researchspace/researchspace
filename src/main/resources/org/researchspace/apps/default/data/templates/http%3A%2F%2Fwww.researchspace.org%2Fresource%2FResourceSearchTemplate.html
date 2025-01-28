@@ -93,9 +93,9 @@
       <div class="semantic-search-content">
         <div class="semantic-search-header-content">
           {{#if [[urlParam "searchall" escape=false]]}}
-            <div class="semantic-search-header-title" style="min-height: 31px; min-width: 340px;flex: 0;"></div>
+            <div class="semantic-search-header-title text-truncate-line1" style="min-height: 31px; min-width: 340px;flex: 0;"></div>
           {{else}}
-            <h3 class="semantic-search-header-title">[[urlParam "resourcelabel" escape=false]]</h3>
+            <h3 class="semantic-search-header-title text-truncate-line1" title="[[urlParam 'resourcelabel' escape=false]]">[[urlParam "resourcelabel" escape=false]]</h3>
           {{/if}}
       
           <div class="semantic-search-header-actions">
@@ -303,16 +303,23 @@
                                                       [[/if]]
 
                                                       {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Appellation")}}
-                                                        MINUS { <http://www.researchspace.org/resource/system/ontodiaDiagramContainer> crm:P1_is_identified_by ?subject .}
+                                                        MINUS { ?systemAuthorityItem crm:P1_is_identified_by|crm:P170i_time_is_defined_by ?subject .
+                                                                ?systemAuthorityItem crm:P71i_is_listed_in ?systemAuthority .
+                                                                ?systemAuthority crm:P2_has_type Platform:System_Resource . }
                                                       {{/if}}
 
-                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor")}}
+                                                      {{#if (or 
+                                                        (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor")
+                                                        (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Group")
+                                                        (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Person")
+                                                      )}}
                                                         MINUS {?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .}
                                                       {{/if}}
 
                                                       {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
                                                         MINUS { ?subject crm:P2_has_type Platform:System_Resource .}
                                                       {{/if}}
+
 
                                                       {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Entity")}}
                                                         MINUS { ?configuration <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_listView_column> ?subject .}
@@ -333,16 +340,14 @@
                                                         }
                                                       {{/if}}
 
-                                                      {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Type")}}
-                                                        MINUS { 
-                                                          ?subject crm:P71i_is_listed_in ?vocabulary .
-                                                          ?vocabulary crm:P2_has_type Platform:System_Resource .
-                                                        }
-                                                      {{/if}}
-
                                                       {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
                                                         MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
                                                       {{/if}}
+
+                                                      MINUS {
+                                                        ?subject crm:P71i_is_listed_in|skos:inScheme ?systemAuthorityDoc .
+                                                        ?systemAuthorityDoc crm:P2_has_type Platform:System_Resource .
+                                                      }
 
                                                       SERVICE <http://www.bigdata.com/rdf/search#search> {
                                                         ?label bds:search ?__token__ ;
@@ -365,9 +370,15 @@
                                                                 [[/if]]
 
                                                                 {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Appellation")}}
-                                                                  MINUS { <http://www.researchspace.org/resource/system/ontodiaDiagramContainer> crm:P1_is_identified_by ?subject .}
+                                                                  MINUS { ?systemAuthorityItem crm:P1_is_identified_by|crm:P170i_time_is_defined_by ?subject .
+                                                                    ?systemAuthorityItem crm:P71i_is_listed_in ?systemAuthority .
+                                                                    ?systemAuthority crm:P2_has_type Platform:System_Resource . }
                                                                 {{/if}}
-                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor")}}
+                                                                {{#if (or 
+                                                                  (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor")
+                                                                  (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Group")
+                                                                  (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Person")
+                                                                )}}
                                                                   MINUS {?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .}
                                                                 {{/if}}
                                                                 {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
@@ -388,16 +399,14 @@
                                                                     ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
                                                                   }
                                                                 {{/if}}
-                                                                {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Type")}}
-                                                                  MINUS { 
-                                                                    ?subject crm:P71i_is_listed_in ?vocabulary .
-                                                                    ?vocabulary crm:P2_has_type Platform:System_Resource .
-                                                                  }
-                                                                {{/if}}
                                                                 {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
                                                                   MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
                                                                 {{/if}}
 
+                                                                MINUS {
+                                                                  ?subject crm:P71i_is_listed_in|skos:inScheme ?systemAuthorityDoc .
+                                                                  ?systemAuthorityDoc crm:P2_has_type Platform:System_Resource .
+                                                                }
                                                               }'
                                                 debounce=300
                                                 placeholder="Search [[urlParam 'resourcelabel' escape=false]]"
@@ -416,13 +425,13 @@
                             template='{{> search-views}}'
             >
               <template id='search-views'>
-                <div>
+                
                   {{#if bindings.1.searchViewType.value}}
                     <mp-event-target-template-render id="{{bindings.0.viewid.value}}-search-view-dropdown-area" template="{{> viewDropdown}}">
                       <template id='viewDropdown'>
                         <bs-dropdown id="{{bindings.0.viewid.value}}-view-type-selection"
                                       bs-style="default"
-                                      class="btn-textAndIcon"
+                                      class="btn-textAndIcon search-view-dropdown"
                                       pull-right=true
                                       title="{{#if viewTypeIndex}}{{#with (lookup bindings viewTypeIndex)}}{{searchViewLabel.value}}{{/with}}{{else}}List{{/if}}"
                         > 
@@ -454,9 +463,9 @@
                       </template>
                     </mp-event-target-template-render>
                   {{else}}
-
+                    <div></div>
                   {{/if}}
-                </div>
+                
               </template>
             </semantic-query>
 
@@ -567,16 +576,23 @@
                                               }
 
                                               {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Appellation")}}
-                                                MINUS { <http://www.researchspace.org/resource/system/ontodiaDiagramContainer> crm:P1_is_identified_by ?subject .}
+                                                MINUS { ?systemAuthorityItem crm:P1_is_identified_by|crm:P170i_time_is_defined_by ?subject .
+                                                  ?systemAuthorityItem crm:P71i_is_listed_in ?systemAuthority .
+                                                  ?systemAuthority crm:P2_has_type Platform:System_Resource . }
                                               {{/if}}
 
-                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor")}}
+                                              {{#if (or 
+                                                (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor")
+                                                (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Group")
+                                                (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Person")
+                                              )}}
                                                 MINUS {?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .}
                                               {{/if}}
 
                                               {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
                                                 MINUS { ?subject crm:P2_has_type Platform:System_Resource .}
                                               {{/if}}
+
 
                                               {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Entity")}}
                                                 MINUS { ?configuration <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_listView_column> ?subject .}
@@ -597,16 +613,14 @@
                                                 }
                                               {{/if}}
 
-                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Type")}}
-                                                MINUS { 
-                                                  ?subject crm:P71i_is_listed_in ?vocabulary .
-                                                  ?vocabulary crm:P2_has_type Platform:System_Resource .
-                                                }
-                                              {{/if}}
-
                                               {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
                                                 MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
                                               {{/if}}
+
+                                              MINUS {
+                                                ?subject crm:P71i_is_listed_in|skos:inScheme ?systemAuthorityDoc .
+                                                ?systemAuthorityDoc crm:P2_has_type Platform:System_Resource .
+                                              }
                                             }'
                                       header='text/csv'
                                       filename='[[urlParam "resourcelabel" escape=false]]-csv-result.csv'>
@@ -649,16 +663,23 @@
                                               }
 
                                               {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Appellation")}}
-                                                MINUS { <http://www.researchspace.org/resource/system/ontodiaDiagramContainer> crm:P1_is_identified_by ?subject .}
+                                                MINUS { ?systemAuthorityItem crm:P1_is_identified_by|crm:P170i_time_is_defined_by ?subject .
+                                                  ?systemAuthorityItem crm:P71i_is_listed_in ?systemAuthority .
+                                                  ?systemAuthority crm:P2_has_type Platform:System_Resource . }
                                               {{/if}}
 
-                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor")}}
+                                              {{#if (or 
+                                                (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor")
+                                                (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Group")
+                                                (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Person")
+                                              )}}
                                                 MINUS {?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .}
                                               {{/if}}
 
                                               {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
                                                 MINUS { ?subject crm:P2_has_type Platform:System_Resource .}
                                               {{/if}}
+
 
                                               {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Entity")}}
                                                 MINUS { ?configuration <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_listView_column> ?subject .}
@@ -679,16 +700,14 @@
                                                 }
                                               {{/if}}
 
-                                              {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Type")}}
-                                                MINUS { 
-                                                  ?subject crm:P71i_is_listed_in ?vocabulary .
-                                                  ?vocabulary crm:P2_has_type Platform:System_Resource .
-                                                }
-                                              {{/if}}
-
                                               {{#if (eq "[[urlParam "resourceconfig" escape=false]]" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
                                                 MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
                                               {{/if}}
+
+                                              MINUS {
+                                                ?subject crm:P71i_is_listed_in|skos:inScheme ?systemAuthorityDoc .
+                                                ?systemAuthorityDoc crm:P2_has_type Platform:System_Resource .
+                                              }
                                             }'
                                       header='application/sparql-results+json'
                                       filename='[[urlParam "resourcelabel" escape=false]]-json-result.json'>
@@ -730,7 +749,7 @@
                   <div> 
                     <div class="warning-documentation-section-title">Warning! &nbsp; The following authority documents can't be edited.</div>
                     <div class="warning-documentation-section-content">
-                      <div>Authority documents of ontology class crm:E32_Authority_Document and all associated data should be defined in one named graph that equals to the vocabulary IRI.</div>
+                      <div>Authority documents of ontology class crm:E32_Authority_Document and all associated data should be defined in one named graph that equals to the authority IRI.</div>
                         <ul>
                           {{#each bindings}}
                             <li>
@@ -833,37 +852,55 @@
                                 <mp-component-toolbar-component>
                                     <semantic-timeline  id='search-result-timeline'
                                                         query='PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-                                                                SELECT DISTINCT ?iri ?timespan ?start ?end ?birthTimespan ?deathTimespan WHERE {
+                                                                SELECT DISTINCT ?item ?timespan ?start ?end ?birthTimespan ?deathTimespan WHERE {
                                                                   {
-                                                                    ?subject a ?ontologyClass .
+                                                                    ?item a ?ontologyClass .
                                                                     ?ontologyClass rdfs:subClassOf* crm:E2_Temporal_Entity .
-                                                                    ?subject crm:P4_has_time-span ?__value__ .
-                                                                    ?__value__ crm:P82a_begin_of_the_begin ?start ;
-                                                                                crm:P82b_end_of_the_end ?end .
+                                                                    ?item crm:P4_has_time-span ?__value__ .
+                                                                    ?__value__ crm:P82a_begin_of_the_begin|crm:P82b_end_of_the_end|crm:P82_at_some_time_within ?timespanDate .
+                                                                    OPTIONAL { ?__value__ crm:P82a_begin_of_the_begin ?timespanStart . }
+                                                                    OPTIONAL { ?__value__ crm:P82b_end_of_the_end ?timespanEnd . }
+                                                                    OPTIONAL { ?__value__ crm:P82_at_some_time_within ?date . }
+                                                                  
+
+                                                                    BIND(IF(BOUND(?timespanEnd), ?timespanEnd, ?date) AS ?end)
+                                                                    BIND(COALESCE(?timespanStart, ?date, ?end) AS ?start)
                                                                     BIND(?__value__ as ?timespan)
-                                                                    BIND(?subject AS ?iri)
+                                                               
                                                                     OPTIONAL { FILTER(?__contextRelationPattern__) }
                                                                   } UNION
                                                                   {
+                                                                    ?item rdf:type crm:E21_Person.
+                                                                    ?item crm:P98i_was_born|crm:P100i_died_in ?activity .
+                                                                    ?activity crm:P4_has_time-span ?activityTimespan .
+                                                                    ?activityTimespan crm:P82_at_some_time_within|crm:P82a_begin_of_the_begin|crm:P82b_end_of_the_end ?activityTimespanDate .
                                                                     OPTIONAL {
-                                                                      ?subject a crm:E21_Person .
-                                                                      ?subject crm:P98i_was_born ?birth .
+                                                                      ?item crm:P98i_was_born ?birth .
                                                                       ?birth crm:P4_has_time-span ?birthTimespan .
-                                                                      OPTIONAL { ?birthTimespan crm:P82_at_some_time_within ?start . }
-                                                                      BIND(?subject AS ?iri)
+                                                                      ?birthTimespan crm:P82_at_some_time_within|crm:P82a_begin_of_the_begin|crm:P82b_end_of_the_end ?birthTimespanDate .
+                                                                      OPTIONAL { ?birthTimespan crm:P82a_begin_of_the_begin ?birthStart . }
+                                                                      OPTIONAL { ?birthTimespan crm:P82b_end_of_the_end ?birthEnd . }
+                                                                      OPTIONAL { ?birthTimespan crm:P82_at_some_time_within ?birthDate . }
+                                                                      BIND(COALESCE(?birthDate, ?birthStart, ?birthEnd) AS ?existingStart)
                                                                     }
                                                                     OPTIONAL {
-                                                                      ?subject a crm:E21_Person .
-                                                                      ?subject crm:P100i_died_in ?death .
+                                                                      ?item crm:P100i_died_in ?death .
                                                                       ?death crm:P4_has_time-span ?deathTimespan .
-                                                                      OPTIONAL { ?deathTimespan crm:P82_at_some_time_within ?end .}
-                                                                      BIND(?subject AS ?iri)
+                                                                      ?deathTimespan crm:P82_at_some_time_within|crm:P82a_begin_of_the_begin|crm:P82b_end_of_the_end ?deathTimespanDate .
+                                                                      OPTIONAL { ?deathTimespan crm:P82a_begin_of_the_begin ?deathStart . }
+                                                                      OPTIONAL { ?deathTimespan crm:crm:P82b_end_of_the_end ?deathEnd .}
+                                                                      OPTIONAL { ?deathTimespan crm:P82_at_some_time_within ?deathDate . }
+                                                                      BIND(COALESCE(?deathDate, ?deathStart, ?deathEnd) AS ?end)
                                                                     }
+                                                                    BIND(COALESCE(?existingStart, ?end) AS ?start)
                                                                     OPTIONAL { FILTER(?__contextRelationPattern__) }
                                                                   } 
                                                                 }
                                                                 ORDER BY ?start ?end
                                                                 LIMIT 100'
+                                                                
+                                                            
+                                                        options='{"showCurrentTime": "true", "height": "500px"}'
                                                         tuple-template='{{> timelineItem}}'
                                                         no-result-template='{{> noResults}}'
                                                         tuple-template-height=auto>
@@ -872,18 +909,18 @@
                                         <div style='display:flex;'>
                                           <div style='display:flex; gap: 12px; flex: 1;'>
                                             <div>
-                                              <mp-resource-thumbnail iri='{{iri.value}}'
+                                              <mp-resource-thumbnail iri='{{item.value}}'
                                                                     style="width: 55px; height: 55px; object-fit:cover; margin-top: 5px;">
                                                 <mp-resource-thumbnail-fallback>
-                                                  <span>Image not found!</span>
+                                                  <span></span>
                                                 </mp-resource-thumbnail-fallback>
                                               </mp-resource-thumbnail>
                                             </div>
                                             <div style='display:flex; flex-direction:column;align-items: flex-start; gap: 2px;'>
                                               <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
                                                               urlqueryparam-view='resource-editor' 
-                                                              urlqueryparam-resource-iri='{{iri.value}}'>
-                                                <mp-label iri='{{iri.value}}' class="text-link-action text-truncate-line1"></mp-label>
+                                                              urlqueryparam-resource-iri='{{item.value}}'>
+                                                <mp-label iri='{{item.value}}' class="text-link-action text-truncate-line1"></mp-label>
                                               </semantic-link>
                                               {{#if timespan}}
                                                 {{#if start.value}}<div>Start date: {{start.value}}</div>{{/if}}
@@ -930,13 +967,13 @@
                                             </div>
                                           </div>
                                           <div style="display:flex; gap: 3px;">
-                                            <mp-copy-to-default-set id="[[urlParam 'viewid' escape=false]]-copy-to-clipboard" resource="{{iri.value}}">
+                                            <mp-copy-to-default-set id="[[urlParam 'viewid' escape=false]]-copy-to-clipboard" resource="{{item.value}}">
                                               <button class="btn btn-default" style="height: 35px;">
                                                 <rs-icon icon-type="rounded" icon-name="inventory" symbol="true" title="Copy to clipboard"></rs-icon>
                                               </button>
                                             </mp-copy-to-default-set>
                                             
-                                            <mp-overlay-dialog  id="{{iri.value}}-resource-preview-dialog"  
+                                            <mp-overlay-dialog  id="{{item.value}}-resource-preview-dialog"  
                                                                 type="modal" 
                                                                 class="modal-xlSize preview_modal"
                                                                 title="Preview">
@@ -948,7 +985,7 @@
 
                                               <mp-overlay-dialog-content>
                                                 <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
-                                                                  options='{  "resource": "{{iri.value}}", 
+                                                                  options='{  "resource": "{{item.value}}", 
                                                                               "resourceConfig": "[[urlParam "resourceconfig" escape=false]]", 
                                                                               "resourceConfigLabel": "[[urlParam "resourcelabel" escape=false]]",
                                                                               "resourceOntologyClass": "[[urlParam "resourceontologyclass" escape=false]]",
@@ -971,7 +1008,7 @@
                                             <div style="flex: 1;"> 
                                               <div class="documentation-section-title">No results available</div>
                                               <div class="documentation-section-content">
-                                                To display a resource in the timeline it must have associated a Timespan with Start date and End date.
+                                                To display a resource in the timeline it must have associated a Timespan with date, start date or end date.
                                               </div>
                                             </div>
                                           </div> 
@@ -993,7 +1030,7 @@
                             <mp-component-toolbar-actions>
                               <semantic-chart-type-selector id='[[urlParam "viewid" escape=false]]-search-result-chart-type-selector' default="bar" types='["line", "bar", "radar", "pie", "donut"]'></semantic-chart-type-selector>
                                 <mp-component-toolbar-action-download></mp-component-toolbar-action-download>
-                                <mp-component-toolbar-action-save id='[[urlParam "viewid" escape=false]]-persist-component-action' add-to-default-set=true></mp-component-toolbar-action-save>
+                                <mp-component-toolbar-action-save id='[[urlParam "viewid" escape=false]]-persist-component-action' add-to-default-set=false></mp-component-toolbar-action-save>
                             </mp-component-toolbar-actions>
                             <mp-component-toolbar-component>
                               <semantic-chart id='[[urlParam "viewid" escape=false]]-search-result-chart'
@@ -1088,7 +1125,7 @@
                                                                     {{#if bindings.0.columnTitle2.value}} {"variableName": "", "displayName": "{{bindings.0.columnTitle2.value}}", "cellTemplate": "{{> column2}}" },{{/if}}
                                                                     {{#if bindings.0.columnTitle3.value}} {"variableName": "", "displayName": "{{bindings.0.columnTitle3.value}}", "cellTemplate": "{{> column3}}" },{{/if}}
                                                                     {{#if bindings.0.columnTitle4.value}} {"variableName": "", "displayName": "{{bindings.0.columnTitle4.value}}", "cellTemplate": "{{> column4}}" },{{/if}}
-                                                                    {"variableName": "", "displayName": "more", "cellTemplate": "{{> actions}}" }
+                                                                    {"variableName": "", "displayName": "", "cellTemplate": "{{> actions}}" }
                                                                   ]'   
                             >
     
@@ -1119,7 +1156,7 @@
                                           <mp-draggable iri='{{iri.value}}'>
                                             {{#if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation")}}
                                               <div>
-                                                <rs-iiif-image-thumbnail  height='40' width='45' style='height: 100%; width: 100%;'
+                                                <rs-iiif-image-thumbnail  height='40' width='45' style='height: 100%; width: 100%; max-height: 40px;'
                                                                           image-or-region='{{iri.value}}'      
                                                                           [[> rsp:IIIFConfig]]
                                                                         >
@@ -1445,7 +1482,7 @@
                                                                     {"variableName": "subject", "displayName": "", "cellTemplate": "{{> selectionCheckbox}}" },
                                                                     {"variableName": "subject", "displayName": "[[urlParam "resourcelabel" escape=false]] name", "cellTemplate": "{{> column1}}" },
                                                                     {"variableName": "description", "displayName": "Description", "cellTemplate": "{{> column2}}" },
-                                                                    {"variableName": "", "displayName": "more", "cellTemplate": "{{> actions}}" }
+                                                                    {"variableName": "", "displayName": "", "cellTemplate": "{{> actions}}" }
                                                                   ]'   
                             >
     
@@ -1477,7 +1514,7 @@
                                           <mp-draggable iri='{{iri.value}}'>
                                             {{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation")}}
                                               <div>
-                                                <rs-iiif-image-thumbnail  height='40' width='45' style='height: 100%; width: 100%;'
+                                                <rs-iiif-image-thumbnail  height='40' width='45' style='height: 100%; width: 100%; max-height: 40px;'
                                                                           image-or-region='{{iri.value}}'      
                                                                           [[> rsp:IIIFConfig]]
                                                                         >

@@ -122,8 +122,8 @@ const DEFAULT_VALUE_SET = `SELECT ?value ?label WHERE {
 }`;
 const DEFAULT_AUTOSUGGESTION = `SELECT ?value ?label WHERE {
   ?value a ?anyType ;
-    rdfs:label ?label .
-  FILTER REGEX(STR(?label), "?token")
+    rdfs:label|crm:P190_has_symbolic_content ?label .
+  FILTER REGEX(STR(?label), "?token", "i")
 } LIMIT 10`;
 
 class FieldEditorComponent extends Component<Props, State> {
@@ -240,7 +240,7 @@ class FieldEditorComponent extends Component<Props, State> {
             placement="bottom"
             overlay={<Popover id="tooltip">{tooltip}</Popover>}
           >
-            <Icon iconType='rounded' iconName='help' symbol style={ {position:'absolute', top: '-5px', right: '-6px', fontSize: '20px'} }/>
+            <Icon iconType='rounded' iconName='help' symbol style={ {position:'absolute', top: '-5px', right: '-2px', fontSize: '20px'} }/>
           </OverlayTrigger>
         </div>
     )
@@ -261,7 +261,7 @@ class FieldEditorComponent extends Component<Props, State> {
       this.updateState({ label });
     };
     return D.div(
-      {},
+      {style: { display: 'flex', flexDirection: 'column', height: '100%' } },
       D.div({style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
         D.div( {}, 
         this.isEditMode() ? 

@@ -23,7 +23,7 @@ import { Rdf } from 'platform/api/rdf';
 import { universalChildren, isValidChild, componentHasType } from 'platform/components/utils';
 import { SemanticTable, SemanticTableConfig, ColumnConfiguration } from 'platform/components/semantic/table';
 
-import { SemanticSearchContext, ResultContext, GraphScopeContext } from './SemanticSearchApi';
+import { SemanticSearchContext, ResultContext } from './SemanticSearchApi';
 
 export class SemanticSearchTableResult extends React.Component {
   render() {
@@ -36,7 +36,7 @@ export class SemanticSearchTableResult extends React.Component {
 }
 
 interface InnerProps {
-  context: ResultContext & GraphScopeContext;
+  context: ResultContext;
 }
 
 interface State {
@@ -65,12 +65,7 @@ export class SemanticSearchTableResultInner extends React.Component<InnerProps, 
   }
 
   private prepareColumnConfiguration() {
-    const { graphScopeResults } = this.props.context;
-
-    const columnConfiguration = graphScopeResults.isJust
-      ? prepareGraphScopeColumns(this.props.context)
-      : prepareSearchProfileColumns(this.props.context);
-
+    const columnConfiguration = prepareSearchProfileColumns(this.props.context);
     this.setState({ columnConfiguration });
   }
 
@@ -108,28 +103,6 @@ function prepareSearchProfileColumns(context: ResultContext): ColumnConfiguratio
         displayName: store && store.categories.has(iri) ? store.categories.get(iri).label : variableName,
       });
     });
-  }
-  return columns;
-}
-
-// TODO: This method should not exists; instead this information
-// should be present in the search profile
-function prepareGraphScopeColumns(context: ResultContext & GraphScopeContext): ColumnConfiguration[] {
-  const { searchProfileStore, graphScopeResults } = context;
-  const store = searchProfileStore.isJust ? searchProfileStore.get() : undefined;
-  const columns: ColumnConfiguration[] = [];
-  if (graphScopeResults.isJust) {
-    for (const column of graphScopeResults.get().columns) {
-      const variableName = column.id.replace(/^\?/, '');
-      let displayName: string;
-      if (column.type === 'var-concept') {
-        const iri = Rdf.fullIri(column.tgConcept.iri);
-        displayName = store && store.categories.has(iri) ? store.categories.get(iri).label : variableName;
-      } else {
-        displayName = column.attribute.label;
-      }
-      columns.push({ variableName, displayName });
-    }
   }
   return columns;
 }

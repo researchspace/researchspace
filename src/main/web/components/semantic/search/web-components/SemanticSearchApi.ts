@@ -33,8 +33,7 @@ export type ExtendedSearchValue = Model.Resource | { label: string; query: Sparq
 export type SemanticSearchContext = InitialQueryContext &
   ResultContext &
   FacetContext &
-  ConfigurationContext &
-  GraphScopeContext;
+  ConfigurationContext;
 
 export const SemanticSearchContext = React.createContext<SemanticSearchContext>(undefined);
 
@@ -90,11 +89,4 @@ export interface ResultContext extends BaseSearchContext {
   readonly resultState: { [componentId: string]: object };
   updateResultState(componentId: string, stateChange: object): void;
   setVisualizationContext(relation: Data.Maybe<Model.Relation>): void;
-}
-
-export interface GraphScopeContext extends BaseSearchContext {
-  readonly graphScopeStructure: Data.Maybe<Model.GraphScopeSearch>;
-  readonly graphScopeResults: Data.Maybe<Model.GraphScopeResults>;
-  setGraphScopeStructure(graphScopeStructure: Data.Maybe<Model.GraphScopeSearch>): void;
-  setGraphScopeResults(graphScopeResults: Data.Maybe<Model.GraphScopeResults>): void;
 }

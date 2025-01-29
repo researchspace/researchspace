@@ -101,7 +101,7 @@ public class SecurityManagerTest {
         AuthenticationInfo authInfo = (AuthenticationInfo) authCache.values().iterator().next();
         Assert.assertEquals("admin", authInfo.getPrincipals().getPrimaryPrincipal());
         Assert.assertNotEquals("admin", authInfo.getCredentials());
-        Assert.assertTrue(authInfo.getCredentials().toString().startsWith("$shiro1$"));
+        Assert.assertTrue(authInfo.getCredentials().toString().startsWith("$shiro2$"));
         Assert.assertEquals(1, testRealm.loginCount.get());
 
         // make sure that the cache is used, i.e. login count from the realm does not

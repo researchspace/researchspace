@@ -35,7 +35,7 @@ import org.apache.shiro.subject.Subject;
 import org.researchspace.config.Configuration;
 import org.researchspace.servlet.filter.CorsFilter;
 
-import io.buji.pac4j.filter.SecurityFilter;
+import org.pac4j.jee.filter.SecurityFilter;
 
 /**
  * Proxies all web resources through the filter from pac4j configuration.

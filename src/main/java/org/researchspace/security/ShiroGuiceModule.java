@@ -20,7 +20,6 @@
 package org.researchspace.security;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 import javax.inject.Provider;
@@ -30,11 +29,9 @@ import javax.servlet.ServletContext;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.shiro.config.ConfigurationException;
 import org.apache.shiro.guice.web.ShiroWebModule;
 import org.apache.shiro.web.env.WebEnvironment;
 import org.apache.shiro.web.mgt.WebSecurityManager;
-import org.researchspace.cache.CacheManager;
 import org.researchspace.config.Configuration;
 import org.researchspace.config.groups.EnvironmentConfiguration;
 import org.researchspace.security.sso.SSOCallbackFilter;
@@ -175,13 +172,10 @@ public class ShiroGuiceModule extends ShiroWebModule {
 
     @Override
     protected void bindWebSecurityManager(final AnnotatedBindingBuilder<? super WebSecurityManager> bind) {
-        try {
-            bind.toConstructor(PlatformSecurityManager.class.getConstructor(Collection.class, Configuration.class,
-                    CacheManager.class)).asEagerSingleton();
-        } catch (NoSuchMethodException e) {
-            throw new ConfigurationException("This is a serious configuration error while setting up the ShiroModule",
-                    e);
-        }
+        // we need to have this both binds so both our code and shiro relate code use 
+        // the same single instance of the PlatformSecurityManager
+        bind(PlatformSecurityManager.class).in(Singleton.class);
+        bind.to(PlatformSecurityManager.class).in(Singleton.class);
     }
 
     private Key<? extends Filter>[] getFiltersFromConfig() {

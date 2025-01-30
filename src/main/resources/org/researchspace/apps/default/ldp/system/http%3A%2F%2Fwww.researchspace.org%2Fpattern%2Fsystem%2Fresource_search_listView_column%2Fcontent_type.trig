@@ -3,49 +3,48 @@
   <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_type>
     a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
       <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E55_Type>;
     <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/resource_configuration>;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-a898653366bf4d83847c216771774e2b-rdt15c;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-a898653366bf4d83847c216771774e2b-ezxy2e;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-a70ebc8f6cc0482ea56f3dd60763b739-t4mr8;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-a70ebc8f6cc0482ea56f3dd60763b739-0eu1uh;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-a70ebc8f6cc0482ea56f3dd60763b739-nuazuq;
     <http://www.researchspace.org/resource/system/fields/minOccurs> "1";
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-a70ebc8f6cc0482ea56f3dd60763b739-42gnj;
     <http://www.w3.org/2000/01/rdf-schema#label> "List view column content type";
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-a898653366bf4d83847c216771774e2b-ueoae;
-    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-a898653366bf4d83847c216771774e2b-d9109w;
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#string>;
     <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>;
     <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
     <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-06-06T13:50:26.999+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+    <http://www.w3.org/ns/prov#generatedAtTime> "2025-01-29T12:47:16.114Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
   
-  _:genid-a898653366bf4d83847c216771774e2b-d9109w a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
-	VALUES ($value)
-    { 	(\"bold text\")
-    	(\"date\")
-    	(\"icon actor\")
-    	(\"link\")
-    	(\"number\")
-    	(\"tag\")
-    	(\"text\")
-  	} 
+  _:genid-a70ebc8f6cc0482ea56f3dd60763b739-0eu1uh a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+  $subject <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_type> $value .
+} WHERE { 
+  $subject <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_type> $value .
 }""" .
   
-  _:genid-a898653366bf4d83847c216771774e2b-rdt15c a <http://spinrdf.org/sp#Query>;
+  _:genid-a70ebc8f6cc0482ea56f3dd60763b739-t4mr8 a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """INSERT { 
   $subject <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_type> $value .
 } WHERE {
 }""" .
   
-  _:genid-a898653366bf4d83847c216771774e2b-ueoae a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE { BIND(URI(STRBEFORE(STR($subject),"/resource_search_listView_column")) as ?resource_config) 
-      graph ?resource_config {
-  $subject <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_type> ?value. }
-}""" .
+  _:genid-a70ebc8f6cc0482ea56f3dd60763b739-nuazuq a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a crm:E55_Type .
+  ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/search_column_content_type> .
+  ?value skos:prefLabel ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
   
-  _:genid-a898653366bf4d83847c216771774e2b-ezxy2e a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE { 
-  $subject <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_type> $value .
-} WHERE { 
-  $subject <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_type> $value .
+  _:genid-a70ebc8f6cc0482ea56f3dd60763b739-42gnj a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE { 
+  BIND(URI(STRBEFORE(STR($subject),\"/resource_search_listView_column\")) as ?resource_config) 
+  GRAPH ?resource_config {
+  	$subject <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_type> ?value .
+  }
+  ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/search_column_content_type> .
+  ?value skos:prefLabel ?label . 
 }""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>

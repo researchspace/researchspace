@@ -1,19 +1,46 @@
-<ol class="page-breadcrumb">
-  <li>
-    <mp-link title="Home" url="/">Home</mp-link>
-  </li>
-  <li>
-    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
-  </li>
-  <li>
-    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
-  </li>
-  <li class="active">Semantic Form</li>
-</ol>
+<style>
+ 
+  div {
+    line-height: 1.2;
+  }
 
-<div class="page">
-  <div class='page__body'>
-    <h1>Semantic Form</h1>
+  .table>tbody>tr>td, 
+  .table>tbody>tr>th, 
+  .table>tfoot>tr>td, 
+  .table>tfoot>tr>th, 
+  .table>thead>tr>td {
+    vertical-align: top;
+  }
+
+  .semantic-form h4 {
+    margin-top:10px;
+  }
+
+  .semantic-form .btn-group {
+    margin-top: 15px;
+    justify-content: start;
+  }
+
+  .panel-body,
+  .semantic-form-recover-notification {
+
+    padding-top: 10px;
+  }
+
+  .cardinality-support__group-instance {
+    padding-top: 10px;
+  }
+
+  .semantic-form-recover-notification__hide,
+  .semantic-form-recover-notification__discard-data {
+    border: none;
+  }
+
+</style>
+
+<div class="page__grid-container help-page-container">
+  <div class='page__content-container'>
+    <h1>Semantic form</h1>
 
     <p>
       The form component can be used to create declarative authoring forms for knowledge graphs.
@@ -25,7 +52,7 @@
       <li><a href="#html5markup">HTML5 Markup</a></li>
     </ul>
 
-
+    <hr class="divider">
     <h2 id="fielddefinitions">Knowledge Patterns (Field Definitions)</h2>
     <p>
       Knowledge Patterns (also called field definitions in some areas of the system) provide an abstraction over the data model (aka ontology) 
@@ -75,7 +102,7 @@
           <td>xsdDatatype</td>
           <td>
             <p>A full or prefix XSD URI datatype identifier as
-            specified in <a href="https://www.w3.org/TR/rdf11-concepts/#xsd-datatypes">RDF 1.1</a></p>
+            specified in <a href="https://www.w3.org/TR/rdf11-concepts/#xsd-datatypes" class="text-link-action" target="_blank">RDF 1.1</a></p>
           </td>
         </tr>
         <tr>
@@ -187,14 +214,15 @@
     <b>Note:</b><br>
     <p>Whether <b>$</b> or <b>?</b> are being used as SPARQL variable identifier does not matter (both are valid in SPARQL). However, we recommend using <b>$</b> for variables to be replaced/injected by the form, for example, <b>$subject</b> or <b>$value.</b> We recommend this just for sake of readability i.e. the one is reminded when reading or modifying these patterns, that certain variables will be replaced/injected later.</p>
 
+    <hr class="divider">
     <h2 id="html5markup">HTML5 Markup</h2>
     <p>While knowledge patterns are being defined on an abstract level, forms and corresponding input elements can be instantiated using custom HTML5 components including references to the field definitions. </p>
 
     <p>The basic structure of a form markup looks as follows:</p>
     <p>The form itself is instantiated through the custom HTML5 tag <code>[[{{documentation}}]]<semantic-form> ... children... </semantic-form>[[{{/documentation}}]]</code> </p>
     <p>The only mandatory attribute on the form component is the attribute <code>fields</code>, which expects and JSON object array of knowledge patterns.</p>
-<mp-code-block mode='text/html' show-copy-button=false>
-<![CDATA[
+    <mp-code-block mode='text/html' show-copy-button=false>
+    <![CDATA[
 <semantic-form
   fields='[{
     "id": "name",
@@ -205,13 +233,11 @@
   ... children ...
 
 </semantic-form>
-]]></mp-code-block>
+      ]]>
+    </mp-code-block>
 
     Furthermore, the following attributes can be configured:
-    <style>
-      dt { margin-left: 1em; }
-      dd { margin-left: 3em; }
-    </style>
+    <hr style="margin: 10px 0;">
     <dl>
       <dt><code>subject: IRI string</code></dt>
       <dd>
@@ -219,6 +245,7 @@
         <p>If this attribute is set to a non-empty value then the form will operate
         in the "editing existing instance" mode instead of "creating a new instance".</p>
       </dd>
+      <hr style="margin: 10px 0;">
       <dt><code>new-subject-template: string</code></dt>
       <dd>
         <p>IRI template to customize subject generation in the "creating a new instance" form mode.</p>
@@ -229,6 +256,7 @@
         <p><code>{{UUID}}</code> placeholder allows to substitute a random UUID.<p>
         <p><code>{{FIELD_VALUE_LOCAL_NAME fieldName}}</code> placeholder allows to use field value local name. Useful together with <code>type</code> field in auto-generated forms to create IRIs with type information, e.g <code>http://localhost:10214/resource/E21_Person/b517d013-242c-4610-9155-48ce891ffef6</code></p>
       </dd>
+      <hr style="margin: 10px 0;">
       <dt id="prop-browser-persistence"><code>browser-persistence: boolean</code></dt>
       <dd>
         <p>Whether to save intermediate changes in browser's local storage.</p>
@@ -236,6 +264,7 @@
         to display notification to user whether a form state was recovered from the local storage.</p>
         <p>Default: <code>false</code></p>
       </dd>
+      <hr style="margin: 10px 0;">
       <dt><code>persistence: string ('sparql' | 'ldp')</code></dt>
       <dd>
         <p>Persistence and operation mode to use for creating and modifying data. Both modes require dedicated ACL permissions.</p>
@@ -243,6 +272,7 @@
         <p>In the <code>sparql</code> mode no provenance can be captured.</p>
         <p>Default: <code>ldp</code></p>
       </dd>
+      <hr style="margin: 10px 0;">
       <dt><code>post-action: string ('reload' | 'redirect')</code></dt>
       <dd>
         <p>Optional post-action to be performed after saving the form. Can be either <code>reload</code> or <code>redirect</code>
@@ -258,9 +288,8 @@
     <p>
       To instantiate a certain field through an input element, one can choose from a set of dedicated form input elements, whereas each input <strong>MUST</strong> reference a knowledge pattern via the <code>for='{field-id}'</code> attribute.
     </p>
-
-    <h3>Input Components</h3>
-    
+    <hr class="divider">
+    <h2>Input components</h2>
     <p>Some input elemnts have specific HTML attributes that can be used to modify input behaviour, but all inputs share these properties:</p>
     
     <dl>
@@ -289,19 +318,19 @@
     </dl>
         
     <style>
-      .inputs-table td:nth-child(1) {
+      .inputs-form-table td:nth-child(1) {
         font-weight: bold;
         width: 10%;
       }
-      .inputs-table td:nth-child(2) {
+      .inputs-form-table td:nth-child(2) {
         width: 50%;
       }
-      .inputs-table td:nth-child(2) {
+      .inputs-form-table td:nth-child(2) {
         width: 40%;
       }
     </style>
     <p></p>
-    <table class="table table-striped table-bordered inputs-table">
+    <table class="table table-bordered inputs-form-table">
       <tbody>
         <tr>
           <th>Field input name</th>
@@ -311,15 +340,20 @@
         <tr>
           <td>Text Input</td>
           <td>
-						<mp-code-block mode='text/html'><![CDATA[
+						<mp-code-block mode='text/html'>
+            <![CDATA[
 <semantic-form-text-input for='{field-id}'>
 </semantic-form-text-input>
-						]]></mp-code-block>
-						<mp-code-block mode='text/html'><![CDATA[
+              ]]>
+            </mp-code-block>
+						<mp-code-block mode='text/html'>
+            <![CDATA[
 <!-- allows to add language tag -->
-<semantic-form-text-input for='name' languages='["en", "ru"]'>
+<semantic-form-text-input for='name' 
+            languages='["en", "ru"]'>
 </semantic-form-text-input>
-            ]]></mp-code-block>
+              ]]>
+            </mp-code-block>
           </td>
           <td>
             <p>Commonly used for Literal values. However, can also be used for IRIs if corresponding xsdDatatype of knowledge pattern is <code>xsd:anyURI</code>.</p>
@@ -331,10 +365,12 @@
         <tr>
           <td>Select Input</td>
           <td>
-            <mp-code-block mode='text/html'><![CDATA[
+            <mp-code-block mode='text/html'>
+            <![CDATA[
 <semantic-form-select-input for='{field-id}'>
 </semantic-form-select-input>
-            ]]></mp-code-block>
+              ]]>
+            </mp-code-block>
           </td>
           <td>
             <p>Offers a dropdown list to choose entities from, using the <code>valueSetPattern</code> from the referenced knowledge pattern.</p>
@@ -343,10 +379,12 @@
         <tr>
           <td>Autocomplete Input</td>
           <td>
-            <mp-code-block mode='text/html'><![CDATA[
+            <mp-code-block mode='text/html'>
+            <![CDATA[
 <semantic-form-autocomplete-input for='{field-id}'>
 </semantic-form-autocomplete-input>
-            ]]></mp-code-block>
+              ]]>
+            </mp-code-block>
           </td>
           <td>
             <p>Dynamic autosuggestion while user enters search token, using the <code>autosuggestionPattern</code> from the referenced knowledge pattern.</p>
@@ -355,10 +393,12 @@
         <tr>
           <td>Drag and Drop Visual Input</td>
           <td>
-            <mp-code-block mode='text/html'><![CDATA[
+            <mp-code-block mode='text/html'>
+            <![CDATA[
 <semantic-form-drag-and-drop-input for='{field-id}'>
 </semantic-form-drag-and-drop-input>
-            ]]></mp-code-block>
+              ]]>
+            </mp-code-block>
           </td>
           <td>
             <p>Visual input that display card for every value. New values can be added with drag-and-drop. </p>
@@ -368,10 +408,12 @@
         <tr>
           <td>DateTime Input</td>
           <td>
-            <mp-code-block mode='text/html'><![CDATA[
+            <mp-code-block mode='text/html'>
+            <![CDATA[
 <semantic-form-datetime-input for='{field-id}'>
 </semantic-form-datetime-input>
-            ]]></mp-code-block>
+              ]]>
+            </mp-code-block>
           </td>
           <td>
             <p>Component to either enter <code>date</code>, <code>time</code> or <code>dateTime</code> string or to select them visually from a calendar.</p>
@@ -384,7 +426,8 @@
             <mp-code-block mode='text/html'><![CDATA[
 <semantic-form-tree-picker-input for='{field-id}'>
 </semantic-form-tree-picker-input>
-            ]]></mp-code-block>
+              ]]>
+            </mp-code-block>
           </td>
           <td>
             <p>Component to select one or many values from a hierarchy represented by a tree selector.</p>
@@ -395,8 +438,8 @@
           <td>
             <mp-code-block mode='text/html'><![CDATA[
 <semantic-form-composite-input for='{field-id}'
-  new-subject-template='template'
-  fields='[{fieldDefinitions}]'>
+                new-subject-template='template'
+                fields='[{fieldDefinitions}]'>
   ... child inputs ...
 </semantic-form-composite-input>
           ]]></mp-code-block>
@@ -412,12 +455,14 @@
         <tr>
           <td>Hidden Input</td>
           <td>
-            <mp-code-block mode='text/html'><![CDATA[
+            <mp-code-block mode='text/html'>
+            <![CDATA[
 <semantic-form-hidden-input for='{field-id}'
     default-value='https://www.wikidata.org/wiki/Q2337004'>
 </semantic-form-hidden-input>
             ]]></mp-code-block>
-            <mp-code-block mode='text/html'><![CDATA[
+            <mp-code-block mode='text/html'>
+            <![CDATA[
 <semantic-form-hidden-input for='{field-id}'
     default-values='["Emmett Brown", "Marty McFly"]'>
 </semantic-form-hidden-input>
@@ -439,17 +484,21 @@
 						]]></mp-code-block>
 						<mp-code-block mode='text/html'><![CDATA[
 <!-- allows to add type -->
-<semantic-form-checklist-input for='name' type='checkbox'>
+<semantic-form-checklist-input for='name' 
+                          type='checkbox'>
 </semantic-form-checklist-input>
             ]]></mp-code-block>
             <mp-code-block mode='text/html'><![CDATA[
 <!-- allows to add custom class to component and to items of component -->
-<semantic-form-checklist-input for='name' class='class name' class-item-name='item class name'>
+<semantic-form-checklist-input for='name' 
+            class='class name' 
+            class-item-name='item class name'>
 </semantic-form-checklist-input>
             ]]></mp-code-block>
             <mp-code-block mode='text/html'><![CDATA[
 <!-- allows to select horizontal/vertical position. -->
-<semantic-form-checklist-input for='name' row=true>
+<semantic-form-checklist-input for='name' 
+                                row=true>
 </semantic-form-checklist-input>
             ]]></mp-code-block>
           </td>
@@ -552,7 +601,8 @@
       <dd><p>Displays all errors for every form input at one convenient place.</p></dd>
       
       <dt><code><semantic-form-recover-notification></semantic-form-recover-notification></code></dt>
-      <dd><p>Display dismissable notification that form state was recovered from local storage (see <a href="#prop-browser-persistence">browser-persistence</a> form property for details).</p></dd>
+      <dd><p>Display dismissable notification that form state was recovered from local storage 
+        (see <a href="#prop-browser-persistence">browser-persistence</a> form property for details).</p></dd>
       
       <dt><code><button name='submit'>Save</button></code></dt>
       <dd><p>Submits form content.<p></dd>
@@ -569,9 +619,121 @@
       <dt><code><button name='delete'>Delete</button></code></dt>
       <dd><p>Remove the subject entity using the active persistence method.</p></dd>
     </dl>
-    <p>See also <semantic-link iri="http://help.researchspace.org/resource/SemanticFormAdvancedInputs">Advanced Inputs</semantic-link> for more specialized form inputs.</p>
 
-    <h3>Reading knowledge patterns from the Database </h3>
+    <hr class="divider">
+    <h2>Advanced inputs</h2>
+    
+    <style>
+      .inputs-form-table td:nth-child(1) {
+        font-weight: bold;
+        width: 10%;
+      }
+      .inputs-form-table td:nth-child(2) {
+        width: 50%;
+      }
+      .inputs-form-table td:nth-child(2) {
+        width: 40%;
+      }
+    </style>
+    <table class="table table-bordered inputs-form-table">
+      <tbody>
+        <tr>
+          <th>Field input name</th>
+          <th>Markup</th>
+          <th>Description</th>
+        </tr>
+        <tr>
+          <td>File input</td>
+          <td>
+            <mp-code-block mode='text/html'><![CDATA[
+<semantic-form-file-input
+    for='{field-id}'
+    storage='{file-storage-id}'
+    temp-storage='{temp-file-storage-id}'>
+  <!-- custom placeholder when no file uploaded -->
+</semantic-form-file-input>
+            ]]></mp-code-block>
+            <mp-code-block mode='text/html'><![CDATA[
+<semantic-form-file-input
+    for='{field-id}'
+    placeholder='Please drag&drop your image here'
+    accept-pattern='image/*'
+    generate-iri-query='
+      SELECT ?resourceIri WHERE {
+        BIND(URI(CONCAT(
+          STR(<Default:>), "uploaded-file-", ?__fileName__)
+        ) as ?resourceIri)
+      }'
+
+    resource-query='
+      PREFIX mp: <http://www.researchspace.org/resource/system/>
+      CONSTRUCT {
+        ?__resourceIri__ a mp:File.
+        ?__resourceIri__ mp:fileName ?__fileName__.
+        ?__resourceIri__ mp:mediaType ?__mediaType__.
+      } WHERE {}
+    '
+    name-predicate-iri='http://www.researchspace.org/resource/system/fileName'
+    media-type-predicate-iri='http://www.researchspace.org/resource/system/mediaType'
+    storage='{file-storage-id}'
+    temp-storage='{temp-file-storage-id}'
+></semantic-form-file-input>
+          ]]></mp-code-block>
+          </td>
+          <td>
+            <p>Component to attach files by uploading them 
+              into <semantic-link iri="http://help.researchspace.org/resource/Storage" class="text-link-action" target="_blank">storage</semantic-link> and linking to resulting metadata LDP resource.</p>
+            <p>To be able to upload files into a storage it's necessary to have the 
+              proper permissions.</p>
+            <mp-documentation type="FileInputConfig"></mp-documentation>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <hr class="divider">
+    <h2>Examples</h2>
+    <h3>Example 1: File input</h3>
+    <mp-code-example>
+    <![CDATA[
+<semantic-form new-subject-template='http://www.example.com/id/{{UUID}}'
+  post-action='redirect'
+  browser-persistence=true
+  form-id='example-6'
+  fields='[
+    {
+      "id": "file",
+      "label": "File",
+      "description": "The attached file",
+      "xsdDatatype": "xsd:anyURI",
+      "selectPattern": "SELECT $value WHERE { $subject <http://www.example.com/hasAttachedFile> $value }",
+      "insertPattern": "INSERT { $subject <http://www.example.com/hasAttachedFile> $value } WHERE {}",
+      "deletePattern": "DELETE { $subject <http://www.example.com/hasAttachedFile> $value } WHERE {}"
+    }
+  ]'>
+  <bs-panel>
+    <h4>Create new document with attached file</h4>
+    <semantic-form-recover-notification></semantic-form-recover-notification>
+    <semantic-form-file-input
+        for='file'
+        context-uri='http://example.com'
+        storage='undefined-1'
+        temp-storage='undefined-2'
+    ></semantic-form-file-input>
+    <semantic-form-errors></semantic-form-errors>
+    <!-- save and reset button for form -->
+
+    <div class="btn-group"> 
+      <button name="reset" class="btn btn-default">Reset</button>
+      <button name="submit" class="btn btn-action">Save</button>
+    </div>
+
+  </bs-panel>
+</semantic-form>
+      ]]>
+    </mp-code-example>
+
+    <hr class="divider">
+    <h2>Reading knowledge patterns from the Database</h2>
     <p>
       Instead of defining the knowledge patterns inline (as above), knowledge patterns may also have an RDF representation and can be stored in the database (for example, when the Field Definition Catalog is used). The following backend template helper function can be used to read the definitions from the database:
     </p>
@@ -598,922 +760,947 @@
         </mp-code-block>
       </li>
     </ul>
+    <hr class="divider">
+    <h2>Examples</h2>
+    <p>The following two examples show how to create 1. simple knowledge patterns and 
+    2. complex knowledge patterns that create sub-graphs for 
+    the <a href="https://cidoc-crm.org/" class="text-link-action" target="_blank">CIDOC 
+      Conceptual Reference Model</a> ontology.</p>
 
-    <h1>Examples</h1>
-    The following two examples show how to create 1) simple knowledge patterns and 2) complex knowledge patterns that create sub-graphs for the <a href="http://www.cidoc-crm.org/comprehensive_intro.html" target="_blank">CIDOC Conceptual Reference Model</a> ontology.
-
+      <br>
     <h3>Example 1: Simple knowledge patterns</h3>
     In the following we show a very simple example form with two simple knowledge patterns to create a new CRM object.
     The fields capture an RDFS label as well as the CRM type, which can be selected from a given set of CRM type.
     <mp-code-example>
-<![CDATA[
-      <semantic-form new-subject-template='http://www.example.com/id/{{UUID}}'
-        post-action='redirect'
-        browser-persistence=true
-        form-id='example-1'
-        fields='[
-          {
-            "id": "type",
-            "label": "Type",
-            "description": "The type of the created instance",
-            "xsdDatatype": "xsd:anyURI",
-            "minOccurs": "1",
-            "maxOccurs": "1",
-            "valueSetPattern": "
-              SELECT $value $label WHERE {
-                VALUES ($value $label) {
-                  (<http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object> \"Human Made Object\")
-                  (<http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object> \"Information Object\")
-                }
-              }
-            ",
-            "selectPattern": "SELECT $value WHERE { $subject a $value }",
-            "insertPattern": "INSERT { $subject a $value } WHERE {}",
-            "deletePattern": "DELETE { $subject a $value } WHERE {}"
-          },
-          {
-            "id": "label",
-            "label": "Label",
-            "description": "The label used to display the instance",
-            "xsdDatatype": "xsd:string",
-            "minOccurs": "1",
-            "maxOccurs": "1",
-            "selectPattern": "SELECT $value WHERE { $subject rdfs:label $value }",
-            "insertPattern": "INSERT { $subject rdfs:label $value } WHERE {}",
-            "deletePattern": "DELETE { $subject rdfs:label $value } WHERE {}"
-          },
-          {
-            "id": "location",
-            "label": "Location",
-            "description": "The former or current location of an instance",
-            "xsdDatatype": "xsd:anyURI",
-            "minOccurs": "1",
-            "maxOccurs": "3",
-            "selectPattern": "
-              PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-              SELECT $value WHERE { $subject crm:P53_has_former_or_current_location $value }
-            ",
-            "insertPattern": "
-              PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-              INSERT { $subject crm:P53_has_former_or_current_location $value } WHERE {}
-            ",
-            "deletePattern": "
-              PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-              DELETE { $subject crm:P53_has_former_or_current_location $value } WHERE {}
-            ",
-            "treePatterns": {
-              "type": "simple",
-              "schemePattern": "?item <http://www.w3.org/2004/02/skos/core#inScheme> <http://collection.britishmuseum.org/id/place>"
-            }
+    <![CDATA[
+<semantic-form new-subject-template='http://www.example.com/id/{{UUID}}'
+  post-action='redirect'
+  browser-persistence=true
+  form-id='example-1'
+  fields='[
+    {
+      "id": "type",
+      "label": "Type",
+      "description": "The type of the created instance",
+      "xsdDatatype": "xsd:anyURI",
+      "minOccurs": "1",
+      "maxOccurs": "1",
+      "valueSetPattern": "
+        SELECT $value $label WHERE {
+          VALUES ($value $label) {
+            (<http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object> \"Human Made Object\")
+            (<http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object> \"Information Object\")
           }
-        ]'>
-        <bs-panel>
-          <h4>Create new CRM Instance</h4>
-          <semantic-form-recover-notification></semantic-form-recover-notification>
-          <semantic-form-text-input for='label'></semantic-form-text-input>
-          <semantic-form-select-input for='type'></semantic-form-select-input>
-          <semantic-form-tree-picker-input for='location'></semantic-form-tree-picker-input>
-          <semantic-form-errors></semantic-form-errors>
-          <!-- save and reset button for form -->
-          <button name="reset" class="btn btn-default">Reset</button>
-          <button name="submit" class="btn btn-action">Save</button>
+        }
+      ",
+      "selectPattern": "SELECT $value WHERE { $subject a $value }",
+      "insertPattern": "INSERT { $subject a $value } WHERE {}",
+      "deletePattern": "DELETE { $subject a $value } WHERE {}"
+    },
+    {
+      "id": "label",
+      "label": "Label",
+      "description": "The label used to display the instance",
+      "xsdDatatype": "xsd:string",
+      "minOccurs": "1",
+      "maxOccurs": "1",
+      "selectPattern": "SELECT $value WHERE { $subject rdfs:label $value }",
+      "insertPattern": "INSERT { $subject rdfs:label $value } WHERE {}",
+      "deletePattern": "DELETE { $subject rdfs:label $value } WHERE {}"
+    },
+    {
+      "id": "location",
+      "label": "Location",
+      "description": "The former or current location of an instance",
+      "xsdDatatype": "xsd:anyURI",
+      "minOccurs": "1",
+      "maxOccurs": "3",
+      "selectPattern": "
+        PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+        SELECT $value WHERE { $subject crm:P53_has_former_or_current_location $value }
+      ",
+      "insertPattern": "
+        PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+        INSERT { $subject crm:P53_has_former_or_current_location $value } WHERE {}
+      ",
+      "deletePattern": "
+        PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+        DELETE { $subject crm:P53_has_former_or_current_location $value } WHERE {}
+      ",
+      "treePatterns": {
+        "type": "simple",
+        "schemePattern": "?item <http://www.w3.org/2004/02/skos/core#inScheme> <http://collection.britishmuseum.org/id/place>"
+      }
+    }
+  ]'>
+  <bs-panel>
+    <h4>Create new CRM Instance</h4>
+    <semantic-form-recover-notification></semantic-form-recover-notification>
+    <semantic-form-text-input for='label'></semantic-form-text-input>
+    <semantic-form-select-input for='type'></semantic-form-select-input>
+    <semantic-form-tree-picker-input for='location'></semantic-form-tree-picker-input>
+    <semantic-form-errors></semantic-form-errors>
+    <!-- save and reset button for form -->
+    <div class="btn-group"> 
+      <button name="reset" class="btn btn-default">Reset</button>
+      <button name="submit" class="btn btn-action">Save</button>
+    </div>
 
-        </bs-panel>
-      </semantic-form>
-]]>
+  </bs-panel>
+</semantic-form>
+      ]]>
     </mp-code-example>
 
     <h3>Example 2: Complex knowledge patterns</h3>
     The following example shows more complex knowledge patterns, where the field definition map to complex CRM graph structures. We also show how to create a more complex, tabbed layout for the form.
     <mp-code-example>
-<![CDATA[
-      <semantic-form new-subject-template='http://www.example.com/id/{{UUID}}'
-        post-action='redirect'
-        browser-persistence=true
-        form-id='example-2'
-        fields='[
-          {
-            "id": "type",
-            "label": "Type",
-            "description": "The type of the created instance",
-            "xsdDatatype": "xsd:anyURI",
-            "minOccurs": "1",
-            "maxOccurs": "1",
-            "valueSetPattern": "
-              SELECT $value $label WHERE {
-                VALUES ($value $label) {
-                  (<http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object> \"Human Made Object\")
-                  (<http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object> \"Information Object\")
-                }
-              }
-            ",
-            "selectPattern": "SELECT $value WHERE { $subject a $value }",
-            "insertPattern": "INSERT { $subject a $value } WHERE {}",
-            "deletePattern": "DELETE { $subject a $value } WHERE {}"
-          },
-          {
-            "id": "label",
-            "label": "Label",
-            "description": "The label used to display the instance",
-            "xsdDatatype": "xsd:string",
-            "minOccurs": "1",
-            "maxOccurs": "1",
-            "selectPattern": "SELECT $value WHERE { $subject rdfs:label $value }",
-            "insertPattern": "INSERT { $subject rdfs:label $value } WHERE {}",
-            "deletePattern": "DELETE { $subject rdfs:label $value } WHERE {}"
-          },
-          {
-            "id": "acquisitionBeginDate",
-            "label": "Acquisition begin date",
-            "description": "The acquisition start date refers to the date that the current owning body acquired the object",
-            "xsdDatatype": "xsd:dateTime",
-            "minOccurs": "1",
-            "maxOccurs": "1",
-            "selectPattern": "
-              PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-              SELECT ?value WHERE {
-                $subject crm:P24i_changed_ownership_through ?acquisition.
-                ?acquisition crm:P4_has_time-span ?acquisitionDate.
-                ?acquisitionDate crm:P82a_begin_of_the_begin ?value
-              }
-            ",
-            "insertPattern": "
-              PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-              INSERT {
-                $subject crm:P24i_changed_ownership_through ?acquisition.
-                ?acquisition crm:P4_has_time-span ?acquisitionDate.
-                ?acquisitionDate crm:P82a_begin_of_the_begin $value
-              } WHERE {
-                BIND(IRI(CONCAT(STR(?subject), \"/acquisition\")) as ?acquisition).
-                BIND(IRI(CONCAT(STR(?subject), \"/acquisition/date\")) as ?acquisitionDate).
-              }
-            ",
-            "deletePattern": "
-              PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-              DELETE {
-                $subject crm:P24i_changed_ownership_through ?acquisition.
-                ?acquisition crm:P4_has_time-span ?acquisitionDate.
-                ?acquisitionDate crm:P82a_begin_of_the_begin ?date
-              } WHERE {
-                $subject crm:P24i_changed_ownership_through ?acquisition.
-                ?acquisition crm:P4_has_time-span ?acquisitionDate.
-                ?acquisitionDate crm:P82a_begin_of_the_begin $value.
-                ?acquisitionDate crm:P82a_begin_of_the_begin ?date.
-              }
-            "
-          },
-          {
-            "id": "acquisitionEndDate",
-            "label": "Acquisition end date",
-            "description": "The acquisition end date refers to the date that the current owning body acquired the object",
-            "xsdDatatype": "xsd:dateTime",
-            "minOccurs": "1",
-            "maxOccurs": "1",
-            "selectPattern": "
-              PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-              SELECT ?value WHERE {
-                $subject crm:P24i_changed_ownership_through ?acquisition.
-                ?acquisition crm:P4_has_time-span ?acquisitionDate.
-                ?acquisitionDate crm:P82a_end_of_the_end ?value
-              }
-            ",
-            "insertPattern": "
-              PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-              INSERT {
-                $subject crm:P24i_changed_ownership_through ?acquisition.
-                ?acquisition crm:P4_has_time-span ?acquisitionDate.
-                ?acquisitionDate crm:P82a_end_of_the_end  $value
-              } WHERE {
-                BIND(IRI(CONCAT(STR(?subject), \"/acquisition\")) as ?acquisition).
-                BIND(IRI(CONCAT(STR(?subject), \"/acquisition/date\")) as ?acquisitionDate).
-              }
-            ",
-            "deletePattern": "
-              PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-              DELETE {
-                $subject crm:P24i_changed_ownership_through ?acquisition.
-                ?acquisition crm:P4_has_time-span ?acquisitionDate.
-                ?acquisitionDate crm:P82a_end_of_the_end ?date
-              } WHERE {
-                $subject crm:P24i_changed_ownership_through ?acquisition.
-                ?acquisition crm:P4_has_time-span ?acquisitionDate.
-                ?acquisitionDate crm:P82a_end_of_the_end $value.
-                ?acquisitionDate crm:P82a_end_of_the_end  ?date.
-              }
-            "
-          },
-          {
-            "id": "acquisitionType",
-            "label": "Acquistion Type",
-            "description": "The type of acquisition refers to how the thing was transferred to the owning organisation. For example, donation, purchase, etc.",
-            "xsdDatatype": "xsd:anyURI",
-            "minOccurs": "1",
-            "maxOccurs": "1",
-            "selectPattern": "
-              PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-              SELECT $value ?label WHERE {
-                $subject crm:P24i_changed_ownership_through ?acquisition.
-                ?acquisition crm:P2_has_type $value.
-                $value skos:prefLabel $label
-              }
-            ",
-            "valueSetPattern": "
-              PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-              SELECT DISTINCT $value $label WHERE {
-                VALUES ($value $label) {
-                  (<http://collection.britishmuseum.org/id/thesauri/acquisition/B> \"Bequeathed\")
-                  (<http://collection.britishmuseum.org/id/thesauri/acquisition/D> \"Donated\")
-                  (<http://collection.britishmuseum.org/id/thesauri/acquisition/FU> \"Funded\")
-                  (<http://collection.britishmuseum.org/id/thesauri/acquisition/P> \"Purchased\")
-                }
-              }
-            ",
-            "insertPattern": "
-              PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-              INSERT {
-                ?acquisition a crm:E8_Acquisition .
-                ?acquisitionType a crm:E55_Type .
-                $subject crm:P24i_changed_ownership_through ?acquisition.
-                ?acquisition crm:P2_has_type $value.
-              } WHERE {
-                BIND(uri(concat(str($subject),\"/acquisition\")) as ?acquisition) .
-              }
-            "
-          },
-          {
-            "id": "acquisitionFromActor",
-            "label": "Acquisition from Actor",
-            "xsdDatatype": "xsd:anyURI",
-            "minOccurs": "1",
-            "maxOccurs": "1",
-            "selectPattern": "
-              PREFIX rs: <http://www.researchspace.org/ontology/>
-              PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-              SELECT ?value ?label WHERE {
-                $subject crm:P24i_changed_ownership_through ?acquisition.
-                ?acquisition crm:P23_transferred_title_from $value.
-                $value rs:displayLabel ?label
-              }
-            ",
-            "autosuggestionPattern": "
-              PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-              SELECT $value $label WHERE {
-                VALUES ($value $label) {
-                  (<http://collection.britishmuseum.org/id/person-institution/104636> \"The British Museum\")
-                  (<http://collection.britishmuseum.org/id/person-institution/170898> \"British Consulate General, Atlanta\")
-                  (<http://collection.britishmuseum.org/id/person-institution/188537> \"British Association for the Advancement of Science\")
-                }
-                FILTER REGEX($label, \"?token\", \"i\")
-              }
-            ",
-            "insertPattern": "
-              PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-              INSERT {
-                ?acquisitionActor a crm:E39_Actor .
-                ?acqusition a crm:E8_Acquisition .
-                $subject crm:P24i_changed_ownership_through ?acquisition .
-                ?acquisition crm:P23_transferred_title_from $value .
-              } WHERE {
-                BIND(uri(concat(str(?subject),\"/acquisition\")) as ?acquisition)
-              }
-            "
+    <![CDATA[
+<semantic-form new-subject-template='http://www.example.com/id/{{UUID}}'
+  post-action='redirect'
+  browser-persistence=true
+  form-id='example-2'
+  fields='[
+    {
+      "id": "type",
+      "label": "Type",
+      "description": "The type of the created instance",
+      "xsdDatatype": "xsd:anyURI",
+      "minOccurs": "1",
+      "maxOccurs": "1",
+      "valueSetPattern": "
+        SELECT $value $label WHERE {
+          VALUES ($value $label) {
+            (<http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object> \"Human Made Object\")
+            (<http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object> \"Information Object\")
           }
-        ]'>
-        <bs-panel>
-          <h4>Create CRM Instance </h4>
-          <semantic-form-recover-notification></semantic-form-recover-notification>
-          <bs-tabs fixed-key="form">
-            <bs-tab event-key="1" title="General Information">
-              <semantic-form-text-input for='label'></semantic-form-text-input>
-              <semantic-form-select-input for='type'></semantic-form-select-input>
-            </bs-tab>
-            <bs-tab event-key="2" title="Acquisition">
-              <semantic-form-datetime-input for="acquisitionBeginDate"></semantic-form-datetime-input>
-              <semantic-form-datetime-input for="acquisitionEndDate"></semantic-form-datetime-input>
-              <semantic-form-select-input for='acquisitionType'></semantic-form-select-input>
-              <semantic-form-autocomplete-input for='acquisitionFromActor' placeholder='Search for an actor. Type e.g. "British"'></semantic-form-autocomplete-input>
-            </bs-tab>
-          </bs-tabs>
-          <semantic-form-errors></semantic-form-errors>
-          <!-- save and reset button for form -->
+        }
+      ",
+      "selectPattern": "SELECT $value WHERE { $subject a $value }",
+      "insertPattern": "INSERT { $subject a $value } WHERE {}",
+      "deletePattern": "DELETE { $subject a $value } WHERE {}"
+    },
+    {
+      "id": "label",
+      "label": "Label",
+      "description": "The label used to display the instance",
+      "xsdDatatype": "xsd:string",
+      "minOccurs": "1",
+      "maxOccurs": "1",
+      "selectPattern": "SELECT $value WHERE { $subject rdfs:label $value }",
+      "insertPattern": "INSERT { $subject rdfs:label $value } WHERE {}",
+      "deletePattern": "DELETE { $subject rdfs:label $value } WHERE {}"
+    },
+    {
+      "id": "acquisitionBeginDate",
+      "label": "Acquisition begin date",
+      "description": "The acquisition start date refers to the date that the current owning body acquired the object",
+      "xsdDatatype": "xsd:dateTime",
+      "minOccurs": "1",
+      "maxOccurs": "1",
+      "selectPattern": "
+        PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+        SELECT ?value WHERE {
+          $subject crm:P24i_changed_ownership_through ?acquisition.
+          ?acquisition crm:P4_has_time-span ?acquisitionDate.
+          ?acquisitionDate crm:P82a_begin_of_the_begin ?value
+        }
+      ",
+      "insertPattern": "
+        PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+        INSERT {
+          $subject crm:P24i_changed_ownership_through ?acquisition.
+          ?acquisition crm:P4_has_time-span ?acquisitionDate.
+          ?acquisitionDate crm:P82a_begin_of_the_begin $value
+        } WHERE {
+          BIND(IRI(CONCAT(STR(?subject), \"/acquisition\")) as ?acquisition).
+          BIND(IRI(CONCAT(STR(?subject), \"/acquisition/date\")) as ?acquisitionDate).
+        }
+      ",
+      "deletePattern": "
+        PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+        DELETE {
+          $subject crm:P24i_changed_ownership_through ?acquisition.
+          ?acquisition crm:P4_has_time-span ?acquisitionDate.
+          ?acquisitionDate crm:P82a_begin_of_the_begin ?date
+        } WHERE {
+          $subject crm:P24i_changed_ownership_through ?acquisition.
+          ?acquisition crm:P4_has_time-span ?acquisitionDate.
+          ?acquisitionDate crm:P82a_begin_of_the_begin $value.
+          ?acquisitionDate crm:P82a_begin_of_the_begin ?date.
+        }
+      "
+    },
+    {
+      "id": "acquisitionEndDate",
+      "label": "Acquisition end date",
+      "description": "The acquisition end date refers to the date that the current owning body acquired the object",
+      "xsdDatatype": "xsd:dateTime",
+      "minOccurs": "1",
+      "maxOccurs": "1",
+      "selectPattern": "
+        PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+        SELECT ?value WHERE {
+          $subject crm:P24i_changed_ownership_through ?acquisition.
+          ?acquisition crm:P4_has_time-span ?acquisitionDate.
+          ?acquisitionDate crm:P82a_end_of_the_end ?value
+        }
+      ",
+      "insertPattern": "
+        PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+        INSERT {
+          $subject crm:P24i_changed_ownership_through ?acquisition.
+          ?acquisition crm:P4_has_time-span ?acquisitionDate.
+          ?acquisitionDate crm:P82a_end_of_the_end  $value
+        } WHERE {
+          BIND(IRI(CONCAT(STR(?subject), \"/acquisition\")) as ?acquisition).
+          BIND(IRI(CONCAT(STR(?subject), \"/acquisition/date\")) as ?acquisitionDate).
+        }
+      ",
+      "deletePattern": "
+        PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+        DELETE {
+          $subject crm:P24i_changed_ownership_through ?acquisition.
+          ?acquisition crm:P4_has_time-span ?acquisitionDate.
+          ?acquisitionDate crm:P82a_end_of_the_end ?date
+        } WHERE {
+          $subject crm:P24i_changed_ownership_through ?acquisition.
+          ?acquisition crm:P4_has_time-span ?acquisitionDate.
+          ?acquisitionDate crm:P82a_end_of_the_end $value.
+          ?acquisitionDate crm:P82a_end_of_the_end  ?date.
+        }
+      "
+    },
+    {
+      "id": "acquisitionType",
+      "label": "Acquistion Type",
+      "description": "The type of acquisition refers to how the thing was transferred to the owning organisation. For example, donation, purchase, etc.",
+      "xsdDatatype": "xsd:anyURI",
+      "minOccurs": "1",
+      "maxOccurs": "1",
+      "selectPattern": "
+        PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+        SELECT $value ?label WHERE {
+          $subject crm:P24i_changed_ownership_through ?acquisition.
+          ?acquisition crm:P2_has_type $value.
+          $value skos:prefLabel $label
+        }
+      ",
+      "valueSetPattern": "
+        PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+        SELECT DISTINCT $value $label WHERE {
+          VALUES ($value $label) {
+            (<http://collection.britishmuseum.org/id/thesauri/acquisition/B> \"Bequeathed\")
+            (<http://collection.britishmuseum.org/id/thesauri/acquisition/D> \"Donated\")
+            (<http://collection.britishmuseum.org/id/thesauri/acquisition/FU> \"Funded\")
+            (<http://collection.britishmuseum.org/id/thesauri/acquisition/P> \"Purchased\")
+          }
+        }
+      ",
+      "insertPattern": "
+        PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+        INSERT {
+          ?acquisition a crm:E8_Acquisition .
+          ?acquisitionType a crm:E55_Type .
+          $subject crm:P24i_changed_ownership_through ?acquisition.
+          ?acquisition crm:P2_has_type $value.
+        } WHERE {
+          BIND(uri(concat(str($subject),\"/acquisition\")) as ?acquisition) .
+        }
+      "
+    },
+    {
+      "id": "acquisitionFromActor",
+      "label": "Acquisition from Actor",
+      "xsdDatatype": "xsd:anyURI",
+      "minOccurs": "1",
+      "maxOccurs": "1",
+      "selectPattern": "
+        PREFIX rs: <http://www.researchspace.org/ontology/>
+        PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+        SELECT ?value ?label WHERE {
+          $subject crm:P24i_changed_ownership_through ?acquisition.
+          ?acquisition crm:P23_transferred_title_from $value.
+          $value rs:displayLabel ?label
+        }
+      ",
+      "autosuggestionPattern": "
+        PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+        SELECT $value $label WHERE {
+          VALUES ($value $label) {
+            (<http://collection.britishmuseum.org/id/person-institution/104636> \"The British Museum\")
+            (<http://collection.britishmuseum.org/id/person-institution/170898> \"British Consulate General, Atlanta\")
+            (<http://collection.britishmuseum.org/id/person-institution/188537> \"British Association for the Advancement of Science\")
+          }
+          FILTER REGEX($label, \"?token\", \"i\")
+        }
+      ",
+      "insertPattern": "
+        PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+        INSERT {
+          ?acquisitionActor a crm:E39_Actor .
+          ?acqusition a crm:E8_Acquisition .
+          $subject crm:P24i_changed_ownership_through ?acquisition .
+          ?acquisition crm:P23_transferred_title_from $value .
+        } WHERE {
+          BIND(uri(concat(str(?subject),\"/acquisition\")) as ?acquisition)
+        }
+      "
+    }
+  ]'>
+  <bs-panel>
+    <h4>Create CRM Instance </h4>
+    <semantic-form-recover-notification></semantic-form-recover-notification>
+    <bs-tabs fixed-key="form">
+      <bs-tab event-key="1" title="General Information">
+        <semantic-form-text-input for='label'></semantic-form-text-input>
+        <semantic-form-select-input for='type'></semantic-form-select-input>
+      </bs-tab>
+      <bs-tab event-key="2" title="Acquisition">
+        <semantic-form-datetime-input for="acquisitionBeginDate"></semantic-form-datetime-input>
+        <semantic-form-datetime-input for="acquisitionEndDate"></semantic-form-datetime-input>
+        <semantic-form-select-input for='acquisitionType'></semantic-form-select-input>
+        <semantic-form-autocomplete-input for='acquisitionFromActor' placeholder='Search for an actor. Type e.g. "British"'></semantic-form-autocomplete-input>
+      </bs-tab>
+    </bs-tabs>
+    <semantic-form-errors></semantic-form-errors>
+    <!-- save and reset button for form -->
 
-          <button name="reset" class="btn btn-default">Reset</button>
-          <button name="submit" class="btn btn-action">Save</button>
-        </bs-panel>
-      </semantic-form>
-]]>
+    <div class="btn-group"> 
+      <button name="reset" class="btn btn-default">Reset</button>
+      <button name="submit" class="btn btn-action">Save</button>
+    </div>
+  </bs-panel>
+</semantic-form>
+      ]]>
     </mp-code-example>
 
     <h3>Example 3: Composite inputs</h3>
     <mp-code-example>
-<![CDATA[
-      <bs-panel>
-        <semantic-form new-subject-template='http://www.example.com/id/{{UUID}}'
-          post-action='redirect'
-          browser-persistence=true
-          form-id='example-3'
-          fields='[
-            {
-              "id": "label",
-              "label": "Label",
-              "xsdDatatype": "xsd:string",
-              "minOccurs": "1",
-              "maxOccurs": "1",
-              "selectPattern": "SELECT ?value WHERE { $subject <test:label> ?value }",
-              "insertPattern": "INSERT { $subject <test:label> ?value } WHERE {}",
-              "deletePattern": "DELETE { $subject <test:label> ?value } WHERE {}"
-            },
-            {
-              "id": "owner",
-              "label": "Owner",
-              "xsdDatatype": "xsd:anyURI",
-              "selectPattern": "SELECT ?value WHERE { $subject <test:owner> ?value }",
-              "insertPattern": "INSERT { $subject <test:owner> ?value } WHERE {}",
-              "deletePattern": "DELETE { $subject <test:owner> ?value } WHERE {}"
-            }
-          ]'>
-          <semantic-form-recover-notification></semantic-form-recover-notification>
-          <semantic-form-text-input for="label"></semantic-form-text-input>
-          <semantic-form-composite-input for="owner" new-subject-template="owner/{{id}}" fields='[
-            {
-              "id": "id",
-              "label": "Owner ID",
-              "xsdDatatype": "xsd:string",
-              "minOccurs": "1",
-              "maxOccurs": "1",
-              "selectPattern": "SELECT ?value WHERE { $subject <test:id> ?value }",
-              "insertPattern": "INSERT { $subject <test:id> ?value } WHERE {}",
-              "deletePattern": "DELETE { $subject <test:id> ?value } WHERE {}"
-            },
-            {
-              "id": "name",
-              "label": "Owner name",
-              "xsdDatatype": "xsd:string",
-              "minOccurs": "1",
-              "selectPattern": "SELECT ?value WHERE { $subject <test:name> ?value }",
-              "insertPattern": "INSERT { $subject <test:name> ?value } WHERE {}",
-              "deletePattern": "DELETE { $subject <test:name> ?value } WHERE {}"
-            }
-          ]'>
-            <semantic-form-text-input for="id"></semantic-form-text-input>
-            <semantic-form-text-input for="name"></semantic-form-text-input>
-          </semantic-form-composite-input>
-          <semantic-form-errors></semantic-form-errors>
-          <!-- save and reset button for form -->
+    <![CDATA[
+<bs-panel>
+  <semantic-form new-subject-template='http://www.example.com/id/{{UUID}}'
+    post-action='redirect'
+    browser-persistence=true
+    form-id='example-3'
+    fields='[
+      {
+        "id": "label",
+        "label": "Label",
+        "xsdDatatype": "xsd:string",
+        "minOccurs": "1",
+        "maxOccurs": "1",
+        "selectPattern": "SELECT ?value WHERE { $subject <test:label> ?value }",
+        "insertPattern": "INSERT { $subject <test:label> ?value } WHERE {}",
+        "deletePattern": "DELETE { $subject <test:label> ?value } WHERE {}"
+      },
+      {
+        "id": "owner",
+        "label": "Owner",
+        "xsdDatatype": "xsd:anyURI",
+        "selectPattern": "SELECT ?value WHERE { $subject <test:owner> ?value }",
+        "insertPattern": "INSERT { $subject <test:owner> ?value } WHERE {}",
+        "deletePattern": "DELETE { $subject <test:owner> ?value } WHERE {}"
+      }
+    ]'>
+    <semantic-form-recover-notification></semantic-form-recover-notification>
+    <semantic-form-text-input for="label"></semantic-form-text-input>
+    <semantic-form-composite-input for="owner" new-subject-template="owner/{{id}}" fields='[
+      {
+        "id": "id",
+        "label": "Owner ID",
+        "xsdDatatype": "xsd:string",
+        "minOccurs": "1",
+        "maxOccurs": "1",
+        "selectPattern": "SELECT ?value WHERE { $subject <test:id> ?value }",
+        "insertPattern": "INSERT { $subject <test:id> ?value } WHERE {}",
+        "deletePattern": "DELETE { $subject <test:id> ?value } WHERE {}"
+      },
+      {
+        "id": "name",
+        "label": "Owner name",
+        "xsdDatatype": "xsd:string",
+        "minOccurs": "1",
+        "selectPattern": "SELECT ?value WHERE { $subject <test:name> ?value }",
+        "insertPattern": "INSERT { $subject <test:name> ?value } WHERE {}",
+        "deletePattern": "DELETE { $subject <test:name> ?value } WHERE {}"
+      }
+    ]'>
+      <semantic-form-text-input for="id"></semantic-form-text-input>
+      <semantic-form-text-input for="name"></semantic-form-text-input>
+    </semantic-form-composite-input>
+    <semantic-form-errors></semantic-form-errors>
+    <!-- save and reset button for form -->
 
-          <button name="reset" class="btn btn-default">Reset</button>
-          <button name="submit" class="btn btn-action">Save</button>
-        </semantic-form>
-      </bs-panel>
-]]>
+    <div class="btn-group"> 
+      <button name="reset" class="btn btn-default">Reset</button>
+      <button name="submit" class="btn btn-action">Save</button>
+    </div>
+  </semantic-form>
+</bs-panel>
+      ]]>
     </mp-code-example>
 
     <h3>Example 4: Independent resource creation in modal dialog</h3>
     <mp-code-example>
-<![CDATA[
-      <bs-panel>
-        <semantic-form new-subject-template='http://www.example.com/with-features/{{id}}'
-          post-action='redirect'
-          browser-persistence=true
-          form-id='example-4'
-          fields='[
-            {
-              "id": "id",
-              "label": "ID",
-              "xsdDatatype": "xsd:string",
-              "minOccurs": "1",
-              "maxOccurs": "1",
-              "selectPattern": "SELECT ?value WHERE { $subject <test:id> ?value }",
-              "insertPattern": "INSERT { $subject <test:id> ?value } WHERE {}",
-              "deletePattern": "DELETE { $subject <test:id> ?value } WHERE {}",
-              "askPattern": "ASK { FILTER(REGEX($value, \"^[a-zA-Z0-9]+$\")) }"
-            },
-            {
-              "id": "feature",
-              "label": "Feature",
-              "xsdDatatype": "xsd:anyURI",
-              "selectPattern": "
-                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-                SELECT ?value ?label WHERE {
-                  $subject <test:feature> ?value .
-                  OPTIONAL { ?value rdfs:label ?label }
-                }
-              ",
-              "insertPattern": "INSERT { $subject <test:feature> ?value } WHERE {}",
-              "deletePattern": "DELETE { $subject <test:feature> ?value } WHERE {}",
-              "autosuggestionPattern": "
-                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-                SELECT $value $label WHERE {
-                  $value a <test:Feature> .
-                  $value rdfs:label $label .
-                  FILTER REGEX($label, \"?token\", \"i\")
-                }
-              "
-            },
-            {
-              "id": "location",
-              "label": "Location",
-              "description": "The former or current location of an instance",
-              "xsdDatatype": "xsd:anyURI",
-              "minOccurs": "1",
-              "maxOccurs": "3",
-              "selectPattern": "
-                PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-                SELECT $value WHERE { $subject crm:P53_has_former_or_current_location $value }
-              ",
-              "insertPattern": "
-                PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-                INSERT { $subject crm:P53_has_former_or_current_location $value } WHERE {}
-              ",
-              "deletePattern": "
-                PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-                DELETE { $subject crm:P53_has_former_or_current_location $value } WHERE {}
-              ",
-              "treePatterns": {
-                "type": "simple",
-                "schemePattern": "?item <http://www.w3.org/2004/02/skos/core#inScheme> <test:scheme/location>"
-              }
-            }
-          ]'>
-          <semantic-form-recover-notification></semantic-form-recover-notification>
-          <semantic-form-text-input for='id'></semantic-form-text-input>
-          <semantic-form-autocomplete-input for='feature' placeholder='Search or create a feature...'>
-            <semantic-form new-subject-template='http://www.example.com/feature/{{label}}' fields='[
-              {
-                "id": "label",
-                "label": "Label",
-                "xsdDatatype": "xsd:string",
-                "minOccurs": "1",
-                "maxOccurs": "1",
-                "selectPattern": "
-                  PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-                  SELECT ?value WHERE { $subject rdfs:label ?value }
-                ",
-                "insertPattern": "
-                  PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-                  INSERT { $subject rdfs:label ?value } WHERE {}
-                ",
-                "deletePattern": "
-                  PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-                  DELETE { $subject rdfs:label ?value } WHERE {}
-                ",
-                "askPattern": "ASK { FILTER(REGEX($value, \"^[a-zA-Z0-9]+$\")) }"
-              },
-              {
-                "id": "type",
-                "label": "Type",
-                "xsdDatatype": "xsd:anyURI",
-                "minOccurs": "1",
-                "maxOccurs": "1",
-                "selectPattern": "SELECT $value WHERE { $subject a $value }",
-                "insertPattern": "INSERT { $subject a $value } WHERE {}",
-                "deletePattern": "DELETE { $subject a $value } WHERE {}"
-              },
-              {
-                "id": "dimension",
-                "label": "Dimension",
-                "xsdDatatype": "xsd:positiveInteger",
-                "selectPattern": "SELECT ?value WHERE { $subject <test:dimension> ?value }",
-                "insertPattern": "INSERT { $subject <test:dimension> ?value } WHERE {}",
-                "deletePattern": "DELETE { $subject <test:dimension> ?value } WHERE {}"
-              }]'>
-              <semantic-form-hidden-input for='type' default-value='test:Feature'></semantic-form-hidden-input>
-              <semantic-form-text-input for='label'></semantic-form-text-input>
-              <semantic-form-text-input for='dimension'></semantic-form-text-input>
-              <semantic-form-errors></semantic-form-errors>
-              <button name='submit' class='btn btn-default'>Create feature</button>
-              <button name='reset' class='btn btn-default'>Reset feature</button>
-            </semantic-form>
-          </semantic-form-autocomplete-input>
-          <semantic-form-tree-picker-input for='location'>
-            <semantic-form new-subject-template='http://www.example.com/location/{{label}}' fields='[
-              {
-                "id": "label",
-                "label": "Label",
-                "xsdDatatype": "xsd:string",
-                "minOccurs": "1",
-                "maxOccurs": "1",
-                "selectPattern": "
-                  PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-                  SELECT ?value WHERE { $subject rdfs:label ?value }
-                ",
-                "insertPattern": "
-                  PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-                  INSERT { $subject rdfs:label ?value } WHERE {}
-                ",
-                "deletePattern": "
-                  PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-                  DELETE { $subject rdfs:label ?value } WHERE {}
-                ",
-                "askPattern": "ASK { FILTER(REGEX($value, \"^[a-zA-Z0-9]+$\")) }"
-              },
-              {
-                "id": "type",
-                "label": "Type",
-                "xsdDatatype": "xsd:anyURI",
-                "minOccurs": "1",
-                "maxOccurs": "1",
-                "selectPattern": "SELECT $value WHERE { $subject a $value }",
-                "insertPattern": "
-                  PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-                  INSERT {
-                    $subject a $value .
-                    $subject skos:inScheme <test:scheme/location>
-                  } WHERE {}
-                ",
-                "deletePattern": "
-                  PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-                  DELETE {
-                    $subject a $value .
-                    $subject skos:inScheme <test:scheme/location>
-                  } WHERE {}
-                "
-              },
-              {
-                "id": "broader",
-                "label": "Broader concept",
-                "xsdDatatype": "xsd:anyURI",
-                "maxOccurs": "1",
-                "selectPattern": "
-                  PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-                  SELECT ?value WHERE { $subject skos:broader ?value }
-                ",
-                "insertPattern": "
-                  PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-                  INSERT { $subject skos:broader ?value } WHERE {}
-                ",
-                "deletePattern": "
-                  PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-                  DELETE { $subject skos:broader ?value } WHERE {}
-                ",
-                "treePatterns": {
-                  "type": "simple",
-                  "schemePattern": "?item <http://www.w3.org/2004/02/skos/core#inScheme> <test:scheme/location>"
-                }
-              }]'>
-              <semantic-form-hidden-input for='type' default-value='test:Location'></semantic-form-hidden-input>
-              <semantic-form-text-input for='label'></semantic-form-text-input>
-              <semantic-form-tree-picker-input for='broader'></semantic-form-tree-picker-input>
-              <semantic-form-errors></semantic-form-errors>
-              <button name='submit' class='btn btn-default'>Create location</button>
-              <button name='reset' class='btn btn-default'>Reset location</button>
-            </semantic-form>
-          </semantic-form-tree-picker-input>
-          <semantic-form-errors></semantic-form-errors>
-          <!-- save and reset button for form -->
+    <![CDATA[
+<bs-panel>
+  <semantic-form new-subject-template='http://www.example.com/with-features/{{id}}'
+    post-action='redirect'
+    browser-persistence=true
+    form-id='example-4'
+    fields='[
+      {
+        "id": "id",
+        "label": "ID",
+        "xsdDatatype": "xsd:string",
+        "minOccurs": "1",
+        "maxOccurs": "1",
+        "selectPattern": "SELECT ?value WHERE { $subject <test:id> ?value }",
+        "insertPattern": "INSERT { $subject <test:id> ?value } WHERE {}",
+        "deletePattern": "DELETE { $subject <test:id> ?value } WHERE {}",
+        "askPattern": "ASK { FILTER(REGEX($value, \"^[a-zA-Z0-9]+$\")) }"
+      },
+      {
+        "id": "feature",
+        "label": "Feature",
+        "xsdDatatype": "xsd:anyURI",
+        "selectPattern": "
+          PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+          SELECT ?value ?label WHERE {
+            $subject <test:feature> ?value .
+            OPTIONAL { ?value rdfs:label ?label }
+          }
+        ",
+        "insertPattern": "INSERT { $subject <test:feature> ?value } WHERE {}",
+        "deletePattern": "DELETE { $subject <test:feature> ?value } WHERE {}",
+        "autosuggestionPattern": "
+          PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+          SELECT $value $label WHERE {
+            $value a <test:Feature> .
+            $value rdfs:label $label .
+            FILTER REGEX($label, \"?token\", \"i\")
+          }
+        "
+      },
+      {
+        "id": "location",
+        "label": "Location",
+        "description": "The former or current location of an instance",
+        "xsdDatatype": "xsd:anyURI",
+        "minOccurs": "1",
+        "maxOccurs": "3",
+        "selectPattern": "
+          PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+          SELECT $value WHERE { $subject crm:P53_has_former_or_current_location $value }
+        ",
+        "insertPattern": "
+          PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+          INSERT { $subject crm:P53_has_former_or_current_location $value } WHERE {}
+        ",
+        "deletePattern": "
+          PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+          DELETE { $subject crm:P53_has_former_or_current_location $value } WHERE {}
+        ",
+        "treePatterns": {
+          "type": "simple",
+          "schemePattern": "?item <http://www.w3.org/2004/02/skos/core#inScheme> <test:scheme/location>"
+        }
+      }
+    ]'>
+    <semantic-form-recover-notification></semantic-form-recover-notification>
+    <semantic-form-text-input for='id'></semantic-form-text-input>
+    <semantic-form-autocomplete-input for='feature' placeholder='Search or create a feature...'>
+      <semantic-form new-subject-template='http://www.example.com/feature/{{label}}' fields='[
+        {
+          "id": "label",
+          "label": "Label",
+          "xsdDatatype": "xsd:string",
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "selectPattern": "
+            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+            SELECT ?value WHERE { $subject rdfs:label ?value }
+          ",
+          "insertPattern": "
+            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+            INSERT { $subject rdfs:label ?value } WHERE {}
+          ",
+          "deletePattern": "
+            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+            DELETE { $subject rdfs:label ?value } WHERE {}
+          ",
+          "askPattern": "ASK { FILTER(REGEX($value, \"^[a-zA-Z0-9]+$\")) }"
+        },
+        {
+          "id": "type",
+          "label": "Type",
+          "xsdDatatype": "xsd:anyURI",
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "selectPattern": "SELECT $value WHERE { $subject a $value }",
+          "insertPattern": "INSERT { $subject a $value } WHERE {}",
+          "deletePattern": "DELETE { $subject a $value } WHERE {}"
+        },
+        {
+          "id": "dimension",
+          "label": "Dimension",
+          "xsdDatatype": "xsd:positiveInteger",
+          "selectPattern": "SELECT ?value WHERE { $subject <test:dimension> ?value }",
+          "insertPattern": "INSERT { $subject <test:dimension> ?value } WHERE {}",
+          "deletePattern": "DELETE { $subject <test:dimension> ?value } WHERE {}"
+        }]'>
+        <semantic-form-hidden-input for='type' default-value='test:Feature'></semantic-form-hidden-input>
+        <semantic-form-text-input for='label'></semantic-form-text-input>
+        <semantic-form-text-input for='dimension'></semantic-form-text-input>
+        <semantic-form-errors></semantic-form-errors>
+        <div class="btn-group"> 
+          <button name='reset' class='btn btn-default'>Reset feature</button>
+          <button name='submit' class='btn btn-action'>Create feature</button>
+        </div>
+      </semantic-form>
+    </semantic-form-autocomplete-input>
+    <semantic-form-tree-picker-input for='location'>
+      <semantic-form new-subject-template='http://www.example.com/location/{{label}}' fields='[
+        {
+          "id": "label",
+          "label": "Label",
+          "xsdDatatype": "xsd:string",
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "selectPattern": "
+            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+            SELECT ?value WHERE { $subject rdfs:label ?value }
+          ",
+          "insertPattern": "
+            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+            INSERT { $subject rdfs:label ?value } WHERE {}
+          ",
+          "deletePattern": "
+            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+            DELETE { $subject rdfs:label ?value } WHERE {}
+          ",
+          "askPattern": "ASK { FILTER(REGEX($value, \"^[a-zA-Z0-9]+$\")) }"
+        },
+        {
+          "id": "type",
+          "label": "Type",
+          "xsdDatatype": "xsd:anyURI",
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "selectPattern": "SELECT $value WHERE { $subject a $value }",
+          "insertPattern": "
+            PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+            INSERT {
+              $subject a $value .
+              $subject skos:inScheme <test:scheme/location>
+            } WHERE {}
+          ",
+          "deletePattern": "
+            PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+            DELETE {
+              $subject a $value .
+              $subject skos:inScheme <test:scheme/location>
+            } WHERE {}
+          "
+        },
+        {
+          "id": "broader",
+          "label": "Broader concept",
+          "xsdDatatype": "xsd:anyURI",
+          "maxOccurs": "1",
+          "selectPattern": "
+            PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+            SELECT ?value WHERE { $subject skos:broader ?value }
+          ",
+          "insertPattern": "
+            PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+            INSERT { $subject skos:broader ?value } WHERE {}
+          ",
+          "deletePattern": "
+            PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+            DELETE { $subject skos:broader ?value } WHERE {}
+          ",
+          "treePatterns": {
+            "type": "simple",
+            "schemePattern": "?item <http://www.w3.org/2004/02/skos/core#inScheme> <test:scheme/location>"
+          }
+        }]'>
+        <semantic-form-hidden-input for='type' default-value='test:Location'></semantic-form-hidden-input>
+        <semantic-form-text-input for='label'></semantic-form-text-input>
+        <semantic-form-tree-picker-input for='broader'></semantic-form-tree-picker-input>
+        <semantic-form-errors></semantic-form-errors>
+        <div class="btn-group"> 
+          <button name='reset' class='btn btn-default'>Reset location</button>
+          <button name='submit' class='btn btn-action'>Create location</button>
+        </div>
+      </semantic-form>
+    </semantic-form-tree-picker-input>
+    <semantic-form-errors></semantic-form-errors>
+    <!-- save and reset button for form -->
 
-          <button name='reset' class='btn btn-default'>Reset</button>
-          <button name='submit' class='btn btn-action'>Save</button>
-        </semantic-form>
-      </bs-panel>
-]]>
+    <div class="btn-group"> 
+      <button name="reset" class="btn btn-default">Reset</button>
+      <button name="submit" class="btn btn-action">Save</button>
+    </div>
+  </semantic-form>
+</bs-panel>
+      ]]>
     </mp-code-example>
 
     <h3>Example 5: Default values and hidden fields</h3>
     <mp-code-example>
-<![CDATA[
-      <semantic-form new-subject-template='http://www.example.com/id/{{UUID}}'
-        post-action='redirect'
-        browser-persistence=true
-        form-id='example-5'
-        fields='[
-          {
-            "id": "label",
-            "label": "Label",
-            "description": "The label used to display the instance",
-            "xsdDatatype": "xsd:string",
-            "minOccurs": "1",
-            "maxOccurs": "unbound",
-            "defaultValues": ["Default label for example instance"],
-            "selectPattern": "SELECT $value WHERE { $subject rdfs:label $value }",
-            "insertPattern": "INSERT { $subject rdfs:label $value } WHERE {}",
-            "deletePattern": "DELETE { $subject rdfs:label $value } WHERE {}"
-          },
-          {
-            "id": "type",
-            "label": "Type",
-            "description": "The type of the created instance",
-            "xsdDatatype": "xsd:anyURI",
-            "selectPattern": "SELECT $value WHERE { $subject a $value }",
-            "insertPattern": "INSERT { $subject a $value } WHERE {}",
-            "deletePattern": "DELETE { $subject a $value } WHERE {}"
-          }
-        ]'>
-        <bs-panel>
-          <h4>Create new Human Made Object Instance</h4>
-          <semantic-form-recover-notification></semantic-form-recover-notification>
-          <semantic-form-text-input for='label'></semantic-form-text-input>
-          <semantic-form-hidden-input for='type'
-            default-value='http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object'>
-          </semantic-form-hidden-input>
-          <semantic-form-errors></semantic-form-errors>
-          <!-- save and reset button for form -->
+    <![CDATA[
+<semantic-form new-subject-template='http://www.example.com/id/{{UUID}}'
+  post-action='redirect'
+  browser-persistence=true
+  form-id='example-5'
+  fields='[
+    {
+      "id": "label",
+      "label": "Label",
+      "description": "The label used to display the instance",
+      "xsdDatatype": "xsd:string",
+      "minOccurs": "1",
+      "maxOccurs": "unbound",
+      "defaultValues": ["Default label for example instance"],
+      "selectPattern": "SELECT $value WHERE { $subject rdfs:label $value }",
+      "insertPattern": "INSERT { $subject rdfs:label $value } WHERE {}",
+      "deletePattern": "DELETE { $subject rdfs:label $value } WHERE {}"
+    },
+    {
+      "id": "type",
+      "label": "Type",
+      "description": "The type of the created instance",
+      "xsdDatatype": "xsd:anyURI",
+      "selectPattern": "SELECT $value WHERE { $subject a $value }",
+      "insertPattern": "INSERT { $subject a $value } WHERE {}",
+      "deletePattern": "DELETE { $subject a $value } WHERE {}"
+    }
+  ]'>
+  <bs-panel>
+    <h4>Create new Human Made Object Instance</h4>
+    <semantic-form-recover-notification></semantic-form-recover-notification>
+    <semantic-form-text-input for='label'></semantic-form-text-input>
+    <semantic-form-hidden-input for='type'
+      default-value='http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object'>
+    </semantic-form-hidden-input>
+    <semantic-form-errors></semantic-form-errors>
+    <!-- save and reset button for form -->
 
-          <button name="reset" class="btn btn-default">Reset</button>
-          <button name="submit" class="btn btn-action">Save</button>
-        </bs-panel>
-      </semantic-form>
-]]>
+    <div class="btn-group"> 
+      <button name="reset" class="btn btn-default">Reset</button>
+      <button name="submit" class="btn btn-action">Save</button>
+    </div>
+  </bs-panel>
+</semantic-form>
+      ]]>
     </mp-code-example>
     <h3>Example 6: Checklist</h3>
     <mp-code-example>
-<![CDATA[
-    <semantic-form new-subject-template='http://www.example.com/id/{{UUID}}'
-      post-action='redirect'
-      browser-persistence=true
-      form-id='example-6'
-      fields='[
-        {
-          "id": "person-character",
-          "label": "Person character",
-          "xsdDatatype": "xsd:anyUri",
-          "minOccurs": "1",
-          "maxOccurs": "unbound",
-          "selectPattern": "SELECT $value WHERE { $subject a $value }",
-          "insertPattern": "INSERT { $subject a $value } WHERE {}",
-          "deletePattern": "DELETE { $subject a $value } WHERE {}",
-          "valueSetPattern": "SELECT ?value ?label WHERE {
-            VALUES (?value ?label) {
-              (<http://example.com/person-character/strong> \"Strong\")
-              (<http://example.com/person-character/brave> \"Brave\")
-              (<http://example.com/person-character/clever> \"Clever\")
-              (<http://example.com/person-character/stupid> \"Stupid\")
-              (<http://example.com/person-character/beautiful> \"Beautiful\")
-            }
-          }"
-        },
-        {
-          "id": "repatriation-status",
-          "label": "Repatriation status",
-          "xsdDatatype": "xsd:anyUri",
-          "minOccurs": "1",
-          "maxOccurs": "1",
-          "selectPattern": "SELECT $value WHERE { $subject a $value }",
-          "insertPattern": "INSERT { $subject a $value } WHERE {}",
-          "deletePattern": "DELETE { $subject a $value } WHERE {}",
-          "valueSetPattern": "SELECT ?value ?label WHERE {
-            VALUES (?value ?label) {
-              (<http://example.com/repatriation-status/in-progress> \"In progress\")
-              (<http://example.com/repatriation-status/not-applicable> \"Not applicable\")
-              (<http://example.com/repatriation-status/repatriated> \"Repatriated\")
-              (<http://example.com/repatriation-status/under-review> \"Under review\")
-            }
-          }"
-        },
-        {
-          "id": "event-happen",
-          "label": "Did the event happen?",
-          "xsdDatatype": "xsd:boolean",
-          "minOccurs": "1",
-          "maxOccurs": "1",
-          "selectPattern": "SELECT $value WHERE { $subject a $value }",
-          "insertPattern": "INSERT { $subject a $value } WHERE {}",
-          "deletePattern": "DELETE { $subject a $value } WHERE {}",
-          "valueSetPattern": "SELECT ?value ?label WHERE {
-            VALUES (?value ?label) {
-              (true \"Yes\")
-              (false \"No\")
-            }
-          }"
+    <![CDATA[
+<semantic-form new-subject-template='http://www.example.com/id/{{UUID}}'
+  post-action='redirect'
+  browser-persistence=true
+  form-id='example-6'
+  fields='[
+    {
+      "id": "person-character",
+      "label": "Person character",
+      "xsdDatatype": "xsd:anyUri",
+      "minOccurs": "1",
+      "maxOccurs": "unbound",
+      "selectPattern": "SELECT $value WHERE { $subject a $value }",
+      "insertPattern": "INSERT { $subject a $value } WHERE {}",
+      "deletePattern": "DELETE { $subject a $value } WHERE {}",
+      "valueSetPattern": "SELECT ?value ?label WHERE {
+        VALUES (?value ?label) {
+          (<http://example.com/person-character/strong> \"Strong\")
+          (<http://example.com/person-character/brave> \"Brave\")
+          (<http://example.com/person-character/clever> \"Clever\")
+          (<http://example.com/person-character/stupid> \"Stupid\")
+          (<http://example.com/person-character/beautiful> \"Beautiful\")
         }
-      ]'>
-      <bs-panel>
-        <semantic-form-recover-notification></semantic-form-recover-notification>
-        <h4>Select the character of the person</h4>
-        <semantic-form-checklist-input for='person-character' type='checkbox'></semantic-form-checklist-input>
-        <h4>Select the state of the repatriation status</h4>
-        <semantic-form-checklist-input for='repatriation-status' row=true type='radio'></semantic-form-checklist-input>
-        <h4>Select is event happen or not</h4>
-        <semantic-form-checklist-input for='event-happen' type='radio'></semantic-form-checklist-input>
-        <semantic-form-errors></semantic-form-errors>
-        <!-- save and reset button for form -->
+      }"
+    },
+    {
+      "id": "repatriation-status",
+      "label": "Repatriation status",
+      "xsdDatatype": "xsd:anyUri",
+      "minOccurs": "1",
+      "maxOccurs": "1",
+      "selectPattern": "SELECT $value WHERE { $subject a $value }",
+      "insertPattern": "INSERT { $subject a $value } WHERE {}",
+      "deletePattern": "DELETE { $subject a $value } WHERE {}",
+      "valueSetPattern": "SELECT ?value ?label WHERE {
+        VALUES (?value ?label) {
+          (<http://example.com/repatriation-status/in-progress> \"In progress\")
+          (<http://example.com/repatriation-status/not-applicable> \"Not applicable\")
+          (<http://example.com/repatriation-status/repatriated> \"Repatriated\")
+          (<http://example.com/repatriation-status/under-review> \"Under review\")
+        }
+      }"
+    },
+    {
+      "id": "event-happen",
+      "label": "Did the event happen?",
+      "xsdDatatype": "xsd:boolean",
+      "minOccurs": "1",
+      "maxOccurs": "1",
+      "selectPattern": "SELECT $value WHERE { $subject a $value }",
+      "insertPattern": "INSERT { $subject a $value } WHERE {}",
+      "deletePattern": "DELETE { $subject a $value } WHERE {}",
+      "valueSetPattern": "SELECT ?value ?label WHERE {
+        VALUES (?value ?label) {
+          (true \"Yes\")
+          (false \"No\")
+        }
+      }"
+    }
+  ]'>
+  <bs-panel>
+    <semantic-form-recover-notification></semantic-form-recover-notification>
+    <h4>Select the character of the person</h4>
+    <semantic-form-checklist-input for='person-character' type='checkbox'></semantic-form-checklist-input>
+    <hr style="margin:5px 0px 10px 0px">
+    <h4>Select the state of the repatriation status</h4>
+    <semantic-form-checklist-input for='repatriation-status' row=true type='radio'></semantic-form-checklist-input>
+    <hr style="margin:5px 0px 10px 0px">
+    <h4>Select is event happen or not</h4>
+    <semantic-form-checklist-input for='event-happen' type='radio'></semantic-form-checklist-input>
+    <semantic-form-errors></semantic-form-errors>
+    <!-- save and reset button for form -->
 
-        <button name="reset" class="btn btn-default">Reset</button>
-        <button name="submit" class="btn btn-action">Save</button>
-      </bs-panel>
-    </semantic-form>
+    <div class="btn-group"> 
+      <button name="reset" class="btn btn-default">Reset</button>
+      <button name="submit" class="btn btn-action">Save</button>
+    </div>
+  </bs-panel>
+</semantic-form>
 ]]>
-    </mp-code-example>
-    <h3>Example 7: Checkbox</h3>
-    <mp-code-example>
+</mp-code-example>
+<h3>Example 7: Checkbox</h3>
+<mp-code-example>
 <![CDATA[
-    <semantic-form new-subject-template='http://www.example.com/id/{{UUID}}'
-      post-action='redirect'
-      browser-persistence=true
-      form-id='example-7'
-      fields='[
-      {
-        "id": "is-dinosaur",
-        "label": "Is it a dinosaur?",
-        "xsdDatatype": "xsd:boolean",
-        "minOccurs": "1",
-        "maxOccurs": "1",
-        "selectPattern": "SELECT $value WHERE { $subject <http://example.com/dinosaur/isdinosaur> $value }",
-        "insertPattern": "INSERT { $subject <http://example.com/dinosaur/isdinosaur> $value } WHERE {}",
-        "deletePattern": "DELETE { $subject <http://example.com/dinosaur/isdinosaur> $value } WHERE {}"
-      }
-      ]'>
-      <bs-panel>
-        <semantic-form-recover-notification></semantic-form-recover-notification>
-        <semantic-form-checkbox-input for='is-dinosaur'></semantic-form-checkbox-input>
-        <semantic-form-errors></semantic-form-errors>
-        <!-- save and reset button for form -->
+<semantic-form new-subject-template='http://www.example.com/id/{{UUID}}'
+  post-action='redirect'
+  browser-persistence=true
+  form-id='example-7'
+  fields='[
+  {
+    "id": "is-dinosaur",
+    "label": "Is it a dinosaur?",
+    "xsdDatatype": "xsd:boolean",
+    "minOccurs": "1",
+    "maxOccurs": "1",
+    "selectPattern": "SELECT $value WHERE { $subject <http://example.com/dinosaur/isdinosaur> $value }",
+    "insertPattern": "INSERT { $subject <http://example.com/dinosaur/isdinosaur> $value } WHERE {}",
+    "deletePattern": "DELETE { $subject <http://example.com/dinosaur/isdinosaur> $value } WHERE {}"
+  }
+  ]'>
+  <bs-panel>
+    <semantic-form-recover-notification></semantic-form-recover-notification>
+    <semantic-form-checkbox-input for='is-dinosaur'></semantic-form-checkbox-input>
+    <semantic-form-errors></semantic-form-errors>
+    <!-- save and reset button for form -->
 
-        <button name="reset" class="btn btn-default">Reset</button>
-        <button name="submit" class="btn btn-action">Save</button>
-      </bs-panel>
-    </semantic-form>
-]]>
+    <div class="btn-group"> 
+      <button name="reset" class="btn btn-default">Reset</button>
+      <button name="submit" class="btn btn-action">Save</button>
+    </div>
+  </bs-panel>
+</semantic-form>
+        ]]>
       </mp-code-example>
 
       <h3>Example 8: Switch</h3>
       <mp-code-example>
-<![CDATA[
-      <semantic-form new-subject-template='http://www.example.com/switch/actions/{{UUID}}'
-        post-action='redirect'
-        browser-persistence=true
-        form-id='example-8'
-        fields='[
+      <![CDATA[
+<semantic-form new-subject-template='http://www.example.com/switch/actions/{{UUID}}'
+  post-action='redirect'
+  browser-persistence=true
+  form-id='example-8'
+  fields='[
+    {
+      "id": "switch-action-type",
+      "label": "Switch",
+      "description": "Allows to select different forms",
+      "xsdDatatype": "xsd:anyURI",
+      "selectPattern": "SELECT $value WHERE { $subject <http://www.example.com/switch/has-action> $value }",
+      "insertPattern": "INSERT { $subject <http://www.example.com/switch/has-action> $value } WHERE {}",
+      "deletePattern": "DELETE { $subject <http://www.example.com/switch/has-action> $value } WHERE {}"
+    }
+  ]'>
+  <bs-panel>
+    <semantic-form-recover-notification></semantic-form-recover-notification>
+    <semantic-form-switch for="switch-action-type" switch-on-field="switch-case-type">
+      <semantic-form-switch-case label="Send">
+        <semantic-form-composite-input for="switch-action-type" new-subject-template='http://www.example.com/switch/action/send/{{UUID}}' fields='[
           {
-            "id": "switch-action-type",
-            "label": "Switch",
-            "description": "Allows to select different forms",
+            "id": "switch-case-type",
             "xsdDatatype": "xsd:anyURI",
-            "selectPattern": "SELECT $value WHERE { $subject <http://www.example.com/switch/has-action> $value }",
-            "insertPattern": "INSERT { $subject <http://www.example.com/switch/has-action> $value } WHERE {}",
-            "deletePattern": "DELETE { $subject <http://www.example.com/switch/has-action> $value } WHERE {}"
+            "minOccurs": "1",
+            "maxOccurs": "1",
+            "selectPattern": "SELECT ?value WHERE { $subject <http://www.example.com/switch/has-action-type> ?value }",
+            "insertPattern": "INSERT { $subject <http://www.example.com/switch/has-action-type> ?value } WHERE {}",
+            "deletePattern": "DELETE { $subject <http://www.example.com/switch/has-action-type> ?value } WHERE {}"
+          },
+          {
+            "id": "label",
+            "label": "Label",
+            "xsdDatatype": "xsd:string",
+            "minOccurs": "1",
+            "maxOccurs": "1",
+            "selectPattern": "SELECT ?value WHERE { $subject rdfs:label ?value }",
+            "insertPattern": "INSERT { $subject rdfs:label ?value } WHERE {}",
+            "deletePattern": "DELETE { $subject rdfs:label ?value } WHERE {}"
+          },
+          {
+            "id": "sender",
+            "label": "Sender",
+            "xsdDatatype": "xsd:string",
+            "minOccurs": "1",
+            "maxOccurs": "1",
+            "selectPattern": "SELECT ?value WHERE { $subject <http://www.example.com/sender-name> ?value }",
+            "insertPattern": "INSERT { $subject <http://www.example.com/sender-name> ?value } WHERE {}",
+            "deletePattern": "DELETE { $subject <http://www.example.com/sender-name> ?value } WHERE {}"
+          },
+          {
+            "id": "amount",
+            "label": "Amount",
+            "xsdDatatype": "xsd:decimal",
+            "minOccurs": "1",
+            "maxOccurs": "1",
+            "selectPattern": "SELECT ?value WHERE { $subject <http://www.example.com/amount> ?value }",
+            "insertPattern": "INSERT { $subject <http://www.example.com/amount> ?value } WHERE {}",
+            "deletePattern": "DELETE { $subject <http://www.example.com/amount> ?value } WHERE {}"
           }
         ]'>
-        <bs-panel>
-          <semantic-form-recover-notification></semantic-form-recover-notification>
-          <semantic-form-switch for="switch-action-type" switch-on-field="switch-case-type">
-            <semantic-form-switch-case label="Send">
-              <semantic-form-composite-input for="switch-action-type" new-subject-template='http://www.example.com/switch/action/send/{{UUID}}' fields='[
-                {
-                  "id": "switch-case-type",
-                  "xsdDatatype": "xsd:anyURI",
-                  "minOccurs": "1",
-                  "maxOccurs": "1",
-                  "selectPattern": "SELECT ?value WHERE { $subject <http://www.example.com/switch/has-action-type> ?value }",
-                  "insertPattern": "INSERT { $subject <http://www.example.com/switch/has-action-type> ?value } WHERE {}",
-                  "deletePattern": "DELETE { $subject <http://www.example.com/switch/has-action-type> ?value } WHERE {}"
-                },
-                {
-                  "id": "label",
-                  "label": "Label",
-                  "xsdDatatype": "xsd:string",
-                  "minOccurs": "1",
-                  "maxOccurs": "1",
-                  "selectPattern": "SELECT ?value WHERE { $subject rdfs:label ?value }",
-                  "insertPattern": "INSERT { $subject rdfs:label ?value } WHERE {}",
-                  "deletePattern": "DELETE { $subject rdfs:label ?value } WHERE {}"
-                },
-                {
-                  "id": "sender",
-                  "label": "Sender",
-                  "xsdDatatype": "xsd:string",
-                  "minOccurs": "1",
-                  "maxOccurs": "1",
-                  "selectPattern": "SELECT ?value WHERE { $subject <http://www.example.com/sender-name> ?value }",
-                  "insertPattern": "INSERT { $subject <http://www.example.com/sender-name> ?value } WHERE {}",
-                  "deletePattern": "DELETE { $subject <http://www.example.com/sender-name> ?value } WHERE {}"
-                },
-                {
-                  "id": "amount",
-                  "label": "Amount",
-                  "xsdDatatype": "xsd:decimal",
-                  "minOccurs": "1",
-                  "maxOccurs": "1",
-                  "selectPattern": "SELECT ?value WHERE { $subject <http://www.example.com/amount> ?value }",
-                  "insertPattern": "INSERT { $subject <http://www.example.com/amount> ?value } WHERE {}",
-                  "deletePattern": "DELETE { $subject <http://www.example.com/amount> ?value } WHERE {}"
-                }
-              ]'>
-                <semantic-form-hidden-input for="switch-case-type" default-value="http://www.example.com/switch/type/send">
-                </semantic-form-hidden-input>
-                <semantic-form-text-input for="label"></semantic-form-text-input>
-                <semantic-form-text-input for="sender"></semantic-form-text-input>
-                <semantic-form-text-input for="amount"></semantic-form-text-input>
-              </semantic-form-composite-input>
-            </semantic-form-switch-case>
-            <semantic-form-switch-case label="Move">
-              <semantic-form-composite-input for="switch-action-type" new-subject-template='http://www.example.com/switch/action/move/{{UUID}}' fields='[
-                {
-                  "id": "switch-case-type",
-                  "xsdDatatype": "xsd:anyURI",
-                  "minOccurs": "1",
-                  "maxOccurs": "1",
-                  "selectPattern": "SELECT ?value WHERE { $subject <http://www.example.com/switch/has-action-type> ?value }",
-                  "insertPattern": "INSERT { $subject <http://www.example.com/switch/has-action-type> ?value } WHERE {}",
-                  "deletePattern": "DELETE { $subject <http://www.example.com/switch/has-action-type> ?value } WHERE {}"
-                },
-                {
-                  "id": "label",
-                  "label": "Label",
-                  "xsdDatatype": "xsd:string",
-                  "minOccurs": "1",
-                  "maxOccurs": "1",
-                  "selectPattern": "SELECT ?value WHERE { $subject rdfs:label ?value }",
-                  "insertPattern": "INSERT { $subject rdfs:label ?value } WHERE {}",
-                  "deletePattern": "DELETE { $subject rdfs:label ?value } WHERE {}"
-                },
-                {
-                  "id": "amount",
-                  "label": "Amount",
-                  "xsdDatatype": "xsd:decimal",
-                  "minOccurs": "1",
-                  "maxOccurs": "1",
-                  "selectPattern": "SELECT ?value WHERE { $subject <http://www.example.com/amount> ?value }",
-                  "insertPattern": "INSERT { $subject <http://www.example.com/amount> ?value } WHERE {}",
-                  "deletePattern": "DELETE { $subject <http://www.example.com/amount> ?value } WHERE {}"
-                },
-                {
-                  "id": "from",
-                  "label": "From",
-                  "xsdDatatype": "xsd:string",
-                  "minOccurs": "1",
-                  "maxOccurs": "1",
-                  "selectPattern": "SELECT ?value WHERE { $subject <http://www.example.com/sender-name> ?value }",
-                  "insertPattern": "INSERT { $subject <http://www.example.com/sender-name> ?value } WHERE {}",
-                  "deletePattern": "DELETE { $subject <http://www.example.com/sender-name> ?value } WHERE {}"
-                },
-                {
-                  "id": "to",
-                  "label": "To",
-                  "xsdDatatype": "xsd:string",
-                  "minOccurs": "1",
-                  "maxOccurs": "1",
-                  "selectPattern": "SELECT ?value WHERE { $subject <http://www.example.com/receiver-name> ?value }",
-                  "insertPattern": "INSERT { $subject <http://www.example.com/receiver-name> ?value } WHERE {}",
-                  "deletePattern": "DELETE { $subject <http://www.example.com/receiver-name> ?value } WHERE {}"
-                }
-              ]'>
-                <semantic-form-hidden-input for="switch-case-type" default-value="http://www.example.com/switch/type/move">
-                </semantic-form-hidden-input>
-                <semantic-form-text-input for="label"></semantic-form-text-input>
-                <semantic-form-text-input for="amount"></semantic-form-text-input>
-                <semantic-form-text-input for="from"></semantic-form-text-input>
-                <semantic-form-text-input for="to"></semantic-form-text-input>
-              </semantic-form-composite-input>
-            </semantic-form-switch-case>
-            <semantic-form-switch-case label="Receive">
-              <semantic-form-composite-input for="switch-action-type" new-subject-template="http://www.example.com/switch/action/receive/{{UUID}}" fields='[
-                {
-                  "id": "switch-case-type",
-                  "xsdDatatype": "xsd:anyURI",
-                  "minOccurs": "1",
-                  "maxOccurs": "1",
-                  "selectPattern": "SELECT ?value WHERE { $subject <http://www.example.com/switch/has-action-type> ?value }",
-                  "insertPattern": "INSERT { $subject <http://www.example.com/switch/has-action-type> ?value } WHERE {}",
-                  "deletePattern": "DELETE { $subject <http://www.example.com/switch/has-action-type> ?value } WHERE {}"
-                },
-                {
-                  "id": "label",
-                  "label": "Label",
-                  "xsdDatatype": "xsd:string",
-                  "minOccurs": "1",
-                  "maxOccurs": "1",
-                  "selectPattern": "SELECT ?value WHERE { $subject rdfs:label ?value }",
-                  "insertPattern": "INSERT { $subject rdfs:label ?value } WHERE {}",
-                  "deletePattern": "DELETE { $subject rdfs:label ?value } WHERE {}"
-                },
-                {
-                  "id": "receiver",
-                  "label": "Receiver",
-                  "xsdDatatype": "xsd:string",
-                  "minOccurs": "1",
-                  "maxOccurs": "1",
-                  "selectPattern": "SELECT ?value WHERE { $subject <http://www.example.com/receiver-name> ?value }",
-                  "insertPattern": "INSERT { $subject <http://www.example.com/receiver-name> ?value } WHERE {}",
-                  "deletePattern": "DELETE { $subject <http://www.example.com/receiver-name> ?value } WHERE {}"
-                },
-                {
-                  "id": "amount",
-                  "label": "Amount",
-                  "xsdDatatype": "xsd:decimal",
-                  "minOccurs": "1",
-                  "maxOccurs": "1",
-                  "selectPattern": "SELECT ?value WHERE { $subject <http://www.example.com/amount> ?value }",
-                  "insertPattern": "INSERT { $subject <http://www.example.com/amount> ?value } WHERE {}",
-                  "deletePattern": "DELETE { $subject <http://www.example.com/amount> ?value } WHERE {}"
-                }
-              ]'>
-                <semantic-form-hidden-input for="switch-case-type" default-value="http://www.example.com/switch/type/receive">
-                </semantic-form-hidden-input>
-                <semantic-form-text-input for="label"></semantic-form-text-input>
-                <semantic-form-text-input for="receiver"></semantic-form-text-input>
-                <semantic-form-text-input for="amount"></semantic-form-text-input>
-              </semantic-form-composite-input>
-            </semantic-form-switch-case>
-          </semantic-form-switch>
-          <semantic-form-errors></semantic-form-errors>
-          <!-- save and reset button for form -->
-          <button name="submit" class="btn btn-default">Save</button>
-          <button name="reset" class="btn btn-default">Reset</button>
-        </bs-panel>
-      </semantic-form>
-]]>
-</mp-code-example>
+          <semantic-form-hidden-input for="switch-case-type" default-value="http://www.example.com/switch/type/send">
+          </semantic-form-hidden-input>
+          <semantic-form-text-input for="label"></semantic-form-text-input>
+          <semantic-form-text-input for="sender"></semantic-form-text-input>
+          <semantic-form-text-input for="amount"></semantic-form-text-input>
+        </semantic-form-composite-input>
+      </semantic-form-switch-case>
+      <semantic-form-switch-case label="Move">
+        <semantic-form-composite-input for="switch-action-type" new-subject-template='http://www.example.com/switch/action/move/{{UUID}}' fields='[
+          {
+            "id": "switch-case-type",
+            "xsdDatatype": "xsd:anyURI",
+            "minOccurs": "1",
+            "maxOccurs": "1",
+            "selectPattern": "SELECT ?value WHERE { $subject <http://www.example.com/switch/has-action-type> ?value }",
+            "insertPattern": "INSERT { $subject <http://www.example.com/switch/has-action-type> ?value } WHERE {}",
+            "deletePattern": "DELETE { $subject <http://www.example.com/switch/has-action-type> ?value } WHERE {}"
+          },
+          {
+            "id": "label",
+            "label": "Label",
+            "xsdDatatype": "xsd:string",
+            "minOccurs": "1",
+            "maxOccurs": "1",
+            "selectPattern": "SELECT ?value WHERE { $subject rdfs:label ?value }",
+            "insertPattern": "INSERT { $subject rdfs:label ?value } WHERE {}",
+            "deletePattern": "DELETE { $subject rdfs:label ?value } WHERE {}"
+          },
+          {
+            "id": "amount",
+            "label": "Amount",
+            "xsdDatatype": "xsd:decimal",
+            "minOccurs": "1",
+            "maxOccurs": "1",
+            "selectPattern": "SELECT ?value WHERE { $subject <http://www.example.com/amount> ?value }",
+            "insertPattern": "INSERT { $subject <http://www.example.com/amount> ?value } WHERE {}",
+            "deletePattern": "DELETE { $subject <http://www.example.com/amount> ?value } WHERE {}"
+          },
+          {
+            "id": "from",
+            "label": "From",
+            "xsdDatatype": "xsd:string",
+            "minOccurs": "1",
+            "maxOccurs": "1",
+            "selectPattern": "SELECT ?value WHERE { $subject <http://www.example.com/sender-name> ?value }",
+            "insertPattern": "INSERT { $subject <http://www.example.com/sender-name> ?value } WHERE {}",
+            "deletePattern": "DELETE { $subject <http://www.example.com/sender-name> ?value } WHERE {}"
+          },
+          {
+            "id": "to",
+            "label": "To",
+            "xsdDatatype": "xsd:string",
+            "minOccurs": "1",
+            "maxOccurs": "1",
+            "selectPattern": "SELECT ?value WHERE { $subject <http://www.example.com/receiver-name> ?value }",
+            "insertPattern": "INSERT { $subject <http://www.example.com/receiver-name> ?value } WHERE {}",
+            "deletePattern": "DELETE { $subject <http://www.example.com/receiver-name> ?value } WHERE {}"
+          }
+        ]'>
+          <semantic-form-hidden-input for="switch-case-type" default-value="http://www.example.com/switch/type/move">
+          </semantic-form-hidden-input>
+          <semantic-form-text-input for="label"></semantic-form-text-input>
+          <semantic-form-text-input for="amount"></semantic-form-text-input>
+          <semantic-form-text-input for="from"></semantic-form-text-input>
+          <semantic-form-text-input for="to"></semantic-form-text-input>
+        </semantic-form-composite-input>
+      </semantic-form-switch-case>
+      <semantic-form-switch-case label="Receive">
+        <semantic-form-composite-input for="switch-action-type" new-subject-template="http://www.example.com/switch/action/receive/{{UUID}}" fields='[
+          {
+            "id": "switch-case-type",
+            "xsdDatatype": "xsd:anyURI",
+            "minOccurs": "1",
+            "maxOccurs": "1",
+            "selectPattern": "SELECT ?value WHERE { $subject <http://www.example.com/switch/has-action-type> ?value }",
+            "insertPattern": "INSERT { $subject <http://www.example.com/switch/has-action-type> ?value } WHERE {}",
+            "deletePattern": "DELETE { $subject <http://www.example.com/switch/has-action-type> ?value } WHERE {}"
+          },
+          {
+            "id": "label",
+            "label": "Label",
+            "xsdDatatype": "xsd:string",
+            "minOccurs": "1",
+            "maxOccurs": "1",
+            "selectPattern": "SELECT ?value WHERE { $subject rdfs:label ?value }",
+            "insertPattern": "INSERT { $subject rdfs:label ?value } WHERE {}",
+            "deletePattern": "DELETE { $subject rdfs:label ?value } WHERE {}"
+          },
+          {
+            "id": "receiver",
+            "label": "Receiver",
+            "xsdDatatype": "xsd:string",
+            "minOccurs": "1",
+            "maxOccurs": "1",
+            "selectPattern": "SELECT ?value WHERE { $subject <http://www.example.com/receiver-name> ?value }",
+            "insertPattern": "INSERT { $subject <http://www.example.com/receiver-name> ?value } WHERE {}",
+            "deletePattern": "DELETE { $subject <http://www.example.com/receiver-name> ?value } WHERE {}"
+          },
+          {
+            "id": "amount",
+            "label": "Amount",
+            "xsdDatatype": "xsd:decimal",
+            "minOccurs": "1",
+            "maxOccurs": "1",
+            "selectPattern": "SELECT ?value WHERE { $subject <http://www.example.com/amount> ?value }",
+            "insertPattern": "INSERT { $subject <http://www.example.com/amount> ?value } WHERE {}",
+            "deletePattern": "DELETE { $subject <http://www.example.com/amount> ?value } WHERE {}"
+          }
+        ]'>
+          <semantic-form-hidden-input for="switch-case-type" default-value="http://www.example.com/switch/type/receive">
+          </semantic-form-hidden-input>
+          <semantic-form-text-input for="label"></semantic-form-text-input>
+          <semantic-form-text-input for="receiver"></semantic-form-text-input>
+          <semantic-form-text-input for="amount"></semantic-form-text-input>
+        </semantic-form-composite-input>
+      </semantic-form-switch-case>
+    </semantic-form-switch>
+    <semantic-form-errors></semantic-form-errors>
+    <!-- save and reset button for form -->
+    <div class="btn-group"> 
+      <button name="reset" class="btn btn-default">Reset</button>
+      <button name="submit" class="btn btn-action">Save</button>
+    </div>
+  </bs-panel>
+</semantic-form>
+      ]]>
+    </mp-code-example>
   </div>
 </div>
-t

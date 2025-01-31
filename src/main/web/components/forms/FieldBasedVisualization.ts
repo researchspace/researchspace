@@ -48,17 +48,18 @@ export interface FieldBasedVisualizationConfig {
   /**
    * Definition for fields that need to be visualized.
    *
-   * See <semantic-link iri='http://help.researchspace.org/resource/Help:SemanticForm'></semantic-link> for more details about field definitions.
+   * See <semantic-link iri='http://help.researchspace.org/resource/Help:SemanticForm' target="_blank"></semantic-link> for more details about field definitions.
    */
   fields: FieldDefinitionProp[];
 
   /**
-   * <semantic-link iri='http://help.researchspace.org/resource/Help:FrontendTemplating'>Template</semantic-link>, that gets the `fields` value with the list of field definitions injected as template context.
-   * [each helper](http://handlebarsjs.com/builtin_helpers.html#iteration) can be used to iterate over the fields.
+   * <semantic-link iri='http://help.researchspace.org/resource/Help:TemplatingSystem' target="_blank">Template</semantic-link>, that gets the `fields` value with the list of field definitions injected as template context.
+   * <a href='https://handlebarsjs.com/guide/builtin-helpers.html#each' class='text-link-action' target='_blank'>each helper</a>
+   *  can be used to iterate over the fields.
    *
    * Every field has corresponding metadata (label, xsdDatatype, etc.), as well as list of `values`.
    *
-   * See <semantic-link iri='http://help.researchspace.org/resource/Help:SemanticForm'></semantic-link> for more details about field definitions.
+   * See <semantic-link iri='http://help.researchspace.org/resource/Help:SemanticForm' target="_blank"></semantic-link> for more details about field definitions.
    */
   template: string;
 }

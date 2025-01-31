@@ -30,7 +30,7 @@ import './ConfigDocComponent.scss';
 const box: string = require('raw-loader!./templates/box.html').default;
 const signature: string = require('raw-loader!./templates/signature.html').default;
 
-interface Props {
+interface ConfigDocProps {
   type: string;
   disableTransformAttributes?: boolean;
   hideRequiredLabel?: boolean;
@@ -48,7 +48,7 @@ type PropertyTransformer = (fn: (key: string, value?: any) => string) => (json: 
  * @example
  * <mp-documentation type="<interface-name>"></mp-documentation>
  */
-export default class ConfigDocComponent extends Component<Props, {}> {
+export default class ConfigDocComponent extends Component<ConfigDocProps, {}> {
   private container: HTMLElement;
 
   componentDidMount() {

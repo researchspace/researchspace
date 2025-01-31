@@ -1,0 +1,64 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "ResultFormat": {
+            "enum": [
+                "application/json",
+                "application/ld+json",
+                "application/n-quads",
+                "application/n-triples",
+                "application/rdf+json",
+                "application/rdf+xml",
+                "application/sparql-results+json",
+                "application/sparql-results+xml",
+                "application/trig",
+                "application/trix",
+                "application/x-binary-rdf",
+                "application/x-binary-rdf-results-table",
+                "application/x-trig",
+                "application/x-turtle",
+                "application/xml",
+                "text/boolean",
+                "text/csv",
+                "text/n3",
+                "text/nquads",
+                "text/plain",
+                "text/rdf+n3",
+                "text/tab-separated-values",
+                "text/turtle",
+                "text/x-nquads"
+            ],
+            "type": "string"
+        }
+    },
+    "properties": {
+        "downloadResourceIri": {
+            "description": "(optional) downloadResourceIri: if provided, will be used to retrieve the label that will be used as filename. \nIn case filename is provided, downloadResourceIri will be ignored",
+            "type": "string"
+        },
+        "filename": {
+            "description": "(optional) file name: if provided, will be used as filename",
+            "type": "string"
+        },
+        "header": {
+            "$ref": "#/definitions/ResultFormat",
+            "description": "result mime type header (according to the standards)"
+        },
+        "query": {
+            "description": "SPARQL SELECT OR CONSTRUCT query",
+            "type": "string"
+        }
+    },
+    "propertyOrder": [
+        "query",
+        "header",
+        "filename",
+        "downloadResourceIri"
+    ],
+    "required": [
+        "header",
+        "query"
+    ],
+    "type": "object"
+}
+

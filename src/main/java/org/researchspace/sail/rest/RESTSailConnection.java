@@ -21,6 +21,7 @@ package org.researchspace.sail.rest;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +55,7 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.algebra.Create;
 import org.eclipse.rdf4j.query.algebra.StatementPattern;
 import org.eclipse.rdf4j.query.algebra.Var;
 import org.eclipse.rdf4j.query.algebra.evaluation.iterator.CollectionIteration;
@@ -64,13 +66,24 @@ import org.researchspace.federation.repository.service.ServiceDescriptor.Paramet
 import org.researchspace.sail.rest.RESTSailConfig.AUTH_LOCATION;
 import org.researchspace.sail.rest.RESTSailConfig.RestAuthorization;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.ReadContext;
+import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
+import com.jayway.jsonpath.spi.json.JsonSmartJsonProvider;
+import com.jayway.jsonpath.spi.mapper.JsonSmartMappingProvider;
+
+
+
+import net.minidev.json.parser.ParseException;
+
+
 
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
+import net.minidev.json.parser.JSONParser;
 
 /**
  * 
@@ -120,7 +133,7 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
                     // Get the root path
                     Optional<Parameter> param = getSail().getSubjectParameter();
                     String rootPath = param.isPresent() ? param.get().getJsonPath() : "$";
-
+                    logger.trace("rootPath"+rootPath);
                     results = executeJson(stringResponse, rootPath, parametersHolder.getOutputVariables());
                     break;
 
@@ -147,25 +160,28 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
      * @return
      */
     private List<BindingSet> executeJson(String res, String rootPath, Map<IRI, String> outputParameters) {
+        logger.trace("Response: "+res);
+        
+        ObjectMapper objectMapper = new ObjectMapper();
 
-        // Parse the response
-        ReadContext context = JsonPath.parse(res);
+        Configuration config = Configuration.builder()
+                .jsonProvider(new JacksonJsonProvider(objectMapper))
+                .build();
 
-        // Get the root object
+        ReadContext context  = JsonPath.using(config).parse(res);
+        List<BindingSet> results = new ArrayList<>();
         Object root = context.read(rootPath);
-
-        List<BindingSet> results = Lists.newArrayList();
-
-        // Manipulate the results in different ways based on its structure
-        if (root instanceof JSONArray) {
-            results = iterateJsonArray((JSONArray) root, outputParameters);
+        if (root instanceof List) {
+            // likely a JSON array
+            logger.trace("Root is a JSON array. Iterating over array properties...");
+            results = iterateJsonArray((List<?>) root, outputParameters);
+        } else if (root instanceof Map) {
+            // likely a JSON object
+            logger.trace("Root is a JSON object. Iterating over object properties...");
+            results = iterateJsonMap((Map<?, ?>) root, outputParameters);
         }
 
-        if (root instanceof Map) {
-            results = iterateJsonMap((Map) root, outputParameters);
-        }
-
-        return results;
+        return results;       
     }
 
     /**
@@ -174,11 +190,11 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
      * @param outputParameters
      * @return
      */
-    private List<BindingSet> iterateJsonArray(JSONArray array, Map<IRI, String> outputParameters) {
+    private List<BindingSet> iterateJsonArray(List<?> array, Map<IRI, String> outputParameters) {
+        List<BindingSet> bindingSets = new ArrayList<>();
 
         logger.trace("### [START] Parsing JSONArray ###");
-        List<BindingSet> bindingSets = Lists.newArrayList();
-
+      
         for (Object object : array) {
             bindingSets.add(createBindingSetFromJSONObject(object, outputParameters));
         }
@@ -193,12 +209,12 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
      * @param outputParameters
      * @return
      */
-    private List<BindingSet> iterateJsonMap(Map map, Map<IRI, String> outputParameters) {
+    private List<BindingSet> iterateJsonMap(Map<?, ?> map, Map<IRI, String> outputParameters) {
 
         logger.trace("### [START] Parsing JSONObject ###");
         List<BindingSet> bindingSets = Lists.newArrayList();
 
-        bindingSets.add(createBindingSetFromJSONObject(map, outputParameters));
+        bindingSets.add(createBindingSetFromJSONObject(map, outputParameters));       
 
         logger.trace("### [END] Parsing JSONObject ###");
         return bindingSets;
@@ -261,7 +277,7 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
              * e.g https://api.vam.ac.uk/v2/object/{objectid} 
              */
             String url = getSail().getConfig().getUrl();
-            System.out.println(getSail().getConfig().getUrl().toString());
+            logger.trace(getSail().getConfig().getUrl().toString());
             Pattern pattern = Pattern.compile("\\{([^}]*)\\}");
             Matcher matcher = pattern.matcher(getSail().getConfig().getUrl().toString());
 
@@ -275,6 +291,36 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
             WebTarget targetResource = this.client.target(url)
                     .property(ClientProperties.FOLLOW_REDIRECTS, Boolean.TRUE);
 
+            // 1. Print information about the WebTarget
+            logger.trace("=== WebTarget ===");
+            if (targetResource != null) {
+                logger.trace("URI: " + targetResource.getUri().toString());
+            } else {
+                logger.trace("WebTarget is null.");
+            }
+
+            // 2. Print values from the ServiceParametersHolder
+            logger.trace("\n=== ServiceParametersHolder ===");
+
+            // 2a. Input Parameters
+            if (parametersHolder != null && parametersHolder.getInputParameters() != null) {
+                logger.trace("Input Parameters:");
+                for (Map.Entry<String, String> entry : parametersHolder.getInputParameters().entrySet()) {
+                    logger.trace(" - " + entry.getKey() + " => " + entry.getValue());
+                }
+            } else {
+                logger.trace("No input parameters found.");
+            }
+
+            // 2b. Output Variables
+            if (parametersHolder != null && parametersHolder.getOutputVariables() != null) {
+                logger.trace("\nOutput Variables:");
+                for (Entry<IRI, String> entry : parametersHolder.getOutputVariables().entrySet()) {
+                    logger.trace(" - " + entry.getKey() + " => " + entry.getValue());
+                }
+            } else {
+                logger.trace("No output variables found.");
+            }
             // Case with POST
             if (HttpMethod.POST.equals(httpMethod)) {
                 return submitPost(targetResource, parametersHolder);
@@ -366,6 +412,17 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
         // Iterate over input triples in descriptor
         // Use the SPARQL query to get values and create input parameter holder as a set
         // of tuple IRI, value
+        for (Entry<String, Parameter> entry : getSail().getServiceDescriptor().getInputParameters().entrySet()) {
+
+            String key = entry.getKey();
+            Parameter param = entry.getValue();
+
+            // Replace .getParameterName() / .getDefaultValue() with the actual methods in your Parameter class
+            logger.trace("Parameter IRI: {}", key);
+            logger.trace("Parameter Name: {}", param.getParameterName());
+            logger.trace("Default Value: {}", param.getDefaultValue().orElse(null));
+        }
+
         for (Map.Entry<IRI, Parameter> entry : getSail().getMapInputParametersByProperty().entrySet()) {
 
             // Get subject and value
@@ -397,7 +454,8 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
             }
         }
         logger.trace("[END] Parsing SPARLQ query");
-
+        logger.trace(res);
+        
         return res;
     }
 

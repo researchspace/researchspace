@@ -1,28 +1,20 @@
-<ol class="page-breadcrumb">
-  <li>
-    <mp-link title="Home" url="/">Home</mp-link>
-  </li>
-  <li>
-    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
-  </li>
-  <li>
-    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
-  </li>
-  <li class="active">Simple Component Tutorial</li>
-</ol>
+<div class="page__grid-container help-page-container">
+  <div class='page__content-container'>
+  <h1>Simple Component Tutorial</h1>
 
-<div class="page">
-  <div class='page__body'>
-  <h1> Simple Component Tutorial </h1>
-
-  <h2> Hello World Component </h2>
+  <h2>Hello World Component</h2>
   <p>The goal is to create the most simple "Hello World!"-like component.</p>
 
-  <p>First, we need to create the JavaScript implementation for our new component. Put the code below into <code>src/main/web/components/examples/GreetingComponent.tsx</code> file. If this is your first encounter with React.js we recommend first to read <a href="https://facebook.github.io/react/docs/tutorial.html">React Getting Started</a>. The pretty HTML-like syntax we use is <a href="https://facebook.github.io/react/docs/introducing-jsx.html">JSX</a>, but it would work equally well <a href="https://facebook.github.io/react/docs/react-without-jsx.html">without it</a>.
+  <p>First, we need to create the JavaScript implementation for our new component. 
+    Put the code below into <code>src/main/web/components/examples/GreetingComponent.tsx</code> file. 
+   
+    The pretty HTML-like syntax we use is JSX, 
+    but it would work equally well without it.
   </p>
-  <p>Please, keep in mind that we <a href="https://facebook.github.io/react/docs/jsx-in-depth.html#react-must-be-in-scope">have to</a> import <code>React</code> to make JSX syntax work. Some outdated JavaScript IDE may still claim that this <code>import</code> is extraneous, but it's not.</p>
+  <p>Please, keep in mind that we have to import <code>React</code> to make JSX syntax work. 
+    Some outdated JavaScript IDE may still claim that this <code>import</code> is extraneous, but it's not.</p>
   <mp-code-block mode='text/typescript'>
-<![CDATA[
+  <![CDATA[
 import * as React from 'react';
 import {Component} from 'platform/api/components';
 
@@ -59,30 +51,34 @@ export class GreetingComponent extends Component<GreetingComponentProps, Greetin
 
 // register GreetingComponent as the default export for this source file
 export default GreetingComponent;
-]]>
+  ]]>
   </mp-code-block>
   <p>
     Now, we have to define our custom HTML tag that would display this component on the web page. Supposedly, we want to use the tag <code>greeting</code> for that. Then, we need to open the file <code>component.json</code>. It defines a map that links the name of the custom tag with the source script file, specifically, with default exported class from this file (note the <code>export</code> statements at the end of our source file). Here we need to register the link between our tag name and the source file by adding a line to the map:
   </p>
   <mp-code-block>
-<![CDATA[
-    ...
-    "greeting": "platform/components/examples/GreetingComponent.tsx",
-    ...
-]]>
+  <![CDATA[
+...
+"greeting": "platform/components/examples/GreetingComponent.tsx",
+...
+  ]]>
   </mp-code-block>
   <p><em>NB!</em>Currently you have to restart the server when <code>component.json</code> was changed.</p>
-  <p>Let's try to embed our new component into some page. Go to a new page, for example, <semantic-link title="HelloWorld" iri="[[resolvePrefix ":HelloWorld"]]">HelloWorld</semantic-link> and edit the page by clicking on the edit button. Copy and paste the component definition below into the page and save the page.</p>
+  <p>Let's try to embed our new component into some page. Go to a new page, 
+    for example, 
+  <semantic-link title="HelloWorld" iri="[[resolvePrefix ':HelloWorld']]" class="text-link-action" target="_blank">HelloWorld</semantic-link> 
+  and edit the page by clicking on the edit button. Copy and paste the component definition below into the page and save the page.</p>
 
     <mp-code-example show-code-by-default='true'>
-<![CDATA[
+    <![CDATA[
 <greeting name='World'></greeting>
-]]>
+    ]]>
     </mp-code-example>
-
-
-  <h2> Gallery Component </h2>
-Let's create a component which retrieves some entities from the triplestore and visualizes them in a simple, floating grid. For this, please, first load the pre-requisite data as described <semantic-link title="Basic Tutorial" iri="[[resolvePrefix "Help:Tutorial"]]">here</semantic-link>.
+  <hr class="divider">
+  <h2>Gallery Component</h2>
+Let's create a component which retrieves some entities from the triplestore and visualizes them in a simple, floating grid. For this, please, 
+first load the pre-requisite data as described 
+<semantic-link title="Basic Tutorial" iri="[[resolvePrefix 'Help:Tutorial']]" class="text-link-action" target="_blank">here</semantic-link>.
 
 
   [[#if (ask "ASK {  <http://example.org/bob#me> a foaf:Person  }") ]]
@@ -94,7 +90,7 @@ Let's create a component which retrieves some entities from the triplestore and 
   <p>As before, the first step involves creating a TypeScript file implementing the behaviour of our component and saving it as <code>platform-web/src/main/components/GalleryComponent.tsx</code>.</p>
   <p></p>
   <mp-code-block mode='text/typescript'>
-<![CDATA[
+  <![CDATA[
 // we need to import React, because TSX syntax implicitly uses React.createElement
 import * as React from 'react';
 
@@ -169,44 +165,50 @@ export class GalleryComponent extends Component<GalleryComponentProps, GalleryCo
 }
 
 export default GalleryComponent;
-]]>
+  ]]>
   </mp-code-block>
   Now, we need to register the tag <code>gallery-component</code> and associate it with our TypeScript file.
   <mp-code-block>
-<![CDATA[
+  <![CDATA[
 ...
 "gallery-component": "platform/components/GalleryComponent.tsx",
 ...
-]]>
+  ]]>
   </mp-code-block>
-  To see how our new gallery component looks like, let's add it to our <semantic-link title="HelloWorld" iri="[[resolvePrefix ":HelloWorld"]]">HelloWorld</semantic-link> page:
-    <mp-code-example show-code-by-default='true'>
-<![CDATA[
-<gallery-component
-  query='SELECT ?uri ?thumbnail WHERE { ?uri <http://schema.org/thumbnail> ?thumbnail }'
-  tuple-template='<img style="float: left; height: 300px; margin: 10px; border: 1px solid;" src="{{thumbnail.value}}"/>'
+  To see how our new gallery component looks like, let's add it to
+   our <semantic-link title="HelloWorld" iri="[[resolvePrefix ':HelloWorld']]" class="text-link-action" target="_blank">HelloWorld</semantic-link> page:
+    <mp-code-block>
+  <![CDATA[
+<gallery-component  query='SELECT ?uri ?thumbnail WHERE { ?uri <http://schema.org/thumbnail> ?thumbnail }'
+                    tuple-template='<img style="float: left; height: 300px; margin: 10px; border: 1px solid;" src="{{thumbnail.value}}"/>'
 ></gallery-component>
-]]>
-    </mp-code-example>
+  ]]>
+    </mp-code-block>
   <p>
   Here, we used a SPARQL query to select links to thumbnail images of the data instances from our repository. Then, we render each of these links as an image and display them in a row.
   </p>
-
+  <hr class="divider">
   <h2>Dynamic Query Parameters</h2>
-  <p>Now let's check how our components can play nicely with the templating mechanism (refer to <semantic-link iri="[[resolvePrefix "Help:TemplateAndApplicationPages"]]">Templates and Application Pages</semantic-link> for more details about the templates concept).</p>
+  <p>Now let's check how our components can play nicely with the templating mechanism</p>
   <p>Let's try to apply our new GalleryComponent to the <code>foaf:Person</code> template.
     Now we want to show the thumbnail image of the Person on the page of each person.</p>
 
-<p>To do this, just navigate to the template page <a href="/resource/?action=edit&uri=Template%3Ahttp%3A%2F%2Fxmlns.com%2Ffoaf%2F0.1%2FPerson">Template:foaf:Person</a> and copy/paste to add the component definition from below.
-  <mp-code-example show-code-by-default='true'>
-<![CDATA[
-<gallery-component
-  query='SELECT ?label ?thumbnail WHERE { ?? rdfs:label ?label; <http://schema.org/thumbnail> ?thumbnail }'
-  tuple-template='<div><b>{{label.value}}</b><img style="float: left; height: 300px; margin: 10px; border: 1px solid;" src="{{thumbnail.value}}"/></div>'
+<p>To do this, just navigate to the template page 
+  <a href="/resource/?action=edit&uri=Template%3Ahttp%3A%2F%2Fxmlns.com%2Ffoaf%2F0.1%2FPerson" class="text-link-action" target="_blank">Template:foaf:Person</a> 
+  and copy/paste to add the component definition from below.</p>
+  <mp-code-block>
+  <![CDATA[
+<gallery-component query='SELECT ?label ?thumbnail WHERE { 
+                                  ?? rdfs:label ?label; <http://schema.org/thumbnail> ?thumbnail 
+                          }'
+                   tuple-template='<div><b>{{label.value}}</b>
+                                    <img style="float: left; height: 300px; margin: 10px; border: 1px solid;" src="{{thumbnail.value}}"/>
+                                  </div>'
 ></gallery-component>
-]]>
-  </mp-code-example>
-  To see your component in action, try to navigate to a page of some Person having a thumbnail image, e.g., in our case, <semantic-link iri="http://example.org/bob#me">bob#me</semantic-link>.
+  ]]>
+  </mp-code-block>
+  To see your component in action, try to navigate to a page of some Person having a thumbnail image, e.g., 
+  in our case, <semantic-link iri="http://example.org/bob#me" class="text-link-action" target="_blank">bob#me</semantic-link>.
 
 The most interesting part of the component configuration from above is dynamic query parameter - ??. At runtime, this parameter will be bound to the selected resource. E.g., if you navigate to the <code>bob#me</code> page, ?? will be substituted with the <code>&lt;http://example.org/bob#me&gt;</code> URI.
   </div>

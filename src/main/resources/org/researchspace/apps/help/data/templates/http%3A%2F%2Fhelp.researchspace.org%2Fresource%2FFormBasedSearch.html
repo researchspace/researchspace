@@ -1,30 +1,15 @@
-<ol class="page-breadcrumb">
-  <li>
-    <mp-link title="Home" url="/">Home</mp-link>
-  </li>
-  <li>
-    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
-  </li>
-  <li>
-    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
-  </li>
-  <li>
-    <semantic-link title="Semantic Search" iri="http://help.researchspace.org/resource/SemanticSearch">Semantic Search</semantic-link>
-  </li>
-  <li class="active">Form-Based Search Component</li>
-</ol>
-
-<div class="page">
-  <div class="page__body">
-  <h1> Form-Based Search Component </h1>
-  <div class="documentation__intro">
-    <div class="documentation__intro__description">
-      Search input component for the <semantic-link iri="[[resolvePrefix "Help:SemanticSearch"]]">semantic search framework</semantic-link> based on the <semantic-link iri="[[resolvePrefix "Help:SemanticForm"]]">semantic form</semantic-link> component.  <br><br>
+<div class="page__grid-container help-page-container">
+  <div class='page__content-container'>
+  <h1>Semantic search form-based</h1>
+  <div>
+      Search input component for the <semantic-link iri="http://help.researchspace.org/resource/SemanticSearch" class="text-link-action" target="_blank">semantic search</semantic-link> framework 
+      based on the <semantic-link iri="[[resolvePrefix 'Help:SemanticForm']]" class="text-link-action" target="_blank">semantic form</semantic-link> component.  
+      <br><br>
       <p>
         The component allows to flexibly compose form input components in order to serve as search definition input for the semantic search framework. Input values as provided by end-users will dynamically be injected as values into SPARQL query templates. This way forms can be used to let end-users execute pre-defined information requests aka SPARQL query templates, including SPARQL hybrid queries, i.e. for external (compute) service invocation.
       </p>
       <p>
-        Due to the integration with the <semantic-link iri="[[resolvePrefix "Help:SemanticSearch"]]">semantic search framework</semantic-link>, the form-based search input can effectively be used to configure interactive result visualizations allowing end-users, for example: 
+        Due to the integration with the <semantic-link iri="[[resolvePrefix 'Help:SemanticSearch']]" class="text-link-action" target="_blank">semantic search</semantic-link> framework, the form-based search input can effectively be used to configure interactive result visualizations allowing end-users, for example: 
       </p>
       <ul>
         <li>
@@ -38,7 +23,7 @@
         </li>
       </ul>
       
-      <h4>Features</h4>
+      <h3>Features</h3>
       <ul>
         <li>
           <b>Supports all atomic form input components</b>: text input, date input, autocomplete input, select input, tree input.
@@ -47,24 +32,22 @@
           <b>Can be comined with all standard result visualization components</b>: semantic-query, -table, -tree, -graph, -carousel, -map, -chart.
         </li>
       </ul>
-      <h4>Limitations</h4>
+      <h3>Limitations</h3>
       <ul>
-        <li><b>Optional Values</b>: Due to the pattern matching nature of the SPARQL query language, it can be difficult to treat certain form inputs transparently as optional or non-optional parameters, i.e. if the user does not provide certain input values in the form-based search component, the respective query variables will simply not be injected (replaced) into the main query. However, the respective BGP (basic graph pattern) in the SPARQL query  will still exist and be most likely non-optional. </li>
+        <li><b>Optional Values</b>: Due to the pattern matching nature of the SPARQL query language, it can be difficult to treat certain form inputs transparently as optional or non-optional parameters, 
+          i.e. if the user does not provide certain input values in the form-based search component, the respective query variables will simply not be injected (replaced) into the main query. However, the respective BGP (basic graph pattern) in the SPARQL query  will still exist and be most likely non-optional. </li>
         <li><b>Multi Value Parameterization</b>: Multi-value selection and parameterization for a single query variable is supported but it should be used with caution. Within SPARQL multi value injection is only possible through the VALUES clause. It has effectively a FILTER semantics and can either lead to very inefficient queries or even return unexpected results (in particular, in combination with service calls, subqueries, unions etc.). By default, multi-value selection is disabled but can be enabled by setting <code>multi=true</code>. It's possible to disable multi-value parameterization for particular variables by setting <code>"maxOccurs": "1"</code> for corresponding fields.</li>
       	<li><b>Input Dependencies</b>: It is currently not supported to make inputs dependent on other inputs during runtime, i.e. one select dropdown input can not be used to restrict the valueset of another dropdown or autosuggestion input. </li>
       </ul>
-
-    </div>
-
   </div>
      
-  <div style="clear:both;"></div>
-  <h2>Configuration </h2>
-    Please refer to the <semantic-link iri="[[resolvePrefix "Help:SemanticForm"]]">semantic form help</semantic-link> for details about field definitions and configuration of respective HTML form input components.
+  <hr class="divider">
+  <h2>Configuration</h2>
+    Please refer to the <semantic-link iri="[[resolvePrefix 'Help:SemanticForm']]" class="text-link-action" target="_blank">semantic form guide</semantic-link> for details about field definitions and configuration of respective HTML form input components.
     <mp-documentation type="SemanticFormBasedQueryConfig"></mp-documentation>
     
     <mp-code-block>
-<![CDATA[
+    <![CDATA[
 <semantic-search>
   <!-- 1. form-based search as search definition -->
 	<semantic-search-form-query
@@ -87,7 +70,7 @@
        }
      ]'>
        <semantic-form-select-input for="class"></semantic-form-select-input>
-       <button type='button' name='submit' className='btn btn-action'>Search</button>
+       <button type='button' name='submit' className='btn btn-action' style="margin-top:10px;">Search</button>
   </semantic-search-form-query>
   
 	<!-- 2. faceting is optional -->
@@ -102,9 +85,10 @@
     </semantic-search-result>
   </semantic-search-result-holder>
 </semantic-search>
-]]>
+    ]]>
   </mp-code-block>
-  <h2> Example: Graph visualization with user-selected nodes</h2>
+  <hr class="divider">
+  <h3>Example: Graph visualization with user-selected nodes</h3>
   <p>
     The following example returns all person that know the user selected person.
     </p>
@@ -113,7 +97,7 @@
       [[> Help:StructuredSearchSampleDataCheck]]
     </p>
     <mp-code-example>
-<![CDATA[
+    <![CDATA[
 <semantic-search>
   <!-- 1. search definition -->
   <semantic-search-form-query
@@ -136,7 +120,7 @@
        }
      ]'>
 	<semantic-form-select-input for="person" placeholder='Select, for example, "Alice"'></semantic-form-select-input>
-       <button type='button' name='submit' className='btn btn-default'>Visualize Graph</button>
+       <button type='button' name='submit' className='btn btn-action' style="margin-top:10px;">Visualize Graph</button>
    </semantic-search-form-query>
  
   <!-- 2. facet is optional -->
@@ -147,16 +131,16 @@
     </semantic-search-result>
   </semantic-search-result-holder>
 </semantic-search>
-]]>
+    ]]>
   </mp-code-example>
-    
-  <h2> Example: Search with a simple table result </h2>
+  <hr class="divider">
+  <h3>Example: Search with a simple table result</h3>
     <p>
       [[> Help:StructuredSearchSampleDataCheck]]
     </p>
     
     <mp-code-example>
-<![CDATA[
+    <![CDATA[
 <semantic-search>
   <!-- 1. search definition -->
   <semantic-search-form-query
@@ -193,7 +177,7 @@
      ]'>
        <semantic-form-select-input placeholder='Please select a class to search instances of' for="class"></semantic-form-select-input>
        <semantic-form-text-input for="label" placeholder='Type "li" to find , for example, "mona lisa" or "alice"'></semantic-form-text-input>
-       <button type='button' name='submit' className='btn btn-action'>Search</button>
+       <button type='button' name='submit' className='btn btn-action' style="margin-top:10px;">Search</button>
    </semantic-search-form-query>
   <!-- 2. facet is optional -->
 	<!-- <semantic-search-facet></semantic-search-facet> -->
@@ -203,7 +187,7 @@
     </semantic-search-result>
   </semantic-search-result-holder>
 </semantic-search>
-]]>
+    ]]>
   </mp-code-example>
   </div>  
 </div>

@@ -232,86 +232,89 @@
                                     </template>
                                   </semantic-query>
                                 </div>
-																<semantic-context repository="ontologies">
-                                <semantic-if query='ASK where { 
-                                                    {
-                                                      SELECT ((COUNT(?prop)) - (COUNT(?kp)) AS ?diff) WHERE {
-                                                      {
-                                                        BIND(<{{subject.value}}> AS ?ontology)
-                                                        BIND(IF(STRENDS(STR(?ontology), "/"), STR(?ontology), CONCAT(STR(?ontology), "/")) AS ?ontologyURI)
-                                                        BIND(IRI(CONCAT(STR(?ontologyURI), "context")) AS ?ontologyContext)
 
-                                                        GRAPH ?ontologyContext {
-                                                          ?prop rdf:type ?owlType.
-                                                          FILTER(?owlType IN(owl:DatatypeProperty, owl:ObjectProperty, rdf:Property))
-                                                          FILTER(CONTAINS(STR(?prop), REPLACE(STR(?ontologyContext), "/context", "")))
+                                [[#if (hasPermission "forms:ldp:*")]]
+																<semantic-context repository="ontologies">
+                                  <semantic-if query='ASK where { 
+                                                      {
+                                                        SELECT ((COUNT(?prop)) - (COUNT(?kp)) AS ?diff) WHERE {
+                                                        {
+                                                          BIND(<{{subject.value}}> AS ?ontology)
+                                                          BIND(IF(STRENDS(STR(?ontology), "/"), STR(?ontology), CONCAT(STR(?ontology), "/")) AS ?ontologyURI)
+                                                          BIND(IRI(CONCAT(STR(?ontologyURI), "context")) AS ?ontologyContext)
+
+                                                          GRAPH ?ontologyContext {
+                                                            ?prop rdf:type ?owlType.
+                                                            FILTER(?owlType IN(owl:DatatypeProperty, owl:ObjectProperty, rdf:Property))
+                                                            FILTER(CONTAINS(STR(?prop), REPLACE(STR(?ontologyContext), "/context", "")))
+                                                          }
+                                                        }
+                                                        UNION
+                                                        {
+                                                          BIND(<{{subject.value}}> AS ?ontology)
+                                                          BIND(IF(STRENDS(STR(?ontology), "/"), STR(?ontology), CONCAT(STR(?ontology), "/")) AS ?ontologyURI)
+                                                          BIND(IRI(CONCAT(STR(?ontologyURI), "context")) AS ?ontologyContext)
+                                                          ?kp rdf:type <http://www.researchspace.org/resource/system/fields/Field> .
+                                                          graph ?ontologyContext { 
+                                                              ?kp a ?type . 
+                                                              VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}
+                                                          }                                                        
                                                         }
                                                       }
-                                                      UNION
-                                                      {
-                                                        BIND(<{{subject.value}}> AS ?ontology)
-                                                        BIND(IF(STRENDS(STR(?ontology), "/"), STR(?ontology), CONCAT(STR(?ontology), "/")) AS ?ontologyURI)
-                                                        BIND(IRI(CONCAT(STR(?ontologyURI), "context")) AS ?ontologyContext)
-                                                        ?kp rdf:type <http://www.researchspace.org/resource/system/fields/Field> .
-                                                        graph ?ontologyContext { 
-                                                            ?kp a ?type . 
-                                                            VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}
-                                                        }                                                        
-                                                      }
-                                                    }
-                                                }
-                                            FILTER(?diff != 0 ) }' 
-                                          then='{{> then}}' 
-                                          else='{{> else}}'>
+                                                  }
+                                              FILTER(?diff != 0 ) }' 
+                                            then='{{> then}}' 
+                                            else='{{> else}}'>
 
-                                    <template id='else'>
-                                      <div class="alert alert-info" style="margin: 0;padding: 15px; font-size: 14px;">
-                                        <semantic-context repository="ontologies">
-                                        <semantic-query query='SELECT (count(?kp) as ?count) WHERE {
-                                                                ?kp a <http://www.researchspace.org/resource/system/fields/Field> .
-                                                                BIND(<{{subject.value}}> AS ?ontology)
-                                                                BIND(IF(STRENDS(STR(?ontology), "/"), STR(?ontology), CONCAT(STR(?ontology), "/")) AS ?ontologyURI)
-                                                                BIND(IRI(CONCAT(STR(?ontologyURI), "context")) AS ?ontologyContext)
-                                                                ?kp rdf:type <http://www.researchspace.org/resource/system/fields/Field> .
-                                                                graph ?ontologyContext { 
-                                                                    ?kp a ?type . 
-                                                                    VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}
-                                                                } 
-                                                              }'
-                                                        template='{{> template}}'
-                                        >
-                                              <template id='template'>
-                                                <div>
-                                                  The system includes 
-                                                  <semantic-link iri="http://www.researchspace.org/resource/system/fieldDefinitionContainer">
-                                                    <b>{{bindings.0.count.value}} knowledge pattern</b>
-                                                  </semantic-link>
-                                                  from this ontology.
-                                                </div>
-                                              </template>
-                                        </semantic-query>
+                                      <template id='else'>
+                                        <div class="alert alert-info" style="margin: 0;padding: 15px; font-size: 14px;">
+                                          <semantic-context repository="ontologies">
+                                            <semantic-query query='SELECT (count(?kp) as ?count) WHERE {
+                                                                    ?kp a <http://www.researchspace.org/resource/system/fields/Field> .
+                                                                    BIND(<{{subject.value}}> AS ?ontology)
+                                                                    BIND(IF(STRENDS(STR(?ontology), "/"), STR(?ontology), CONCAT(STR(?ontology), "/")) AS ?ontologyURI)
+                                                                    BIND(IRI(CONCAT(STR(?ontologyURI), "context")) AS ?ontologyContext)
+                                                                    ?kp rdf:type <http://www.researchspace.org/resource/system/fields/Field> .
+                                                                    graph ?ontologyContext { 
+                                                                        ?kp a ?type . 
+                                                                        VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}
+                                                                    } 
+                                                                  }'
+                                                            template='{{> template}}'
+                                            >
+                                                  <template id='template'>
+                                                    <div>
+                                                      The system includes 
+                                                      <semantic-link iri="http://www.researchspace.org/resource/system/fieldDefinitionContainer">
+                                                        <b>{{bindings.0.count.value}} knowledge pattern</b>
+                                                      </semantic-link>
+                                                      from this ontology.
+                                                    </div>
+                                                  </template>
+                                            </semantic-query>
                                           </semantic-context>
-                                      </div>
-                                    </template>
+                                        </div>
+                                      </template>
 
-                                    <template id='then'>                                      
-                                      <mp-json-renderer
-                                        get-url='/rs/kp/getGeneratedKpsAndResponse?ontologyIri={{encodeUriComponent subject.value}}'
-                                        template="{{> template}}">
+                                      <template id='then'>                                      
+                                        <mp-json-renderer
+                                          get-url='/rs/kp/getGeneratedKpsAndResponse?ontologyIri={{encodeUriComponent subject.value}}'
+                                          template="{{> template}}">
 
-                                        <template id='template'>
-                                          <div class="alert alert-info" style="margin: 0;padding: 15px; font-size: 14px;">
-                                            The system includes 
-                                            <semantic-link iri="http://www.researchspace.org/resource/system/fieldDefinitionContainer">
-                                              <b>{{this.kp_count}} knowledge pattern</b>
-                                            </semantic-link>
-                                            from this ontology.
-                                          </div>
-                                        </template>
-                                      </mp-json-renderer>                                     
-                                    </template>
-                                </semantic-if>
-                                  </semantic-context>
+                                          <template id='template'>
+                                            <div class="alert alert-info" style="margin: 0;padding: 15px; font-size: 14px;">
+                                              The system includes 
+                                              <semantic-link iri="http://www.researchspace.org/resource/system/fieldDefinitionContainer">
+                                                <b>{{this.kp_count}} knowledge pattern</b>
+                                              </semantic-link>
+                                              from this ontology.
+                                            </div>
+                                          </template>
+                                        </mp-json-renderer>                                     
+                                      </template>
+                                  </semantic-if>
+                                </semantic-context>
+                                [[/if]]
                               </div>
 
                               <div class="page__section-container-whiteBg" 

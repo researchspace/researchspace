@@ -219,6 +219,8 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
         ? this.createDefaultPlaceholder(definition)
         : this.props.placeholder;
     
+    const current_value = FieldValue.isAtomic(this.props.value)
+      ? (this.props.value.value as Rdf.Iri).value: undefined;
     const isFieldValueEmpty = FieldValue.isEmpty(this.props.value)
     
     const showLinkResourceButton = !isFieldValueEmpty && !this.props.readonlyResource
@@ -280,7 +282,7 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
             uri={ConfigHolder.getDashboard().value} 
             urlqueryparam-view="resource-editor"
             urlqueryparam-open-as-drag-and-drop="true"
-            urlqueryparam-resource={(this.props.value.value as Rdf.Iri).value}
+            urlqueryparam-resource={current_value}
             draggable={false}
           >
             <Button className={`${CLASS_NAME}__open-in-new-tab`} title='Edit in new draggable tab'>

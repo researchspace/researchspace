@@ -1,0 +1,57 @@
+
+<http://www.researchspace.org/pattern/system/user/type_min1/context> {
+  <http://www.researchspace.org/pattern/system/user/type_min1> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-5fc2fae911af4bb9a9c0f5ec9bd309cc-izjmdn;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E55_Type>;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-5fc2fae911af4bb9a9c0f5ec9bd309cc-bjqk9;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-5fc2fae911af4bb9a9c0f5ec9bd309cc-3olilv;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "1";
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E21_Person>,
+      <http://www.cidoc-crm.org/cidoc-crm/E74_Group>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "User type min1";
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-5fc2fae911af4bb9a9c0f5ec9bd309cc-cbamfa;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/user>,
+      <http://www.researchspace.org/resource/system/category/user_search>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2025-01-29T17:08:19.109Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-5fc2fae911af4bb9a9c0f5ec9bd309cc-cbamfa a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  $subject crm:P2_has_type ?value .
+  ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/user_type> .
+  ?value skos:prefLabel ?label .
+}""" .
+  
+  _:genid-5fc2fae911af4bb9a9c0f5ec9bd309cc-3olilv a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+  $subject crm:P2_has_type $value .
+  $subject a ?ontologyClass .
+} WHERE {
+  $subject crm:P2_has_type $value .
+  $value crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/user_type> ;
+  skos:prefLabel ?label .
+  $subject a ?ontologyClass .
+}""" .
+  
+  _:genid-5fc2fae911af4bb9a9c0f5ec9bd309cc-bjqk9 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/user_type> .
+    ?value skos:prefLabel ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-5fc2fae911af4bb9a9c0f5ec9bd309cc-izjmdn a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P2_has_type $value .
+  $subject a ?ontologyClass .
+} WHERE {   
+  BIND (
+   IF(CONTAINS(STR(?value), \"person\"), <http://www.cidoc-crm.org/cidoc-crm/E21_Person>, 
+      <http://www.cidoc-crm.org/cidoc-crm/E74_Group>) AS ?ontologyClass)    
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/user/type_min1> .
+}

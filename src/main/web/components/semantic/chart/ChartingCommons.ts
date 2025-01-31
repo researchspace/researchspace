@@ -92,12 +92,14 @@ export interface SemanticChartConfig {
   type: ChartType;
 
   /**
-   * List of plotted data sets where each specified through mapping between data points properties and query variables. (Mutually exclusive with `multi-data-sets.`)
+   * List of plotted data sets where each specified through mapping between 
+   * data points properties and query variables. (Mutually exclusive with `multi-data-sets.`)
    */
   sets?: DataSetMappings[];
 
   /**
-   * Data sets specified through pivoting on variable in query and mapping between data points properties and other query variables. (Mutually exclusive with `data-sets.`)
+   * Data sets specified through pivoting on variable in query and mapping 
+   * between data points properties and other query variables. (Mutually exclusive with `data-sets.`)
    */
   multiDataSet?: DataSetMappings;
 
@@ -105,7 +107,10 @@ export interface SemanticChartConfig {
   styles?: ProviderSpecificStyle[];
 
   /**
-   * Chart's dimensions. If any dimension is not set, the default value provided by the charting library is used instead. In most cases the component will occupy all available space, so you should limit dimensions on enclosing HTML container tag if omitting this parameter.
+   * Chart's dimensions. If any dimension is not set, the default value provided
+   * by the charting library is used instead. 
+   * In most cases the component will occupy all available space, 
+   * so you should limit dimensions on enclosing HTML container tag if omitting this parameter.
    */
   dimensions?: ChartDimensions;
 
@@ -126,13 +131,12 @@ export interface SemanticChartConfig {
   disableTooltips?: boolean;
 
   /**
-   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is applied when query returns no results.
+   * <semantic-link iri='http://help.researchspace.org/resource/TemplatingSystem' target="_blank">Template</semantic-link> which is applied when query returns no results.
    */
   noResultTemplate?: string;
 
   /**
-   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is applied to render tooltip for chart points; the following properties are provided:
-   * <mp-documentation type="ChartTooltipData"></mp-documentation>
+   * <semantic-link iri='http://help.researchspace.org/resource/TemplatingSystem' target="_blank">Template</semantic-link> which is applied to render tooltip for chart points.
    */
   tooltipTemplate?: string;
 }
@@ -205,7 +209,7 @@ export function parseNumeric(value: string | undefined): Data.Maybe<number> {
 export interface ChartTooltipData {
   /**
    * Non-numerical value for argument axis (usually x-axis) at selected data points,
-   * e.g. labels of pie chart segement or bar chart column; may be empty.
+   * e.g. labels of pie chart segment or bar chart column; may be empty.
    */
   category?: {
     /**

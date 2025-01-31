@@ -1,0 +1,539 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "Function": {
+            "description": "Creates a new function.",
+            "properties": {
+                "arguments": {
+                },
+                "caller": {
+                    "$ref": "#/definitions/Function"
+                },
+                "length": {
+                    "type": "number"
+                },
+                "name": {
+                    "description": "Returns the name of the function. Function names are read-only and can not be changed.",
+                    "type": "string"
+                },
+                "prototype": {
+                }
+            },
+            "propertyOrder": [
+                "apply",
+                "call",
+                "bind",
+                "toString",
+                "prototype",
+                "length",
+                "arguments",
+                "caller",
+                "name",
+                "__@hasInstance"
+            ],
+            "required": [
+                "arguments",
+                "caller",
+                "length",
+                "name",
+                "prototype"
+            ],
+            "type": "object"
+        },
+        "Handlebars.Visitor": {
+            "propertyOrder": [
+                "accept",
+                "acceptKey",
+                "acceptArray",
+                "Program",
+                "BlockStatement",
+                "PartialStatement",
+                "PartialBlockStatement",
+                "DecoratorBlock",
+                "Decorator",
+                "MustacheStatement",
+                "ContentStatement",
+                "CommentStatement",
+                "SubExpression",
+                "PathExpression",
+                "StringLiteral",
+                "NumberLiteral",
+                "BooleanLiteral",
+                "UndefinedLiteral",
+                "NullLiteral",
+                "Hash"
+            ],
+            "type": "object"
+        },
+        "HandlebarsTemplateDelegate": {
+            "propertyOrder": [
+            ],
+            "type": "object"
+        },
+        "HandlebarsTemplates": {
+            "additionalProperties": {
+                "$ref": "#/definitions/HandlebarsTemplateDelegate"
+            },
+            "propertyOrder": [
+            ],
+            "type": "object"
+        },
+        "Logger": {
+            "properties": {
+                "DEBUG": {
+                    "type": "number"
+                },
+                "ERROR": {
+                    "type": "number"
+                },
+                "INFO": {
+                    "type": "number"
+                },
+                "WARN": {
+                    "type": "number"
+                },
+                "level": {
+                    "type": "number"
+                },
+                "methodMap": {
+                    "additionalProperties": false,
+                    "patternProperties": {
+                        "^[0-9]+$": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                }
+            },
+            "propertyOrder": [
+                "DEBUG",
+                "INFO",
+                "WARN",
+                "ERROR",
+                "level",
+                "methodMap",
+                "log"
+            ],
+            "required": [
+                "DEBUG",
+                "ERROR",
+                "INFO",
+                "WARN",
+                "level",
+                "methodMap"
+            ],
+            "type": "object"
+        },
+        "ReadonlyMap<string,ParsedTemplate>": {
+            "properties": {
+                "size": {
+                    "type": "number"
+                }
+            },
+            "propertyOrder": [
+                "forEach",
+                "get",
+                "has",
+                "size",
+                "__@iterator",
+                "entries",
+                "keys",
+                "values"
+            ],
+            "required": [
+                "size"
+            ],
+            "type": "object"
+        },
+        "TemplateScope": {
+            "description": "Represents an isolated Handlebars compiler instance acting as a container\nfor partials and helpers with an ability to clone it.\n\nCloned scope doesn't depend on it's parent, e.g. registering a helper or a\npartial on a parent scope won't affect cloned scope.",
+            "properties": {
+                "compiledCache": {
+                },
+                "handlebars": {
+                    "properties": {
+                        "AST": {
+                            "properties": {
+                                "helpers": {
+                                    "$ref": "#/definitions/hbs.AST.helpers"
+                                }
+                            },
+                            "propertyOrder": [
+                                "helpers"
+                            ],
+                            "required": [
+                                "helpers"
+                            ],
+                            "type": "object"
+                        },
+                        "Exception": {
+                            "propertyOrder": [
+                            ],
+                            "type": "object"
+                        },
+                        "K": {
+                            "propertyOrder": [
+                            ],
+                            "type": "object"
+                        },
+                        "SafeString": {
+                            "properties": {
+                                "prototype": {
+                                    "$ref": "#/definitions/hbs.SafeString"
+                                }
+                            },
+                            "propertyOrder": [
+                                "prototype",
+                                "toString"
+                            ],
+                            "required": [
+                                "prototype"
+                            ],
+                            "type": "object"
+                        },
+                        "Utils": {
+                            "properties": {
+                                "createFrame": {
+                                    "description": "Provides functionality common to all JavaScript objects.",
+                                    "propertyOrder": [
+                                    ],
+                                    "type": "object"
+                                },
+                                "escapeExpression": {
+                                    "propertyOrder": [
+                                    ],
+                                    "type": "object"
+                                },
+                                "extend": {
+                                    "propertyOrder": [
+                                    ],
+                                    "type": "object"
+                                },
+                                "isArray": {
+                                    "propertyOrder": [
+                                    ],
+                                    "type": "object"
+                                },
+                                "isEmpty": {
+                                    "propertyOrder": [
+                                    ],
+                                    "type": "object"
+                                },
+                                "isFunction": {
+                                    "propertyOrder": [
+                                    ],
+                                    "type": "object"
+                                },
+                                "toString": {
+                                    "propertyOrder": [
+                                    ],
+                                    "type": "object"
+                                }
+                            },
+                            "propertyOrder": [
+                                "escapeExpression",
+                                "createFrame",
+                                "isEmpty",
+                                "extend",
+                                "toString",
+                                "isArray",
+                                "isFunction"
+                            ],
+                            "required": [
+                                "createFrame",
+                                "escapeExpression",
+                                "extend",
+                                "isArray",
+                                "isEmpty",
+                                "isFunction",
+                                "toString"
+                            ],
+                            "type": "object"
+                        },
+                        "Visitor": {
+                            "properties": {
+                                "prototype": {
+                                    "$ref": "#/definitions/Handlebars.Visitor"
+                                }
+                            },
+                            "propertyOrder": [
+                                "prototype"
+                            ],
+                            "required": [
+                                "prototype"
+                            ],
+                            "type": "object"
+                        },
+                        "compile": {
+                            "propertyOrder": [
+                            ],
+                            "type": "object"
+                        },
+                        "create": {
+                            "propertyOrder": [
+                            ],
+                            "type": "object"
+                        },
+                        "createFrame": {
+                            "propertyOrder": [
+                            ],
+                            "type": "object"
+                        },
+                        "decorators": {
+                            "additionalProperties": {
+                                "$ref": "#/definitions/Function"
+                            },
+                            "propertyOrder": [
+                            ],
+                            "type": "object"
+                        },
+                        "escapeExpression": {
+                            "propertyOrder": [
+                            ],
+                            "type": "object"
+                        },
+                        "helpers": {
+                            "additionalProperties": {
+                                "$ref": "#/definitions/Function"
+                            },
+                            "propertyOrder": [
+                            ],
+                            "type": "object"
+                        },
+                        "log": {
+                            "propertyOrder": [
+                            ],
+                            "type": "object"
+                        },
+                        "logger": {
+                            "$ref": "#/definitions/Logger"
+                        },
+                        "noConflict": {
+                            "propertyOrder": [
+                            ],
+                            "type": "object"
+                        },
+                        "parse": {
+                            "propertyOrder": [
+                            ],
+                            "type": "object"
+                        },
+                        "partials": {
+                            "additionalProperties": {
+                            },
+                            "propertyOrder": [
+                            ],
+                            "type": "object"
+                        },
+                        "precompile": {
+                            "propertyOrder": [
+                            ],
+                            "type": "object"
+                        },
+                        "registerDecorator": {
+                            "propertyOrder": [
+                            ],
+                            "type": "object"
+                        },
+                        "registerHelper": {
+                            "propertyOrder": [
+                            ],
+                            "type": "object"
+                        },
+                        "registerPartial": {
+                            "propertyOrder": [
+                            ],
+                            "type": "object"
+                        },
+                        "template": {
+                            "propertyOrder": [
+                            ],
+                            "type": "object"
+                        },
+                        "templates": {
+                            "$ref": "#/definitions/HandlebarsTemplates"
+                        },
+                        "unregisterDecorator": {
+                            "propertyOrder": [
+                            ],
+                            "type": "object"
+                        },
+                        "unregisterHelper": {
+                            "propertyOrder": [
+                            ],
+                            "type": "object"
+                        },
+                        "unregisterPartial": {
+                            "propertyOrder": [
+                            ],
+                            "type": "object"
+                        }
+                    },
+                    "propertyOrder": [
+                        "registerHelper",
+                        "registerPartial",
+                        "unregisterHelper",
+                        "unregisterPartial",
+                        "registerDecorator",
+                        "unregisterDecorator",
+                        "K",
+                        "createFrame",
+                        "Exception",
+                        "log",
+                        "parse",
+                        "compile",
+                        "precompile",
+                        "template",
+                        "create",
+                        "noConflict",
+                        "SafeString",
+                        "escapeExpression",
+                        "Utils",
+                        "logger",
+                        "templates",
+                        "helpers",
+                        "partials",
+                        "decorators",
+                        "AST",
+                        "Visitor"
+                    ],
+                    "required": [
+                        "AST",
+                        "Exception",
+                        "K",
+                        "SafeString",
+                        "Utils",
+                        "Visitor",
+                        "compile",
+                        "create",
+                        "createFrame",
+                        "decorators",
+                        "escapeExpression",
+                        "helpers",
+                        "log",
+                        "logger",
+                        "noConflict",
+                        "parse",
+                        "partials",
+                        "precompile",
+                        "registerDecorator",
+                        "registerHelper",
+                        "registerPartial",
+                        "template",
+                        "templates",
+                        "unregisterDecorator",
+                        "unregisterHelper",
+                        "unregisterPartial"
+                    ],
+                    "type": "object"
+                },
+                "helpers": {
+                    "additionalProperties": {
+                        "$ref": "#/definitions/Function"
+                    },
+                    "propertyOrder": [
+                    ],
+                    "type": "object"
+                },
+                "loadByReference": {
+                    "description": "Loads partial by local name or remote reference.",
+                    "propertyOrder": [
+                    ],
+                    "type": "object"
+                },
+                "partials": {
+                    "$ref": "#/definitions/ReadonlyMap<string,ParsedTemplate>"
+                },
+                "scopeTrace": {
+                    "$ref": "#/definitions/TemplateScopeTrace"
+                }
+            },
+            "propertyOrder": [
+                "handlebars",
+                "compiledCache",
+                "partials",
+                "helpers",
+                "scopeTrace",
+                "clearCache",
+                "getPartial",
+                "exportProps",
+                "compile",
+                "compileWithoutRemote",
+                "resolve",
+                "loadByReference"
+            ],
+            "required": [
+                "compiledCache",
+                "handlebars",
+                "helpers",
+                "loadByReference",
+                "partials"
+            ],
+            "type": "object"
+        },
+        "TemplateScopeTrace": {
+            "properties": {
+                "componentId": {
+                    "type": "string"
+                },
+                "componentTag": {
+                    "type": "string"
+                },
+                "templateId": {
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "componentTag",
+                "componentId",
+                "templateId"
+            ],
+            "type": "object"
+        },
+        "hbs.AST.helpers": {
+            "propertyOrder": [
+                "helperExpression",
+                "scopeId",
+                "simpleId"
+            ],
+            "type": "object"
+        },
+        "hbs.SafeString": {
+            "propertyOrder": [
+            ],
+            "type": "object"
+        }
+    },
+    "properties": {
+        "codeText": {
+            "type": "string"
+        },
+        "markupTemplateScope": {
+            "$ref": "#/definitions/TemplateScope",
+            "description": "Scope with templates explicitely specified in the markup.\n\nIf present then it means the component had been created from markup;\notherwise it has been created as part of another component.\n\nThis property should be used only as implementation detail to template-related\ncomponents (like `SemanticIf`)."
+        },
+        "mode": {
+            "default": "text/html",
+            "description": "Supported modes:\n'text/html' - HTML\n'text/x-java' - Java\n'text/typescript' - TypeScript\n'text/javascript' - JavaScript\n'application/json' - JSON\n'application/ld+json' - JSON-LD\n'application/sparql-query' - SPARQL\n'text/turtle' - Turtle\n'application/n-triples' - N-Triples\n'application/n-quads' - N-Quads\n'text/x-sh' - Shell/Bash\n'application/xml' - XML",
+            "type": "string"
+        },
+        "showCopyButton": {
+            "type": "boolean"
+        },
+        "showRunQueryButton": {
+            "type": "boolean"
+        }
+    },
+    "propertyOrder": [
+        "showCopyButton",
+        "showRunQueryButton",
+        "codeText",
+        "mode",
+        "markupTemplateScope"
+    ],
+    "required": [
+        "codeText"
+    ],
+    "type": "object"
+}
+

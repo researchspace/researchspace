@@ -35,9 +35,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.sail.federation.MpFederationConnection;
 import org.researchspace.config.Configuration;
 import org.researchspace.config.NamespaceRegistry;
 import org.researchspace.config.NamespaceRegistry.RuntimeNamespace;
@@ -50,6 +53,7 @@ import org.researchspace.config.NamespaceRegistry.RuntimeNamespace;
 @Singleton
 @WebFilter
 public class HomePageFilter implements Filter {
+private static final Logger logger = LogManager.getLogger(HomePageFilter.class);
 
     @Inject
     private NamespaceRegistry ns;
@@ -87,20 +91,22 @@ public class HomePageFilter implements Filter {
         final IRI startPageIRI = guessStartPage(startPage);
 
         Optional<String> prefixString = ns.getPrefix(startPageIRI.getNamespace()).map(prefix -> {
-            if (prefix.equals(RuntimeNamespace.EMPTY)) {
+            if (prefix.equals(RuntimeNamespace.DEFAULT)) {
                 return startPageIRI.getLocalName();
             }
             return prefix + ":" + startPageIRI.getLocalName();
         });
+        logger.info("prefixString"+prefixString);
         String newPath = "";
         if (prefixString.isPresent())
             newPath = httpRequest.getContextPath() + config.getEnvironmentConfig().getResourceUrlMapping()
                     + prefixString.get();
         else
             newPath = httpRequest.getContextPath() + config.getEnvironmentConfig().getResourceUrlMapping() + "?uri="
-                    + startPageIRI.stringValue();
+                                               + startPageIRI.stringValue();
 
         HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+        logger.info("NEW path redirect"+newPath);
         httpServletResponse.sendRedirect(httpServletResponse.encodeRedirectURL(newPath));
         return;
     }

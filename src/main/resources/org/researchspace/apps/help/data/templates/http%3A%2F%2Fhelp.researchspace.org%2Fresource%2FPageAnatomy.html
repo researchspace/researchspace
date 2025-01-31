@@ -1,9 +1,16 @@
-<h2>Anatomy of a ResearchSpace page</h2>
 
-<p>To understand the anatomy of a RS page let's take as example a template page 
-   containing a semantic query component (code below) that retrieves a list of people URIs. 
+[[#if includedTemplate]]
+  <h2>Anatomy of a ResearchSpace page</h2>
+[[else]]
+  <div class="page__grid-container help-page-container">
+    <div class='page__content-container'>
+      <h1>Anatomy of a ResearchSpace page</h1>
+[[/if]]
 
-   <mp-code-block mode='text/html'>
+  <p>To understand the anatomy of a RS page let's take as example a template page 
+    containing a semantic query component (code below) that retrieves a list of people URIs. </p>
+
+    <mp-code-block mode='text/html'>
     <![CDATA[
 <semantic-query query=' PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
                         SELECT ?person ?birthPlace {
@@ -24,23 +31,23 @@
     </ul>
   </template>
 </semantic-query>
-    ]]></mp-code-block>
-</p>
+      ]]>
+    </mp-code-block>
 
-<p>Let's now analise what is actually happening in the system:</p>
-<ol>
-  <li>The template is transformed into REACTJS.</li>
-  <li>The <code>semantic-query</code> component sends the specified SPARQL query to the <b>ResearchSpace SPARQL Endpoint</b>.
-    No custom repository was specified and therefore the ResearchSpace SPARQL Endpoint will use the default repository.</li>
-  <li>Before the query is executed the system uses the Apache Shiro Java library to check
-    the <b>current user permission</b> to access the default repository (this may be read or write permission).</li>
-  <li>If the user has permissions then the system uses the RDF4J Java library to <b>evaluate the query</b> using the default repository. 
-    In effect the ResearchSpace SPARQL Endpoint acts as an intermediate proxy to the actual repository. Since the service is using a 
-    proxy there is the opportunity to adjust the query sent to the repository, for example, to restrict it to specific graphs, 
-    or do other types of query rewriting.</li>
-  <li>The evaluated result is returned to the ResearchSpace SPARQL Endpoint which send this back 
-    to the Semantic Query component in the format <code>application/sparql-results+json</code>, as follow:
-    <mp-code-block mode='JSON'>
+  <p>Let's now analise what is actually happening in the system:</p>
+  <ol>
+    <li>The template is transformed into REACTJS.</li>
+    <li>The <code>semantic-query</code> component sends the specified SPARQL query to the <b>ResearchSpace SPARQL Endpoint</b>.
+      No custom repository was specified and therefore the ResearchSpace SPARQL Endpoint will use the default repository.</li>
+    <li>Before the query is executed the system uses the Apache Shiro Java library to check
+      the <b>current user permission</b> to access the default repository (this may be read or write permission).</li>
+    <li>If the user has permissions then the system uses the RDF4J Java library to <b>evaluate the query</b> using the default repository. 
+      In effect the ResearchSpace SPARQL Endpoint acts as an intermediate proxy to the actual repository. Since the service is using a 
+      proxy there is the opportunity to adjust the query sent to the repository, for example, to restrict it to specific graphs, 
+      or do other types of query rewriting.</li>
+    <li><p>The evaluated result is returned to the ResearchSpace SPARQL Endpoint which send this back 
+      to the Semantic Query component in the format <code>application/sparql-results+json</code>, as follow:</p>
+      <mp-code-block mode='JSON'>
       <![CDATA[
 {
   "head" : {
@@ -70,13 +77,14 @@
   } ]
   }
 }      
-      ]]> </mp-code-block>
-    </li>
-  <li><code>semantic-query</code> component applies its associated template (in this case architectsTemplate).</li>
-  <li>The results of the query execution are propagated to the template through the bindings variable and as result
-    we get the following HTML:
-    <mp-code-block mode='text/html'>
-<![CDATA[
+        ]]> 
+      </mp-code-block>
+      </li>
+    <li><code>semantic-query</code> component applies its associated template (in this case architectsTemplate).</li>
+    <li><p>The results of the query execution are propagated to the template through the bindings variable and as result
+      we get the following HTML:</p>
+      <mp-code-block mode='text/html'>
+      <![CDATA[
 List of female architects:
 <ul>
     <li>
@@ -96,24 +104,29 @@ List of female architects:
       <mp-resource-thumbnail iri='http://www.researchspace.org/resource/2296fe53-6297-4b24-be5f-51429cb1cdc7' style="max-width: 400px; max-height: 100px;" />
     </li>
 </ul>
-]]></mp-code-block>
-  </li>
-  <li>The HTML result is transformed into a REACTJS component tree.
-    <div><img src="/assets/images/manual/reactTree.png" class="img-fluid"></div>
-  </li>
-  <li>When the component tree is rendered, custom components inside of it are initialised: 
-    <ul>
-      <li><code>semantic-link</code> component is initialised and,if no label is provided in the template, it uses 
-            the label service to retrieve a label for a given entity URI  - for example, for the URI 'http://www.wikidata.org/entity/Q19602731' we get “Svetlana Kana Radević”.</li>
-      <li>when <code>mp-resource-thumbnail</code> component is initialised it uses the Thumbnail service to retrieve the preferred thumbnail for the given entity URI and 
-        renders it using the <code><img></code> HTML element.
-      </li>
-    </ul>
-  </li>
-  <li>When one of the semantic links is clicked by the user the system transitions to a new page using the associated template for that entity.</li>
-</ol>
+      ]]>
+    </mp-code-block>
+    </li>
+    <li><p>The HTML result is transformed into a REACTJS component tree.</p>
+      <div><img src="/assets/images/help/reactTree.png" class="img-fluid"></div>
+    </li>
+    <li>When the component tree is rendered, custom components inside of it are initialised: 
+      <ul>
+        <li><code>semantic-link</code> component is initialised and,if no label is provided in the template, it uses 
+              the label service to retrieve a label for a given entity URI  - for example, for the URI 'http://www.wikidata.org/entity/Q19602731' we get “Svetlana Kana Radević”.</li>
+        <li>when <code>mp-resource-thumbnail</code> component is initialised it uses the Thumbnail service to retrieve the preferred thumbnail for the given entity URI and 
+          renders it using the <code><img></code> HTML element.
+        </li>
+      </ul>
+    </li>
+    <li>When one of the semantic links is clicked by the user the system transitions to a new page using the associated template for that entity.</li>
+  </ol>
 
-
+[[#if includedTemplate]]
+[[else]]
+  </div>
+</div>
+[[/if]]
 
 
 

@@ -1,43 +1,22 @@
-<style>
-  .ontodia-navigator--expanded {
-    display:none;
-  }
 
-  .ontodia-paper-area__area {
-      overflow: hidden;
-  }
-
-  .event-link:active, .event-link:focus .event-link:focus-within .event-link:hover {
-    background-color: #8FBC8F;
-  }
-</style>
 
 [[#*inline "inlineTemplate"]]
 	<template id='default'>
 	  <div class='event-link'>
 	    <mp-event-trigger id='event-trigger' type='Component.TemplateUpdate' data='{"iri": "{{iri}}"}' targets='["event-target"]'>
-	      <a><rs-icon icon-type="rounded" icon-name="account_box" symbol="true"></rs-icon><mp-label iri='{{iri}}'></mp-label></a>
+	      <a><mp-label iri='{{iri}}'></mp-label></a>
 	    </mp-event-trigger>
 	  </div>
 	</template>
 [[/inline]]
 
-<ol class="page-breadcrumb">
-  <li>
-    <mp-link title="Home" url="/">Home</mp-link>
-  </li>
-  <li>
-    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
-  </li>
-  <li>
-    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
-  </li>
-  <li class="active">Event System</li>
-</ol>
-
-<div class="page">
-  <div class='page__body'>
-    <h1>Event System</h1>
+[[#if includedTemplate]]
+  <h2>Events</h2>
+[[else]]
+  <div class="page__grid-container help-page-container">
+    <div class='page__content-container'>
+      <h1 id="rs-doc_codeDocumentation">Events</h1>
+[[/if]]
     <p>
       Event system allows different components of the platform to interact and exchange data with each other.
     </p>
@@ -47,21 +26,24 @@
       The platform provides the set of generic events:
     </p>
     <mp-documentation type="BuiltInEventData" disable-transform-attributes=true hide-required-label=true></mp-documentation>
+    <br>
     <p>
       The <code>Component.Loaded</code> event could be used in case some action should be produced after a component has loaded data, e.g. to go to the next step of a guided tour. Here is the list of components which trigger this event:
     </p>
     <ul>
-      <li><code><semantic-carousel /></code></li>
-      <li><code><semantic-chart /></code></li>
-      <li><code><semantic-graph /></code></li>
-      <li><code><semantic-map /></code></li>
-      <li><code><semantic-search /></code></li>
-      <li><code><semantic-search-facet /></code></li>
-      <li><code><semantic-table /></code></li>
-      <li><code><semantic-timeline /></code></li>
-      <li><code><semantic-tree /></code></li>
-      <li><code><ontodia /></code></li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<semantic-carousel>"]]</li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<semantic-chart>"]]</li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<semantic-graph>"]]</li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<semantic-map>"]]</li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<semantic-search>"]]</li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<semantic-search-facet>"]]</li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<semantic-table>"]]</li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<semantic-timeline>"]]</li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<semantic-tree>"]]</li>
+      <li>[[> Help:CodeHighlightPartial codeContent="<ontodia>"]]</li>
     </ul>
+
+    <hr class="divider">
 
     <h2>Event components</h2>
     <p>
@@ -70,27 +52,30 @@
 
     <h3>Trigger component</h3>
     <p>
-      <code><mp-event-trigger /></code> - triggers an event by click on the child component.
+      [[> Help:CodeHighlightPartial codeContent="<mp-event-trigger>"]] - triggers an event by click on the child component.
     </p>
     <mp-documentation type="EventTriggerConfig"></mp-documentation>
 
+    <hr class="divider">
     <h3>Proxy component</h3>
     <p>
-      <code><mp-event-proxy /></code> - listens to a specified event, and when it happens triggers some other event, could be used in case one need to produce some action after another one, e.g. to refresh a component after data saving.
+      [[> Help:CodeHighlightPartial codeContent="<mp-event-proxy>"]] - listens to a specified event, and when it happens triggers some other event, could be used in case one need to produce some action after another one, e.g. to refresh a component after data saving.
     </p>
     <mp-documentation type="EventProxyConfig"></mp-documentation>
-
+    <hr class="divider">
     <h3>Target components</h3>
     <p>
-      <code><mp-event-target-refresh /></code> - refreshes the child component when receiving the <code>Component.Refresh</code> event.
+      [[> Help:CodeHighlightPartial codeContent="<mp-event-target-refresh>"]] - refreshes the child component when receiving the <code>Component.Refresh</code> event.
     </p>
     <mp-documentation type="EventTargetRefreshConfig"></mp-documentation>
+    <br>
     <p>
-      <code><mp-event-target-template-render /></code> - refreshes the template component and passes it new properties when receiving the <code>Component.TemplateUpdate</code> event.
+      [[> Help:CodeHighlightPartial codeContent="<mp-event-target-template-render>"]] - refreshes the template component and passes it new properties when receiving the <code>Component.TemplateUpdate</code> event.
     </p>
     <mp-documentation type="EventTargetTemplateRenderConfig"></mp-documentation>
+    <br>
     <p>
-      <code><mp-event-target-redirect/></code> - Component which provides redirect feature. In response to the event <code>RedirectAction.perform</code> component perform redirect/reload operation where the IRI of the target resource can be passed via parameters or together with event.
+      [[> Help:CodeHighlightPartial codeContent="<mp-event-target-redirect>"]] - Component which provides redirect feature. In response to the event <code>RedirectAction.perform</code> component perform redirect/reload operation where the IRI of the target resource can be passed via parameters or together with event.
     </p>
     <mp-event-target-redirect
       id='redirect-to-resource'
@@ -98,14 +83,17 @@
     ></mp-event-target-redirect>
     <mp-documentation type="RedirectActionProps"></mp-documentation>
 
+    <br>
     <bs-alert bs-style='info'>
       <strong>Info!</strong>
       Besides the generic events and components, the platform provides specialized ones for different use cases that will be documented here in the future.
     </bs-alert>
 
-    <h2>Examples</h2>
+    <h3>Examples</h3>
     <p>
-      NOTE: In order for this examples to work, please download the <a href="/samples/sample.ttl">sample data</a> (simple right click and save as). You can now load this data into the backing store via the <semantic-link iri="[[resolvePrefix "Admin:DataImportExport"]]"> data import and export</semantic-link> administration page.
+      NOTE: In order for this examples to work, please download the <a href="/samples/sample.ttl" class="text-link-action" target="_blank">sample data</a> (simple right click and save as). 
+      You can now load this data into the backing store via 
+      the <semantic-link iri="http://127.0.0.1:10214/resource/Admin:DataImportExport" class="text-link-action" target="_blank">data import and export</semantic-link> administration page.
     </p>
     <p>
       [[#if (ask "ASK {  <http://example.org/bob#me> a <http://xmlns.com/foaf/0.1/Person>  }") ]]
@@ -115,183 +103,198 @@
       [[/if]]
     </p>
 
-    <h3>Refresh a component using the Component.Refresh event</h3>
+    <h4>Refresh a component using the Component.Refresh event</h4>
     <mp-code-example>
     <![CDATA[
-			<mp-event-trigger id='dom-refresh' type='Component.Refresh' targets='["some-element"]'>
-				<button class='btn btn-default'>Refresh</button>
-			</mp-event-trigger>
-			<mp-event-target-refresh id='some-element'>
-				<semantic-query query='SELECT * {BIND(NOW() as ?update)}'></semantic-query>
-			</mp-event-target-refresh>
-    ]]>
+<mp-event-trigger id='dom-refresh' type='Component.Refresh' targets='["some-element"]'>
+  <button class='btn btn-default' style="margin-bottom:15px;">Refresh</button>
+</mp-event-trigger>
+
+<mp-event-target-refresh id='some-element'>
+  <semantic-query query='SELECT * {BIND(NOW() as ?update)}'></semantic-query>
+</mp-event-target-refresh>
+      ]]>
     </mp-code-example>
 
-    <h3>Re-render a template with new data using the Component.TemplateUpdate event</h3>
+    <h4>Re-render a template with new data using the Component.TemplateUpdate event</h4>
     <mp-code-example>
     <![CDATA[
-			<div style='display: flex;'>
-        <div style='flex: 1'>
-          <bs-tabs id='tabs'>
-            <bs-tab event-key='1' title='Graph'>
-							<div style='height: 500px'>
-                <ontodia
-                  settings=nostats
-                  hide-panels=true
-                  hide-toolbar=true
-                  hide-navigation-confirmation=true
-                  query='
-                    PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-                    CONSTRUCT {
-                      ?s ?p ?o
-                    } WHERE {
-                      VALUES (?s ?p ?o) {
-                        (<http://example.org/bob#me> foaf:knows <http://example.org/alice#me> )
-                      }
-                    }
-                  '
-                  default-node-template='{{> default}}'
-								>
-                  [[> inlineTemplate]]
-                </ontodia>
-							</div>
-          	</bs-tab>
-          <bs-tab event-key='2' title='Table'>
-            <semantic-table
-              query='
-								SELECT ?person WHERE {
-                  VALUES (?person) {
-                    (<http://example.org/bob#me>)
-                    (<http://example.org/alice#me> )
-                  }
-              	}
-							'
-              column-configuration='[
-                {
-                  "variableName": "person",
-                  "displayName": "Persons",
-                  "cellTemplate": "{{> default iri=person.value}}"
+<div style='display: flex; gap:15px;'>
+  <div style='flex: 1'>
+    <bs-tabs id='tabs'>
+      <bs-tab event-key='1' title='Graph'>
+        <div style='height: 400px'>
+          <ontodia
+            settings=nostats
+            hide-panels=true
+            hide-toolbar=true
+            hide-navigation-confirmation=true
+            query='
+              PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+              CONSTRUCT {
+                ?s ?p ?o
+              } WHERE {
+                VALUES (?s ?p ?o) {
+                  (<http://example.org/bob#me> foaf:knows <http://example.org/alice#me> )
                 }
-              ]'
-            >
-              [[> inlineTemplate]]
-            </semantic-table>
-          </bs-tab>
-         </bs-tabs>
+              }
+            '
+            default-node-template='{{> default}}'
+          >
+            [[> inlineTemplate]]
+          </ontodia>
         </div>
-        <div style='background: #f5f5f5; flex: 1; padding: 10px 20px'>
-          <mp-event-target-template-render id='event-target' template='{{> template}}'>
-            <template id='template'>
-              <div>
-                {{#if iri}}
-                <h2><mp-label iri='{{iri}}'></mp-label></h2>
-                <hr />
-                <strong>IRI:</strong> {{iri}}
-                <br /><br />
-                <semantic-table options='{"showFilter": false}'
-									no-result-template='{{> noResultTemplate}}'
-                  query='
-                    PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-                    SELECT ?friends WHERE {
-                    	<{{iri}}> foaf:knows|^foaf:knows ?friends .
-                    }
-                  '
-                >
-									<template id='noResultTemplate'>
-										<span><mp-label iri={{iri}}></mp-label> has no friends :( <br> Maybe you should try to load the sample.ttl dataset from the tutorial.</span>
-									</template>
-								</semantic-table>
-                {{/if}}
-              </div>
-            </template>
-          </mp-event-target-template-render>
-        </div>
-      </div>
+      </bs-tab>
+      <bs-tab event-key='2' title='Table'>
+        <semantic-table
+          query='
+            SELECT ?person WHERE {
+              VALUES (?person) {
+                (<http://example.org/bob#me>)
+                (<http://example.org/alice#me> )
+              }
+            }
+          '
+          column-configuration='[
+            {
+              "variableName": "person",
+              "displayName": "Persons",
+              "cellTemplate": "{{> default iri=person.value}}"
+            }
+          ]'
+        >
+          [[> inlineTemplate]]
+        </semantic-table>
+      </bs-tab>
+    </bs-tabs>
+  </div>
+  <div style='display:flex; flex-direction:column;background: #f7f7fa; width:300px; padding: 10px 20px;'>
+    <h4>Rendering area</h4>
+    <div>click one table result to update the area below.</div>
+    <div style='flex: 1; padding-top:10px;'>
+      
+      <mp-event-target-template-render id='event-target' template='{{> template}}'>
+        <template id='template'>
+          <div>
+            {{#if iri}}
+              <h4 style="margin:0px"><mp-label iri='{{iri}}'></mp-label></h4>
+              <strong>IRI:</strong> {{iri}}
+              <br /><br />
+              <semantic-table options='{"showFilter": false}'
+                no-result-template='{{> noResultTemplate}}'
+                query='
+                  PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+                  SELECT ?friends WHERE {
+                    <{{iri}}> foaf:knows|^foaf:knows ?friends .
+                  }'
+              >
+                <template id='noResultTemplate'>
+                  <span><mp-label iri={{iri}}></mp-label> has no friends :( <br> Maybe you should 
+                    try to load the sample.ttl dataset from the tutorial.</span>
+                </template>
+              </semantic-table>
+            {{/if}}
+          </div>
+        </template>
+      </mp-event-target-template-render>
+    </div>
+  </div>
+</div>
     ]]>
     </mp-code-example>
 
-    <h3>Turn Component.Loaded event into a Component.TemplateUpdate via event proxy</h3>
+    <h4>Turn Component.Loaded event into a Component.TemplateUpdate via event proxy</h4>
      <mp-code-example>
         <![CDATA[
-<mp-event-proxy id='some-refresh' on-event-source='table-xy' proxy-event-type='Component.TemplateUpdate' proxy-targets='["some-element"]' data='{ "id": "xy" }'
-  ></mp-event-proxy>
-        <div style='display: flex;'>
-        <div style='flex: 1'>
-          <bs-tabs id='tabs'>
-            <bs-tab event-key='1' title='No Table'>
-            	<div style='height: 500px'>
-                No table
-            	</div>
-            </bs-tab>
-          <bs-tab event-key='2' title='Table' unmount-on-exit=true>
-            <semantic-table id='table-xy'
-              query='
-								SELECT ?person WHERE {
-                  VALUES (?person) {
-                    (<http://example.org/bob#me>)
-                    (<http://example.org/alice#me> )
-                  }
-                }
-            	'
-            >
-            </semantic-table>
-          </bs-tab>
-         </bs-tabs>
+<mp-event-proxy id='some-refresh' 
+                on-event-source='table-xy' 
+                proxy-event-type='Component.TemplateUpdate' 
+                proxy-targets='["some-element"]' 
+                data='{ "id": "xy" }'>
+</mp-event-proxy>
+
+<div style='display: flex;gap:15px;'>
+  <div>
+    <bs-tabs id='tabs'>
+      <bs-tab event-key='1' title='No Table'>
+        <div style='height: 400px'>
+          No table
         </div>
-        <div style='background: #f5f5f5; flex: 1; padding: 10px 20px'>
-        	<mp-event-target-template-render id='some-element' template='{{> xy}}'>
-          	<template id='xy'>
-							{{#if id}}
-          	  	<div>Updated at: {{currentDateTime}}</div>
-							{{/if}}
-          	</template>
-        	</mp-event-target-template-render>
-        </div>
-      </div>
+      </bs-tab>
+      <bs-tab event-key='2' title='Table' unmount-on-exit=true>
+        <semantic-table id='table-xy'
+          query='
+            SELECT ?person WHERE {
+              VALUES (?person) {
+                (<http://example.org/bob#me>)
+                (<http://example.org/alice#me> )
+              }
+            }'
+        >
+        </semantic-table>
+      </bs-tab>
+    </bs-tabs>
+  </div>
+  <div style='background: #f7f7fa; flex: 1; padding: 10px 20px'>
+    <mp-event-target-template-render id='some-element' template='{{> xy}}'>
+      <template id='xy'>
+        {{#if id}}
+          <div>Updated at: {{currentDateTime}}</div>
+        {{/if}}
+      </template>
+    </mp-event-target-template-render>
+  </div>
+</div>
     ]]>
     </mp-code-example>
 
-    <h3>Redirect to the resource after the form has been submitted</h3>
+    <h4>Redirect to the resource after the form has been submitted</h4>
     <mp-code-example>
     <![CDATA[
-      <semantic-form
-        id='semantic-form-example'
-        post-action='event'
-        new-subject-template='http://example.com/person-name-{{UUID}}'
-        fields='[
-          {
-            "id": "name",
-            "label": "Name",
-            "description": "",
-            "xsdDatatype": "xsd:string",
-            "minOccurs": "1",
-            "maxOccurs": "1",
-            "selectPattern": "SELECT $value WHERE {$subject rdfs:label $value}",
-            "insertPattern": "INSERT {$subject rdfs:label $value}WHERE{}"
-          }
-        ]'>
-        <semantic-form-text-input for='name'></semantic-form-text-input>
-        <button name='submit' class='btn btn-primary'>Create</button>
-        <button name='reset' class='btn btn-default'>Reset</button>
-      </semantic-form>
-      <mp-event-proxy id='form-resource-created' on-event-type='Form.ResourceUpdated'
-        proxy-event-type='RedirectAction.perform' proxy-targets='["redirect-to-resource"]'>
-      </mp-event-proxy>
-      <mp-event-target-redirect
-        id='redirect-to-resource'
-        action='redirect'
-      ></mp-event-target-redirect>
+<semantic-form
+  id='semantic-form-example'
+  post-action='event'
+  new-subject-template='http://example.com/person-name-{{UUID}}'
+  fields='[
+    {
+      "id": "name",
+      "label": "Name",
+      "description": "",
+      "xsdDatatype": "xsd:string",
+      "minOccurs": "1",
+      "maxOccurs": "1",
+      "selectPattern": "SELECT $value WHERE {$subject rdfs:label $value}",
+      "insertPattern": "INSERT {$subject rdfs:label $value}WHERE{}"
+    }
+  ]'>
+  <semantic-form-text-input for='name'></semantic-form-text-input>
+  <div style="margin-top:15px; display:flex; gap: 5px;">
+    <button name='reset' class='btn btn-default'>Reset</button>
+    <button name='submit' class='btn btn-action'>Create</button>
+  </div>
+</semantic-form>
+
+<mp-event-proxy id='form-resource-created' on-event-type='Form.ResourceUpdated'
+  proxy-event-type='RedirectAction.perform' proxy-targets='["redirect-to-resource"]'>
+</mp-event-proxy>
+
+<mp-event-target-redirect
+      id='redirect-to-resource'
+      action='redirect'
+></mp-event-target-redirect>
     ]]>
     </mp-code-example>
 
+    <hr class="divider">
     <h2>Ontodia Events</h2>
     <p>
     	Ontodia Component supports the following events:
     </p>
     <mp-documentation type="OntodiaEventData" disable-transform-attributes=true hide-required-label=true></mp-documentation>
-    <h3>Example: Focus on an element</h3>
+    <br>
+    <h4>Example: Focus on an element</h4>
     <mp-code-example>
-<![CDATA[
+    <![CDATA[
 <bs-row>
 	<bs-col md='6'>
     <semantic-table
@@ -321,6 +324,7 @@
 			settings='nostats'
 			query='
         PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+        PREFIX foaf: <http://xmlns.com/foaf/0.1/>
         PREFIX person: <http://example.com/person/>
 
         CONSTRUCT {
@@ -344,7 +348,11 @@
     ></ontodia>
   </bs-col>
 </bs-row>
-]]>
+        ]]>
       </mp-code-example>
+
+[[#if includedTemplate]]
+[[else]]
   </div>
 </div>
+[[/if]]

@@ -223,7 +223,7 @@ export interface TimelineOptions {
    */
   groupOrder?: string;
   /**
-   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> for the groups contents.
+   * <semantic-link iri='http://help.researchspace.org/resource/TemplatingSystem' target="_blank">Template</semantic-link> for the groups contents.
    * The variables that available in the template are following:
    * <pre>
    * {
@@ -472,11 +472,11 @@ interface SemanticTimelineConfigBase {
    */
   query: string;
   /**
-   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is applied when query returns no results.
+   * <semantic-link iri='http://help.researchspace.org/resource/TemplatingSystem' target="_blank">Template</semantic-link> which is applied when query returns no results.
    */
   noResultTemplate?: string;
   /**
-   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> for the items contents.
+   * <semantic-link iri='http://help.researchspace.org/resource/TemplatingSystem' target="_blank">Template</semantic-link> for the items contents.
    * @default {{start.value}} - {{end.value}}
    */
   tupleTemplate?: string;
@@ -485,7 +485,7 @@ interface SemanticTimelineConfigBase {
    */
   tupleTemplateHeight?: number | string;
   /**
-   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> of a loading which is applied when items are drawn.
+   * <semantic-link iri='http://help.researchspace.org/resource/TemplatingSystem' target="_blank">Template</semantic-link> of a loading which is applied when items are drawn.
    */
   loadingTemplate?: string;
   /**

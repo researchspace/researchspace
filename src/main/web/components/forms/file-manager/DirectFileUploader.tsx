@@ -57,7 +57,8 @@ export interface DirectFileUploaderState {
 
 export interface DirectFileUploaderProps {
   /**
-   * Allow specific types of files. See https://github.com/okonet/attr-accept for more information
+   * Allow specific types of files. 
+   * See <a href='https://github.com/okonet/attr-accept' class='text-link-action' target='_blank'>https://github.com/okonet/attr-accept</a> for more information
    */
   acceptPattern?: string;
 

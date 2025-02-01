@@ -36,6 +36,7 @@ import javax.validation.constraints.NotNull;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.IRI;
 import org.researchspace.config.Configuration;
 import org.researchspace.plugin.PlatformPlugin;
 import org.researchspace.plugin.PlatformPluginManager;
@@ -182,7 +183,16 @@ public class MainPlatformStorage implements PlatformStorage {
         logger.info("Creating {} storage '{}' with config type {}", config.isMutable() ? "mutable" : "readonly",
                 storageId, config.getClass().getName());
 
+        // Check if the config requires a hierarchical path mapping
+        IRI pathMappingBaseIri = config.getBaseIri();
         PathMapping pathMapping = appPaths;
+
+        if (config.getPathMapping() != null && pathMappingBaseIri != null
+                && config.getPathMapping().equals("hierarchical")) {
+            logger.info("Storage {} has hierarchical config", storageId);
+            pathMapping = new PathMapping.HierarchicalPathMapping(pathMappingBaseIri);
+        }
+
         if (config.getSubroot() != null) {
             pathMapping = new PathMapping.MapPrefix(pathMapping, StoragePath.EMPTY,
                     StoragePath.parse(config.getSubroot()));

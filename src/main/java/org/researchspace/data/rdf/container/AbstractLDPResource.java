@@ -37,8 +37,10 @@ import javax.inject.Inject;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -46,6 +48,7 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.ModelException;
 import org.eclipse.rdf4j.model.util.Models;
+import org.eclipse.rdf4j.model.util.Values;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -57,6 +60,7 @@ import org.researchspace.config.Configuration;
 import org.researchspace.config.NamespaceRegistry;
 import org.researchspace.data.rdf.PointedGraph;
 import org.researchspace.data.rdf.ReadConnection;
+import org.researchspace.data.rdf.RioUtils;
 import org.researchspace.repository.MpRepositoryProvider;
 import org.researchspace.security.SecurityService;
 import org.researchspace.services.storage.api.*;
@@ -112,6 +116,9 @@ public abstract class AbstractLDPResource implements LDPResource {
         this.resourceIRI = iri;
         this.repositoryProvider = repositoryProvider;
     }
+
+    @Inject
+    private RioUtils rioUtils;
 
     @Override
     public Model getModel() throws RepositoryException {
@@ -366,7 +373,11 @@ public abstract class AbstractLDPResource implements LDPResource {
                 .map(stmt -> VF.createStatement(stmt.getSubject(), stmt.getPredicate(), stmt.getObject(), contextUri))
                 .collect(Collectors.toList());
 
-        Rio.write(toWrite, outStream, RDFFormat.TRIG);
+        Model model = new LinkedHashModel(); 
+
+        model.addAll(toWrite);       
+        rioUtils.skolemizedWrite(model, outStream, RDFFormat.TRIG);
+
         byte[] bytes = outStream.toByteArray();
 
         // The author and the creation date are extracted from the graph

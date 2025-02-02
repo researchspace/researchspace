@@ -30,14 +30,21 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.BNode;
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.Models;
+import org.eclipse.rdf4j.model.util.Values;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.repository.config.RepositoryConfig;
 import org.eclipse.rdf4j.repository.config.RepositoryConfigException;
@@ -50,6 +57,7 @@ import org.eclipse.rdf4j.rio.WriterConfig;
 import org.eclipse.rdf4j.rio.helpers.BasicWriterSettings;
 import org.eclipse.rdf4j.sail.config.SailConfigSchema;
 import org.eclipse.rdf4j.sail.federation.config.FederationConfig;
+import org.researchspace.data.rdf.RioUtils;
 import org.researchspace.services.storage.api.ObjectKind;
 import org.researchspace.services.storage.api.ObjectMetadata;
 import org.researchspace.services.storage.api.ObjectRecord;
@@ -266,7 +274,31 @@ public class RepositoryConfigUtils {
         WriterConfig config = new WriterConfig();
         config.set(BasicWriterSettings.PRETTY_PRINT, true);
         config.set(BasicWriterSettings.INLINE_BLANK_NODES, true);
-        Rio.write(model, os, RDFFormat.TURTLE, config);
+        //RioUtils rioUtils = new RioUtils();   
+        //rioUtils.skolemizedWrite(model, os, RDFFormat.TURTLE, config);
+
+        // Create a new Model to hold skolemized data
+        Model skolemizedModel = new LinkedHashModel();
+        String baseIRI = "http://www.researchspace.org/bnode/";
+
+        for (Statement st: model) {
+            Resource subj = st.getSubject();
+            IRI pred = st.getPredicate();
+            Value obj = st.getObject();
+
+            if (subj.isBNode()) {
+                // Convert blank node to IRI
+                subj = Values.iri(baseIRI + ((BNode) subj).getID());
+            }
+
+            if (obj instanceof BNode) {
+                obj = Values.iri(baseIRI + ((BNode) obj).getID());
+            }
+
+            skolemizedModel.add(subj, pred, obj, st.getContext());
+        }
+
+        Rio.write(skolemizedModel, os, RDFFormat.TURTLE, config);
     }
 
     /**

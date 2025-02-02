@@ -27,14 +27,19 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.shiro.UnavailableSecurityManagerException;
 import org.eclipse.rdf4j.common.iteration.Iterations;
+import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.util.Models;
+import org.eclipse.rdf4j.model.util.Values;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.QueryLanguage;
@@ -43,6 +48,7 @@ import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.sail.federation.MpFederationConnection;
 import org.researchspace.cache.CacheManager;
 import org.researchspace.data.rdf.PointedGraph;
 import org.researchspace.repository.MpRepositoryProvider;
@@ -58,7 +64,7 @@ import com.google.common.base.Throwables;
  * @author Johannes Trame <jt@metaphacts.com>
  */
 public abstract class AbstractLDPContainer extends AbstractLDPResource implements LDPContainer {
-
+    private static final Logger logger = LogManager.getLogger(AbstractLDPContainer.class);
     @Inject
     protected CacheManager cacheManager;
 
@@ -108,8 +114,30 @@ public abstract class AbstractLDPContainer extends AbstractLDPResource implement
                 throw new RepositoryException("Cannot save the object " + pointedGraph.getPointer().stringValue()
                         + " to storage: " + e.getMessage(), e);
             }
+        }logger.trace("saving KP");
+        Model model = new LinkedHashModel();
+        pg.getGraph().forEach(model::add);
+        // Create a new Model to hold skolemized data
+        Model skolemizedModel = new LinkedHashModel();
+        String baseIRI = "http://www.researchspace.org/bnode/";
+
+        for (Statement st: model) {
+            Resource subj = st.getSubject();
+            IRI pred = st.getPredicate();
+            Value obj = st.getObject();
+
+            if (subj.isBNode()) {
+                // Convert blank node to IRI
+                subj = Values.iri(baseIRI + ((BNode) subj).getID());
+            }
+
+            if (obj instanceof BNode) {
+                obj = Values.iri(baseIRI + ((BNode) obj).getID());
+            }
+
+            skolemizedModel.add(subj, pred, obj, st.getContext());
         }
-        repConnection.add(pg.getGraph(), contextUri);
+        repConnection.add(skolemizedModel, contextUri);
     }
 
     public void renameUpdateSet(PointedGraph pointedGraph) throws RepositoryException {

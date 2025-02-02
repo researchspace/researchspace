@@ -65,6 +65,7 @@ import org.apache.shiro.lang.ShiroException;
 import org.commonjava.mimeparse.MIMEParse;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFHandlerException;
 import org.eclipse.rdf4j.rio.RDFWriterRegistry;
@@ -320,7 +321,10 @@ public class ContainerEndpoint {
                         m.setNamespace(e.getKey(), e.getValue());
                     }
                     try {
-                        Rio.write(m, writer, format);
+                        //Rio.write(m, writer, format);
+                        //Model model = new LinkedHashModel(); 
+                        rioUtils.skolemizedWrite(m, os, format);
+
                     } catch (RDFHandlerException e) {
                         throw new WebApplicationException(e);
                     }

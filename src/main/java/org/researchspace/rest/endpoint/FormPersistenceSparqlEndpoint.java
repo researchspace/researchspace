@@ -58,6 +58,7 @@ import org.researchspace.api.sparql.SparqlOperationBuilder;
 import org.researchspace.cache.CacheManager;
 import org.researchspace.config.NamespaceRegistry;
 import org.researchspace.data.rdf.PointedGraph;
+import org.researchspace.data.rdf.RioUtils;
 import org.researchspace.repository.MpRepositoryProvider;
 import org.researchspace.repository.RepositoryManager;
 import org.researchspace.security.Permissions.FORMS_SPARQL;
@@ -92,9 +93,9 @@ public class FormPersistenceSparqlEndpoint {
     private NamespaceRegistry nsRegistry;
 
     private final ValueFactory vf = SimpleValueFactory.getInstance();
-    
+
     @Inject
-    private FileManager fileManager;
+    private RioUtils rioUtils;
 
     /**
      * Executes and array of SPARQL INSERT and DELETE query strings in one
@@ -143,7 +144,13 @@ public class FormPersistenceSparqlEndpoint {
                                 .collect(Collectors.toList());
 
                         if (toWrite.size()>0) {
-                            Rio.write(toWrite, outStream, RDFFormat.TRIG);
+                            //Rio.write(toWrite, outStream, RDFFormat.TRIG);
+                            Model model2 = new LinkedHashModel(); 
+
+                            model2.addAll(toWrite);       
+                            rioUtils.skolemizedWrite(model2, outStream, RDFFormat.TRIG);
+
+                            
                             byte[] bytes = outStream.toByteArray();
                             
                             ByteArrayInputStream content = new ByteArrayInputStream(bytes);

@@ -41,6 +41,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.GraphQueryResult;
@@ -55,6 +56,7 @@ import org.researchspace.api.sparql.SparqlOperationBuilder;
 import org.researchspace.api.sparql.SparqlUtil;
 import org.researchspace.config.NamespaceRegistry;
 import org.researchspace.data.rdf.ReadConnection;
+import org.researchspace.data.rdf.RioUtils;
 import org.researchspace.repository.RepositoryManager;
 import org.researchspace.rest.feature.CacheControl.NoCache;
 import org.researchspace.ui.templates.MainTemplate;
@@ -80,6 +82,8 @@ public class ResourceEndpoint {
     @Inject
     private NamespaceRegistry namespaceRegistry;
 
+    @Inject
+    private RioUtils rioUtils;
     /**
      * When accessing from browser, return main template with client-side logic to
      * present resource
@@ -165,7 +169,9 @@ public class ResourceEndpoint {
                 StreamingOutput stream = new StreamingOutput() {
                     @Override
                     public void write(OutputStream output) throws IOException, WebApplicationException {
-                        Rio.write(model, output, rdfFormat);
+                        //Rio.write(model, output, rdfFormat);
+                             
+                        rioUtils.skolemizedWrite(model, output, RDFFormat.TRIG);
                     }
                 };
                 return Response.ok(stream).type(mimeType).build();

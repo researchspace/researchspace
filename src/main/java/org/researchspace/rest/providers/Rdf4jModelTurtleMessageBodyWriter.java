@@ -34,10 +34,12 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFHandlerException;
 import org.eclipse.rdf4j.rio.Rio;
 import org.researchspace.config.NamespaceRegistry;
+import org.researchspace.data.rdf.RioUtils;
 
 /**
  * @author Johannes Trame <jt@metaphacts.com>
@@ -48,6 +50,9 @@ public class Rdf4jModelTurtleMessageBodyWriter implements MessageBodyWriter<Mode
 
     @Inject
     private NamespaceRegistry ns;
+
+    @Inject
+    private RioUtils rioUtils;
 
     @Override
     public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
@@ -68,7 +73,10 @@ public class Rdf4jModelTurtleMessageBodyWriter implements MessageBodyWriter<Mode
         try {
             for (Entry<String, String> e : ns.getPrefixMap().entrySet())
                 t.setNamespace(e.getKey(), e.getValue());
-            Rio.write(t, entityStream, RDFFormat.TURTLE);
+            //Rio.write(t, entityStream, RDFFormat.TURTLE);
+      
+            rioUtils.skolemizedWrite(t, entityStream, RDFFormat.TURTLE);
+
         } catch (RDFHandlerException e) {
             throw new WebApplicationException(e);
         }

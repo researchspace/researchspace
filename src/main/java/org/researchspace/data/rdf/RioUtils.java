@@ -26,10 +26,15 @@ import java.io.OutputStream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.eclipse.rdf4j.model.BNode;
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.util.Values;
 import org.eclipse.rdf4j.rio.ParserConfig;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParseException;
@@ -77,4 +82,45 @@ public class RioUtils {
         }
         writer.endRDF();
     }
+
+    public void skolemizedWrite(Model model, OutputStream out, RDFFormat format) {
+        // Create a new Model to hold skolemized data
+        Model skolemizedModel = new LinkedHashModel();
+        String baseIRI = "http://www.researchspace.org/bnode/";
+
+        for (Statement st: model) {
+            Resource subj = st.getSubject();
+            IRI pred = st.getPredicate();
+            Value obj = st.getObject();
+
+            if (subj.isBNode()) {
+                // Convert blank node to IRI
+                subj = toIRI((BNode) subj, baseIRI);
+            }
+
+            if (obj instanceof BNode) {
+                obj = toIRI((BNode) obj, baseIRI);
+            }
+
+            skolemizedModel.add(subj, pred, obj, st.getContext());
+        }
+
+
+        RDFWriter writer = Rio.createWriter(format, out);
+        writer.startRDF();
+
+        ns.getRioNamespaces().stream()
+                .forEach(namespace -> writer.handleNamespace(namespace.getPrefix(), namespace.getName()));
+        writer.set(BasicWriterSettings.PRETTY_PRINT, true);
+
+        for (final Statement st : skolemizedModel) {
+            writer.handleStatement(st);
+        }
+        writer.endRDF();
+    }
+
+    private IRI toIRI(BNode bnode, String baseIRI) {
+        // Use the bnode ID to craft a stable URI
+        return Values.iri(baseIRI + bnode.getID());
+    }   
 }

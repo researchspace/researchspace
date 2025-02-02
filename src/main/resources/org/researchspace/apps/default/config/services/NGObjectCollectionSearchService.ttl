@@ -1,0 +1,137 @@
+PREFIX sp: <http://spinrdf.org/sp#>
+PREFIX spin: <http://spinrdf.org/spin#>
+PREFIX spl: <http://spinrdf.org/spl#>
+PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#>
+PREFIX sail: <http://www.openrdf.org/config/sail#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX : <http://www.researchspace.org/resource/system/services/ngcollectiononline/>
+
+:NGObjectCollectionSearchService a ephedra:Service ;    
+    sail:sailType "researchspace:RESTSail" ;
+    rdfs:label "A wrapper for the National Gallery museum API service." ;
+
+    ephedra:hasSPARQLPattern (
+        [
+            sp:subject :_results ;
+            sp:predicate :q ;
+            sp:object :_q
+        ] 
+        [
+            sp:subject :_results ;
+            sp:predicate :size ;
+            sp:object :_size
+        ]
+        [
+            sp:subject :_results ;
+            sp:predicate :default_operator ;
+            sp:object :_default_operator
+        ]   
+        [
+            sp:subject :_results ;
+            sp:predicate :_source ;
+            sp:object :__source
+        ]   
+        [
+           sp:subject :_results ;
+           sp:predicate :ID ;
+           sp:object :_ID
+        ]
+        [
+            sp:subject :_results ;
+            sp:predicate :title ;
+            sp:object :_title
+        ]
+        [
+            sp:subject :_results ;
+            sp:predicate :title_type ;
+            sp:object :_title_type
+        ]
+        [
+            sp:subject :_results ;
+            sp:predicate :title_value ;
+            sp:object :_title_value
+        ]
+        [
+            sp:subject :_results ;
+            sp:predicate :multimedia_preview ;
+            sp:object :_multimedia_preview
+        ]
+
+    );
+
+    spin:constraint [
+        a spl:Argument ;
+        rdfs:comment "search term" ;
+        spl:predicate :_q ;
+        spl:valueType xsd:string ;
+        ] ;
+
+    spin:constraint [
+        a spl:Argument ;
+        rdfs:comment "result set size" ;
+        spl:predicate :_size ;
+        spl:valueType xsd:int ;
+        ] ;
+
+    spin:constraint [
+        a spl:Argument ;
+        rdfs:comment "default operator for elastic search" ;
+        spl:predicate :_default_operator;
+        spl:valueType xsd:string ;
+        ] ;
+    
+    spin:constraint [
+        a spl:Argument ;
+        rdfs:comment "search parameter that specifies which metadata to return when running the keyword search" ;
+        spl:predicate :__source;
+        spl:valueType xsd:string ;
+        ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "results" ;
+        spl:predicate :_results ;
+        spl:valueType rdfs:Resource;
+        ephedra:jsonPath "$.hits.hits.[*]"
+    ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "Title" ;
+        spl:predicate :_title ;
+        spl:valueType xsd:string ;
+        ephedra:jsonPath "$._source.summary.title"
+    ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "Title Type" ;
+        spl:predicate :_title_type ;
+        spl:valueType xsd:string ;
+        ephedra:jsonPath "$._source.title.[*].type"
+    ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "Title Value" ;
+        spl:predicate :_title_value ;
+        spl:valueType xsd:string ;
+        ephedra:jsonPath "$._source.title.[*].value"
+    ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "Multimedia Preview" ;
+        spl:predicate :_multimedia_preview ;
+        spl:valueType xsd:string ;
+        ephedra:jsonPath "$._source.multimedia[0][0]['@processed'].preview.location"
+    ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "Collection PID" ;
+        spl:predicate :_ID ;
+        spl:valueType xsd:string ;
+        ephedra:jsonPath "$._id"
+    ] .
+

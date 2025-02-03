@@ -93,14 +93,15 @@ This version of ResearchSpace is created and supported by Kartography CIC.
 
 This is an invitation to explore new ways of researching using as example of our research on the ***Seventeenth Century Woman Artists***. 
 
-[**Download Latest ResearchSpace Release with Example Data**](https://drive.google.com/file/d/18j4tocxPpsj9-Ej8Rx9DIv4yAEzJN1rn/view?usp=sharing) (ResearchSpace bundled with demo data, [blazegraph triplestore](https://blazegraph.com/) and [digilib](https://robcast.github.io/digilib/) IIIF viewer).
-
+[**Download Latest ResearchSpace Release with Example Data**](https://documentation.researchspace.org/resource/rsp:Documentation_Download) (ResearchSpace bundled with demo data, [blazegraph triplestore](https://blazegraph.com/) and [digilib](https://robcast.github.io/digilib/) IIIF viewer).
 
 
 ## Docker Image
-Latest docker images for ResearchSpace are available on [Docker Hub](https://hub.docker.com/r/researchspace/platform-ci). 
+Latest docker images for ResearchSpace are available on [Docker Hub](https://hub.docker.com/r/researchspace/platform-ci). Use ```docker pull researchspace/platform-ci:latest``` to get the most current version.
 
-*docker-compose* scripts for ResearchSpace setup are available in [researchspace-docker-compose repository](https://github.com/researchspace/researchspace-docker-compose). 
+[**ResearchSpace with Docker Desktop download and instructions for installing **](https://documentation.researchspace.org/resource/rsp:Documentation_Download#rs-doc_installationDocker)
+
+[**ResearchSpace server installation using docker-compose scripts**](https://github.com/researchspace/researchspace-docker-compose). 
 
 
 ## ZIP Bundle

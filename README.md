@@ -99,7 +99,7 @@ This is an invitation to explore new ways of researching using as example of our
 ## Docker Image
 Latest docker images for ResearchSpace are available on [Docker Hub](https://hub.docker.com/r/researchspace/platform-ci). Use ```docker pull researchspace/platform-ci:latest``` to get the most current version.
 
-[**ResearchSpace with Docker Desktop download and instructions for installing **](https://documentation.researchspace.org/resource/rsp:Documentation_Download#rs-doc_installationDocker)
+[**ResearchSpace with Docker Desktop download and instructions for installing**](https://documentation.researchspace.org/resource/rsp:Documentation_Download#rs-doc_installationDocker)
 
 [**ResearchSpace server installation using docker-compose scripts**](https://github.com/researchspace/researchspace-docker-compose). 
 

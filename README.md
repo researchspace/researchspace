@@ -75,13 +75,11 @@ Changing the methods of research in the humanities requires an innovative platfo
 
 The thinking and design of the platform is that any research is a process of growing a network of connections, namely a ***knowledge graph***. From a technical perspective it is a "changing informational structure that mediates between a human, the world and a computer. The graph itself is ontologically based and enhanced by human epistemology. These are closely linked in that the ontology provides real world references and a structure of interrelated entities or processes, while the epistemology uses the graph to interpret and generate new knowledge. Growing the graph is based on both automated reasoning and crucially, collaborative human thinking and creativity". [Oldman and Tanase](https://link.springer.com/chapter/10.1007/978-3-030-00668-6_20)
 
-This led to the creation of a new release reflecting this design thinking.
-
 ## ResearchSpace v.4.0.0
 
 This release offers a unique way of recording data with semantics based on an exhaustive collection of interconnected resource templates, allowing one to start by adding any [new resource based on CIDOC CRM ontology](./images/release4/NewResource.png). See further details in the **[RELEASE NOTES](release-notes.md)**.
 
-This version of ResearchSpace is created and supported by Kartography CIC.
+Current version of ResearchSpace was created and is supported by Kartography CIC.
 
 ![Research as Data](./images/release4/ResearchAsData.png)
 
@@ -93,16 +91,18 @@ This version of ResearchSpace is created and supported by Kartography CIC.
 
 This is an invitation to explore new ways of researching using as example of our research on the ***Seventeenth Century Woman Artists***. 
 
-[**Download Latest ResearchSpace Release with Example Data**](https://documentation.researchspace.org/resource/rsp:Documentation_Download) (ResearchSpace bundled with demo data, [blazegraph triplestore](https://blazegraph.com/) and [digilib](https://robcast.github.io/digilib/) IIIF viewer).
+[**Download Latest ResearchSpace Release and Example Data**](https://documentation.researchspace.org/resource/rsp:Documentation_Download)
 
 
 ## Docker Image
-Latest docker images for ResearchSpace are available on [Docker Hub](https://hub.docker.com/r/researchspace/platform-ci). Use ```docker pull researchspace/platform-ci:latest``` to get the most current version.
 
 [**ResearchSpace with Docker Desktop download and instructions for installing**](https://documentation.researchspace.org/resource/rsp:Documentation_Download#rs-doc_installationDocker)
 
-[**ResearchSpace server installation using docker-compose scripts**](https://github.com/researchspace/researchspace-docker-compose). 
+[**ResearchSpace server installations using docker compose scripts**](https://github.com/researchspace/researchspace-docker-compose). 
 
+All docker images for ResearchSpace are available on [Docker Hub](https://hub.docker.com/r/researchspace/platform-ci). 
+
+Get the current version with ```docker pull researchspace/platform-ci:latest```
 
 ## ZIP Bundle
 

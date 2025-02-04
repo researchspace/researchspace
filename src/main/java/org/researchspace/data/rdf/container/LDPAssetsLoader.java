@@ -178,7 +178,7 @@ public class LDPAssetsLoader {
         for (Entry<String, Map<String, Map<StoragePath, FindResult>>> entry : mapResultsByRepositoryIdAndStorageId
                 .entrySet()) {
             if (isLoadableFromStorage(entry.getKey()) || defaultRepositoriesList.contains(entry.getKey())) {
-                boolean isWritable = repositoryManager.getRepository(entry.getKey()).isWritable();
+                boolean isWritable = true;//repositoryManager.getRepository(entry.getKey()).isWritable();
                 if (isWritable) {                                                  
                     if (!defaultRepositoriesList.contains(entry.getKey())){
                         /* Load non-default repositories */

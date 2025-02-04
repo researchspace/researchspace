@@ -29,7 +29,7 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 public class PLATFORM {
 
     public static String NAMESPACE = "http://www.researchspace.org/resource/system/";
-
+    public static String BNODE = "http://www.researchspace.org/bnode/";
     /**
      * Types
      */
@@ -44,6 +44,7 @@ public class PLATFORM {
     public static final IRI SET_TYPE;
     public static final IRI SET_ITEM_TYPE;
 
+    public static final String IRI BNODE;
     static {
         ValueFactory f = SimpleValueFactory.getInstance();
         FIELD = f.createIRI(NAMESPACE, "Field");

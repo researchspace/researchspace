@@ -64,6 +64,7 @@ import org.researchspace.services.storage.api.ObjectRecord;
 import org.researchspace.services.storage.api.ObjectStorage;
 import org.researchspace.services.storage.api.PlatformStorage;
 import org.researchspace.services.storage.api.StoragePath;
+import org.researchspace.vocabulary.PLATFORM;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -279,7 +280,7 @@ public class RepositoryConfigUtils {
 
         // Create a new Model to hold skolemized data
         Model skolemizedModel = new LinkedHashModel();
-        String baseIRI = "http://www.researchspace.org/bnode/";
+        String baseIRI = PLATFORM.BNODE;
 
         for (Statement st: model) {
             Resource subj = st.getSubject();

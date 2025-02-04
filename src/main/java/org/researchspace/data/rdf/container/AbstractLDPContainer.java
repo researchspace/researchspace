@@ -114,12 +114,12 @@ public abstract class AbstractLDPContainer extends AbstractLDPResource implement
                 throw new RepositoryException("Cannot save the object " + pointedGraph.getPointer().stringValue()
                         + " to storage: " + e.getMessage(), e);
             }
-        }logger.trace("saving KP");
+        }
         Model model = new LinkedHashModel();
         pg.getGraph().forEach(model::add);
         // Create a new Model to hold skolemized data
         Model skolemizedModel = new LinkedHashModel();
-        String baseIRI = "http://www.researchspace.org/bnode/";
+        String baseIRI = PLATFORM.BNODE;
 
         for (Statement st: model) {
             Resource subj = st.getSubject();

@@ -45,6 +45,7 @@ import org.eclipse.rdf4j.rio.helpers.BasicParserSettings;
 import org.eclipse.rdf4j.rio.helpers.BasicWriterSettings;
 import org.eclipse.rdf4j.rio.helpers.ParseErrorLogger;
 import org.researchspace.config.NamespaceRegistry;
+import org.researchspace.vocabulary.PLATFORM;
 
 /**
  * @author Artem Kozlov <ak@metaphacts.com>
@@ -86,7 +87,7 @@ public class RioUtils {
     public void skolemizedWrite(Model model, OutputStream out, RDFFormat format) {
         // Create a new Model to hold skolemized data
         Model skolemizedModel = new LinkedHashModel();
-        String baseIRI = "http://www.researchspace.org/bnode/";
+        String baseIRI = PLATFORM.BNODE;
 
         for (Statement st: model) {
             Resource subj = st.getSubject();

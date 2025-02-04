@@ -1,43 +1,49 @@
+@prefix ns1: <http://www.w3.org/ns/ldp#> .
+@prefix ns2: <http://spinrdf.org/sp#> .
+@prefix ns3: <http://www.researchspace.org/resource/system/fields/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/is_associated_with/association_type/context> {
-  <http://www.researchspace.org/pattern/system/is_associated_with/association_type>
-    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
-      <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E55_Type>;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-bd44309134c1404185b3fb518833c927-871k74;
-    <http://www.w3.org/2000/01/rdf-schema#label> "Association type";
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-bd44309134c1404185b3fb518833c927-qhotfh;
-    <http://www.researchspace.org/resource/system/fields/treePatterns> """{
-  \"type\": \"simple\",
-  \"schemePattern\": \"?item  crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/association_type> . \"
-}"""^^<http://www.researchspace.org/resource/system/syntheticJson>;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-bd44309134c1404185b3fb518833c927-2gx1l;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/PC69_is_associated_with>;
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-25T16:47:22.190+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-bd44309134c1404185b3fb518833c927-871k74 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns1:contains <http://www.researchspace.org/pattern/system/is_associated_with/association_type> .
+
+    <http://www.researchspace.org/bnode/n9dc2110c52d84bd7b8b0aeafbdf34edbb1> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value WHERE {
   $subject crm:P69.1_has_type $value .
   ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/association_type> . 
 }""" .
-  
-  _:genid-bd44309134c1404185b3fb518833c927-qhotfh a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE {  
+
+    <http://www.researchspace.org/bnode/n9dc2110c52d84bd7b8b0aeafbdf34edbb2> a ns2:Query ;
+        ns2:text """DELETE {  
   $subject crm:P69.1_has_type $value .
 } WHERE { 
   $subject crm:P69.1_has_type $value .
   ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/association_type> . 
 } """ .
-  
-  _:genid-bd44309134c1404185b3fb518833c927-2gx1l a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
+
+    <http://www.researchspace.org/bnode/n9dc2110c52d84bd7b8b0aeafbdf34edbb3> a ns2:Query ;
+        ns2:text """INSERT { 
   $subject crm:P69.1_has_type $value .
 } WHERE {}""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/is_associated_with/association_type> .
+
+    <http://www.researchspace.org/pattern/system/is_associated_with/association_type> a ns3:Field,
+            ns1:Resource,
+            prov:Entity ;
+        rdfs:label "Association type" ;
+        ns3:deletePattern <http://www.researchspace.org/bnode/n9dc2110c52d84bd7b8b0aeafbdf34edbb2> ;
+        ns3:domain <http://www.cidoc-crm.org/cidoc-crm/PC69_is_associated_with> ;
+        ns3:insertPattern <http://www.researchspace.org/bnode/n9dc2110c52d84bd7b8b0aeafbdf34edbb3> ;
+        ns3:maxOccurs "unbound" ;
+        ns3:minOccurs "0" ;
+        ns3:range <http://www.cidoc-crm.org/cidoc-crm/E55_Type> ;
+        ns3:selectPattern <http://www.researchspace.org/bnode/n9dc2110c52d84bd7b8b0aeafbdf34edbb1> ;
+        ns3:treePatterns """{
+  "type": "simple",
+  "schemePattern": "?item  crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/association_type> . "
+}"""^^<http://www.researchspace.org/resource/system/syntheticJson> ;
+        ns3:xsdDatatype xsd:anyURI ;
+        prov:generatedAtTime "2024-04-25T16:47:22.190000+01:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

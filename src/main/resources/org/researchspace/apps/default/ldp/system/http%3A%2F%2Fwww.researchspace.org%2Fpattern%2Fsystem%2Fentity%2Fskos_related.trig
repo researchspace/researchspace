@@ -1,32 +1,33 @@
+@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns2: <http://spinrdf.org/sp#> .
+@prefix ns3: <http://www.w3.org/ns/ldp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/entity/skos_related/context> {
-  <http://www.researchspace.org/pattern/system/entity/skos_related> a <http://www.researchspace.org/resource/system/fields/Field>,
-      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/entity>;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.w3.org/2004/02/skos/core#Concept>;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-51285c9e472643bba4bc1d6a563172f8-n0ruyh;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-51285c9e472643bba4bc1d6a563172f8-w1yg5;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-51285c9e472643bba4bc1d6a563172f8-2b80b;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.w3.org/2000/01/rdf-schema#label> "Related resource"@en;
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.w3.org/2004/02/skos/core#Concept>;
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-02-19T18:26:58.368Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-51285c9e472643bba4bc1d6a563172f8-w1yg5 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/entity/skos_related> .
+
+    <http://www.researchspace.org/bnode/n6872c461490f455a8948a8f4cf02c727b1> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value WHERE {
+    $subject skos:related ?value .
+    ?value skos:related $subject .
+    ?value a skos:Concept .
+}""" .
+
+    <http://www.researchspace.org/bnode/n6872c461490f455a8948a8f4cf02c727b2> a ns2:Query ;
+        ns2:text """INSERT { 
     $subject skos:related ?value .
     ?value skos:related $subject .
   #  ?relatedConcept a skos:Concept .
   #  ?relatedConcept skos:prefLabel ?value .
 } WHERE {
-  #  BIND(URI(CONCAT(\"http://www.researchspace.org/resource/skos_concept/\",STRUUID())) as ?relatedConcept)
+  #  BIND(URI(CONCAT("http://www.researchspace.org/resource/skos_concept/",STRUUID())) as ?relatedConcept)
 }""" .
-  
-  _:genid-51285c9e472643bba4bc1d6a563172f8-2b80b a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE {  
+
+    <http://www.researchspace.org/bnode/n6872c461490f455a8948a8f4cf02c727b3> a ns2:Query ;
+        ns2:text """DELETE {  
     $subject skos:related ?value .
     ?value skos:related $subject .
 } WHERE {
@@ -34,14 +35,21 @@
     ?value skos:related $subject .
     ?value a skos:Concept .
 }""" .
-  
-  _:genid-51285c9e472643bba4bc1d6a563172f8-n0ruyh a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
-    $subject skos:related ?value .
-    ?value skos:related $subject .
-    ?value a skos:Concept .
-}""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/entity/skos_related> .
+
+    <http://www.researchspace.org/pattern/system/entity/skos_related> a ns1:Field,
+            ns3:Resource,
+            prov:Entity ;
+        rdfs:label "Related resource"@en ;
+        ns1:category <http://www.researchspace.org/resource/system/category/entity> ;
+        ns1:deletePattern <http://www.researchspace.org/bnode/n6872c461490f455a8948a8f4cf02c727b3> ;
+        ns1:domain skos:Concept ;
+        ns1:insertPattern <http://www.researchspace.org/bnode/n6872c461490f455a8948a8f4cf02c727b2> ;
+        ns1:maxOccurs "unbound" ;
+        ns1:minOccurs "0" ;
+        ns1:range skos:Concept ;
+        ns1:selectPattern <http://www.researchspace.org/bnode/n6872c461490f455a8948a8f4cf02c727b1> ;
+        ns1:xsdDatatype xsd:anyURI ;
+        prov:generatedAtTime "2024-02-19T18:26:58.368000+00:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

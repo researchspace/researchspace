@@ -1,22 +1,19 @@
+@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns2: <http://www.w3.org/ns/ldp#> .
+@prefix ns3: <http://spinrdf.org/sp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
 <http://www.researchspace.org/pattern/system/system_activity/was_attributed_to/context> {
-  <http://www.researchspace.org/pattern/system/system_activity/was_attributed_to> a <http://www.researchspace.org/resource/system/fields/Field>,
-      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.w3.org/2000/01/rdf-schema#label> "Resource created/modified by user";
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.researchspace.org/resource/system/fields/category> 
-    <http://www.researchspace.org/resource/system/category/system_activity_search>,
-    <http://www.researchspace.org/resource/system/category/narrative_resources_search>;
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E39_Actor>;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-3358211a011b43ea8132ab0b2f918051-iqxu69;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://iflastandards.info/ns/fr/frbr/frbroo/F2_Expression>,
-      <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-3358211a011b43ea8132ab0b2f918051-7ryw17;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-3358211a011b43ea8132ab0b2f918051-ye0t6;
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-09-02T15:20:04.463+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-3358211a011b43ea8132ab0b2f918051-7ryw17 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value WHERE { 
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns2:contains <http://www.researchspace.org/pattern/system/system_activity/was_attributed_to> .
+
+    <http://www.researchspace.org/bnode/n755217fa39344156a2a2e38b851fed73b1> a ns3:Query ;
+        ns3:text """INSERT { ?subject prov:wasAttributedTo ?value .} 
+WHERE {}""" .
+
+    <http://www.researchspace.org/bnode/n755217fa39344156a2a2e38b851fed73b2> a ns3:Query ;
+        ns3:text """SELECT ?value WHERE { 
     { ?subject prov:wasAttributedTo ?value .
       MINUS {?subject a <http://www.researchspace.org/resource/system/fields/Field> .}
     } UNION {
@@ -28,14 +25,24 @@
     }
     ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
 }""" .
-  
-  _:genid-3358211a011b43ea8132ab0b2f918051-ye0t6 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> "DELETE {?subject prov:wasAttributedTo ?value .} WHERE {?subject prov:wasAttributedTo ?value .}" .
-  
-  _:genid-3358211a011b43ea8132ab0b2f918051-iqxu69 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { ?subject prov:wasAttributedTo ?value .} 
-WHERE {}""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/system_activity/was_attributed_to> .
+
+    <http://www.researchspace.org/bnode/n755217fa39344156a2a2e38b851fed73b3> a ns3:Query ;
+        ns3:text "DELETE {?subject prov:wasAttributedTo ?value .} WHERE {?subject prov:wasAttributedTo ?value .}" .
+
+    <http://www.researchspace.org/pattern/system/system_activity/was_attributed_to> a ns1:Field,
+            ns2:Resource,
+            prov:Entity ;
+        rdfs:label "Resource created/modified by user" ;
+        ns1:category <http://www.researchspace.org/resource/system/category/narrative_resources_search>,
+            <http://www.researchspace.org/resource/system/category/system_activity_search> ;
+        ns1:deletePattern <http://www.researchspace.org/bnode/n755217fa39344156a2a2e38b851fed73b3> ;
+        ns1:domain <http://iflastandards.info/ns/fr/frbr/frbroo/F2_Expression>,
+            <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity> ;
+        ns1:insertPattern <http://www.researchspace.org/bnode/n755217fa39344156a2a2e38b851fed73b1> ;
+        ns1:range <http://www.cidoc-crm.org/cidoc-crm/E39_Actor> ;
+        ns1:selectPattern <http://www.researchspace.org/bnode/n755217fa39344156a2a2e38b851fed73b2> ;
+        ns1:xsdDatatype xsd:anyURI ;
+        prov:generatedAtTime "2024-09-02T15:20:04.463000+01:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

@@ -1,37 +1,43 @@
+@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns2: <http://spinrdf.org/sp#> .
+@prefix ns3: <http://www.w3.org/ns/ldp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/symbolic_object/has_symbolic_contentMin1Max1/context> {
-  <http://www.researchspace.org/pattern/system/symbolic_object/has_symbolic_contentMin1Max1>
-    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
-      <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E90_Symbolic_Object>;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "1";
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/symbolic_object>;
-    <http://www.w3.org/2000/01/rdf-schema#label> "Name/value";
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-756c0c4a88c042659ed12695f7f2edb6-l94xuy;
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#string>;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-756c0c4a88c042659ed12695f7f2edb6-80j1;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-756c0c4a88c042659ed12695f7f2edb6-rl46s6;
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-25T14:08:10.113+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-756c0c4a88c042659ed12695f7f2edb6-rl46s6 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-	$subject crm:P190_has_symbolic_content $value .
-} WHERE {}""" .
-  
-  _:genid-756c0c4a88c042659ed12695f7f2edb6-80j1 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
-	$subject crm:P190_has_symbolic_content $value .
-}""" .
-  
-  _:genid-756c0c4a88c042659ed12695f7f2edb6-l94xuy a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE {
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/symbolic_object/has_symbolic_contentMin1Max1> .
+
+    <http://www.researchspace.org/bnode/nd32cf36f092542849bcb669066cb8f6cb1> a ns2:Query ;
+        ns2:text """DELETE {
 	$subject crm:P190_has_symbolic_content $value .
 } WHERE {
 	$subject crm:P190_has_symbolic_content $value .
 }""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/symbolic_object/has_symbolic_contentMin1Max1> .
+
+    <http://www.researchspace.org/bnode/nd32cf36f092542849bcb669066cb8f6cb2> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+	$subject crm:P190_has_symbolic_content $value .
+}""" .
+
+    <http://www.researchspace.org/bnode/nd32cf36f092542849bcb669066cb8f6cb3> a ns2:Query ;
+        ns2:text """INSERT { 
+	$subject crm:P190_has_symbolic_content $value .
+} WHERE {}""" .
+
+    <http://www.researchspace.org/pattern/system/symbolic_object/has_symbolic_contentMin1Max1> a ns1:Field,
+            ns3:Resource,
+            prov:Entity ;
+        rdfs:label "Name/value" ;
+        ns1:category <http://www.researchspace.org/resource/system/category/symbolic_object> ;
+        ns1:deletePattern <http://www.researchspace.org/bnode/nd32cf36f092542849bcb669066cb8f6cb1> ;
+        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E90_Symbolic_Object> ;
+        ns1:insertPattern <http://www.researchspace.org/bnode/nd32cf36f092542849bcb669066cb8f6cb3> ;
+        ns1:maxOccurs "1" ;
+        ns1:minOccurs "1" ;
+        ns1:selectPattern <http://www.researchspace.org/bnode/nd32cf36f092542849bcb669066cb8f6cb2> ;
+        ns1:xsdDatatype xsd:string ;
+        prov:generatedAtTime "2024-04-25T14:08:10.113000+01:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

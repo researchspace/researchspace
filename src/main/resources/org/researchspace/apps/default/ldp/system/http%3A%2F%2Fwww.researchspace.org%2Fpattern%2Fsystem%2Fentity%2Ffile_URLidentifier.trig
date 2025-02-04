@@ -1,7 +1,15 @@
+@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns2: <http://spinrdf.org/sp#> .
+@prefix ns3: <http://www.w3.org/ns/ldp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/entity/file_URLidentifier/context> {
-  _:genid-f1906af4838245a19e5f8ea19b1b6d75-dxxeos a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/entity/file_URLidentifier> .
+
+    <http://www.researchspace.org/bnode/n5b85c92369e344069933b9eb6d0ee6d4b1> a ns2:Query ;
+        ns2:text """INSERT { 
   $subject crmdig:L60i_is_documented_by ?digital_object_embed .
   ?digital_object_embed a crmdig:D7_Digital_Machine_Event .
   ?digital_object_embed crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/digital_object_embed> .
@@ -10,38 +18,12 @@
   ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
   ?digital_object crm:P190_has_symbolic_content $value .    
 } WHERE {
-  BIND(URI(CONCAT(STR($subject),\"/digital_object_embed/\", STRUUID())) as ?digital_object_embed)
-  BIND(URI(CONCAT(STR($subject),\"/digital_object/\", STRUUID())) as ?digital_object)
+  BIND(URI(CONCAT(STR($subject),"/digital_object_embed/", STRUUID())) as ?digital_object_embed)
+  BIND(URI(CONCAT(STR($subject),"/digital_object/", STRUUID())) as ?digital_object)
 }""" .
-  
-  <http://www.researchspace.org/pattern/system/entity/file_URLidentifier> a <http://www.researchspace.org/resource/system/fields/Field>,
-      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.w3.org/2000/01/rdf-schema#comment> "Enter embed URL (e.g. for Youtube video go to Share > Embed video and select the src value in <iframe>)";
-    <http://www.w3.org/2000/01/rdf-schema#label> "Web URL embed";
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/entity>;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-f1906af4838245a19e5f8ea19b1b6d75-hkpqlh;
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#string>;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-f1906af4838245a19e5f8ea19b1b6d75-02hky7;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-f1906af4838245a19e5f8ea19b1b6d75-dxxeos;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-05-15T17:53:40.218+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-f1906af4838245a19e5f8ea19b1b6d75-02hky7 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
-  $subject crmdig:L60i_is_documented_by ?digital_object_embed .
-  ?digital_object_embed a crmdig:D7_Digital_Machine_Event .
-  ?digital_object_embed crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/digital_object_embed> .
-  ?digital_object_embed crmdig:L11_had_output ?digital_object .
-  ?digital_object a crmdig:D1_Digital_Object .
-  ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
-  ?digital_object crm:P190_has_symbolic_content $value .
-}""" .
-  
-  _:genid-f1906af4838245a19e5f8ea19b1b6d75-hkpqlh a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE { 
+
+    <http://www.researchspace.org/bnode/n5b85c92369e344069933b9eb6d0ee6d4b2> a ns2:Query ;
+        ns2:text """DELETE { 
   $subject crmdig:L60i_is_documented_by ?digital_object_embed .
   ?digital_object_embed a crmdig:D7_Digital_Machine_Event .
   ?digital_object_embed crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/digital_object_embed> .
@@ -58,7 +40,32 @@
   ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
   ?digital_object crm:P190_has_symbolic_content $value .
 }""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/entity/file_URLidentifier> .
+
+    <http://www.researchspace.org/bnode/n5b85c92369e344069933b9eb6d0ee6d4b3> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value WHERE {
+  $subject crmdig:L60i_is_documented_by ?digital_object_embed .
+  ?digital_object_embed a crmdig:D7_Digital_Machine_Event .
+  ?digital_object_embed crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/digital_object_embed> .
+  ?digital_object_embed crmdig:L11_had_output ?digital_object .
+  ?digital_object a crmdig:D1_Digital_Object .
+  ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+  ?digital_object crm:P190_has_symbolic_content $value .
+}""" .
+
+    <http://www.researchspace.org/pattern/system/entity/file_URLidentifier> a ns1:Field,
+            ns3:Resource,
+            prov:Entity ;
+        rdfs:label "Web URL embed" ;
+        ns1:category <http://www.researchspace.org/resource/system/category/entity> ;
+        ns1:deletePattern <http://www.researchspace.org/bnode/n5b85c92369e344069933b9eb6d0ee6d4b2> ;
+        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity> ;
+        ns1:insertPattern <http://www.researchspace.org/bnode/n5b85c92369e344069933b9eb6d0ee6d4b1> ;
+        ns1:maxOccurs "1" ;
+        ns1:minOccurs "0" ;
+        ns1:selectPattern <http://www.researchspace.org/bnode/n5b85c92369e344069933b9eb6d0ee6d4b3> ;
+        ns1:xsdDatatype xsd:string ;
+        rdfs:comment "Enter embed URL (e.g. for Youtube video go to Share > Embed video and select the src value in <iframe>)" ;
+        prov:generatedAtTime "2024-05-15T17:53:40.218000+01:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

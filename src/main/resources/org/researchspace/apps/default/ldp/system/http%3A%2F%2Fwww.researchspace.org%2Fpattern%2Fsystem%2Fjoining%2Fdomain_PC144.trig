@@ -1,35 +1,15 @@
+@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns2: <http://spinrdf.org/sp#> .
+@prefix ns3: <http://www.w3.org/ns/ldp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/joining/domain_PC144/context> {
-  <http://www.researchspace.org/pattern/system/joining/domain_PC144> a <http://www.researchspace.org/resource/system/fields/Field>,
-      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.w3.org/2000/01/rdf-schema#label> "Joining - domain PC144";
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/joining>;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-b86fc3d25d3246449350e06ec0a6f414-mad9g;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-b86fc3d25d3246449350e06ec0a6f414-qbti7e;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-b86fc3d25d3246449350e06ec0a6f414-pkntth;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/PC144_joined_with>;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E85_Joining>;
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-04T13:19:15.619+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-b86fc3d25d3246449350e06ec0a6f414-qbti7e a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
-  	$subject crm:P01i_is_domain_of $value .
-	?value a crm:PC144_joined_with .
-}""" .
-  
-  _:genid-b86fc3d25d3246449350e06ec0a6f414-pkntth a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-    $subject crm:P01i_is_domain_of $value .
-    $value crm:P01_has_domain $subject .
-} WHERE {
-}""" .
-  
-  _:genid-b86fc3d25d3246449350e06ec0a6f414-mad9g a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE { 
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/joining/domain_PC144> .
+
+    <http://www.researchspace.org/bnode/n0ba5dc044ac54265a0c2ed7f2527e68ab1> a ns2:Query ;
+        ns2:text """DELETE { 
     $subject crm:P01i_is_domain_of $value .
     $value crm:P01_has_domain $subject .
 } WHERE { 
@@ -37,7 +17,34 @@
     $value crm:P01_has_domain $subject .
   	?value a crm:PC144_joined_with .
 } """ .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/joining/domain_PC144> .
+
+    <http://www.researchspace.org/bnode/n0ba5dc044ac54265a0c2ed7f2527e68ab2> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value WHERE {
+  	$subject crm:P01i_is_domain_of $value .
+	?value a crm:PC144_joined_with .
+}""" .
+
+    <http://www.researchspace.org/bnode/n0ba5dc044ac54265a0c2ed7f2527e68ab3> a ns2:Query ;
+        ns2:text """INSERT { 
+    $subject crm:P01i_is_domain_of $value .
+    $value crm:P01_has_domain $subject .
+} WHERE {
+}""" .
+
+    <http://www.researchspace.org/pattern/system/joining/domain_PC144> a ns1:Field,
+            ns3:Resource,
+            prov:Entity ;
+        rdfs:label "Joining - domain PC144" ;
+        ns1:category <http://www.researchspace.org/resource/system/category/joining> ;
+        ns1:deletePattern <http://www.researchspace.org/bnode/n0ba5dc044ac54265a0c2ed7f2527e68ab1> ;
+        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E85_Joining> ;
+        ns1:insertPattern <http://www.researchspace.org/bnode/n0ba5dc044ac54265a0c2ed7f2527e68ab3> ;
+        ns1:maxOccurs "unbound" ;
+        ns1:minOccurs "0" ;
+        ns1:range <http://www.cidoc-crm.org/cidoc-crm/PC144_joined_with> ;
+        ns1:selectPattern <http://www.researchspace.org/bnode/n0ba5dc044ac54265a0c2ed7f2527e68ab2> ;
+        ns1:xsdDatatype xsd:anyURI ;
+        prov:generatedAtTime "2024-04-04T13:19:15.619000+01:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

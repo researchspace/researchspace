@@ -1,37 +1,21 @@
+@prefix ns1: <http://spinrdf.org/sp#> .
+@prefix ns2: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns3: <http://www.w3.org/ns/ldp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
 <http://www.researchspace.org/pattern/system/entity/resource_type/context> {
-  <http://www.researchspace.org/pattern/system/entity/resource_type> a <http://www.researchspace.org/resource/system/fields/Field>,
-      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E55_Type>;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-a5108a6c38fd4f4da9af0d4532326aaf-96sb2c;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/entity>;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-a5108a6c38fd4f4da9af0d4532326aaf-apdmw;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-a5108a6c38fd4f4da9af0d4532326aaf-8s2n9;
-    <http://www.researchspace.org/resource/system/fields/treePatterns> """{
-  \"type\": \"simple\",
-  \"schemePattern\": \"?item crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/resource_type> .\"
-}"""^^<http://www.researchspace.org/resource/system/syntheticJson>;
-    <http://www.w3.org/2000/01/rdf-schema#label> "Resource type";
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>;
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-05-30T13:25:26.966+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-a5108a6c38fd4f4da9af0d4532326aaf-96sb2c a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/entity/resource_type> .
+
+    <http://www.researchspace.org/bnode/n34cadea4af9f41ebaeda7aaae6457c44b1> a ns1:Query ;
+        ns1:text """INSERT { 
   $subject crm:P2_has_type $value .
   $value crm:P2i_is_type_of $subject .
 } WHERE {}""" .
-  
-  _:genid-a5108a6c38fd4f4da9af0d4532326aaf-8s2n9 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
-  $subject crm:P2_has_type $value .
-  ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/resource_type> .
-}""" .
-  
-  _:genid-a5108a6c38fd4f4da9af0d4532326aaf-apdmw a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE { 
+
+    <http://www.researchspace.org/bnode/n34cadea4af9f41ebaeda7aaae6457c44b2> a ns1:Query ;
+        ns1:text """DELETE { 
   $subject crm:P2_has_type $value .
   $value crm:P2i_is_type_of $subject .
 } WHERE { 
@@ -39,7 +23,31 @@
  # $value crm:P2i_is_type_of $subject .
   ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/resource_type> .
 }""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/entity/resource_type> .
+
+    <http://www.researchspace.org/bnode/n34cadea4af9f41ebaeda7aaae6457c44b3> a ns1:Query ;
+        ns1:text """SELECT DISTINCT ?value WHERE {
+  $subject crm:P2_has_type $value .
+  ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/resource_type> .
+}""" .
+
+    <http://www.researchspace.org/pattern/system/entity/resource_type> a ns2:Field,
+            ns3:Resource,
+            prov:Entity ;
+        rdfs:label "Resource type" ;
+        ns2:category <http://www.researchspace.org/resource/system/category/entity> ;
+        ns2:deletePattern <http://www.researchspace.org/bnode/n34cadea4af9f41ebaeda7aaae6457c44b2> ;
+        ns2:domain <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity> ;
+        ns2:insertPattern <http://www.researchspace.org/bnode/n34cadea4af9f41ebaeda7aaae6457c44b1> ;
+        ns2:maxOccurs "unbound" ;
+        ns2:minOccurs "0" ;
+        ns2:range <http://www.cidoc-crm.org/cidoc-crm/E55_Type> ;
+        ns2:selectPattern <http://www.researchspace.org/bnode/n34cadea4af9f41ebaeda7aaae6457c44b3> ;
+        ns2:treePatterns """{
+  "type": "simple",
+  "schemePattern": "?item crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/resource_type> ."
+}"""^^<http://www.researchspace.org/resource/system/syntheticJson> ;
+        ns2:xsdDatatype xsd:anyURI ;
+        prov:generatedAtTime "2024-05-30T13:25:26.966000+01:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

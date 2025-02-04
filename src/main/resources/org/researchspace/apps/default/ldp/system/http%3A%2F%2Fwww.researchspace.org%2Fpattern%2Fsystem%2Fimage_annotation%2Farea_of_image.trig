@@ -1,37 +1,44 @@
+@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns2: <http://spinrdf.org/sp#> .
+@prefix ns3: <http://www.w3.org/ns/ldp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/image_annotation/area_of_image/context> {
-  <http://www.researchspace.org/pattern/system/image_annotation/area_of_image> a <http://www.researchspace.org/resource/system/fields/Field>,
-      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.researchspace.org/ontology/EX_Digital_Image_Region>;
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.researchspace.org/ontology/EX_Digital_Image>;
-     <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/image_annotation>;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-6cff564d8ef74554965bbfd782a28215-xzycah;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-6cff564d8ef74554965bbfd782a28215-6ql9rn;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-6cff564d8ef74554965bbfd782a28215-48rfgo;
-    <http://www.w3.org/2000/01/rdf-schema#label> "Annotation is area of image"@en;
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2023-10-25T17:13:09.217+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-6cff564d8ef74554965bbfd782a28215-6ql9rn a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-  $subject crmdig:L49_is_primary_area_of $value .
-} WHERE {}""" .
-  
-  _:genid-6cff564d8ef74554965bbfd782a28215-48rfgo a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
-  $subject crmdig:L49_is_primary_area_of $value .
-}""" .
-  
-  _:genid-6cff564d8ef74554965bbfd782a28215-xzycah a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE { 
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/image_annotation/area_of_image> .
+
+    <http://www.researchspace.org/bnode/ne78ca26d7dd44e38bcc657fd1e0e98bbb1> a ns2:Query ;
+        ns2:text """DELETE { 
   $subject crmdig:L49_is_primary_area_of $value .
 } WHERE {
   $subject crmdig:L49_is_primary_area_of $value .
 }""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/image_annotation/area_of_image> .
+
+    <http://www.researchspace.org/bnode/ne78ca26d7dd44e38bcc657fd1e0e98bbb2> a ns2:Query ;
+        ns2:text """INSERT { 
+  $subject crmdig:L49_is_primary_area_of $value .
+} WHERE {}""" .
+
+    <http://www.researchspace.org/bnode/ne78ca26d7dd44e38bcc657fd1e0e98bbb3> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value WHERE {
+  $subject crmdig:L49_is_primary_area_of $value .
+}""" .
+
+    <http://www.researchspace.org/pattern/system/image_annotation/area_of_image> a ns1:Field,
+            ns3:Resource,
+            prov:Entity ;
+        rdfs:label "Annotation is area of image"@en ;
+        ns1:category <http://www.researchspace.org/resource/system/category/image_annotation> ;
+        ns1:deletePattern <http://www.researchspace.org/bnode/ne78ca26d7dd44e38bcc657fd1e0e98bbb1> ;
+        ns1:domain <http://www.researchspace.org/ontology/EX_Digital_Image_Region> ;
+        ns1:insertPattern <http://www.researchspace.org/bnode/ne78ca26d7dd44e38bcc657fd1e0e98bbb2> ;
+        ns1:maxOccurs "unbound" ;
+        ns1:minOccurs "0" ;
+        ns1:range <http://www.researchspace.org/ontology/EX_Digital_Image> ;
+        ns1:selectPattern <http://www.researchspace.org/bnode/ne78ca26d7dd44e38bcc657fd1e0e98bbb3> ;
+        ns1:xsdDatatype xsd:anyURI ;
+        prov:generatedAtTime "2023-10-25T17:13:09.217000+01:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

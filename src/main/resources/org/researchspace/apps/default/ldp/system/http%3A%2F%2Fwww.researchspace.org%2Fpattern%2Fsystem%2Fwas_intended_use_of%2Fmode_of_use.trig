@@ -1,37 +1,44 @@
+@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns2: <http://spinrdf.org/sp#> .
+@prefix ns3: <http://www.w3.org/ns/ldp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/was_intended_use_of/mode_of_use/context> {
-  <http://www.researchspace.org/pattern/system/was_intended_use_of/mode_of_use> a <http://www.researchspace.org/resource/system/fields/Field>,
-      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E55_Type>;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-8e5ec9603b6b4d838ef93d8035c94f12-5tk7g;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-8e5ec9603b6b4d838ef93d8035c94f12-i9tylo;
-    <http://www.w3.org/2000/01/rdf-schema#label> "Was intended use of - mode of use";
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/PC19_was_intended_use_of>;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/activity>;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-8e5ec9603b6b4d838ef93d8035c94f12-75dwe;
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-02-28T17:47:51.175Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-8e5ec9603b6b4d838ef93d8035c94f12-5tk7g a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE {  
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/was_intended_use_of/mode_of_use> .
+
+    <http://www.researchspace.org/bnode/n3d1de7bb2fd44708be7fe20bba0e4c0bb1> a ns2:Query ;
+        ns2:text """DELETE {  
   $subject crm:P19.1_mode_of_use $value .
 } WHERE { 
   $subject crm:P19.1_mode_of_use $value .
 } """ .
-  
-  _:genid-8e5ec9603b6b4d838ef93d8035c94f12-75dwe a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value  WHERE {
-  $subject crm:P19.1_mode_of_use $value .
-}""" .
-  
-  _:genid-8e5ec9603b6b4d838ef93d8035c94f12-i9tylo a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
+
+    <http://www.researchspace.org/bnode/n3d1de7bb2fd44708be7fe20bba0e4c0bb2> a ns2:Query ;
+        ns2:text """INSERT { 
   $subject crm:P19.1_mode_of_use $value .
 } WHERE {}""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/was_intended_use_of/mode_of_use> .
+
+    <http://www.researchspace.org/bnode/n3d1de7bb2fd44708be7fe20bba0e4c0bb3> a ns2:Query ;
+        ns2:text """SELECT ?value  WHERE {
+  $subject crm:P19.1_mode_of_use $value .
+}""" .
+
+    <http://www.researchspace.org/pattern/system/was_intended_use_of/mode_of_use> a ns1:Field,
+            ns3:Resource,
+            prov:Entity ;
+        rdfs:label "Was intended use of - mode of use" ;
+        ns1:category <http://www.researchspace.org/resource/system/category/activity> ;
+        ns1:deletePattern <http://www.researchspace.org/bnode/n3d1de7bb2fd44708be7fe20bba0e4c0bb1> ;
+        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/PC19_was_intended_use_of> ;
+        ns1:insertPattern <http://www.researchspace.org/bnode/n3d1de7bb2fd44708be7fe20bba0e4c0bb2> ;
+        ns1:maxOccurs "unbound" ;
+        ns1:minOccurs "0" ;
+        ns1:range <http://www.cidoc-crm.org/cidoc-crm/E55_Type> ;
+        ns1:selectPattern <http://www.researchspace.org/bnode/n3d1de7bb2fd44708be7fe20bba0e4c0bb3> ;
+        ns1:xsdDatatype xsd:anyURI ;
+        prov:generatedAtTime "2024-02-28T17:47:51.175000+00:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

@@ -1,7 +1,15 @@
+@prefix ns1: <http://spinrdf.org/sp#> .
+@prefix ns2: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns3: <http://www.w3.org/ns/ldp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/physical_thing/current_owner/context> {
-  _:genid-9264edda785d499890fb07d5aea7400e-8s8h0o a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/physical_thing/current_owner> .
+
+    <http://www.researchspace.org/bnode/n6e70f465af144174b113f5f81ec90925b1> a ns1:Query ;
+        ns1:text """SELECT DISTINCT ?value ?label WHERE {
    	?value a ?ontologyClass .
     ?ontologyClass rdfs:subClassOf* crm:E39_Actor .
     ?value crm:P1_is_identified_by ?appellation .
@@ -9,31 +17,12 @@
     ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
     ?appellation crm:P190_has_symbolic_content ?label .
   MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
-  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+  FILTER REGEX(LCASE(STR(?label)), "?token", "i")
 } ORDER BY ASC(?label)
   LIMIT 10""" .
-  
-  <http://www.researchspace.org/pattern/system/physical_thing/current_owner> a <http://www.researchspace.org/resource/system/fields/Field>,
-      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-9264edda785d499890fb07d5aea7400e-3ia9an;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E18_Physical_Thing>;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-9264edda785d499890fb07d5aea7400e-lj3mw;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E39_Actor>;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-9264edda785d499890fb07d5aea7400e-ifd66;
-    <http://www.w3.org/2000/01/rdf-schema#label> "Current owner";
-    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-9264edda785d499890fb07d5aea7400e-8s8h0o;
-    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-9264edda785d499890fb07d5aea7400e-3aptt;
-    <http://www.w3.org/2000/01/rdf-schema#comment> """The owner at the time of validity of the record.
-""";
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/physical_thing>;
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-17T16:54:47.083+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-9264edda785d499890fb07d5aea7400e-3ia9an a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+
+    <http://www.researchspace.org/bnode/n6e70f465af144174b113f5f81ec90925b2> a ns1:Query ;
+        ns1:text """SELECT DISTINCT ?value ?label WHERE {
 	$subject crm:P52_has_current_owner $value . 
       
     ?value a ?ontologyClass .
@@ -43,25 +32,9 @@
     ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .      
     ?appellation crm:P190_has_symbolic_content ?label . 
 }""" .
-  
-  _:genid-9264edda785d499890fb07d5aea7400e-ifd66 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-	$subject crm:P52_has_current_owner $value . 
-    $value crm:P52i_is_current_owner_of $subject .
-} WHERE {}""" .
-  
-  _:genid-9264edda785d499890fb07d5aea7400e-3aptt a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
-   	?value a ?ontologyClass .
-    ?ontologyClass rdfs:subClassOf* crm:E39_Actor .
-    ?value crm:P1_is_identified_by ?appellation .
-    ?appellation a crm:E41_Appellation .
-    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .     
-    ?appellation crm:P190_has_symbolic_content ?label .
-} ORDER BY ASC(LCASE(STR(?label)))""" .
-  
-  _:genid-9264edda785d499890fb07d5aea7400e-lj3mw a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE {
+
+    <http://www.researchspace.org/bnode/n6e70f465af144174b113f5f81ec90925b3> a ns1:Query ;
+        ns1:text """DELETE {
 	$subject crm:P52_has_current_owner $value . 
     $value crm:P52i_is_current_owner_of $subject .
 } WHERE {
@@ -75,7 +48,41 @@
     ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .      
     ?appellation crm:P190_has_symbolic_content ?label . 
 }""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/physical_thing/current_owner> .
+
+    <http://www.researchspace.org/bnode/n6e70f465af144174b113f5f81ec90925b4> a ns1:Query ;
+        ns1:text """INSERT { 
+	$subject crm:P52_has_current_owner $value . 
+    $value crm:P52i_is_current_owner_of $subject .
+} WHERE {}""" .
+
+    <http://www.researchspace.org/bnode/n6e70f465af144174b113f5f81ec90925b5> a ns1:Query ;
+        ns1:text """SELECT DISTINCT ?value ?label WHERE {
+   	?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E39_Actor .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .     
+    ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+
+    <http://www.researchspace.org/pattern/system/physical_thing/current_owner> a ns2:Field,
+            ns3:Resource,
+            prov:Entity ;
+        rdfs:label "Current owner" ;
+        ns2:autosuggestionPattern <http://www.researchspace.org/bnode/n6e70f465af144174b113f5f81ec90925b1> ;
+        ns2:category <http://www.researchspace.org/resource/system/category/physical_thing> ;
+        ns2:deletePattern <http://www.researchspace.org/bnode/n6e70f465af144174b113f5f81ec90925b3> ;
+        ns2:domain <http://www.cidoc-crm.org/cidoc-crm/E18_Physical_Thing> ;
+        ns2:insertPattern <http://www.researchspace.org/bnode/n6e70f465af144174b113f5f81ec90925b4> ;
+        ns2:maxOccurs "unbound" ;
+        ns2:minOccurs "0" ;
+        ns2:range <http://www.cidoc-crm.org/cidoc-crm/E39_Actor> ;
+        ns2:selectPattern <http://www.researchspace.org/bnode/n6e70f465af144174b113f5f81ec90925b2> ;
+        ns2:valueSetPattern <http://www.researchspace.org/bnode/n6e70f465af144174b113f5f81ec90925b5> ;
+        ns2:xsdDatatype xsd:anyURI ;
+        rdfs:comment """The owner at the time of validity of the record.
+""" ;
+        prov:generatedAtTime "2024-04-17T16:54:47.083000+01:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

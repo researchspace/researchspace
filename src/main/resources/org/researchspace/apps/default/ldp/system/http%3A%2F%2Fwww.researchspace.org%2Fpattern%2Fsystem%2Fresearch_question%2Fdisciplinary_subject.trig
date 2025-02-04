@@ -1,30 +1,15 @@
+@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns2: <http://spinrdf.org/sp#> .
+@prefix ns3: <http://www.w3.org/ns/ldp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/research_question/disciplinary_subject/context> {
-  <http://www.researchspace.org/pattern/system/research_question/disciplinary_subject>
-    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
-      <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E55_Type>;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E89_Propositional_Object>;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-f5d22b23bb064d05a52765fa7aa6acea-yx8pmy;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/category> 
-    <http://www.researchspace.org/resource/system/category/research_question>,
-    <http://www.researchspace.org/resource/system/category/research_question_search>;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-f5d22b23bb064d05a52765fa7aa6acea-68c2wr;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-f5d22b23bb064d05a52765fa7aa6acea-1kj8x9;
-    <http://www.researchspace.org/resource/system/fields/treePatterns> """{
-  \"type\": \"simple\",
-  \"schemePattern\": \"?item crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/disciplinary_subject> .\",
-  \"relationPattern\": \"?item crm:P127_has_broader_term ?parent\"
-}"""^^<http://www.researchspace.org/resource/system/syntheticJson>;
-    <http://www.w3.org/2000/01/rdf-schema#label> "Disciplinary subject"@en;
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-05-20T12:54:50.413+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-f5d22b23bb064d05a52765fa7aa6acea-yx8pmy a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE { 
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/research_question/disciplinary_subject> .
+
+    <http://www.researchspace.org/bnode/nf1714d707e794f6db70db2c378cd16d5b1> a ns2:Query ;
+        ns2:text """DELETE { 
     $subject crm:P129_is_about $value . 
     $value crm:P129i_is_subject_of $subject .
 } WHERE {
@@ -34,22 +19,42 @@
     ?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/research_question> .
     ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/disciplinary_subject> .
 }""" .
-  
-  _:genid-f5d22b23bb064d05a52765fa7aa6acea-1kj8x9 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+
+    <http://www.researchspace.org/bnode/nf1714d707e794f6db70db2c378cd16d5b2> a ns2:Query ;
+        ns2:text """INSERT { 
+    $subject crm:P129_is_about $value . 
+    $value crm:P129i_is_subject_of $subject .
+} WHERE {}""" .
+
+    <http://www.researchspace.org/bnode/nf1714d707e794f6db70db2c378cd16d5b3> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value ?label WHERE {
   $subject crm:P129_is_about ?value .
       
   ?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/research_question> .
   ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/disciplinary_subject> .
   ?value skos:prefLabel ?label .
 }""" .
-  
-  _:genid-f5d22b23bb064d05a52765fa7aa6acea-68c2wr a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-    $subject crm:P129_is_about $value . 
-    $value crm:P129i_is_subject_of $subject .
-} WHERE {}""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/research_question/disciplinary_subject> .
+
+    <http://www.researchspace.org/pattern/system/research_question/disciplinary_subject> a ns1:Field,
+            ns3:Resource,
+            prov:Entity ;
+        rdfs:label "Disciplinary subject"@en ;
+        ns1:category <http://www.researchspace.org/resource/system/category/research_question>,
+            <http://www.researchspace.org/resource/system/category/research_question_search> ;
+        ns1:deletePattern <http://www.researchspace.org/bnode/nf1714d707e794f6db70db2c378cd16d5b1> ;
+        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E89_Propositional_Object> ;
+        ns1:insertPattern <http://www.researchspace.org/bnode/nf1714d707e794f6db70db2c378cd16d5b2> ;
+        ns1:maxOccurs "unbound" ;
+        ns1:minOccurs "0" ;
+        ns1:range <http://www.cidoc-crm.org/cidoc-crm/E55_Type> ;
+        ns1:selectPattern <http://www.researchspace.org/bnode/nf1714d707e794f6db70db2c378cd16d5b3> ;
+        ns1:treePatterns """{
+  "type": "simple",
+  "schemePattern": "?item crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/disciplinary_subject> .",
+  "relationPattern": "?item crm:P127_has_broader_term ?parent"
+}"""^^<http://www.researchspace.org/resource/system/syntheticJson> ;
+        ns1:xsdDatatype xsd:anyURI ;
+        prov:generatedAtTime "2024-05-20T12:54:50.413000+01:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

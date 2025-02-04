@@ -1,40 +1,46 @@
+@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns2: <http://spinrdf.org/sp#> .
+@prefix ns3: <http://www.w3.org/ns/ldp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_sparql_pattern/context> {
-  <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_sparql_pattern>
-    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
-      <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/resource_configuration>;
-    <http://www.w3.org/2000/01/rdf-schema#comment> "Enter a SPARQL pattern for the column content. The pattern should have ?item as subject variable, ?label as label literal, ?itemIri as  URI for content of type link (e.g. ?item crm:P1_is_identified_by / crm:P190_has_symbolic_content ?label . )";
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "1";
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-8ea9b9bd8465405da4ef2136fcef148b-326v;
-    <http://www.w3.org/2000/01/rdf-schema#label> "List view column content (SPARQL pattern)";
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-8ea9b9bd8465405da4ef2136fcef148b-zkl03;
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#string>;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-8ea9b9bd8465405da4ef2136fcef148b-9yjlv;
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-06-05T17:14:10.570+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-8ea9b9bd8465405da4ef2136fcef148b-326v a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE { 
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_sparql_pattern> .
+
+    <http://www.researchspace.org/bnode/nf4c5185ee2b04f929ed58d01556cd9c7b1> a ns2:Query ;
+        ns2:text """DELETE { 
   $subject <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_sparql_pattern> $value .
 } WHERE { 
   $subject <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_sparql_pattern> $value .
 }""" .
-  
-  _:genid-8ea9b9bd8465405da4ef2136fcef148b-zkl03 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
+
+    <http://www.researchspace.org/bnode/nf4c5185ee2b04f929ed58d01556cd9c7b2> a ns2:Query ;
+        ns2:text """INSERT { 
   $subject <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_sparql_pattern> $value .
 } WHERE {
 }""" .
-  
-  _:genid-8ea9b9bd8465405da4ef2136fcef148b-9yjlv a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {BIND(URI(STRBEFORE(STR($subject),"/resource_search_listView")) as ?resource_config) 
+
+    <http://www.researchspace.org/bnode/nf4c5185ee2b04f929ed58d01556cd9c7b3> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value WHERE {BIND(URI(STRBEFORE(STR($subject),"/resource_search_listView")) as ?resource_config) 
       graph ?resource_config {
   $subject <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_sparql_pattern> ?value.}
 }""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_sparql_pattern> .
+
+    <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_sparql_pattern> a ns1:Field,
+            ns3:Resource,
+            prov:Entity ;
+        rdfs:label "List view column content (SPARQL pattern)" ;
+        ns1:category <http://www.researchspace.org/resource/system/category/resource_configuration> ;
+        ns1:deletePattern <http://www.researchspace.org/bnode/nf4c5185ee2b04f929ed58d01556cd9c7b1> ;
+        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity> ;
+        ns1:insertPattern <http://www.researchspace.org/bnode/nf4c5185ee2b04f929ed58d01556cd9c7b2> ;
+        ns1:maxOccurs "1" ;
+        ns1:minOccurs "1" ;
+        ns1:selectPattern <http://www.researchspace.org/bnode/nf4c5185ee2b04f929ed58d01556cd9c7b3> ;
+        ns1:xsdDatatype xsd:string ;
+        rdfs:comment "Enter a SPARQL pattern for the column content. The pattern should have ?item as subject variable, ?label as label literal, ?itemIri as  URI for content of type link (e.g. ?item crm:P1_is_identified_by / crm:P190_has_symbolic_content ?label . )" ;
+        prov:generatedAtTime "2024-06-05T17:14:10.570000+01:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

@@ -1,37 +1,44 @@
+@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns2: <http://spinrdf.org/sp#> .
+@prefix ns3: <http://www.w3.org/ns/ldp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/temporal_entity/composite_timespan/context> {
-  <http://www.researchspace.org/pattern/system/temporal_entity/composite_timespan> a <http://www.researchspace.org/resource/system/fields/Field>,
-      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.w3.org/2000/01/rdf-schema#label> "Timespan (composite)";
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "1";
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E2_Temporal_Entity>;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-5f23cebdfe934c0cbfaba3490db57863-qqdfi5;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-5f23cebdfe934c0cbfaba3490db57863-g09d18;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-5f23cebdfe934c0cbfaba3490db57863-yebnw;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/activity>;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span>;
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-01-16T18:20:12.149Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-5f23cebdfe934c0cbfaba3490db57863-g09d18 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE {   
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/temporal_entity/composite_timespan> .
+
+    <http://www.researchspace.org/bnode/n30d87a6c0e624927b729fcfae406735eb1> a ns2:Query ;
+        ns2:text """INSERT { 
+  $subject crm:P4_has_time-span $value . 
+} WHERE {}""" .
+
+    <http://www.researchspace.org/bnode/n30d87a6c0e624927b729fcfae406735eb2> a ns2:Query ;
+        ns2:text """DELETE {   
     $subject crm:P4_has_time-span $value . 
 }  WHERE {
     $subject crm:P4_has_time-span $value . 
 }""" .
-  
-  _:genid-5f23cebdfe934c0cbfaba3490db57863-qqdfi5 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-  $subject crm:P4_has_time-span $value . 
-} WHERE {}""" .
-  
-  _:genid-5f23cebdfe934c0cbfaba3490db57863-yebnw a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
+
+    <http://www.researchspace.org/bnode/n30d87a6c0e624927b729fcfae406735eb3> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value WHERE {
     $subject crm:P4_has_time-span $value . 
 }""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/temporal_entity/composite_timespan> .
+
+    <http://www.researchspace.org/pattern/system/temporal_entity/composite_timespan> a ns1:Field,
+            ns3:Resource,
+            prov:Entity ;
+        rdfs:label "Timespan (composite)" ;
+        ns1:category <http://www.researchspace.org/resource/system/category/activity> ;
+        ns1:deletePattern <http://www.researchspace.org/bnode/n30d87a6c0e624927b729fcfae406735eb2> ;
+        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E2_Temporal_Entity> ;
+        ns1:insertPattern <http://www.researchspace.org/bnode/n30d87a6c0e624927b729fcfae406735eb1> ;
+        ns1:maxOccurs "1" ;
+        ns1:minOccurs "1" ;
+        ns1:range <http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span> ;
+        ns1:selectPattern <http://www.researchspace.org/bnode/n30d87a6c0e624927b729fcfae406735eb3> ;
+        ns1:xsdDatatype xsd:anyURI ;
+        prov:generatedAtTime "2024-01-16T18:20:12.149000+00:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

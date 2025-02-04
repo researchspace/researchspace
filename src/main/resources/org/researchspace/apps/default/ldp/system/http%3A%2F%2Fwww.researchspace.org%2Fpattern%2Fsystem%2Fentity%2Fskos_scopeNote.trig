@@ -1,34 +1,42 @@
+@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns2: <http://spinrdf.org/sp#> .
+@prefix ns3: <http://www.w3.org/ns/ldp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/entity/skos_scopeNote/context> {
-  _:genid-2fc1decfe6f24421b82921fffa15b121-cshqoq a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE { 
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/entity/skos_scopeNote> .
+
+    <http://www.researchspace.org/bnode/ndc1a07827f0c42299ae9ede792d1334eb1> a ns2:Query ;
+        ns2:text """DELETE { 
       $subject skos:scopeNote $value
 } WHERE { 
       $subject skos:scopeNote $value }""" .
-  
-  _:genid-2fc1decfe6f24421b82921fffa15b121-3q3bg a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
+
+    <http://www.researchspace.org/bnode/ndc1a07827f0c42299ae9ede792d1334eb2> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value WHERE {
     $subject skos:scopeNote ?value.
 }""" .
-  
-  <http://www.researchspace.org/pattern/system/entity/skos_scopeNote> a <http://www.researchspace.org/resource/system/fields/Field>,
-      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/entity>;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.w3.org/2004/02/skos/core#Concept>;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-2fc1decfe6f24421b82921fffa15b121-ofed9;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-2fc1decfe6f24421b82921fffa15b121-cshqoq;
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#string>;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-2fc1decfe6f24421b82921fffa15b121-3q3bg;
-    <http://www.w3.org/2000/01/rdf-schema#label> "Skos scope note";
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-26T18:34:17.507+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-2fc1decfe6f24421b82921fffa15b121-ofed9 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
+
+    <http://www.researchspace.org/bnode/ndc1a07827f0c42299ae9ede792d1334eb3> a ns2:Query ;
+        ns2:text """INSERT { 
     $subject skos:scopeNote $value
 } WHERE {}""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/entity/skos_scopeNote> .
+
+    <http://www.researchspace.org/pattern/system/entity/skos_scopeNote> a ns1:Field,
+            ns3:Resource,
+            prov:Entity ;
+        rdfs:label "Skos scope note" ;
+        ns1:category <http://www.researchspace.org/resource/system/category/entity> ;
+        ns1:deletePattern <http://www.researchspace.org/bnode/ndc1a07827f0c42299ae9ede792d1334eb1> ;
+        ns1:domain skos:Concept ;
+        ns1:insertPattern <http://www.researchspace.org/bnode/ndc1a07827f0c42299ae9ede792d1334eb3> ;
+        ns1:minOccurs "0" ;
+        ns1:selectPattern <http://www.researchspace.org/bnode/ndc1a07827f0c42299ae9ede792d1334eb2> ;
+        ns1:xsdDatatype xsd:string ;
+        prov:generatedAtTime "2024-04-26T18:34:17.507000+01:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

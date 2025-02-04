@@ -1,44 +1,29 @@
+@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns2: <http://spinrdf.org/sp#> .
+@prefix ns3: <http://www.w3.org/ns/ldp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
 <http://www.researchspace.org/pattern/system/contact_point/type/context> {
-  _:genid-8aa05ce1cbeb4b2c81a7565e8c2060a5-2qact9 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/contact_point/type> .
+
+    <http://www.researchspace.org/bnode/nbc33a49308f64ec891393bef4382f5b1b1> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value ?label WHERE {
   $subject crm:P2_has_type $value .
   $value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/contact_point_type> .
   $subject a crm:E41_Appellation .
   $subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation_type/contact_point> .
   ?value skos:prefLabel ?label .
 } ORDER BY ASC(LCASE(STR(?label)))""" .
-  
-  <http://www.researchspace.org/pattern/system/contact_point/type> a <http://www.researchspace.org/resource/system/fields/Field>,
-      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E55_Type>;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-8aa05ce1cbeb4b2c81a7565e8c2060a5-jp37qc;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/actor>,
-      <http://www.researchspace.org/resource/system/category/person>;
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-8aa05ce1cbeb4b2c81a7565e8c2060a5-li5qpp;
-    <http://www.w3.org/2000/01/rdf-schema#label> "Contact point type";
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-8aa05ce1cbeb4b2c81a7565e8c2060a5-2qact9;
-    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-8aa05ce1cbeb4b2c81a7565e8c2060a5-lhjvt7;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E41_Appellation>;
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-02-19T15:48:09.504Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-8aa05ce1cbeb4b2c81a7565e8c2060a5-lhjvt7 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
-  ?value a crm:E55_Type .
-  ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/contact_point_type> .
-  ?value skos:prefLabel ?label .
-} ORDER BY ?label""" .
-  
-  _:genid-8aa05ce1cbeb4b2c81a7565e8c2060a5-jp37qc a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
+
+    <http://www.researchspace.org/bnode/nbc33a49308f64ec891393bef4382f5b1b2> a ns2:Query ;
+        ns2:text """INSERT { 
   $subject crm:P2_has_type $value .
 } WHERE {}""" .
-  
-  _:genid-8aa05ce1cbeb4b2c81a7565e8c2060a5-li5qpp a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE { 
+
+    <http://www.researchspace.org/bnode/nbc33a49308f64ec891393bef4382f5b1b3> a ns2:Query ;
+        ns2:text """DELETE { 
   $subject crm:P2_has_type $value .
 } WHERE {
   $subject crm:P2_has_type $value .
@@ -46,7 +31,30 @@
   $subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation_type/contact_point> .
   $value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/contact_point_type> .
 }""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/contact_point/type> .
+
+    <http://www.researchspace.org/bnode/nbc33a49308f64ec891393bef4382f5b1b4> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+  ?value a crm:E55_Type .
+  ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/contact_point_type> .
+  ?value skos:prefLabel ?label .
+} ORDER BY ?label""" .
+
+    <http://www.researchspace.org/pattern/system/contact_point/type> a ns1:Field,
+            ns3:Resource,
+            prov:Entity ;
+        rdfs:label "Contact point type" ;
+        ns1:category <http://www.researchspace.org/resource/system/category/actor>,
+            <http://www.researchspace.org/resource/system/category/person> ;
+        ns1:deletePattern <http://www.researchspace.org/bnode/nbc33a49308f64ec891393bef4382f5b1b3> ;
+        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E41_Appellation> ;
+        ns1:insertPattern <http://www.researchspace.org/bnode/nbc33a49308f64ec891393bef4382f5b1b2> ;
+        ns1:maxOccurs "1" ;
+        ns1:minOccurs "0" ;
+        ns1:range <http://www.cidoc-crm.org/cidoc-crm/E55_Type> ;
+        ns1:selectPattern <http://www.researchspace.org/bnode/nbc33a49308f64ec891393bef4382f5b1b1> ;
+        ns1:valueSetPattern <http://www.researchspace.org/bnode/nbc33a49308f64ec891393bef4382f5b1b4> ;
+        ns1:xsdDatatype xsd:anyURI ;
+        prov:generatedAtTime "2024-02-19T15:48:09.504000+00:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

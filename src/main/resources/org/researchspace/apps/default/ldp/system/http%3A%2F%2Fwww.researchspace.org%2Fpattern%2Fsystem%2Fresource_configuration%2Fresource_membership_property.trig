@@ -1,50 +1,56 @@
+@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns2: <http://spinrdf.org/sp#> .
+@prefix ns3: <http://www.w3.org/ns/ldp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property/context> {
-  <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property>
-    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
-      <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/resource_configuration> ;
-     
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-e557b147cfcd4230bcf9bee2677a1ae5-omlyl8;
-    <http://www.researchspace.org/resource/system/fields/treePatterns> """{
-  \"type\": \"full\",
-  \"rootsQuery\": \"PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\\nPREFIX rs: <http://www.researchspace.org/ontology/>\\nPREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>\\nSELECT DISTINCT ?item ?label ?hasChildren WHERE {\\n  ?item a ?type .\\n  FILTER(?type in (rdf:Property, owl:ObjectProperty))\\n      \\n  FILTER(NOT EXISTS { ?item rdfs:subPropertyOf ?parent. })\\n \\n  ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.\\n  FILTER (lang(?label) = \\\"en\\\")\\n      \\n  OPTIONAL { ?child rdfs:subPropertyOf ?item. }\\n  BIND(BOUND(?child) AS ?hasChildren)\\n  OPTIONAL { BIND(?label AS ?order) }\\n}\\nORDER BY (?order) (?label)\",
-  \"childrenQuery\": \"PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\\nPREFIX rs: <http://www.researchspace.org/ontology/>\\nPREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>\\nSELECT DISTINCT ?item ?label ?hasChildren WHERE {\\n  ?item a ?type .\\n  FILTER(?type in (rdf:Property, owl:ObjectProperty)) .\\n  \\n ?item rdfs:subPropertyOf ?parent.\\n      \\n  ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.\\n    FILTER (lang(?label) = \\\"en\\\")\\n  \\n  OPTIONAL { ?child rdfs:subPropertyOf ?item. }\\n  BIND(BOUND(?child) AS ?hasChildren)\\n  OPTIONAL { BIND(?label AS ?order) }\\n}\\nORDER BY (?order) (?label)\",
-  \"parentsQuery\": \"PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\\nPREFIX rs: <http://www.researchspace.org/ontology/>\\nPREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>\\nSELECT DISTINCT ?item ?parent ?parentLabel WHERE {\\n  ?item a ?type .\\n  FILTER(?type in (rdf:Property, owl:ObjectProperty)) .\\n  \\n ?item rdfs:subPropertyOf ?parent.\\n  ?parent ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?parentLabel.\\n  FILTER (lang(?parentLabel) = \\\"en\\\")\\n}\",
-  \"searchQuery\": \"PREFIX bds: <http://www.bigdata.com/rdf/search#>\\nPREFIX skos: <http://www.w3.org/2004/02/skos/core#>\\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\\nPREFIX rs: <http://www.researchspace.org/ontology/>\\nPREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>\\nSELECT DISTINCT ?item ?label ?score ?hasChildren WHERE {\\n  ?item a ?type .\\n  FILTER(?type in (rdf:Property, owl:ObjectProperty)) .\\n      \\n  ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.\\n FILTER (lang(?label) = \\\"en\\\")\\n      \\n  ?label bds:search ?__token__;\\n    bds:minRelevance \\\"0.3\\\";\\n    bds:relevance ?score;\\n    bds:matchAllTerms \\\"true\\\".\\n  OPTIONAL { ?child rdfs:subPropertyOf ?item. }\\n  BIND(BOUND(?child) AS ?hasChildren)\\n  OPTIONAL { BIND(?label AS ?order) }\\n}\\nORDER BY DESC (?score) (?order) (?label)\\nLIMIT 200\"
-}"""^^<http://www.researchspace.org/resource/system/syntheticJson>;
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property>;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object>;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-e557b147cfcd4230bcf9bee2677a1ae5-v7meew;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-e557b147cfcd4230bcf9bee2677a1ae5-8uotxd;
-    <http://www.w3.org/2000/01/rdf-schema#label> "Resource membership in the authority document";
-    <http://www.w3.org/2000/01/rdf-schema#comment> "Enter a property that define the membership of the resource in the authority (e.g. skos:inScheme, crm:P71i_is_listed_in, etc.)";
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2023-10-17T11:29:48.697+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-e557b147cfcd4230bcf9bee2677a1ae5-omlyl8 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE { graph $subject {
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> .
+
+    <http://www.researchspace.org/bnode/naae24940b35542b8aec5db60545e6992b1> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value WHERE { graph $subject {
   $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?value. }
 }""" .
-  
-  _:genid-e557b147cfcd4230bcf9bee2677a1ae5-8uotxd a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE { 
+
+    <http://www.researchspace.org/bnode/naae24940b35542b8aec5db60545e6992b2> a ns2:Query ;
+        ns2:text """INSERT { 
+    $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> $value .
+    $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_list_in_authority> ?listInAuthority .
+    } WHERE { BIND(IRI(CONCAT(STR(?subject), "/list_in_authority")) AS ?listInAuthority) . }""" .
+
+    <http://www.researchspace.org/bnode/naae24940b35542b8aec5db60545e6992b3> a ns2:Query ;
+        ns2:text """DELETE { 
   $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> $value .
   $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_list_in_authority> ?listInAuthority . 
 } WHERE { 
   $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> $value .
   $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_list_in_authority> ?listInAuthority .
 }""" .
-  
-  _:genid-e557b147cfcd4230bcf9bee2677a1ae5-v7meew a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-    $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> $value .
-    $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_list_in_authority> ?listInAuthority .
-    } WHERE { BIND(IRI(CONCAT(STR(?subject), \"/list_in_authority\")) AS ?listInAuthority) . }""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> .
+
+    <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> a ns1:Field,
+            ns3:Resource,
+            prov:Entity ;
+        rdfs:label "Resource membership in the authority document" ;
+        ns1:category <http://www.researchspace.org/resource/system/category/resource_configuration> ;
+        ns1:deletePattern <http://www.researchspace.org/bnode/naae24940b35542b8aec5db60545e6992b3> ;
+        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object> ;
+        ns1:insertPattern <http://www.researchspace.org/bnode/naae24940b35542b8aec5db60545e6992b2> ;
+        ns1:maxOccurs "1" ;
+        ns1:minOccurs "0" ;
+        ns1:range rdf:Property ;
+        ns1:selectPattern <http://www.researchspace.org/bnode/naae24940b35542b8aec5db60545e6992b1> ;
+        ns1:treePatterns """{
+  "type": "full",
+  "rootsQuery": "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\\nPREFIX rs: <http://www.researchspace.org/ontology/>\\nPREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>\\nSELECT DISTINCT ?item ?label ?hasChildren WHERE {\\n  ?item a ?type .\\n  FILTER(?type in (rdf:Property, owl:ObjectProperty))\\n      \\n  FILTER(NOT EXISTS { ?item rdfs:subPropertyOf ?parent. })\\n \\n  ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.\\n  FILTER (lang(?label) = \\"en\\")\\n      \\n  OPTIONAL { ?child rdfs:subPropertyOf ?item. }\\n  BIND(BOUND(?child) AS ?hasChildren)\\n  OPTIONAL { BIND(?label AS ?order) }\\n}\\nORDER BY (?order) (?label)",
+  "childrenQuery": "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\\nPREFIX rs: <http://www.researchspace.org/ontology/>\\nPREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>\\nSELECT DISTINCT ?item ?label ?hasChildren WHERE {\\n  ?item a ?type .\\n  FILTER(?type in (rdf:Property, owl:ObjectProperty)) .\\n  \\n ?item rdfs:subPropertyOf ?parent.\\n      \\n  ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.\\n    FILTER (lang(?label) = \\"en\\")\\n  \\n  OPTIONAL { ?child rdfs:subPropertyOf ?item. }\\n  BIND(BOUND(?child) AS ?hasChildren)\\n  OPTIONAL { BIND(?label AS ?order) }\\n}\\nORDER BY (?order) (?label)",
+  "parentsQuery": "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\\nPREFIX rs: <http://www.researchspace.org/ontology/>\\nPREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>\\nSELECT DISTINCT ?item ?parent ?parentLabel WHERE {\\n  ?item a ?type .\\n  FILTER(?type in (rdf:Property, owl:ObjectProperty)) .\\n  \\n ?item rdfs:subPropertyOf ?parent.\\n  ?parent ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?parentLabel.\\n  FILTER (lang(?parentLabel) = \\"en\\")\\n}",
+  "searchQuery": "PREFIX bds: <http://www.bigdata.com/rdf/search#>\\nPREFIX skos: <http://www.w3.org/2004/02/skos/core#>\\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\\nPREFIX rs: <http://www.researchspace.org/ontology/>\\nPREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>\\nSELECT DISTINCT ?item ?label ?score ?hasChildren WHERE {\\n  ?item a ?type .\\n  FILTER(?type in (rdf:Property, owl:ObjectProperty)) .\\n      \\n  ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.\\n FILTER (lang(?label) = \\"en\\")\\n      \\n  ?label bds:search ?__token__;\\n    bds:minRelevance \\"0.3\\";\\n    bds:relevance ?score;\\n    bds:matchAllTerms \\"true\\".\\n  OPTIONAL { ?child rdfs:subPropertyOf ?item. }\\n  BIND(BOUND(?child) AS ?hasChildren)\\n  OPTIONAL { BIND(?label AS ?order) }\\n}\\nORDER BY DESC (?score) (?order) (?label)\\nLIMIT 200"
+}"""^^<http://www.researchspace.org/resource/system/syntheticJson> ;
+        ns1:xsdDatatype xsd:anyURI ;
+        rdfs:comment "Enter a property that define the membership of the resource in the authority (e.g. skos:inScheme, crm:P71i_is_listed_in, etc.)" ;
+        prov:generatedAtTime "2023-10-17T11:29:48.697000+01:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

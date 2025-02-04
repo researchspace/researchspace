@@ -1,40 +1,35 @@
+@prefix ns1: <http://spinrdf.org/sp#> .
+@prefix ns2: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns3: <http://www.w3.org/ns/ldp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/design_or_procedure/foresees_use_of/context> {
-  <http://www.researchspace.org/pattern/system/design_or_procedure/foresees_use_of>
-    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
-      <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/design_or_procedure>;
-    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-5e1c9cc4099e4938bce147c5718555b9-1dpn6f;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-5e1c9cc4099e4938bce147c5718555b9-493hzt;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.w3.org/2000/01/rdf-schema#label> "Foresees use of";
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E29_Design_or_Procedure>;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-5e1c9cc4099e4938bce147c5718555b9-ohvmx4;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-5e1c9cc4099e4938bce147c5718555b9-p8v8g5;
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E57_Material>;
-    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-5e1c9cc4099e4938bce147c5718555b9-najc69;
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-25T16:17:53.420+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-5e1c9cc4099e4938bce147c5718555b9-najc69 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
-    ?value a crm:E57_Material .
-    ?value skos:prefLabel ?label .
-  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
-  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
-} ORDER BY ASC(?label)
-  LIMIT 10""" .
-  
-  _:genid-5e1c9cc4099e4938bce147c5718555b9-1dpn6f a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/design_or_procedure/foresees_use_of> .
+
+    <http://www.researchspace.org/bnode/n9d8ef9b4362a418ea7c662db96efa39fb1> a ns1:Query ;
+        ns1:text """SELECT DISTINCT ?value ?label WHERE {
     ?value a crm:E57_Material .
     ?value skos:prefLabel ?label .
 } ORDER BY ASC(LCASE(STR(?label)))""" .
-  
-  _:genid-5e1c9cc4099e4938bce147c5718555b9-p8v8g5 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE {
+
+    <http://www.researchspace.org/bnode/n9d8ef9b4362a418ea7c662db96efa39fb2> a ns1:Query ;
+        ns1:text """SELECT DISTINCT ?value ?label WHERE {
+  	$subject crm:P68_foresees_use_of $value .  
+    
+    ?value a crm:E57_Material .
+    ?value skos:prefLabel ?label .
+}""" .
+
+    <http://www.researchspace.org/bnode/n9d8ef9b4362a418ea7c662db96efa39fb3> a ns1:Query ;
+        ns1:text """INSERT { 
+    $subject crm:P68_foresees_use_of $value .  
+    $value crm:P68i_use_foreseen_by $subject .
+} WHERE {}""" .
+
+    <http://www.researchspace.org/bnode/n9d8ef9b4362a418ea7c662db96efa39fb4> a ns1:Query ;
+        ns1:text """DELETE {
     $subject crm:P68_foresees_use_of $value .  
     $value crm:P68i_use_foreseen_by $subject .
 } WHERE {
@@ -44,21 +39,32 @@
     ?value a crm:E57_Material .
     ?value skos:prefLabel ?label .
 }""" .
-  
-  _:genid-5e1c9cc4099e4938bce147c5718555b9-493hzt a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
-  	$subject crm:P68_foresees_use_of $value .  
-    
+
+    <http://www.researchspace.org/bnode/n9d8ef9b4362a418ea7c662db96efa39fb5> a ns1:Query ;
+        ns1:text """SELECT DISTINCT ?value ?label WHERE {
     ?value a crm:E57_Material .
     ?value skos:prefLabel ?label .
-}""" .
-  
-  _:genid-5e1c9cc4099e4938bce147c5718555b9-ohvmx4 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-    $subject crm:P68_foresees_use_of $value .  
-    $value crm:P68i_use_foreseen_by $subject .
-} WHERE {}""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/design_or_procedure/foresees_use_of> .
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
+  FILTER REGEX(LCASE(STR(?label)), "?token", "i")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+
+    <http://www.researchspace.org/pattern/system/design_or_procedure/foresees_use_of> a ns2:Field,
+            ns3:Resource,
+            prov:Entity ;
+        rdfs:label "Foresees use of" ;
+        ns2:autosuggestionPattern <http://www.researchspace.org/bnode/n9d8ef9b4362a418ea7c662db96efa39fb5> ;
+        ns2:category <http://www.researchspace.org/resource/system/category/design_or_procedure> ;
+        ns2:deletePattern <http://www.researchspace.org/bnode/n9d8ef9b4362a418ea7c662db96efa39fb4> ;
+        ns2:domain <http://www.cidoc-crm.org/cidoc-crm/E29_Design_or_Procedure> ;
+        ns2:insertPattern <http://www.researchspace.org/bnode/n9d8ef9b4362a418ea7c662db96efa39fb3> ;
+        ns2:maxOccurs "unbound" ;
+        ns2:minOccurs "0" ;
+        ns2:range <http://www.cidoc-crm.org/cidoc-crm/E57_Material> ;
+        ns2:selectPattern <http://www.researchspace.org/bnode/n9d8ef9b4362a418ea7c662db96efa39fb2> ;
+        ns2:valueSetPattern <http://www.researchspace.org/bnode/n9d8ef9b4362a418ea7c662db96efa39fb1> ;
+        ns2:xsdDatatype xsd:anyURI ;
+        prov:generatedAtTime "2024-04-25T16:17:53.420000+01:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

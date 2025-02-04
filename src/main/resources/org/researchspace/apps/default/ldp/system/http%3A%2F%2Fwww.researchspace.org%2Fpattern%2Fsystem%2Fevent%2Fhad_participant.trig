@@ -1,36 +1,21 @@
+@prefix ns1: <http://www.w3.org/ns/ldp#> .
+@prefix ns2: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns3: <http://spinrdf.org/sp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/event/had_participant/context> {
-  <http://www.researchspace.org/pattern/system/event/had_participant> a <http://www.researchspace.org/resource/system/fields/Field>,
-      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/PC11_had_participant>;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/event>;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-5bbe30c2d70b431fa4a60448ed8eeb2f-ka4gp;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E5_Event>;
-    <http://www.w3.org/2000/01/rdf-schema#label> "Participant"@en;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/activity>;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-5bbe30c2d70b431fa4a60448ed8eeb2f-hw2kr;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-5bbe30c2d70b431fa4a60448ed8eeb2f-dxpzjk;
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-01-18T16:48:59.823Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-5bbe30c2d70b431fa4a60448ed8eeb2f-dxpzjk a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
-  	$subject crm:P01i_is_domain_of $value . 
-  	$value crm:P01_has_domain $subject .
-	$value a crm:PC11_had_participant .
-}""" .
-  
-  _:genid-5bbe30c2d70b431fa4a60448ed8eeb2f-ka4gp a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns1:contains <http://www.researchspace.org/pattern/system/event/had_participant> .
+
+    <http://www.researchspace.org/bnode/n6530d99e67d145e191583a4374c44bb9b1> a ns3:Query ;
+        ns3:text """INSERT { 
     $subject crm:P01i_is_domain_of $value . 
     $value crm:P01_has_domain $subject .
 } WHERE {}""" .
-  
-  _:genid-5bbe30c2d70b431fa4a60448ed8eeb2f-hw2kr a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE { 
+
+    <http://www.researchspace.org/bnode/n6530d99e67d145e191583a4374c44bb9b2> a ns3:Query ;
+        ns3:text """DELETE { 
     $subject crm:P01i_is_domain_of $value . 
     $value crm:P01_has_domain $subject .
 } WHERE {
@@ -38,7 +23,29 @@
   	$value crm:P01_has_domain $subject .
 	$value a crm:PC11_had_participant .
 }""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/event/had_participant> .
+
+    <http://www.researchspace.org/bnode/n6530d99e67d145e191583a4374c44bb9b3> a ns3:Query ;
+        ns3:text """SELECT DISTINCT ?value WHERE {
+  	$subject crm:P01i_is_domain_of $value . 
+  	$value crm:P01_has_domain $subject .
+	$value a crm:PC11_had_participant .
+}""" .
+
+    <http://www.researchspace.org/pattern/system/event/had_participant> a ns2:Field,
+            ns1:Resource,
+            prov:Entity ;
+        rdfs:label "Participant"@en ;
+        ns2:category <http://www.researchspace.org/resource/system/category/activity>,
+            <http://www.researchspace.org/resource/system/category/event> ;
+        ns2:deletePattern <http://www.researchspace.org/bnode/n6530d99e67d145e191583a4374c44bb9b2> ;
+        ns2:domain <http://www.cidoc-crm.org/cidoc-crm/E5_Event> ;
+        ns2:insertPattern <http://www.researchspace.org/bnode/n6530d99e67d145e191583a4374c44bb9b1> ;
+        ns2:maxOccurs "unbound" ;
+        ns2:minOccurs "0" ;
+        ns2:range <http://www.cidoc-crm.org/cidoc-crm/PC11_had_participant> ;
+        ns2:selectPattern <http://www.researchspace.org/bnode/n6530d99e67d145e191583a4374c44bb9b3> ;
+        ns2:xsdDatatype xsd:anyURI ;
+        prov:generatedAtTime "2024-01-18T16:48:59.823000+00:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

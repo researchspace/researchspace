@@ -1,27 +1,39 @@
+@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns2: <http://spinrdf.org/sp#> .
+@prefix ns3: <http://www.w3.org/ns/ldp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/activity/carried_out_by_user/context> {
-  <http://www.researchspace.org/pattern/system/activity/carried_out_by_user> a <http://www.researchspace.org/resource/system/fields/Field>,
-      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-bf78183bf04f4111bbe90be69ebe9831-j168x;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E39_Actor>;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-bf78183bf04f4111bbe90be69ebe9831-3s6o1q;
-    <http://www.w3.org/2000/01/rdf-schema#label> "Carried out by user"@en;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E7_Activity>;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-bf78183bf04f4111bbe90be69ebe9831-xsrups;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-bf78183bf04f4111bbe90be69ebe9831-bswif;
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-11-29T17:45:25.793Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-bf78183bf04f4111bbe90be69ebe9831-j168x a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/activity/carried_out_by_user> .
+
+    <http://www.researchspace.org/bnode/nce4fcbe0bcef46c49ddf383623dd708fb1> a ns2:Query ;
+        ns2:text """INSERT { 
   $subject crm:P14_carried_out_by $value .
 } WHERE {
 }""" .
-  
-  _:genid-bf78183bf04f4111bbe90be69ebe9831-xsrups a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
+
+    <http://www.researchspace.org/bnode/nce4fcbe0bcef46c49ddf383623dd708fb2> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+  {
+    FILTER(NOT EXISTS{ <http://www.researchspace.org/resource/user/admin> crm:P2_has_type 				<http://www.researchspace.org/resource/system/vocab/resource_type/user> .})
+  	BIND(<http://www.researchspace.org/resource/user/admin> as ?value)
+    BIND("admin" as ?label)
+  } UNION
+  {
+    ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+    ?value crm:P1_is_identified_by ?appellation . 
+    ?appellation a crm:E41_Appellation . 
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+  }
+  FILTER REGEX(LCASE(STR(?label)), "?token", "i")
+} ORDER BY ASC(?label) 
+  LIMIT 10 """ .
+
+    <http://www.researchspace.org/bnode/nce4fcbe0bcef46c49ddf383623dd708fb3> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value WHERE {
 	$subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
   {   
     $subject crm:P14_carried_out_by $value . 
@@ -33,27 +45,9 @@
     ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> . 
    }
 }""" .
-  
-  _:genid-bf78183bf04f4111bbe90be69ebe9831-3s6o1q a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
-  {
-    FILTER(NOT EXISTS{ <http://www.researchspace.org/resource/user/admin> crm:P2_has_type 				<http://www.researchspace.org/resource/system/vocab/resource_type/user> .})
-  	BIND(<http://www.researchspace.org/resource/user/admin> as ?value)
-    BIND(\"admin\" as ?label)
-  } UNION
-  {
-    ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
-    ?value crm:P1_is_identified_by ?appellation . 
-    ?appellation a crm:E41_Appellation . 
-    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-    ?appellation crm:P190_has_symbolic_content ?label .
-  }
-  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
-} ORDER BY ASC(?label) 
-  LIMIT 10 """ .
-  
-  _:genid-bf78183bf04f4111bbe90be69ebe9831-bswif a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE { 
+
+    <http://www.researchspace.org/bnode/nce4fcbe0bcef46c49ddf383623dd708fb4> a ns2:Query ;
+        ns2:text """DELETE { 
   $subject crm:P14_carried_out_by $value .
 } WHERE {
 	$subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
@@ -67,7 +61,20 @@
     ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
   }  
 }  """ .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/activity/carried_out_by_user> .
+
+    <http://www.researchspace.org/pattern/system/activity/carried_out_by_user> a ns1:Field,
+            ns3:Resource,
+            prov:Entity ;
+        rdfs:label "Carried out by user"@en ;
+        ns1:autosuggestionPattern <http://www.researchspace.org/bnode/nce4fcbe0bcef46c49ddf383623dd708fb2> ;
+        ns1:deletePattern <http://www.researchspace.org/bnode/nce4fcbe0bcef46c49ddf383623dd708fb4> ;
+        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E7_Activity> ;
+        ns1:insertPattern <http://www.researchspace.org/bnode/nce4fcbe0bcef46c49ddf383623dd708fb1> ;
+        ns1:maxOccurs "unbound" ;
+        ns1:minOccurs "0" ;
+        ns1:range <http://www.cidoc-crm.org/cidoc-crm/E39_Actor> ;
+        ns1:selectPattern <http://www.researchspace.org/bnode/nce4fcbe0bcef46c49ddf383623dd708fb3> ;
+        prov:generatedAtTime "2024-11-29T17:45:25.793000+00:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

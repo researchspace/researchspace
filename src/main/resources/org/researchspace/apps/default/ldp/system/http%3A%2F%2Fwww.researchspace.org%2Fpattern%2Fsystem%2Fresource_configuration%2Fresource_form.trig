@@ -1,33 +1,39 @@
+@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns2: <http://www.w3.org/ns/ldp#> .
+@prefix ns3: <http://spinrdf.org/sp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
 <http://www.researchspace.org/pattern/system/resource_configuration/resource_form/context> {
-  
-  <http://www.researchspace.org/pattern/system/resource_configuration/resource_form>
-    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
-      <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/resource_configuration>;
-    <http://www.w3.org/2000/01/rdf-schema#comment> "Enter IRI of the form to be used to edit the resource (e.g. http://www.researchspace.org/resource/system/forms/Actor )";
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-7c5ef99775f74b06a78e8c62f7604d0d-65nsvc;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-7c5ef99775f74b06a78e8c62f7604d0d-vi4vl;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object>;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-7c5ef99775f74b06a78e8c62f7604d0d-1im3ue;
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>;
-    <http://www.w3.org/2000/01/rdf-schema#label> "Resource form";
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-03-06T18:45:02.012Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-7c5ef99775f74b06a78e8c62f7604d0d-1im3ue a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> "INSERT { $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> $value} WHERE {}" .
-  
-  _:genid-7c5ef99775f74b06a78e8c62f7604d0d-vi4vl a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> "DELETE { $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> $value } WHERE { $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> $value }" .
-  
-  _:genid-7c5ef99775f74b06a78e8c62f7604d0d-65nsvc a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns2:contains <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> .
+
+    <http://www.researchspace.org/bnode/n1fb50a8ee3684aa59de8c9cef5d7217eb1> a ns3:Query ;
+        ns3:text """SELECT DISTINCT ?value WHERE {
   graph $subject { $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?value.}
 }""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> .
+
+    <http://www.researchspace.org/bnode/n1fb50a8ee3684aa59de8c9cef5d7217eb2> a ns3:Query ;
+        ns3:text "DELETE { $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> $value } WHERE { $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> $value }" .
+
+    <http://www.researchspace.org/bnode/n1fb50a8ee3684aa59de8c9cef5d7217eb3> a ns3:Query ;
+        ns3:text "INSERT { $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> $value} WHERE {}" .
+
+    <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> a ns1:Field,
+            ns2:Resource,
+            prov:Entity ;
+        rdfs:label "Resource form" ;
+        ns1:category <http://www.researchspace.org/resource/system/category/resource_configuration> ;
+        ns1:deletePattern <http://www.researchspace.org/bnode/n1fb50a8ee3684aa59de8c9cef5d7217eb2> ;
+        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object> ;
+        ns1:insertPattern <http://www.researchspace.org/bnode/n1fb50a8ee3684aa59de8c9cef5d7217eb3> ;
+        ns1:maxOccurs "1" ;
+        ns1:minOccurs "0" ;
+        ns1:range <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity> ;
+        ns1:selectPattern <http://www.researchspace.org/bnode/n1fb50a8ee3684aa59de8c9cef5d7217eb1> ;
+        ns1:xsdDatatype xsd:anyURI ;
+        rdfs:comment "Enter IRI of the form to be used to edit the resource (e.g. http://www.researchspace.org/resource/system/forms/Actor )" ;
+        prov:generatedAtTime "2024-03-06T18:45:02.012000+00:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

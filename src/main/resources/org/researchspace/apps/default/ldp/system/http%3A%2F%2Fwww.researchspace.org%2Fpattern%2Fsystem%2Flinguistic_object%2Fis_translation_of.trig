@@ -1,7 +1,15 @@
+@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns2: <http://spinrdf.org/sp#> .
+@prefix ns3: <http://www.w3.org/ns/ldp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/linguistic_object/is_translation_of/context> {
-  _:genid-ffb2dad2f8da4c1eae8318b687989d61-y2up8j a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE {   
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/linguistic_object/is_translation_of> .
+
+    <http://www.researchspace.org/bnode/n5fdd5eed3eab439a99e75bb3f03eb313b1> a ns2:Query ;
+        ns2:text """DELETE {   
   $subject crm:P73i_is_translation_of $value .
   $value crm:P73_has_translation $subject .
 }  WHERE {
@@ -12,57 +20,55 @@
   ?ontologyClass rdfs:subClassOf* crm:E33_Linguistic_Object .
   ?value crm:P190_has_symbolic_content ?label .
 }""" .
-  
-  _:genid-ffb2dad2f8da4c1eae8318b687989d61-njn5or a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+
+    <http://www.researchspace.org/bnode/n5fdd5eed3eab439a99e75bb3f03eb313b2> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value ?label WHERE {
   ?value a ?ontologyClass .
   ?ontologyClass rdfs:subClassOf* crm:E33_Linguistic_Object .
   ?value crm:P190_has_symbolic_content ?label .
   MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
-  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+  FILTER REGEX(LCASE(STR(?label)), "?token", "i")
 } ORDER BY ASC(?label)
   LIMIT 10""" .
-  
-  <http://www.researchspace.org/pattern/system/linguistic_object/is_translation_of>
-    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
-      <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/linguistic_object>;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-ffb2dad2f8da4c1eae8318b687989d61-y2up8j;
-    <http://www.w3.org/2000/01/rdf-schema#label> "Is translation of";
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E33_Linguistic_Object>;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E33_Linguistic_Object>;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-ffb2dad2f8da4c1eae8318b687989d61-quxhkb;
-    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-ffb2dad2f8da4c1eae8318b687989d61-gpdn1n;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-ffb2dad2f8da4c1eae8318b687989d61-tna3lb;
-    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-ffb2dad2f8da4c1eae8318b687989d61-njn5or;
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-29T14:05:15.394+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-ffb2dad2f8da4c1eae8318b687989d61-tna3lb a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+
+    <http://www.researchspace.org/bnode/n5fdd5eed3eab439a99e75bb3f03eb313b3> a ns2:Query ;
+        ns2:text """INSERT { 
+  $subject crm:P73i_is_translation_of $value .
+  $value crm:P73_has_translation $subject .
+} WHERE {}""" .
+
+    <http://www.researchspace.org/bnode/n5fdd5eed3eab439a99e75bb3f03eb313b4> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E33_Linguistic_Object .
+  ?value crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+
+    <http://www.researchspace.org/bnode/n5fdd5eed3eab439a99e75bb3f03eb313b5> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value ?label WHERE {
   $subject crm:P73i_is_translation_of $value .
    
   ?value a ?ontologyClass .
   ?ontologyClass rdfs:subClassOf* crm:E33_Linguistic_Object .
   ?value crm:P190_has_symbolic_content ?label .
 }""" .
-  
-  _:genid-ffb2dad2f8da4c1eae8318b687989d61-gpdn1n a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
-  ?value a ?ontologyClass .
-  ?ontologyClass rdfs:subClassOf* crm:E33_Linguistic_Object .
-  ?value crm:P190_has_symbolic_content ?label .
-} ORDER BY ASC(LCASE(STR(?label)))""" .
-  
-  _:genid-ffb2dad2f8da4c1eae8318b687989d61-quxhkb a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-  $subject crm:P73i_is_translation_of $value .
-  $value crm:P73_has_translation $subject .
-} WHERE {}""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/linguistic_object/is_translation_of> .
+
+    <http://www.researchspace.org/pattern/system/linguistic_object/is_translation_of> a ns1:Field,
+            ns3:Resource,
+            prov:Entity ;
+        rdfs:label "Is translation of" ;
+        ns1:autosuggestionPattern <http://www.researchspace.org/bnode/n5fdd5eed3eab439a99e75bb3f03eb313b2> ;
+        ns1:category <http://www.researchspace.org/resource/system/category/linguistic_object> ;
+        ns1:deletePattern <http://www.researchspace.org/bnode/n5fdd5eed3eab439a99e75bb3f03eb313b1> ;
+        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E33_Linguistic_Object> ;
+        ns1:insertPattern <http://www.researchspace.org/bnode/n5fdd5eed3eab439a99e75bb3f03eb313b3> ;
+        ns1:maxOccurs "unbound" ;
+        ns1:minOccurs "0" ;
+        ns1:range <http://www.cidoc-crm.org/cidoc-crm/E33_Linguistic_Object> ;
+        ns1:selectPattern <http://www.researchspace.org/bnode/n5fdd5eed3eab439a99e75bb3f03eb313b5> ;
+        ns1:valueSetPattern <http://www.researchspace.org/bnode/n5fdd5eed3eab439a99e75bb3f03eb313b4> ;
+        ns1:xsdDatatype xsd:anyURI ;
+        prov:generatedAtTime "2024-04-29T14:05:15.394000+01:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

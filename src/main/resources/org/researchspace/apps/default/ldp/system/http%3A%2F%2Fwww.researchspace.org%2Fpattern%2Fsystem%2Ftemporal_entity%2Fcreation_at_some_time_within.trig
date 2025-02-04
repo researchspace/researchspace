@@ -1,38 +1,15 @@
+@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns2: <http://spinrdf.org/sp#> .
+@prefix ns3: <http://www.w3.org/ns/ldp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
 <http://www.researchspace.org/pattern/system/temporal_entity/creation_at_some_time_within/context> {
-   
-  <http://www.researchspace.org/pattern/system/temporal_entity/creation_at_some_time_within> a <http://www.researchspace.org/resource/system/fields/Field>,
-      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-74f86b8f4ac84c55838be93d92c29237-yncdx;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#dateTime>;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-74f86b8f4ac84c55838be93d92c29237-mo90kb;
-    <http://www.w3.org/2000/01/rdf-schema#label> "At some time within"@en;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-74f86b8f4ac84c55838be93d92c29237-lmj4wr;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E2_Temporal_Entity>;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/activity>;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/document>;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2023-12-04T17:54:18.153Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/temporal_entity/creation_at_some_time_within> .
 
-_:genid-74f86b8f4ac84c55838be93d92c29237-lmj4wr a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
-	?subject crm:P4_has_time-span ?date .
-  ?date a crm:E52_Time-Span . 
-  ?date crm:P82_at_some_time_within $value . 
-}""" .
-
-  _:genid-74f86b8f4ac84c55838be93d92c29237-mo90kb a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-	?subject crm:P4_has_time-span ?date .
-  ?date a crm:E52_Time-Span . 
-  	?date crm:P82_at_some_time_within $value . 
-} WHERE { 
-    BIND(IRI(CONCAT(str($subject),\"/at_some_time_within\")) as ?date)
-}""" .
-  
-  _:genid-74f86b8f4ac84c55838be93d92c29237-yncdx a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE { 
+    <http://www.researchspace.org/bnode/nd9b20dd2ed034e22b71c757a67c97915b1> a ns2:Query ;
+        ns2:text """DELETE { 
 	?subject crm:P4_has_time-span ?date .
   ?date a crm:E52_Time-Span . 
   	?date crm:P82_at_some_time_within $value . 
@@ -41,7 +18,37 @@ _:genid-74f86b8f4ac84c55838be93d92c29237-lmj4wr a <http://spinrdf.org/sp#Query>;
   ?date a crm:E52_Time-Span . 
   	?date crm:P82_at_some_time_within $value . 
 }""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/temporal_entity/creation_at_some_time_within> .
+
+    <http://www.researchspace.org/bnode/nd9b20dd2ed034e22b71c757a67c97915b2> a ns2:Query ;
+        ns2:text """INSERT { 
+	?subject crm:P4_has_time-span ?date .
+  ?date a crm:E52_Time-Span . 
+  	?date crm:P82_at_some_time_within $value . 
+} WHERE { 
+    BIND(IRI(CONCAT(str($subject),"/at_some_time_within")) as ?date)
+}""" .
+
+    <http://www.researchspace.org/bnode/nd9b20dd2ed034e22b71c757a67c97915b3> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value WHERE {
+	?subject crm:P4_has_time-span ?date .
+  ?date a crm:E52_Time-Span . 
+  ?date crm:P82_at_some_time_within $value . 
+}""" .
+
+    <http://www.researchspace.org/pattern/system/temporal_entity/creation_at_some_time_within> a ns1:Field,
+            ns3:Resource,
+            prov:Entity ;
+        rdfs:label "At some time within"@en ;
+        ns1:category <http://www.researchspace.org/resource/system/category/activity>,
+            <http://www.researchspace.org/resource/system/category/document> ;
+        ns1:deletePattern <http://www.researchspace.org/bnode/nd9b20dd2ed034e22b71c757a67c97915b1> ;
+        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E2_Temporal_Entity> ;
+        ns1:insertPattern <http://www.researchspace.org/bnode/nd9b20dd2ed034e22b71c757a67c97915b2> ;
+        ns1:maxOccurs "1" ;
+        ns1:minOccurs "0" ;
+        ns1:selectPattern <http://www.researchspace.org/bnode/nd9b20dd2ed034e22b71c757a67c97915b3> ;
+        ns1:xsdDatatype xsd:dateTime ;
+        prov:generatedAtTime "2023-12-04T17:54:18.153000+00:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

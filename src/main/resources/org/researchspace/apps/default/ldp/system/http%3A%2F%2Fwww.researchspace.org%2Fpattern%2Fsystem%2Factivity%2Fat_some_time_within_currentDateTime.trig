@@ -1,39 +1,32 @@
+@prefix ns1: <http://spinrdf.org/sp#> .
+@prefix ns2: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns3: <http://www.w3.org/ns/ldp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/activity/at_some_time_within_currentDateTime/context> {
-  <http://www.researchspace.org/pattern/system/activity/at_some_time_within_currentDateTime>
-    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
-      <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-3f1a2592c2be445186c0c3b1479723bc-zx4sx9;
-    <http://www.w3.org/2000/01/rdf-schema#label> "Activity at currentDateTime";
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "1";
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#dateTime>;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-3f1a2592c2be445186c0c3b1479723bc-v8gr94;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E7_Activity>;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/activity>;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-3f1a2592c2be445186c0c3b1479723bc-4ncqn8;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2023-12-04T18:37:15.224Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-3f1a2592c2be445186c0c3b1479723bc-zx4sx9 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/activity/at_some_time_within_currentDateTime> .
+
+    <http://www.researchspace.org/bnode/n675d5f6923ac49dba75b99c0387b2a56b1> a ns1:Query ;
+        ns1:text """INSERT { 
 	?subject crm:P4_has_time-span ?activityDate .
   ?activityDate a crm:E52_Time-Span . 
   	?activityDate crm:P82_at_some_time_within $value . 
 } WHERE { 
-    BIND(IRI(CONCAT(str($subject),\"/activity_at_some_time_within/\",STRUUID())) as ?activityDate)
+    BIND(IRI(CONCAT(str($subject),"/activity_at_some_time_within/",STRUUID())) as ?activityDate)
     BIND( now() AS ?value ) .   
 }""" .
-  
-  _:genid-3f1a2592c2be445186c0c3b1479723bc-v8gr94 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
+
+    <http://www.researchspace.org/bnode/n675d5f6923ac49dba75b99c0387b2a56b2> a ns1:Query ;
+        ns1:text """SELECT DISTINCT ?value WHERE {
 	?subject crm:P4_has_time-span ?activityDate .
   ?activityDate a crm:E52_Time-Span . 
   	?activityDate crm:P82_at_some_time_within $value . 
 }""" .
-  
-  _:genid-3f1a2592c2be445186c0c3b1479723bc-4ncqn8 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE { 
+
+    <http://www.researchspace.org/bnode/n675d5f6923ac49dba75b99c0387b2a56b3> a ns1:Query ;
+        ns1:text """DELETE { 
 	?subject crm:P4_has_time-span ?activityDate .
   ?activityDate a crm:E52_Time-Span . 
   	?activityDate crm:P82_at_some_time_within $value . 
@@ -42,7 +35,20 @@
   ?activityDate a crm:E52_Time-Span . 
   	?activityDate crm:P82_at_some_time_within $value . 
 }""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/activity/at_some_time_within_currentDateTime> .
+
+    <http://www.researchspace.org/pattern/system/activity/at_some_time_within_currentDateTime> a ns2:Field,
+            ns3:Resource,
+            prov:Entity ;
+        rdfs:label "Activity at currentDateTime" ;
+        ns2:category <http://www.researchspace.org/resource/system/category/activity> ;
+        ns2:deletePattern <http://www.researchspace.org/bnode/n675d5f6923ac49dba75b99c0387b2a56b3> ;
+        ns2:domain <http://www.cidoc-crm.org/cidoc-crm/E7_Activity> ;
+        ns2:insertPattern <http://www.researchspace.org/bnode/n675d5f6923ac49dba75b99c0387b2a56b1> ;
+        ns2:maxOccurs "1" ;
+        ns2:minOccurs "1" ;
+        ns2:selectPattern <http://www.researchspace.org/bnode/n675d5f6923ac49dba75b99c0387b2a56b2> ;
+        ns2:xsdDatatype xsd:dateTime ;
+        prov:generatedAtTime "2023-12-04T18:37:15.224000+00:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

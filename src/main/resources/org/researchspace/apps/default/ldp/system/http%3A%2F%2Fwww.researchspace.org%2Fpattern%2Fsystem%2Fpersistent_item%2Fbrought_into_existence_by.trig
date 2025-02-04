@@ -1,25 +1,15 @@
+@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns2: <http://spinrdf.org/sp#> .
+@prefix ns3: <http://www.w3.org/ns/ldp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/persistent_item/brought_into_existence_by/context> {
-  <http://www.researchspace.org/pattern/system/persistent_item/brought_into_existence_by>
-    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
-      <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/persistent_item>;
-    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-e1bcba9305f54d50a82813c31d6939ff-ft09ub;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-e1bcba9305f54d50a82813c31d6939ff-25a99;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.w3.org/2000/01/rdf-schema#label> "Brought into existence by";
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-e1bcba9305f54d50a82813c31d6939ff-dimvpr;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E77_Persistent_Item>;
-    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-e1bcba9305f54d50a82813c31d6939ff-zqtjvs;
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E63_Beginning_of_Existence>;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-e1bcba9305f54d50a82813c31d6939ff-npxrab;
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-08T17:28:09.331+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-e1bcba9305f54d50a82813c31d6939ff-ft09ub a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/persistent_item/brought_into_existence_by> .
+
+    <http://www.researchspace.org/bnode/n6adaac330d3c4aad9bce35b79e4ae5f6b1> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value ?label WHERE {
     ?value a ?ontologyClass .
     ?ontologyClass rdfs:subClassOf* crm:E63_Beginning_of_Existence .
     ?value crm:P1_is_identified_by ?appellation .
@@ -28,9 +18,9 @@
      
     ?appellation crm:P190_has_symbolic_content ?label .
 } ORDER BY ASC(LCASE(STR(?label)))""" .
-  
-  _:genid-e1bcba9305f54d50a82813c31d6939ff-25a99 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE { 
+
+    <http://www.researchspace.org/bnode/n6adaac330d3c4aad9bce35b79e4ae5f6b2> a ns2:Query ;
+        ns2:text """DELETE { 
     $subject crm:P92i_was_brought_into_existence_by $value . 
     $value crm:P92_brought_into_existence $subject .
 } WHERE {
@@ -45,15 +35,29 @@
      
     ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
-  
-  _:genid-e1bcba9305f54d50a82813c31d6939ff-dimvpr a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
+
+    <http://www.researchspace.org/bnode/n6adaac330d3c4aad9bce35b79e4ae5f6b3> a ns2:Query ;
+        ns2:text """INSERT { 
     $subject crm:P92i_was_brought_into_existence_by $value . 
     $value crm:P92_brought_into_existence $subject .
 } WHERE {}""" .
-  
-  _:genid-e1bcba9305f54d50a82813c31d6939ff-npxrab a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+
+    <http://www.researchspace.org/bnode/n6adaac330d3c4aad9bce35b79e4ae5f6b4> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E63_Beginning_of_Existence .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+     
+    ?appellation crm:P190_has_symbolic_content ?label .
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
+  FILTER REGEX(LCASE(STR(?label)), "?token", "i")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+
+    <http://www.researchspace.org/bnode/n6adaac330d3c4aad9bce35b79e4ae5f6b5> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value ?label WHERE {
   	$subject crm:P92i_was_brought_into_existence_by $value . 
       
     ?value a ?ontologyClass .
@@ -64,21 +68,23 @@
      
     ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
-  
-  _:genid-e1bcba9305f54d50a82813c31d6939ff-zqtjvs a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
-    ?value a ?ontologyClass .
-    ?ontologyClass rdfs:subClassOf* crm:E63_Beginning_of_Existence .
-    ?value crm:P1_is_identified_by ?appellation .
-    ?appellation a crm:E41_Appellation .
-    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-     
-    ?appellation crm:P190_has_symbolic_content ?label .
-  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
-  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
-} ORDER BY ASC(?label)
-  LIMIT 10""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/persistent_item/brought_into_existence_by> .
+
+    <http://www.researchspace.org/pattern/system/persistent_item/brought_into_existence_by> a ns1:Field,
+            ns3:Resource,
+            prov:Entity ;
+        rdfs:label "Brought into existence by" ;
+        ns1:autosuggestionPattern <http://www.researchspace.org/bnode/n6adaac330d3c4aad9bce35b79e4ae5f6b4> ;
+        ns1:category <http://www.researchspace.org/resource/system/category/persistent_item> ;
+        ns1:deletePattern <http://www.researchspace.org/bnode/n6adaac330d3c4aad9bce35b79e4ae5f6b2> ;
+        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E77_Persistent_Item> ;
+        ns1:insertPattern <http://www.researchspace.org/bnode/n6adaac330d3c4aad9bce35b79e4ae5f6b3> ;
+        ns1:maxOccurs "unbound" ;
+        ns1:minOccurs "0" ;
+        ns1:range <http://www.cidoc-crm.org/cidoc-crm/E63_Beginning_of_Existence> ;
+        ns1:selectPattern <http://www.researchspace.org/bnode/n6adaac330d3c4aad9bce35b79e4ae5f6b5> ;
+        ns1:valueSetPattern <http://www.researchspace.org/bnode/n6adaac330d3c4aad9bce35b79e4ae5f6b1> ;
+        ns1:xsdDatatype xsd:anyURI ;
+        prov:generatedAtTime "2024-04-08T17:28:09.331000+01:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

@@ -1,42 +1,27 @@
+@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns2: <http://www.w3.org/ns/ldp#> .
+@prefix ns3: <http://spinrdf.org/sp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/image/type/context> {
-  <http://www.researchspace.org/pattern/system/image/type> a <http://www.researchspace.org/resource/system/fields/Field>,
-      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E55_Type>;
-    <http://www.researchspace.org/resource/system/fields/category> 
-    <http://www.researchspace.org/resource/system/category/image>,
-    <http://www.researchspace.org/resource/system/category/image_search>;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-a98875e5c2774b57b46b3350871aafd9-hhj26a;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/treePatterns> """{
-  \"type\": \"simple\",
-  \"schemePattern\": \"?item a crm:E55_Type .\\n?item crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/image_type> .\",
-  \"relationPattern\": \"?item crm:P127_has_broader_term ?parent .\"
-}"""^^<http://www.researchspace.org/resource/system/syntheticJson>;
-    <http://www.w3.org/2000/01/rdf-schema#comment> "This is only to assign a type to the image, not to describe the image subject that should be added in section More > Is about";
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-a98875e5c2774b57b46b3350871aafd9-25mevj;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.researchspace.org/ontology/EX_Digital_Image>;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-a98875e5c2774b57b46b3350871aafd9-j76oxc;
-    <http://www.w3.org/2000/01/rdf-schema#label> "Image type";
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-05-07T10:38:49.949+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-a98875e5c2774b57b46b3350871aafd9-25mevj a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-  $subject crm:P2_has_type $value .
-  $value crm:P2i_is_type_of $subject .
-} WHERE {}""" .
-  
-  _:genid-a98875e5c2774b57b46b3350871aafd9-hhj26a a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns2:contains <http://www.researchspace.org/pattern/system/image/type> .
+
+    <http://www.researchspace.org/bnode/n25100e6b52354b0e973fa391f15669dfb1> a ns3:Query ;
+        ns3:text """SELECT DISTINCT ?value WHERE {
   $subject crm:P2_has_type ?value.
   ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/image_type> .
 }""" .
-  
-  _:genid-a98875e5c2774b57b46b3350871aafd9-j76oxc a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE { 
+
+    <http://www.researchspace.org/bnode/n25100e6b52354b0e973fa391f15669dfb2> a ns3:Query ;
+        ns3:text """INSERT { 
+  $subject crm:P2_has_type $value .
+  $value crm:P2i_is_type_of $subject .
+} WHERE {}""" .
+
+    <http://www.researchspace.org/bnode/n25100e6b52354b0e973fa391f15669dfb3> a ns3:Query ;
+        ns3:text """DELETE { 
   $subject crm:P2_has_type $value .
   $value crm:P2i_is_type_of $subject .
 } WHERE { 
@@ -44,7 +29,28 @@
   $value crm:P2i_is_type_of $subject .
   $value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/image_type> .
 }""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/image/type> .
+
+    <http://www.researchspace.org/pattern/system/image/type> a ns1:Field,
+            ns2:Resource,
+            prov:Entity ;
+        rdfs:label "Image type" ;
+        ns1:category <http://www.researchspace.org/resource/system/category/image>,
+            <http://www.researchspace.org/resource/system/category/image_search> ;
+        ns1:deletePattern <http://www.researchspace.org/bnode/n25100e6b52354b0e973fa391f15669dfb3> ;
+        ns1:domain <http://www.researchspace.org/ontology/EX_Digital_Image> ;
+        ns1:insertPattern <http://www.researchspace.org/bnode/n25100e6b52354b0e973fa391f15669dfb2> ;
+        ns1:maxOccurs "unbound" ;
+        ns1:minOccurs "0" ;
+        ns1:range <http://www.cidoc-crm.org/cidoc-crm/E55_Type> ;
+        ns1:selectPattern <http://www.researchspace.org/bnode/n25100e6b52354b0e973fa391f15669dfb1> ;
+        ns1:treePatterns """{
+  "type": "simple",
+  "schemePattern": "?item a crm:E55_Type .\\n?item crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/image_type> .",
+  "relationPattern": "?item crm:P127_has_broader_term ?parent ."
+}"""^^<http://www.researchspace.org/resource/system/syntheticJson> ;
+        ns1:xsdDatatype xsd:anyURI ;
+        rdfs:comment "This is only to assign a type to the image, not to describe the image subject that should be added in section More > Is about" ;
+        prov:generatedAtTime "2024-05-07T10:38:49.949000+01:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

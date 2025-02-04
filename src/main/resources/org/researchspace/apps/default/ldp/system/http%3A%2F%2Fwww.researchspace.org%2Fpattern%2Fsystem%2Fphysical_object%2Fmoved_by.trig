@@ -1,34 +1,53 @@
+@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns2: <http://spinrdf.org/sp#> .
+@prefix ns3: <http://www.w3.org/ns/ldp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/physical_object/moved_by/context> {
-  <http://www.researchspace.org/pattern/system/physical_object/moved_by> a <http://www.researchspace.org/resource/system/fields/Field>,
-      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-fbd759093ec74f3d88a613502b97d86a-70td3e;
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E9_Move>;
-    <http://www.w3.org/2000/01/rdf-schema#comment> "The property implies the object’s passive participation. For example, Monet’s painting “Impression sunrise” was moved for the first Impressionist exhibition in 1874.";
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-fbd759093ec74f3d88a613502b97d86a-peu1je;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-fbd759093ec74f3d88a613502b97d86a-muy1a;
-    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-fbd759093ec74f3d88a613502b97d86a-stpb9;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/physical_object>;
-    <http://www.w3.org/2000/01/rdf-schema#label> "Moved by";
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-fbd759093ec74f3d88a613502b97d86a-xb292q;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E19_Physical_Object>;
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-19T11:57:55.604+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-fbd759093ec74f3d88a613502b97d86a-70td3e a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/physical_object/moved_by> .
+
+    <http://www.researchspace.org/bnode/n40d70bf881ff4b80a2f58928a032a998b1> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value ?label WHERE {
   ?value a crm:E9_Move .
   ?value crm:P1_is_identified_by ?appellation .
   ?appellation a crm:E41_Appellation .
   ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .  
   ?appellation crm:P190_has_symbolic_content ?label .
 } ORDER BY ASC(LCASE(STR(?label)))""" .
-  
-  _:genid-fbd759093ec74f3d88a613502b97d86a-xb292q a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE {   
+
+    <http://www.researchspace.org/bnode/n40d70bf881ff4b80a2f58928a032a998b2> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+  $subject crm:P25i_moved_by $value . 
+
+  ?value a crm:E9_Move .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .  
+  ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+
+    <http://www.researchspace.org/bnode/n40d70bf881ff4b80a2f58928a032a998b3> a ns2:Query ;
+        ns2:text """INSERT { 
+  $subject crm:P25i_moved_by $value . 
+  $value crm:P25_moved $subject .
+} WHERE {}""" .
+
+    <http://www.researchspace.org/bnode/n40d70bf881ff4b80a2f58928a032a998b4> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+  ?value a crm:E9_Move .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .  
+  ?appellation crm:P190_has_symbolic_content ?label .
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
+  FILTER REGEX(LCASE(STR(?label)), "?token", "i")
+} ORDER BY ASC(?label) 
+  LIMIT 10 """ .
+
+    <http://www.researchspace.org/bnode/n40d70bf881ff4b80a2f58928a032a998b5> a ns2:Query ;
+        ns2:text """DELETE {   
   $subject crm:P25i_moved_by $value . 
   $value crm:P25_moved $subject .
 }  WHERE {
@@ -41,36 +60,24 @@
   ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .  
   ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
-  
-  _:genid-fbd759093ec74f3d88a613502b97d86a-stpb9 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
-  ?value a crm:E9_Move .
-  ?value crm:P1_is_identified_by ?appellation .
-  ?appellation a crm:E41_Appellation .
-  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .  
-  ?appellation crm:P190_has_symbolic_content ?label .
-  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
-  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
-} ORDER BY ASC(?label) 
-  LIMIT 10 """ .
-  
-  _:genid-fbd759093ec74f3d88a613502b97d86a-peu1je a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
-  $subject crm:P25i_moved_by $value . 
 
-  ?value a crm:E9_Move .
-  ?value crm:P1_is_identified_by ?appellation .
-  ?appellation a crm:E41_Appellation .
-  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .  
-  ?appellation crm:P190_has_symbolic_content ?label .
-}""" .
-  
-  _:genid-fbd759093ec74f3d88a613502b97d86a-muy1a a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-  $subject crm:P25i_moved_by $value . 
-  $value crm:P25_moved $subject .
-} WHERE {}""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/physical_object/moved_by> .
+    <http://www.researchspace.org/pattern/system/physical_object/moved_by> a ns1:Field,
+            ns3:Resource,
+            prov:Entity ;
+        rdfs:label "Moved by" ;
+        ns1:autosuggestionPattern <http://www.researchspace.org/bnode/n40d70bf881ff4b80a2f58928a032a998b4> ;
+        ns1:category <http://www.researchspace.org/resource/system/category/physical_object> ;
+        ns1:deletePattern <http://www.researchspace.org/bnode/n40d70bf881ff4b80a2f58928a032a998b5> ;
+        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E19_Physical_Object> ;
+        ns1:insertPattern <http://www.researchspace.org/bnode/n40d70bf881ff4b80a2f58928a032a998b3> ;
+        ns1:maxOccurs "unbound" ;
+        ns1:minOccurs "0" ;
+        ns1:range <http://www.cidoc-crm.org/cidoc-crm/E9_Move> ;
+        ns1:selectPattern <http://www.researchspace.org/bnode/n40d70bf881ff4b80a2f58928a032a998b2> ;
+        ns1:valueSetPattern <http://www.researchspace.org/bnode/n40d70bf881ff4b80a2f58928a032a998b1> ;
+        ns1:xsdDatatype xsd:anyURI ;
+        rdfs:comment "The property implies the object’s passive participation. For example, Monet’s painting “Impression sunrise” was moved for the first Impressionist exhibition in 1874." ;
+        prov:generatedAtTime "2024-04-19T11:57:55.604000+01:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

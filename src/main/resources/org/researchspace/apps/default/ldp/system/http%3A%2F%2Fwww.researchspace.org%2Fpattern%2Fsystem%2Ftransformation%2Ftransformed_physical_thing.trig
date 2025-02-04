@@ -1,25 +1,27 @@
+@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns2: <http://spinrdf.org/sp#> .
+@prefix ns3: <http://www.w3.org/ns/ldp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/transformation/transformed_physical_thing/context> {
-  <http://www.researchspace.org/pattern/system/transformation/transformed_physical_thing>
-    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
-      <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-3f03fd8d4e0f4b098b5bf2d28092adfd-zfzjpo;
-    <http://www.w3.org/2000/01/rdf-schema#label> "Transformed thing";
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-3f03fd8d4e0f4b098b5bf2d28092adfd-zosagi;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-3f03fd8d4e0f4b098b5bf2d28092adfd-vgabz;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E81_Transformation>;
-    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-3f03fd8d4e0f4b098b5bf2d28092adfd-e6m0rq;
-    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-3f03fd8d4e0f4b098b5bf2d28092adfd-5rd7ll;
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E18_Physical_Thing>;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/transformation>;
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-05T15:24:06.459+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-3f03fd8d4e0f4b098b5bf2d28092adfd-zosagi a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE {
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/transformation/transformed_physical_thing> .
+
+    <http://www.researchspace.org/bnode/nea7975ccb6da4b2a98e61711e0b094c1b1> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+	$subject crm:P124_transformed $value .
+      
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E18_Physical_Thing .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+
+    <http://www.researchspace.org/bnode/nea7975ccb6da4b2a98e61711e0b094c1b2> a ns2:Query ;
+        ns2:text """DELETE {
 	$subject crm:P124_transformed $value .
     $value crm:P124i_was_transformed_by $subject .
 } WHERE {
@@ -33,9 +35,15 @@
     ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
     ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
-  
-  _:genid-3f03fd8d4e0f4b098b5bf2d28092adfd-e6m0rq a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+
+    <http://www.researchspace.org/bnode/nea7975ccb6da4b2a98e61711e0b094c1b3> a ns2:Query ;
+        ns2:text """INSERT { 
+	$subject crm:P124_transformed $value .
+    $value crm:P124i_was_transformed_by $subject .
+} WHERE {}""" .
+
+    <http://www.researchspace.org/bnode/nea7975ccb6da4b2a98e61711e0b094c1b4> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value ?label WHERE {
     ?value a ?ontologyClass .
     ?ontologyClass rdfs:subClassOf* crm:E18_Physical_Thing .
     ?value crm:P1_is_identified_by ?appellation .
@@ -43,21 +51,9 @@
     ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
     ?appellation crm:P190_has_symbolic_content ?label .
 } ORDER BY ASC(LCASE(STR(?label)))""" .
-  
-  _:genid-3f03fd8d4e0f4b098b5bf2d28092adfd-zfzjpo a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
-	$subject crm:P124_transformed $value .
-      
-    ?value a ?ontologyClass .
-    ?ontologyClass rdfs:subClassOf* crm:E18_Physical_Thing .
-    ?value crm:P1_is_identified_by ?appellation .
-    ?appellation a crm:E41_Appellation .
-    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-    ?appellation crm:P190_has_symbolic_content ?label .
-}""" .
-  
-  _:genid-3f03fd8d4e0f4b098b5bf2d28092adfd-5rd7ll a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+
+    <http://www.researchspace.org/bnode/nea7975ccb6da4b2a98e61711e0b094c1b5> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value ?label WHERE {
     ?value a ?ontologyClass .
     ?ontologyClass rdfs:subClassOf* crm:E18_Physical_Thing .
     ?value crm:P1_is_identified_by ?appellation .
@@ -65,16 +61,26 @@
     ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
     ?appellation crm:P190_has_symbolic_content ?label .
   MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
-  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+  FILTER REGEX(LCASE(STR(?label)), "?token", "i")
 } ORDER BY ASC(?label) 
   LIMIT 10 """ .
-  
-  _:genid-3f03fd8d4e0f4b098b5bf2d28092adfd-vgabz a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-	$subject crm:P124_transformed $value .
-    $value crm:P124i_was_transformed_by $subject .
-} WHERE {}""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/transformation/transformed_physical_thing> .
+
+    <http://www.researchspace.org/pattern/system/transformation/transformed_physical_thing> a ns1:Field,
+            ns3:Resource,
+            prov:Entity ;
+        rdfs:label "Transformed thing" ;
+        ns1:autosuggestionPattern <http://www.researchspace.org/bnode/nea7975ccb6da4b2a98e61711e0b094c1b5> ;
+        ns1:category <http://www.researchspace.org/resource/system/category/transformation> ;
+        ns1:deletePattern <http://www.researchspace.org/bnode/nea7975ccb6da4b2a98e61711e0b094c1b2> ;
+        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E81_Transformation> ;
+        ns1:insertPattern <http://www.researchspace.org/bnode/nea7975ccb6da4b2a98e61711e0b094c1b3> ;
+        ns1:maxOccurs "unbound" ;
+        ns1:minOccurs "0" ;
+        ns1:range <http://www.cidoc-crm.org/cidoc-crm/E18_Physical_Thing> ;
+        ns1:selectPattern <http://www.researchspace.org/bnode/nea7975ccb6da4b2a98e61711e0b094c1b1> ;
+        ns1:valueSetPattern <http://www.researchspace.org/bnode/nea7975ccb6da4b2a98e61711e0b094c1b4> ;
+        ns1:xsdDatatype xsd:anyURI ;
+        prov:generatedAtTime "2024-04-05T15:24:06.459000+01:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

@@ -1,36 +1,43 @@
+@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns2: <http://spinrdf.org/sp#> .
+@prefix ns3: <http://www.w3.org/ns/ldp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/dimension/lower_value/context> {
-  <http://www.researchspace.org/pattern/system/dimension/lower_value> a <http://www.researchspace.org/resource/system/fields/Field>,
-      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#decimal>;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E54_Dimension>;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-c73a815da1e5400c9565eba9d3ccdd17-upma9;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-c73a815da1e5400c9565eba9d3ccdd17-mpcn19;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.w3.org/2000/01/rdf-schema#label> "Lower value";
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/dimension>;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-c73a815da1e5400c9565eba9d3ccdd17-yl5ji3;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-10-15T10:58:45.545+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-c73a815da1e5400c9565eba9d3ccdd17-mpcn19 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-  $subject crm:P90a_has_lower_value_limit $value . 
-} WHERE {}""" .
-  
-  _:genid-c73a815da1e5400c9565eba9d3ccdd17-upma9 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/dimension/lower_value> .
+
+    <http://www.researchspace.org/bnode/nb076fce517a24f1ab2b2cdff8de9e3dab1> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value WHERE {
   $subject crm:P90a_has_lower_value_limit $value . 
 }""" .
-  
-  _:genid-c73a815da1e5400c9565eba9d3ccdd17-yl5ji3 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE {
+
+    <http://www.researchspace.org/bnode/nb076fce517a24f1ab2b2cdff8de9e3dab2> a ns2:Query ;
+        ns2:text """INSERT { 
+  $subject crm:P90a_has_lower_value_limit $value . 
+} WHERE {}""" .
+
+    <http://www.researchspace.org/bnode/nb076fce517a24f1ab2b2cdff8de9e3dab3> a ns2:Query ;
+        ns2:text """DELETE {
     $subject crm:P90a_has_lower_value_limit $value .
 }  WHERE {
     $subject crm:P90a_has_lower_value_limit $value .
 }""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/dimension/lower_value> .
+
+    <http://www.researchspace.org/pattern/system/dimension/lower_value> a ns1:Field,
+            ns3:Resource,
+            prov:Entity ;
+        rdfs:label "Lower value" ;
+        ns1:category <http://www.researchspace.org/resource/system/category/dimension> ;
+        ns1:deletePattern <http://www.researchspace.org/bnode/nb076fce517a24f1ab2b2cdff8de9e3dab3> ;
+        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E54_Dimension> ;
+        ns1:insertPattern <http://www.researchspace.org/bnode/nb076fce517a24f1ab2b2cdff8de9e3dab2> ;
+        ns1:maxOccurs "1" ;
+        ns1:minOccurs "0" ;
+        ns1:selectPattern <http://www.researchspace.org/bnode/nb076fce517a24f1ab2b2cdff8de9e3dab1> ;
+        ns1:xsdDatatype xsd:decimal ;
+        prov:generatedAtTime "2024-10-15T10:58:45.545000+01:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

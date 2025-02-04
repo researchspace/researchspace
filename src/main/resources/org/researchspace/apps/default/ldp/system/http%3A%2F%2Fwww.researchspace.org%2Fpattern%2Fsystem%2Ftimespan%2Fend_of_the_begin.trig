@@ -1,36 +1,43 @@
+@prefix ns1: <http://www.w3.org/ns/ldp#> .
+@prefix ns2: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns3: <http://spinrdf.org/sp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/timespan/end_of_the_begin/context> {
-  <http://www.researchspace.org/pattern/system/timespan/end_of_the_begin> a <http://www.researchspace.org/resource/system/fields/Field>,
-      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span>;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-baf426dedc5a4eff9791d50e3e982f37-sn1y7g;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-baf426dedc5a4eff9791d50e3e982f37-m857w;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#dateTime>;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/timespan>;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-baf426dedc5a4eff9791d50e3e982f37-u35ifj;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
-    <http://www.w3.org/2000/01/rdf-schema#label> "End of the begin";
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-03-26T15:25:55.649Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-baf426dedc5a4eff9791d50e3e982f37-u35ifj a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE {
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns1:contains <http://www.researchspace.org/pattern/system/timespan/end_of_the_begin> .
+
+    <http://www.researchspace.org/bnode/n60b767db1917440b83f29823d456e41cb1> a ns3:Query ;
+        ns3:text """SELECT DISTINCT ?value WHERE {
+	$subject crm:P81a_end_of_the_begin $value . 
+}""" .
+
+    <http://www.researchspace.org/bnode/n60b767db1917440b83f29823d456e41cb2> a ns3:Query ;
+        ns3:text """INSERT { 
+	$subject crm:P81a_end_of_the_begin $value . 
+} WHERE {}""" .
+
+    <http://www.researchspace.org/bnode/n60b767db1917440b83f29823d456e41cb3> a ns3:Query ;
+        ns3:text """DELETE {
 	$subject crm:P81a_end_of_the_begin $value . 
 }  WHERE {
 	$subject crm:P81a_end_of_the_begin $value . 
 }""" .
-  
-  _:genid-baf426dedc5a4eff9791d50e3e982f37-m857w a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-	$subject crm:P81a_end_of_the_begin $value . 
-} WHERE {}""" .
-  
-  _:genid-baf426dedc5a4eff9791d50e3e982f37-sn1y7g a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
-	$subject crm:P81a_end_of_the_begin $value . 
-}""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/timespan/end_of_the_begin> .
+
+    <http://www.researchspace.org/pattern/system/timespan/end_of_the_begin> a ns2:Field,
+            ns1:Resource,
+            prov:Entity ;
+        rdfs:label "End of the begin" ;
+        ns2:category <http://www.researchspace.org/resource/system/category/timespan> ;
+        ns2:deletePattern <http://www.researchspace.org/bnode/n60b767db1917440b83f29823d456e41cb3> ;
+        ns2:domain <http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span> ;
+        ns2:insertPattern <http://www.researchspace.org/bnode/n60b767db1917440b83f29823d456e41cb2> ;
+        ns2:maxOccurs "1" ;
+        ns2:minOccurs "0" ;
+        ns2:selectPattern <http://www.researchspace.org/bnode/n60b767db1917440b83f29823d456e41cb1> ;
+        ns2:xsdDatatype xsd:dateTime ;
+        prov:generatedAtTime "2024-03-26T15:25:55.649000+00:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

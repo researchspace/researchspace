@@ -1,24 +1,17 @@
+@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns2: <http://spinrdf.org/sp#> .
+@prefix ns3: <http://www.w3.org/ns/ldp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/actor/has_right_on/context> {
-  <http://www.researchspace.org/pattern/system/actor/has_right_on> a <http://www.researchspace.org/resource/system/fields/Field>,
-      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/actor>;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-3b981f013af64420a6f2ced340326d3f-05c1pq;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-3b981f013af64420a6f2ced340326d3f-nhtaz;
-    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-3b981f013af64420a6f2ced340326d3f-3ruu5j;
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E72_Legal_Object>;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E39_Actor>;
-    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-3b981f013af64420a6f2ced340326d3f-kv07z;
-    <http://www.w3.org/2000/01/rdf-schema#label> "Has right on";
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-3b981f013af64420a6f2ced340326d3f-7gfhoe;
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-10T11:19:28.718+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-3b981f013af64420a6f2ced340326d3f-3ruu5j a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/actor/has_right_on> .
+
+    <http://www.researchspace.org/bnode/n182fd36fdd5d4acaa69a927d4a89fec9b1> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+	$subject crm:P105i_has_right_on $value . 
+      
     ?value a ?ontologyClass .
     ?ontologyClass rdfs:subClassOf* crm:E72_Legal_Object .
     { 
@@ -29,18 +22,10 @@
     } UNION {
       ?value crm:P190_has_symbolic_content ?label .
     }
+}""" .
 
-  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
-  MINUS { ?systemAuthorityTerm crm:P1_is_identified_by ?value .
-          ?systemAuthorityTerm crm:P71i_is_listed_in|skos:inScheme ?systemAuthorityDoc .
-          ?systemAuthorityDoc crm:P2_has_type Platform:System_Resource .
-        }
-  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
-} ORDER BY ASC(?label) 
-  LIMIT 10 """ .
-  
-  _:genid-3b981f013af64420a6f2ced340326d3f-nhtaz a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE {
+    <http://www.researchspace.org/bnode/n182fd36fdd5d4acaa69a927d4a89fec9b2> a ns2:Query ;
+        ns2:text """DELETE {
 	$subject crm:P105i_has_right_on $value . 
     $value crm:P105_right_held_by $subject .
 } WHERE {
@@ -58,17 +43,9 @@
       ?value crm:P190_has_symbolic_content ?label .
     }
 }""" .
-  
-  _:genid-3b981f013af64420a6f2ced340326d3f-7gfhoe a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-	$subject crm:P105i_has_right_on $value . 
-    $value crm:P105_right_held_by $subject .
-} WHERE {}""" .
-  
-  _:genid-3b981f013af64420a6f2ced340326d3f-05c1pq a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
-	$subject crm:P105i_has_right_on $value . 
-      
+
+    <http://www.researchspace.org/bnode/n182fd36fdd5d4acaa69a927d4a89fec9b3> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value ?label WHERE {
     ?value a ?ontologyClass .
     ?ontologyClass rdfs:subClassOf* crm:E72_Legal_Object .
     { 
@@ -79,10 +56,18 @@
     } UNION {
       ?value crm:P190_has_symbolic_content ?label .
     }
-}""" .
-  
-  _:genid-3b981f013af64420a6f2ced340326d3f-kv07z a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
+  MINUS { ?systemAuthorityTerm crm:P1_is_identified_by ?value .
+          ?systemAuthorityTerm crm:P71i_is_listed_in|skos:inScheme ?systemAuthorityDoc .
+          ?systemAuthorityDoc crm:P2_has_type Platform:System_Resource .
+        }
+  FILTER REGEX(LCASE(STR(?label)), "?token", "i")
+} ORDER BY ASC(?label) 
+  LIMIT 10 """ .
+
+    <http://www.researchspace.org/bnode/n182fd36fdd5d4acaa69a927d4a89fec9b4> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value ?label WHERE {
     ?value a ?ontologyClass .
     ?ontologyClass rdfs:subClassOf* crm:E72_Legal_Object .
     { 
@@ -94,7 +79,29 @@
       ?value crm:P190_has_symbolic_content ?label .
     }
 } ORDER BY ASC(LCASE(STR(?label)))""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/actor/has_right_on> .
+
+    <http://www.researchspace.org/bnode/n182fd36fdd5d4acaa69a927d4a89fec9b5> a ns2:Query ;
+        ns2:text """INSERT { 
+	$subject crm:P105i_has_right_on $value . 
+    $value crm:P105_right_held_by $subject .
+} WHERE {}""" .
+
+    <http://www.researchspace.org/pattern/system/actor/has_right_on> a ns1:Field,
+            ns3:Resource,
+            prov:Entity ;
+        rdfs:label "Has right on" ;
+        ns1:autosuggestionPattern <http://www.researchspace.org/bnode/n182fd36fdd5d4acaa69a927d4a89fec9b3> ;
+        ns1:category <http://www.researchspace.org/resource/system/category/actor> ;
+        ns1:deletePattern <http://www.researchspace.org/bnode/n182fd36fdd5d4acaa69a927d4a89fec9b2> ;
+        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E39_Actor> ;
+        ns1:insertPattern <http://www.researchspace.org/bnode/n182fd36fdd5d4acaa69a927d4a89fec9b5> ;
+        ns1:maxOccurs "unbound" ;
+        ns1:minOccurs "0" ;
+        ns1:range <http://www.cidoc-crm.org/cidoc-crm/E72_Legal_Object> ;
+        ns1:selectPattern <http://www.researchspace.org/bnode/n182fd36fdd5d4acaa69a927d4a89fec9b1> ;
+        ns1:valueSetPattern <http://www.researchspace.org/bnode/n182fd36fdd5d4acaa69a927d4a89fec9b4> ;
+        ns1:xsdDatatype xsd:anyURI ;
+        prov:generatedAtTime "2024-04-10T11:19:28.718000+01:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

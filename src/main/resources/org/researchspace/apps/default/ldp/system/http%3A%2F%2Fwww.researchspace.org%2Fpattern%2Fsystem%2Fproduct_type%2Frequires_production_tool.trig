@@ -1,38 +1,15 @@
+@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns2: <http://spinrdf.org/sp#> .
+@prefix ns3: <http://www.w3.org/ns/ldp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/product_type/requires_production_tool/context> {
-  <http://www.researchspace.org/pattern/system/product_type/requires_production_tool>
-    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
-      <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.w3.org/2000/01/rdf-schema#comment> "This property associates the Product Type with an instance of object that is needed for the production of an instance of thing. When the process of production is correctly executed in accordance with the plan and using the specified object, the resulting thing is considered an exemplar of the Product Type. Examples include models and moulds.";
-    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-ddbb2479f084482c9f862a321b0ecbf7-3tqddp;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-ddbb2479f084482c9f862a321b0ecbf7-zi3r04;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.w3.org/2000/01/rdf-schema#label> "Requires production tool";
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-ddbb2479f084482c9f862a321b0ecbf7-q60eqq;
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E19_Physical_Object>;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E99_Product_Type>;
-    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-ddbb2479f084482c9f862a321b0ecbf7-d602uk;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-ddbb2479f084482c9f862a321b0ecbf7-9rtpzh;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/product_type>;
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-10-15T12:22:17.621+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-ddbb2479f084482c9f862a321b0ecbf7-q60eqq a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE {
-	$subject crm:P188_requires_production_tool $value . 
-} WHERE {
-	$subject crm:P188_requires_production_tool $value . 
-}""" .
-  
-  _:genid-ddbb2479f084482c9f862a321b0ecbf7-9rtpzh a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-	$subject crm:P188_requires_production_tool $value . 
-} WHERE {}""" .
-  
-  _:genid-ddbb2479f084482c9f862a321b0ecbf7-3tqddp a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/product_type/requires_production_tool> .
+
+    <http://www.researchspace.org/bnode/na806d092f4a74f78a1ef30a00bd3fe49b1> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value ?label WHERE {
   ?value a ?ontologyClass .
   ?ontologyClass rdfs:subClassOf* crm:E19_Physical_Object .
   ?value crm:P1_is_identified_by ?appellation .
@@ -40,14 +17,21 @@
   ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
   ?appellation crm:P190_has_symbolic_content ?label .
 } ORDER BY ASC(LCASE(STR(?label)))""" .
-  
-  _:genid-ddbb2479f084482c9f862a321b0ecbf7-zi3r04 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+
+    <http://www.researchspace.org/bnode/na806d092f4a74f78a1ef30a00bd3fe49b2> a ns2:Query ;
+        ns2:text """SELECT ?value WHERE {
 	$subject crm:P188_requires_production_tool $value . 
 }""" .
-  
-  _:genid-ddbb2479f084482c9f862a321b0ecbf7-d602uk a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+
+    <http://www.researchspace.org/bnode/na806d092f4a74f78a1ef30a00bd3fe49b3> a ns2:Query ;
+        ns2:text """DELETE {
+	$subject crm:P188_requires_production_tool $value . 
+} WHERE {
+	$subject crm:P188_requires_production_tool $value . 
+}""" .
+
+    <http://www.researchspace.org/bnode/na806d092f4a74f78a1ef30a00bd3fe49b4> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value ?label WHERE {
   ?value a ?ontologyClass .
   ?ontologyClass rdfs:subClassOf* crm:E19_Physical_Object .
   ?value crm:P1_is_identified_by ?appellation .
@@ -55,10 +39,32 @@
   ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
   ?appellation crm:P190_has_symbolic_content ?label .
   MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
-  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+  FILTER REGEX(LCASE(STR(?label)), "?token", "i")
 } ORDER BY ASC(?label) 
   LIMIT 10 """ .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/product_type/requires_production_tool> .
+
+    <http://www.researchspace.org/bnode/na806d092f4a74f78a1ef30a00bd3fe49b5> a ns2:Query ;
+        ns2:text """INSERT { 
+	$subject crm:P188_requires_production_tool $value . 
+} WHERE {}""" .
+
+    <http://www.researchspace.org/pattern/system/product_type/requires_production_tool> a ns1:Field,
+            ns3:Resource,
+            prov:Entity ;
+        rdfs:label "Requires production tool" ;
+        ns1:autosuggestionPattern <http://www.researchspace.org/bnode/na806d092f4a74f78a1ef30a00bd3fe49b4> ;
+        ns1:category <http://www.researchspace.org/resource/system/category/product_type> ;
+        ns1:deletePattern <http://www.researchspace.org/bnode/na806d092f4a74f78a1ef30a00bd3fe49b3> ;
+        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E99_Product_Type> ;
+        ns1:insertPattern <http://www.researchspace.org/bnode/na806d092f4a74f78a1ef30a00bd3fe49b5> ;
+        ns1:maxOccurs "unbound" ;
+        ns1:minOccurs "0" ;
+        ns1:range <http://www.cidoc-crm.org/cidoc-crm/E19_Physical_Object> ;
+        ns1:selectPattern <http://www.researchspace.org/bnode/na806d092f4a74f78a1ef30a00bd3fe49b2> ;
+        ns1:valueSetPattern <http://www.researchspace.org/bnode/na806d092f4a74f78a1ef30a00bd3fe49b1> ;
+        ns1:xsdDatatype xsd:anyURI ;
+        rdfs:comment "This property associates the Product Type with an instance of object that is needed for the production of an instance of thing. When the process of production is correctly executed in accordance with the plan and using the specified object, the resulting thing is considered an exemplar of the Product Type. Examples include models and moulds." ;
+        prov:generatedAtTime "2024-10-15T12:22:17.621000+01:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

@@ -1,23 +1,15 @@
+@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns2: <http://www.w3.org/ns/ldp#> .
+@prefix ns3: <http://spinrdf.org/sp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/person/relationship/context> {
-  
-  <http://www.researchspace.org/pattern/system/person/relationship> a <http://www.researchspace.org/resource/system/fields/Field>,
-      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-5bfffdc3689142d8a9baa968522d09ae-irw0kq;
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E21_Person>;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/person>;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-5bfffdc3689142d8a9baa968522d09ae-gn7ymm;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-5bfffdc3689142d8a9baa968522d09ae-bpwwm;
-    <http://www.w3.org/2000/01/rdf-schema#label> "Relationship"@en;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.researchspace.org/ontology/Relationship>;
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-01-17T18:32:26.228Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-5bfffdc3689142d8a9baa968522d09ae-irw0kq a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE { 
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns2:contains <http://www.researchspace.org/pattern/system/person/relationship> .
+
+    <http://www.researchspace.org/bnode/n743cf709428b4ac18f78c093f34f9184b1> a ns3:Query ;
+        ns3:text """DELETE { 
   $subject rs:PX_is_bind_by $value .
   $value rs:PX_binds $subject .
 } WHERE {
@@ -25,17 +17,31 @@
   $value rs:PX_binds $subject .
 }""" .
 
-  _:genid-5bfffdc3689142d8a9baa968522d09ae-gn7ymm a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
+    <http://www.researchspace.org/bnode/n743cf709428b4ac18f78c093f34f9184b2> a ns3:Query ;
+        ns3:text """SELECT DISTINCT ?value WHERE {
   $subject rs:PX_is_bind_by $value .
 }""" .
-  
-  _:genid-5bfffdc3689142d8a9baa968522d09ae-bpwwm a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
+
+    <http://www.researchspace.org/bnode/n743cf709428b4ac18f78c093f34f9184b3> a ns3:Query ;
+        ns3:text """INSERT { 
   $subject rs:PX_is_bind_by $value .
   $value rs:PX_binds $subject .
 } WHERE {}""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/person/relationship> .
+
+    <http://www.researchspace.org/pattern/system/person/relationship> a ns1:Field,
+            ns2:Resource,
+            prov:Entity ;
+        rdfs:label "Relationship"@en ;
+        ns1:category <http://www.researchspace.org/resource/system/category/person> ;
+        ns1:deletePattern <http://www.researchspace.org/bnode/n743cf709428b4ac18f78c093f34f9184b1> ;
+        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E21_Person> ;
+        ns1:insertPattern <http://www.researchspace.org/bnode/n743cf709428b4ac18f78c093f34f9184b3> ;
+        ns1:maxOccurs "unbound" ;
+        ns1:minOccurs "0" ;
+        ns1:range <http://www.researchspace.org/ontology/Relationship> ;
+        ns1:selectPattern <http://www.researchspace.org/bnode/n743cf709428b4ac18f78c093f34f9184b2> ;
+        ns1:xsdDatatype xsd:anyURI ;
+        prov:generatedAtTime "2024-01-17T18:32:26.228000+00:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

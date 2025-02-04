@@ -1,33 +1,33 @@
+@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
+@prefix ns2: <http://spinrdf.org/sp#> .
+@prefix ns3: <http://www.w3.org/ns/ldp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/place/postcode/context> {
-  <http://www.researchspace.org/pattern/system/place/postcode> a <http://www.researchspace.org/resource/system/fields/Field>,
-      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.w3.org/2000/01/rdf-schema#label> "Postcode";
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/organisation> ;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/place> ;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E53_Place>;
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#string>;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
-    
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-a2eb78b396f94fdbaada4e387ec37d9a-t6747371;    
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-a2eb78b396f94fdbaada4e387ec37d9a-t6747373;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-a2eb78b396f94fdbaada4e387ec37d9a-t6747372;
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2023-11-30T13:48:23.034Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-a2eb78b396f94fdbaada4e387ec37d9a-t6747373 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT {  
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/place/postcode> .
+
+    <http://www.researchspace.org/bnode/n73c6b3f26ec24aa8a11023c284aba27cb1> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value WHERE {
+  $subject crm:P1_is_identified_by ?address .
+  ?address a crm:E41_Appellation .
+  ?address crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation_type/postcode> .
+  ?address crm:P190_has_symbolic_content ?value.
+}""" .
+
+    <http://www.researchspace.org/bnode/n73c6b3f26ec24aa8a11023c284aba27cb2> a ns2:Query ;
+        ns2:text """INSERT {  
   $subject crm:P1_is_identified_by ?address .
   ?address a crm:E41_Appellation .
   ?address crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation_type/postcode> .
   ?address crm:P190_has_symbolic_content ?value.
 } WHERE {
-      BIND(URI(CONCAT(str($subject),\"/postcode\")) as ?address)
+      BIND(URI(CONCAT(str($subject),"/postcode")) as ?address)
 }""" .
-  
-  _:genid-a2eb78b396f94fdbaada4e387ec37d9a-t6747372 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE {
+
+    <http://www.researchspace.org/bnode/n73c6b3f26ec24aa8a11023c284aba27cb3> a ns2:Query ;
+        ns2:text """DELETE {
   $subject crm:P1_is_identified_by ?address .
   ?address a crm:E41_Appellation .
   ?address crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation_type/postcode> .
@@ -38,15 +38,21 @@
   ?address crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation_type/postcode> .
   ?address crm:P190_has_symbolic_content ?value.
 }""" .
-  
-  _:genid-a2eb78b396f94fdbaada4e387ec37d9a-t6747371 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
-  $subject crm:P1_is_identified_by ?address .
-  ?address a crm:E41_Appellation .
-  ?address crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation_type/postcode> .
-  ?address crm:P190_has_symbolic_content ?value.
-}""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/place/postcode> .
+
+    <http://www.researchspace.org/pattern/system/place/postcode> a ns1:Field,
+            ns3:Resource,
+            prov:Entity ;
+        rdfs:label "Postcode" ;
+        ns1:category <http://www.researchspace.org/resource/system/category/organisation>,
+            <http://www.researchspace.org/resource/system/category/place> ;
+        ns1:deletePattern <http://www.researchspace.org/bnode/n73c6b3f26ec24aa8a11023c284aba27cb3> ;
+        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E53_Place> ;
+        ns1:insertPattern <http://www.researchspace.org/bnode/n73c6b3f26ec24aa8a11023c284aba27cb2> ;
+        ns1:maxOccurs "1" ;
+        ns1:minOccurs "0" ;
+        ns1:selectPattern <http://www.researchspace.org/bnode/n73c6b3f26ec24aa8a11023c284aba27cb1> ;
+        ns1:xsdDatatype xsd:string ;
+        prov:generatedAtTime "2023-11-30T13:48:23.034000+00:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

@@ -1,25 +1,21 @@
+@prefix ns1: <http://www.w3.org/ns/ldp#> .
+@prefix ns2: <http://spinrdf.org/sp#> .
+@prefix ns3: <http://www.researchspace.org/resource/system/fields/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/activity/motivated_by/context> {
-  <http://www.researchspace.org/pattern/system/activity/motivated_by> a <http://www.researchspace.org/resource/system/fields/Field>,
-      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-e179d8f6c0b64c84b3b892fe316983a4-e4fb9l;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-e179d8f6c0b64c84b3b892fe316983a4-jfh14;
-    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-e179d8f6c0b64c84b3b892fe316983a4-83d1fs;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-e179d8f6c0b64c84b3b892fe316983a4-0mzskr;
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E7_Activity>;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/activity>;
-    <http://www.w3.org/2000/01/rdf-schema#label> "Motivated by";
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-e179d8f6c0b64c84b3b892fe316983a4-c9dn56;
-    <http://www.w3.org/2000/01/rdf-schema#comment> "An item or items that are regarded as a reason for carrying out the activity.";
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-05-02T12:01:20.622+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-e179d8f6c0b64c84b3b892fe316983a4-jfh14 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns1:contains <http://www.researchspace.org/pattern/system/activity/motivated_by> .
+
+    <http://www.researchspace.org/bnode/na9f29a84edee4468a8f97d2007a9754eb1> a ns2:Query ;
+        ns2:text """INSERT { 
+    $subject crm:P17_was_motivated_by $value .
+    $value crm:P17i_motivated $subject .
+} WHERE {}""" .
+
+    <http://www.researchspace.org/bnode/na9f29a84edee4468a8f97d2007a9754eb2> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value ?label WHERE {
     ?value a ?ontologyClass .
     ?ontologyClass rdfs:subClassOf* crm:E1_CRM_Entity .
     { 
@@ -38,11 +34,9 @@
       ?value crm:P190_has_symbolic_content ?label .
     }
 } ORDER BY ASC(LCASE(STR(?label)))""" .
-  
-  _:genid-e179d8f6c0b64c84b3b892fe316983a4-c9dn56 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
-  	$subject crm:P17_was_motivated_by $value .
-      
+
+    <http://www.researchspace.org/bnode/na9f29a84edee4468a8f97d2007a9754eb3> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value ?label WHERE {
     ?value a ?ontologyClass .
     ?ontologyClass rdfs:subClassOf* crm:E1_CRM_Entity .
     { 
@@ -60,16 +54,18 @@
     } UNION {
       ?value crm:P190_has_symbolic_content ?label .
     }
-}""" .
-  
-  _:genid-e179d8f6c0b64c84b3b892fe316983a4-e4fb9l a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-    $subject crm:P17_was_motivated_by $value .
-    $value crm:P17i_motivated $subject .
-} WHERE {}""" .
-  
-  _:genid-e179d8f6c0b64c84b3b892fe316983a4-0mzskr a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE { 
+
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
+  MINUS { ?systemAuthorityTerm crm:P1_is_identified_by ?value .
+          ?systemAuthorityTerm crm:P71i_is_listed_in|skos:inScheme ?systemAuthorityDoc .
+          ?systemAuthorityDoc crm:P2_has_type Platform:System_Resource .
+        }
+  FILTER REGEX(LCASE(STR(?label)), "?token", "i")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+
+    <http://www.researchspace.org/bnode/na9f29a84edee4468a8f97d2007a9754eb4> a ns2:Query ;
+        ns2:text """DELETE { 
     $subject crm:P17_was_motivated_by $value .
     $value crm:P17i_motivated $subject .
 } WHERE {
@@ -94,9 +90,11 @@
       ?value crm:P190_has_symbolic_content ?label .
     }
 }""" .
-  
-  _:genid-e179d8f6c0b64c84b3b892fe316983a4-83d1fs a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+
+    <http://www.researchspace.org/bnode/na9f29a84edee4468a8f97d2007a9754eb5> a ns2:Query ;
+        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+  	$subject crm:P17_was_motivated_by $value .
+      
     ?value a ?ontologyClass .
     ?ontologyClass rdfs:subClassOf* crm:E1_CRM_Entity .
     { 
@@ -114,16 +112,25 @@
     } UNION {
       ?value crm:P190_has_symbolic_content ?label .
     }
+}""" .
 
-  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
-  MINUS { ?systemAuthorityTerm crm:P1_is_identified_by ?value .
-          ?systemAuthorityTerm crm:P71i_is_listed_in|skos:inScheme ?systemAuthorityDoc .
-          ?systemAuthorityDoc crm:P2_has_type Platform:System_Resource .
-        }
-  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
-} ORDER BY ASC(?label)
-  LIMIT 10""" .
-  
-  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.researchspace.org/pattern/system/activity/motivated_by> .
+    <http://www.researchspace.org/pattern/system/activity/motivated_by> a ns3:Field,
+            ns1:Resource,
+            prov:Entity ;
+        rdfs:label "Motivated by" ;
+        ns3:autosuggestionPattern <http://www.researchspace.org/bnode/na9f29a84edee4468a8f97d2007a9754eb3> ;
+        ns3:category <http://www.researchspace.org/resource/system/category/activity> ;
+        ns3:deletePattern <http://www.researchspace.org/bnode/na9f29a84edee4468a8f97d2007a9754eb4> ;
+        ns3:domain <http://www.cidoc-crm.org/cidoc-crm/E7_Activity> ;
+        ns3:insertPattern <http://www.researchspace.org/bnode/na9f29a84edee4468a8f97d2007a9754eb1> ;
+        ns3:maxOccurs "unbound" ;
+        ns3:minOccurs "0" ;
+        ns3:range <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity> ;
+        ns3:selectPattern <http://www.researchspace.org/bnode/na9f29a84edee4468a8f97d2007a9754eb5> ;
+        ns3:valueSetPattern <http://www.researchspace.org/bnode/na9f29a84edee4468a8f97d2007a9754eb2> ;
+        ns3:xsdDatatype xsd:anyURI ;
+        rdfs:comment "An item or items that are regarded as a reason for carrying out the activity." ;
+        prov:generatedAtTime "2024-05-02T12:01:20.622000+01:00"^^xsd:dateTime ;
+        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
 }
+

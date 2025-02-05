@@ -58,9 +58,12 @@ import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.repository.util.Repositories;
+import org.eclipse.rdf4j.rio.ParserConfig;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParseException;
 import org.eclipse.rdf4j.rio.Rio;
+import org.eclipse.rdf4j.rio.helpers.BasicParserSettings;
+import org.eclipse.rdf4j.rio.helpers.ParseErrorLogger;
 import org.researchspace.config.Configuration;
 import org.researchspace.config.UnknownConfigurationException;
 import org.researchspace.kp.KnowledgePatternGenerator;
@@ -73,6 +76,7 @@ import org.researchspace.services.storage.api.StorageException;
 import org.researchspace.services.storage.api.StoragePath;
 import org.researchspace.services.storage.api.PlatformStorage.FindResult;
 import org.researchspace.vocabulary.LDP;
+import org.researchspace.vocabulary.PLATFORM;
 import org.researchspace.vocabulary.PROV;
 
 import com.google.common.collect.Lists;
@@ -324,7 +328,11 @@ public class LDPAssetsLoader {
                 }
                 ObjectRecord record = entry.getValue().getRecord();
                 try (InputStream in = record.getLocation().readContent()) {
-                    Model model = Rio.parse(in, "", format);              
+                    ParserConfig config = new ParserConfig();
+                    config.set(BasicParserSettings.SKOLEMIZE_ORIGIN, PLATFORM.BNODE);
+                    Model model = Rio.parse(in, "", format, config, SimpleValueFactory.getInstance(),
+                               new ParseErrorLogger());             
+                              
                     loadedAssetsModel.addAll(model);                   
                 } catch (IOException | RDFParseException e) {
                     logger.error("Failed to parse LDP asset: " + record.getLocation() + ". Details: " + e.getMessage());

@@ -44,7 +44,6 @@ public class PLATFORM {
     public static final IRI SET_TYPE;
     public static final IRI SET_ITEM_TYPE;
 
-    public static final String IRI BNODE;
     static {
         ValueFactory f = SimpleValueFactory.getInstance();
         FIELD = f.createIRI(NAMESPACE, "Field");

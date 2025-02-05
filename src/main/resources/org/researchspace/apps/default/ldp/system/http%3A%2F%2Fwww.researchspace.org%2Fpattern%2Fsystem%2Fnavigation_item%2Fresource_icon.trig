@@ -1,15 +1,21 @@
-@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
-@prefix ns2: <http://spinrdf.org/sp#> .
-@prefix ns3: <http://www.w3.org/ns/ldp#> .
-@prefix prov: <http://www.w3.org/ns/prov#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/navigation_item/resource_icon/context> {
-    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/navigation_item/resource_icon> .
-
-    <http://www.researchspace.org/bnode/n2597ff00a65c426898fc617b17a3d3fbb1> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value WHERE {
+  <http://www.researchspace.org/pattern/system/navigation_item/resource_icon> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Navigation item icon"@en;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-63dde15c24dc4738bf8cece0cc4aaa78-nlpy1;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-63dde15c24dc4738bf8cece0cc4aaa78-y0enu;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#string>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/navigation_item>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-63dde15c24dc4738bf8cece0cc4aaa78-whmxs;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2023-12-14T15:53:16.609Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-63dde15c24dc4738bf8cece0cc4aaa78-nlpy1 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
     $subject <http://www.cidoc-crm.org/cidoc-crm/P67_refers_to> ?resource_config .
     ?resource_config a <http://www.researchspace.org/resource/system/resource_configuration> .
     graph ?resource_config {
@@ -17,33 +23,20 @@
       $subject a <http://www.researchspace.org/resource/system/FinderNavigationItem> .
     }
 }""" .
-
-    <http://www.researchspace.org/bnode/n2597ff00a65c426898fc617b17a3d3fbb2> a ns2:Query ;
-        ns2:text """DELETE { 
+  
+  _:genid-63dde15c24dc4738bf8cece0cc4aaa78-whmxs a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject <http://www.researchspace.org/pattern/system/navigation_item/resource_icon> $value .
+} WHERE {
+}""" .
+  
+  _:genid-63dde15c24dc4738bf8cece0cc4aaa78-y0enu a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
   $subject <http://www.researchspace.org/pattern/system/navigation_item/resource_icon> $value .
 } WHERE { 
   $subject <http://www.researchspace.org/pattern/system/navigation_item/resource_icon> $value .
 }""" .
-
-    <http://www.researchspace.org/bnode/n2597ff00a65c426898fc617b17a3d3fbb3> a ns2:Query ;
-        ns2:text """INSERT { 
-  $subject <http://www.researchspace.org/pattern/system/navigation_item/resource_icon> $value .
-} WHERE {
-}""" .
-
-    <http://www.researchspace.org/pattern/system/navigation_item/resource_icon> a ns1:Field,
-            ns3:Resource,
-            prov:Entity ;
-        rdfs:label "Navigation item icon" ;
-        ns1:category <http://www.researchspace.org/resource/system/category/navigation_item> ;
-        ns1:deletePattern <http://www.researchspace.org/bnode/n2597ff00a65c426898fc617b17a3d3fbb2> ;
-        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object> ;
-        ns1:insertPattern <http://www.researchspace.org/bnode/n2597ff00a65c426898fc617b17a3d3fbb3> ;
-        ns1:maxOccurs "1" ;
-        ns1:minOccurs "0" ;
-        ns1:selectPattern <http://www.researchspace.org/bnode/n2597ff00a65c426898fc617b17a3d3fbb1> ;
-        ns1:xsdDatatype xsd:string ;
-        prov:generatedAtTime "2023-12-14T15:53:16.609000+00:00"^^xsd:dateTime ;
-        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/navigation_item/resource_icon> .
 }
-

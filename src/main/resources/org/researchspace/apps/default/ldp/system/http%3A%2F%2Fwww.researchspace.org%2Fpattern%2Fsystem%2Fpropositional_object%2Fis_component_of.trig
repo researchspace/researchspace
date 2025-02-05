@@ -1,15 +1,7 @@
-@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
-@prefix ns2: <http://spinrdf.org/sp#> .
-@prefix ns3: <http://www.w3.org/ns/ldp#> .
-@prefix prov: <http://www.w3.org/ns/prov#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/propositional_object/is_component_of/context> {
-    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/propositional_object/is_component_of> .
-
-    <http://www.researchspace.org/bnode/nb25600dc570e4144adb0a5cea6fc34bbb1> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+  _:genid-b3615828b2714ee2aa4a3ebcf6155ff0-k1o0xr a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
   ?value a ?ontologyClass .
   ?ontologyClass rdfs:subClassOf* crm:E89_Propositional_Object . 
   { 
@@ -21,18 +13,30 @@
     ?value crm:P190_has_symbolic_content ?label .
   }
   MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
-  FILTER REGEX(LCASE(STR(?label)), "?token", "i")
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ASC(?label)
   LIMIT 10""" .
-
-    <http://www.researchspace.org/bnode/nb25600dc570e4144adb0a5cea6fc34bbb2> a ns2:Query ;
-        ns2:text """INSERT { 
-  $subject crm:P148i_is_component_of $value . 
-  $value crm:P148_has_component $subject .
-} WHERE {}""" .
-
-    <http://www.researchspace.org/bnode/nb25600dc570e4144adb0a5cea6fc34bbb3> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+  
+  <http://www.researchspace.org/pattern/system/propositional_object/is_component_of>
+    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
+      <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-b3615828b2714ee2aa4a3ebcf6155ff0-k1o0xr;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E89_Propositional_Object>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/propositional_object>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-b3615828b2714ee2aa4a3ebcf6155ff0-hiwill;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-b3615828b2714ee2aa4a3ebcf6155ff0-gf6g6;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Part of"@en;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-b3615828b2714ee2aa4a3ebcf6155ff0-6p74a;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-b3615828b2714ee2aa4a3ebcf6155ff0-zzobxq;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E89_Propositional_Object>;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-19T13:53:14.161+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-b3615828b2714ee2aa4a3ebcf6155ff0-gf6g6 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
   $subject crm:P148i_is_component_of $value . 
       
   ?value a ?ontologyClass .
@@ -46,9 +50,9 @@
     ?value crm:P190_has_symbolic_content ?label .
   }
 }""" .
-
-    <http://www.researchspace.org/bnode/nb25600dc570e4144adb0a5cea6fc34bbb4> a ns2:Query ;
-        ns2:text """DELETE {
+  
+  _:genid-b3615828b2714ee2aa4a3ebcf6155ff0-6p74a a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
   $subject crm:P148i_is_component_of $value . 
   $value crm:P148_has_component $subject .
 } WHERE {
@@ -66,9 +70,15 @@
     ?value crm:P190_has_symbolic_content ?label .
   }
 }""" .
-
-    <http://www.researchspace.org/bnode/nb25600dc570e4144adb0a5cea6fc34bbb5> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+  
+  _:genid-b3615828b2714ee2aa4a3ebcf6155ff0-hiwill a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P148i_is_component_of $value . 
+  $value crm:P148_has_component $subject .
+} WHERE {}""" .
+  
+  _:genid-b3615828b2714ee2aa4a3ebcf6155ff0-zzobxq a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
   ?value a ?ontologyClass .
   ?ontologyClass rdfs:subClassOf* crm:E89_Propositional_Object . 
   { 
@@ -80,23 +90,7 @@
     ?value crm:P190_has_symbolic_content ?label .
   }
 } ORDER BY ASC(LCASE(STR(?label)))""" .
-
-    <http://www.researchspace.org/pattern/system/propositional_object/is_component_of> a ns1:Field,
-            ns3:Resource,
-            prov:Entity ;
-        rdfs:label "Part of" ;
-        ns1:autosuggestionPattern <http://www.researchspace.org/bnode/nb25600dc570e4144adb0a5cea6fc34bbb1> ;
-        ns1:category <http://www.researchspace.org/resource/system/category/propositional_object> ;
-        ns1:deletePattern <http://www.researchspace.org/bnode/nb25600dc570e4144adb0a5cea6fc34bbb4> ;
-        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E89_Propositional_Object> ;
-        ns1:insertPattern <http://www.researchspace.org/bnode/nb25600dc570e4144adb0a5cea6fc34bbb2> ;
-        ns1:maxOccurs "unbound" ;
-        ns1:minOccurs "0" ;
-        ns1:range <http://www.cidoc-crm.org/cidoc-crm/E89_Propositional_Object> ;
-        ns1:selectPattern <http://www.researchspace.org/bnode/nb25600dc570e4144adb0a5cea6fc34bbb3> ;
-        ns1:valueSetPattern <http://www.researchspace.org/bnode/nb25600dc570e4144adb0a5cea6fc34bbb5> ;
-        ns1:xsdDatatype xsd:anyURI ;
-        prov:generatedAtTime "2024-04-19T13:53:14.161000+01:00"^^xsd:dateTime ;
-        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/propositional_object/is_component_of> .
 }
-

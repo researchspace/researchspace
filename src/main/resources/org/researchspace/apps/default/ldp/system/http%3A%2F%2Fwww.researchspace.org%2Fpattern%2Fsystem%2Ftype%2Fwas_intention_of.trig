@@ -1,15 +1,7 @@
-@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
-@prefix ns2: <http://spinrdf.org/sp#> .
-@prefix ns3: <http://www.w3.org/ns/ldp#> .
-@prefix prov: <http://www.w3.org/ns/prov#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/type/was_intention_of/context> {
-    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/type/was_intention_of> .
-
-    <http://www.researchspace.org/bnode/n15ce2f0260954a57b152a312fb22012bb1> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+  _:genid-1437bbfd0cf44d02901c14a82e8d3a5b-a4lnq a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
 	  $subject crm:P103i_was_intention_of $value .
       
    	?value a ?ontologyClass .
@@ -25,9 +17,27 @@
       ?value crm:P190_has_symbolic_content ?label .
     }
 }""" .
-
-    <http://www.researchspace.org/bnode/n15ce2f0260954a57b152a312fb22012bb2> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+  
+  <http://www.researchspace.org/pattern/system/type/was_intention_of> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.w3.org/2000/01/rdf-schema#comment> "It creates a relation between specific things, both physical and immaterial, to types of intended methods and techniques of use.";
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-1437bbfd0cf44d02901c14a82e8d3a5b-fw8onh;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-1437bbfd0cf44d02901c14a82e8d3a5b-d8xn9;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E55_Type>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/type>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-1437bbfd0cf44d02901c14a82e8d3a5b-7fz45j;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-1437bbfd0cf44d02901c14a82e8d3a5b-9cygt4;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-1437bbfd0cf44d02901c14a82e8d3a5b-a4lnq;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Was intention of"@en;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E71_Human-Made_Thing>;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-23T18:15:36.848+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-1437bbfd0cf44d02901c14a82e8d3a5b-fw8onh a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
   ?value a ?ontologyClass .
   ?ontologyClass rdfs:subClassOf* crm:E71_Human-Made_Thing .
   { 
@@ -45,18 +55,12 @@
           ?systemAuthorityTerm crm:P71i_is_listed_in|skos:inScheme ?systemAuthorityDoc .
           ?systemAuthorityDoc crm:P2_has_type Platform:System_Resource .
         }
-  FILTER REGEX(LCASE(STR(?label)), "?token", "i")
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ASC(?label) 
   LIMIT 10 """ .
-
-    <http://www.researchspace.org/bnode/n15ce2f0260954a57b152a312fb22012bb3> a ns2:Query ;
-        ns2:text """INSERT { 
-	$subject crm:P103i_was_intention_of $value .
-    $value crm:P103_was_intended_for $subject .
-} WHERE {}""" .
-
-    <http://www.researchspace.org/bnode/n15ce2f0260954a57b152a312fb22012bb4> a ns2:Query ;
-        ns2:text """DELETE {
+  
+  _:genid-1437bbfd0cf44d02901c14a82e8d3a5b-7fz45j a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
 	$subject crm:P103i_was_intention_of $value .
     $value crm:P103_was_intended_for $subject .
 } WHERE {
@@ -76,9 +80,15 @@
       ?value crm:P190_has_symbolic_content ?label .
     }
 }""" .
-
-    <http://www.researchspace.org/bnode/n15ce2f0260954a57b152a312fb22012bb5> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+  
+  _:genid-1437bbfd0cf44d02901c14a82e8d3a5b-d8xn9 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+	$subject crm:P103i_was_intention_of $value .
+    $value crm:P103_was_intended_for $subject .
+} WHERE {}""" .
+  
+  _:genid-1437bbfd0cf44d02901c14a82e8d3a5b-9cygt4 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
   ?value a ?ontologyClass .
   ?ontologyClass rdfs:subClassOf* crm:E71_Human-Made_Thing .
   { 
@@ -92,24 +102,7 @@
     ?value crm:P190_has_symbolic_content ?label .
   }
 } ORDER BY ASC(LCASE(STR(?label)))""" .
-
-    <http://www.researchspace.org/pattern/system/type/was_intention_of> a ns1:Field,
-            ns3:Resource,
-            prov:Entity ;
-        rdfs:label "Was intention of" ;
-        ns1:autosuggestionPattern <http://www.researchspace.org/bnode/n15ce2f0260954a57b152a312fb22012bb2> ;
-        ns1:category <http://www.researchspace.org/resource/system/category/type> ;
-        ns1:deletePattern <http://www.researchspace.org/bnode/n15ce2f0260954a57b152a312fb22012bb4> ;
-        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E55_Type> ;
-        ns1:insertPattern <http://www.researchspace.org/bnode/n15ce2f0260954a57b152a312fb22012bb3> ;
-        ns1:maxOccurs "unbound" ;
-        ns1:minOccurs "0" ;
-        ns1:range <http://www.cidoc-crm.org/cidoc-crm/E71_Human-Made_Thing> ;
-        ns1:selectPattern <http://www.researchspace.org/bnode/n15ce2f0260954a57b152a312fb22012bb1> ;
-        ns1:valueSetPattern <http://www.researchspace.org/bnode/n15ce2f0260954a57b152a312fb22012bb5> ;
-        ns1:xsdDatatype xsd:anyURI ;
-        rdfs:comment "It creates a relation between specific things, both physical and immaterial, to types of intended methods and techniques of use." ;
-        prov:generatedAtTime "2024-04-23T18:15:36.848000+01:00"^^xsd:dateTime ;
-        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/type/was_intention_of> .
 }
-

@@ -1,50 +1,44 @@
-@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
-@prefix ns2: <http://spinrdf.org/sp#> .
-@prefix ns3: <http://www.w3.org/ns/ldp#> .
-@prefix prov: <http://www.w3.org/ns/prov#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-
 <http://www.researchspace.org/pattern/system/resource_configuration/resource_list_in_authority/context> {
-    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/resource_configuration/resource_list_in_authority> .
-
-    <http://www.researchspace.org/bnode/n5dcc540969b442af9a13d27871953efdb1> a ns2:Query ;
-        ns2:text """INSERT { 
-  $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_list_in_authority> ?listInAuthority .
-} WHERE {
-  FILTER(?value = true) .
-  BIND(IRI(CONCAT(STR(?subject), "/list_in_authority")) AS ?listInAuthority) .
-}""" .
-
-    <http://www.researchspace.org/bnode/n5dcc540969b442af9a13d27871953efdb2> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value WHERE {graph $subject {
+  <http://www.researchspace.org/pattern/system/resource_configuration/resource_list_in_authority>
+    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
+      <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/resource_configuration> ;
+     
+    <http://www.w3.org/2000/01/rdf-schema#label> "Resource list in authority"@en;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#boolean>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-d379b0cac8d14b0c8bc65da1b00af34b-ix6nl;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-d379b0cac8d14b0c8bc65da1b00af34b-55c93h;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-d379b0cac8d14b0c8bc65da1b00af34b-jq8uvb;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2023-10-26T14:04:58.770+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-d379b0cac8d14b0c8bc65da1b00af34b-55c93h a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {graph $subject {
   OPTIONAL {
     $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_list_in_authority> ?listInAuthority .
   } }
   BIND(IF(BOUND(?listInAuthority), true, false) AS ?value) .
 }""" .
-
-    <http://www.researchspace.org/bnode/n5dcc540969b442af9a13d27871953efdb3> a ns2:Query ;
-        ns2:text """DELETE { 
+  
+  _:genid-d379b0cac8d14b0c8bc65da1b00af34b-ix6nl a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_list_in_authority> ?listInAuthority .
+} WHERE {
+  FILTER(?value = true) .
+  BIND(IRI(CONCAT(STR(?subject), \"/list_in_authority\")) AS ?listInAuthority) .
+}""" .
+  
+  _:genid-d379b0cac8d14b0c8bc65da1b00af34b-jq8uvb a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
   $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_list_in_authority> ?listInAuthority . 
 } WHERE { 
   FILTER(?value = true) .
   $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_list_in_authority> ?listInAuthority  .
 }""" .
-
-    <http://www.researchspace.org/pattern/system/resource_configuration/resource_list_in_authority> a ns1:Field,
-            ns3:Resource,
-            prov:Entity ;
-        rdfs:label "Resource list in authority" ;
-        ns1:category <http://www.researchspace.org/resource/system/category/resource_configuration> ;
-        ns1:deletePattern <http://www.researchspace.org/bnode/n5dcc540969b442af9a13d27871953efdb3> ;
-        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object> ;
-        ns1:insertPattern <http://www.researchspace.org/bnode/n5dcc540969b442af9a13d27871953efdb1> ;
-        ns1:maxOccurs "1" ;
-        ns1:minOccurs "0" ;
-        ns1:selectPattern <http://www.researchspace.org/bnode/n5dcc540969b442af9a13d27871953efdb2> ;
-        ns1:xsdDatatype xsd:boolean ;
-        prov:generatedAtTime "2023-10-26T14:04:58.770000+01:00"^^xsd:dateTime ;
-        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/resource_configuration/resource_list_in_authority> .
 }
-

@@ -1,15 +1,7 @@
-@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
-@prefix ns2: <http://spinrdf.org/sp#> .
-@prefix ns3: <http://www.w3.org/ns/ldp#> .
-@prefix prov: <http://www.w3.org/ns/prov#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/acquisition/transferred_title_from/context> {
-    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/acquisition/transferred_title_from> .
-
-    <http://www.researchspace.org/bnode/nf479c09a4fa54df6931a0cb1abb05e20b1> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+  _:genid-7acaf41c8a894901b89f98223319fd7f-uvwhfz a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
   ?value a ?ontologyClass .
   ?ontologyClass rdfs:subClassOf* crm:E39_Actor .
   ?value crm:P1_is_identified_by ?appellation .
@@ -19,12 +11,12 @@
   ?appellation crm:P190_has_symbolic_content ?label .
 
   MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
-  FILTER REGEX(LCASE(STR(?label)), "?token", "i")
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ASC(?label) 
   LIMIT 10 """ .
-
-    <http://www.researchspace.org/bnode/nf479c09a4fa54df6931a0cb1abb05e20b2> a ns2:Query ;
-        ns2:text """DELETE {
+  
+  _:genid-7acaf41c8a894901b89f98223319fd7f-n9wc2a a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
 	$subject crm:P23_transferred_title_from $value .
     $value crm:P23i_surrendered_title_through $subject .
 } WHERE {
@@ -38,25 +30,33 @@
     ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
     ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
-
-    <http://www.researchspace.org/bnode/nf479c09a4fa54df6931a0cb1abb05e20b3> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value ?label WHERE {
-  ?value a ?ontologyClass .
-  ?ontologyClass rdfs:subClassOf* crm:E39_Actor .
-  ?value crm:P1_is_identified_by ?appellation .
-  ?appellation a crm:E41_Appellation .
-  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .   
-  ?appellation crm:P190_has_symbolic_content ?label .
-} ORDER BY ASC(LCASE(STR(?label)))""" .
-
-    <http://www.researchspace.org/bnode/nf479c09a4fa54df6931a0cb1abb05e20b4> a ns2:Query ;
-        ns2:text """INSERT { 
+  
+  <http://www.researchspace.org/pattern/system/acquisition/transferred_title_from> a
+      <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
+      <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-7acaf41c8a894901b89f98223319fd7f-n9wc2a;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-7acaf41c8a894901b89f98223319fd7f-pax1cx;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E39_Actor>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-7acaf41c8a894901b89f98223319fd7f-94kb2q;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/acquisition>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-7acaf41c8a894901b89f98223319fd7f-h7t2e;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E8_Acquisition>;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-7acaf41c8a894901b89f98223319fd7f-uvwhfz;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Transferred title from"@en;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-03T18:30:51.523+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-7acaf41c8a894901b89f98223319fd7f-94kb2q a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
 	$subject crm:P23_transferred_title_from $value .
     $value crm:P23i_surrendered_title_through $subject .
 } WHERE {}""" .
-
-    <http://www.researchspace.org/bnode/nf479c09a4fa54df6931a0cb1abb05e20b5> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value ?labelWHERE {
+  
+  _:genid-7acaf41c8a894901b89f98223319fd7f-h7t2e a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?labelWHERE {
 	$subject crm:P23_transferred_title_from $value .
       
    	?value a ?ontologyClass .
@@ -66,23 +66,17 @@
     ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .     
     ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
-
-    <http://www.researchspace.org/pattern/system/acquisition/transferred_title_from> a ns1:Field,
-            ns3:Resource,
-            prov:Entity ;
-        rdfs:label "Transferred title from" ;
-        ns1:autosuggestionPattern <http://www.researchspace.org/bnode/nf479c09a4fa54df6931a0cb1abb05e20b1> ;
-        ns1:category <http://www.researchspace.org/resource/system/category/acquisition> ;
-        ns1:deletePattern <http://www.researchspace.org/bnode/nf479c09a4fa54df6931a0cb1abb05e20b2> ;
-        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E8_Acquisition> ;
-        ns1:insertPattern <http://www.researchspace.org/bnode/nf479c09a4fa54df6931a0cb1abb05e20b4> ;
-        ns1:maxOccurs "unbound" ;
-        ns1:minOccurs "0" ;
-        ns1:range <http://www.cidoc-crm.org/cidoc-crm/E39_Actor> ;
-        ns1:selectPattern <http://www.researchspace.org/bnode/nf479c09a4fa54df6931a0cb1abb05e20b5> ;
-        ns1:valueSetPattern <http://www.researchspace.org/bnode/nf479c09a4fa54df6931a0cb1abb05e20b3> ;
-        ns1:xsdDatatype xsd:anyURI ;
-        prov:generatedAtTime "2024-04-03T18:30:51.523000+01:00"^^xsd:dateTime ;
-        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
+  
+  _:genid-7acaf41c8a894901b89f98223319fd7f-pax1cx a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E39_Actor .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .   
+  ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/acquisition/transferred_title_from> .
 }
-

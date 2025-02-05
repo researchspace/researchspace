@@ -1,29 +1,24 @@
-@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
-@prefix ns2: <http://spinrdf.org/sp#> .
-@prefix ns3: <http://www.w3.org/ns/ldp#> .
-@prefix prov: <http://www.w3.org/ns/prov#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/entity/identifier/context> {
-    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/entity/identifier> .
-
-    <http://www.researchspace.org/bnode/nc9548962fc3b4cf2a9d7f9638d1a7703b1> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value ?label WHERE {
-    MINUS {?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . }
-    ?value a ?ontologyClass .
-  	?ontologyClass rdfs:subClassOf* crm:E41_Appellation .
-    ?value crm:P190_has_symbolic_content ?label .   
-} ORDER BY ASC(LCASE(STR(?label)))""" .
-
-    <http://www.researchspace.org/bnode/nc9548962fc3b4cf2a9d7f9638d1a7703b2> a ns2:Query ;
-        ns2:text """INSERT { 
-	$subject crm:P1_is_identified_by $value . 
-    $value crm:P1i_identifies $subject .
-} WHERE {}""" .
-
-    <http://www.researchspace.org/bnode/nc9548962fc3b4cf2a9d7f9638d1a7703b3> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+  <http://www.researchspace.org/pattern/system/entity/identifier> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/entity>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-46355fc8a4b64b9ba125560dd5791488-ux8qo;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-46355fc8a4b64b9ba125560dd5791488-be6bkh;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-46355fc8a4b64b9ba125560dd5791488-9e8v98;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-46355fc8a4b64b9ba125560dd5791488-o5xwk;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E41_Appellation>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-46355fc8a4b64b9ba125560dd5791488-j3tzfl;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Other identifier"@en;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-29T19:42:42.757+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-46355fc8a4b64b9ba125560dd5791488-9e8v98 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
 	$subject crm:P1_is_identified_by $value . 
 
     MINUS {?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . }
@@ -31,9 +26,17 @@
   	?ontologyClass rdfs:subClassOf* crm:E41_Appellation .
     ?value crm:P190_has_symbolic_content ?label .                          
 }""" .
-
-    <http://www.researchspace.org/bnode/nc9548962fc3b4cf2a9d7f9638d1a7703b4> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+  
+  _:genid-46355fc8a4b64b9ba125560dd5791488-ux8qo a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    MINUS {?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . }
+    ?value a ?ontologyClass .
+  	?ontologyClass rdfs:subClassOf* crm:E41_Appellation .
+    ?value crm:P190_has_symbolic_content ?label .   
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-46355fc8a4b64b9ba125560dd5791488-o5xwk a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
     MINUS {?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . }
     ?value a ?ontologyClass .
   	?ontologyClass rdfs:subClassOf* crm:E41_Appellation .
@@ -44,12 +47,12 @@
           ?systemAuthorityTerm crm:P71i_is_listed_in|skos:inScheme ?systemAuthorityDoc .
           ?systemAuthorityDoc crm:P2_has_type Platform:System_Resource .
         }
-  FILTER REGEX(LCASE(STR(?label)), "?token", "i")
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ASC(?label)
   LIMIT 10""" .
-
-    <http://www.researchspace.org/bnode/nc9548962fc3b4cf2a9d7f9638d1a7703b5> a ns2:Query ;
-        ns2:text """DELETE {  
+  
+  _:genid-46355fc8a4b64b9ba125560dd5791488-j3tzfl a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {  
 	$subject crm:P1_is_identified_by $value . 
     $value crm:P1i_identifies $subject . 
 } WHERE {
@@ -61,23 +64,13 @@
   	?ontologyClass rdfs:subClassOf* crm:E41_Appellation .
     ?value crm:P190_has_symbolic_content ?label .   
 }""" .
-
-    <http://www.researchspace.org/pattern/system/entity/identifier> a ns1:Field,
-            ns3:Resource,
-            prov:Entity ;
-        rdfs:label "Other identifier" ;
-        ns1:autosuggestionPattern <http://www.researchspace.org/bnode/nc9548962fc3b4cf2a9d7f9638d1a7703b4> ;
-        ns1:category <http://www.researchspace.org/resource/system/category/entity> ;
-        ns1:deletePattern <http://www.researchspace.org/bnode/nc9548962fc3b4cf2a9d7f9638d1a7703b5> ;
-        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity> ;
-        ns1:insertPattern <http://www.researchspace.org/bnode/nc9548962fc3b4cf2a9d7f9638d1a7703b2> ;
-        ns1:maxOccurs "unbound" ;
-        ns1:minOccurs "0" ;
-        ns1:range <http://www.cidoc-crm.org/cidoc-crm/E41_Appellation> ;
-        ns1:selectPattern <http://www.researchspace.org/bnode/nc9548962fc3b4cf2a9d7f9638d1a7703b3> ;
-        ns1:valueSetPattern <http://www.researchspace.org/bnode/nc9548962fc3b4cf2a9d7f9638d1a7703b1> ;
-        ns1:xsdDatatype xsd:anyURI ;
-        prov:generatedAtTime "2024-04-29T19:42:42.757000+01:00"^^xsd:dateTime ;
-        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
+  
+  _:genid-46355fc8a4b64b9ba125560dd5791488-be6bkh a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+	$subject crm:P1_is_identified_by $value . 
+    $value crm:P1i_identifies $subject .
+} WHERE {}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/entity/identifier> .
 }
-

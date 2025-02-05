@@ -1,49 +1,42 @@
-@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
-@prefix ns2: <http://www.w3.org/ns/ldp#> .
-@prefix ns3: <http://spinrdf.org/sp#> .
-@prefix prov: <http://www.w3.org/ns/prov#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/exemplifies/taxonomic_role/context> {
-    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns2:contains <http://www.researchspace.org/pattern/system/exemplifies/taxonomic_role> .
-
-    <http://www.researchspace.org/bnode/n7d6837ed63de442c8fd52d5a64a20aadb1> a ns3:Query ;
-        ns3:text """INSERT { 
+  <http://www.researchspace.org/pattern/system/exemplifies/taxonomic_role> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E55_Type>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-6980be4af49f42ccafe572f89ddc3993-50o6m;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Taxonomic role"@en;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/PC137_exemplifies>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-6980be4af49f42ccafe572f89ddc3993-sdo19db;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-6980be4af49f42ccafe572f89ddc3993-od9ji9;
+    <http://www.researchspace.org/resource/system/fields/treePatterns> """{
+  \"type\": \"simple\",
+  \"schemePattern\": \"?item crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/taxonomic_role> . \"
+}"""^^<http://www.researchspace.org/resource/system/syntheticJson>;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-24T10:26:40.727+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-6980be4af49f42ccafe572f89ddc3993-50o6m a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
   $subject crm:P137.1_in_the_taxonomic_role $value .
 } WHERE {}""" .
-
-    <http://www.researchspace.org/bnode/n7d6837ed63de442c8fd52d5a64a20aadb2> a ns3:Query ;
-        ns3:text """SELECT DISTINCT ?value WHERE {
-  $subject crm:P137.1_in_the_taxonomic_role $value .
-  ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/taxonomic_role> . 
-}""" .
-
-    <http://www.researchspace.org/bnode/n7d6837ed63de442c8fd52d5a64a20aadb3> a ns3:Query ;
-        ns3:text """DELETE { 
+  
+  _:genid-6980be4af49f42ccafe572f89ddc3993-od9ji9 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
   $subject crm:P137.1_in_the_taxonomic_role $value .
 } WHERE {
   $subject crm:P137.1_in_the_taxonomic_role $value .
   ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/taxonomic_role> . 
 }""" .
-
-    <http://www.researchspace.org/pattern/system/exemplifies/taxonomic_role> a ns1:Field,
-            ns2:Resource,
-            prov:Entity ;
-        rdfs:label "Taxonomic role" ;
-        ns1:deletePattern <http://www.researchspace.org/bnode/n7d6837ed63de442c8fd52d5a64a20aadb3> ;
-        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/PC137_exemplifies> ;
-        ns1:insertPattern <http://www.researchspace.org/bnode/n7d6837ed63de442c8fd52d5a64a20aadb1> ;
-        ns1:maxOccurs "unbound" ;
-        ns1:minOccurs "0" ;
-        ns1:range <http://www.cidoc-crm.org/cidoc-crm/E55_Type> ;
-        ns1:selectPattern <http://www.researchspace.org/bnode/n7d6837ed63de442c8fd52d5a64a20aadb2> ;
-        ns1:treePatterns """{
-  "type": "simple",
-  "schemePattern": "?item crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/taxonomic_role> . "
-}"""^^<http://www.researchspace.org/resource/system/syntheticJson> ;
-        ns1:xsdDatatype xsd:anyURI ;
-        prov:generatedAtTime "2024-04-24T10:26:40.727000+01:00"^^xsd:dateTime ;
-        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
+  
+  _:genid-6980be4af49f42ccafe572f89ddc3993-sdo19db a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
+  $subject crm:P137.1_in_the_taxonomic_role $value .
+  ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/taxonomic_role> . 
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/exemplifies/taxonomic_role> .
 }
-

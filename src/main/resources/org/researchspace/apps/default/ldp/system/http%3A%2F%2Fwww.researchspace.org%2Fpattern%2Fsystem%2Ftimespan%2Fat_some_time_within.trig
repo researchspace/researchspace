@@ -1,43 +1,36 @@
-@prefix ns1: <http://spinrdf.org/sp#> .
-@prefix ns2: <http://www.researchspace.org/resource/system/fields/> .
-@prefix ns3: <http://www.w3.org/ns/ldp#> .
-@prefix prov: <http://www.w3.org/ns/prov#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-
 <http://www.researchspace.org/pattern/system/timespan/at_some_time_within/context> {
-    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/timespan/at_some_time_within> .
+ 
+  <http://www.researchspace.org/pattern/system/timespan/at_some_time_within> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Date (date value)"@en;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-6f90635875e44250a16caa3ce0e86099-bg2r;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-6f90635875e44250a16caa3ce0e86099-r1gp4b;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-6f90635875e44250a16caa3ce0e86099-dm9pvg;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/timespan>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#date>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-01-16T17:51:50.696Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-6f90635875e44250a16caa3ce0e86099-dm9pvg a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
+  $subject crm:P82_at_some_time_within ?value .
+}""" .
+  
+  _:genid-6f90635875e44250a16caa3ce0e86099-r1gp4b a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P82_at_some_time_within $value .
+} WHERE {}""" .
 
-    <http://www.researchspace.org/bnode/n24774170d97042de88b4b328d7d2ba71b1> a ns1:Query ;
-        ns1:text """DELETE { 
+  _:genid-6f90635875e44250a16caa3ce0e86099-bg2r a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
   $subject crm:P82_at_some_time_within $value .
 } WHERE {
   $subject crm:P82_at_some_time_within $value . 
 }""" .
-
-    <http://www.researchspace.org/bnode/n24774170d97042de88b4b328d7d2ba71b2> a ns1:Query ;
-        ns1:text """INSERT { 
-  $subject crm:P82_at_some_time_within $value .
-} WHERE {}""" .
-
-    <http://www.researchspace.org/bnode/n24774170d97042de88b4b328d7d2ba71b3> a ns1:Query ;
-        ns1:text """SELECT DISTINCT ?value WHERE {
-  $subject crm:P82_at_some_time_within ?value .
-}""" .
-
-    <http://www.researchspace.org/pattern/system/timespan/at_some_time_within> a ns2:Field,
-            ns3:Resource,
-            prov:Entity ;
-        rdfs:label "Date (date value)"@en ;
-        ns2:category <http://www.researchspace.org/resource/system/category/timespan> ;
-        ns2:deletePattern <http://www.researchspace.org/bnode/n24774170d97042de88b4b328d7d2ba71b1> ;
-        ns2:domain <http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span> ;
-        ns2:insertPattern <http://www.researchspace.org/bnode/n24774170d97042de88b4b328d7d2ba71b2> ;
-        ns2:maxOccurs "1" ;
-        ns2:minOccurs "0" ;
-        ns2:selectPattern <http://www.researchspace.org/bnode/n24774170d97042de88b4b328d7d2ba71b3> ;
-        ns2:xsdDatatype xsd:date ;
-        prov:generatedAtTime "2024-01-16T17:51:50.696000+00:00"^^xsd:dateTime ;
-        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/timespan/at_some_time_within> .
 }
-

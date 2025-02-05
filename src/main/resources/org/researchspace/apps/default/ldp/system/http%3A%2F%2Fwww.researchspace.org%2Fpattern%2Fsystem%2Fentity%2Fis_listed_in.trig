@@ -1,45 +1,38 @@
-@prefix ns1: <http://www.w3.org/ns/ldp#> .
-@prefix ns2: <http://spinrdf.org/sp#> .
-@prefix ns3: <http://www.researchspace.org/resource/system/fields/> .
-@prefix prov: <http://www.w3.org/ns/prov#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/entity/is_listed_in/context> {
-    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns1:contains <http://www.researchspace.org/pattern/system/entity/is_listed_in> .
-
-    <http://www.researchspace.org/bnode/n5eb56f751e8a47349f7e9e4964783a77b1> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value WHERE {
+  _:genid-df5757a68fd44fb8ac71c4afc33354a0-n54v7g a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
   $subject crm:P71i_is_listed_in $value . 
 }""" .
-
-    <http://www.researchspace.org/bnode/n5eb56f751e8a47349f7e9e4964783a77b2> a ns2:Query ;
-        ns2:text """DELETE { 
+  
+  <http://www.researchspace.org/pattern/system/entity/is_listed_in> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/resource_configuration>,
+      <http://www.researchspace.org/resource/system/category/entity>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-df5757a68fd44fb8ac71c4afc33354a0-n54v7g;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E32_Authority_Document>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-df5757a68fd44fb8ac71c4afc33354a0-3pc8tj;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.w3.org/2000/01/rdf-schema#label> "is listed in"@en;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-df5757a68fd44fb8ac71c4afc33354a0-4x6m4;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-26T18:34:07.474+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-df5757a68fd44fb8ac71c4afc33354a0-4x6m4 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P71i_is_listed_in $value . 
+} WHERE {}""" .
+  
+  _:genid-df5757a68fd44fb8ac71c4afc33354a0-3pc8tj a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
   $subject crm:P71i_is_listed_in $value . 
 } WHERE { 
   $subject crm:P71i_is_listed_in $value . 
 }""" .
-
-    <http://www.researchspace.org/bnode/n5eb56f751e8a47349f7e9e4964783a77b3> a ns2:Query ;
-        ns2:text """INSERT { 
-  $subject crm:P71i_is_listed_in $value . 
-} WHERE {}""" .
-
-    <http://www.researchspace.org/pattern/system/entity/is_listed_in> a ns3:Field,
-            ns1:Resource,
-            prov:Entity ;
-        rdfs:label " is listed in" ;
-        ns3:category <http://www.researchspace.org/resource/system/category/entity>,
-            <http://www.researchspace.org/resource/system/category/resource_configuration> ;
-        ns3:deletePattern <http://www.researchspace.org/bnode/n5eb56f751e8a47349f7e9e4964783a77b2> ;
-        ns3:domain <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity> ;
-        ns3:insertPattern <http://www.researchspace.org/bnode/n5eb56f751e8a47349f7e9e4964783a77b3> ;
-        ns3:maxOccurs "unbound" ;
-        ns3:minOccurs "0" ;
-        ns3:range <http://www.cidoc-crm.org/cidoc-crm/E32_Authority_Document> ;
-        ns3:selectPattern <http://www.researchspace.org/bnode/n5eb56f751e8a47349f7e9e4964783a77b1> ;
-        ns3:xsdDatatype xsd:anyURI ;
-        prov:generatedAtTime "2024-04-26T18:34:07.474000+01:00"^^xsd:dateTime ;
-        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/entity/is_listed_in> .
 }
-

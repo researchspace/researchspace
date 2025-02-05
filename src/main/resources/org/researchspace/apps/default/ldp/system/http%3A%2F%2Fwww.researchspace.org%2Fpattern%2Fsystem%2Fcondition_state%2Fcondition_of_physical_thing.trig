@@ -1,21 +1,24 @@
-@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
-@prefix ns2: <http://www.w3.org/ns/ldp#> .
-@prefix ns3: <http://spinrdf.org/sp#> .
-@prefix prov: <http://www.w3.org/ns/prov#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-
 <http://www.researchspace.org/pattern/system/condition_state/condition_of_physical_thing/context> {
-    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns2:contains <http://www.researchspace.org/pattern/system/condition_state/condition_of_physical_thing> .
-
-    <http://www.researchspace.org/bnode/n31d9dbbd908548bbb4371247e26e52d3b1> a ns3:Query ;
-        ns3:text """INSERT { 
-  	$subject crm:P44i_is_condition_of $value . 
-  	$value crm:P44_has_condition $subject .
-} WHERE {}""" .
-
-    <http://www.researchspace.org/bnode/n31d9dbbd908548bbb4371247e26e52d3b2> a ns3:Query ;
-        ns3:text """SELECT DISTINCT ?value ?label WHERE {
+  <http://www.researchspace.org/pattern/system/condition_state/condition_of_physical_thing>
+    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
+      <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-b1fe43a4b8a34d38924ada57f6fb0e3c-b93x4n;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-b1fe43a4b8a34d38924ada57f6fb0e3c-0m42sq;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/condition_state>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-b1fe43a4b8a34d38924ada57f6fb0e3c-62bzkc;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Condition of physical thing"@en;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-b1fe43a4b8a34d38924ada57f6fb0e3c-osefl;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E18_Physical_Thing>;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-b1fe43a4b8a34d38924ada57f6fb0e3c-5unrjn;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E3_Condition_State>;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-02T17:53:31.335+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-b1fe43a4b8a34d38924ada57f6fb0e3c-0m42sq a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
     ?value a ?ontologyClass .
     ?ontologyClass rdfs:subClassOf* crm:E18_Physical_Thing .
     ?value crm:P1_is_identified_by ?appellation .
@@ -23,9 +26,15 @@
     ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
     ?appellation crm:P190_has_symbolic_content ?label .
 } ORDER BY ASC(LCASE(STR(?label)))""" .
-
-    <http://www.researchspace.org/bnode/n31d9dbbd908548bbb4371247e26e52d3b3> a ns3:Query ;
-        ns3:text """SELECT DISTINCT ?value ?label WHERE {
+  
+  _:genid-b1fe43a4b8a34d38924ada57f6fb0e3c-b93x4n a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  	$subject crm:P44i_is_condition_of $value . 
+  	$value crm:P44_has_condition $subject .
+} WHERE {}""" .
+  
+  _:genid-b1fe43a4b8a34d38924ada57f6fb0e3c-62bzkc a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
   	$subject crm:P44i_is_condition_of $value . 
 
     ?value a ?ontologyClass .
@@ -35,9 +44,9 @@
     ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
     ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
-
-    <http://www.researchspace.org/bnode/n31d9dbbd908548bbb4371247e26e52d3b4> a ns3:Query ;
-        ns3:text """DELETE {   
+  
+  _:genid-b1fe43a4b8a34d38924ada57f6fb0e3c-osefl a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {   
   	$subject crm:P44i_is_condition_of $value . 
   	$value crm:P44_has_condition $subject .
 } WHERE {
@@ -51,9 +60,9 @@
     ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
     ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
-
-    <http://www.researchspace.org/bnode/n31d9dbbd908548bbb4371247e26e52d3b5> a ns3:Query ;
-        ns3:text """SELECT DISTINCT ?value ?label WHERE {
+  
+  _:genid-b1fe43a4b8a34d38924ada57f6fb0e3c-5unrjn a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
     ?value a ?ontologyClass .
     ?ontologyClass rdfs:subClassOf* crm:E18_Physical_Thing .
     ?value crm:P1_is_identified_by ?appellation .
@@ -61,26 +70,10 @@
     ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
     ?appellation crm:P190_has_symbolic_content ?label .
   MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
-  FILTER REGEX(LCASE(STR(?label)), "?token", "i")
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ASC(?label)
   LIMIT 10""" .
-
-    <http://www.researchspace.org/pattern/system/condition_state/condition_of_physical_thing> a ns1:Field,
-            ns2:Resource,
-            prov:Entity ;
-        rdfs:label "Condition of physical thing" ;
-        ns1:autosuggestionPattern <http://www.researchspace.org/bnode/n31d9dbbd908548bbb4371247e26e52d3b5> ;
-        ns1:category <http://www.researchspace.org/resource/system/category/condition_state> ;
-        ns1:deletePattern <http://www.researchspace.org/bnode/n31d9dbbd908548bbb4371247e26e52d3b4> ;
-        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E3_Condition_State> ;
-        ns1:insertPattern <http://www.researchspace.org/bnode/n31d9dbbd908548bbb4371247e26e52d3b1> ;
-        ns1:maxOccurs "unbound" ;
-        ns1:minOccurs "0" ;
-        ns1:range <http://www.cidoc-crm.org/cidoc-crm/E18_Physical_Thing> ;
-        ns1:selectPattern <http://www.researchspace.org/bnode/n31d9dbbd908548bbb4371247e26e52d3b3> ;
-        ns1:valueSetPattern <http://www.researchspace.org/bnode/n31d9dbbd908548bbb4371247e26e52d3b2> ;
-        ns1:xsdDatatype xsd:anyURI ;
-        prov:generatedAtTime "2024-04-02T17:53:31.335000+01:00"^^xsd:dateTime ;
-        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/condition_state/condition_of_physical_thing> .
 }
-

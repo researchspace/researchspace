@@ -1,15 +1,7 @@
-@prefix ns1: <http://spinrdf.org/sp#> .
-@prefix ns2: <http://www.researchspace.org/resource/system/fields/> .
-@prefix ns3: <http://www.w3.org/ns/ldp#> .
-@prefix prov: <http://www.w3.org/ns/prov#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/person/family_name/context> {
-    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/person/family_name> .
-
-    <http://www.researchspace.org/bnode/n10b2244d08024bd6839ff57ebcc35939b1> a ns1:Query ;
-        ns1:text """INSERT { 
+  _:genid-0991b6554fad40ccaa52009358faad8b-1qu46f a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
     $subject crm:107i_is_current_or_former_member_of ?family .
     ?family crm:P107_has_current_or_former_member $subject .
       
@@ -21,12 +13,26 @@
   	$appellation crm:P190_has_symbolic_content $value .   
       
 } WHERE {
-  BIND(URI(concat(str($subject), "/family") ) as ?family)
-  BIND(URI(concat(str(?family), "/family_name") ) as $appellation)
+  BIND(URI(concat(str($subject), \"/family\") ) as ?family)
+  BIND(URI(concat(str(?family), \"/family_name\") ) as $appellation)
 }""" .
-
-    <http://www.researchspace.org/bnode/n10b2244d08024bd6839ff57ebcc35939b2> a ns1:Query ;
-        ns1:text """DELETE {  
+  
+  <http://www.researchspace.org/pattern/system/person/family_name> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E21_Person>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-0991b6554fad40ccaa52009358faad8b-9e7sja;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-0991b6554fad40ccaa52009358faad8b-1qu46f;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/person>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-0991b6554fad40ccaa52009358faad8b-q23ewm;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#string>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Family name"@en;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-10T18:55:18.591+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-0991b6554fad40ccaa52009358faad8b-9e7sja a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {  
  	$subject crm:107i_is_current_or_former_member_of ?family .
     ?family crm:P107_has_current_or_former_member $subject .
       
@@ -47,9 +53,9 @@
    	$appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
   	$appellation crm:P190_has_symbolic_content $value .     
 }""" .
-
-    <http://www.researchspace.org/bnode/n10b2244d08024bd6839ff57ebcc35939b3> a ns1:Query ;
-        ns1:text """SELECT DISTINCT ?value WHERE {
+  
+  _:genid-0991b6554fad40ccaa52009358faad8b-q23ewm a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
  	  $subject crm:107i_is_current_or_former_member_of ?family .
     
     ?family a crm:E74_Group .
@@ -59,20 +65,7 @@
    	$appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
   	$appellation crm:P190_has_symbolic_content $value .   
 }""" .
-
-    <http://www.researchspace.org/pattern/system/person/family_name> a ns2:Field,
-            ns3:Resource,
-            prov:Entity ;
-        rdfs:label "Family name" ;
-        ns2:category <http://www.researchspace.org/resource/system/category/person> ;
-        ns2:deletePattern <http://www.researchspace.org/bnode/n10b2244d08024bd6839ff57ebcc35939b2> ;
-        ns2:domain <http://www.cidoc-crm.org/cidoc-crm/E21_Person> ;
-        ns2:insertPattern <http://www.researchspace.org/bnode/n10b2244d08024bd6839ff57ebcc35939b1> ;
-        ns2:maxOccurs "1" ;
-        ns2:minOccurs "0" ;
-        ns2:selectPattern <http://www.researchspace.org/bnode/n10b2244d08024bd6839ff57ebcc35939b3> ;
-        ns2:xsdDatatype xsd:string ;
-        prov:generatedAtTime "2024-04-10T18:55:18.591000+01:00"^^xsd:dateTime ;
-        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/person/family_name> .
 }
-

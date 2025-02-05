@@ -1,15 +1,7 @@
-@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
-@prefix ns2: <http://spinrdf.org/sp#> .
-@prefix ns3: <http://www.w3.org/ns/ldp#> .
-@prefix prov: <http://www.w3.org/ns/prov#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/represents/domain/context> {
-    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/represents/domain> .
-
-    <http://www.researchspace.org/bnode/ndadb0f6b452b41bdb050351805d6160ab1> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+  _:genid-581aaaa006dd4debad10414161de386d-of443 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
   ?value a ?ontologyClass .
   ?ontologyClass rdfs:subClassOf* crm:E36_Visual_Item .
   MINUS { ?ontologyClass a rs:EX_Digital_Image }
@@ -22,12 +14,28 @@
     ?value crm:P190_has_symbolic_content ?label .
   }
   MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
-  FILTER REGEX(LCASE(STR(?label)), "?token", "i")
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ASC(?label) 
   LIMIT 10 """ .
-
-    <http://www.researchspace.org/bnode/ndadb0f6b452b41bdb050351805d6160ab2> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+  
+  <http://www.researchspace.org/pattern/system/represents/domain> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Represents domain"@en;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-581aaaa006dd4debad10414161de386d-1amtun;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-581aaaa006dd4debad10414161de386d-u2dc5w;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E36_Visual_Item>;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-581aaaa006dd4debad10414161de386d-lvh7tn;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/PC138_represents>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-581aaaa006dd4debad10414161de386d-ae7thp;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-581aaaa006dd4debad10414161de386d-of443;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-05-03T15:29:31.883+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-581aaaa006dd4debad10414161de386d-1amtun a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
   	$subject crm:P01_has_domain $value .
       
     ?ontologyClass rdfs:subClassOf* crm:E36_Visual_Item .
@@ -41,9 +49,9 @@
       ?value crm:P190_has_symbolic_content ?label .
     }
 }""" .
-
-    <http://www.researchspace.org/bnode/ndadb0f6b452b41bdb050351805d6160ab3> a ns2:Query ;
-        ns2:text """DELETE { 
+  
+  _:genid-581aaaa006dd4debad10414161de386d-u2dc5w a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
     $subject crm:P01_has_domain $value . 
     $value crm:P01i_is_domain_of $subject .  
 } WHERE {
@@ -61,9 +69,9 @@
       ?value crm:P190_has_symbolic_content ?label .
     }
 }""" .
-
-    <http://www.researchspace.org/bnode/ndadb0f6b452b41bdb050351805d6160ab4> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+  
+  _:genid-581aaaa006dd4debad10414161de386d-lvh7tn a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
   ?value a ?ontologyClass .
   ?ontologyClass rdfs:subClassOf* crm:E36_Visual_Item .
   MINUS { ?ontologyClass a rs:EX_Digital_Image }
@@ -76,28 +84,13 @@
     ?value crm:P190_has_symbolic_content ?label .
   }
 } ORDER BY ASC(LCASE(STR(?label)))""" .
-
-    <http://www.researchspace.org/bnode/ndadb0f6b452b41bdb050351805d6160ab5> a ns2:Query ;
-        ns2:text """INSERT { 
+  
+  _:genid-581aaaa006dd4debad10414161de386d-ae7thp a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
   $subject crm:P01_has_domain $value . 
   $value crm:P01i_is_domain_of $subject .    
 } WHERE {}""" .
-
-    <http://www.researchspace.org/pattern/system/represents/domain> a ns1:Field,
-            ns3:Resource,
-            prov:Entity ;
-        rdfs:label "Represents domain" ;
-        ns1:autosuggestionPattern <http://www.researchspace.org/bnode/ndadb0f6b452b41bdb050351805d6160ab1> ;
-        ns1:deletePattern <http://www.researchspace.org/bnode/ndadb0f6b452b41bdb050351805d6160ab3> ;
-        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/PC138_represents> ;
-        ns1:insertPattern <http://www.researchspace.org/bnode/ndadb0f6b452b41bdb050351805d6160ab5> ;
-        ns1:maxOccurs "1" ;
-        ns1:minOccurs "0" ;
-        ns1:range <http://www.cidoc-crm.org/cidoc-crm/E36_Visual_Item> ;
-        ns1:selectPattern <http://www.researchspace.org/bnode/ndadb0f6b452b41bdb050351805d6160ab2> ;
-        ns1:valueSetPattern <http://www.researchspace.org/bnode/ndadb0f6b452b41bdb050351805d6160ab4> ;
-        ns1:xsdDatatype xsd:anyURI ;
-        prov:generatedAtTime "2024-05-03T15:29:31.883000+01:00"^^xsd:dateTime ;
-        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/represents/domain> .
 }
-

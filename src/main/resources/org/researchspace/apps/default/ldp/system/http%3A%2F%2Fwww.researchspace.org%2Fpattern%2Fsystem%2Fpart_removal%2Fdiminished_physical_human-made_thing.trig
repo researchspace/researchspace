@@ -1,31 +1,37 @@
-@prefix ns1: <http://spinrdf.org/sp#> .
-@prefix ns2: <http://www.researchspace.org/resource/system/fields/> .
-@prefix ns3: <http://www.w3.org/ns/ldp#> .
-@prefix prov: <http://www.w3.org/ns/prov#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/part_removal/diminished_physical_human-made_thing/context> {
-    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/part_removal/diminished_physical_human-made_thing> .
-
-    <http://www.researchspace.org/bnode/ne1b85a9082294f44bb8c9b666bbf3d68b1> a ns1:Query ;
-        ns1:text """INSERT { 
-  $subject crm:P112_diminished $value .
-  $value crm:P112i_was_diminished_by $subject .
-} WHERE {}""" .
-
-    <http://www.researchspace.org/bnode/ne1b85a9082294f44bb8c9b666bbf3d68b2> a ns1:Query ;
-        ns1:text """SELECT DISTINCT ?value ?label WHERE {
+  <http://www.researchspace.org/pattern/system/part_removal/diminished_physical_human-made_thing> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-0f87075b7c7b423ab4871767931c0c30-0p7scd;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E24_Physical_Human-Made_Thing>;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-0f87075b7c7b423ab4871767931c0c30-gkr0kk;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/part_removal>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-0f87075b7c7b423ab4871767931c0c30-6x85di;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.w3.org/2000/01/rdf-schema#label> "Object/thing  diminished"@en;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E80_Part_Removal>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-0f87075b7c7b423ab4871767931c0c30-pdqib;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-0f87075b7c7b423ab4871767931c0c30-zb8ljs;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-08T11:44:59.439+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-0f87075b7c7b423ab4871767931c0c30-zb8ljs a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
   ?value a ?ontologyClass .
   ?ontologyClass rdfs:subClassOf* crm:E24_Physical_Human-Made_Thing .
   ?value crm:P1_is_identified_by ?appellation .
   ?appellation a crm:E41_Appellation .
   ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
   ?appellation crm:P190_has_symbolic_content ?label .
-} ORDER BY ASC(LCASE(STR(?label)))""" .
-
-    <http://www.researchspace.org/bnode/ne1b85a9082294f44bb8c9b666bbf3d68b3> a ns1:Query ;
-        ns1:text """DELETE {
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-0f87075b7c7b423ab4871767931c0c30-6x85di a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
   $subject crm:P112_diminished $value .
   $value crm:P112i_was_diminished_by $subject .
 } WHERE {
@@ -39,9 +45,25 @@
   ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
   ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
-
-    <http://www.researchspace.org/bnode/ne1b85a9082294f44bb8c9b666bbf3d68b4> a ns1:Query ;
-        ns1:text """SELECT DISTINCT ?value ?label WHERE {
+  
+  _:genid-0f87075b7c7b423ab4871767931c0c30-0p7scd a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P112_diminished $value .
+  $value crm:P112i_was_diminished_by $subject .
+} WHERE {}""" .
+  
+  _:genid-0f87075b7c7b423ab4871767931c0c30-gkr0kk a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E24_Physical_Human-Made_Thing .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-0f87075b7c7b423ab4871767931c0c30-pdqib a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
   $subject crm:P112_diminished $value .
       
   ?value a ?ontologyClass .
@@ -51,36 +73,7 @@
   ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
   ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
-
-    <http://www.researchspace.org/bnode/ne1b85a9082294f44bb8c9b666bbf3d68b5> a ns1:Query ;
-        ns1:text """SELECT DISTINCT ?value ?label WHERE {
-  ?value a ?ontologyClass .
-  ?ontologyClass rdfs:subClassOf* crm:E24_Physical_Human-Made_Thing .
-  ?value crm:P1_is_identified_by ?appellation .
-  ?appellation a crm:E41_Appellation .
-  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-  ?appellation crm:P190_has_symbolic_content ?label .
-  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
-  FILTER REGEX(LCASE(STR(?label)), "?token", "i")
-} ORDER BY ASC(?label)
-  LIMIT 10""" .
-
-    <http://www.researchspace.org/pattern/system/part_removal/diminished_physical_human-made_thing> a ns2:Field,
-            ns3:Resource,
-            prov:Entity ;
-        rdfs:label "Object/thing  diminished" ;
-        ns2:autosuggestionPattern <http://www.researchspace.org/bnode/ne1b85a9082294f44bb8c9b666bbf3d68b5> ;
-        ns2:category <http://www.researchspace.org/resource/system/category/part_removal> ;
-        ns2:deletePattern <http://www.researchspace.org/bnode/ne1b85a9082294f44bb8c9b666bbf3d68b3> ;
-        ns2:domain <http://www.cidoc-crm.org/cidoc-crm/E80_Part_Removal> ;
-        ns2:insertPattern <http://www.researchspace.org/bnode/ne1b85a9082294f44bb8c9b666bbf3d68b1> ;
-        ns2:maxOccurs "unbound" ;
-        ns2:minOccurs "0" ;
-        ns2:range <http://www.cidoc-crm.org/cidoc-crm/E24_Physical_Human-Made_Thing> ;
-        ns2:selectPattern <http://www.researchspace.org/bnode/ne1b85a9082294f44bb8c9b666bbf3d68b4> ;
-        ns2:valueSetPattern <http://www.researchspace.org/bnode/ne1b85a9082294f44bb8c9b666bbf3d68b2> ;
-        ns2:xsdDatatype xsd:anyURI ;
-        prov:generatedAtTime "2024-04-08T11:44:59.439000+01:00"^^xsd:dateTime ;
-        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/part_removal/diminished_physical_human-made_thing> .
 }
-

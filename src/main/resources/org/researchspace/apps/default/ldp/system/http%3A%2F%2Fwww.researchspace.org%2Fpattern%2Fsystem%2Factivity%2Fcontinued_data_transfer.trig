@@ -1,15 +1,28 @@
-@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
-@prefix ns2: <http://spinrdf.org/sp#> .
-@prefix ns3: <http://www.w3.org/ns/ldp#> .
-@prefix prov: <http://www.w3.org/ns/prov#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/activity/continued_data_transfer/context> {
-    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/activity/continued_data_transfer> .
-
-    <http://www.researchspace.org/bnode/n1cf531b2d5464ce2aecd1ad9a1388b1db1> a ns2:Query ;
-        ns2:text """DELETE { 
+  <http://www.researchspace.org/pattern/system/activity/continued_data_transfer> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-20d51ecb417847c7bf09c380af18d72b-ji3xdh;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-20d51ecb417847c7bf09c380af18d72b-yef5ca;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.ics.forth.gr/isl/CRMdig/D12_Data_Transfer_Event>;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.w3.org/2000/01/rdf-schema#label> "Activity continued data transfer"@en;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E7_Activity>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/activity>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-20d51ecb417847c7bf09c380af18d72b-ln4kkt;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2023-12-04T18:06:19.498Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-20d51ecb417847c7bf09c380af18d72b-ln4kkt a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
+	?subject crm:P134_continued ?value .
+    ?value a crmdig:D12_Data_Transfer_Event .
+}""" .
+  
+  _:genid-20d51ecb417847c7bf09c380af18d72b-ji3xdh a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
 	?subject crm:P134_continued ?value .
   	?value crm:P134i_was_continued_by ?subject . 
 } WHERE {
@@ -17,34 +30,14 @@
   	?value crm:P134i_was_continued_by ?subject . 
     ?value a crmdig:D12_Data_Transfer_Event .
 }""" .
-
-    <http://www.researchspace.org/bnode/n1cf531b2d5464ce2aecd1ad9a1388b1db2> a ns2:Query ;
-        ns2:text """INSERT { 
+  
+  _:genid-20d51ecb417847c7bf09c380af18d72b-yef5ca a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
 	?subject crm:P134_continued ?value .
   	?value crm:P134i_was_continued_by ?subject . 
 } WHERE { 
 }""" .
-
-    <http://www.researchspace.org/bnode/n1cf531b2d5464ce2aecd1ad9a1388b1db3> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value WHERE {
-	?subject crm:P134_continued ?value .
-    ?value a crmdig:D12_Data_Transfer_Event .
-}""" .
-
-    <http://www.researchspace.org/pattern/system/activity/continued_data_transfer> a ns1:Field,
-            ns3:Resource,
-            prov:Entity ;
-        rdfs:label "Activity continued data transfer" ;
-        ns1:category <http://www.researchspace.org/resource/system/category/activity> ;
-        ns1:deletePattern <http://www.researchspace.org/bnode/n1cf531b2d5464ce2aecd1ad9a1388b1db1> ;
-        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E7_Activity> ;
-        ns1:insertPattern <http://www.researchspace.org/bnode/n1cf531b2d5464ce2aecd1ad9a1388b1db2> ;
-        ns1:maxOccurs "1" ;
-        ns1:minOccurs "0" ;
-        ns1:range <http://www.ics.forth.gr/isl/CRMdig/D12_Data_Transfer_Event> ;
-        ns1:selectPattern <http://www.researchspace.org/bnode/n1cf531b2d5464ce2aecd1ad9a1388b1db3> ;
-        ns1:xsdDatatype xsd:anyURI ;
-        prov:generatedAtTime "2023-12-04T18:06:19.498000+00:00"^^xsd:dateTime ;
-        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/activity/continued_data_transfer> .
 }
-

@@ -1,30 +1,33 @@
-@prefix ns1: <http://spinrdf.org/sp#> .
-@prefix ns2: <http://www.researchspace.org/resource/system/fields/> .
-@prefix ns3: <http://www.w3.org/ns/ldp#> .
-@prefix prov: <http://www.w3.org/ns/prov#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/actor/acquired_title_through/context> {
-    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/actor/acquired_title_through> .
-
-    <http://www.researchspace.org/bnode/n2f7e62413ad24df7a363cede29ff4ba1b1> a ns1:Query ;
-        ns1:text """SELECT DISTINCT ?value ?label WHERE {
+  <http://www.researchspace.org/pattern/system/actor/acquired_title_through> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-eb17467034e843868ea54912f88b266d-cftmx;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/actor>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E39_Actor>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-eb17467034e843868ea54912f88b266d-b87qie;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Acquired title through"@en;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E8_Acquisition>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-eb17467034e843868ea54912f88b266d-gz41p6;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-eb17467034e843868ea54912f88b266d-ez6v8;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-eb17467034e843868ea54912f88b266d-qlqrb79e;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-09T15:00:06.532+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-eb17467034e843868ea54912f88b266d-cftmx a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
   ?value a crm:E8_Acquisition .
   ?value crm:P1_is_identified_by ?appellation . 
   ?appellation a crm:E41_Appellation . 
   ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
   ?appellation crm:P190_has_symbolic_content ?label .
 } ORDER BY ASC(LCASE(STR(?label)))""" .
-
-    <http://www.researchspace.org/bnode/n2f7e62413ad24df7a363cede29ff4ba1b2> a ns1:Query ;
-        ns1:text """INSERT { 
-  $subject crm:P22i_acquired_title_through $value .
-  $value crm:P22_transferred_title_to $subject .
-} WHERE {}""" .
-
-    <http://www.researchspace.org/bnode/n2f7e62413ad24df7a363cede29ff4ba1b3> a ns1:Query ;
-        ns1:text """DELETE { 
+  
+  _:genid-eb17467034e843868ea54912f88b266d-gz41p6 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
   $subject crm:P22i_acquired_title_through $value .
   $value crm:P22_transferred_title_to $subject .
 } WHERE {
@@ -37,21 +40,9 @@
   ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
   ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
-
-    <http://www.researchspace.org/bnode/n2f7e62413ad24df7a363cede29ff4ba1b4> a ns1:Query ;
-        ns1:text """SELECT DISTINCT ?value ?label WHERE {
-  ?value a crm:E8_Acquisition .
-  ?value crm:P1_is_identified_by ?appellation . 
-  ?appellation a crm:E41_Appellation . 
-  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-  ?appellation crm:P190_has_symbolic_content ?label .
-  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
-  FILTER REGEX(LCASE(STR(?label)), "?token", "i")
-} ORDER BY ASC(?label)
-  LIMIT 10""" .
-
-    <http://www.researchspace.org/bnode/n2f7e62413ad24df7a363cede29ff4ba1b5> a ns1:Query ;
-        ns1:text """SELECT DISTINCT ?value ?label WHERE {
+  
+  _:genid-eb17467034e843868ea54912f88b266d-qlqrb79e a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
   $subject crm:P22i_acquired_title_through $value .
       
   ?value a crm:E8_Acquisition .
@@ -60,23 +51,25 @@
   ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
   ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
-
-    <http://www.researchspace.org/pattern/system/actor/acquired_title_through> a ns2:Field,
-            ns3:Resource,
-            prov:Entity ;
-        rdfs:label "Acquired title through" ;
-        ns2:autosuggestionPattern <http://www.researchspace.org/bnode/n2f7e62413ad24df7a363cede29ff4ba1b4> ;
-        ns2:category <http://www.researchspace.org/resource/system/category/actor> ;
-        ns2:deletePattern <http://www.researchspace.org/bnode/n2f7e62413ad24df7a363cede29ff4ba1b3> ;
-        ns2:domain <http://www.cidoc-crm.org/cidoc-crm/E39_Actor> ;
-        ns2:insertPattern <http://www.researchspace.org/bnode/n2f7e62413ad24df7a363cede29ff4ba1b2> ;
-        ns2:maxOccurs "unbound" ;
-        ns2:minOccurs "0" ;
-        ns2:range <http://www.cidoc-crm.org/cidoc-crm/E8_Acquisition> ;
-        ns2:selectPattern <http://www.researchspace.org/bnode/n2f7e62413ad24df7a363cede29ff4ba1b5> ;
-        ns2:valueSetPattern <http://www.researchspace.org/bnode/n2f7e62413ad24df7a363cede29ff4ba1b1> ;
-        ns2:xsdDatatype xsd:anyURI ;
-        prov:generatedAtTime "2024-04-09T15:00:06.532000+01:00"^^xsd:dateTime ;
-        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
+  
+  _:genid-eb17467034e843868ea54912f88b266d-ez6v8 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a crm:E8_Acquisition .
+  ?value crm:P1_is_identified_by ?appellation . 
+  ?appellation a crm:E41_Appellation . 
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-eb17467034e843868ea54912f88b266d-b87qie a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P22i_acquired_title_through $value .
+  $value crm:P22_transferred_title_to $subject .
+} WHERE {}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/actor/acquired_title_through> .
 }
-

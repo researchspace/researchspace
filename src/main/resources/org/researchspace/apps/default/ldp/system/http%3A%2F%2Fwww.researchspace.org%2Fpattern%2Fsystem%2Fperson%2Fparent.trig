@@ -1,21 +1,25 @@
-@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
-@prefix ns2: <http://spinrdf.org/sp#> .
-@prefix ns3: <http://www.w3.org/ns/ldp#> .
-@prefix prov: <http://www.w3.org/ns/prov#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/person/parent/context> {
-    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/person/parent> .
-
-    <http://www.researchspace.org/bnode/n31d7c5068f83462fa7df8dfa14d271fbb1> a ns2:Query ;
-        ns2:text """INSERT { 
-  $subject crm:P152_has_parent $value .
-  $value crm:P152i_is_parent_of $subject .
-} WHERE {}""" .
-
-    <http://www.researchspace.org/bnode/n31d7c5068f83462fa7df8dfa14d271fbb2> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+  <http://www.researchspace.org/pattern/system/person/parent> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E21_Person>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.w3.org/2000/01/rdf-schema#comment> "Person who plays the role of the first instance’s parent, regardless of whether the relationship is biological parenthood, assumed or pretended biological parenthood or an equivalent legal status of rights and obligations obtained by a social or legal act.";
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E21_Person>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-282dbe3d470641a3af13258c6fdb7ed5-4g19c;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Has parent"@en;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/person>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-282dbe3d470641a3af13258c6fdb7ed5-9ne2r9;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-282dbe3d470641a3af13258c6fdb7ed5-v17npx;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-282dbe3d470641a3af13258c6fdb7ed5-qf043e;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-282dbe3d470641a3af13258c6fdb7ed5-5z7jsc;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-11T10:28:07.843+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-282dbe3d470641a3af13258c6fdb7ed5-9ne2r9 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
   $subject crm:P152_has_parent $value .
       
   ?value a crm:E21_Person .
@@ -24,9 +28,9 @@
   ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
   ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
-
-    <http://www.researchspace.org/bnode/n31d7c5068f83462fa7df8dfa14d271fbb3> a ns2:Query ;
-        ns2:text """DELETE { 
+  
+  _:genid-282dbe3d470641a3af13258c6fdb7ed5-v17npx a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
   $subject crm:P152_has_parent $value .
   $value crm:P152i_is_parent_of $subject .
 } WHERE {
@@ -39,45 +43,34 @@
   ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
   ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
-
-    <http://www.researchspace.org/bnode/n31d7c5068f83462fa7df8dfa14d271fbb4> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+  
+  _:genid-282dbe3d470641a3af13258c6fdb7ed5-4g19c a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P152_has_parent $value .
+  $value crm:P152i_is_parent_of $subject .
+} WHERE {}""" .
+  
+  _:genid-282dbe3d470641a3af13258c6fdb7ed5-qf043e a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
   ?value a crm:E21_Person .
   ?value crm:P1_is_identified_by ?appellation .
   ?appellation a crm:E41_Appellation .
   ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
   ?appellation crm:P190_has_symbolic_content ?label .
 } ORDER BY ASC(LCASE(STR(?label)))""" .
-
-    <http://www.researchspace.org/bnode/n31d7c5068f83462fa7df8dfa14d271fbb5> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+  
+  _:genid-282dbe3d470641a3af13258c6fdb7ed5-5z7jsc a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
   ?value a crm:E21_Person .
   ?value crm:P1_is_identified_by ?appellation .
   ?appellation a crm:E41_Appellation .
   ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
   ?appellation crm:P190_has_symbolic_content ?label .
   MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
-  FILTER REGEX(LCASE(STR(?label)), "?token", "i")
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ASC(?label)
   LIMIT 10""" .
-
-    <http://www.researchspace.org/pattern/system/person/parent> a ns1:Field,
-            ns3:Resource,
-            prov:Entity ;
-        rdfs:label "Has parent" ;
-        ns1:autosuggestionPattern <http://www.researchspace.org/bnode/n31d7c5068f83462fa7df8dfa14d271fbb5> ;
-        ns1:category <http://www.researchspace.org/resource/system/category/person> ;
-        ns1:deletePattern <http://www.researchspace.org/bnode/n31d7c5068f83462fa7df8dfa14d271fbb3> ;
-        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E21_Person> ;
-        ns1:insertPattern <http://www.researchspace.org/bnode/n31d7c5068f83462fa7df8dfa14d271fbb1> ;
-        ns1:maxOccurs "unbound" ;
-        ns1:minOccurs "0" ;
-        ns1:range <http://www.cidoc-crm.org/cidoc-crm/E21_Person> ;
-        ns1:selectPattern <http://www.researchspace.org/bnode/n31d7c5068f83462fa7df8dfa14d271fbb2> ;
-        ns1:valueSetPattern <http://www.researchspace.org/bnode/n31d7c5068f83462fa7df8dfa14d271fbb4> ;
-        ns1:xsdDatatype xsd:anyURI ;
-        rdfs:comment "Person who plays the role of the first instance’s parent, regardless of whether the relationship is biological parenthood, assumed or pretended biological parenthood or an equivalent legal status of rights and obligations obtained by a social or legal act." ;
-        prov:generatedAtTime "2024-04-11T10:28:07.843000+01:00"^^xsd:dateTime ;
-        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/person/parent> .
 }
-

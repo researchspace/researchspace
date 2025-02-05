@@ -1,40 +1,32 @@
-@prefix ns1: <http://spinrdf.org/sp#> .
-@prefix ns2: <http://www.w3.org/ns/ldp#> .
-@prefix ns3: <http://www.researchspace.org/resource/system/fields/> .
-@prefix prov: <http://www.w3.org/ns/prov#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/transfer_of_custody/transferred_custody_of/context> {
-    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns2:contains <http://www.researchspace.org/pattern/system/transfer_of_custody/transferred_custody_of> .
-
-    <http://www.researchspace.org/bnode/n482c30ecb8ba45ff899a621ba76aa60db1> a ns1:Query ;
-        ns1:text """SELECT DISTINCT ?value ?label WHERE {
-	  ?value a ?ontologyClass .
-    ?ontologyClass rdfs:subClassOf* crm:E18_Physical_Thing .
-    ?value crm:P1_is_identified_by ?appellation .
-    ?appellation a crm:E41_Appellation .
-    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-    ?appellation crm:P190_has_symbolic_content ?label .
-  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
-  FILTER REGEX(LCASE(STR(?label)), "?token", "i")
-} ORDER BY ASC(?label) 
-  LIMIT 10 """ .
-
-    <http://www.researchspace.org/bnode/n482c30ecb8ba45ff899a621ba76aa60db2> a ns1:Query ;
-        ns1:text """SELECT DISTINCT ?value ?label WHERE {
+  <http://www.researchspace.org/pattern/system/transfer_of_custody/transferred_custody_of>
+    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
+      <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-97c9c8fb8bab42cb9945ac89a7723b3e-8sblc4;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E10_Transfer_of_Custody>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-97c9c8fb8bab42cb9945ac89a7723b3e-fzgkc5;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-97c9c8fb8bab42cb9945ac89a7723b3e-oa3w4o;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-97c9c8fb8bab42cb9945ac89a7723b3e-fgib4o;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E18_Physical_Thing>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-97c9c8fb8bab42cb9945ac89a7723b3e-xd65b;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/transfer_of_custody>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Transferred custody of"@en;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-05T10:55:04.828+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-97c9c8fb8bab42cb9945ac89a7723b3e-xd65b a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
     $subject crm:P30_transferred_custody_of $value .
-      
-	  ?value a ?ontologyClass .
-    ?ontologyClass rdfs:subClassOf* crm:E18_Physical_Thing .
-    ?value crm:P1_is_identified_by ?appellation .
-    ?appellation a crm:E41_Appellation .
-    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-    ?appellation crm:P190_has_symbolic_content ?label .
+    $value crm:P30i_custody_transferred_through $subject .
+} WHERE {
 }""" .
-
-    <http://www.researchspace.org/bnode/n482c30ecb8ba45ff899a621ba76aa60db3> a ns1:Query ;
-        ns1:text """SELECT DISTINCT ?value ?label WHERE {
+  
+  _:genid-97c9c8fb8bab42cb9945ac89a7723b3e-oa3w4o a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
 	  ?value a ?ontologyClass .
     ?ontologyClass rdfs:subClassOf* crm:E18_Physical_Thing .
     ?value crm:P1_is_identified_by ?appellation .
@@ -42,9 +34,22 @@
     ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
     ?appellation crm:P190_has_symbolic_content ?label .
 } ORDER BY ASC(LCASE(STR(?label)))""" .
-
-    <http://www.researchspace.org/bnode/n482c30ecb8ba45ff899a621ba76aa60db4> a ns1:Query ;
-        ns1:text """DELETE { 
+  
+  _:genid-97c9c8fb8bab42cb9945ac89a7723b3e-8sblc4 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+	  ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E18_Physical_Thing .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label) 
+  LIMIT 10 """ .
+  
+  _:genid-97c9c8fb8bab42cb9945ac89a7723b3e-fgib4o a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
     $subject crm:P30_transferred_custody_of $value .
     $value crm:P30i_custody_transferred_through $subject .
 } WHERE { 
@@ -58,30 +63,19 @@
     ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
     ?appellation crm:P190_has_symbolic_content ?label .
 } """ .
-
-    <http://www.researchspace.org/bnode/n482c30ecb8ba45ff899a621ba76aa60db5> a ns1:Query ;
-        ns1:text """INSERT { 
+  
+  _:genid-97c9c8fb8bab42cb9945ac89a7723b3e-fzgkc5 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
     $subject crm:P30_transferred_custody_of $value .
-    $value crm:P30i_custody_transferred_through $subject .
-} WHERE {
+      
+	  ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E18_Physical_Thing .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
-
-    <http://www.researchspace.org/pattern/system/transfer_of_custody/transferred_custody_of> a ns3:Field,
-            ns2:Resource,
-            prov:Entity ;
-        rdfs:label "Transferred custody of" ;
-        ns3:autosuggestionPattern <http://www.researchspace.org/bnode/n482c30ecb8ba45ff899a621ba76aa60db1> ;
-        ns3:category <http://www.researchspace.org/resource/system/category/transfer_of_custody> ;
-        ns3:deletePattern <http://www.researchspace.org/bnode/n482c30ecb8ba45ff899a621ba76aa60db4> ;
-        ns3:domain <http://www.cidoc-crm.org/cidoc-crm/E10_Transfer_of_Custody> ;
-        ns3:insertPattern <http://www.researchspace.org/bnode/n482c30ecb8ba45ff899a621ba76aa60db5> ;
-        ns3:maxOccurs "unbound" ;
-        ns3:minOccurs "0" ;
-        ns3:range <http://www.cidoc-crm.org/cidoc-crm/E18_Physical_Thing> ;
-        ns3:selectPattern <http://www.researchspace.org/bnode/n482c30ecb8ba45ff899a621ba76aa60db2> ;
-        ns3:valueSetPattern <http://www.researchspace.org/bnode/n482c30ecb8ba45ff899a621ba76aa60db3> ;
-        ns3:xsdDatatype xsd:anyURI ;
-        prov:generatedAtTime "2024-04-05T10:55:04.828000+01:00"^^xsd:dateTime ;
-        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/transfer_of_custody/transferred_custody_of> .
 }
-

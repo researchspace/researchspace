@@ -1,15 +1,28 @@
-@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
-@prefix ns2: <http://www.w3.org/ns/ldp#> .
-@prefix ns3: <http://spinrdf.org/sp#> .
-@prefix prov: <http://www.w3.org/ns/prov#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-
 <http://www.researchspace.org/pattern/system/publication/publication_type/context> {
-    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns2:contains <http://www.researchspace.org/pattern/system/publication/publication_type> .
-
-    <http://www.researchspace.org/bnode/nd3958ba7b6eb4a7ba7e0bab9a88220c7b1> a ns3:Query ;
-        ns3:text """DELETE { 
+  <http://www.researchspace.org/pattern/system/publication/publication_type> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E55_Type>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-3354068febea4936ac4626470b5d8e73-mdb689;
+    <http://www.researchspace.org/resource/system/fields/category> 
+    <http://www.researchspace.org/resource/system/category/publication>,
+    <http://www.researchspace.org/resource/system/category/publication_search>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.w3.org/2000/01/rdf-schema#label> "Publication type"@en;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-3354068febea4936ac4626470b5d8e73-t0u18;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-3354068febea4936ac4626470b5d8e73-3e0nqi;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://iflastandards.info/ns/fr/frbr/frbroo/F22_Self-Contained_Expression>;
+    <http://www.researchspace.org/resource/system/fields/treePatterns> """{
+  \"type\": \"simple\",
+  \"schemePattern\": \"?item a crm:E55_Type .\\n?item crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/publication_type> .\",
+  \"relationPattern\": \"?item crm:P127_has_broader_term ?parent .\"
+}"""^^<http://www.researchspace.org/resource/system/syntheticJson>;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-05-21T10:10:42.459+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-3354068febea4936ac4626470b5d8e73-mdb689 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
   $subject crm:P2_has_type $value .
   $value crm:P2i_is_type_of $subject .
 } WHERE { 
@@ -17,39 +30,19 @@
   $value crm:P2i_is_type_of $subject .
   $value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/publication_type> .
 }""" .
-
-    <http://www.researchspace.org/bnode/nd3958ba7b6eb4a7ba7e0bab9a88220c7b2> a ns3:Query ;
-        ns3:text """SELECT ?value  WHERE {
-  $subject crm:P2_has_type ?value.
-  ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/publication_type> .
-}""" .
-
-    <http://www.researchspace.org/bnode/nd3958ba7b6eb4a7ba7e0bab9a88220c7b3> a ns3:Query ;
-        ns3:text """INSERT { 
+  
+  _:genid-3354068febea4936ac4626470b5d8e73-3e0nqi a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
   $subject crm:P2_has_type $value .
   $value crm:P2i_is_type_of $subject .
 } WHERE {}""" .
-
-    <http://www.researchspace.org/pattern/system/publication/publication_type> a ns1:Field,
-            ns2:Resource,
-            prov:Entity ;
-        rdfs:label "Publication type" ;
-        ns1:category <http://www.researchspace.org/resource/system/category/publication>,
-            <http://www.researchspace.org/resource/system/category/publication_search> ;
-        ns1:deletePattern <http://www.researchspace.org/bnode/nd3958ba7b6eb4a7ba7e0bab9a88220c7b1> ;
-        ns1:domain <http://iflastandards.info/ns/fr/frbr/frbroo/F22_Self-Contained_Expression> ;
-        ns1:insertPattern <http://www.researchspace.org/bnode/nd3958ba7b6eb4a7ba7e0bab9a88220c7b3> ;
-        ns1:maxOccurs "unbound" ;
-        ns1:minOccurs "0" ;
-        ns1:range <http://www.cidoc-crm.org/cidoc-crm/E55_Type> ;
-        ns1:selectPattern <http://www.researchspace.org/bnode/nd3958ba7b6eb4a7ba7e0bab9a88220c7b2> ;
-        ns1:treePatterns """{
-  "type": "simple",
-  "schemePattern": "?item a crm:E55_Type .\\n?item crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/publication_type> .",
-  "relationPattern": "?item crm:P127_has_broader_term ?parent ."
-}"""^^<http://www.researchspace.org/resource/system/syntheticJson> ;
-        ns1:xsdDatatype xsd:anyURI ;
-        prov:generatedAtTime "2024-05-21T10:10:42.459000+01:00"^^xsd:dateTime ;
-        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
+  
+  _:genid-3354068febea4936ac4626470b5d8e73-t0u18 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value  WHERE {
+  $subject crm:P2_has_type ?value.
+  ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/publication_type> .
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/publication/publication_type> .
 }
-

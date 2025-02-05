@@ -1,59 +1,53 @@
-@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
-@prefix ns2: <http://spinrdf.org/sp#> .
-@prefix ns3: <http://www.w3.org/ns/ldp#> .
-@prefix prov: <http://www.w3.org/ns/prov#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_type/context> {
-    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_type> .
-
-    <http://www.researchspace.org/bnode/n50878f69a160486c92705890f02163b6b1> a ns2:Query ;
-        ns2:text """INSERT { 
+  <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_type>
+    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
+      <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/resource_configuration>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-a898653366bf4d83847c216771774e2b-rdt15c;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-a898653366bf4d83847c216771774e2b-ezxy2e;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "1";
+    <http://www.w3.org/2000/01/rdf-schema#label> "List view column content type"@en;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-a898653366bf4d83847c216771774e2b-ueoae;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-a898653366bf4d83847c216771774e2b-d9109w;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#string>;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-06-06T13:50:26.999+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-a898653366bf4d83847c216771774e2b-d9109w a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
+	VALUES ($value)
+    { 	(\"bold text\")
+    	(\"date\")
+    	(\"icon actor\")
+    	(\"link\")
+    	(\"number\")
+    	(\"tag\")
+    	(\"text\")
+  	} 
+}""" .
+  
+  _:genid-a898653366bf4d83847c216771774e2b-rdt15c a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
   $subject <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_type> $value .
 } WHERE {
 }""" .
-
-    <http://www.researchspace.org/bnode/n50878f69a160486c92705890f02163b6b2> a ns2:Query ;
-        ns2:text """DELETE { 
+  
+  _:genid-a898653366bf4d83847c216771774e2b-ueoae a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE { BIND(URI(STRBEFORE(STR($subject),"/resource_search_listView_column")) as ?resource_config) 
+      graph ?resource_config {
+  $subject <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_type> ?value. }
+}""" .
+  
+  _:genid-a898653366bf4d83847c216771774e2b-ezxy2e a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
   $subject <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_type> $value .
 } WHERE { 
   $subject <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_type> $value .
 }""" .
-
-    <http://www.researchspace.org/bnode/n50878f69a160486c92705890f02163b6b3> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value WHERE { BIND(URI(STRBEFORE(STR($subject),"/resource_search_listView_column")) as ?resource_config) 
-      graph ?resource_config {
-  $subject <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_type> ?value. }
-}""" .
-
-    <http://www.researchspace.org/bnode/n50878f69a160486c92705890f02163b6b4> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value WHERE {
-	VALUES ($value)
-    { 	("bold text")
-    	("date")
-    	("icon actor")
-    	("link")
-    	("number")
-    	("tag")
-    	("text")
-  	} 
-}""" .
-
-    <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_type> a ns1:Field,
-            ns3:Resource,
-            prov:Entity ;
-        rdfs:label "List view column content type" ;
-        ns1:category <http://www.researchspace.org/resource/system/category/resource_configuration> ;
-        ns1:deletePattern <http://www.researchspace.org/bnode/n50878f69a160486c92705890f02163b6b2> ;
-        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity> ;
-        ns1:insertPattern <http://www.researchspace.org/bnode/n50878f69a160486c92705890f02163b6b1> ;
-        ns1:maxOccurs "1" ;
-        ns1:minOccurs "1" ;
-        ns1:selectPattern <http://www.researchspace.org/bnode/n50878f69a160486c92705890f02163b6b3> ;
-        ns1:valueSetPattern <http://www.researchspace.org/bnode/n50878f69a160486c92705890f02163b6b4> ;
-        ns1:xsdDatatype xsd:string ;
-        prov:generatedAtTime "2024-06-06T13:50:26.999000+01:00"^^xsd:dateTime ;
-        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_type> .
 }
-

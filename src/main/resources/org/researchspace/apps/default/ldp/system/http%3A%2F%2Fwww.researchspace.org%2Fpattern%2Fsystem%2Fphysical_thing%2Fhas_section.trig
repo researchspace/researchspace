@@ -1,26 +1,36 @@
-@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
-@prefix ns2: <http://spinrdf.org/sp#> .
-@prefix ns3: <http://www.w3.org/ns/ldp#> .
-@prefix prov: <http://www.w3.org/ns/prov#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/physical_thing/has_section/context> {
-    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/physical_thing/has_section> .
-
-    <http://www.researchspace.org/bnode/n4f7b057534084141987b79e549a8c42cb1> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value ?label WHERE {
-   $subject crm:P59_has_section $value .
-      
+  <http://www.researchspace.org/pattern/system/physical_thing/has_section> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-8ad95368ffb94259904f3f81a9c2f8bb-cmno2b;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E18_Physical_Thing>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-8ad95368ffb94259904f3f81a9c2f8bb-n61sid;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-8ad95368ffb94259904f3f81a9c2f8bb-cbb0v;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-8ad95368ffb94259904f3f81a9c2f8bb-j7gj2;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Has section"@en;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-8ad95368ffb94259904f3f81a9c2f8bb-0j46x;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E53_Place>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/physical_thing>;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-17T17:52:15.760+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-8ad95368ffb94259904f3f81a9c2f8bb-0j46x a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
   ?value a crm:E53_Place .
   ?value crm:P1_is_identified_by ?appellation .
   ?appellation a crm:E41_Appellation .
-  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .    
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .  
   ?appellation crm:P190_has_symbolic_content ?label .
-}""" .
-
-    <http://www.researchspace.org/bnode/n4f7b057534084141987b79e549a8c42cb2> a ns2:Query ;
-        ns2:text """DELETE {
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-8ad95368ffb94259904f3f81a9c2f8bb-n61sid a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
 	$subject crm:P59_has_section $value . 
     $value crm:P59i_is_located_on_or_within $subject .
 } WHERE {
@@ -33,50 +43,33 @@
     ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .      
     ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
-
-    <http://www.researchspace.org/bnode/n4f7b057534084141987b79e549a8c42cb3> a ns2:Query ;
-        ns2:text """INSERT { 
+  
+  _:genid-8ad95368ffb94259904f3f81a9c2f8bb-cbb0v a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
 	$subject crm:P59_has_section $value . 
     $value crm:P59i_is_located_on_or_within $subject .
 } WHERE {}""" .
-
-    <http://www.researchspace.org/bnode/n4f7b057534084141987b79e549a8c42cb4> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+  
+  _:genid-8ad95368ffb94259904f3f81a9c2f8bb-j7gj2 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
     ?value a crm:E53_Place .
     ?value crm:P1_is_identified_by ?appellation .
     ?appellation a crm:E41_Appellation .
     ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .      
     ?appellation crm:P190_has_symbolic_content ?label .
 } ORDER BY ASC(LCASE(STR(?label)))""" .
-
-    <http://www.researchspace.org/bnode/n4f7b057534084141987b79e549a8c42cb5> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+  
+  _:genid-8ad95368ffb94259904f3f81a9c2f8bb-cmno2b a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+   $subject crm:P59_has_section $value .
+      
   ?value a crm:E53_Place .
   ?value crm:P1_is_identified_by ?appellation .
   ?appellation a crm:E41_Appellation .
-  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .  
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .    
   ?appellation crm:P190_has_symbolic_content ?label .
-  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
-  FILTER REGEX(LCASE(STR(?label)), "?token", "i")
-} ORDER BY ASC(?label)
-  LIMIT 10""" .
-
-    <http://www.researchspace.org/pattern/system/physical_thing/has_section> a ns1:Field,
-            ns3:Resource,
-            prov:Entity ;
-        rdfs:label "Has section" ;
-        ns1:autosuggestionPattern <http://www.researchspace.org/bnode/n4f7b057534084141987b79e549a8c42cb5> ;
-        ns1:category <http://www.researchspace.org/resource/system/category/physical_thing> ;
-        ns1:deletePattern <http://www.researchspace.org/bnode/n4f7b057534084141987b79e549a8c42cb2> ;
-        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E18_Physical_Thing> ;
-        ns1:insertPattern <http://www.researchspace.org/bnode/n4f7b057534084141987b79e549a8c42cb3> ;
-        ns1:maxOccurs "unbound" ;
-        ns1:minOccurs "0" ;
-        ns1:range <http://www.cidoc-crm.org/cidoc-crm/E53_Place> ;
-        ns1:selectPattern <http://www.researchspace.org/bnode/n4f7b057534084141987b79e549a8c42cb1> ;
-        ns1:valueSetPattern <http://www.researchspace.org/bnode/n4f7b057534084141987b79e549a8c42cb4> ;
-        ns1:xsdDatatype xsd:anyURI ;
-        prov:generatedAtTime "2024-04-17T17:52:15.760000+01:00"^^xsd:dateTime ;
-        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/physical_thing/has_section> .
 }
-

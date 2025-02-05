@@ -1,16 +1,65 @@
-@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
-@prefix ns2: <http://www.w3.org/ns/ldp#> .
-@prefix ns3: <http://spinrdf.org/sp#> .
-@prefix prov: <http://www.w3.org/ns/prov#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-
 <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_facet_kpCategory/context> {
-    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns2:contains <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_facet_kpCategory> .
-
-    <http://www.researchspace.org/bnode/n55f6c0345dbd4b858251d72f27fabb75b1> a ns3:Query ;
-        ns3:text """DELETE { 
+  <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_facet_kpCategory>
+    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
+      <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/resource_configuration>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-f5021286dac948d99df9c5bb90869f6c-79thyo;
+    <http://www.researchspace.org/resource/system/fields/treePatterns> """{
+  \"type\": \"simple\",
+  \"schemePattern\": \"?item skos:inScheme <http://www.researchspace.org/resource/system/FieldCategories> .\\n?item crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/KP_category> .\",
+  \"relationPattern\": \"?item <http://www.w3.org/2004/02/skos/core#broader> ?parent\"
+}"""^^<http://www.researchspace.org/resource/system/syntheticJson>;
+    <http://www.w3.org/2000/01/rdf-schema#comment> "Enter IRI of the category assigned to the knowledge patterns to be used as search filters.";
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-f5021286dac948d99df9c5bb90869f6c-yy4z2e;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-f5021286dac948d99df9c5bb90869f6c-a8h1f;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Knowledge pattern category"@en;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-f5021286dac948d99df9c5bb90869f6c-115c29;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.w3.org/2004/02/skos/core#Concept>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-f5021286dac948d99df9c5bb90869f6c-ngdg2v;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-05-30T10:06:30.591+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-f5021286dac948d99df9c5bb90869f6c-115c29 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a skos:Concept .
+  ?value skos:inScheme <http://www.researchspace.org/resource/system/FieldCategories> .
+  ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/KP_category> .
+  ?value skos:prefLabel ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-f5021286dac948d99df9c5bb90869f6c-ngdg2v a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_facet_kpCategory> $value .
+} WHERE {
+}""" .
+  
+  _:genid-f5021286dac948d99df9c5bb90869f6c-a8h1f a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE { graph $subject {
+  $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_facet_kpCategory> ?value . }
+  
+  ?value a skos:Concept .
+  ?value skos:inScheme <http://www.researchspace.org/resource/system/FieldCategories> .
+  ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/KP_category> .
+  ?value skos:prefLabel ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-f5021286dac948d99df9c5bb90869f6c-yy4z2e a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a skos:Concept .
+  ?value skos:inScheme <http://www.researchspace.org/resource/system/FieldCategories> .
+  ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/KP_category> .
+  ?value skos:prefLabel ?label .
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-f5021286dac948d99df9c5bb90869f6c-79thyo a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
   $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_facet_kpCategory> $value .
 } WHERE { 
   $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_facet_kpCategory> $value .
@@ -20,64 +69,7 @@
   ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/KP_category> .
   ?value skos:prefLabel ?label .
 }""" .
-
-    <http://www.researchspace.org/bnode/n55f6c0345dbd4b858251d72f27fabb75b2> a ns3:Query ;
-        ns3:text """SELECT DISTINCT ?value ?label WHERE {
-  ?value a skos:Concept .
-  ?value skos:inScheme <http://www.researchspace.org/resource/system/FieldCategories> .
-  ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/KP_category> .
-  ?value skos:prefLabel ?label .
-  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
-  FILTER REGEX(LCASE(STR(?label)), "?token", "i")
-} ORDER BY ASC(?label)
-  LIMIT 10""" .
-
-    <http://www.researchspace.org/bnode/n55f6c0345dbd4b858251d72f27fabb75b3> a ns3:Query ;
-        ns3:text """SELECT DISTINCT ?value ?label WHERE { graph $subject {
-  $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_facet_kpCategory> ?value . }
   
-  ?value a skos:Concept .
-  ?value skos:inScheme <http://www.researchspace.org/resource/system/FieldCategories> .
-  ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/KP_category> .
-  ?value skos:prefLabel ?label .
-} ORDER BY ASC(LCASE(STR(?label)))""" .
-
-    <http://www.researchspace.org/bnode/n55f6c0345dbd4b858251d72f27fabb75b4> a ns3:Query ;
-        ns3:text """SELECT DISTINCT ?value ?label WHERE {
-  ?value a skos:Concept .
-  ?value skos:inScheme <http://www.researchspace.org/resource/system/FieldCategories> .
-  ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/KP_category> .
-  ?value skos:prefLabel ?label .
-} ORDER BY ASC(LCASE(STR(?label)))""" .
-
-    <http://www.researchspace.org/bnode/n55f6c0345dbd4b858251d72f27fabb75b5> a ns3:Query ;
-        ns3:text """INSERT { 
-  $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_facet_kpCategory> $value .
-} WHERE {
-}""" .
-
-    <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_facet_kpCategory> a ns1:Field,
-            ns2:Resource,
-            prov:Entity ;
-        rdfs:label "Knowledge pattern category" ;
-        ns1:autosuggestionPattern <http://www.researchspace.org/bnode/n55f6c0345dbd4b858251d72f27fabb75b2> ;
-        ns1:category <http://www.researchspace.org/resource/system/category/resource_configuration> ;
-        ns1:deletePattern <http://www.researchspace.org/bnode/n55f6c0345dbd4b858251d72f27fabb75b1> ;
-        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object> ;
-        ns1:insertPattern <http://www.researchspace.org/bnode/n55f6c0345dbd4b858251d72f27fabb75b5> ;
-        ns1:maxOccurs "1" ;
-        ns1:minOccurs "0" ;
-        ns1:range skos:Concept ;
-        ns1:selectPattern <http://www.researchspace.org/bnode/n55f6c0345dbd4b858251d72f27fabb75b3> ;
-        ns1:treePatterns """{
-  "type": "simple",
-  "schemePattern": "?item skos:inScheme <http://www.researchspace.org/resource/system/FieldCategories> .\\n?item crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/KP_category> .",
-  "relationPattern": "?item <http://www.w3.org/2004/02/skos/core#broader> ?parent"
-}"""^^<http://www.researchspace.org/resource/system/syntheticJson> ;
-        ns1:valueSetPattern <http://www.researchspace.org/bnode/n55f6c0345dbd4b858251d72f27fabb75b4> ;
-        ns1:xsdDatatype xsd:anyURI ;
-        rdfs:comment "Enter IRI of the category assigned to the knowledge patterns to be used as search filters." ;
-        prov:generatedAtTime "2024-05-30T10:06:30.591000+01:00"^^xsd:dateTime ;
-        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_facet_kpCategory> .
 }
-

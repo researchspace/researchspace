@@ -1,15 +1,24 @@
-@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
-@prefix ns2: <http://spinrdf.org/sp#> .
-@prefix ns3: <http://www.w3.org/ns/ldp#> .
-@prefix prov: <http://www.w3.org/ns/prov#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/entity/influenced_activity/context> {
-    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/entity/influenced_activity> .
-
-    <http://www.researchspace.org/bnode/nd1b7fd9abf8240b9a1596676b4023b2ab1> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+  <http://www.researchspace.org/pattern/system/entity/influenced_activity> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-c7dc8e1092014b5dad4005ddba650fc6-m4ioi;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/entity>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-c7dc8e1092014b5dad4005ddba650fc6-ncveqe;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E7_Activity>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-c7dc8e1092014b5dad4005ddba650fc6-mlhi8d;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Influenced"@en;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-c7dc8e1092014b5dad4005ddba650fc6-m2vae3;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-c7dc8e1092014b5dad4005ddba650fc6-gatl6;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-03-26T18:25:53.050Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-c7dc8e1092014b5dad4005ddba650fc6-m4ioi a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
   ?value a ?ontologyClass .
   ?ontologyClass rdfs:subClassOf* crm:E7_Activity .
   ?value crm:P1_is_identified_by ?appellation .
@@ -18,29 +27,9 @@
    
   ?appellation crm:P190_has_symbolic_content ?label .
 } ORDER BY ASC(LCASE(STR(?label)))""" .
-
-    <http://www.researchspace.org/bnode/nd1b7fd9abf8240b9a1596676b4023b2ab2> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value ?label WHERE {
-  ?value a ?ontologyClass .
-  ?ontologyClass rdfs:subClassOf* crm:E7_Activity .
-  ?value crm:P1_is_identified_by ?appellation .
-  ?appellation a crm:E41_Appellation .
-  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-   
-  ?appellation crm:P190_has_symbolic_content ?label .
-  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
-  FILTER REGEX(LCASE(STR(?label)), "?token", "i")
-} ORDER BY ASC(?label) 
-  LIMIT 10 """ .
-
-    <http://www.researchspace.org/bnode/nd1b7fd9abf8240b9a1596676b4023b2ab3> a ns2:Query ;
-        ns2:text """INSERT { 
-  $subject crm:P15i_influenced $value . 
-  $value crm:P15_was_influenced_by $subject .
-} WHERE {}""" .
-
-    <http://www.researchspace.org/bnode/nd1b7fd9abf8240b9a1596676b4023b2ab4> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+  
+  _:genid-c7dc8e1092014b5dad4005ddba650fc6-m2vae3 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
   $subject crm:P15i_influenced $value . 
      
   ?value a ?ontologyClass .
@@ -51,9 +40,29 @@
    
   ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
-
-    <http://www.researchspace.org/bnode/nd1b7fd9abf8240b9a1596676b4023b2ab5> a ns2:Query ;
-        ns2:text """DELETE {
+  
+  _:genid-c7dc8e1092014b5dad4005ddba650fc6-mlhi8d a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P15i_influenced $value . 
+  $value crm:P15_was_influenced_by $subject .
+} WHERE {}""" .
+  
+  _:genid-c7dc8e1092014b5dad4005ddba650fc6-ncveqe a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E7_Activity .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+   
+  ?appellation crm:P190_has_symbolic_content ?label .
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label) 
+  LIMIT 10 """ .
+  
+  _:genid-c7dc8e1092014b5dad4005ddba650fc6-gatl6 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
   $subject crm:P15i_influenced $value . 
   $value crm:P15_was_influenced_by $subject .
 } WHERE {
@@ -68,23 +77,7 @@
    
   ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
-
-    <http://www.researchspace.org/pattern/system/entity/influenced_activity> a ns1:Field,
-            ns3:Resource,
-            prov:Entity ;
-        rdfs:label "Influenced" ;
-        ns1:autosuggestionPattern <http://www.researchspace.org/bnode/nd1b7fd9abf8240b9a1596676b4023b2ab2> ;
-        ns1:category <http://www.researchspace.org/resource/system/category/entity> ;
-        ns1:deletePattern <http://www.researchspace.org/bnode/nd1b7fd9abf8240b9a1596676b4023b2ab5> ;
-        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity> ;
-        ns1:insertPattern <http://www.researchspace.org/bnode/nd1b7fd9abf8240b9a1596676b4023b2ab3> ;
-        ns1:maxOccurs "unbound" ;
-        ns1:minOccurs "0" ;
-        ns1:range <http://www.cidoc-crm.org/cidoc-crm/E7_Activity> ;
-        ns1:selectPattern <http://www.researchspace.org/bnode/nd1b7fd9abf8240b9a1596676b4023b2ab4> ;
-        ns1:valueSetPattern <http://www.researchspace.org/bnode/nd1b7fd9abf8240b9a1596676b4023b2ab1> ;
-        ns1:xsdDatatype xsd:anyURI ;
-        prov:generatedAtTime "2024-03-26T18:25:53.050000+00:00"^^xsd:dateTime ;
-        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/entity/influenced_activity> .
 }
-

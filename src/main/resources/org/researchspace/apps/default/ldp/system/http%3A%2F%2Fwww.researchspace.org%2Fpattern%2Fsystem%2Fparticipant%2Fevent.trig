@@ -1,15 +1,7 @@
-@prefix ns1: <http://www.researchspace.org/resource/system/fields/> .
-@prefix ns2: <http://spinrdf.org/sp#> .
-@prefix ns3: <http://www.w3.org/ns/ldp#> .
-@prefix prov: <http://www.w3.org/ns/prov#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://www.researchspace.org/pattern/system/participant/event/context> {
-    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> ns3:contains <http://www.researchspace.org/pattern/system/participant/event> .
-
-    <http://www.researchspace.org/bnode/nd43ba127d49e44b3ba4f4b896b17dba7b1> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+  _:genid-04c9a77fc75c4bbd9d6737f324b24ac8-vubix a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
     ?value a ?ontologyClass .
     ?ontologyClass rdfs:subClassOf* crm:E5_Event .
     ?value crm:P1_is_identified_by ?appellation .
@@ -18,15 +10,25 @@
      
     ?appellation crm:P190_has_symbolic_content ?label .
 } ORDER BY ASC(LCASE(STR(?label)))""" .
-
-    <http://www.researchspace.org/bnode/nd43ba127d49e44b3ba4f4b896b17dba7b2> a ns2:Query ;
-        ns2:text """INSERT { 
-    $subject crm:P01_has_domain $value . 
-    $value crm:P01i_is_domain_of $subject .
-} WHERE {}""" .
-
-    <http://www.researchspace.org/bnode/nd43ba127d49e44b3ba4f4b896b17dba7b3> a ns2:Query ;
-        ns2:text """DELETE { 
+  
+  <http://www.researchspace.org/pattern/system/participant/event> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Participant - domain event"@en;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/PC11_had_participant>;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-04c9a77fc75c4bbd9d6737f324b24ac8-31v0xv;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E5_Event>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-04c9a77fc75c4bbd9d6737f324b24ac8-vjqzot;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-04c9a77fc75c4bbd9d6737f324b24ac8-vubix;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-04c9a77fc75c4bbd9d6737f324b24ac8-ba585j;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-04c9a77fc75c4bbd9d6737f324b24ac8-0mqltd;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-09T11:57:14.347+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-04c9a77fc75c4bbd9d6737f324b24ac8-vjqzot a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
     $subject crm:P01_has_domain $value . 
     $value crm:P01i_is_domain_of $subject .
 } WHERE {
@@ -41,9 +43,15 @@
      
     ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
-
-    <http://www.researchspace.org/bnode/nd43ba127d49e44b3ba4f4b896b17dba7b4> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+  
+  _:genid-04c9a77fc75c4bbd9d6737f324b24ac8-31v0xv a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+    $subject crm:P01_has_domain $value . 
+    $value crm:P01i_is_domain_of $subject .
+} WHERE {}""" .
+  
+  _:genid-04c9a77fc75c4bbd9d6737f324b24ac8-ba585j a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
   ?value a ?ontologyClass .
   ?ontologyClass rdfs:subClassOf* crm:E5_Event .
   ?value crm:P1_is_identified_by ?appellation .
@@ -52,12 +60,12 @@
    
   ?appellation crm:P190_has_symbolic_content ?label .
   MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
-  FILTER REGEX(LCASE(STR(?label)), "?token", "i")
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ASC(?label) 
   LIMIT 10 """ .
-
-    <http://www.researchspace.org/bnode/nd43ba127d49e44b3ba4f4b896b17dba7b5> a ns2:Query ;
-        ns2:text """SELECT DISTINCT ?value ?label WHERE {
+  
+  _:genid-04c9a77fc75c4bbd9d6737f324b24ac8-0mqltd a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
     $subject crm:P01_has_domain $value . 
       
     ?value a ?ontologyClass .
@@ -68,22 +76,7 @@
      
     ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
-
-    <http://www.researchspace.org/pattern/system/participant/event> a ns1:Field,
-            ns3:Resource,
-            prov:Entity ;
-        rdfs:label "Participant - domain event" ;
-        ns1:autosuggestionPattern <http://www.researchspace.org/bnode/nd43ba127d49e44b3ba4f4b896b17dba7b4> ;
-        ns1:deletePattern <http://www.researchspace.org/bnode/nd43ba127d49e44b3ba4f4b896b17dba7b3> ;
-        ns1:domain <http://www.cidoc-crm.org/cidoc-crm/PC11_had_participant> ;
-        ns1:insertPattern <http://www.researchspace.org/bnode/nd43ba127d49e44b3ba4f4b896b17dba7b2> ;
-        ns1:maxOccurs "1" ;
-        ns1:minOccurs "0" ;
-        ns1:range <http://www.cidoc-crm.org/cidoc-crm/E5_Event> ;
-        ns1:selectPattern <http://www.researchspace.org/bnode/nd43ba127d49e44b3ba4f4b896b17dba7b5> ;
-        ns1:valueSetPattern <http://www.researchspace.org/bnode/nd43ba127d49e44b3ba4f4b896b17dba7b1> ;
-        ns1:xsdDatatype xsd:anyURI ;
-        prov:generatedAtTime "2024-04-09T11:57:14.347000+01:00"^^xsd:dateTime ;
-        prov:wasAttributedTo <http://www.researchspace.org/resource/user/admin> .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/participant/event> .
 }
-

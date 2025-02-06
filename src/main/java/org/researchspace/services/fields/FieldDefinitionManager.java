@@ -31,6 +31,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -41,9 +43,13 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.GraphQueryResult;
+import org.eclipse.rdf4j.query.Operation;
+import org.eclipse.rdf4j.query.impl.DatasetImpl;
+import org.eclipse.rdf4j.query.impl.SimpleDataset;
 import org.eclipse.rdf4j.queryrender.RenderUtils;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.researchspace.api.sparql.SparqlOperationBuilder;
@@ -156,6 +162,9 @@ public class FieldDefinitionManager implements PlatformCache {
     private String makeFieldDefinitionQuery(@Nullable Iterable<? extends IRI> fieldIris) {
         String valuesClause = fieldIris == null ? ""
                 : renderValuesClause("?iri", fieldIris, Collections::singletonList);
+        String fromGraphs = StreamSupport.stream(fieldIris.spliterator(), false)
+                .map(iri -> "FROM <" + iri.stringValue() + "/context" + ">\n").collect(Collectors.joining());
+
         return "PREFIX field: <http://www.researchspace.org/resource/system/fields/>"
                 + "\nPREFIX ldp: <http://www.w3.org/ns/ldp#>" + "\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>"
                 + "\nPREFIX sp: <http://spinrdf.org/sp#>" + "\nCONSTRUCT {" + "\n  ?iri rdfs:comment ?description ."
@@ -166,8 +175,7 @@ public class FieldDefinitionManager implements PlatformCache {
                 + "\n  ?iri field:deletePattern ?deletePattern ." + "\n  ?iri field:askPattern ?askPattern ."
                 + "\n  ?iri field:autosuggestionPattern ?autosuggestionPattern ."
                 + "\n  ?iri field:valueSetPattern ?valueSetPattern ." + "\n  ?iri field:treePatterns ?treePatterns ."
-                + "\n} WHERE {" + "\n  " + valuesClause + "\n  <" + FieldDefinitionContainer.IRI_STRING
-                + "> ldp:contains ?iri ." + "\n  ?iri a field:Field ."
+                + "\n}" + fromGraphs + " WHERE {" + "\n  " + valuesClause + "\n" + "\n  ?iri a field:Field ."
                 + "\n  OPTIONAL { ?iri rdfs:comment ?description }" + "\n  OPTIONAL { ?iri field:minOccurs ?minOccurs }"
                 + "\n  OPTIONAL { ?iri field:maxOccurs ?maxOccurs }"
                 + "\n  OPTIONAL { ?iri field:xsdDatatype ?xsdDatatype }" + "\n  OPTIONAL { ?iri field:domain ?domain }"

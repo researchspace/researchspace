@@ -189,7 +189,8 @@ public class KnowledgePatternGenerator {
         IRI kpIri = this.generateBasicKp(builder, ontoIri, onto, prop);
 
         builder.subject(kpIri)
-            .add(FIELDS.XSD_DATATYPE, this.vf.createIRI(XSD.ANY_URI));
+            .add(FIELDS.XSD_DATATYPE, this.vf.createIRI(XSD.ANY_URI))
+            .add(FIELDS.ONTOLOGY, ontoIri);
         addAll(builder, FIELDS.RANGE, Models.getPropertyIRIs(onto, prop, RDFS.RANGE));
 
         return new PointedGraph(kpIri, builder.build());
@@ -247,7 +248,7 @@ public class KnowledgePatternGenerator {
         // generate KP insert pattern and add it to the KP
         String insertPattern =
             "INSERT { $subject <" + prop.stringValue() + "> $value . } WHERE {}";
-        BNode insertQueryNode = this.vf.createBNode();
+        IRI insertQueryNode = this.vf.createIRI(kpIri.stringValue() + "/insert");
         builder
             .add(kpIri, FIELDS.INSERT_PATTERN, insertQueryNode)
             .subject(insertQueryNode)
@@ -260,7 +261,7 @@ public class KnowledgePatternGenerator {
             "  $subject <" + prop.stringValue() + "> ?value . \n" +
             "  ?value rdfs:label|crm:P190_has_symbolic_content ?label ." +
             "}";
-        BNode selectQueryNode = this.vf.createBNode();
+        IRI selectQueryNode = this.vf.createIRI(kpIri.stringValue() + "/select");
         builder
             .add(kpIri, FIELDS.SELECT_PATTERN, selectQueryNode)
             .subject(selectQueryNode)
@@ -277,7 +278,7 @@ public class KnowledgePatternGenerator {
             "  $subject <" + prop.stringValue() + "> ?value . \n" +
             "  " +
             "}";
-        BNode deleteQueryNode = this.vf.createBNode();
+        IRI deleteQueryNode = this.vf.createIRI(kpIri.stringValue() + "/delete");
         builder
             .add(kpIri, FIELDS.DELETE_PATTERN, deleteQueryNode)
             .subject(deleteQueryNode)

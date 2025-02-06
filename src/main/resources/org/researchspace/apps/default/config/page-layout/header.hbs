@@ -106,25 +106,31 @@
                     <bs-tab event-key="all" title="All resources" mount-on-enter="true">
                       <div class="resources-tab-container">
                         <semantic-table  id='newResource-tab-results'
-                                        query='SELECT ?resourceConfig ?resourceName ?resourceOntologyClass ?resourceFormIRI ?resourceIcon WHERE {
-                                                ?resourceConfig a Platform:resource_configuration . 
-                                                ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceName .
-                                                ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass .
-                                                ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
-                                              
-                                                OPTIONAL {
-                                                  ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .
-                                                }
-                                                FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>)
-                                                FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation>)
-                                                FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>)
-                                                FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart>)
-                                                FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>)
-                                                FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline>)
-                                                FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>)
-                                                FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item>)
-                                                FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/User>)
-                                              } ORDER BY (LCASE(STR(?resourceName)))'
+                                        query='SELECT ?resourceConfig ?resourceName ?resourceOntologyClass ?resourceFormIRI ?resourceIcon 
+                                              WHERE {
+                                                  ?resourceConfig a Platform:resource_configuration . 
+                                                  ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceName .
+                                                  ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass .
+                                                  ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
+
+                                                  OPTIONAL {
+                                                    ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .
+                                                  }
+
+                                                  FILTER (?resourceConfig NOT IN (
+                                                    <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>,
+                                                    <http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation>,
+                                                    <http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>,
+                                                    <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart>,
+                                                    <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>,
+                                                    <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline>,
+                                                    <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>,
+                                                    <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item>,
+                                                    <http://www.researchspace.org/resource/system/resource_configurations_container/data/User>
+                                                  ))
+                                                } 
+                                                ORDER BY (LCASE(STR(?resourceName)))
+                                                '
 
                                         tuple-template='\{{> newResourceCard}}',
                                         options='{"showFilter":true, "filterPlaceholderText":"Filter results by ontological type", "resultsPerPage":100}'

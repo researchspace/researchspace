@@ -218,12 +218,11 @@ public abstract class ResourcePropertyCache<Key, Property> implements PlatformCa
             }
 
             // ?subject [PREDICATE] ?p[PREDICATE_IDX]
-            queryString.append("{").append(preferredProperty.format("subject", "p" + predicateIdx)).append("}");
+            queryString.append("{").append(valuesClause).append(preferredProperty.format("subject", "p" + predicateIdx)).append("}");
 
             predicateIdx++;
         }
 
-        queryString.append(valuesClause);
         queryString.append("} ");
 
         return queryString.toString();

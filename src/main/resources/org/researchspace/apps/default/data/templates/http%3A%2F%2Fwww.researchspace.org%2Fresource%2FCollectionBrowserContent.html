@@ -7,18 +7,11 @@
                             
                         WHERE {
 
-                            OPTIONAL {
-                              <{{configOrScheme}}> crm:P67_refers_to ?refersToResourceConfig .
-                              BIND(<{{configOrScheme}}> AS ?collection) .
-                            }
-
-                            OPTIONAL {
                               <{{configOrScheme}}> a <http://www.researchspace.org/resource/system/resource_configuration> .
-                              BIND(<{{configOrScheme}}> as ?refersToResourceConfig) .
-                            }
+                              BIND(<{{configOrScheme}}> as ?refersToResourceConfig_2) .
 
-                            BIND(COALESCE(?refersToResourceConfig [[#if defaultConfig]], <[[defaultConfig]]>[[/if]]) AS ?resourceConfiguration ) .
-                            BIND(BOUND(?refersToResourceConfig) as ?managedByResourceConfig) .
+                            BIND(COALESCE(?refersToResourceConfig_1, ?refersToResourceConfig_2  [[#if defaultConfig]], <[[defaultConfig]]>[[/if]]) AS ?resourceConfiguration ) .
+                            BIND(true as ?managedByResourceConfig) .
                             
                             ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceName ;
                               <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass ;

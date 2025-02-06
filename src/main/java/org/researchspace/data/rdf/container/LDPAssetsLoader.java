@@ -58,9 +58,12 @@ import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.repository.util.Repositories;
+import org.eclipse.rdf4j.rio.ParserConfig;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParseException;
 import org.eclipse.rdf4j.rio.Rio;
+import org.eclipse.rdf4j.rio.helpers.BasicParserSettings;
+import org.eclipse.rdf4j.rio.helpers.ParseErrorLogger;
 import org.researchspace.config.Configuration;
 import org.researchspace.config.UnknownConfigurationException;
 import org.researchspace.kp.KnowledgePatternGenerator;
@@ -256,13 +259,14 @@ public class LDPAssetsLoader {
                              "{" +
                                 "graph ?ontologyContext {" +
                                 "  ?prop a ?owlType . " +
-                                "  FILTER (?owlType IN (owl:DatatypeProperty,owl:ObjectProperty)) " +    
-                                "  FILTER(CONTAINS(STR(?prop),REPLACE(STR(?ontologyContext),\"/context\",\"\"))) " +
+                                "  FILTER (?owlType IN (owl:DatatypeProperty,owl:ObjectProperty)) " + 
+                                "  FILTER(CONTAINS(STR(?prop),STR(?ontology))) \n" +
                                 "}" +
                              "}" +
                              "UNION { " +
                              "  ?kp a <http://www.researchspace.org/resource/system/fields/Field> ." +
                              "  ?kp a ?owlType ." +
+                             "  ?kp <http://www.researchspace.org/resource/system/fields/ontology> ?ontology . " +
                              "  VALUES ?owlType {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}" +
                             "}" +
                           "}" + 
@@ -324,7 +328,10 @@ public class LDPAssetsLoader {
                 }
                 ObjectRecord record = entry.getValue().getRecord();
                 try (InputStream in = record.getLocation().readContent()) {
-                    Model model = Rio.parse(in, "", format);              
+                    ParserConfig config = new ParserConfig();
+                    config.set(BasicParserSettings.SKOLEMIZE_ORIGIN, "http://researchspace.org/bnode/");
+                    Model model = Rio.parse(in, "", format, config, SimpleValueFactory.getInstance(),
+				new ParseErrorLogger());              
                     loadedAssetsModel.addAll(model);                   
                 } catch (IOException | RDFParseException e) {
                     logger.error("Failed to parse LDP asset: " + record.getLocation() + ". Details: " + e.getMessage());

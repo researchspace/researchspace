@@ -195,8 +195,8 @@ export function constructUrlForResource(
     return Kefir.constant(simpleUrl);
   } else {
     return getPrefixedUri(iri).map((mUri) => {
-      if (mUri.isJust) {
-        const resourcePath = ConfigHolder.getEnvironmentConfig().resourceUrlMapping.value;
+      if (mUri.isJust) { console.log("isjust");
+        const resourcePath = ConfigHolder.getEnvironmentConfig().resourceUrlMapping.value;console.log(resourcePath);
         return constructUrl(`${resourcePath}${mUri.get()}`, props, repository, fragment);
       } else {
         return construcUrlForResourceSync(iri, props, repository, fragment);
@@ -233,9 +233,11 @@ function constructSimpleUrl(
 
   if (platformBaseIri) {
     const urlPrefix = platformBaseIri.value + resourcePath;
-    if (iri.value.startsWith(urlPrefix)) {
-      return constructUrl(iri.value.split(platformBaseIri.value)[1], props, repository, fragment);
-    }
+    
+    if (iri.value)
+      if (iri.value.startsWith(urlPrefix)) {
+        return constructUrl(iri.value.split(platformBaseIri.value)[1], props, repository, fragment);
+      }
   }
 
   return null;

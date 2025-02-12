@@ -66,6 +66,7 @@ interface State {
   year: number;
   yearMarks: number[];
   registeredMap: string;
+  groupDisabled: { [group: string]: boolean };
 }
 
 interface Props {
@@ -96,6 +97,7 @@ export class SemanticMapControls extends Component<Props, State> {
       setColor: 'rgba(200,50,50,0.5)',
       mapLayers: [],
       maskIndex: -1,
+      groupDisabled: {},
       filters: this.props.filtersInitialization ? this.props.filtersInitialization : {"feature":true,"overlay":true,"basemap":true},
       selectedFeaturesLabel: '',
       featuresColorTaxonomy: this.props.featuresTaxonomies ? this.props.featuresTaxonomies.split(',')[0] : '',
@@ -106,7 +108,7 @@ export class SemanticMapControls extends Component<Props, State> {
       yearMarks: [],
       registeredMap: ""
     };
-
+    this.toggleGroupDisabled = this.toggleGroupDisabled.bind(this);
     this.handleSelectedLabelChange = this.handleSelectedLabelChange.bind(this);
     this.handleColorTaxonomyChange = this.handleColorTaxonomyChange.bind(this);
     this.handleColorPickerChange = this.handleColorPickerChange.bind(this);
@@ -264,10 +266,16 @@ export class SemanticMapControls extends Component<Props, State> {
   }
 
   private triggerSendFeaturesColorsAssociationsToMap() {
+    // Construct a new object with updated alpha values based on disabled state
+    let finalAssociations = {};
+    for (let group in this.state.groupColorAssociations) {
+      finalAssociations[group] = this.getRgbaString(group); 
+    }
+  
     trigger({
       eventType: SemanticMapControlsSendGroupColorsAssociationsToMap,
       source: this.props.id,
-      data: this.state.groupColorAssociations,
+      data: finalAssociations,
       targets: [this.props.targetMapId],
     });
   }
@@ -720,103 +728,110 @@ export class SemanticMapControls extends Component<Props, State> {
     `;
 
     return (
-        <div>
-            <style>{controlsStyles}</style>
-            {this.props.featuresOptionsEnabled && (
-        <div className={'featuresOptionsContainer'}>
-          {/* <h3 className={'mapOptionsSectionTitle'}>Options</h3> */}
-          {/* TODO: move toggle3d button outside features option enabling */}
-          <div className={'toggle3dBtn'} onClick={() => this.triggerSendToggle3d()} style={{ cursor: 'pointer' }}>
-            <i className="fa fa-cube" aria-hidden="true"></i> Toggle 3d
-          </div>
-          <div className={'mapLayersFiltersContainer'}>
-            <div className={'featuresOptionsDiv'}>
-              <label style={{ marginRight: '10px', userSelect: 'none' }}>Color by: </label>
-              <select name="featuresColorsList" id="featuresColorsList" onChange={this.handleColorTaxonomyChange}>
-                {this.featuresColorTaxonomies.map((taxonomy) => (
-                  <option key={taxonomy} value={taxonomy}>
-                    {this.capitalizeFirstLetter(taxonomy)}
-                  </option>
-                ))}
-              </select>
-              <OverlayTrigger
-                key={'random'}
-                placement={'top'}
-                overlay={<Tooltip id={'tooltip-right'}>Generate a random color palette.</Tooltip>}
-              >
-                <i
-                  className={'fa fa-refresh'}
-                  style={{ display: 'inline-block', cursor: 'pointer', marginLeft: '10px', userSelect: 'none' }}
-                  onClick={this.handleGenerateColorPalette}
-                ></i>
-              </OverlayTrigger>
-              <OverlayTrigger
-                key={'reset'}
-                placement={'top'}
-                overlay={<Tooltip id={'tooltip-right'}>Restart palette to a single color.</Tooltip>}
-              >
-                <i
-                  className={'fa fa-paint-brush'}
-                  style={{ display: 'inline-block', cursor: 'pointer', marginLeft: '10px', userSelect: 'none' }}
-                  onClick={this.handleRestartColorPalette}
-                ></i>
-              </OverlayTrigger>
-              <div className={'colorsLegend'}>
-                {this.state.featuresColorGroups.map((group, index) => (
-                  <div
-                    key={group}
-                    id={'color-' + group}
-                    style={{ display: 'flex', alignItems: 'center', margin: '5px' }}
-                  >
-                    <div
-                      style={styles.swatch}
-                      onClick={() => {
-                        this.handleColorpickerClick(group);
-                      }}
-                    >
+      <div>
+        <style>{controlsStyles}</style>
+        {this.props.featuresOptionsEnabled && (
+          <div className={'featuresOptionsContainer'}>
+            <div className={'mapLayersFiltersContainer'}>
+              <div className={'featuresOptionsDiv'}>
+                <label style={{ marginRight: '10px', userSelect: 'none' }}>Color by: </label>
+                <select name="featuresColorsList" id="featuresColorsList" onChange={this.handleColorTaxonomyChange}>
+                  {this.featuresColorTaxonomies.map((taxonomy) => (
+                    <option key={taxonomy} value={taxonomy}>
+                      {this.capitalizeFirstLetter(taxonomy)}
+                    </option>
+                  ))}
+                </select>
+                <OverlayTrigger
+                  key={'random'}
+                  placement={'top'}
+                  overlay={<Tooltip id={'tooltip-right'}>Generate a random color palette.</Tooltip>}
+                >
+                  <i
+                    className={'fa fa-refresh'}
+                    style={{ display: 'inline-block', cursor: 'pointer', marginLeft: '10px', userSelect: 'none' }}
+                    onClick={this.handleGenerateColorPalette}
+                  ></i>
+                </OverlayTrigger>
+                <OverlayTrigger
+                  key={'reset'}
+                  placement={'top'}
+                  overlay={<Tooltip id={'tooltip-right'}>Restart palette to a single color.</Tooltip>}
+                >
+                  <i
+                    className={'fa fa-paint-brush'}
+                    style={{ display: 'inline-block', cursor: 'pointer', marginLeft: '10px', userSelect: 'none' }}
+                    onClick={this.handleRestartColorPalette}
+                  ></i>
+                </OverlayTrigger>
+                <div className={'colorsLegend'}>
+                  {this.state.featuresColorGroups.map((group, index) => {
+                    const isDisabled = this.state.groupDisabled[group];
+                    return (
                       <div
-                        style={{
-                          width: '15px',
-                          height: '15px',
-                          borderRadius: '50%',
-                          backgroundColor: this.getRgbaString(group),
-                        }}
-                      />
-                    </div>
-                    <label style={{ marginLeft: '5px', marginBottom: '0px' }}>{group}</label>
-                    {this.state.displayColorPicker[group] && (
-                      <div style={{ position: 'absolute', zIndex: 2 }}>
+                        key={group}
+                        id={'color-' + group}
+                        style={{ display: 'flex', alignItems: 'center', margin: '5px' }}
+                      >
                         <div
-                          style={{ position: 'fixed', top: '0px', right: '0px', left: '0px', bottom: '0px' }}
-                          onClick={this.handleClose}
-                        />
-                        <SwatchesPicker
-                          color={this.state.groupColorAssociations[group]}
-                          onChange={(color) => {
-                            this.handleColorPickerChange(color, group);
+                          style={styles.swatch}
+                          onClick={() => {
+                            this.handleColorpickerClick(group);
                           }}
-                        />
+                        >
+                          <div
+                            style={{
+                              width: '15px',
+                              height: '15px',
+                              borderRadius: '50%',
+                              backgroundColor: this.getRgbaString(group),
+                            }}
+                          />
+                        </div>
+                        {/* Clicking the label toggles disabled */}
+                        <label 
+                          style={{ 
+                            marginLeft: '5px', 
+                            marginBottom: '0px', 
+                            cursor: 'pointer', 
+                            textDecoration: isDisabled ? 'line-through' : 'none' 
+                          }}
+                          onClick={() => this.toggleGroupDisabled(group)}
+                        >
+                          {group}
+                        </label>
+                        {this.state.displayColorPicker[group] && (
+                          <div style={{ position: 'absolute', zIndex: 2 }}>
+                            <div
+                              style={{ position: 'fixed', top: '0px', right: '0px', left: '0px', bottom: '0px' }}
+                              onClick={this.handleClose}
+                            />
+                            <SwatchesPicker
+                              color={this.state.groupColorAssociations[group]}
+                              onChange={(color) => {
+                                this.handleColorPickerChange(color, group);
+                              }}
+                            />
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                ))}
+                    );
+                  })}
+                </div>
+              </div>
+              <div className={'featuresOptionsDiv'}>
+                <label style={{ marginRight: '10px', userSelect: 'none' }}>Label by: </label>
+                <select name="featuresLabelList" id="featuresLabelList" onChange={this.handleSelectedLabelChange}>
+                  <option key={'none'} value={'none'}>None</option>
+                  {this.featuresTaxonomies.map((taxonomy) => (
+                    <option key={taxonomy} value={taxonomy}>
+                      {this.capitalizeFirstLetter(taxonomy)}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
-            <div className={'featuresOptionsDiv'}>
-              <label style={{ marginRight: '10px', userSelect: 'none' }}>Label by: </label>
-              <select name="featuresLabelList" id="featuresLabelList" onChange={this.handleSelectedLabelChange}>
-                <option key={'none'} value={'none'}>
-                  None
-                </option>
-                {this.featuresTaxonomies.map((taxonomy) => (
-                  <option key={taxonomy} value={taxonomy}>
-                    {this.capitalizeFirstLetter(taxonomy)}
-                  </option>
-                ))}
-              </select>
-            </div>
           </div>
-        </div>
       )}
                   {this.props.timeline && (
                 <div className={'timeSliderContainer'}>
@@ -1259,43 +1274,78 @@ findClosestMark(value, marks) {
     return string.charAt(0).toUpperCase() + string.slice(1);
   }
 
-  private getRgbaString(group) {
-    let rgba_string = '';
-    if (
-      group in this.state.groupColorAssociations &&
-      this.state.groupColorAssociations[group] &&
-      this.state.groupColorAssociations[group] !== this.defaultFeaturesColor &&
-      this.state.groupColorAssociations[group] !== ''
-    ) {
+  private getRgbaString(group: string) {
+    let baseColor = this.defaultFeaturesColor;
+    // Check if we have a custom color assigned
+    if (group in this.state.groupColorAssociations && 
+        this.state.groupColorAssociations[group] && 
+        this.state.groupColorAssociations[group] !== this.defaultFeaturesColor && 
+        this.state.groupColorAssociations[group] !== '') {
       if (typeof this.state.groupColorAssociations[group] === 'string') {
-        return this.state.groupColorAssociations[group];
+        baseColor = this.state.groupColorAssociations[group];
       } else {
         let color = this.state.groupColorAssociations[group];
         let color_rgba = color.rgb;
-        rgba_string = 'rgba(' + color_rgba.r + ', ' + color_rgba.g + ', ' + color_rgba.b + ', ' + '0.4' + ')';
+        baseColor = 'rgba(' + color_rgba.r + ', ' + color_rgba.g + ', ' + color_rgba.b + ', ' + '0.4' + ')';
       }
-    } else {
-      rgba_string = this.defaultFeaturesColor;
     }
-    return rgba_string;
+
+    // Now adjust the alpha depending on whether the group is disabled
+    const disabled = this.state.groupDisabled[group] === true;
+    // Parse the baseColor to RGBA components if needed
+    // We assume baseColor is always in rgba(x,y,z,a) format
+    // If you need a more robust parser, implement accordingly.
+    const matches = baseColor.match(/rgba?\((\d+),\s?(\d+),\s?(\d+),?\s?([\d.]+)?\)/);
+    if (matches) {
+      let r = matches[1];
+      let g = matches[2];
+      let b = matches[3];
+      let a = disabled ? '0' : '0.5';
+      return `rgba(${r},${g},${b},${a})`;
+    }
+
+    // Fallback, if parsing fails
+    return disabled ? 'rgba(200,50,50,0)' : 'rgba(200,50,50,0.5)';
   }
 
   private initializeGroupColorAssociations(groups: string[]) {
     let colorGroups = {};
     let displayColorPickerNew = {};
+    let groupDisabled = {};
     groups.forEach((group) => {
       colorGroups[group] = this.defaultFeaturesColor;
       displayColorPickerNew[group] = false;
+      groupDisabled[group] = false;
     });
     this.setState(
       {
         groupColorAssociations: colorGroups,
         displayColorPicker: displayColorPickerNew,
+        groupDisabled: groupDisabled
       },
       () => {
-        console.log('GroupColorassociations intialized. Here are the associations:');
+        console.log('GroupColorassociations initialized. Here are the associations:');
         console.log(this.state.groupColorAssociations);
         this.generateColorPalette();
+      }
+    );
+  }
+
+  private toggleGroupDisabled(group: string) {
+    this.setState(
+      (prevState) => {
+        const currentlyDisabled = prevState.groupDisabled[group];
+        const newDisabledState = !currentlyDisabled;
+        return {
+          groupDisabled: {
+            ...prevState.groupDisabled,
+            [group]: newDisabledState
+          }
+        };
+      },
+      () => {
+        // After state is updated, re-trigger the event to send updated colors (with new alpha)
+        this.triggerSendFeaturesColorsAssociationsToMap();
       }
     );
   }

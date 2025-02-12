@@ -100,7 +100,7 @@ export class SemanticMapControls extends Component<Props, State> {
       groupDisabled: {},
       filters: this.props.filtersInitialization ? this.props.filtersInitialization : {"feature":true,"overlay":true,"basemap":true},
       selectedFeaturesLabel: '',
-      featuresColorTaxonomy: this.props.featuresTaxonomies ? this.props.featuresTaxonomies.split(',')[0] : '',
+      featuresColorTaxonomy: this.props.featuresColorTaxonomies ? this.props.featuresColorTaxonomies.split(',')[0] : '',
       featuresColorGroups: [],
       displayColorPicker: {},
       groupColorAssociations: {},
@@ -140,10 +140,10 @@ export class SemanticMapControls extends Component<Props, State> {
   }
 
   public componentWillMount() {
-    if(this.props.featuresColorTaxonomies){
+    if(this.props.featuresTaxonomies){
       this.featuresTaxonomies = this.props.featuresTaxonomies.split(',');
     }
-    if(this.props.featuresTaxonomies){
+    if(this.props.featuresColorTaxonomies){
       this.featuresColorTaxonomies = this.props.featuresColorTaxonomies.split(',');
     }
     console.log("Filters initialization: ", this.props.filtersInitialization);

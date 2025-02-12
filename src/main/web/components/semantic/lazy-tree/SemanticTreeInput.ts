@@ -251,7 +251,9 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
       } else {
         selection = initialSelection as ReadonlyArray<Rdf.Iri>;
       }
-      this.setInitialSelection(selection).onValue(() => {this.onSelectionChanged});
+      this.setInitialSelection(selection).onValue((confirmedSelection) => {
+        this.onSelectionChanged(confirmedSelection);
+      });
     }
   }
 

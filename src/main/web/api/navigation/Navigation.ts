@@ -195,8 +195,8 @@ export function constructUrlForResource(
     return Kefir.constant(simpleUrl);
   } else {
     return getPrefixedUri(iri).map((mUri) => {
-      if (mUri.isJust) { console.log("isjust");
-        const resourcePath = ConfigHolder.getEnvironmentConfig().resourceUrlMapping.value;console.log(resourcePath);
+      if (mUri.isJust) { 
+        const resourcePath = ConfigHolder.getEnvironmentConfig().resourceUrlMapping.value;
         return constructUrl(`${resourcePath}${mUri.get()}`, props, repository, fragment);
       } else {
         return construcUrlForResourceSync(iri, props, repository, fragment);

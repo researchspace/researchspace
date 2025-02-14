@@ -765,6 +765,16 @@ export class SemanticMapControls extends Component<Props, State> {
                   ></i>
                 </OverlayTrigger>
                 <div className={'colorsLegend'}>
+                <div style={{ marginBottom: '10px' }}>
+                  <button onClick={() => this.enableAllGroups()}>
+                    <i className="fa fa-check-circle" style={{ marginRight: '5px' }}></i>
+                    Select All
+                  </button>
+                  <button onClick={() => this.disableAllGroups()} style={{ marginLeft: '10px' }}>
+                    <i className="fa fa-times-circle" style={{ marginRight: '5px' }}></i>
+                    Clear All
+                  </button>
+                </div>
                   {this.state.featuresColorGroups.map((group, index) => {
                     const isDisabled = this.state.groupDisabled[group];
                     return (
@@ -773,28 +783,43 @@ export class SemanticMapControls extends Component<Props, State> {
                         id={'color-' + group}
                         style={{ display: 'flex', alignItems: 'center', margin: '5px' }}
                       >
+                      <div
+                        style={styles.swatch}
+                        onClick={() => this.handleColorpickerClick(group)}
+                      >
                         <div
-                          style={styles.swatch}
-                          onClick={() => {
-                            this.handleColorpickerClick(group);
+                          style={{
+                            width: '15px',
+                            height: '15px',
+                            borderRadius: '50%',
+                            backgroundColor: this.getRgbaString(group, true),
+                            opacity: this.state.groupDisabled[group] ? 0.3 : 1, // lower opacity when disabled
+                            position: 'relative'
                           }}
                         >
-                          <div
-                            style={{
-                              width: '15px',
-                              height: '15px',
-                              borderRadius: '50%',
-                              backgroundColor: this.getRgbaString(group),
-                            }}
-                          />
+                          {this.state.groupDisabled[group] && false && (
+                            <div
+                              style={{
+                                position: 'absolute',
+                                top: '50%',
+                                left: '50%',
+                                width: '150%',     // full width of the circle
+                                height: '1px',     // thickness of the line
+                                backgroundColor: 'black', // or any color you prefer
+                                transform: 'translate(-50%, -50%) rotate(45deg)',
+                              }}
+                            />
+                          )}
                         </div>
+                      </div>
+
                         {/* Clicking the label toggles disabled */}
                         <label 
                           style={{ 
                             marginLeft: '5px', 
                             marginBottom: '0px', 
                             cursor: 'pointer', 
-                            textDecoration: isDisabled ? 'line-through' : 'none' 
+                            opacity: isDisabled ? 0.3 : 1 
                           }}
                           onClick={() => this.toggleGroupDisabled(group)}
                         >
@@ -1121,6 +1146,46 @@ export class SemanticMapControls extends Component<Props, State> {
     return groups;
   }
 
+
+    /**
+   * Enable (activate) all groups at once
+   */
+    private enableAllGroups() {
+      this.setState(
+        (prevState) => {
+          const newDisabled = {};
+          for (const group in prevState.groupDisabled) {
+            newDisabled[group] = false; // mark all as enabled
+          }
+          return { groupDisabled: newDisabled };
+        },
+        () => {
+          // After updating state, push color changes to the map
+          this.triggerSendFeaturesColorsAssociationsToMap();
+        }
+      );
+    }
+  
+    /**
+     * Disable (deactivate) all groups at once
+     */
+    private disableAllGroups() {
+      this.setState(
+        (prevState) => {
+          const newDisabled = {};
+          for (const group in prevState.groupDisabled) {
+            newDisabled[group] = true; // mark all as disabled
+          }
+          return { groupDisabled: newDisabled };
+        },
+        () => {
+          // After updating state, push color changes to the map
+          this.triggerSendFeaturesColorsAssociationsToMap();
+        }
+      );
+    }
+  
+
   /* accepts parameters
    * h  Object = {h:x, s:y, v:z}
    * OR
@@ -1274,13 +1339,15 @@ findClosestMark(value, marks) {
     return string.charAt(0).toUpperCase() + string.slice(1);
   }
 
-  private getRgbaString(group: string) {
+  private getRgbaString(group: string, preview: boolean = false) {
     let baseColor = this.defaultFeaturesColor;
     // Check if we have a custom color assigned
-    if (group in this.state.groupColorAssociations && 
-        this.state.groupColorAssociations[group] && 
-        this.state.groupColorAssociations[group] !== this.defaultFeaturesColor && 
-        this.state.groupColorAssociations[group] !== '') {
+    if (
+      group in this.state.groupColorAssociations &&
+      this.state.groupColorAssociations[group] &&
+      this.state.groupColorAssociations[group] !== this.defaultFeaturesColor &&
+      this.state.groupColorAssociations[group] !== ''
+    ) {
       if (typeof this.state.groupColorAssociations[group] === 'string') {
         baseColor = this.state.groupColorAssociations[group];
       } else {
@@ -1289,12 +1356,14 @@ findClosestMark(value, marks) {
         baseColor = 'rgba(' + color_rgba.r + ', ' + color_rgba.g + ', ' + color_rgba.b + ', ' + '0.4' + ')';
       }
     }
-
-    // Now adjust the alpha depending on whether the group is disabled
+  
+    // If this is for a preview, ignore the disabled state and return the base color as is.
+    if (preview) {
+      return baseColor;
+    }
+  
+    // Adjust alpha based on disabled state for other uses
     const disabled = this.state.groupDisabled[group] === true;
-    // Parse the baseColor to RGBA components if needed
-    // We assume baseColor is always in rgba(x,y,z,a) format
-    // If you need a more robust parser, implement accordingly.
     const matches = baseColor.match(/rgba?\((\d+),\s?(\d+),\s?(\d+),?\s?([\d.]+)?\)/);
     if (matches) {
       let r = matches[1];
@@ -1303,10 +1372,9 @@ findClosestMark(value, marks) {
       let a = disabled ? '0' : '0.5';
       return `rgba(${r},${g},${b},${a})`;
     }
-
-    // Fallback, if parsing fails
+  
     return disabled ? 'rgba(200,50,50,0)' : 'rgba(200,50,50,0.5)';
-  }
+  }  
 
   private initializeGroupColorAssociations(groups: string[]) {
     let colorGroups = {};

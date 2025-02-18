@@ -134,9 +134,10 @@ declare module "chart.js" {
     animation?: AnimationOptions;
     elements?: ElementOptions;
     scales?: {
-      xAxes?: ScaleOptions[];
-      yAxes?: ScaleOptions[];
-    }
+      x?: ScaleOptions;
+      y?: ScaleOptions;
+      [key: string]: any;
+    };
     defaultColor?: Color;
 
     /** Resizes when the canvas container does. */

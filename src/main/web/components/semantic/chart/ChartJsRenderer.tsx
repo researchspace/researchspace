@@ -21,7 +21,7 @@ import * as Immutable from 'immutable';
 import * as React from 'react';
 import * as D from 'react-dom-factories';
 import {
-  Chart,
+  Chart  as ChartJS,
   ChartData,
   ChartOptions,
   LegendItem,
@@ -33,9 +33,9 @@ import {
   BarDataSet,
   CircularDataSet,
   BubbleDataSet,
-  BubbleDataObject,
+  BubbleDataObject
 } from 'chart.js';
-import ChartComponent, { ChartComponentProps, Line, Bar, Radar, Pie, Doughnut, Bubble } from 'react-chartjs-2';
+import {Chart as ChartComponent, ChartProps as ChartComponentProps, Line, Bar, Radar, Pie, Doughnut, Bubble } from 'react-chartjs-2';
 
 import { Rdf } from 'platform/api/rdf';
 import { TemplateItem } from 'platform/components/ui/template';
@@ -101,7 +101,7 @@ type CustomLegendItem = LegendItem & { category?: Rdf.Node };
 export class ChartJsRenderer extends React.Component<ChartRendererProps, State> {
   private redrawChart = false;
 
-  private chart: ChartComponent<ChartComponentProps>;
+  private chart: ChartJS | null = null;
   private mapped: MappedOptions;
 
   constructor(props: ChartRendererProps) {
@@ -148,7 +148,7 @@ export class ChartJsRenderer extends React.Component<ChartRendererProps, State> 
       options = this.legendOptions(
         (chart) => {
           const meta = chart.getDatasetMeta(0);
-          const items: CustomLegendItem[] = Chart.defaults.doughnut.legend.labels.generateLabels(chart);
+          const items: CustomLegendItem[] = ChartJS.defaults.doughnut.legend.labels.generateLabels(chart);
           categories.forEach((category, i) => {
             const hidden = this.state.hiddenCategories.has(category);
             items[i].category = category;
@@ -158,7 +158,7 @@ export class ChartJsRenderer extends React.Component<ChartRendererProps, State> 
           return items;
         },
         (event, item, context) => {
-          Chart.defaults.doughnut.legend.onClick.call(context, event, item);
+          ChartJS.defaults.doughnut.legend.onClick.call(context, event, item);
         }
       );
       makeTooltip = (refs): ChartTooltipData => {
@@ -211,18 +211,18 @@ export class ChartJsRenderer extends React.Component<ChartRendererProps, State> 
     if (chartType === 'line' || chartType === 'bar') {
       merge(mapped.options, {
         scales: {
-          xAxes: [
+          x: 
             {
               ticks: { autoSkip: false },
             },
-          ],
-          yAxes: [
-            {
+          },
+          y: {
+            
               ticks: { beginAtZero: true },
             },
-          ],
-        },
-      });
+          },
+        
+      );
     } else if (chartType === 'radar') {
       merge(mapped.options, {
         scale: {
@@ -332,7 +332,7 @@ export class ChartJsRenderer extends React.Component<ChartRendererProps, State> 
   }
 
   private legendOptions(
-    generateLabels: (chart: Chart) => CustomLegendItem[],
+    generateLabels: (chart: ChartJS) => CustomLegendItem[],
     onClick: (event: any, item: CustomLegendItem, context: any) => void
   ): ChartOptions {
     const updateVisibility = (category: Rdf.Node, wasHidden: boolean) => {
@@ -428,7 +428,7 @@ export class ChartJsRenderer extends React.Component<ChartRendererProps, State> 
       this.props.config.type === 'line'
         ? {
             scales: {
-              xAxes: [{ type: 'linear', position: 'bottom' } as ScaleOptions],
+              x: { type: 'linear', position: 'bottom' } as ScaleOptions,
             },
           }
         : {};
@@ -490,6 +490,7 @@ export class ChartJsRenderer extends React.Component<ChartRendererProps, State> 
     };
     const generatedConfig: ChartComponentProps = {
       data: data,
+      type: config.type,
       options: merge(options, optionsOverride),
       width: !config.dimensions || config.dimensions.width === 0 ? DEFAULT_WIDTH : config.dimensions.width,
       height: !config.dimensions || config.dimensions.height === 0 ? DEFAULT_HEIGHT : config.dimensions.height,
@@ -532,8 +533,10 @@ export class ChartJsRenderer extends React.Component<ChartRendererProps, State> 
     );
   }
 
-  private onChartMount = (chart: ChartComponent<ChartComponentProps>) => {
-    this.chart = chart;
+  private onChartMount = (chartComponent: { chart: ChartJS } | null) => {
+    if (chartComponent) {
+      this.chart = chartComponent.chart;
+    }
   };
 
   private onTooltipHide = () => {
@@ -592,9 +595,10 @@ export class ChartJsRenderer extends React.Component<ChartRendererProps, State> 
         break;
     }
 
-    const chart = this.chart.chartInstance;
-    const { offsetLeft, offsetTop } = chart.canvas as HTMLElement;
-
+    /* THIS SECTION will not be possible as is written with the upgradred libraries, 
+       it requires some rethinking */
+    //const { offsetLeft, offsetTop } = chart.canvas as HTMLElement;
+/*
     this.setState({
       tooltip: {
         hovering: true,
@@ -609,7 +613,7 @@ export class ChartJsRenderer extends React.Component<ChartRendererProps, State> 
           arrowAlignment,
         },
       },
-    });
+    });*/
   };
 }
 

@@ -53,7 +53,7 @@
 
 {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map") }}
   <div class="modal-preview-container">
-    <div class="modal-resource-persisted-container" style="padding: 0;">
+    <div class="modal-resource-media p-0">
       <ontodia  id='ontodia' 
                 diagram='{{resource}}'
                 image-iris='["http://www.researchspace.org/ontology/PX_has_main_representation"]'
@@ -211,7 +211,7 @@
 {{else if (or (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart") 
               (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline") )}}
   <div class="modal-preview-container">
-    <div class="modal-resource-persisted-container">
+    <div class="modal-resource-media">
       <mp-persisted-component iri='{{resource}}'></mp-persisted-component>
     </div>
     [[> resourceDetails]]
@@ -231,7 +231,7 @@
     [[> resourceDetails]]
   </div>
 {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Video") }}
-  <div class="modal-preview-container modal-recording-container h100">
+  <div class="modal-preview-container">
     <semantic-query query='SELECT DISTINCT ?video ?fileName ?fileMediaType WHERE {     
                             {
                               <{{resource}}> crm:P129i_is_subject_of ?digital_object.
@@ -251,9 +251,9 @@
                     template='{{> template}}'>
                 
         <template id='template'>
-          {{#ifCond bindings.length ">" "1"}}
-            <div class="modal-recording-container">
-              <div class="modal-videos">
+          <div class="modal-recording-container h100">
+            {{#ifCond bindings.length ">" "1"}}
+              <div class="modal-resource-media modal-videos">
                 {{#each bindings}}
                   <div>
                     {{#if video}}
@@ -272,24 +272,24 @@
                   </div>
                 {{/each}}
               </div>
-            </div>
-          {{else}}
-            <div class="modal-single-video">
-              {{#if bindings.0.video.value}}
-                <iframe src='{{bindings.0.video.value}}' 
-                        frameborder="0" 
-                        allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
-                        width="100%" height="100%"
-                        allowfullscreen>
-                </iframe>
-              {{else if bindings.0.fileName.value}}
-                <video controls preload="metadata" width="100%" height="100%" style="object-fit: cover;">
-                    <source src="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}" type="{{bindings.0.fileMediaType.value}}" />
-                    <div class="color-secondary">Your browser doesn't support the visualisation of this video.</div>
-                </video>
-              {{/if}}
-            </div>
-          {{/ifCond}}
+            {{else}}
+              <div class="modal-resource-media modal-videos p-0">
+                {{#if bindings.0.video.value}}
+                  <iframe src='{{bindings.0.video.value}}' 
+                          frameborder="0" 
+                          allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
+                          width="100%" height="100%"
+                          allowfullscreen>
+                  </iframe>
+                {{else if bindings.0.fileName.value}}
+                  <video controls preload="metadata" width="100%" height="100%" style="object-fit: cover;">
+                      <source src="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}" type="{{bindings.0.fileMediaType.value}}" />
+                      <div class="color-secondary">Your browser doesn't support the visualisation of this video.</div>
+                  </video>
+                {{/if}}
+              </div>
+            {{/ifCond}}
+          </div>
         </template>
     </semantic-query>
     [[> resourceDetails]]
@@ -315,33 +315,81 @@
                     template='{{> template}}'>
                 
         <template id='template'>
-          <div class="modal-single-audio">
-            {{#if bindings.0.audioURL.value}}
-              <div style="display: flex; gap: 5px; margin-top: 10px; width: 100%;">
-                <span>Audio URL:</span>
-                <a  class="text-link" 
-                    style="display: block;"
-                    target="_blank" 
-                    href="{{bindings.0.audioURL.value}}">
-                    {{bindings.0.audioURL.value}}
-                </a>
-              </div>
-            {{/if}}
+          <div class="modal-resource-media">
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+              {{#if bindings.0.audioURL.value}}
+                <div style="display: flex; gap: 5px; width: 100%;">
+                  <span>Audio URL:</span>
+                  <a  class="text-link" 
+                      style="display: block;"
+                      target="_blank" 
+                      href="{{bindings.0.audioURL.value}}">
+                      {{bindings.0.audioURL.value}}
+                  </a>
+                </div>
+              {{/if}}
 
-            {{#if bindings.0.fileName.value}}
-              <p style="margin-top: 20px;">Audio file:</p>
-              <audio controls preload="metadata" width="100%">
-                <source src="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}" type="{{bindings.0.fileMediaType.value}}">
-                <div class="color-secondary" style="width: 100%;">Your browser doesn't support the format of this audio.</div>
-              </audio>
-            {{/if}}
+              {{#if bindings.0.fileName.value}}
+                <div>
+                  <p>Audio file:</p>
+                  <audio controls preload="metadata" width="100%">
+                    <source src="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}" type="{{bindings.0.fileMediaType.value}}">
+                    <div class="color-secondary" style="width: 100%;">Your browser doesn't support the format of this audio.</div>
+                  </audio>
+                </div>
+              {{/if}}
+            </div>
           </div>
         </template>
     </semantic-query>
     [[> resourceDetails]]
   </div>
 {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Document") }}
+  <div class="modal-preview-container">
+        <semantic-query query='SELECT DISTINCT ?doc ?fileName ?fileMediaType WHERE { 
+                                      BIND(<{{resource}}> as ?doc) .
+                                      ?doc crmdig:L60i_is_documented_by ?digitizationProcess .
+                                      ?digitizationProcess a crmdig:D2_Digitization_Process .    
+                                      ?digitizationProcess crmdig:L11_had_output ?file .
+                                      ?file rs:PX_has_file_name ?fileName .
+                                      ?file rs:PX_has_media_type ?fileMediaType .
+                              }'
+                                              
+                    template='{{> template}}'>
+                
+        <template id='template'>
+          {{#if (or (eq bindings.0.fileMediaType.value "application/pdf") 
+                    (eq bindings.0.fileMediaType.value "application/json") 
+                    (eq bindings.0.fileMediaType.value "text/plain")
+                    (eq bindings.0.fileMediaType.value "text/html")
+                    (eq bindings.0.fileMediaType.value "text/xml")
+          )}}
+            <div class="modal-resource-media p-0">
+              <iframe src="/file?fileName={{bindings.0.fileName.value}}&storage=images&mode=open&mediaType={{bindings.0.fileMediaType.value}}"
+                      frameborder="0" 
+                      width="100%" height="100%"
+                      allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
+                      allowfullscreen>
+              </iframe>
+            </div>
+          {{else}}
+            <div class="modal-resource-media">
+              <div style="display: flex; gap: 5px; margin-top: 10px; width: 100%;">
+                <span>Document file:</span>
+                <a href="/file?fileName={{bindings.0.fileName.value}}&storage=images&mode=open&mediaType={{bindings.0.fileMediaType.value}}"
+                    class="text-link" 
+                    style="display: block;"
+                    target="_blank">
+                    {{bindings.0.fileName.value}}
+                </a>
+              </div>
+            </div>
+          {{/if}}
+        </template>
 
+    </semantic-query>
+    [[> resourceDetails]]
+  </div>
 {{else}}
   <semantic-query query='SELECT ?image ?recording ?recordingType ?map WHERE {
                           OPTIONAL {
@@ -413,7 +461,7 @@
                   <div class="modal-preview-container modal-image-container">
                     <div class="modal-iiif-container">
                       {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation") }}
-                        <div class="modal-image-thumbnail-container">
+                        <div class="modal-resource-media modal-image-thumbnail-container">
                           <rs-iiif-image-thumbnail  height='100%' width='auto' style='height: 100%; width: auto; object-fit: contain;'
                                                     image-or-region='{{resource}}'    
                                                     [[> rsp:IIIFConfig]]>
@@ -486,7 +534,7 @@
                     <template id='template'>
                       {{#ifCond bindings.length ">" "1"}}
                         <div class="modal-preview-container modal-recording-container">
-                          <div class="modal-videos">
+                          <div class="modal-resource-media modal-videos">
                             {{#each bindings}}
                               <div class="video-card">
                                 <div class="video-card-header">
@@ -564,8 +612,8 @@
         
               <bs-tab-pane event-key="map">
                 {{#if bindings.0.map.value}}
-                  <div class="modal-preview-container modal-map-container">
-                    <div class="modal-map">
+                  <div class="modal-preview-container">
+                    <div class="modal-resource-media p-0">
                       <semantic-map query='SELECT ?wkt WHERE { 
                                               <{{resource}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
                                               ?osm_geoCoordinates a crm:E94_Space_Primitive .

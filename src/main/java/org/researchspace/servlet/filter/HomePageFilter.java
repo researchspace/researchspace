@@ -89,14 +89,15 @@ private static final Logger logger = LogManager.getLogger(HomePageFilter.class);
         String startPage = config.getGlobalConfig().getHomePage();
 
         final IRI startPageIRI = guessStartPage(startPage);
-
         Optional<String> prefixString = ns.getPrefix(startPageIRI.getNamespace()).map(prefix -> {
-            if (prefix.equals(RuntimeNamespace.DEFAULT)) {
+            /* Check if empty and default namespaces are equal */
+            if (prefix.equals(RuntimeNamespace.DEFAULT) && prefix.equals(RuntimeNamespace.EMPTY)) {
                 return startPageIRI.getLocalName();
             }
+             
             return prefix + ":" + startPageIRI.getLocalName();
         });
-        logger.info("prefixString"+prefixString);
+       
         String newPath = "";
         if (prefixString.isPresent())
             newPath = httpRequest.getContextPath() + config.getEnvironmentConfig().getResourceUrlMapping()
@@ -106,7 +107,7 @@ private static final Logger logger = LogManager.getLogger(HomePageFilter.class);
                                                + startPageIRI.stringValue();
 
         HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-        logger.info("NEW path redirect"+newPath);
+        
         httpServletResponse.sendRedirect(httpServletResponse.encodeRedirectURL(newPath));
         return;
     }

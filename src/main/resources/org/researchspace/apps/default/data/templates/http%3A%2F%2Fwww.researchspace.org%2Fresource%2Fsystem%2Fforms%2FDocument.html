@@ -137,15 +137,16 @@
                               (eq bindings.0.fileMediaType.value "text/html")
                               (eq bindings.0.fileMediaType.value "text/xml")
                     )}}
-                      <button class="btn btn-default btn-textAndIcon" style="height: 40px;">
-                        <a href="/file?fileName={{bindings.0.fileName.value}}&storage=images&mode=open&mediaType={{bindings.0.fileMediaType.value}}"
-                           target="_blank" title='Open document' class="btn-textAndIcon">
-                          <rs-icon icon-type="rounded" icon-name="open_in_new" symbol="true"></rs-icon>
-                          <span>Open</span>
-                        </a>
-                      </button>
+                      <mp-event-trigger id='{{viewId}}-open-document-file-visualisation-trigger' 
+                                      type='Dashboard.AddFrame'
+                                      data='{"viewId":"resource-file-visualisation", 
+                                              "resourceIri": "{{node}}"}' 
+                                      targets='["thinking-frames"]'>
+                        <button class="btn btn-default" style="height: 40px;">
+                          <span>Open document</span>
+                        </button>
+                      </mp-event-trigger>
                     {{/if}}
-
                 </template>
               </semantic-query>
             </div>

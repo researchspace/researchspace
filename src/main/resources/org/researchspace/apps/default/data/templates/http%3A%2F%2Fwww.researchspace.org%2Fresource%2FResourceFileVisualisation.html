@@ -1,15 +1,50 @@
-<semantic-query query='SELECT DISTINCT ?subject ?viewId ?resourceType WHERE {
+<semantic-switch query='SELECT ?resourceOntologyClass {
                         BIND(<{{iri}}> as ?subject)
-                        BIND("{{dashboardId}}" as ?viewId)
+                        ?subject a ?resourceOntologyClass .
+                      }'>
 
-                        ?subject a <http://iflastandards.info/ns/fr/frbr/frbroo/F26_Recording> .
+  <template id='http://www.cidoc-crm.org/cidoc-crm/E31_Document'>
+    <semantic-query query='SELECT ?file ?fileName ?fileMediaType WHERE {
+                            BIND(<{{iri}}> as ?subject)
+                            ?subject crmdig:L60i_is_documented_by ?digitizationProcess .
+                            ?digitizationProcess a crmdig:D2_Digitization_Process .    
+                            ?digitizationProcess crmdig:L11_had_output ?file .
+                            ?file rs:PX_has_file_name ?fileName .
+                            ?file rs:PX_has_media_type ?fileMediaType .
+                          }'
+                    template='{{> template}}'>
 
-                        ?subject crm:P2_has_type ?resourceType . 
-                        ?resourceType crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/resource_type> .
+        <template id='template'>
+          {{#if (or (eq bindings.0.fileMediaType.value "application/pdf") 
+                    (eq bindings.0.fileMediaType.value "application/json") 
+                    (eq bindings.0.fileMediaType.value "text/plain")
+                    (eq bindings.0.fileMediaType.value "text/html")
+                    (eq bindings.0.fileMediaType.value "text/xml")
+          )}}
+            <iframe src="/file?fileName={{bindings.0.fileName.value}}&storage=images&mode=open&mediaType={{bindings.0.fileMediaType.value}}"
+                    frameborder="0" 
+                    width="100%" height="100%"
+                    allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen>
+            </iframe>
+          {{/if}}
+        </template>
+    </semantic-query>
+  </template>
 
-                      } LIMIT 1'
-      
-                template='{{> template}}'>
+  <template id='http://iflastandards.info/ns/fr/frbr/frbroo/F26_Recording'>
+    <semantic-query query='SELECT DISTINCT ?subject ?viewId ?resourceType WHERE {
+                            BIND(<{{iri}}> as ?subject)
+                            BIND("{{dashboardId}}" as ?viewId)
+
+                            ?subject a <http://iflastandards.info/ns/fr/frbr/frbroo/F26_Recording> .
+
+                            ?subject crm:P2_has_type ?resourceType . 
+                            ?resourceType crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/resource_type> .
+
+                          } LIMIT 1'
+          
+                    template='{{> template}}'>
 
       <template id='template'>
         <div class="resource-frameView-container">
@@ -29,11 +64,10 @@
                                                     iri=iri
                                                     resourceConfig="http://www.researchspace.org/resource/system/resource_configurations_container/data/Audio"
                                                     resourceLabel="Audio"
-                                                    
                                                     resourceFormIRI="http://www.researchspace.org/resource/system/forms/Audio"
                                                     hidePreview=true
                                                     headerButton=true
-                                                    RecordingFileVisualisationPage=true
+                                                    ResourceFileVisualisationPage=true
                     }}
                   </rs-resource-dropdown>
                 </div>
@@ -104,11 +138,10 @@
                                                     iri=iri
                                                     resourceConfig="http://www.researchspace.org/resource/system/resource_configurations_container/data/Video"
                                                     resourceLabel="Video"
-                                                
                                                     resourceFormIRI="http://www.researchspace.org/resource/system/forms/Video"
                                                     hidePreview=true
                                                     headerButton=true
-                                                    RecordingFileVisualisationPage=true
+                                                    ResourceFileVisualisationPage=true
                     }}
                   </rs-resource-dropdown>
                 </div>
@@ -183,5 +216,13 @@
           {{/switch}}
         </div>
       </template>
+    </semantic-query>
+  </template>
 
-</semantic-query>
+  <template id='default'><div></div></template>
+  
+</semantic-switch>
+
+
+
+

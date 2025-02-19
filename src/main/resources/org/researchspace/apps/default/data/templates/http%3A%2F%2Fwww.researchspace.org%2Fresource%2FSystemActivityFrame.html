@@ -89,7 +89,7 @@
                                                                         } ORDER BY DESC(?date)'
                                                                   default-query='SELECT DISTINCT ?subject WHERE {
                                                                                   {
-                                                                                    ?subject prov:generatedAtTime ?date .
+                                                                                    ?subject prov:generatedAtTime ?date1 .
                                                                                     ?subject crm:P2_has_type ?type .
                                                                                     FILTER(?type IN (<http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map>, 
                                                                                                       <http://www.researchspace.org/resource/system/vocab/resource_type/set>,
@@ -101,7 +101,7 @@
                                                                                     MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
                                                                                   } UNION {
                                                                                     ?subject a rs:EX_Digital_Image .
-                                                                                    ?subject prov:generatedAtTime ?date .
+                                                                                    ?subject prov:generatedAtTime ?date2 .
                                                                                   } UNION {
                                                                                     ?subject crm:P129i_is_subject_of ?entityFormRecord .
                                                                                     ?entityFormRecord a crmdig:D1_Digital_Object .
@@ -119,7 +119,9 @@
                                                                                     ?entityFormRecordModification crm:P4_has_time-span ?entityFormRecordModificationTimespan .
                                                                                     ?entityFormRecordModificationTimespan crm:P82_at_some_time_within ?dateModification .
                                                                                   } 
-                                                                                  BIND(IF(BOUND(?dateModification), ?dateModification, ?dateCreation) AS ?date)
+                                                                                  BIND(IF(BOUND(?dateModification), ?dateModification, ?dateCreation) AS ?complexDate)
+                                                                                  BIND(IF(BOUND(?complexDate),?complexDate,IF(BOUND(?date1),?date1,IF(BOUND(?date2),?date2,""))) as ?date)
+
                                                                                   MINUS { ?subject a Platform:resource_configuration .}
                                                                                   FILTER (?date > "2024-10-22T00:00:00.000Z"^^xsd:dateTime)
                                                                                 }'

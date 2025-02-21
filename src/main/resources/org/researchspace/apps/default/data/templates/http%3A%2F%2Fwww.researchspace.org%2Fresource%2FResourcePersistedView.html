@@ -26,15 +26,18 @@
         >
 
     <template id='template'>
-      <div class="resource-persisted-container">
-        <div class="resource-persisted-visualisation">
+      <div class="resource-frameView-container resource-persisted-container">
+        <div class="resource-frameView-visualisation" style="min-height: 300px;">
           <mp-persisted-component iri='{{iri}}'></mp-persisted-component>
         </div>
-        <div class="resource-persisted-details">
-          <div style="display: flex; justify-content: space-between;">
-            <h3 style="margin-top: 0; margin-bottom: 5px; text-transform: capitalize; flex: 1;">
-              <mp-label iri='{{iri}}' class="text-truncate-line1"></mp-label>
-            </h3>
+        <div class="resource-frameView-details">
+          <div class="resource-frameView-details-hearder">
+            <div>
+              <h3>
+                <mp-label iri='{{iri}}'></mp-label>
+              </h3>
+              <p class="color-secondary-light">{{bindings.0.resourceLabel.value}}</p>
+            </div>
             <rs-resource-dropdown id="{{viewId}}-{{iri}}-item-actions-dropdown" class-name="dropdown-no-caret">
               {{> rsp:ResourceDropdownActions viewId=viewId
                                               iri=iri
@@ -48,7 +51,7 @@
               }}
             </rs-resource-dropdown>
           </div>
-          <p class="color-secondary-light">{{bindings.0.resourceLabel.value}}</p>
+          
           {{#if bindings.0.description.value}}
             <p>{{bindings.0.description.value}}</p>
           {{/if}}

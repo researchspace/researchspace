@@ -128,7 +128,7 @@ export class RepositoryConfigEditor extends Component<Props, State> {
     }
 
     return (
-      <div data-flex-layout="column top-left" className={styles.holder}>
+      <div className={styles.holder}>
         <div>
           <h2>{this.isEditMode() ? `Edit Repository Config "${this.props.id}"` : `Create new Repository Config`}</h2>
         </div>
@@ -136,7 +136,7 @@ export class RepositoryConfigEditor extends Component<Props, State> {
           <div>
             <Form horizontal>
               <FormGroup className={styles.formGroup} validationState={this.getNewRepositoryIDValidation()}>
-                <strong> Repository ID:</strong>
+                <strong>Repository ID:</strong>
                 <br />
                 <FormControl
                   className={styles.formGroup}
@@ -146,7 +146,7 @@ export class RepositoryConfigEditor extends Component<Props, State> {
                   placeholder="Please specify a new and unique repository id."
                 />
                 {this.getNewRepositoryIDValidation() && (
-                  <Alert bsStyle='info'>Repository ID must be a unique, alphanumeric string of length &gt; 5 characters.</Alert>
+                  <Alert bsStyle='info' style={{ marginBottom: '0px' }}>Repository ID must be a unique, alphanumeric string of length &gt; 5 characters.</Alert>
                 )}
               </FormGroup>
             </Form>
@@ -261,10 +261,10 @@ export class RepositoryConfigEditor extends Component<Props, State> {
     return (
       <DropdownButton
         bsStyle="default"
-        title="From template ...."
+        title="From template"
         onSelect={this.onTemplateSelected}
         id="template-dropdown"
-        style={{ marginBottom: '5px'}}
+        style={{ marginBottom: '5px', marginTop: '10px'}}
       >
         {items}
       </DropdownButton>

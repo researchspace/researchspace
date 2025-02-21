@@ -1,171 +1,176 @@
-<ol class="page-breadcrumb">
+[[!-- <ol class="page-breadcrumb">
   <li>
-    <mp-link title="Home" url="/">Home</mp-link>
-  </li>
-  <li>
-    <semantic-link title="Administration" iri='[[resolvePrefix "rsp:admin"]]'>Administration</semantic-link>
+    <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames" 
+                            urlqueryparam-view='admin'
+                            urlqueryparam-resource-iri='[[resolvePrefix "rsp:admin"]]'
+                            urlqueryparam-custom-label='Administration'>
+      <div>Administration</div>
+    </semantic-link-container>
   </li>
   <li class="active">Data import and download</li>
-</ol>
+</ol> --]]
 
-<div class="page rs-import-exp">
+<div class="page__grid-container application-page-container">
+  <div class='page__content-container'>
 
-  [[> rsp:adminPageHeader title="Data import and download" materialIcon="import_export"]]
+  [[> rsp:adminPageHeader title="Data import"]]
 
-  <div class="container-fluid" style="margin-bottom: 40px;">
-    <bs-row class="row-center">
-      <bs-col xs=12 sm=11 md=10 lg=9 class="rs-col-xl-8">
+  [[#if (hasPermission "sparql:update")]]
+    <div class="documentation-section documentation-section-withIcon">
+      <div class="documentation-section-icon-container">
+        <i class="fa fa-info"></i>
+      </div>
 
-        <h1>Data import</h1>
-        <hr style="margin-top:0px;" />
-        [[#if (hasPermission "sparql:update")]]
-          <div class="documentation-section documentation-section-withIcon" style="margin: 20px 0;">
-            <div class="documentation-section-icon-container">
-              <i class="fa fa-info"></i>
-            </div>
+      <div style="flex: 1;"> 
+        <div class="documentation-section-title" style="margin-bottom: 5px;">Info</div>
+        <div class="documentation-section-content" style="margin-bottom: 5px;"> 
+          The data import via drag&amp;drop file upload should only be used for smaller files.
+        </div>
+        <div class="documentation-section-content" style="margin-bottom: 5px;"> 
+          All communication is done via HTTP and as such there are several limiting parameters, for example,
+          the maximum body size a client may post against the webserver (e.g. tomcat, jetty or nginx default
+          configuration
+          is usually around 2 MBs).
+          
+        </div>
+        <div class="documentation-section-content">
+          For loading larger datasets it is generally recommended to load the data via dedicated (but usually
+          proprietary)
+          graph database APIs. See also 
+          <semantic-link iri='[[resolvePrefix "Help:WorkingWithData"]]' class="text-underline" target="_blank">Working with data</semantic-link>.
+        </div>
+      </div>
+    </div> 
+    <mp-rdf-upload></mp-rdf-upload>
+  [[else]]
+    <div class="warning-documentation-section warning-documentation-section-withIcon">
+      <div class="warning-documentation-section-icon-container">
+        <rs-icon icon-type="rounded" icon-name="lock" symbol="true"></rs-icon>
+      </div>
+      <div> 
+        <div class="warning-documentation-section-title">Permission denied!</div>
+        <div class="warning-documentation-section-content">
+          <div>You don't have permission to upload data in the system</div>
+        </div>
+      </div>
+    </div>
+  [[/if]]
 
-            <div style="flex: 1;"> 
-              <div class="documentation-section-title" style="margin-bottom: 5px;">Info</div>
-              <div class="documentation-section-content" style="margin-bottom: 5px;"> 
-                The data import via drag&amp;drop file upload should only be used for smaller files.
-              </div>
-              <div class="documentation-section-content" style="margin-bottom: 5px;"> 
-                All communication is done via HTTP and as such there are several limiting parameters, for example,
-                the maximum body size a client may post against the webserver (e.g. tomcat, jetty or nginx default
-                configuration
-                is usually around 2 MBs).
-                
-              </div>
-              <div class="documentation-section-content">
-                For loading larger datasets it is generally recommended to load the data via dedicated (but usually
-                proprietary)
-                graph database APIs. See also 
-                <semantic-link iri='[[resolvePrefix "Help:WorkingWithData"]]' class="text-underline" target="_blank">Working with data</semantic-link>.
-              </div>
-            </div>
-          </div> 
-          <mp-rdf-upload></mp-rdf-upload>
-        [[else]]
-          <div class="warning-documentation-section warning-documentation-section-withIcon" style="margin: 20px 0;">
-            <div class="warning-documentation-section-icon-container">
-              <rs-icon icon-type="rounded" icon-name="lock" symbol="true"></rs-icon>
-            </div>
-            <div> 
-              <div class="warning-documentation-section-title">Permission denied!</div>
-              <div class="warning-documentation-section-content">
-                <div>You don't have permission to upload data in the system</div>
-              </div>
-            </div>
+  [[> rsp:adminPageHeader title="Data download"]]
+
+  <mp-event-proxy id='{{viewId}}-dataImport-upload-success-proxy' 
+                  on-event-type='RdfUpload.Success'
+                  proxy-event-type='Component.Refresh' 
+                  proxy-targets='["{{viewId}}-data-export-table"]'
+  ></mp-event-proxy>
+
+  <mp-event-proxy id='{{viewId}}-dataImport-graph-action-success-proxy' 
+                  on-event-type='GraphAction.Success'
+                  proxy-event-type='Component.Refresh'
+                  proxy-targets='["{{viewId}}-data-export-table"]'
+  ></mp-event-proxy>
+
+  <mp-event-target-refresh id='{{viewId}}-data-export-table'>
+    <div>
+      <semantic-query
+        query='SELECT (COUNT(*) as ?number) WHERE { { SELECT DISTINCT ?g WHERE{ GRAPH ?g {?s ?p ?o} } LIMIT 1000 } }'
+        template='{{#each bindings}}{{#ifCond number.value ">=" 1000}}<bs-alert bs-style="warning"> The following table is limited to show only <strong>1000</strong> named graphs.</bs-alert> {{else}} <div class="page__section-container"> The repository contains <strong> {{number.value}} </strong> distinct named graphs.</div> {{/ifCond}}{{/each}}'>
+      </semantic-query>
+      
+      <semantic-table query='SELECT ?graph WHERE {
+                                {
+                                  SELECT DISTINCT ?graph WHERE {
+                                    { GRAPH ?graph { ?subject ?predicate ?object. } }
+                                  } LIMIT 1000
+                                }
+                            }' 
+                      column-configuration='[ {"variableName":"graph", "displayName":"Named Graph", "cellTemplate":"{{> link}}"},
+                                              {"displayName":"Triples", "cellTemplate":"{{> count}}"},
+                                              {"displayName":"Actions", "cellTemplate": "{{> actions}}"}
+                                            ]'>
+
+        <template id='link'>
+          <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                    urlqueryparam-view='admin'
+                                    urlqueryparam-resource-iri='[[resolvePrefix "Admin:NamedGraphs"]]'
+                                    urlqueryparam-custom-label='{{graph.value}}'
+                                    urlqueryparam-graph="{{graph.value}}">
+            <div class="text-link">{{graph.value}}</div>
+          </semantic-link-container>
+        </template>
+
+        <template id='count'>
+          <semantic-query query='
+            SELECT ?size WHERE {
+              {
+                SELECT (COUNT(*) as ?number) WHERE {
+                  GRAPH <{{graph.value}}> { { SELECT * WHERE{ ?s ?p ?o}  LIMIT 1000 } }
+                } LIMIT 1
+              }
+              BIND(IF(?number>=1000, &apos;>=1000&apos;, ?number) as ?size)
+            }
+          '></semantic-query>
+        </template>
+
+        <template id='actions'>
+          <div class="btn-inline-container">
+            [[#if (hasPermission "sparql:graphstore:get")]]
+              <bs-dropdown id="download">
+                <bs-dropdown-toggle>
+                    <rs-icon icon-type="rounded" icon-name="file_download" symbol="true"></rs-icon>
+                    Download
+                </bs-dropdown-toggle>
+                <bs-dropdown-menu>
+                  
+                <bs-menu-item event-key=1>
+                  <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="trig">TRIG</mp-graph-store-action>
+                </bs-menu-item>
+                  
+                <bs-menu-item event-key=2>
+                  <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="ttl">
+                    TURTLE
+                  </mp-graph-store-action>
+                </bs-menu-item>
+
+                <bs-menu-item event-key=3>
+                  <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="nt">
+                    NTRIPLES
+                  </mp-graph-store-action>
+                </bs-menu-item>  
+
+                <bs-menu-item event-key=4>
+                  <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="rdf">
+                    RDF/XML
+                  </mp-graph-store-action>
+                </bs-menu-item>
+
+                <bs-menu-item event-key=4>
+                  <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="owl">
+                    OWL
+                  </mp-graph-store-action>
+                </bs-menu-item>
+
+                </bs-dropdown-menu>
+              </bs-dropdown>
+            [[/if]]
+            [[#if (hasPermission "sparql:graphstore:delete")]]
+              <mp-graph-store-action title="Delete" action="DELETE CUSTOM" graphuri="{{graph.value}}" graph-description="{{graph.value}}">
+                <button class="btn btn-default btn-textAndIcon" style="margin-right:8px;">
+                  <rs-icon icon-type="rounded" icon-name="delete" symbol="true"></rs-icon>Delete
+                </button>
+              </mp-graph-store-action>
+            [[/if]]
           </div>
-        [[/if]]
+        </template>
 
+        <template id='export'>
+          
+        </template>
 
-        <h1 style="margin-top: 30px;">All named graphs</h1>
-        <hr style="margin-top:0px;" />
+        <template id='delete'>
+        </template>
 
-        <mp-event-proxy id='{{viewId}}-dataImport-upload-success-proxy' 
-                        on-event-type='RdfUpload.Success'
-                        proxy-event-type='Component.Refresh' 
-                        proxy-targets='["{{viewId}}-data-export-table"]'
-        ></mp-event-proxy>
-
-        <mp-event-proxy id='{{viewId}}-dataImport-graph-action-success-proxy' 
-                        on-event-type='GraphAction.Success'
-                        proxy-event-type='Component.Refresh'
-                        proxy-targets='["{{viewId}}-data-export-table"]'
-        ></mp-event-proxy>
-
-        <mp-event-target-refresh id='{{viewId}}-data-export-table'>
-          <div>
-            <semantic-query
-              query='SELECT (COUNT(*) as ?number) WHERE { { SELECT DISTINCT ?g WHERE{ GRAPH ?g {?s ?p ?o} } LIMIT 1000 } }'
-              template='{{#each bindings}}{{#ifCond number.value ">=" 1000}}<bs-alert bs-style="warning"> The following table is limited to show only <strong>1000</strong> named graphs.</bs-alert> {{else}} <div class="page__section-container"> The repository contains <strong> {{number.value}} </strong> distinct named graphs.</div> {{/ifCond}}{{/each}}'>
-            </semantic-query>
-            
-            <semantic-table query='SELECT ?graph WHERE {
-                                      {
-                                        SELECT DISTINCT ?graph WHERE {
-                                          { GRAPH ?graph { ?subject ?predicate ?object. } }
-                                        } LIMIT 1000
-                                      }
-                                  }' 
-                            column-configuration='[ {"variableName":"graph", "displayName":"Named Graph", "cellTemplate":"{{> link}}"},
-                                                    {"displayName":"Triples", "cellTemplate":"{{> count}}"},
-                                                    {"displayName":"Actions", "cellTemplate": "{{> actions}}"}
-                                                  ]'>
-
-              <template id='link'>
-                <semantic-link iri='[[resolvePrefix "Admin:NamedGraphs"]]' urlqueryparam-graph="{{graph.value}}">
-                  {{graph.value}}</semantic-link>
-              </template>
-
-              <template id='count'>
-                <semantic-query query='
-                  SELECT ?size WHERE {
-                    {
-                      SELECT (COUNT(*) as ?number) WHERE {
-                        GRAPH <{{graph.value}}> { { SELECT * WHERE{ ?s ?p ?o}  LIMIT 1000 } }
-                      } LIMIT 1
-                    }
-                    BIND(IF(?number>=1000, &apos;>=1000&apos;, ?number) as ?size)
-                  }
-                '></semantic-query>
-              </template>
-
-              <template id='actions'>
-                <div class="btn-inline-container">
-                  [[#if (hasPermission "sparql:graphstore:get")]]
-                    <bs-dropdown id="download">
-                      <bs-dropdown-toggle>
-                          <rs-icon icon-type="rounded" icon-name="file_download" symbol="true"></rs-icon>
-                          Download
-                      </bs-dropdown-toggle>
-                      <bs-dropdown-menu>
-                        
-                        <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="trig">
-                          <bs-menu-item event-key=1>TRIG</bs-menu-item>
-                        </mp-graph-store-action>
-                      
-                        <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="ttl">
-                          <bs-menu-item event-key=2>TURTLE</bs-menu-item>
-                        </mp-graph-store-action>
-                      
-                        <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="nt">
-                          <bs-menu-item event-key=3>NTRIPLES</bs-menu-item>
-                        </mp-graph-store-action>
-                        
-                        <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="rdf">
-                          <bs-menu-item event-key=4>RDF/XML</bs-menu-item>
-                        </mp-graph-store-action>
-                        
-                        <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="owl">
-                          <bs-menu-item event-key=4>OWL</bs-menu-item>
-                        </mp-graph-store-action>
-                        
-                      </bs-dropdown-menu>
-                    </bs-dropdown>
-                  [[/if]]
-                  [[#if (hasPermission "sparql:graphstore:delete")]]
-                    <mp-graph-store-action title="Delete" action="DELETE CUSTOM" graphuri="{{graph.value}}" graph-description="{{graph.value}}">
-                      <button class="btn btn-default btn-textAndIcon" style="margin-right:8px;">
-                        <rs-icon icon-type="rounded" icon-name="delete" symbol="true"></rs-icon>Delete
-                      </button>
-                    </mp-graph-store-action>
-                  [[/if]]
-                </div>
-              </template>
-
-              <template id='export'>
-                
-              </template>
-
-              <template id='delete'>
-              </template>
-
-            </semantic-table>
-          </div>
-        </mp-event-target-refresh>
-      </bs-col>
-    </bs-row> <!--  close row -->
-  </div>
+      </semantic-table>
+    </div>
+  </mp-event-target-refresh> 
 </div>

@@ -1,223 +1,193 @@
-<ol class="page-breadcrumb">
-  <li>
-    <mp-link title="Home" url="/">Home</mp-link>
-  </li>
-  <li class="active">Administration</li>
-</ol>
+<div class="page__grid-container application-page-container">
+  <div class='page__content-container'>
+    [[> rsp:adminPageHeader title="Administration"]]
 
-<div class="page">
-  [[> rsp:adminPageHeader title="Administration" materialIcon="settings_suggest"]]
+    <h2 class="admin-title" style="margin-top: 30px;">Data management</h2>
+    <div class="admin-section-row">
+      [[#if (hasPermission "sparql:update")]]
+        [[>Admin:IconPanelInclude title="File Upload" materialIcon="upload_file"
+          pageLink=(resolvePrefix "Admin:FileUpload")]]
+      [[/if]]
+ 
+      [[>Admin:IconPanelInclude title="Data Import & Download" materialIcon="import_export" pageLink=(resolvePrefix
+                                "Admin:DataImportExport")]]
+    </div>
 
-  <div class="container-fluid">
-    <bs-row class="row-center">
-      <bs-col xs="12" sm="11" md="10" lg="9" class="rs-col-xl-8" style="margin-bottom: 40px;">
-        <bs-row>
-          <bs-col xs="6">
-            <h2 class="admin-title" style="margin-top: 12px;">Data management</h2>
-            <bs-row>
-              [[#if (hasPermission "sparql:update")]]
-                <bs-col xs="12" md="6">
-                  [[>Admin:IconPanelInclude title="File Upload" materialIcon="upload_file"
-                  pageLink=(resolvePrefix "Admin:FileUpload")]]
-                </bs-col>
-              [[/if]]
-              <bs-col xs="12" md="6">
-                [[>Admin:IconPanelInclude title="Data Import & Download" materialIcon="import_export" pageLink=(resolvePrefix
-                "Admin:DataImportExport")]]
-              </bs-col>
-            </bs-row>
-          </bs-col>
-        </bs-row>
+    <h2 class="admin-title">Knowledge Modelling</h2>
+    <div class="admin-section-row">
+      [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/fieldDefinitionContainer>:read:any")]]
+       [[>Admin:IconPanelInclude title="Knowledge Patterns" materialIcon="list"
+          pageLink="http://www.researchspace.org/resource/system/fieldDefinitionContainer"]]
+      [[/if]]
 
-        <bs-row>
-          <bs-col xs="12"><h2 class="admin-title">Knowledge Modelling</h2></bs-col>
-          [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/fieldDefinitionContainer>:read:any")]]
-            <bs-col xs="6" md="3"
-              >[[>Admin:IconPanelInclude title="Knowledge Patterns" materialIcon="list"
-              pageLink="http://www.researchspace.org/resource/system/fieldDefinitionContainer"]]
-            </bs-col>
-          [[/if]]
-          <bs-col xs="6" md="3"
-            > [[>Admin:IconPanelInclude title="Ontologies" materialIcon="schema" pageLink=(resolvePrefix "assets:Ontologies")]]
-          </bs-col>
-          [[#if (hasPermission "namespaces:*")]]
-            <bs-col xs="6" md="3"
-              >[[>Admin:IconPanelInclude title="RDF Namespace Prefixes" materialIcon="integration_instructions" pageLink=(resolvePrefix "Admin:Namespaces")]]
-            </bs-col>
-          [[/if]]
-          [[!-- TODO rename sparql endpoint and make it a proper link --]]
-          <bs-col xs="6" md="3">
-              <mp-link url="/sparql">
-                  <div class="text-center panel panel-default admin-icon-panel">
-                      <div class="panel-body">
-                        <span class="rs-icon rs-icon-sparql"></span>
-                      </div>
-                      <div class="panel-footer text-truncate" style="position: relative">
-                          SPARQL
-                      </div>
-                  </div>
-              </mp-link>
-          </bs-col>
-        </bs-row>
+      [[>Admin:IconPanelInclude title="Ontologies" materialIcon="schema" pageLink=(resolvePrefix "assets:Ontologies")]]
+      
+      [[#if (hasPermission "namespaces:*")]]
+        [[>Admin:IconPanelInclude title="RDF Namespace Prefixes" materialIcon="integration_instructions" pageLink=(resolvePrefix "Admin:Namespaces")]]
+      [[/if]]
 
-        <bs-row>
-          <bs-col xs="12"><h2 class="admin-title">System configurations</h2></bs-col>
-          [[#if (hasPermission "sparql:update")]]
-            <bs-col xs="6" md=3>
-              <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                          urlqueryparam-view='resource-configuration'>
-                    <div class="text-center panel panel-default admin-icon-panel">
-                      <div class="panel-body">
-                        <rs-icon icon-type="rounded" icon-name="ballot" symbol="true"></rs-icon>
-                      </div>
-                      <div class="panel-footer text-truncate" style="position: relative">
-                        Resources
-                      </div>
-                    </div>
-              </semantic-link-container>
-            </bs-col>
-          [[/if]]
-          [[#if (hasPermission "sparql:update")]]
-            <bs-col xs="6" md="3">
-              <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                      urlqueryparam-view='system-authority'>
-                      <div class="text-center panel panel-default admin-icon-panel">
-                        <div class="panel-body">
-                          <rs-icon icon-type="rounded" icon-name="description" symbol="true"></rs-icon>
-                        </div>
-                        <div class="panel-footer text-truncate" style="position: relative">
-                          System authority documents
-                        </div>
-                      </div>
-              </semantic-link-container>
-            </bs-col>
-          [[/if]]
-          [[#if (hasPermission "api:config:*:*:read")]]
-            <bs-col xs=6 md=3>[[>Admin:IconPanelInclude title="UI, Environment, Global & Data Quality" materialIcon="settings" pageLink=(resolvePrefix "Admin:Configuration")]]
-            </bs-col>
-          [[/if]]
-          [[#if (hasPermission "repository-config:view")]]
-            <bs-col xs=6 md=3>[[>Admin:IconPanelInclude title="Repositories" materialIcon="dns" pageLink=(resolvePrefix "Admin:Repositories")]]
-            </bs-col>
-          [[/if]]
-        </bs-row>
+      [[!-- TODO rename sparql endpoint and make it a proper link --]]
+      <mp-link url="/sparql">
+        <div class="text-center panel panel-default admin-icon-panel">
+            <div class="panel-body">
+              <span class="rs-icon rs-icon-sparql"></span>
+            </div>
+            <div class="panel-footer text-truncate" style="position: relative">
+                SPARQL
+            </div>
+        </div>
+      </mp-link>
+    </div>
 
-        <bs-row>
-          <bs-col xs="12"><h2 class="admin-title">System Management</h2></bs-col>
-          <bs-col xs="6" md="3"
-            >[[>Admin:IconPanelInclude title="Template & Application Pages" materialIcon="description" pageLink=(resolvePrefix "Admin:Templates")]]
-          </bs-col>
-          <bs-col xs=6 md=3>[[>Admin:IconPanelInclude title="Apps & Storages" materialIcon="storage" pageLink=(resolvePrefix "Admin:Apps")]]
-          </bs-col>
-          [[#if (hasPermission "api:ldp:*")]]
-            <bs-col xs=6 md=3>[[>Admin:IconPanelInclude title="LDP (Linked Data Platform)" materialIcon="inventory_2" pageLink="http://www.researchspace.org/resource/system/rootContainer" assets="true"]]</bs-col>
-          [[/if]]
-          
-          [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/queryTemplateContainer>:read:any")]]
-            <style>
-              .fa-stack-1x { top: 0em; }
-              .fa-stack {
-                font-size: 2.5em;
-                vertical-align: -16%;
-                height: 1.18em;
-              }
-              .filetype-text {
-                font-size: .4em;
-                font-weight: 800;
-              }
-            </style>
-            <bs-col xs=6 md=3>
-              <semantic-link-container title="Query Templates" uri="http://www.researchspace.org/resource/assets/QueryTemplates">
+    [[#if (hasPermission "sparql:update")]]<h2 class="admin-title">System configurations</h2>[[/if]]
+    <div class="admin-section-row">
+      [[#if (hasPermission "sparql:update")]]
+        <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                    urlqueryparam-view='resource-configuration'>
+              <div class="text-center panel panel-default admin-icon-panel">
+                <div class="panel-body">
+                  <rs-icon icon-type="rounded" icon-name="ballot" symbol="true"></rs-icon>
+                </div>
+                <div class="panel-footer text-truncate" style="position: relative">
+                  Resource configuration
+                </div>
+              </div>
+        </semantic-link-container>
+      [[/if]]
+
+      [[#if (hasPermission "sparql:update")]]
+        <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                urlqueryparam-view='system-authority'>
                 <div class="text-center panel panel-default admin-icon-panel">
-                  <div class="panel-body">      
-                    <rs-icon icon-type="rounded" icon-name="query_builder" symbol="true"></rs-icon>
+                  <div class="panel-body">
+                    <rs-icon icon-type="rounded" icon-name="description" symbol="true"></rs-icon>
                   </div>
-                  <div class="panel-footer" style="position: relative">
-                    Query Templates
+                  <div class="panel-footer text-truncate" style="position: relative">
+                    System authority documents
+                  </div>
+                </div>
+        </semantic-link-container>
+      [[/if]]
+
+      [[#if (hasPermission "api:config:*:*:read")]]
+        [[>Admin:IconPanelInclude title="UI, Environment, Global & Data Quality" materialIcon="settings" pageLink=(resolvePrefix "Admin:Configuration")]]
+      [[/if]]
+
+      [[#if (hasPermission "repository-config:view")]]
+        [[>Admin:IconPanelInclude title="Repositories" materialIcon="dns" pageLink=(resolvePrefix "Admin:Repositories")]]
+      [[/if]]
+    </div>
+
+    <h2 class="admin-title">System Management</h2>
+    <div class="admin-section-row">
+      [[>Admin:IconPanelInclude title="Template & Application Pages" materialIcon="description" pageLink=(resolvePrefix "Admin:Templates")]]
+
+      [[>Admin:IconPanelInclude title="Apps & Storages" materialIcon="storage" pageLink=(resolvePrefix "Admin:Apps")]]
+
+      [[#if (hasPermission "api:ldp:*")]]
+        [[>Admin:IconPanelInclude title="LDP (Linked Data Platform)" materialIcon="inventory_2" pageLink="http://www.researchspace.org/resource/system/rootContainer" assets="true"]]
+      [[/if]]
+      
+      [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/queryTemplateContainer>:read:any")]]
+        <style>
+          .fa-stack-1x { top: 0em; }
+          .fa-stack {
+            font-size: 2.5em;
+            vertical-align: -16%;
+            height: 1.18em;
+          }
+          .filetype-text {
+            font-size: .4em;
+            font-weight: 800;
+          }
+        </style>
+          <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                    urlqueryparam-view='admin'
+                                    urlqueryparam-resource-iri='http://www.researchspace.org/resource/assets/QueryTemplates'
+                                    urlqueryparam-custom-label='Query Templates'>
+            <div class="text-center panel panel-default admin-icon-panel">
+              <div class="panel-body">      
+                <rs-icon icon-type="rounded" icon-name="query_builder" symbol="true"></rs-icon>
+              </div>
+              <div class="panel-footer" style="position: relative">
+                Query Templates
+              </div>
+            </div>
+          </semantic-link-container>
+      [[/if]]
+
+      [[>Admin:IconPanelInclude title="Logs" materialIcon="terminal" pageLink=(resolvePrefix "Admin:Logs")]]
+
+    </div>
+
+    <div class="admin-system-manag_btnContainer">
+      [[#if (hasPermission "system:restart")]]
+        <mp-restart-wrapper>
+          <button class="btn btn-default btn-textAndIcon">
+            <rs-icon icon-type="rounded" icon-name="power_settings_new" symbol="true"></rs-icon>
+            <div>Restart Platform</div>
+          </button>
+        </mp-restart-wrapper>
+      [[/if]]
+      <mp-admin-cache-invalidation-button></mp-admin-cache-invalidation-button>
+      
+    </div>
+
+    <h2 class="admin-title">User management and security</h2>
+    <div class="admin-section-row">
+      <mp-anonymous-hidden>
+        <semantic-query query='SELECT DISTINCT ?systemUser ?systemUserName ?actorFullName { 
+                                BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
+                                BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?systemUserName)
+
+                                OPTIONAL {
+                                  ?systemUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                  ?systemUser crm:P1_is_identified_by ?actorName .
+                                  ?actorName a crm:E41_Appellation .
+                                  ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                  ?actorName crm:P190_has_symbolic_content ?actorFullName .
+                                }
+                              }'
+                        template='{{> template}}'>
+
+          <template id='template'>
+            {{#if bindings.0.actorFullName.value}}
+              <semantic-link-container  uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                        urlqueryparam-view='resource-editor' 
+                                        urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                        urlqueryparam-resource="{{bindings.0.systemUser.value}}"
+                                        urlqueryparam-mode='edit'>
+                <div class="text-center panel panel-default admin-icon-panel">
+                  <div class="panel-body">
+                    <rs-icon icon-type="rounded" icon-name="person" symbol="true"></rs-icon>
+                  </div>
+                  <div class="panel-footer text-truncate" style="position: relative">
+                    User
                   </div>
                 </div>
               </semantic-link-container>
-            </bs-col>
-          [[/if]]
-
-          <bs-col xs=6 md=3>[[>Admin:IconPanelInclude title="Logs" materialIcon="terminal" pageLink=(resolvePrefix "Admin:Logs")]]
-          </bs-col>
-
-          <bs-col md=3 class="admin-system-manag_btnContainer">
-            [[#if (hasPermission "system:restart")]]
-              <mp-restart-wrapper>
-                <button class="btn btn-default btn-textAndIcon">
-                  <rs-icon icon-type="rounded" icon-name="power_settings_new" symbol="true"></rs-icon>
-                  <div>Restart Platform</div>
-                </button>
-              </mp-restart-wrapper>
-            [[/if]]
-            <mp-admin-cache-invalidation-button></mp-admin-cache-invalidation-button>
-            
-          </bs-col>
-        </bs-row>
-
-        <bs-row>
-          <bs-col xs="12"><h2 class="admin-title">User management and security</h2></bs-col>
-          <mp-anonymous-hidden>
-            <semantic-query query='SELECT DISTINCT ?systemUser ?systemUserName ?actorFullName { 
-                                    BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
-                                    BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?systemUserName)
-
-                                    OPTIONAL {
-                                      ?systemUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
-                                      ?systemUser crm:P1_is_identified_by ?actorName .
-                                      ?actorName a crm:E41_Appellation .
-                                      ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
-                                      ?actorName crm:P190_has_symbolic_content ?actorFullName .
-                                    }
-                                  }'
-                            template='{{> template}}'>
-
-              <template id='template'>
-                {{#if bindings.0.actorFullName.value}}
-                  <bs-col xs="6" md="3">
-                    <semantic-link-container  uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                              urlqueryparam-view='resource-editor' 
-                                              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
-                                              urlqueryparam-resource="{{bindings.0.systemUser.value}}"
-                                              urlqueryparam-mode='edit'>
-                      <div class="text-center panel panel-default admin-icon-panel">
-                        <div class="panel-body">
-                          <rs-icon icon-type="rounded" icon-name="person" symbol="true"></rs-icon>
-                        </div>
-                        <div class="panel-footer text-truncate" style="position: relative">
-                          User
-                        </div>
-                      </div>
-                    </semantic-link-container>
-                  </bs-col>
-                {{else}}
-                  <bs-col xs="6" md="3">
-                    <semantic-link-container  uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                              urlqueryparam-view='resource-editor' 
-                                              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
-                                              urlqueryparam-custom-label='New profile'
-                                              urlqueryparam-mode='new'>
-                      <div class="text-center panel panel-default admin-icon-panel">
-                        <div class="panel-body">
-                          <rs-icon icon-type="rounded" icon-name="person" symbol="true"></rs-icon>
-                        </div>
-                        <div class="panel-footer text-truncate" style="position: relative">
-                          User
-                        </div>
-                      </div>
-                    </semantic-link-container>
-                  </bs-col>
-                {{/if}}
-              </template>
-            </semantic-query>
-          </mp-anonymous-hidden>
-          <bs-col xs=6 md=3>[[>Admin:IconPanelInclude title="Security" materialIcon="admin_panel_settings" pageLink=(resolvePrefix "Admin:Security")]]
-          </bs-col>
-        </bs-row>
-      </bs-col>
-    </bs-row>
+            {{else}}
+              <semantic-link-container  uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                        urlqueryparam-view='resource-editor' 
+                                        urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                        urlqueryparam-custom-label='New profile'
+                                        urlqueryparam-mode='new'>
+                <div class="text-center panel panel-default admin-icon-panel">
+                  <div class="panel-body">
+                    <rs-icon icon-type="rounded" icon-name="person" symbol="true"></rs-icon>
+                  </div>
+                  <div class="panel-footer text-truncate" style="position: relative">
+                    User
+                  </div>
+                </div>
+              </semantic-link-container>
+            {{/if}}
+          </template>
+        </semantic-query>
+      </mp-anonymous-hidden>
+      
+      [[>Admin:IconPanelInclude title="Security" materialIcon="admin_panel_settings" pageLink=(resolvePrefix "Admin:Security")]]
+    </div>
 
   </div>
 </div>

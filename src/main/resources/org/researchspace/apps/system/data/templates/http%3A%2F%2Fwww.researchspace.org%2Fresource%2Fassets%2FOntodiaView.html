@@ -7,28 +7,28 @@
 --]]
 
 [[#*inline "diagram"]]
-      <ontodia
-               [[> "http://www.researchspace.org/resource/assets/OntodiaSettings" ]]
+  <ontodia
+            [[> "http://www.researchspace.org/resource/assets/OntodiaSettings" ]]
 
-               [[#if (urlParam "diagram")]]
-                 diagram="[[urlParam "diagram"]]"
-               [[/if]]
+            [[#if (urlParam "diagram")]]
+              diagram="[[urlParam "diagram"]]"
+            [[/if]]
 
-               [[#if (urlParam "ontologyIri")]]
-                 [[> "http://www.researchspace.org/resource/OntodiaViewOntologyOnlyClasses" param=(urlParam "ontologyIri") ]]
-                 metadata='<> <http://www.researchspace.org/resource/system/diagramForOntology> <[[urlParam "ontologyIri"]]> .'
-                 query-params='{"ontologyIri": "[[urlParam "ontologyIri"]]"}'
-                 query="construct {?class rdfs:comment 'dummyprop'} where {  GRAPH ?g {<[[urlParam "ontologyIri"]]> ?prop ?obj. ?class a ?classType. VALUES ?classType {owl:Class rdfs:Class}}}"
-               [[else]]
-                 [[> "http://www.researchspace.org/resource/OntodiaViewClassCheck" ]]
-               [[/if]]
+            [[#if (urlParam "ontologyIri")]]
+              [[> "http://www.researchspace.org/resource/OntodiaViewOntologyOnlyClasses" param=(urlParam "ontologyIri") ]]
+              metadata='<> <http://www.researchspace.org/resource/system/diagramForOntology> <[[urlParam "ontologyIri"]]> .'
+              query-params='{"ontologyIri": "[[urlParam "ontologyIri"]]"}'
+              query="construct {?class rdfs:comment 'dummyprop'} where {  GRAPH ?g {<[[urlParam "ontologyIri"]]> ?prop ?obj. ?class a ?classType. VALUES ?classType {owl:Class rdfs:Class}}}"
+            [[else]]
+              [[> "http://www.researchspace.org/resource/OntodiaViewClassCheck" ]]
+            [[/if]]
 
-               [[#if view]]
-                 readonly=true
-                 hide-panels=true
-               [[/if]]
+            [[#if view]]
+              readonly=true
+              hide-panels=true
+            [[/if]]
 
-      ></ontodia>
+  ></ontodia>
 [[/inline]]
 
 <style>
@@ -54,29 +54,41 @@
     <semantic-context repository='default'>
       <ol class="page-breadcrumb">
         <li>
-          <mp-link title="Home" url="/">Home</mp-link>
-        </li>
-        <li>
-          <semantic-link title="Administration" iri='[[resolvePrefix "rsp:admin"]]'>Administration</semantic-link>
+          <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                  urlqueryparam-view='admin'
+                                  urlqueryparam-resource-iri='[[resolvePrefix "rsp:admin"]]'
+                                  urlqueryparam-custom-label='Administration'>
+            <div>Administration</div>
+          </semantic-link-container>
         </li>
         [[#if (urlParam "ontologyIri")]]
           <li>
-            <semantic-link title="Ontologies" iri="http://www.researchspace.org/resource/assets/Ontologies">Ontologies</semantic-link>
+            <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                      urlqueryparam-view='admin'
+                                      urlqueryparam-resource-iri='http://www.researchspace.org/resource/assets/Ontologies'
+                                      urlqueryparam-custom-label='Ontologies'>
+            Ontologies
+          </semantic-link-container>
           </li>
           <li>
-            <semantic-link iri='[[urlParam "ontologyIri"]]'></semantic-link>
+            <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                      urlqueryparam-view='admin'
+                                      urlqueryparam-resource-iri='[[urlParam "ontologyIri"]]'
+                                      urlqueryparam-custom-label=''>
+            </semantic-link-container>
           </li>
         [[/if]]
         <li>
-          <semantic-link
-          	title="Assets"
-            iri="http://www.researchspace.org/resource/assets/OntodiaDiagrams"
-            [[#if (urlParam "ontologyIri")]]urlqueryparam-ontology-iri='[[urlParam "ontologyIri"]]'[[/if]]>
+          <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                      urlqueryparam-view='admin'
+                                      urlqueryparam-resource-iri='http://www.researchspace.org/resource/assets/OntodiaDiagrams'
+                                      urlqueryparam-custom-label='Diagrams'
+                                      [[#if (urlParam "ontologyIri")]]urlqueryparam-ontology-iri='[[urlParam "ontologyIri"]]'[[/if]]>
             Diagrams
-         	</semantic-link>
+          </semantic-link-container>
         </li>
         <semantic-context repository='assets'>
-          <li class="active">[[#if (urlParam "diagram")]]<mp-label iri="[[urlParam "diagram"]]"></mp-label>[[else]]New Diagram[[/if]]</li>
+          <li class="active">[[#if (urlParam "diagram")]]<mp-label iri="[[urlParam 'diagram']]"></mp-label>[[else]]New Diagram[[/if]]</li>
         </semantic-context>
       </ol>
     </semantic-context>

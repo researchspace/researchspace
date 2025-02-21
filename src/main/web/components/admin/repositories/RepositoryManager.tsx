@@ -78,9 +78,8 @@ export class RepositoryManager extends Component<{}, State> {
       return <Alert bsStyle="info"> {loadingError} </Alert>;
     }
     return (
-      <div className={styles.holder} data-flex-layout="row top-center">
+      <div className={styles.holder}>
         <div className={styles.RepositorySelectionArea}>
-          {this.renderRepositories()}
           {repositoryToEdit && (
             <Button
               bsStyle="default"
@@ -91,6 +90,8 @@ export class RepositoryManager extends Component<{}, State> {
               New repository
             </Button>
           )}
+          {this.renderRepositories()}
+          
         </div>
         <div className={styles.EditorArea}>
           {<RepositoryConfigEditor id={repositoryToEdit} repositoryTemplates={repositoryTemplates} />}

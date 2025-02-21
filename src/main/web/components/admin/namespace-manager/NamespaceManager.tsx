@@ -81,7 +81,7 @@ export class NamespaceManager extends Component<{}, State> {
 
     return (
       <div className={styles.component}>
-        <strong>New namespace</strong>
+        <div>New namespace</div>
         {this.getUpdatePanel()}
 
         {this.state.modificationError ? (
@@ -150,8 +150,7 @@ export class NamespaceManager extends Component<{}, State> {
     };
     return (
       <div>
-        <h1>All namespaces</h1>
-        <hr style={{ marginTop: '0'}} />
+        <h2>All namespaces</h2>
         
         <div style={{ marginBottom: '20px'}}>
           <div className="documentation-section documentation-section-withIcon">

@@ -1,53 +1,30 @@
 [[#if (hasPermission "api:config")]]
   <style>
     #template-content {
-      height: calc(100vh - 63px);
       overflow: hidden;
       display: flex;
       flex-direction: column;
   }
-
-  .page {
-    height: inherit;
-  }
-
   </style>
 [[/if]]
 
-<ol class="page-breadcrumb">
-  <li>
-    <mp-link title="Home" url="/">Home</mp-link>
-  </li>
-  <li>
-    <semantic-link title="Administration" iri='[[resolvePrefix "rsp:admin"]]'>Administration</semantic-link>
-  </li>
-  <li>
-      <semantic-link title="Assets" iri='[[resolvePrefix "Platform:fieldDefinitionContainer"]]'>Knowledge Patterns</semantic-link>
-  </li>
-  <li class="active">New Knowledge Pattern</li>
-</ol>
-
-<div class="page">
-  <div class="container-fluid" style="height: 100%;">
-      <bs-row class="row-center" style="height: 100%;">
-          <bs-col xs=11 sm=10 md=10 lg=8 class="pr-0" style="padding: 35px 0 20px 0;">
-            [[#if (hasPermission "api:config")]]
-              <field-editor></field-editor>
-            [[else]]
-              <div class="warning-documentation-section warning-documentation-section-withIcon">
-                <div class="warning-documentation-section-icon-container">
-                  <rs-icon icon-type="rounded" icon-name="lock" symbol="true"></rs-icon>
-                </div>
-                <div> 
-                  <div class="warning-documentation-section-title">Permission denied!</div>
-                  <div class="warning-documentation-section-content">
-                    <div>You don't have permission to create a new Knowledge pattern.</div>
-                  </div>
-                </div>
-              </div>
-            [[/if]]
-          </bs-col>   
-      </bs-row>
+<div class="page__grid-container application-page-container">
+  <div class='page__content-container' style="overflow: hidden;">            
+    [[#if (hasPermission "api:config")]]
+      <field-editor></field-editor>
+    [[else]]
+      <div class="warning-documentation-section warning-documentation-section-withIcon">
+        <div class="warning-documentation-section-icon-container">
+          <rs-icon icon-type="rounded" icon-name="lock" symbol="true"></rs-icon>
+        </div>
+        <div> 
+          <div class="warning-documentation-section-title">Permission denied!</div>
+          <div class="warning-documentation-section-content">
+            <div>You don't have permission to create a new Knowledge pattern.</div>
+          </div>
+        </div>
+      </div>
+    [[/if]]
   </div>
 </div>
 

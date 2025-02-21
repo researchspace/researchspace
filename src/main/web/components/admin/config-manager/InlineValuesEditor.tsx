@@ -85,10 +85,10 @@ export class InlineValuesEditor extends Component<InlineValuesEditorProps, State
         />
         <div className={styles.footer}>
           <div className={styles.submitControls}>
-            <Button className={styles.save} bsStyle="primary" disabled={!allowedToSave} onClick={this.onSave}>
+            <Button onClick={onCancel}>Cancel</Button>
+            <Button className="btn-action" bsStyle="default" disabled={!allowedToSave} onClick={this.onSave}>
               Save
             </Button>
-            <Button onClick={onCancel}>Cancel</Button>
           </div>
         </div>
       </div>

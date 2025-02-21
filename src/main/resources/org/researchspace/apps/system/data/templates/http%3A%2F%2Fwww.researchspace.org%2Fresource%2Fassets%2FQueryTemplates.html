@@ -1,12 +1,14 @@
-<ol class="page-breadcrumb">
+[[!-- <ol class="page-breadcrumb">
   <li>
-    <mp-link title="Home" url="/">Home</mp-link>
-  </li>
-  <li>
-    <semantic-link title="Administration" iri='[[resolvePrefix "rsp:admin"]]'>Administration</semantic-link>
+    <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames" 
+                            urlqueryparam-view='admin'
+                            urlqueryparam-resource-iri='[[resolvePrefix "rsp:admin"]]'
+                            urlqueryparam-custom-label='Administration'>
+      <div>Administration</div>
+    </semantic-link-container>
   </li>
   <li class="active">Query Templates</li>
-</ol>
+</ol> --]]
 
 <!-- style for fa stacked icon -->
 <style>
@@ -20,139 +22,119 @@
   }
 </style>
 
-<div class="page">
-  
-  <div class="container-fluid adminPage-header-container">
-    <bs-row class="row-center">
-      <bs-col xs=12 sm=11 md=10 lg=9 class="rs-col-xl-8 adminPage-header--col">
-        <div class="adminPage-header--content">
-          <div class='adminPage-header--thumbnail'>
-            <h2>
-              <rs-icon icon-type="rounded" icon-name="query_builder" symbol="true"></rs-icon>
-            </h2>
-          </div>
-          <div class='adminPage-header--body'>
-            <h2>Query Templates</h2>
-          </div>
-        </div>
-      </bs-col>   
-    </bs-row> <!--  close row -->
-  </div>
-  
-  <div class="container-fluid">
-    <bs-row class="row-center">
-      <bs-col xs=12 sm=11 md=10 lg=9 class="rs-col-xl-8">
-        [[#if (urlParam "queryTemplateFilter")]]
-            <bs-alert bs-style="warning">
-              Current view is filtered to a particular query. <mp-link url="/resource/?uri=[[this]]">Show all</mp-link>.
-            </bs-alert>
-        [[/if]]  
+<div class="page__grid-container application-page-container">
+  <div class='page__content-container'>
 
-        [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/queryTemplateContainer>:read:any")]]         
-          <div style="display: flex; justify-content: space-between; align-items: baseline; gap:20px;">
-
-            [[!-- <h1>Query Template Catalog</h1> --]]
-            [[#if (hasPermission "api:ldp:container:http://www.researchspace.org/resource/system/querytemplatecontainer:create:any")]]  
-              <div style="display:flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
-                <mp-overlay-dialog title="Create Query template" type="modal" bs-size="large">
-                  <mp-overlay-dialog-trigger>
-                    <button class="btn btn-action btn-textAndIcon">
-                      <i class="material-icons-round" aria-hidden="true">add_box</i>
-                      Query template
-                    </button>
-                  </mp-overlay-dialog-trigger>
-                  <mp-overlay-dialog-content>
-                      <div>
-                          <semantic-context repository="assets">
-                          <mp-spin-query-template-editor></mp-spin-query-template-editor>
-                          </semantic-context>
-                      </div>
-                  </mp-overlay-dialog-content>
-                </mp-overlay-dialog>
-              
-              [[!-- Import query templates and Download Container section --]]
-              [[> http://www.researchspace.org/resource/assets/LdpContainerAction container='http://www.researchspace.org/resource/system/queryTemplateContainer' 
-                                      parentContainer='http://www.researchspace.org/resource/system/rootContainer' isQueryTemplateContainer=true]]
-              </div>
-            [[/if]]
-          </div>
-
-          <hr style="margin-top:0px;" />
-          <semantic-context repository="assets">
-            <semantic-table config='{
-                    "query":"SELECT ?template ?label ?text ?author ?modified WHERE {
-                                    ?template <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spinrdf.org/spin#Template>;
-                                    <http://www.w3.org/ns/prov#wasAttributedTo> ?author;
-                                    <http://www.w3.org/ns/prov#generatedAtTime> ?modified
-                                    OPTIONAL {?template <http://www.w3.org/2000/01/rdf-schema#label> ?label.}
-                                    [[#if (urlParam "queryTemplateFilter")]]FILTER(?template=<[[urlParam "queryTemplateFilter"]]>) [[/if]]            
-                                    } ORDER BY DESC(?modified)",
-                    "columnConfiguration" : [
-                        {"variableName":"template", "displayName":"Template", "cellTemplate": "
-                                    <mp-overlay-dialog title=\"Edit Query Template\" type=\"modal\" bs-size=\"large\">
-                                      <mp-overlay-dialog-trigger><a>{{label.value}}</a></mp-overlay-dialog-trigger>
-                                      <mp-overlay-dialog-content>
-                                          <div>
-                                              <semantic-context repository=\"assets\">
-                                              <mp-spin-query-template-editor iri=\"{{template.value}}\"></mp-spin-query-template-editor>
-                                              </semantic-context>
-                                          </div>
-                                      </mp-overlay-dialog-content>
-                                    </mp-overlay-dialog>
-                                    "},                                                          
-                        {"variableName":"author", "displayName":"Author", "cellTemplate": "<mp-label iri=\"{{author.value}}\"></mp-label>" },
-                        {"variableName":"modified", "displayName":"Modified", "cellTemplate": "{{dateTimeFormat modified.value \"LLL\"}}" },
-                        {"displayName": "Actions", "cellTemplate": "{{> actions}}"}
-                    ],
-                    "no-result-template":"{{> noResultTemplate}}",
-                    "layout":{
-                      "tupleTemplate": null,
-                      "options":{
-                        "showFilter":true,
-                        "resultsPerPage":10
-                      }
-                    }
-            }'>
-              <template id='actions'>
-                <div>
-                  <div style="display: flex;">
-                    <mp-copy-to-clipboard text='{{template.value}}' message='Query Template IRI has been copied to clipboard!'>
-                      <button class="btn btn-default btn-textAndIcon" title="Copy IRI" style="margin-right: 8px">
-                        <rs-icon icon-type="rounded" icon-name="content_copy" symbol="true"></rs-icon>
-                        Copy IRI
-                      </button>
-                    </mp-copy-to-clipboard>
-                    [[#if (hasPermission "api:ldp:container:http://www.researchspace.org/resource/system/querytemplatecontainer:delete:any")]]   
-                      <mp-ldp-remove-from-container-action iri="{{template.value}}" container="http://www.researchspace.org/resource/system/queryTemplateContainer">
-                        <button class="btn btn-default btn-textAndIcon" style="margin-right: 8px;">
-                          <rs-icon icon-type="rounded" icon-name="delete" symbol="true"></rs-icon>
-                          Delete</button>
-                      </mp-ldp-remove-from-container-action>   
-                    [[/if]]
+    [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/queryTemplateContainer>:read:any")]]  
+      <div class="adminPage-header-container" style="display:flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+        <h1>Query Templates</h1>
+        [[#if (hasPermission "api:ldp:container:http://www.researchspace.org/resource/system/querytemplatecontainer:create:any")]]  
+          <div style="display:flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+            <mp-overlay-dialog title="Create Query template" type="modal" bs-size="large">
+              <mp-overlay-dialog-trigger>
+                <button class="btn btn-action btn-textAndIcon">
+                  <i class="material-icons-round" aria-hidden="true">add_box</i>
+                  New Query template
+                </button>
+              </mp-overlay-dialog-trigger>
+              <mp-overlay-dialog-content>
+                  <div>
+                      <semantic-context repository="assets">
+                      <mp-spin-query-template-editor></mp-spin-query-template-editor>
+                      </semantic-context>
                   </div>
-                </div>
-              </template>
-
-              <template id='noResultTemplate'>
-                <p>No Query templates available</p>
-              </template>
-            </semantic-table>
-          </semantic-context>
-        [[else]]
-          <div class="warning-documentation-section warning-documentation-section-withIcon">
-            <div class="warning-documentation-section-icon-container">
-              <rs-icon icon-type="rounded" icon-name="lock" symbol="true"></rs-icon>
-            </div>
-            <div> 
-              <div class="warning-documentation-section-title">Permission denied!</div>
-              <div class="warning-documentation-section-content">
-                <div>You don't have permission to edit or add items in Query Template Catalog.</div>
-              </div>
-            </div>
+              </mp-overlay-dialog-content>
+            </mp-overlay-dialog>
+          
+          [[!-- Import query templates and Download Container section --]]
+          [[> http://www.researchspace.org/resource/assets/LdpContainerAction container='http://www.researchspace.org/resource/system/queryTemplateContainer' 
+                                  parentContainer='http://www.researchspace.org/resource/system/rootContainer' isQueryTemplateContainer=true]]
           </div>
         [[/if]]
-      </bs-col>
-    </bs-row>
-  </div>
+      </div>
+    [[/if]]
+    
+    [[#if (urlParam "queryTemplateFilter")]]
+        <bs-alert bs-style="warning">
+          Current view is filtered to a particular query. <mp-link url="/resource/?uri=[[this]]">Show all</mp-link>.
+        </bs-alert>
+    [[/if]]  
 
+    [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/queryTemplateContainer>:read:any")]]         
+      <semantic-context repository="assets">
+        <semantic-table config='{
+                "query":"SELECT ?template ?label ?text ?author ?modified WHERE {
+                                ?template <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spinrdf.org/spin#Template>;
+                                <http://www.w3.org/ns/prov#wasAttributedTo> ?author;
+                                <http://www.w3.org/ns/prov#generatedAtTime> ?modified
+                                OPTIONAL {?template <http://www.w3.org/2000/01/rdf-schema#label> ?label.}
+                                [[#if (urlParam "queryTemplateFilter")]]FILTER(?template=<[[urlParam "queryTemplateFilter"]]>) [[/if]]            
+                                } ORDER BY DESC(?modified)",
+                "columnConfiguration" : [
+                    {"variableName":"template", "displayName":"Template", "cellTemplate": "
+                                <mp-overlay-dialog title=\"Edit Query Template\" type=\"modal\" bs-size=\"large\">
+                                  <mp-overlay-dialog-trigger><a>{{label.value}}</a></mp-overlay-dialog-trigger>
+                                  <mp-overlay-dialog-content>
+                                      <div>
+                                          <semantic-context repository=\"assets\">
+                                          <mp-spin-query-template-editor iri=\"{{template.value}}\"></mp-spin-query-template-editor>
+                                          </semantic-context>
+                                      </div>
+                                  </mp-overlay-dialog-content>
+                                </mp-overlay-dialog>
+                                "},                                                          
+                    {"variableName":"author", "displayName":"Author", "cellTemplate": "<mp-label iri=\"{{author.value}}\"></mp-label>" },
+                    {"variableName":"modified", "displayName":"Modified", "cellTemplate": "{{dateTimeFormat modified.value \"LLL\"}}" },
+                    {"displayName": "Actions", "cellTemplate": "{{> actions}}"}
+                ],
+                "no-result-template":"{{> noResultTemplate}}",
+                "layout":{
+                  "tupleTemplate": null,
+                  "options":{
+                    "showFilter":true,
+                    "resultsPerPage":10
+                  }
+                }
+        }'>
+          <template id='actions'>
+            <div>
+              <div style="display: flex;">
+                <mp-copy-to-clipboard text='{{template.value}}' message='Query Template IRI has been copied to clipboard!'>
+                  <button class="btn btn-default btn-textAndIcon" title="Copy IRI" style="margin-right: 8px">
+                    <rs-icon icon-type="rounded" icon-name="content_copy" symbol="true"></rs-icon>
+                    Copy IRI
+                  </button>
+                </mp-copy-to-clipboard>
+                [[#if (hasPermission "api:ldp:container:http://www.researchspace.org/resource/system/querytemplatecontainer:delete:any")]]   
+                  <mp-ldp-remove-from-container-action iri="{{template.value}}" container="http://www.researchspace.org/resource/system/queryTemplateContainer">
+                    <button class="btn btn-default btn-textAndIcon" style="margin-right: 8px;">
+                      <rs-icon icon-type="rounded" icon-name="delete" symbol="true"></rs-icon>
+                      Delete</button>
+                  </mp-ldp-remove-from-container-action>   
+                [[/if]]
+              </div>
+            </div>
+          </template>
+
+          <template id='noResultTemplate'>
+            <p>No Query templates available</p>
+          </template>
+        </semantic-table>
+      </semantic-context>
+    [[else]]
+      [[> rsp:adminPageHeader title="Query Templates"]]
+      <div class="warning-documentation-section warning-documentation-section-withIcon">
+        <div class="warning-documentation-section-icon-container">
+          <rs-icon icon-type="rounded" icon-name="lock" symbol="true"></rs-icon>
+        </div>
+        <div> 
+          <div class="warning-documentation-section-title">Permission denied!</div>
+          <div class="warning-documentation-section-content">
+            <div>You don't have permission to edit or add items in Query Template Catalog.</div>
+          </div>
+        </div>
+      </div>
+    [[/if]]
+
+  </div>
 </div>

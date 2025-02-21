@@ -59,11 +59,11 @@ class AccountManagerComponent extends Component<{}, State> {
 
     return D.div(
       {},
-      this.renderAccountTable(),
       AccountForm({
         selectedAccount: this.state.selectedAccount,
         refreshCallback: this.fetchAccounts,
-      })
+      }),
+      this.renderAccountTable()
     );
   }
 

@@ -58,9 +58,12 @@ import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.repository.util.Repositories;
+import org.eclipse.rdf4j.rio.ParserConfig;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParseException;
 import org.eclipse.rdf4j.rio.Rio;
+import org.eclipse.rdf4j.rio.helpers.BasicParserSettings;
+import org.eclipse.rdf4j.rio.helpers.ParseErrorLogger;
 import org.researchspace.config.Configuration;
 import org.researchspace.config.UnknownConfigurationException;
 import org.researchspace.kp.KnowledgePatternGenerator;
@@ -130,6 +133,11 @@ public class LDPAssetsLoader {
         Map<StoragePath, FindResult> mapResults = platformStorage.findAll(ObjectKind.LDP);
         Map<String, Map<String, Map<StoragePath, FindResult>>> mapResultsByRepositoryIdAndStorageId = Maps.newHashMap();
         logger.info("Loading LDP assets...");
+        logger.info("Found " + mapResults.size() + " LDP assets");
+
+        mapResults.forEach((path, result) -> {
+            logger.info("Found LDP asset: " + path);
+        });
 
         Integer loadDefaultConfig = -2;
         List<String> defaultRepositoriesList = Arrays.asList("configurations", "system", "ontologies", "authorities");
@@ -256,8 +264,8 @@ public class LDPAssetsLoader {
                              "{" +
                                 "graph ?ontologyContext {" +
                                 "  ?prop a ?owlType . " +
-                                "  FILTER (?owlType IN (owl:DatatypeProperty,owl:ObjectProperty)) " +    
-                                "  FILTER(CONTAINS(STR(?prop),REPLACE(STR(?ontologyContext),\"/context\",\"\"))) " +
+                                "  FILTER (?owlType IN (owl:DatatypeProperty,owl:ObjectProperty)) " + 
+                                "  FILTER(CONTAINS(STR(?prop),STR(?ontology))) \n" +
                                 "}" +
                              "}" +
                              "UNION { " +
@@ -324,7 +332,10 @@ public class LDPAssetsLoader {
                 }
                 ObjectRecord record = entry.getValue().getRecord();
                 try (InputStream in = record.getLocation().readContent()) {
-                    Model model = Rio.parse(in, "", format);              
+                    ParserConfig config = new ParserConfig();
+                    config.set(BasicParserSettings.SKOLEMIZE_ORIGIN, "http://researchspace.org/bnode/");
+                    Model model = Rio.parse(in, "", format, config, SimpleValueFactory.getInstance(),
+				new ParseErrorLogger());              
                     loadedAssetsModel.addAll(model);                   
                 } catch (IOException | RDFParseException e) {
                     logger.error("Failed to parse LDP asset: " + record.getLocation() + ". Details: " + e.getMessage());

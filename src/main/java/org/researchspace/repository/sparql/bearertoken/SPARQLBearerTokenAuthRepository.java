@@ -24,6 +24,7 @@ import java.util.Map;
 import org.eclipse.rdf4j.http.client.SPARQLProtocolSession;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
+import org.researchspace.repository.sparql.CustomSPARQLRepository;
 import org.researchspace.repository.sparql.MpSPARQLProtocolSession;
 import org.researchspace.secrets.SecretResolver;
 import org.researchspace.secrets.SecretsHelper;
@@ -49,7 +50,7 @@ import com.google.inject.Inject;
  * @author Andriy Nikolov <an@metaphacts.com>
  *
  */
-public class SPARQLBearerTokenAuthRepository extends SPARQLRepository {
+public class SPARQLBearerTokenAuthRepository extends CustomSPARQLRepository {
 
     protected String authenticationToken;
     @Inject(optional = true)

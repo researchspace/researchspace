@@ -52,6 +52,7 @@ public class SPARQLBearerTokenAuthRepositoryFactory extends AbstractMpSPARQLRepo
                 result = new SPARQLBearerTokenAuthRepository(httpConfig.getQueryEndpointUrl());
             }
             result.setAuthenticationToken(httpConfig.getAuthenticationToken());
+            result.setWritable(httpConfig.isWritable());
         } else {
             throw new RepositoryConfigException("Invalid configuration class: " + config.getClass());
         }

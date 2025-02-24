@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -91,6 +92,7 @@ class SemanticSearchFacetInner extends React.Component<InnerProps, State> {
     defaultValueQueries: {},
     defaultValueTemplate: DefaultFacetValueTemplate,
     facetValuesThreshold: 10000,
+    hideToggleButton: false
   };
 
   componentWillReceiveProps(nextProps: InnerProps) {
@@ -163,28 +165,33 @@ class SemanticSearchFacetInner extends React.Component<InnerProps, State> {
   render() {
     if (this.props.context.baseQuery.isJust) {
       const facetIsShown = this.state.facetData && this.state.showFacets;
-      return D.div(
-        { className: 'semantic-facet-holder' },
-        this.state.facetData && this.state.showFacets
-          ? Facet({
-              data: this.state.facetData,
-              actions: this.facetStore.facetActions(),
-              config: this.props,
-            })
-          : null,
-        D.button(
-          {
-            className: classNames({
-              'btn-xs': true,
-              'show-facet-button': true,
-              'show-facet-button__hide': facetIsShown,
-              'show-facet-button__show': !facetIsShown,
-            }),
-            onClick: this.toggleFilter,
-          },
-          this.state.showFacets ? 'Hide Filter' : 'Show Filter'
-        )
-      );
+
+      const toggleButton = (
+        <button 
+          className={classNames({
+            'btn-xs': true,
+            'show-facet-button': true,
+            'show-facet-button__hide': facetIsShown,
+            'show-facet-button__show': !facetIsShown,
+            })} 
+          onClick={this.toggleFilter}>
+          <div className='show-facet-button__label'>
+          {this.state.showFacets ? 'Hide Filter' : 'Show Filter'}
+          </div>
+        </button>
+      )
+
+      return (
+        <div className='semantic-facet-holder'>
+          {this.state.facetData && this.state.showFacets ? 
+          <Facet 
+            data={this.state.facetData} 
+            actions={this.facetStore.facetActions()}
+            config={this.props}
+          /> : null}
+          {!this.props.hideToggleButton && toggleButton}
+        </div>
+      )
     } else {
       return null;
     }

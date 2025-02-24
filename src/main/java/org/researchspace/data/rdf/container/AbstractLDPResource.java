@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -23,6 +24,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -44,6 +46,7 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.ModelException;
 import org.eclipse.rdf4j.model.util.Models;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -61,6 +64,7 @@ import org.researchspace.services.storage.api.PlatformStorage.FindResult;
 import org.researchspace.vocabulary.LDP;
 import org.researchspace.vocabulary.PLATFORM;
 import org.researchspace.vocabulary.PROV;
+import org.researchspace.vocabulary.CidocCRM;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -111,20 +115,24 @@ public abstract class AbstractLDPResource implements LDPResource {
 
     @Override
     public Model getModel() throws RepositoryException {
-        IRI context = this.getContextIRI();
+        IRI context = this.getContextIRI(); 
         Model model = getReadConnection().getContext(this.getContextIRI());
         SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
+        
         // workaround, QueryResults.asModel ignores context in getStatement result
         // if search context is set and returns model with context=null even with
         // enabled quads mode
         Model m = new LinkedHashModel(model.stream()
                 .map(s -> valueFactory.createStatement(s.getSubject(), s.getPredicate(), s.getObject(), context))
                 .collect(Collectors.toList()));
-        // add outgoing contains (i.e. stored in different contexts)
+
         Model containsStmts = getReadConnection().getStatements(this.getResourceIRI(), LDP.contains, null);
-        m.addAll(containsStmts);
-        // but hide incoming statements (i.e. contains from parents)
-        m.remove(null, null, this.getResourceIRI());
+        if (!this.isSet()){
+            // add outgoing contains (i.e. stored in different contexts)            
+            m.addAll(containsStmts);
+            // but hide incoming statements (i.e. contains from parents)
+            m.remove(null, null, this.getResourceIRI());            
+        }      
 
         return m;
     }
@@ -140,6 +148,7 @@ public abstract class AbstractLDPResource implements LDPResource {
                 m.addAll(ldpResource.getModelRecursive());
             }
         }
+        
         return m;
     }
 
@@ -159,6 +168,47 @@ public abstract class AbstractLDPResource implements LDPResource {
         try (RepositoryConnection connection = getConnection()) {
             delete(connection, new HashSet<>());
         }
+    }
+
+    protected void deleteSetForRenaming(RepositoryConnection repConnection, Set<IRI> deleting) throws RepositoryException {
+        // avoid unbounded recursion by tracking resources being deleted
+        if (deleting.contains(this.getResourceIRI())) {
+            return;
+        }
+        deleting.add(this.getResourceIRI());
+
+        /* 
+        for (Statement stmt : getReadConnection().getStatements(this.getResourceIRI(), LDP.contains, null)) {
+            IRI childResource = (IRI) stmt.getObject();
+            LDPResource instance = LDPImplManager.getLDPImplementation(childResource,
+                    getLdpApi().getLDPTypesFromRepository(childResource), this.repositoryProvider);
+            if (instance instanceof AbstractLDPResource) {
+                ((AbstractLDPResource) instance).delete(repConnection, deleting);
+            }
+        } */
+
+        if (isSavedToStorage()) {
+            StoragePath objectId = ObjectKind.LDP.resolve(this.repositoryProvider.getRepositoryId())
+                    .resolve(StoragePath.encodeIri(this.resourceIRI)).addExtension(".trig");
+            try {
+                platformStorage.getStorage(PlatformStorage.DEVELOPMENT_RUNTIME_STORAGE_KEY).deleteObject(objectId,
+                        platformStorage.getDefaultMetadata());
+                // Check if the object still exists in some app (usually immutable)
+                Optional<FindResult> optObject = platformStorage.findObject(objectId);
+                if (optObject.isPresent()) {
+                    // We need to shadow the object to prevent loading from the app, so we save an
+                    // empty
+                    // model under the same name into the runtime storage
+                    this.saveToStorage(new PointedGraph(this.getResourceIRI(), new LinkedHashModel()),
+                            this.getContextIRI());
+                }
+            } catch (StorageException e) {
+                throw new RepositoryException(
+                        "Could not delete the object " + objectId + " from storage: " + e.getMessage(), e);
+            }
+        }
+
+        repConnection.clear(this.getContextIRI());
     }
 
     protected void delete(RepositoryConnection repConnection, Set<IRI> deleting) throws RepositoryException {
@@ -228,6 +278,12 @@ public abstract class AbstractLDPResource implements LDPResource {
         return false;
     }
 
+    public boolean isSet() throws RepositoryException {
+        Model model = getReadConnection().getContext(this.getContextIRI());
+        
+        return model.contains(getResourceIRI(), RDF.TYPE, PLATFORM.SET_TYPE);
+     }
+     
     /**
      * Returns a {@link RepositoryConnection}. Clients <b>MUST</b> take care for
      * closing connections properly using, for example, auto-closeables: <code>

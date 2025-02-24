@@ -1,0 +1,76 @@
+
+<http://www.researchspace.org/pattern/system/birth/brought_into_life/context> {
+  _:genid-b386c87e9a0c4cc3849f26c0846d5991-kathfa a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+	$subject crm:P98_brought_into_life $value . 
+    $value crm:P98i_was_born $subject .
+} WHERE {}""" .
+  
+  <http://www.researchspace.org/pattern/system/birth/brought_into_life> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E21_Person>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Birth brought into life"@en;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-b386c87e9a0c4cc3849f26c0846d5991-njk50e;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-b386c87e9a0c4cc3849f26c0846d5991-rm3vbe;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E67_Birth>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-b386c87e9a0c4cc3849f26c0846d5991-wv8l4;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-b386c87e9a0c4cc3849f26c0846d5991-kathfa;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/birth>;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-b386c87e9a0c4cc3849f26c0846d5991-7pv11;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-05T12:21:20.876+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-b386c87e9a0c4cc3849f26c0846d5991-rm3vbe a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+	$subject crm:P98_brought_into_life $value . 
+    $value crm:P98i_was_born $subject .
+} WHERE {
+	$subject crm:P98_brought_into_life $value . 
+    $value crm:P98i_was_born $subject .
+      
+    ?value a crm:E21_Person .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-b386c87e9a0c4cc3849f26c0846d5991-njk50e a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a crm:E21_Person .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-b386c87e9a0c4cc3849f26c0846d5991-7pv11 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a crm:E21_Person .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-b386c87e9a0c4cc3849f26c0846d5991-wv8l4 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+	  $subject crm:P98_brought_into_life $value .  
+      
+    ?value a crm:E21_Person .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/birth/brought_into_life> .
+}

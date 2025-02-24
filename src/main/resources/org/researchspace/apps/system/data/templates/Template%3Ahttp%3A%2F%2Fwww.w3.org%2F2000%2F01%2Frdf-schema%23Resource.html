@@ -1,3 +1,4 @@
+[[!-- 
 <ol class="page-breadcrumb">
   <li>
     <mp-link title="Home" url="/">Home</mp-link>
@@ -6,7 +7,7 @@
     <mp-label iri='[[this]]'></mp-label>
   </li>
 </ol>
-
+--]]
 <style>
   #tabs .tab-ontodia {
     margin: 0px;
@@ -16,12 +17,12 @@
   }
 </style>
 
-<div class="page">
+<div class="page__section-container">
 	[[#if (ask "ASK { {SELECT * WHERE {?? ?p ?o}LIMIT 1}UNION {SELECT * WHERE {?s ?? ?o}LIMIT 1}UNION {SELECT * WHERE {?s ?p ??}LIMIT 1}UNION{ {SELECT * WHERE {?a ?p ?o. FILTER(??=<Template:http://www.w3.org/2000/01/rdf-schema#Resource> )} LIMIT 1} } }")]]
-    <div class='page__header-navtabs'>
+    <div>
       [[> Platform:DefaultResourceHeader]]
     </div>
-    <bs-tabs id="tabs" class='page__body-navtabs' unmount-on-exit=true>
+    <bs-tabs id="tabs" unmount-on-exit=true>
       <bs-tab event-key="0" class="tab-ontodia" title="Knowledge Graph">
         <ontodia id='ontodia' hide-toolbar=true hide-panels=true hide-scroll-bars=true hide-navigation-confirmation=true auto-zoom=true settings=nostats iri='[[this]]'></ontodia>
       </bs-tab>
@@ -35,7 +36,7 @@
       It seems that no entity with IRI <code>"[[this]]"</code> in any subject, predicate or object position is known in the knowledge graph. Also no static application page with this identifier can be found.
     </p>
     <p>
-      Click on the edit button (<i class="fa fa-pencil"></i>) in the top right of this page (<i>only visibile if the respective ACL permissions are being granted to you</i>) to create a new, static application page with this identifier.
+      Click on the edit button (<rs-icon icon-type="rounded" icon-name="edit" symbol="true"></rs-icon>) in the top right of this page (<i>only visibile if the respective ACL permissions are being granted to you</i>) to create a new, static application page with this identifier.
     </p>
   </div>
   [[/if]]

@@ -1,0 +1,61 @@
+
+<http://www.researchspace.org/pattern/system/product_type/production_plan/context> {
+  _:genid-a4560f6b8f8c43a78df03f80c5d7ff88-eitm8 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+  	$subject crm:P187_has_production_plan $value . 
+} WHERE {
+	$subject crm:P187_has_production_plan $value . 
+}""" .
+  
+  <http://www.researchspace.org/pattern/system/product_type/production_plan> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E29_Design_or_Procedure>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-a4560f6b8f8c43a78df03f80c5d7ff88-eitm8;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.w3.org/2000/01/rdf-schema#label> "Production plan"@en;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-a4560f6b8f8c43a78df03f80c5d7ff88-5yew8;
+    <http://www.w3.org/2000/01/rdf-schema#comment> "Design or Procedure that completely determines the production of instances of things. The resulting things are considered exemplars of this instance of Product Type when the process specified is correctly executed. The  Design or Procedure may require the use of tools or models unique to the product type. The same Product Type may be associated with several variant plans.";
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-a4560f6b8f8c43a78df03f80c5d7ff88-4c3xu;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-a4560f6b8f8c43a78df03f80c5d7ff88-hekx49;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E99_Product_Type>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/product_type>;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-a4560f6b8f8c43a78df03f80c5d7ff88-om6io;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-10-15T12:20:28.994+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-a4560f6b8f8c43a78df03f80c5d7ff88-4c3xu a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+	$subject crm:P187_has_production_plan $value . 
+} WHERE {}""" .
+  
+  _:genid-a4560f6b8f8c43a78df03f80c5d7ff88-5yew8 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+	$subject crm:P187_has_production_plan $value . 
+}""" .
+  
+  _:genid-a4560f6b8f8c43a78df03f80c5d7ff88-om6io a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    ?value a crm:E29_Design_or_Procedure .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-a4560f6b8f8c43a78df03f80c5d7ff88-hekx49 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    ?value a crm:E29_Design_or_Procedure .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/product_type/production_plan> .
+}

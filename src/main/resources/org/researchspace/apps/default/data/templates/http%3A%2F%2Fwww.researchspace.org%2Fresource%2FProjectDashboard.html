@@ -14,15 +14,15 @@
     [[#if imgIcon]] <img class="rs-ds-icon" src="[[imgIcon]]">[[/if]]
   </div>
   <div class="rs-ds-text-col">
-    [[#if title]]<div class="rs-body-m-B rs-ds-card--header">[[title]]</div>[[/if]]
-    [[#if descr]]<div class="rs-body-s-M">[[descr]]</div>[[/if]]
+    [[#if title]]<div class="text-bold600 rs-ds-card--header">[[title]]</div>[[/if]]
+    [[#if descr]]<div class="text-s">[[descr]]</div>[[/if]]
   </div>
   </div>
 </semantic-link-container>
 [[/inline]] -->
 
 [[#*inline "dashboardCountCard"]]
-<mp-resource-link-container uri="[[iri]]">
+<semantic-link-container uri="[[iri]]">
   <div class='rs-btn-dashboard' role='button'>
     <div class="rs-btn-dashboard-icon">
       <i class="rs-icon [[icon]]"></i>
@@ -41,13 +41,10 @@
         </div>
     </div>
   </div>
-</mp-resource-link-container>
+</semantic-link-container>
 [[/inline]]
 
 <div class='page rs-dashboard-bg'>
-  [[#> rsp:ClipboardSidebar]]
-  [[#> rsp:DetailsSidebar]]
-
   <div class="page__body--borderless rs-dashboard-container">
     
     <div class="rs-dashboard-welcome">
@@ -67,12 +64,7 @@
    [[!--  <div class="rs-dashboard-icon-area">
     <mp-anonymous-hidden><img src="/assets/images/icons/dashboard/notification.svg"></mp-anonymous-hidden>
       <mp-anonymous-hidden><img src="/assets/images/icons/dashboard/user.svg"></mp-anonymous-hidden>
-     
-      <semantic-link-container uri='[[resolvePrefix "rsp:ProjectConfiguration"]]'>
-        <button class="btn rs-btn-dashboard rs-btn-dashboard-configuration">
-          <i class="fa fa-cog"></i><span>Configurations</span>
-        </button>
-      </semantic-link-container>
+    
       
     </div> --]]
 
@@ -92,7 +84,7 @@
       icon="rs-icon rs-icon-page"
       title='Semantic Narratives'
       class='rs-btn-dashboard--narrative'
-      queryPattern='?resource a rso:Semantic_Narrative .'
+      queryPattern='?resource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative> .'
       ]]
     </div>
 
@@ -102,17 +94,17 @@
       icon="rs-icon-images"
       title='Images'
       class='rs-btn-dashboard--img'
-      queryPattern='?resource a rso:EX_Digital_Image .'
+      queryPattern='?resource a rs:EX_Digital_Image .'
     ]]
     </div>
 
-    <div class="rs-dashboard-activity page__section-container">
+    <div class="rs-dashboard-activity page__section-container-whiteBg">
       <div class='rs-dashboard-sectionTitle'>Activity</div>
       <div class="table-responsive rs-dashboard-table">
         <semantic-table query='prefix ontodia: <http://ontodia.org/schema/v1#>
                   SELECT * WHERE {
                     {
-                      ?page a rso:Semantic_Narrative .
+                      ?page crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative> .
                        OPTIONAL {
                         ?page rdfs:label ?title .
                        }
@@ -168,7 +160,7 @@
                             urlqueryparam-previous-page-title='Project Dashboard'
               >
                 <div style="display: flex; align-items: center;">
-                  <span class="rs-icon rs-icon-drag_points"></span>
+                  <rs-icon icon-type="rounded" icon-name="drag_indicator" symbol="true" style="margin-right: 12px;"></rs-icon>
                   <span>{{title.value}}</span>
                 </div>
               </semantic-link>
@@ -176,8 +168,8 @@
 
           <template id='user'>
             <div class="text-truncate">
-              <i class="fa fa-user"></i>
-              <semantic-link class="rs-dashboard--a" uri="{{user.value}}"></semantic-link>
+              <rs-icon icon-type="rounded" icon-name="account_box" symbol="true"></rs-icon>
+              <semantic-link class="rs-dashboard--a" iri="{{user.value}}"></semantic-link>
             </div>
           </template>
 
@@ -189,7 +181,7 @@
           </template>
 
           <template id='type'>
-              <span class="rs-tag {{tag_cssClass.value}} rs-dashboard-tag">{{content_type.value}}</span>
+              <span class="tag {{tag_cssClass.value}}">{{content_type.value}}</span>
           </template>
 
           <template id="data_download">
@@ -206,7 +198,8 @@
                 header="text/csv" filename="myDiagramEntities.csv">
                 <div>
                   <a href="#" title="Download data" class="rs-dashboard--a">
-                    <i class="fa fa-download"></i></a>
+                    <rs-icon icon-type="rounded" icon-name="file_download" symbol="true"></rs-icon>
+                  </a>
                 </div>
               </mp-sparql-download>
           </template>
@@ -216,7 +209,7 @@
       </div>
     </div>
 
-    <div class='rs-dashboard-team page__section-container'>
+    <div class='rs-dashboard-team page__section-container-whiteBg'>
       <div class='rs-dashboard-sectionTitle'>Team involved</div>
       <div class="rs-dashboard-userCard_container">
         [[> rsp:ProjectUsers]]
@@ -224,18 +217,21 @@
     </div>
         
   </div>
-
-  [[/rsp:DetailsSidebar]]
-  [[/rsp:ClipboardSidebar]]
 </div>
 
 [[#*inline "userCard"]]
-<mp-resource-link-container [[#if name]] title="[[name]]" [[/if]] [[#if pageLink]] uri="[[pageLink]]"[[/if]] [[#if assets]]	urlqueryparam-repository="assets"[[/if]]>
+<semantic-link-container [[#if name]] title="[[name]]" [[/if]] [[#if pageLink]] uri="[[pageLink]]"[[/if]] [[#if assets]]	urlqueryparam-repository="assets"[[/if]]>
   
   <div class="rs-dashboard-userCard">
     <div class="rs-dashboard-userCard-img">
         [[#if UserImg]] <img class="rs-userCard-img" src="[[UserImg]]">
-      	[[else]] <span class="rs-icon rs-icon-user_profile"><span class="path1"></span><span class="path2"></span></span> [[/if]]
+      	[[else]] 
+          <span>
+            <rs-icon icon-type="rounded" icon-name="account_box" symbol="true"></rs-icon>
+            <span class="path1"></span>
+            <span class="path2"></span>
+          </span> 
+        [[/if]]
     </div>
     <div class="rs-dashboard-userCard--text">
         [[#if name]]<div class="rs-user-headerText">[[name]]</div>[[/if]]
@@ -243,7 +239,7 @@
         [[#if role]]<div class="rs-user-text">[[role]]</div>[[/if]]
     </div>
   </div>
-</mp-resource-link-container>
+</semantic-link-container>
 
 [[/inline]]
 

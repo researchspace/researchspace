@@ -1,0 +1,269 @@
+/**
+ * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
+ * Copyright (C) 2015-2020, © Trustees of the British Museum
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+ 
+/* Homepage */
+
+.Dashboard--viewContainer:has(.homepage-container) {
+    container-name: homepage-dashboard-view;
+    container-type: inline-size;
+}
+
+#template-content:has(.homepage-container) {
+
+    overflow: hidden;
+
+    container-name: homepage-template-content;
+    container-type: inline-size;
+    
+}
+
+@container homepage-dashboard-view (width <= 1000px) {
+
+    #template-content:has(.homepage-container) {
+        overflow: auto;
+    }
+}
+
+.homepage-container {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    
+    overflow: hidden;
+    height: 100%;
+
+    container-name: homepage-container;
+    container-type: inline-size;
+}
+
+@container homepage-template-content (width <= 1000px) {
+
+    .homepage-container { 
+        grid-template-columns: 100%;
+        overflow: auto;
+        height: auto;
+    }
+}
+
+.homepage-project-container {
+    border-right: 1px solid $color-border;
+
+    display: flex;
+    flex-direction: column;
+
+    height: 100%;
+    overflow: hidden;
+}
+
+@container homepage-container (width <= 1000px) {
+
+    .homepage-project-container { 
+        overflow: auto;
+    }
+
+    .homepage-activity-container {
+        border-top: 1px solid $color-border;
+    }
+}
+
+.homepage-project-header {
+
+    border-bottom: 1px solid $color-border;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+
+    padding: 17px 30px 10px 30px;
+}
+
+.homepage-project-header__welcome {
+
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+
+    .homepage-project-header__currentDate {
+
+        color: $color-base;
+        font-size: $font-size-xsmall;
+
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+}
+
+.ongoing-projects {
+
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+}
+
+.homepage-project-summary {
+
+    flex: 1;
+    padding: 15px 30px 0 30px;
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    #projectTabs {
+        flex: 1;
+
+        display: flex;
+        flex-direction: column;
+
+        overflow: hidden;
+
+        .tab-content {
+
+            flex: 1;
+            overflow: hidden;
+
+            .tab-pane {
+
+                height: 100%;
+            }
+        }
+    }
+  
+    .pr-0 {
+        padding-right: 0 !important;
+    }
+
+}
+
+.homepage-activity-container {
+
+    height: 100%;
+    overflow: hidden;
+
+    .search-container {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .homepage-activity-header {
+
+        padding: 18px 30px 14px 30px;
+        
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 5px;
+
+        div {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+    }
+
+    .homepage-activity-content {
+
+        margin: 0 23px 0 30px;
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    .activity-result-grid {
+        
+        .griddle-custom-row {
+
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+
+            height: 100%;
+        }
+    }
+}
+
+.homepage-activity-all,
+.homepage-project-all {
+
+    width: 100%;
+    padding: 10px 0;
+
+    a,
+    & > div {
+        display: flex;
+        align-items: center;
+        justify-content: end;
+    }
+}
+
+.homepage-activity-all {
+
+    padding: 10px 30px;
+}
+
+.activity-card-template {
+
+    width: 100%;
+    height: 100px;
+    border: 1px solid $color-border;
+    border-radius: $border-radius;
+    background-color: $color-white;
+    padding: 15px;
+    color: $color-secondary;
+
+    .activity-card-content {
+
+        display: flex;
+        gap: 15px;
+        align-items: flex-start;
+        height: 100%;
+
+        .activity-card-data {
+
+            flex: 1;
+            min-height: 100%;
+           // height: 100%;
+
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+
+            .activity-card-actor-value {
+
+             //   color: $color-dark;
+                font-size: $font-size-small;
+                font-weight: 600;
+                text-transform: capitalize;
+            }
+
+            .activity-card-date-value {
+
+                color: $color-base;
+                font-size: $font-size-small;
+            }
+        }
+    }
+}
+
+

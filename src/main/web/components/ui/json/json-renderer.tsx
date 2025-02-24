@@ -85,7 +85,7 @@ export class GenericJsonRenderer<T> extends Component<Props, State> {
       );
     }
     if (isLoading) {
-      return <Spinner />;
+      return <Spinner spinnerDelay={1000} messageDelay={1000} />;
     }
     if (template && data) {
       return (
@@ -151,7 +151,7 @@ export class GenericJsonRenderer<T> extends Component<Props, State> {
     }
     const keys = Array.from(keySet);
     return (
-      <table key={`${arrayKey}-table`}>
+      <table key={`${arrayKey}-table`} className='table'>
         <thead>
           <tr>
             <th>#</th>
@@ -176,7 +176,7 @@ export class GenericJsonRenderer<T> extends Component<Props, State> {
 
   private renderObject = (data: any, objectKey: string | number) => {
     return (
-      <table key={`${objectKey}-table`}>
+      <table key={`${objectKey}-table`} className='table'>
         <tbody>
           {Object.keys(data).map((key) => (
             <tr key={`${objectKey}-row-${key}`}>

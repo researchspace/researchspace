@@ -1,0 +1,48 @@
+
+<http://www.researchspace.org/pattern/system/activity/at_some_time_within_currentDateTime/context> {
+  <http://www.researchspace.org/pattern/system/activity/at_some_time_within_currentDateTime>
+    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
+      <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-3f1a2592c2be445186c0c3b1479723bc-zx4sx9;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Activity at currentDateTime"@en;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "1";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#dateTime>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-3f1a2592c2be445186c0c3b1479723bc-v8gr94;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E7_Activity>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/activity>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-3f1a2592c2be445186c0c3b1479723bc-4ncqn8;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2023-12-04T18:37:15.224Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-3f1a2592c2be445186c0c3b1479723bc-zx4sx9 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+	?subject crm:P4_has_time-span ?activityDate .
+  ?activityDate a crm:E52_Time-Span . 
+  	?activityDate crm:P82_at_some_time_within $value . 
+} WHERE { 
+    BIND(IRI(CONCAT(str($subject),\"/activity_at_some_time_within/\",STRUUID())) as ?activityDate)
+    BIND( now() AS ?value ) .   
+}""" .
+  
+  _:genid-3f1a2592c2be445186c0c3b1479723bc-v8gr94 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
+	?subject crm:P4_has_time-span ?activityDate .
+  ?activityDate a crm:E52_Time-Span . 
+  	?activityDate crm:P82_at_some_time_within $value . 
+}""" .
+  
+  _:genid-3f1a2592c2be445186c0c3b1479723bc-4ncqn8 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+	?subject crm:P4_has_time-span ?activityDate .
+  ?activityDate a crm:E52_Time-Span . 
+  	?activityDate crm:P82_at_some_time_within $value . 
+} WHERE {
+	?subject crm:P4_has_time-span ?activityDate .
+  ?activityDate a crm:E52_Time-Span . 
+  	?activityDate crm:P82_at_some_time_within $value . 
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/activity/at_some_time_within_currentDateTime> .
+}

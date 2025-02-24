@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -31,6 +32,11 @@ export interface FormEventData {
    * Component fires this event on each update of the form including creation
    */
   'Form.ResourceUpdated': { iri: string };
+
+  /**
+   * semantic-form fires this event when resource is removing
+   */
+    'Form.ResourceRemoving': { iri: string };
 
   /**
    * semantic-form fires this event when resource is removed
@@ -73,6 +79,7 @@ const event: EventMaker<FormEventData> = EventMaker;
 
 export const FormResourceCreated = event('Form.ResourceCreated');
 export const FormResourceUpdated = event('Form.ResourceUpdated');
+export const FormResourceRemoving = event('Form.ResourceRemoving');
 export const FormResourceRemoved = event('Form.ResourceRemoved');
 export const FormDryRunResults = event('Form.DryRunResults');
 export const FormInputUpdated = event('Form.InputUpdated');

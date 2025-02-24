@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -156,9 +157,27 @@
   display: block;
 }
 
+.border-none {
+  border: none;
+}
+
 .row-center {
   display: flex;
   justify-content: center;
+}
+
+.h100 {
+
+  height: 100%;
+}
+
+.w100 {
+
+  width: 100%;
+}
+
+.overflow-y-auto {
+  overflow-y: auto;
 }
 
 @media (min-width: 576px) {
@@ -247,38 +266,32 @@
   }
 }
 
-.rs-background-p10 {
-  background-color: $color-primary-10;
-}
-
-.rs-background-s10 {
-  background-color: $color-secondaryA-10;
-}
-
-.rs-background-sb10 {
-  background-color: $color-secondaryB-10;
-}
-
-.rs-border-buttom {
-  border-bottom: 1px solid $color-dark;
-}
 
 /* spinner */
 .system-spinner {
-  margin-top: 40px;
   position: relative;
-  top: 50%;
-  left: 50%;
+  /* top: 50%; */
+  /* left: 50%; */
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: $color-dark;
+  text-decoration: none;
 
   &__icon {
-    vertical-align: middle;
+
     @include spin-icon();
-    @include icon(cog);
+  //  @include icon(cog);
+    font-size: 17px;
+    text-decoration: none !important;
+    color: $color-dark;
   }
 
   &__message {
-    font-size: 11px;
-    margin-left: 5px;
+    font-size: 13.5px;
+    text-decoration: none !important;
   }
 }
 
@@ -318,26 +331,42 @@
   }
 }
 
-.rs-draggable-container {
-  
-  border: 1px dashed $color-light-grey2;
-  padding: 2px 12px 5px 12px;
-  margin-bottom: 5px;
+.text-first-letter-uppercase {
 
-  .rs-icon {
+  display: inline-block;
+  text-transform: lowercase;
 
-    margin-top: 5px;
-    margin-right: 10px;
-    color: $color-dark;
+  &::first-letter {
+
+   text-transform: uppercase;
   }
+ }
+
+.link-draggable {
+
+  display: flex; 
+  align-items: flex-start; 
+  cursor: grab;
+  gap: 4px;
+
+  .material-icons-round,
+  .material-symbols-rounded {
+    font-size: 24px;     
+    margin-left: -5px;
+  //  color: $color-base;
+  }
+}
+
+.draggable-container {
+  
+  border: 1px dashed transparent;
+  padding: 2px 15px;
+  border-radius: 2px;
 
   &:hover {
     cursor: grab;
-    border: 1px dashed $color-dark;
-
-    .rs-icon {
-      color: $color-primary-100;
-    }
+    border: 1px solid $color-border;
+    background-color: $color-off-white;
   }
 }
 
@@ -346,10 +375,42 @@
   display: block;
 }
 
-.rs-grid-element .panel-footer .resource-card--icon i {
-  color: $color-dark;
-  padding-right: 2px;
-  width: 23px;
-  flex-shrink: 0;
-  font-size: 11px;
+.resource-thumbnail-small-container {
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 45px;
+  height: 40px;
+
+  background-color: $color-white;
+  border: 1.5px solid $color-border;
+  border-radius: 2px;
+  cursor: pointer;
+
+  svg {
+    max-height: 40px;
+  }
+}
+
+.resource-thumbnail-small,
+i.resource-thumbnail-small-fallback-icon {
+
+  height: 40px;
+  width: 45px;
+  object-fit: cover;
+  object-position: 50% 50%;
+  display: flex;
+  justify-content: center;
+}
+
+.resource-thumbnail-small {
+  
+  border-radius: 2px;
+}
+
+.img-fluid {
+
+  max-width: 100%;
+  height: auto;
 }

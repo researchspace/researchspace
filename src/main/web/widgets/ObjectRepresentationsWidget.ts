@@ -91,13 +91,13 @@ interface ObjectRepsWidgetState {
  * <rs-object-representations query='SELECT ?label (bound(?mainRepresentationImage) AS ?isMainRep) (STR(COALESCE(?mainRepresentationImage,?representationImage)) AS ?imgURL)
  * WHERE {
  *        {
- *          ?? rso:displayLabel ?label .
+ *          ?? rs:displayLabel ?label .
  *        }
  *        UNION {
  *                ?? crm:P138i_has_representation ?representationImage .
  *              }
  *        UNION {
- *                ?? rso:PX_has_main_representation ?mainRepresentationImage .
+ *                ?? rs:PX_has_main_representation ?mainRepresentationImage .
  *              }
  * }'
  * template='<img class="object-representations__image--rep" src="{{imgURL.value}}"/>'

@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -125,7 +126,7 @@ class LightBoxTable extends Component<LightboxTableProps, any> {
             onClick: () =>
               this.showDialogAction('Side-by-Side image comparison', SideBySide, this.props.config.iiifServerUrl),
           },
-          'Compare side-by-side'
+          'Image compare side-by-side'
         ),
 
         createElement(
@@ -134,7 +135,7 @@ class LightBoxTable extends Component<LightboxTableProps, any> {
             disabled: this.getSelectedCount() !== 2,
             onClick: () => this.showDialogAction('Image overlay', OverlayComparison, this.props.config.iiifServerUrl),
           },
-          'Overlay'
+          'Image overlay'
         ),
 
         createElement(

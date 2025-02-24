@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -70,6 +71,7 @@ import { Belief } from './Belief';
 import * as AssertionEvents from './AssertionEvents';
 
 import * as styles from './AssertionComponent.scss';
+import Icon from '../ui/icon/Icon';
 
 const DEFAULT_VALUE_TEMPLATE = `<div>
   {{#ifCond field.xsdDatatype.value "=="  "http://www.w3.org/2001/XMLSchema#string"}}
@@ -79,7 +81,7 @@ const DEFAULT_VALUE_TEMPLATE = `<div>
     {{value.value.value}}
   {{/ifCond}}
   {{#ifCond field.xsdDatatype.value "=="  "http://www.w3.org/2001/XMLSchema#anyURI"}}
-    <semantic-link uri="{{value.value.value}}" guess-repository=true></semantic-link>
+    <semantic-link iri="{{value.value.value}}" guess-repository=true></semantic-link>
   {{/ifCond}}
 </div>`;
 
@@ -552,7 +554,7 @@ export class AssertionComponent extends Component<Props, State> {
           {isSaving ? (
             <span>
               {assertionIri ? 'Updating' : 'Saving'}
-              <i className="fa fa-cog fa-spin" style={{ marginLeft: 5 }} />
+              <Icon iconType='round' iconName='settings' style={{ marginLeft: 5 }} className='fa-spin'/>
             </span>
           ) : assertionIri ? (
             'Update Assertion'

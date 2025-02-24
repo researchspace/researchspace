@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -21,12 +22,12 @@ import { Rdf } from 'platform/api/rdf';
 
 import { SetManagementProps, KeywordFilter } from './Configuration';
 
-export const SetKind = Rdf.iri('http://www.researchspace.org/resource/system/Set');
+export const SetKind = Rdf.iri('http://www.researchspace.org/resource/system/vocab/resource_type/set');
 const DefaultSetItemActions = `
   <div class='set-management__item-actions'>
     <bs-dropdown-button pull-right=true bs-style='link' title=''
                         id='set-actions-{{iri.value}}'>
-      <mp-set-management-action-remove-set-item>
+      <mp-set-management-action-remove-set-item item={{iri.value}}>
         <bs-menu-item event-key='remove'>Remove</bs-menu-item>
       </mp-set-management-action-remove-set-item>
     </bs-dropdown-button>
@@ -43,6 +44,8 @@ const DefaultItemLabel = `
 export const GridTemplate = `
   <mp-resource-card iri='{{iri.value}}'>${DefaultSetItemActions}</mp-resource-card>
 `;
+
+/*
 export const SetListTemplate = `
   <div style='display: flex; align-items: center; justify-content: space-between;'>
     <div style='overflow: hidden;'>
@@ -64,20 +67,43 @@ export const SetListTemplate = `
     </div>
   </div>
 `;
+*/
+
+export const SetListTemplate = `
+  <div style='display: flex; align-items: center; justify-content: space-between;'>
+  <div style='overflow: hidden;'>
+    <span style='display: flex;'>
+      ${DefaultItemLabel}
+    </span>
+  </div>
+
+  <div class='set-management__item-actions' style='margin-left: auto;'>
+    <rs-resource-dropdown id="{{clipboard-set}}-{{iri.value}}-item-actions-dropdown" class-name="dropdown-no-caret" toggle-class-name="button-clipboard-folder-actions no-active-bg">
+      {{> rsp:ResourceDropdownActions viewId="clipboard-set"
+                                      iri=iri.value
+                                      resourceConfig="http://www.researchspace.org/resource/system/resource_configurations_container/data/Set"
+                                      resourceLabel="Set"
+                                      resourceFormIRI="http://www.researchspace.org/resource/system/forms/Set"
+                                      setPage=true
+      }}
+    </rs-resource-dropdown>
+  </div>
+`
+
 export const ItemListTemplate = `
   <div style='display: flex; align-items: center; justify-content: space-between;'>
     <div style='overflow: hidden;'>
-      <mp-resource-link-container uri="{{iri.value}}" draggable=false>
+      <semantic-link-container uri="{{iri.value}}" draggable=false>
         ${DefaultItemLabel}
-      </mp-resource-link-container>
+      </semantic-link-container>
     </div>
     ${DefaultSetItemActions}
   </div>
 `;
 
 export const KeywordSearch: KeywordFilter = {
-  placeholder: 'Search all...',
-  placeholderInSet: 'Search in the set...',
+  placeholder: 'Search in clipboard...',
+  placeholderInSet: 'Search in set',
   queryPattern: `
     ?itemHolder ?__preferredLabel__ ?itemLabel .
     FILTER REGEX(STR(?itemLabel), "(.*?)?__token__", "i")`,

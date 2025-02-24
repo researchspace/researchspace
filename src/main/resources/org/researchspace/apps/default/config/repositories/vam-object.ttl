@@ -1,0 +1,19 @@
+@prefix repo: <http://www.openrdf.org/config/repository#> .
+@prefix sr: <http://www.openrdf.org/config/repository/sail#> .
+@prefix sail: <http://www.openrdf.org/config/sail#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
+@prefix : <http://www.researchspace.org/resource/system/service/vam/> .
+
+[] a repo:Repository ;
+  repo:repositoryID "vam-object" ;
+  rdfs:label "A wrapper for V&M using RESTSail repository" ;
+  repo:repositoryImpl [
+    repo:repositoryType "openrdf:SailRepository" ;
+    sr:sailImpl [
+      sail:sailType "researchspace:RESTSail" ;
+      ephedra:serviceURL "https://api.vam.ac.uk/v2/object/{objectid}" ;
+      ephedra:httpMethod "GET" ;
+      ephedra:implementsService :VamObject
+    ] 
+  ] .

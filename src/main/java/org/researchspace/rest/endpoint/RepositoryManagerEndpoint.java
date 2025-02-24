@@ -267,7 +267,7 @@ public class RepositoryManagerEndpoint {
         Optional<Repository> optRepo = repositoryManager.getRepository(Optional.of(repID));
         if (!checkPermission(
                 optRepo.isPresent() ? REPOSITORY_CONFIG.PREFIX_UPDATE + repID : REPOSITORY_CONFIG.CREATE)) {
-            throw new ForbiddenException("No permission for creating or updating the repository " + repID);
+            throw new ForbiddenException("No permission to create or update the repository " + repID);
         }
 
         try {

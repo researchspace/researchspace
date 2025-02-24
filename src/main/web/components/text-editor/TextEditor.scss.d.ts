@@ -1,6 +1,5 @@
 declare namespace TextEditorScssNamespace {
   export interface ITextEditorScss {
-    active: string;
     draggableGripper: string;
     dropdownMenuItem: string;
     dropdownMenuItemIcon: string;
@@ -19,6 +18,7 @@ declare namespace TextEditorScssNamespace {
     titleHolder: string;
     titleInput: string;
     toolbar: string;
+    toolbarBtnGroup: string;
   }
 }
 

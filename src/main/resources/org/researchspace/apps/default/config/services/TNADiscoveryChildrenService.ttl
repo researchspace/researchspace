@@ -1,0 +1,95 @@
+PREFIX sp: <http://spinrdf.org/sp#>
+PREFIX spin: <http://spinrdf.org/spin#>
+PREFIX spl: <http://spinrdf.org/spl#>
+PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#>
+PREFIX sail: <http://www.openrdf.org/config/sail#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX : <http://www.researchspace.org/resource/system/services/tnadiscovery/>
+
+:TNADiscoveryChildrenService a ephedra:Service ;    
+    sail:sailType "researchspace:RESTSail" ;
+    rdfs:label "A wrapper for the TNA Discovery Record Items API service." ;
+
+    ephedra:hasSPARQLPattern (
+        [
+            sp:subject :_results ;
+            sp:predicate :parentId ;
+            sp:object :_parentId
+        ]
+        [
+            sp:subject :_results ;
+            sp:predicate :limit ;
+            sp:object :_limit
+        ]
+        [
+           sp:subject :_results ;
+           sp:predicate :hasCitableReference ;
+           sp:object :_hasCitableReference
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :hasId ;
+            sp:object :_hasId
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :hasCatalogueLevel ;
+            sp:object :_hasCatalogueLevel
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :isParent ;
+            sp:object :_isParent
+            ]
+    );
+    spin:constraint [
+        a spl:Argument ;
+        rdfs:comment "Parent id" ;
+        spl:predicate :_parentId ;
+        spl:valueType xsd:string ;
+        ] ;
+
+    ;
+    spin:constraint [
+        a spl:Argument ;
+        rdfs:comment "Limit, default 30, max 500" ;
+        spl:predicate :_limit ;
+        spl:valueType xsd:integer ;
+        ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "results" ;
+        spl:predicate :_results ;
+        spl:valueType rdfs:Resource;
+        ephedra:jsonPath "$.assets.[*]"
+        ] ;
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "citableReference" ;
+        spl:predicate :_hasCitableReference ;
+        spl:valueType xsd:string ;
+        ephedra:jsonPath "$.citableReference"
+        ] ;
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "id" ;
+        spl:predicate :_hasId ;
+        spl:valueType xsd:string ;
+        ephedra:jsonPath "$.id"
+        ] ;
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "catalogueLevel" ;
+        spl:predicate :_hasCatalogueLevel ;
+        spl:valueType xsd:integer ;
+        ephedra:jsonPath "$.catalogueLevel"
+        ] ;
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "isParent" ;
+        spl:predicate :_isParent ;
+        spl:valueType xsd:boolean ;
+        ephedra:jsonPath "$.isParent"
+        ] .
+

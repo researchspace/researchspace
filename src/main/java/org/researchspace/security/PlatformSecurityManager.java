@@ -121,6 +121,14 @@ public class PlatformSecurityManager extends DefaultWebSecurityManager {
                 ((CachingRealm) r).setCacheManager(_cacheManager);
             }
         }
+
+        setSubjectFactory(new CustomWebSubjectFactory());
+
+        /**
+         * Disable rememberMe functionality, as it is not used in the platform.
+         * And only sets unnecessary cookies.
+         */
+        setRememberMeManager(null);
     }
 
     // If anonymous filter is enabled we initialize anonymous user Subject as soon

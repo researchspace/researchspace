@@ -1,0 +1,139 @@
+
+
+<semantic-form [[> rsp:FormDefaults]] 
+               persistence='{"type": "sparql", "targetInsertGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}", "repository":"{{#if scheme}}authorities{{else}}default{{/if}}"}'
+               new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{skos_prefLabel}}{{{{/raw}}}}{{else}}/skos_concept/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
+               fields='[[
+                    fieldDefinitions
+                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                    skos_inScheme="http://www.researchspace.org/pattern/system/entity/skos_inScheme"
+                    entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
+
+                    skos_prefLabel="http://www.researchspace.org/pattern/system/entity/skos_prefLabel"
+                    skos_altLabel="http://www.researchspace.org/pattern/system/entity/skos_altLabel"
+                    skos_broader="http://www.researchspace.org/pattern/system/entity/skos_broader"
+                    skos_narrower="http://www.researchspace.org/pattern/system/entity/skos_narrower"
+                    related_term="http://www.researchspace.org/pattern/system/term/related_term"
+                    skos_scopeNote="http://www.researchspace.org/pattern/system/entity/skos_scopeNote"
+                    
+                    image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
+                    more_image="http://www.researchspace.org/pattern/system/entity/images"
+               ]]'
+>
+
+  <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
+  
+    <semantic-form-hidden-input for="classtype" default-values='["http://www.w3.org/2004/02/skos/core#Concept"]'></semantic-form-hidden-input>
+    {{#if scheme}}
+      <semantic-form-hidden-input for="skos_inScheme" default-value="{{scheme}}"> </semantic-form-hidden-input>  
+    {{/if}}
+
+    <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
+      <rs-tab event-key="detail" title="Details">
+        <div>
+          <semantic-form-text-input for="skos_prefLabel" label="Preferred {{#if entityType}}{{entityType}}{{/if}} name" 
+                                    placeholder="Enter preferred {{#if entityType}}{{entityType}}{{/if}} name"> 
+          </semantic-form-text-input>
+          <semantic-form-text-input for="skos_altLabel" label="Alternative {{#if entityType}}{{entityType}}{{/if}} name" 
+                                    placeholder="Enter {{#if entityType}}{{entityType}}{{/if}} alternative name"> 
+          </semantic-form-text-input>
+
+          {{#if node}}
+            <semantic-query query='SELECT ?authorityDocument ?authorityDocumentName WHERE {
+                                    <{{node}}> crm:P71i_is_listed_in ?authorityDocument .
+                                    ?authorityDocument a crm:E32_Authority_Document .
+                                    ?authorityDocument crm:P1_is_identified_by ?appellation . 
+                                    ?appellation a crm:E41_Appellation . 
+                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                    ?appellation crm:P190_has_symbolic_content ?authorityDocumentName .
+                                } LIMIT 1'
+                            template='{{> template}}'>
+                            
+                <template id='template'>
+                    <div>
+                        <div style="margin-top: 20px;">
+                            Listed in authority document:
+                            {{#if scheme}}
+                              {{bindings.0.authorityDocumentName.value}} 
+                            {{else}}
+                              <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                              urlqueryparam-view='authority-list' 
+                                              urlqueryparam-resource-iri='{{bindings.0.authorityDocument.value}}'
+                                              class="text-link">
+                                {{bindings.0.authorityDocumentName.value}}
+                              </semantic-link>
+                            {{/if}}
+                        </div>
+                    </div>  
+                </template>
+            </semantic-query>
+          {{/if}}
+
+          <semantic-form-tree-picker-input  for="skos_broader" 
+                                            label="Broader {{#if entityType}}{{entityType}}{{else}}term{{/if}}" 
+                                            placeholder="Select broader {{#if entityType}}{{entityType}}{{else}}term{{/if}}" 
+                                            close-dropdown-on-selection='false'
+                                            default-values='{{#if scheme}}[{{#if broader}}"{{broader}}"{{/if}}]{{else}}{{/if}}' 
+
+                                            tree-patterns='{"scheme": "{{#if scheme}}{{scheme}}{{else}}http://www.w3.org/2004/02/skos/core#Concept{{/if}}",
+                                                            "schemePattern": "{{#if scheme}}?item skos:inScheme <{{scheme}}>{{else}}?item a skos:Concept{{/if}}",
+                                                            "relationPattern": "?item skos:broader ?parent",
+                                                            "labelPattern": "?item skos:prefLabel ?label ."}'
+
+                                            nested-form-template='{{#if scheme}}
+                                                                    {{else}}
+                                                                      {{{{raw}}}}{{> forms:Term nested=true editable=true mode="new" }}{{{{/raw}}}}
+                                                                    {{/if}}'  
+
+                                            query-item-label='SELECT ?label WHERE {
+                                                                    ?item skos:prefLabel ?label .
+                                                              }'
+          ></semantic-form-tree-picker-input>
+    
+          <semantic-form-tree-picker-input  for="skos_narrower" 
+                                            label="Narrower {{#if entityType}}{{entityType}}{{else}}term{{/if}}" 
+                                            placeholder="Select narrower {{#if entityType}}{{entityType}}{{else}}term{{/if}}" 
+                                            close-dropdown-on-selection='false'
+                                          
+                                            tree-patterns='{"scheme": "{{#if scheme}}{{scheme}}{{else}}http://www.w3.org/2004/02/skos/core#Concept{{/if}}",
+                                                            "schemePattern": "{{#if scheme}} ?item skos:inScheme <{{scheme}}>{{else}}?item a skos:Concept{{/if}}",
+                                                            "relationPattern": "?item skos:broader ?parent",
+                                                            "labelPattern": "?item skos:prefLabel ?label ."}'
+                                                            
+                                            nested-form-template='{{#if scheme}}
+                                                                  {{else}}
+                                                                    {{{{raw}}}}{{> forms:Term nested=true editable=true mode="new" }}{{{{/raw}}}}
+                                                                  {{/if}}'  
+
+                                            query-item-label='SELECT ?label WHERE {
+                                                                    ?item skos:prefLabel ?label .
+                                                              }'     
+          ></semantic-form-tree-picker-input>
+        
+          <semantic-form-select-input for='related_term' 
+                                      label="Related {{#if entityType}}{{entityType}}{{else}}term{{/if}}" 
+                                      placeholder="Enter related {{#if entityType}}{{entityType}}{{else}}term{{/if}}"
+                                      nested-form-templates='[ 
+                                        {
+                                          "label": "Term",
+                                          "nestedForm": "{{{{raw}}}}
+                                                            {{> \"http://www.researchspace.org/resource/system/forms/Term\" nested=true editable=true mode=\"new\"}}
+                                                          {{{{/raw}}}}"
+                                        }
+                                      ]'> 
+          </semantic-form-select-input> 
+          
+          <semantic-form-text-input for="skos_scopeNote" multiline=true label="Term scope note" 
+                                    placeholder="Enter {{#if entityType}}{{entityType}}{{else}}term{{/if}} scope note"> 
+          </semantic-form-text-input>
+        </div>
+      </rs-tab>
+      
+      [[> rsp:FormMetadataTab]]
+      
+    </rs-tabs>
+    </div>
+    
+    <semantic-form-errors></semantic-form-errors>
+    [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}term{{/if}}']] 
+  </semantic-form>

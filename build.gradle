@@ -24,16 +24,17 @@ plugins {
     id 'java-library'
 
     // To run app in the development mode with jetty container
-    id 'org.gretty' version '3.0.6'
+    id 'org.gretty' version '3.1.5'
 
     // To run webpack-dev-server in the background
-    id 'com.github.psxpaul.execfork' version '0.1.13'
+    id 'com.github.psxpaul.execfork' version '0.2.2'
 
     // To generate eclipse project files
     id 'eclipse'
 
     // To show task dependency graph
     id "com.dorongold.task-tree" version "1.5"
+
 }
 
 
@@ -78,6 +79,11 @@ war {
     }
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+}
 
 farms {
     farm 'researchspace', {
@@ -103,9 +109,15 @@ products {
             "./bundle-config/digilib-config.xml": "./bundle-config/digilib-config.xml",
             "./bundle-config/digilib-log4j-config.xml": "./bundle-config/digilib-log4j-config.xml",
             "./bundle-config/ZipReadme.txt": "./README.txt",
+            "./bundle-config/Java11PrerequisitesCheckAndInstallationSteps.txt":"./Java11PrerequisitesCheckAndInstallationSteps.txt",
             "./LICENSE": "./LICENSE.txt",
             "./COPYING": "./COPYING",
             "./COPYING": "./COPYING.GPLv3",
+            // add global.prop and set loadDefaultConfig=1
+            "./bundle-config/runtime-data/config/global.prop": "./runtime-data/config/global.prop",
+            // add ui.prop and IIIFConfig template for digilib as in the codebase ui.prop and IIIFConfig are for cantaloupe
+            "./bundle-config/runtime-data/config/ui.prop": "./runtime-data/config/ui.prop",
+            "./bundle-config/runtime-data/data/templates/http%3A%2F%2Fwww.researchspace.org%2Fresource%2FIIIFConfig.html": "./runtime-data/data/templates/http%3A%2F%2Fwww.researchspace.org%2Fresource%2FIIIFConfig.html",
             "${projectDir.getAbsolutePath()}/src/main/resources/org/researchspace/apps/default/config/shiro.ini": "./runtime-data/config/shiro.ini"
         ]
     }
@@ -119,6 +131,7 @@ def defaultJvmArgs = [
     // for properties that get value from project.properties see gradle.properties file for more details
     "-Dconfig.environment.sparqlEndpoint=${project.properties['sparqlEndpoint']}",
     "-Dconfig.proxy.IIIF.targetUri=${project.properties['iiifScaler']}",
+    "-Dconfig.environment.upload-iiifFolder=file://${projectDir.getAbsolutePath()}${project.properties['iiifFolder']}",
 
     // delopment storages for image upload functionality
     "-Dconfig.storage.images.type=nonVersionedFile",
@@ -127,6 +140,8 @@ def defaultJvmArgs = [
     // tmp storage is needed for image upload functionality
     "-Dconfig.storage.tmp.type=nonVersionedFile",
     "-Dconfig.storage.tmp.mutable=true",
+
+   // "-Dconfig.global.loadDefaultConfig=1",
 
     // Increase size limit for file upload
     "-Dorg.eclipse.jetty.server.Request.maxFormContentSize=104857600"
@@ -149,11 +164,10 @@ gretty {
     // don't restart jetty when templates in the resource folder are changed
     fastReload = "${projectDir.getAbsolutePath()}/src/main/resources/org/researchspace/apps".toString()
 
-    // no need to write logs into file in development mode
-    fileLogEnabled = false
-
     // use custom jetty-env.xml to disable websocket support
     contextConfigFile = "${projectDir}/jetty-env.xml"
+
+    recompileOnSourceChange = false
 
     if (project.gradle.startParameter.taskNames.contains('buildZip')) {
         jvmArgs = defaultJvmArgs + [
@@ -217,8 +231,12 @@ tasks.runProdWebpack.dependsOn npmInstallCi
 
 // task to execute webpack in watch mode, see ./webpack/package.json
 task startWebpack(type: com.github.psxpaul.task.ExecFork) {
+    // this is needed to fix this issue https://github.com/psxpaul/gradle-execfork-plugin/issues/61
+    // see also https://github.com/springdoc/springdoc-openapi-gradle-plugin/pull/142
+    workingDir = java.nio.file.Files.createTempDirectory('webpack').toFile()
+
     executable = 'npm'
-    args = [ 'run', 'dev' ]
+    args = [ 'run', '--prefix', projectDir.getAbsolutePath(), 'dev' ]
     timeout = 1200
 
     // wait for message produces by webpack in minimal log mode
@@ -285,15 +303,18 @@ repositories {
 
     // needed for SMAL2 integration
     maven { url 'https://build.shibboleth.net/nexus/content/repositories/releases/' }
+
+    // needed for unrelesead dependencies
+    maven { url "https://jitpack.io" }
 }
 
 ext {
     RDF4J_VERSION = '3.5.1'
-    LOG4J_VERSION = '2.15.0'
+    LOG4J_VERSION = '2.24.3'
     JERSEY_VERSION = '2.30.1'
     JACKSON_VERSION = '2.10.3'
-    GUICE_VERSION = '4.2.3'
-    SHIRO_VERSION = '1.7.1'
+    GUICE_VERSION = '6.0.0'
+    SHIRO_VERSION = '2.0.2'
     IMAGEIO_VERSION = '3.5'
 }
 
@@ -308,6 +329,7 @@ configurations.all {
 dependencies {
     implementation platform('com.amazonaws:aws-java-sdk-bom:1.11.994')
     implementation 'com.amazonaws:aws-java-sdk-s3'
+    implementation 'org.semarglproject:semargl-rdf:0.7'
 
     compileOnly (
         "javax.servlet:javax.servlet-api:3.1.0",
@@ -354,6 +376,7 @@ dependencies {
         "org.apache.logging.log4j:log4j-web:${LOG4J_VERSION}",
         "org.apache.logging.log4j:log4j-1.2-api:${LOG4J_VERSION}",
         "org.apache.logging.log4j:log4j-slf4j-impl:${LOG4J_VERSION}",
+        "org.apache.logging.log4j:log4j-slf4j2-impl:${LOG4J_VERSION}",
         "org.apache.logging.log4j:log4j-jul:${LOG4J_VERSION}",
         "org.apache.logging.log4j:log4j-jcl:${LOG4J_VERSION}",
 
@@ -379,9 +402,10 @@ dependencies {
         "org.glassfish.hk2:guice-bridge:2.6.1",
 
 
-        "io.buji:buji-pac4j:6.0.0-RC1",
-        "org.pac4j:pac4j-oidc:5.0.0-RC1",
-        "org.pac4j:pac4j-saml:5.0.0-RC1",
+        "io.buji:buji-pac4j:8.2.0",
+        "org.pac4j:javaee-pac4j:7.1.0",
+        "org.pac4j:pac4j-oidc:5.7.7",
+        "org.pac4j:pac4j-saml:5.7.7",
 
         // Apache commons stuff
         "org.apache.commons:commons-compress:1.20",
@@ -435,8 +459,11 @@ dependencies {
         "com.novocode:junit-interface:0.11",
         "org.mockito:mockito-core:1.9.5",
         "junit:junit:4.10",
-        "com.github.sdorra:shiro-unit:1.0.1",
         "org.jukito:jukito:1.4.1",
+
+        "com.github.researchspace:shiro-unit:c7205e5a65",
+        //"com.github.sdorra:shiro-unit:1.0.1",
+
         "org.skyscreamer:jsonassert:1.5.0",
         "com.github.tomakehurst:wiremock-jre8:2.27.2"
     )

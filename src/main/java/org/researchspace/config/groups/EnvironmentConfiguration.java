@@ -26,6 +26,7 @@ import com.google.common.collect.Lists;
 
 import javax.inject.Inject;
 
+import org.researchspace.cache.LabelCache;
 import org.researchspace.config.ConfigurationParameter;
 import org.researchspace.config.InvalidConfigurationException;
 import org.researchspace.security.SecurityConfigRecord;
@@ -208,6 +209,31 @@ public class EnvironmentConfiguration extends ConfigurationGroupBase {
     @ConfigurationParameter
     public String getAllowedCrossOrigin() {
         return getString("allowedCrossOrigin");
+    }
+
+    /**
+     * In LabelCache, when too many labels are requested at once, 
+     * SPARQL requests will be split in batches of labelsBatchSize per query.
+     * 
+     * With some databases, like QLever, it can be more efficient to send a single query 
+     * instiead of spliting it into batches (like it was with blazegraph). In this case
+     * it makes sense to set this parameter to a very huge number to prevent batch requests.
+     * 
+     * @see LabelCache
+     */
+    @ConfigurationParameter
+    public int getLabelsBatchSize() {
+        return getInteger("labelsBatchSize", 1000);
+    }
+
+    /**
+     * Labels Service cache size.
+     * 
+     * @see LabelCache
+     */
+    @ConfigurationParameter
+    public int getLabelsCacheSize() {
+        return getInteger("labelsCacheSize", 1000);
     }
 
     /****************************** VALIDATION ********************************/

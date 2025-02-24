@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -21,6 +22,7 @@ import { InputHTMLAttributes, CSSProperties, Children } from 'react';
 import * as classnames from 'classnames';
 
 import './clearable-input.scss';
+import Icon from '../icon/Icon';
 
 export interface ClearableInputProps extends InputHTMLAttributes<HTMLInputElement> {
   className?: string;
@@ -29,6 +31,7 @@ export interface ClearableInputProps extends InputHTMLAttributes<HTMLInputElemen
   inputStyle?: CSSProperties;
   clearTitle?: string;
   onClear: () => void;
+  showPlaceholderIcon?: boolean;
 }
 
 interface State {
@@ -50,7 +53,7 @@ export class ClearableInput extends React.Component<ClearableInputProps, State> 
   }
 
   render() {
-    const { className, style, inputClassName, inputStyle, onClear, clearTitle, children, ...inputProps } = this.props;
+    const { className, style, inputClassName, inputStyle, onClear, clearTitle, children, showPlaceholderIcon, ...inputProps } = this.props;
 
     const hasNonEmptyAddon = Children.count(children) > 0;
 
@@ -65,18 +68,23 @@ export class ClearableInput extends React.Component<ClearableInputProps, State> 
       <div className={groupClass} style={style} onClick={this.onClickSelf}>
         {hasNonEmptyAddon ? children : null}
         <div className={`${CLASS_NAME}__input-with-clear`}>
+          {showPlaceholderIcon &&
+            <div className={`${CLASS_NAME}__icon`}>
+              <Icon iconType='rounded' iconName='search' symbol/>
+            </div>
+          }
           <input
             type="text"
             {...inputProps}
             ref={this.onInputMount}
             className={controlClass}
             style={inputStyle}
-            placeholder={hasNonEmptyAddon ? undefined : inputProps.placeholder}
+            placeholder='Search'
             onFocus={this.onFocus}
             onBlur={this.onBlur}
           />
           <div className={`${CLASS_NAME}__clear`} title={clearTitle} onClick={onClear}>
-            <span className="fa fa-times" aria-hidden="true"></span>
+            <Icon iconType='rounded' iconName='close' symbol />
           </div>
         </div>
       </div>

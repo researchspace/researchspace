@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -17,9 +18,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 import * as React from 'react';
-import { Button, ButtonGroup, Dropdown, MenuItem } from 'react-bootstrap';
+import { OverlayTrigger, Popover, Button, ButtonGroup, Dropdown, MenuItem, SplitButton } from 'react-bootstrap';
 import * as classnames from 'classnames';
-import { Workspace, ToolbarProps as BaseProps, CommandHistory, EventObserver } from 'ontodia';
+import { Workspace, ToolbarProps as BaseProps, CommandHistory, EventObserver, ElementTemplate } from 'ontodia';
 
 import { Component } from 'platform/api/components';
 import { VocabPlatform } from 'platform/api/rdf/vocabularies';
@@ -28,7 +29,10 @@ import { Permissions } from 'platform/api/services/security';
 import { HasPermission } from 'platform/components/security/HasPermission';
 
 import * as styles from './Toolbar.scss';
+import Icon from 'platform/components/ui/icon/Icon';
+import { trigger } from 'platform/api/events';
 export const ToolbarStyles = styles;
+import * as ToolbarEvents from './ToolbarEvents'
 
 export interface ToolbarProps extends BaseProps {
   getWorkspace?: () => Workspace;
@@ -38,6 +42,8 @@ export interface ToolbarProps extends BaseProps {
   onClearAll?: () => void;
   onSaveDiagramAs?: () => void;
   onPersistChangesAndSaveDiagram?: () => void;
+  diagramIri?: string;
+  dropdownTemplate?: ElementTemplate;
 }
 
 export interface ToolbarCommand {
@@ -48,7 +54,7 @@ export interface ToolbarCommand {
 
 export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Component<P, S> {
   static defaultProps: Partial<ToolbarProps> = {
-    saveDiagramLabel: 'Save diagram',
+    saveDiagramLabel: 'Save map',
     persistChangesLabel: 'Save data',
   };
   protected readonly listener = new EventObserver();
@@ -76,19 +82,16 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
     } = this.props;
     if (onPersistChanges && hasUnpersistedChanges) {
       return (
-        <Dropdown id="persist-changes-button" className="btn-group-sm"
-          disabled={!canPersistChanges}
-        >
-          <Button disabled={!canPersistChanges}
-                  bsStyle="success"
-                  onClick={onPersistChanges} 
-                  className={styles.saveButton}
+        <Dropdown id="persist-changes-button" disabled={!canPersistChanges}>
+          <Button
+            disabled={!canPersistChanges}
+            onClick={onPersistChanges}
+            className="btn-action btn-split"
+            bsStyle="default"
           >
-            <span className="fa fa-floppy-o" aria-hidden="true" />
-            &nbsp;
             {persistChangesLabel}
           </Button>
-          <Dropdown.Toggle bsStyle="success" />
+          <Dropdown.Toggle bsStyle="default" className="btn-action" />
           <Dropdown.Menu>
             <MenuItem href="#" onClick={onPersistChangesAndSaveDiagram}>
               {persistChangesLabel} &amp; {saveDiagramLabel}
@@ -99,16 +102,14 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
     }
     if (onSaveDiagram && canSaveDiagram) {
       return (
-        <Dropdown id="save-diagram-button" className="btn-group-sm">
-          <Button bsStyle="primary" 
-                  onClick={onSaveDiagram} 
-                  className={styles.saveButton}>
-            <span className="fa fa-floppy-o" aria-hidden="true" />
-            &nbsp;
+        <Dropdown id="save-diagram-button">
+          <Dropdown.Toggle bsStyle="default" className="btn-action">
             {saveDiagramLabel}
-          </Button>
-          <Dropdown.Toggle bsStyle="primary" />
+          </Dropdown.Toggle>
           <Dropdown.Menu>
+            <MenuItem href="#" onClick={onSaveDiagram}>
+              {saveDiagramLabel}
+            </MenuItem>
             <MenuItem href="#" onClick={onSaveDiagramAs}>
               {saveDiagramLabel} as...
             </MenuItem>
@@ -119,72 +120,215 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
     return null;
   }
 
+  protected renderSaveDataButton() {
+    const {
+      canPersistChanges,
+      hasUnpersistedChanges,
+      saveDiagramLabel,
+      persistChangesLabel,
+      onPersistChanges,
+      onPersistChangesAndSaveDiagram,
+    } = this.props;
+
+    const canSaveData = onPersistChanges && hasUnpersistedChanges;
+
+    return (
+      <Dropdown id="persist-changes-button" disabled={!canPersistChanges || !canSaveData}>
+        <Button
+          disabled={!canPersistChanges || !canSaveData}
+          onClick={onPersistChanges}
+          className="btn-action btn-split"
+          bsStyle="default"
+        >
+          {persistChangesLabel}
+        </Button>
+        <Dropdown.Toggle bsStyle="default" className="btn-action" />
+        <Dropdown.Menu>
+          <MenuItem href="#" onClick={onPersistChangesAndSaveDiagram}>
+            <Icon iconType="rounded" iconName="save" symbol className="icon-left" />
+            {persistChangesLabel} and map
+          </MenuItem>
+        </Dropdown.Menu>
+      </Dropdown>
+    );
+  }
+
+  protected renderSaveMapButton() {
+    const { canSaveDiagram, saveDiagramLabel, onSaveDiagram, onSaveDiagramAs } = this.props;
+
+    const canSaveMap = onSaveDiagram && canSaveDiagram;
+
+    return (
+      <SplitButton
+        title={saveDiagramLabel}
+        id="save-diagram-button-split"
+        disabled={!canSaveMap}
+        onClick={onSaveDiagram}
+        bsStyle="default"
+        className="btn-action btn-split"
+      >
+        <MenuItem href="#" onClick={onSaveDiagramAs}>
+          <Icon iconType="rounded" iconName="save" symbol className="icon-left" />
+          {saveDiagramLabel} as...
+        </MenuItem>
+      </SplitButton>
+
+      /*       <Dropdown id="save-diagram-button"
+                disabled={!canSaveMap}>
+        <Dropdown.Toggle bsStyle='default' className="btn-action">
+          {saveDiagramLabel}
+        </Dropdown.Toggle>
+        <Dropdown.Menu>
+        <MenuItem href="#" onClick={onSaveDiagram}>
+            {saveDiagramLabel}
+          </MenuItem>
+          <MenuItem href="#" onClick={onSaveDiagramAs}>
+            {saveDiagramLabel} as...
+          </MenuItem>
+        </Dropdown.Menu>
+      </Dropdown> */
+    );
+  }
+
   render() {
     const { redo, undo } = this.getUndoReduCommands(this.props.history);
+    const {diagramIri} = this.props
+    
+    function onRefreshButtonClicked() {
+      trigger({
+        eventType: ToolbarEvents.ToolbarRefreshed,
+        source: `toolbar-${diagramIri}`,
+      })
+    }
 
     return (
       <div className={styles.component}>
-        <HasPermission
-          permission={Permissions.toLdp('container', VocabPlatform.OntodiaDiagramContainer, 'create', 'any')}
-        >
-          <ButtonGroup bsSize="small" className={styles.group}>
-            {this.renderSaveButton()}
-          </ButtonGroup>
-        </HasPermission>
-        {undo && redo ? (
-          <ButtonGroup bsSize="small" className={styles.group}>
-            <Button
-              className="ontodia-btn ontodia-btn-default"
-              title={undo.title}
-              disabled={!undo.enabled}
-              onClick={undo.invoke}
-            >
-              <span className="fa fa-undo" aria-hidden="true" />
-            </Button>
-            <Button
-              className="ontodia-btn ontodia-btn-default"
-              title={redo.title}
-              disabled={!redo.enabled}
-              onClick={redo.invoke}
-            >
-              <span className="fa fa-repeat" aria-hidden="true" />
-            </Button>
-          </ButtonGroup>
-        ) : null}
-        <ButtonGroup bsSize="small" className={styles.group}>
-          <Button type="button" className="ontodia-btn ontodia-btn-default" onClick={this.props.onForceLayout}>
-            <span title="Force layout" className="fa fa-snowflake-o" aria-hidden="true" />
-          </Button>
-          {this.props.onClearAll ? (
-            <Button onClick={this.props.onClearAll}>
-              <span className="fa fa-trash" aria-hidden="true" />
-              &nbsp;Clear All
-            </Button>
+        <div className={styles.buttonsContainer}>
+          {undo && redo ? (
+            <ButtonGroup>
+              <Button
+                className="ontodia-btn ontodia-btn-default"
+                title={undo.title}
+                disabled={!undo.enabled}
+                onClick={undo.invoke}
+              >
+                <Icon iconType="rounded" iconName="undo" symbol />
+              </Button>
+              <Button
+                className="ontodia-btn ontodia-btn-default"
+                title={redo.title}
+                disabled={!redo.enabled}
+                onClick={redo.invoke}
+              >
+                <Icon iconType="rounded" iconName="repeat" symbol />
+              </Button>
+            </ButtonGroup>
           ) : null}
-          <Button title="Zoom In" onClick={this.props.onZoomIn}>
-            <span className="fa fa-search-plus" aria-hidden="true" />
-          </Button>
-          <Button title="Zoom Out" onClick={this.props.onZoomOut}>
-            <span className="fa fa-search-minus" aria-hidden="true" />
-          </Button>
-          <Button title="Fit to Screen" onClick={this.props.onZoomToFit}>
-            <span className="fa fa-arrows-alt" aria-hidden="true" />
-          </Button>
-          <Button title="Export diagram as PNG" onClick={this.onExportPng}>
-            <span className="fa fa-picture-o" aria-hidden="true" />
-            &nbsp;PNG
-          </Button>
-          <Button title="Export diagram as SVG" onClick={this.onExportSvg}>
-            <span className="fa fa-picture-o" aria-hidden="true" />
-            &nbsp;SVG
-          </Button>
-          <Button title="Print diagram" onClick={this.props.onPrint}>
-            <span className="fa fa-print" aria-hidden="true" />
-          </Button>
-        </ButtonGroup>
-        {this.renderLanguages()}
+
+          <ButtonGroup className={styles.groupButtons}>
+            <Button bsStyle="default" className="btn-icon" onClick={this.props.onZoomIn}>
+              <Icon iconType="rounded" iconName="add_circle_outline" symbol />
+            </Button>
+
+            <Button bsStyle="default" className="btn-icon" onClick={this.props.onZoomOut}>
+              <Icon iconType="rounded" iconName="remove_circle_outline" symbol />
+            </Button>
+
+            <OverlayTrigger
+              trigger={['hover']}
+              placement="bottom"
+              overlay={<Popover id="tooltip">Fit to screen</Popover>}
+            >
+              <Button bsStyle="default" className="btn-icon" onClick={this.props.onZoomToFit}>
+                <Icon iconType="rounded" iconName="zoom_out_map" symbol />
+              </Button>
+            </OverlayTrigger>
+
+            <OverlayTrigger
+              trigger={['hover']}
+              placement="bottom"
+              overlay={<Popover id="tooltip">Force layout</Popover>}
+            >
+              <Button bsStyle="default" className="btn-icon" onClick={this.props.onForceLayout}>
+                <Icon iconType="rounded" iconName="auto_awesome_mosaic" symbol />
+              </Button>
+            </OverlayTrigger>
+
+            {this.props.onClearAll ? (
+              <OverlayTrigger
+                trigger={['hover']}
+                placement="bottom"
+                overlay={<Popover id="tooltip">Clear all</Popover>}
+              >
+                <Button onClick={this.props.onClearAll} bsStyle="default" className="btn-icon">
+                  <Icon iconType="rounded" iconName="layers_clear" symbol />
+                </Button>
+              </OverlayTrigger>
+            ) : null}
+
+            <OverlayTrigger
+              trigger={['hover']}
+              placement="bottom"
+              overlay={<Popover id="tooltip">Print knowledge map</Popover>}
+            >
+              <Button
+                bsStyle="default"
+                className="btn-icon"
+                onClick={this.props.onPrint}
+                style={{ marginLeft: '30px' }}
+              >
+                <Icon iconType="rounded" iconName="print" symbol />
+              </Button>
+            </OverlayTrigger>
+
+            <Dropdown id="export-diagram-button">
+              <Dropdown.Toggle bsStyle="default" className="btn-textAndIcon btn-icon" style={{ marginRight: 20 }}>
+                <Icon iconType="rounded" iconName="download" symbol />
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                <MenuItem href="#" onClick={this.onExportPng}>
+                  <Icon iconType="rounded" iconName="download" symbol className="icon-left" />
+                  Export as PNG
+                </MenuItem>
+                <MenuItem href="#" onClick={this.onExportSvg}>
+                  <Icon iconType="rounded" iconName="download" symbol className="icon-left" />
+                  Export as SVG
+                </MenuItem>
+              </Dropdown.Menu>
+            </Dropdown>
+          </ButtonGroup>
+        </div>
+
+        <div className={styles.buttonsContainer}>
+          {this.props.diagramIri && 
+            <Button onClick={onRefreshButtonClicked} className='btn-textAndIcon' title='Refresh knowledge map'>
+              <Icon iconType="rounded" iconName='refresh' symbol />
+            </Button>}
+          {this.renderOptionDropdown()}
+          <HasPermission
+            permission={Permissions.toLdp('container', VocabPlatform.OntodiaDiagramContainer, 'create', 'any')}
+          >
+            {/*             {this.renderSaveButton()} */}
+            <>
+              {this.renderSaveDataButton()}
+              {this.renderSaveMapButton()}
+            </>
+          </HasPermission>
+
+          {this.renderLanguages()}
+        </div>
+        
       </div>
     );
+  }
+
+  protected renderOptionDropdown() {
+    const {diagramIri, dropdownTemplate} = this.props;
+    if (!diagramIri || !dropdownTemplate) {
+      return null
+    }
+
+    return dropdownTemplate
   }
 
   protected renderLanguages() {
@@ -193,7 +337,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
       return null;
     }
     return (
-      <ButtonGroup bsSize="small" className={classnames(styles.group, styles.languageSelector)}>
+      <ButtonGroup bsSize="small" className={classnames(styles.groupButtons, styles.languageSelector)}>
         <label>
           <span>Data Language&nbsp;-&nbsp;</span>
           <select value={selectedLanguage} onChange={this.onChangeLanguage}>

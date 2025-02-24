@@ -73,7 +73,7 @@ public class FieldsBasedSearch {
         this.labelCache = labelCache;
     }
 
-    public Map<String, Object> generateSearchConfig(Map<String, SearchRelation> relations, TemplateContext context) {
+    public Map<String, Object> generateSearchConfig(Map<String, SearchRelation> relations, String preferredLanguage) {
         Collection<SearchRelation> allRelations = relations.values();
         Set<IRI> categoryIris = Stream
                 .concat(allRelations.stream().map(relation -> relation.domain),
@@ -82,7 +82,7 @@ public class FieldsBasedSearch {
                 .flatMap(Collection::stream).collect(Collectors.toSet());
 
         Map<IRI, Optional<Literal>> categoryLabels = labelCache.getLabels(categoryIris,
-                this.repositoryManager.getAssetRepository(), context.getPreferredLanguage().orElse(null));
+            this.repositoryManager.getAssetRepository(), preferredLanguage);
 
         Map<String, List<Object>> configCategories = new HashMap<>();
         relations.forEach((key, relation) -> relation.range.forEach(range -> {

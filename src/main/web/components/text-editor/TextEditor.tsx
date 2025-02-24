@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -47,9 +48,17 @@ import { ExternalLink } from './ExternalLink';
 import { InternalLink } from './InternalLink';
 import * as styles from './TextEditor.scss';
 import { ResourceBlock } from './ResourceBlock';
+import Icon from '../ui/icon/Icon';
+import { trigger } from 'platform/api/events';
+import * as TextEditorEvents from './TextEditorEvents'
 
 
 interface TextEditorProps {
+  /**
+   * Used as source id for emitted events.
+   */
+  id?: string;
+
   /**
    * Text document IRI to load.
    */
@@ -61,7 +70,7 @@ interface TextEditorProps {
   readonly?: boolean;
 
   /**
-   * ID of the <semantic-link iri='http://help.researchspace.org/resource/Storage'>
+   * ID of the <semantic-link iri='http://help.researchspace.org/resource/Storage' class='text-link-action' target='_blank'>
    * storage</semantic-link> to load text document content.
    */
   storage: string;
@@ -93,6 +102,11 @@ interface TextEditorProps {
 
 }
 
+interface BlockEmbeddedState {
+  resourceIri: Rdf.Iri;
+  embedded: boolean;
+}
+
 interface TextEditorState {
   value: Slate.Value
   title: string
@@ -100,6 +114,7 @@ interface TextEditorState {
   fileName?: string
   anchorBlock?: Slate.Block
   availableTemplates: { [objectIri: string]: ResourceTemplateConfig[] }
+  blockEmbedReferences?: BlockEmbeddedState[]
   loading: boolean
   saving: boolean
 }
@@ -132,25 +147,28 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
       PREFIX mp: <http://www.researchspace.org/resource/system/>
       PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
       PREFIX crmdig: <http://www.ics.forth.gr/isl/CRMdig/>
-      PREFIX rso: <http://www.researchspace.org/ontology/>
+      PREFIX rs: <http://www.researchspace.org/ontology/>
+      PREFIX frbroo: <http://iflastandards.info/ns/fr/frbr/frbroo/>
 
       CONSTRUCT {
         ?__resourceIri__ a crm:E33_Linguistic_Object,
-                crmdig:D1_Digital_Object,
-                rso:Semantic_Narrative.
-
+                frbroo:F2_Expression.
+        ?__resourceIri__ crm:P190_has_symbolic_content ?__label__ .
+        ?__resourceIri__ crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative> .
         ?__resourceIri__ mp:fileName ?__fileName__.
         ?__resourceIri__ mp:mediaType "text/html".
-        ?__resourceIri__ rdfs:label ?__label__ .
-      } WHERE {}
+      } WHERE {
+      }
     `,
     generateIriQuery: `
-      SELECT ?resourceIri WHERE {
+      SELECT ?resourceIri ?digitizationProcess ?file WHERE {
         BIND(URI(CONCAT(STR(?__contextUri__), "/", ?__fileName__)) as ?resourceIri)
+        BIND(URI(CONCAT(STR(?__contextUri__), "/", ?__fileName__,"/digitization_process")) as ?digitizationProcess)
+        BIND(URI(CONCAT(STR(?__contextUri__), "/", ?__fileName__,"/file")) as ?file) 
+
       }
     `
   };
-
   state: TextEditorState = {
     value: Slate.Value.fromJS({
       document: {
@@ -167,6 +185,7 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
     availableTemplates: {},
     loading: true,
     saving: false,
+    blockEmbedReferences:[]
   };
 
   constructor(props: TextEditorProps, context) {
@@ -199,6 +218,7 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
 
   onResourceDrop = (node: Slate.Node) => (drop: Rdf.Iri) => {
     const editor = this.editorRef.current;
+
     editor
       .moveToRangeOfNode(node)
       .setBlocks({
@@ -335,11 +355,18 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
   private onFocus = () => {
   }
 
+  private onRefresh = () => {
+    trigger({
+      eventType: TextEditorEvents.NarrativeRefreshed,
+      source: this.props.id
+    })
+  } 
+
   componentDidMount() {
     if (this.props.documentIri) {
       const documentIri = Rdf.iri(this.props.documentIri);
       this.cancellation.map(
-        this.fetchDocument(documentIri)
+        this.fetchDocument(documentIri)        
       ).observe({
         value: this.onDocumentLoad,
         error: error => console.error(error)
@@ -379,6 +406,9 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
                   editor={this.editorRef}
                   options={this.state.availableTemplates}
                   onDocumentSave={this.onDocumentSave}
+                  showDropdown={!!this.state.documentIri}
+                  showRefresh={!!this.state.documentIri}
+                  onRefresh={this.onRefresh}
           />
           }
             <div className={styles.sidebarAndEditorHolder}>
@@ -386,7 +416,7 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
                 {this.state.documentIri ? (
                 <Draggable iri={this.state.documentIri}>
                   <span className={styles.draggableGripper} title='drag narrative'>
-                    <i className='rs-icon rs-icon-drag_points'></i>
+                    <Icon iconType='rounded' iconName='drag_indicator' symbol/>
                   </span>
                 </Draggable>
               ) : null}
@@ -436,7 +466,7 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
       });
 
     const value = slateHtml.deserialize(content, { toJSON: true });
-
+  
     // load templates for embeds
     const embeds =
       value.document.nodes
@@ -473,7 +503,8 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
   }
 
   private fetchDocument(documentIri: Rdf.Iri): Kefir.Property<[string, string]> {
-    return this.getFileManager().getFileResource(documentIri)
+    return this.getFileManager()
+      .getFileResource(documentIri)
       .flatMap(resource => {
         const fileUrl = FileManager.getFileUrl(resource.fileName, this.props.storage);
         return requestAsProperty(
@@ -498,15 +529,41 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
     );
   }
 
+  private addRefersToStatementsToConstructQuery = () => {
+      const indexOfBracket = this.props.resourceQuery.indexOf('}');
+      if (indexOfBracket === -1) {
+        return this.props.resourceQuery; // Return the original text if no comma is found
+      }
+      let referredStatements = '';
+      this.state.blockEmbedReferences.forEach(block => {
+        referredStatements += "?__resourceIri__ crm:P67_refers_to <" + block.resourceIri.value + "> .";
+      })
+      // Split the text at the first comma, insert the string, and rejoin
+      return this.props.resourceQuery.slice(0, indexOfBracket) + 
+             referredStatements + 
+             this.props.resourceQuery.slice(indexOfBracket);
+    };
 
   private onDocumentSave = () => {
     this.setState({saving: true});
-    const { value, title } = this.state;
+    const { value, title, documentIri} = this.state;
+    const isEdit = !!documentIri
 
     const html = new Html({ rules: SLATE_RULES });
     const content =
       this.wrapInHtml(title, html.serialize(value));
 
+    this.state.blockEmbedReferences = [];
+    // load templates for embeds
+    const embeds =
+      value.document.nodes
+        .filter(
+          n => n.object === 'block' && n.type === Block.embed
+        ).forEach(block => {
+            this.state.blockEmbedReferences
+                  .push({resourceIri:Rdf.iri(block.data["_root"]["entries"]["0"]["1"]["src"]),
+                         embedded:true});})  
+ 
     const blob = new Blob([content]);
     const fileName =
       this.state.fileName || title.replace(/[^a-z0-9_\-]/gi, '_') + '.html';
@@ -514,31 +571,51 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
 
     const parsedResouercQuery =
       SparqlUtil.parseQuery(
-        this.props.resourceQuery
-      );
+        this.addRefersToStatementsToConstructQuery()
+      ); 
+    let contextUri = "http://www.researchspace.org/instances/narratives";
+    let filename = contextUri+"/"+file.name;
+    let digitization_process = contextUri+"/"+file.name+"/digitization_process";
+    let html_file = contextUri+"/"+file.name+"/file";
     const resourceQuery =
       SparqlUtil.serializeQuery(
         SparqlClient.setBindings(
-          parsedResouercQuery, { '__label__': Rdf.literal(title) }
+          parsedResouercQuery, { '__label__': Rdf.literal(title),
+                                 '__digitizationProcess__':Rdf.iri(digitization_process),
+                                 '__file__':Rdf.iri(html_file) }
         )
       );
-
+    
     this.cancellation.map(
       this.getFileManager().uploadFileAsResource({
         file,
         storage: this.props.storage,
         generateIriQuery: this.props.generateIriQuery,
         resourceQuery: resourceQuery,
-        contextUri: 'http://www.researchspace.org/instances/narratives',
+        contextUri: contextUri,
         fileNameHack: true
       })
     ).observe({
       value: resource => {
         this.setState({documentIri: resource.value, saving: false});
+        trigger({
+          eventType: isEdit ? TextEditorEvents.NarrativeUpdated : TextEditorEvents.NarrativeCreated,
+          source: this.props.id,
+          data: {
+            iri: this.state.documentIri
+          }
+        })
       },
-      error: error => { console.log('error'); console.log(error) },
+      error: error => { console.error(error) },
     });
   }
 }
-
+/*
+ ?__resourceIri__ crmdig:L60i_is_documented_in ?digitizationProcess .
+        ?__resourceIri__/digitization_process> a crmdig:D2_Digitization_Process .
+        ?__resourceIri__/digitization_process> crmdig:L11_had_output ?__file__ .
+        ?__resourceIri__/file> a rs:EX_File .
+        ?__resourceIri__/file> mp:fileName ?__fileName__.
+        ?__resourceIri__/file> mp:mediaType "text/html".
+   */
 export default TextEditor;

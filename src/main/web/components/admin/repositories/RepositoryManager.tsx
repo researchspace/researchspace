@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -31,6 +32,7 @@ import * as styles from './RepositoryManager.scss';
 
 import { RepositoryConfigEditor } from './RepositoryConfigEditor';
 import { ErrorNotification, addNotification } from 'platform/components/ui/notification';
+import Icon from 'platform/components/ui/icon/Icon';
 
 interface State {
   readonly repositories?: Immutable.Map<string, boolean>;
@@ -81,11 +83,12 @@ export class RepositoryManager extends Component<{}, State> {
           {this.renderRepositories()}
           {repositoryToEdit && (
             <Button
-              bsStyle="primary"
-              className={styles.RepositoryButton}
+              bsStyle="default"
+              className={`${styles.RepositoryButton} btn-action btn-textAndIcon`}
               onClick={() => this.setState({ repositoryToEdit: undefined })}
             >
-              Create New{' '}
+              <Icon iconType='round' iconName='add_box' />
+              New repository
             </Button>
           )}
         </div>

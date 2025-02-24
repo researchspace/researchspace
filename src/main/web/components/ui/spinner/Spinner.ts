@@ -20,6 +20,7 @@
 import * as classNames from 'classnames';
 import { Component, CSSProperties, createFactory } from 'react';
 import * as D from 'react-dom-factories';
+import Icon from 'platform/components/ui/icon/Icon';
 
 export interface SpinnerProps {
   className?: string;
@@ -79,7 +80,7 @@ export class SpinnerComponent extends Component<SpinnerProps, SpinnerState> {
         className: classNames('system-spinner', this.props.className),
         style: this.props.style,
       },
-      this.state.showSpinner ? D.i({ className: 'system-spinner__icon' }) : null,
+      this.state.showSpinner ? D.i({ className: 'system-spinner__icon material-icons-round' }, 'settings') : null,
       this.state.showMessage ? D.span({ className: 'system-spinner__message' }, 'Please wait...') : null
     );
   }

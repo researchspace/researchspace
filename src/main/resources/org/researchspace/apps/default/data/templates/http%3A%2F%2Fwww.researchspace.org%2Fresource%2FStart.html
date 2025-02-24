@@ -1,1 +1,917 @@
-[[> rsp:ThinkingFrames]]
+[[!-- CUSTOM HOMEPAGE --]]
+
+[[!-- Close Delete dialog window once resource delete submitted on dropdown action --]]
+<mp-event-proxy id='homepage-close-removal-dialog' 
+                on-event-types='["Form.ResourceRemoved"]'
+                proxy-event-type='OverlayDialog.Close' 
+                proxy-targets='["homepage-delete-resource-dialog"]'
+></mp-event-proxy>  
+
+[[!-- Update homepage on actions --]]
+<mp-event-proxy id='update-homepage-on-actions'
+                on-event-types='[ "Form.ResourceCreated", 
+                                  "Form.ResourceUpdated", 
+                                  "Form.ResourceRemoved",
+                                  "OverlayComparison.Created",
+                                  "Components.SetManagement.SetAdded",
+                                  "Components.SetManagement.SetRenamed",
+                                  "Components.SetManagement.SetRemoved",
+                                  "Narrative.Created", 
+                                  "Narrative.Updated",
+                                  "GraphAction.Delete",
+                                  "Ontodia.DiagramSaved",
+                                  "Ontodia.DiagramDataPersisted"
+                                ]'         
+                proxy-event-type='Component.TemplateUpdate' 
+                proxy-targets='["homepage-render-area"]'
+></mp-event-proxy> 
+
+<mp-event-target-template-render id='homepage-render-area' template='{{> template}}'>
+  <template id='template'>
+    <div class="homepage-container">
+
+        <div class="homepage-project-container">
+      
+          <div class="homepage-project-header">
+            <div class="homepage-project-header__welcome">
+              <div style="display: flex; align-items: center;"><h4>Welcome back</h4><mp-anonymous-hidden>
+                <semantic-query query='SELECT DISTINCT ?systemUser ?systemUserName ?actorFullName { 
+                                        BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
+                                        BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?systemUserName)
+
+                                        OPTIONAL {
+                                          ?systemUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                          ?systemUser crm:P1_is_identified_by ?actorName .
+                                          ?actorName a crm:E41_Appellation .
+                                          ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                          ?actorName crm:P190_has_symbolic_content ?actorFullName .
+                                        }
+                                      }'
+                                template='{{> template}}'>
+
+                  <template id='template'>
+                    {{#if bindings.0.actorFullName.value}}
+                      <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                urlqueryparam-view='resource-editor' 
+                                                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                                urlqueryparam-resource-iri="{{bindings.0.systemUser.value}}"
+                                                urlqueryparam-mode='edit'>
+                        <div style="display: flex; align-items: baseline; gap: 5px;">
+                          <h4>, </h4><h4 style="text-decoration: underline; cursor: pointer;"> {{bindings.0.actorFullName.value}}</h4>
+                        </div>
+                      </semantic-link-container>
+                    {{else}}
+                      <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                urlqueryparam-view='resource-editor' 
+                                                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                                urlqueryparam-custom-label='New profile'
+                                                urlqueryparam-mode='new'>
+                        <div style="display: flex; align-items: baseline; gap: 5px;">
+                          <h4>, </h4><h4 style="text-decoration: underline; cursor: pointer;"> {{bindings.0.systemUserName.value}}</h4><span class="text-font-size__small">(not registered user)</span>  
+                        </div>
+                      </semantic-link-container>
+                    {{/if}}
+                  </template>
+                </semantic-query>
+                </mp-anonymous-hidden>
+              </div>
+              <div class="homepage-project-header__currentDate">
+                <span class="badge badge--secondary">[[currentDateTime format="dd MMMM yyyy"]]</span>
+              </div>
+            </div>
+
+            <semantic-query query='SELECT ?project ?projectName ?projectCount { 
+                                    ?project a crm:E7_Activity .
+                                    ?project crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
+                                    ?project crm:P2_has_type <http://www.researchspace.org/resource/vocab/status/ongoing> .
+
+                                    ?project crm:P1_is_identified_by ?appellation . 
+                                    ?appellation a crm:E41_Appellation . 
+                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                    ?appellation crm:P190_has_symbolic_content ?projectName .
+
+                                    ?project crm:P14_carried_out_by ?__useruri__ .
+
+                                    {
+                                      SELECT (COUNT(?project1) as ?projectCount) WHERE {
+                                        ?project1 crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
+                                        ?project1 crm:P2_has_type <http://www.researchspace.org/resource/vocab/status/ongoing> .
+                                        ?project1 crm:P14_carried_out_by ?__useruri__ .
+                                      }
+                                    }
+                                  } ORDER BY ?projectName'
+                            template='{{> template}}'
+                            no-result-template='{{> noResults}}'>
+
+              <template id='template'>
+                <div class="ongoing-projects">
+                  <div>You have</div>
+                  <bs-dropdown id='ongoingProjectsDropdown' pull-right=true>
+                    <bs-dropdown-toggle class="text-dropdown link-dropdown">
+                        {{bindings.0.projectCount.value}} projects ongoing
+                    </bs-dropdown-toggle>
+                    <bs-dropdown-menu>
+                      {{#each bindings}}
+                        <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                  urlqueryparam-view="resource-editor"
+                                                  urlqueryparam-resource-iri='{{project.value}}'>
+                          <bs-menu-item>
+                            {{projectName.value}}
+                          </bs-menu-item>
+                        </semantic-link-container>
+                      {{/each}}
+                    </bs-dropdown-menu>
+                  </bs-dropdown>
+                </div>
+              </template>
+
+              <template id="noResults">
+
+              </template>
+            </semantic-query>
+          </div>
+      
+          <div class="homepage-project-summary">
+            <h3>Projects summary</h3>
+
+            <semantic-query query='SELECT DISTINCT ?systemUser ?hasTeamProject ?hasMyProject { 
+                                    BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
+                                    
+                                    OPTIONAL {
+                                      ?systemUser crm:P02i_is_range_of ?pc107 .
+                                      ?pc107 rdf:type crm:PC107_has_current_or_former_member .
+                                      ?pc107 crm:P01_has_domain ?group .
+                                      ?group crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                      ?group a crm:E74_Group .
+                            
+                                      ?teamProject crm:P14_carried_out_by ?group .
+                                      ?teamProject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
+                                    }
+
+                                    OPTIONAL {
+                                      ?userProject crm:P14_carried_out_by ?systemUser .
+                                      ?userProject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
+                                    }
+
+                                    BIND(IF(BOUND(?group), true, false) AS ?hasTeamProject) .
+                                  #  BIND(IF(BOUND(?pc14User), true, false) AS ?hasMyProject) .
+                                  }'
+                            template='{{> template}}'>
+              <template id='template'>
+                <bs-tabs id="projectTabs" default-active-key='myProjects' unmount-on-exit=true>
+
+                  <bs-tab event-key="myProjects" title="My Projects" >
+                    [[> projectSearch label="my-project" actorIRI="{{bindings.0.systemUser.value}}"]]
+                  </bs-tab>
+                  <bs-tab event-key="myTeamProjects" title="My Team Projects" >
+                    [[> projectSearch label="my-team-project" actorIRI="{{bindings.0.systemUser.value}}" teamProject=true]]
+                  </bs-tab>
+
+                  <bs-tab event-key="completed" title="Completed" tab-class-name="tab-right pr-0">
+                    [[> projectSearch label="completed" status="completed" statusIRI="http://www.researchspace.org/resource/vocab/status/completed"]]
+                  </bs-tab>
+                  <bs-tab event-key="proposed" title="Proposed" tab-class-name="tab-right">
+                    [[> projectSearch label="proposed" status="proposed" statusIRI="http://www.researchspace.org/resource/vocab/status/proposed"]]
+                  </bs-tab>
+                  <bs-tab event-key="ongoing" title="Ongoing" tab-class-name="tab-right">
+                    [[> projectSearch label="ongoing" status="ongoing" statusIRI="http://www.researchspace.org/resource/vocab/status/ongoing"]]
+                  </bs-tab>
+                 
+                
+              [[!--   {{#if (eq bindings.0.hasTeamProject.value 'true')}}
+                    <bs-tab event-key="myTeamProjects" title="My Team Projects" tab-class-name="tab-right pr-0">
+                      [[> projectSearch label="my-team-project" actorIRI="{{bindings.0.systemUser.value}}" teamProject=true]]
+                    </bs-tab>
+                  {{/if}}
+                  {{#if (eq bindings.0.hasMyProject.value 'true')}}
+                    <bs-tab event-key="myProjects" title="My Projects" tab-class-name="tab-right">
+                      [[> projectSearch label="my-project" actorIRI="{{bindings.0.systemUser.value}}"]]
+                    </bs-tab>
+                  {{/if}}
+              --]]
+
+                </bs-tabs>
+              </template>
+            </semantic-query>
+
+            <semantic-if query="ASK { ?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .}"
+                         then="{{> then}}"
+                         else="{{> else}}">
+
+              <template id="then">
+                <div class="homepage-project-all">
+                  <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                            urlqueryparam-view="resource-search" 
+                                            urlqueryparam-iri="http://www.researchspace.org/resource/system/resource_configurations_container/data/Project"
+                                            urlqueryparam-custom-label="Search project">
+                    <div>
+                      <span class="text-link">all projects</span>
+                      <rs-icon icon-type="rounded" icon-name="chevron_right" symbol="true"></rs-icon>
+                    </div>
+                  </semantic-link-container>
+                </div>
+              </template>
+
+              <template id="else">
+                <div><div style="height: 37px;"></div></div>
+              </template>
+            </semantic-if>
+          </div>
+        </div>
+      
+        <div class="homepage-activity-container">
+          <semantic-search id="homepage-activities">
+            <div class="homepage-activity-header">
+              <h3>System activities</h3>
+              <div>
+                <semantic-search-query-keyword  domain='<http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>'
+                                                query='SELECT DISTINCT ?subject WHERE { 
+                                                        {
+                                                          ?subject prov:generatedAtTime ?date .
+                                                          ?subject crm:P2_has_type ?type .
+                                                          FILTER(?type IN (<http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map>, 
+                                                                            <http://www.researchspace.org/resource/system/vocab/resource_type/set>,
+                                                                            <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative>, 
+                                                                            <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_chart>,
+                                                                            <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_timeline>
+                                                                          ))
+                                                          ?subject crm:P190_has_symbolic_content ?label .
+                                                        } UNION {
+                                                          ?subject a rs:EX_Digital_Image .
+                                                          ?subject prov:generatedAtTime ?date .
+                                                          ?subject crm:P1_is_identified_by ?imageAppellation . 
+                                                          ?imageAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                          ?imageAppellation crm:P190_has_symbolic_content ?label .
+                                                        } UNION {
+                                                          ?subject crm:P129i_is_subject_of ?entityFormRecord .
+                                                          ?entityFormRecord a crmdig:D1_Digital_Object .
+                                                          ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+
+                                                          MINUS { ?subject a Platform:resource_configuration .}
+
+                                                          ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordOutput .
+                                                          ?entityFormRecordOutput crm:P2_has_type ?entityFormRecordOutputType .
+                                                          FILTER(?entityFormRecordOutputType IN (<http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation>, 
+                                                                                                  <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_modification>
+                                                                                                  ))
+                                                          ?entityFormRecordOutput crm:P4_has_time-span ?entityFormRecordOutputTimespan .
+                                                          ?entityFormRecordOutputTimespan crm:P82_at_some_time_within ?date .
+                                                          { 
+                                                            ?subject crm:P1_is_identified_by ?appellation .
+                                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                            ?appellation crm:P190_has_symbolic_content ?label .
+                                                          } UNION {
+                                                            ?subject crm:P170i_time_is_defined_by ?timePrimitive .
+                                                            ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
+                                                            ?timePrimitive crm:P190_has_symbolic_content ?label .
+                                                          } UNION {
+                                                            ?subject skos:prefLabel ?label .
+                                                          } UNION {
+                                                            ?subject crm:P190_has_symbolic_content ?label .
+                                                          }
+                                                        }
+                                                        
+                                                        FILTER (?date > "2024-10-22T00:00:00.000Z"^^xsd:dateTime)
+                                                          
+                                                        SERVICE <http://www.bigdata.com/rdf/search#search> {
+                                                                  ?label bds:search ?__token__ ;
+                                                                  bds:minRelevance "0.3" ;
+                                                                  bds:matchAllTerms "true"  .
+                                                        }
+                                                      } ORDER BY DESC(?date)'
+                                                default-query='SELECT DISTINCT ?subject WHERE {
+                                                                {
+                                                                  ?subject prov:generatedAtTime ?date .
+                                                                  ?subject crm:P2_has_type ?type .
+                                                                  FILTER(?type IN (<http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map>, 
+                                                                                    <http://www.researchspace.org/resource/system/vocab/resource_type/set>,
+                                                                                    <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative>, 
+                                                                                    <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_chart>,
+                                                                                    <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_timeline>
+                                                                                  )
+                                                                    )
+                                                                  MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
+                                                                } UNION {
+                                                                  ?subject a rs:EX_Digital_Image .
+                                                                  ?subject prov:generatedAtTime ?date .
+                                                                } UNION {
+                                                                  ?subject crm:P129i_is_subject_of ?entityFormRecord .
+                                                                  ?entityFormRecord a crmdig:D1_Digital_Object .
+                                                                  ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                                                  ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
+                                                                  ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+                                                                  ?entityFormRecordCreation crm:P4_has_time-span ?entityFormRecordCreationTimespan .
+                                                                  ?entityFormRecordCreationTimespan crm:P82_at_some_time_within ?dateCreation .
+                                                                } UNION {
+                                                                  ?subject crm:P129i_is_subject_of ?entityFormRecord .
+                                                                  ?entityFormRecord a crmdig:D1_Digital_Object .
+                                                                  ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                                                  ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordModification .
+                                                                  ?entityFormRecordModification crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_modification> .
+                                                                  ?entityFormRecordModification crm:P4_has_time-span ?entityFormRecordModificationTimespan .
+                                                                  ?entityFormRecordModificationTimespan crm:P82_at_some_time_within ?dateModification .
+                                                                } 
+                                                                BIND(IF(BOUND(?dateModification), ?dateModification, ?dateCreation) AS ?date)
+                                                                MINUS { ?subject a Platform:resource_configuration .}
+                                                                FILTER (?date > "2024-10-22T00:00:00.000Z"^^xsd:dateTime)
+                                                              }'
+                                                debounce=500
+                                                placeholder="Search resource"
+                ></semantic-search-query-keyword> 
+           [[!--     <button class="btn btn-default btn-textAndIcon">
+                  <rs-icon icon-type="rounded" icon-name="people_alt" symbol="true"></rs-icon>
+                </button>
+                <button class="btn btn-default btn-textAndIcon">
+                  <rs-icon icon-type="rounded" icon-name="calendar_month" symbol="true"></rs-icon>
+                </button>
+          --]]
+              </div>
+            </div>
+
+            <div class="homepage-activity-content">
+              <div data-flex-layout="row stretch-stretch" class='search-results-area'>
+                <semantic-search-result-holder>
+                  <div data-flex-self="md-full">
+                    <semantic-search-result id='activity-result'>
+                      <semantic-table id='activity-result-grid'
+                                      class-name="activity-result-grid"
+                                      query='SELECT DISTINCT ?subject ?iri WHERE {
+                                                  BIND(?subject as ?iri) .
+                                              } ORDER BY DESC(?date)
+                                              LIMIT 20'
+                                      tuple-template='{{> gridItem }}'
+                                      options='{"showFilter":false,
+                                                "resultsPerPage": 20
+                                              }'
+                      >
+                        <template id='gridItem'>
+                          <div class="activity-card-template">
+                            {{#bind iri=iri.value}} 
+                              {{> rsp:ActivityCardTemplate}}
+                            {{/bind}}
+                          </div>
+                        </template>
+                      </semantic-table>
+                    </semantic-search-result>
+                  </div>
+                </semantic-search-result-holder>
+              </div>
+            </div>
+
+            <semantic-if  query='ASK {
+                                      {
+                                        ?subject prov:generatedAtTime ?date .
+                                        ?subject crm:P2_has_type ?type .
+                                        FILTER(?type IN (<http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map>, 
+                                                        <http://www.researchspace.org/resource/system/vocab/resource_type/set>,
+                                                        <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative>, 
+                                                        <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_chart>,
+                                                        <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_timeline>
+                                              )
+                                        )
+                                        MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
+                                      } UNION {
+                                        ?subject crm:P129i_is_subject_of ?entityFormRecord .
+                                        ?entityFormRecord a crmdig:D1_Digital_Object .
+                                        ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                        ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
+                                        ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+                                        ?entityFormRecordCreation crm:P4_has_time-span ?creation .
+                                        ?creation crm:P82_at_some_time_within ?date .
+                                        MINUS { ?subject a Platform:resource_configuration .}
+                                      }
+                                      FILTER (?date > "2024-10-22T00:00:00.000Z"^^xsd:dateTime)
+                                    }'
+                          then='{{> then}}'>
+
+              <template id='then'>
+                <div class="homepage-activity-all">
+                  <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                urlqueryparam-view='system-activity'
+                                getlabel=false> 
+                    <span class="text-link">all activities</span>
+                    <rs-icon icon-type="rounded" icon-name="chevron_right" symbol="true"></rs-icon>
+                  </semantic-link>
+                </div>
+              </template>
+            </semantic-if>
+
+
+          </semantic-search>
+        </div>
+      
+    </div>
+  </template>
+</mp-event-target-template-render>
+
+[[#*inline "projectSearch"]]
+  <semantic-if query='ASK { ?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
+                            [[#if statusIRI]]?subject crm:P2_has_type <[[statusIRI]]> . [[/if]]
+                            [[#if actorIRI]]?subject crm:P14_carried_out_by <[[actorIRI]]> . [[/if]]
+                          }'
+              then='{{> then}}'
+              else='{{> else}}'>
+
+    <template id='then'>
+      <div class="semantic-search-table-container">
+        <semantic-search id="[[label]]-projects">
+          <div class="semantic-search-header-actions">
+            <semantic-search-query-keyword  domain='<http://www.cidoc-crm.org/cidoc-crm/E7_Activity>'
+                                            query='SELECT ?subject WHERE { 
+                                                      ?subject a crm:E7_Activity .
+                                                      ?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
+                                                      [[#if statusIRI]]?subject crm:P2_has_type <[[statusIRI]]> . [[/if]]
+                                                      
+                                                      ?subject crm:P1_is_identified_by ?appellation . 
+                                                      ?appellation a crm:E41_Appellation . 
+                                                      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                      ?appellation crm:P190_has_symbolic_content ?label .
+
+                                                      SERVICE <http://www.bigdata.com/rdf/search#search> {
+                                                                ?label bds:search ?__token__ ;
+                                                                bds:minRelevance "0.3" ;
+                                                                bds:matchAllTerms "true"  .
+                                                      }
+                                                    }'
+                                            default-query='SELECT ?subject WHERE {
+                                                            ?subject a <http://www.cidoc-crm.org/cidoc-crm/E7_Activity> .
+                                                            ?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
+                                                            [[#if statusIRI]]?subject crm:P2_has_type <[[statusIRI]]> . [[/if]]
+                                                          }'
+                                            debounce=500
+                                            placeholder="Search by project name"
+            ></semantic-search-query-keyword> 
+          [[!--  
+            <button class="btn btn-default btn-textAndIcon">
+              <rs-icon icon-type="rounded" icon-name="people_alt" symbol="true"></rs-icon>
+            </button>
+
+            <button class="btn btn-default btn-textAndIcon">
+              <rs-icon icon-type="rounded" icon-name="calendar_month" symbol="true"></rs-icon>
+            </button>
+
+            <semantic-search-facet id='person-semantic-search-facet'
+                                    value-categories='{
+                                    "<http://www.cidoc-crm.org/cidoc-crm/E39_Actor>": {
+                                    "kind": "resource",
+                                    "valuesQuery": "
+                                    SELECT ?projectActorName WHERE {
+                                      FILTER(?__facetRelationPattern__).
+                                      ?__value__  crm:P01i_is_domain_of ?pc14 .
+                                      ?pc14 rdf:type crm:PC14_carried_out_by .
+                                      ?pc14 crm:P02_has_range ?actor .
+                                      ?actor crm:P1_is_identified_by ?actorAppellation .
+                                      ?actorAppellation rdf:type crm:E41_Appellation .
+                                      ?actorAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                      ?actorAppellation crm:P190_has_symbolic_content ?projectActorName .
+
+
+                                    } ORDER BY ?projectActorName
+                                    "
+                                    }
+                                    }'
+            ></semantic-search-facet>
+            
+            <semantic-search-facet id='person-semantic-search-facet'
+                              value-categories='{
+                              "<http://www.cidoc-crm.org/cidoc-crm/E39_Actor>": {
+                              "kind": "resource",
+                              "valuesQuery": "
+                              SELECT ?projectActorName WHERE {
+                              FILTER(?__facetRelationPattern__).
+                              ?__value__  crm:P01i_is_domain_of ?pc14 .
+                              ?pc14 rdf:type crm:PC14_carried_out_by .
+                              ?pc14 crm:P02_has_range ?actor .
+                              ?actor crm:P1_is_identified_by ?actorAppellation .
+                              ?actorAppellation rdf:type crm:E41_Appellation .
+                              ?actorAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                              ?actorAppellation crm:P190_has_symbolic_content ?projectActorName .
+
+
+                              } ORDER BY ?projectActorName
+                              "
+                              }
+                              }'
+            ></semantic-search-facet>
+          --]]
+
+            <semantic-search-result>
+              <bs-dropdown id='Export' pull-right=true>
+                <bs-dropdown-toggle class="btn-textAndIcon">
+                  <rs-icon icon-type="rounded" icon-name="download" symbol="true"></rs-icon> Export
+                </bs-dropdown-toggle>
+                <bs-dropdown-menu>
+                  <mp-sparql-download id='csv-result' 
+                                      query='SELECT ?projectName ?projectStatus (GROUP_CONCAT(?typeLabel;SEPARATOR=", ") AS ?projectType) ?projectActor ?startDate ?endDate ?projectPriority WHERE {
+
+                                              [[#if statusIRI]]?subject crm:P2_has_type <[[statusIRI]]> . [[/if]]
+
+                                              ?subject crm:P1_is_identified_by ?appellation . 
+                                              ?appellation a crm:E41_Appellation . 
+                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                              ?appellation crm:P190_has_symbolic_content ?projectName .
+
+                                              [[#if status]]BIND("[[status]]" as ?projectStatus)[[/if]]
+                                
+                                              OPTIONAL {
+                                                ?subject crm:P2_has_type ?typeURI .
+                                                ?typeURI crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/project_type> .
+                                                ?typeURI skos:prefLabel ?typeLabel .
+                                              }
+
+                                              {
+                                                SELECT (GROUP_CONCAT(?projectActorName; SEPARATOR = ", ") AS ?projectActor) WHERE {
+                                                    ?subject crm:P01i_is_domain_of ?pc14 .
+                                                    ?pc14 rdf:type crm:PC14_carried_out_by .
+                                                    ?pc14 crm:P02_has_range ?actor .
+                                                    ?actor crm:P1_is_identified_by ?actorAppellation .
+                                                    ?actorAppellation rdf:type crm:E41_Appellation .
+                                                    ?actorAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                                    ?actorAppellation crm:P190_has_symbolic_content ?projectActorName .
+                                                }
+                                              }
+
+                                              OPTIONAL {
+                                                ?subject crm:P4_has_time-span ?timespan .
+                                                ?timespan crm:P82a_begin_of_the_begin ?startDate .
+                                              }
+
+                                              OPTIONAL {
+                                                ?subject crm:P4_has_time-span ?timespan .
+                                                ?timespan crm:P82b_end_of_the_end ?endDate .
+                                              }
+
+                                              OPTIONAL {
+                                                ?subject crm:P2_has_type ?priority .
+                                                ?priority crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/priority> .
+                                                ?priority skos:prefLabel ?projectPriority .
+                                              }
+                                          } 
+                                          group by ?subject ?projectName ?projectStatus ?projectActor ?startDate ?endDate ?projectPriority
+                                          ORDER BY ?projectName'
+
+                                      header="text/csv"
+                                      filename="project-[[label]].csv"
+                  >
+                    <bs-menu-item>Export as CSV</bs-menu-item>
+                  </mp-sparql-download>
+          
+                  <mp-sparql-download id='json-result' 
+                                      query='SELECT ?projectName ?projectStatus (GROUP_CONCAT(?typeLabel;SEPARATOR=", ") AS ?projectType) ?projectActor ?startDate ?endDate ?projectPriority WHERE {
+                                              [[#if statusIRI]]?subject crm:P2_has_type <[[statusIRI]]> . [[/if]]
+
+                                              ?subject crm:P1_is_identified_by ?appellation . 
+                                              ?appellation a crm:E41_Appellation . 
+                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                              ?appellation crm:P190_has_symbolic_content ?projectName .
+
+                                              [[#if status]]BIND("[[status]]" as ?projectStatus)[[/if]]
+                                
+                                              OPTIONAL {
+                                                ?subject crm:P2_has_type ?typeURI .
+                                                ?typeURI crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/project_type> .
+                                                ?typeURI skos:prefLabel ?typeLabel .
+                                              }
+
+                                              {
+                                                SELECT (GROUP_CONCAT(?projectActorName; SEPARATOR = ", ") AS ?projectActor) WHERE {
+                                                    ?subject crm:P01i_is_domain_of ?pc14 .
+                                                    ?pc14 rdf:type crm:PC14_carried_out_by .
+                                                    ?pc14 crm:P02_has_range ?actor .
+                                                    ?actor crm:P1_is_identified_by ?actorAppellation .
+                                                    ?actorAppellation rdf:type crm:E41_Appellation .
+                                                    ?actorAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                                    ?actorAppellation crm:P190_has_symbolic_content ?projectActorName .
+                                                }
+                                              }
+
+                                              OPTIONAL {
+                                                ?subject crm:P4_has_time-span ?timespan .
+                                                ?timespan crm:P82a_begin_of_the_begin ?startDate
+                                              }
+
+                                              OPTIONAL {
+                                                ?subject crm:P4_has_time-span ?timespan .
+                                                ?timespan crm:P82b_end_of_the_end ?endDate .
+                                              }
+
+                                              OPTIONAL {
+                                                ?subject crm:P2_has_type ?priority.
+                                                ?priority crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/priority> .
+                                                ?priority skos:prefLabel ?projectPriority .
+                                              }
+                                          } 
+                                          group by ?subject ?projectName ?projectStatus ?projectActor ?startDate ?endDate ?projectPriority
+                                          ORDER BY ?projectName'
+
+                                      header="application/sparql-results+json"
+                                      filename="project-[[label]].json"
+                  >
+                  <bs-menu-item>Export as JSON</bs-menu-item>
+                  </mp-sparql-download>
+                </bs-dropdown-menu>
+              </bs-dropdown>
+            </semantic-search-result>
+          </div>
+          
+          <div data-flex-layout="row stretch-stretch" class='search-results-area'>
+            <semantic-search-result-holder>
+              <div data-flex-self="md-full">
+                <semantic-search-result id='[[label]]-projects-result'>
+                  <semantic-table id='[[label]]-projects-table'
+                                  class-name="table-fixed-header table-scrollable-content table-expanded search-table-container project-table"
+                                  query='SELECT DISTINCT ?subject ?iri ?projectName ?description WHERE {
+                                          BIND(?subject as ?iri) .
+
+                                          ?subject crm:P1_is_identified_by ?appellation . 
+                                          ?appellation a crm:E41_Appellation . 
+                                          ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                          ?appellation crm:P190_has_symbolic_content ?projectName .
+
+                                          [[#if actorIRI]]
+                                            [[#if teamProject]]
+                                              <[[actorIRI]]> crm:P02i_is_range_of ?pc107 .
+                                              ?pc107 rdf:type crm:PC107_has_current_or_former_member .
+                                              ?pc107 crm:P01_has_domain ?group .
+                                              ?group crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                              ?group a crm:E74_Group .
+                                              ?subject crm:P14_carried_out_by ?group .
+                                            
+                                            [[else]]
+                                              ?subject crm:P14_carried_out_by <[[actorIRI]]> .
+                                            [[/if]]
+                                          [[/if]]
+
+                                          OPTIONAL {
+                                            ?subject crm:P67i_is_referred_to_by ?information_object  .
+                                            ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
+                                            ?information_object crm:P1_is_identified_by ?descriptionAppellation . 
+                                            ?descriptionAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                            ?descriptionAppellation crm:P190_has_symbolic_content ?description .
+                                          }
+                                        } ORDER BY ?projectName
+                                          LIMIT 10'
+                              
+                                  options='{"showFilter":false,
+                                            "resultsPerPage":100,
+                                            "useFixedHeader":true}'
+
+                                  no-result-template='<div class="table-no-results">
+                                                        <div class="no-results-container">
+                                                          <rs-icon icon-type="rounded" icon-name="search_off" symbol="true" class="no-results-icon"></rs-icon>
+                                                          <div class="no-results-text">No [[#if status]][[status]] [[/if]][[#if teamProject]]team [[/if]]projects found</div>
+                                                          [[#if teamProject]]
+                                                            <div class="text-font-size__xsmall">
+                                                              Add your user as member of an user of type team <br>to display here your team projects
+                                                            </div>
+                                                          [[/if]]
+                                                        </div>
+                                                          <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                    urlqueryparam-view="resource-editor" 
+                                                                                    urlqueryparam-entity-type-config="http://www.researchspace.org/resource/system/resource_configurations_container/data/Project"
+                                                                                    urlqueryparam-mode="new"
+                                                                                    urlqueryparam-custom-label="New project">
+                                                            <button class="btn btn-default btn-textAndIcon">
+                                                              <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                                                                <span>New Project</span>
+                                                            </button>
+                                                          </semantic-link-container>
+                                                      </div>'
+
+                                  column-configuration='[
+                                                          {"variableName": "projectName", "displayName": "Project name","cellTemplate": "{{> details}}"},
+                                                          {"displayName": "Type","cellTemplate": "{{> type}}"},
+                                                          {"displayName": "Carried out by","cellTemplate": "{{> actor}}"},
+                                                          {"displayName": "Date","cellTemplate": "{{> date}}"},
+                                                          {"displayName": "Priority","cellTemplate": "{{> priority}}"},
+                                                          {"displayName": "", "cellTemplate": "{{> actions}}" }
+                                                        ]'
+
+                  >
+                    <template id='details'>  
+                      <div>
+                        <div style="display: flex; align-items: center; gap: 15px;">                                 
+                          <mp-draggable iri='{{subject.value}}'>
+                            <mp-overlay-dialog  id="{{subject.value}}-resource-preview-dialog"  
+                                                type="modal" 
+                                                class="modal-xlSize preview_modal"
+                                                title="Preview">
+                              <mp-overlay-dialog-trigger>
+                                <div class="resource-thumbnail-small-container">
+                                    <mp-resource-thumbnail iri='{{subject.value}}' class='resource-thumbnail-small'>
+                                        <mp-resource-thumbnail-fallback>
+                                          <mp-draggable iri='{{subject.value}}'>
+                                            <rs-icon icon-type="rounded" icon-name="work_outline" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
+                                          </mp-draggable>
+                                        </mp-resource-thumbnail-fallback>
+                                    </mp-resource-thumbnail>      
+                                </div>
+                              </mp-overlay-dialog-trigger>
+                              <mp-overlay-dialog-content>
+                                <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
+                                                options='{"resource": "{{subject.value}}", 
+                                                            "resourceConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Project", 
+                                                            "resourceConfigLabel": "Project",
+                                                            "resourceDescription": "{{description.value}}",
+                                                            "resourceDetailSection": true
+                                                          }' >
+                                </inline-template> 
+                              </mp-overlay-dialog-content>
+                            </mp-overlay-dialog>
+                          </mp-draggable>
+
+                          <div>
+                            <mp-draggable iri='{{subject.value}}'>
+                              <div>
+                                  <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                  urlqueryparam-view='resource-editor'
+                                                  urlqueryparam-resource='{{subject.value}}'>
+                                    <mp-label iri='{{subject.value}}' class="text-link text-truncate-line1"></mp-label>
+                                  </semantic-link>
+                              </div>
+                            </mp-draggable>
+
+                            <div class="color-secondary-light text-font-size__xsmall">Project</div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                    </template>
+        
+                    <template id='type'>
+                      <semantic-query query='SELECT ?projectType WHERE {
+                                              <{{subject.value}}> crm:P2_has_type ?type.
+                                              ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/project_type> .
+                                              ?type skos:prefLabel ?projectType .
+                                            } ORDER BY ?projectType'
+                                      template='{{> template}}'>
+                        <template id='template'>
+                          <div>
+                            <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                              {{#each bindings}}
+                                <span class="badge badge--secondary">{{projectType.value}}</span>
+                              {{/each}}
+                            </div>
+                          </div>
+                        </template>
+                      </semantic-query>
+                    </template>
+
+                    <template id='actor'>
+                      <semantic-query query='SELECT ?projectActor ?projectActorName (GROUP_CONCAT(?projectActorRole; SEPARATOR=", ") AS ?projectActorRoles) WHERE {
+                                              <{{subject.value}}> crm:P01i_is_domain_of ?pc14 . 
+                                              ?pc14 a crm:PC14_carried_out_by . 
+                                              ?pc14 crm:P02_has_range ?projectActor . 
+
+                                              ?projectActor crm:P1_is_identified_by ?appellation . 
+                                              ?appellation a crm:E41_Appellation . 
+                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                              ?appellation crm:P190_has_symbolic_content ?projectActorName .
+
+                                              OPTIONAL {
+                                                ?pc14 crm:P14.1_in_the_role_of ?role .
+                                                ?role crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/actor_role> . 
+                                                ?role skos:prefLabel ?projectActorRole .
+                                              }
+
+                                            } GROUP BY ?projectActor ?projectActorName
+                                              ORDER BY ?projectActorName'
+                                      template='{{> template}}'>
+                        <template id='template'>
+                          <div>
+                            <mp-popover>
+                              <mp-popover-trigger placement="bottom" trigger='["click", "focus"]'> 
+                                <rs-icon icon-type="rounded" icon-name="people_alt" class="people-icon" symbol="true"></rs-icon>
+                              </mp-popover-trigger>
+                              <mp-popover-content>
+                                <div style="display: flex; flex-direction: column; gap: 5px;">
+                                  {{#each bindings}}
+                                    <div style="display: flex; gap: 5px;">
+                                      <mp-draggable iri='{{projectActor.value}}'>
+                                        <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                  urlqueryparam-view="resource-editor"
+                                                                  urlqueryparam-resource-iri='{{projectActor.value}}'>
+                                          <div class="text-link">{{projectActorName.value}}</div>
+                                        </semantic-link-container>
+                                      </mp-draggable>
+                                      {{#if projectActorRoles.value}}
+                                        <div>({{projectActorRoles.value}})</div>
+                                      {{/if}}
+                                    </div>
+                                  {{/each}}
+                                </div>
+                              </mp-popover-content>
+                            </mp-popover>
+                          </div>
+                        </template>
+                      </semantic-query>
+                    </template>
+                    
+                    <template id='date'>
+                      <semantic-query query='SELECT ?timespan ?timespanLabel ?projectStartDate ?projectEndDate WHERE {
+                                              <{{subject.value}}> crm:P4_has_time-span ?timespan . 
+                                              ?timespan a crm:E52_Time-Span . 
+                                              ?timespan crm:P170i_time_is_defined_by ?timePrimitive .
+                                              ?timePrimitive a crm:E61_Time_Primitive .
+                                              ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
+                                              ?timePrimitive crm:P190_has_symbolic_content ?timespanLabel . 
+                                            
+                                              OPTIONAL {
+                                                ?timespan crm:P82a_begin_of_the_begin ?projectStartDate .
+                                              }
+                                              OPTIONAL {
+                                                ?timespan crm:P82b_end_of_the_end ?projectEndDate .
+                                              }
+                                            }'
+                                      template='{{> template}}'>
+
+                        <template id='template'>
+                          <div>
+                            {{#if bindings.0.projectStartDate.value}}
+                              <div>Start: {{bindings.0.projectStartDate.value}}</div>
+                            {{/if}}
+                            {{#if bindings.0.projectEndDate.value}}
+                              <div>End: {{bindings.0.projectEndDate.value}}</div>
+                            {{/if}}
+                            {{#if (not bindings.0.projectStartDate.value)}}
+                              {{#if (not bindings.0.projectEndDate.value)}}
+                                <mp-draggable iri='{{bindings.0.timespan.value}}'>
+                                  <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                            urlqueryparam-view="resource-editor"
+                                                            urlqueryparam-resource-iri='{{bindings.0.timespan.value}}'>
+                                    <div class="text-link">{{bindings.0.timespanLabel.value}}</div>
+                                  </semantic-link-container>
+                                </mp-draggable>
+                              {{/if}}
+                            {{/if}}
+                          </div>
+                        </template>
+                      </semantic-query>
+                    </template>
+
+                    <template id='priority'>
+                      <semantic-query query='SELECT ?projectPriority WHERE {
+                                              <{{subject.value}}> crm:P2_has_type ?priority.
+                                              ?priority crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/priority> .
+                                              ?priority skos:prefLabel ?projectPriority .
+                                            }'
+                                      template='{{> template}}'>
+                        <template id='template'>
+                          <span>{{bindings.0.projectPriority.value}}</span>
+                        </template>
+                      </semantic-query>
+                    </template>
+
+                    <template id='actions'>
+                      <div>
+                        <div style="display: flex; align-items: stretch; gap: 1px;">
+                          <mp-draggable iri='{{subject.value}}' drag-style="cursor: grab;">
+                            <button class="btn btn-default border-none" title="drag project" style="cursor: grab;">
+                              <rs-icon icon-type="rounded" icon-name="drag_pan" symbol="true"></rs-icon>
+                            </button>
+                          </mp-draggable>
+                          <rs-resource-dropdown id="homepage-{{subject.value}}-item-actions-dropdown" class-name="dropdown-no-caret" toggle-class-name="border-none">
+                            {{> rsp:ResourceDropdownActions viewId="homepage"
+                                                            iri=subject.value
+                                                            resourceConfig="http://www.researchspace.org/resource/system/resource_configurations_container/data/Project"
+                                                            resourceLabel="Project"
+                                                            resourceDescription=description.value
+                                                            resourceFormIRI="http://www.researchspace.org/resource/system/forms/Project"
+                                                            allowResourceDelete=true
+                            }}
+                        </rs-resource-dropdown>
+                        </div>
+                      </div>
+                    </template>
+        
+                  </semantic-table>   
+                </semantic-search-result>
+              </div>
+            </semantic-search-result-holder>
+          </div>
+        </semantic-search>
+      </div>
+    </template>
+
+    <template id="else">
+      <div class="table-no-results" style="height: 100%; margin: 0; padding: 40px 20px;">
+        <div class="no-results-container">
+          <rs-icon icon-type="rounded" icon-name="search_off" symbol="true" class="no-results-icon"></rs-icon>
+          <div class="no-results-text">No [[#if status]][[status]] [[/if]]projects found</div>
+          
+        </div>
+          <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                    urlqueryparam-view="resource-editor" 
+                                    urlqueryparam-entity-type-config="http://www.researchspace.org/resource/system/resource_configurations_container/data/Project"
+                                    urlqueryparam-mode="new"
+                                    urlqueryparam-custom-label="New project">
+            <button class="btn btn-default btn-textAndIcon">
+              <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                <span>New Project</span>
+            </button>
+          </semantic-link-container>
+      </div>
+    </template>
+  </semantic-if>
+[[/inline]]
+[[!-- END OF CUSTOM HOMEPAGE --]]

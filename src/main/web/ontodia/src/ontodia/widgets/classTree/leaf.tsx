@@ -5,11 +5,10 @@ import { DiagramView } from '../../diagram/view';
 import { highlightSubstring } from '../listElementView';
 
 import { TreeNode } from './treeModel';
+import Icon from 'platform/components/ui/icon/Icon';
 
-const EXPAND_ICON = require('../../../../images/tree/expand-toggle.svg').default;
-const COLLAPSE_ICON = require('../../../../images/tree/collapse-toggle.svg').default;
-const DEFAULT_LEAF_ICON = require('../../../../images/tree/leaf-default.svg').default;
-const DEFAULT_PARENT_ICON = require('../../../../images/tree/leaf-folder.svg').default;
+const EXPAND_ICON = 'arrow_right';
+const COLLAPSE_ICON = 'arrow_drop_down';
 
 interface CommonProps {
   view: DiagramView;
@@ -49,17 +48,12 @@ export class Leaf extends React.Component<LeafProps, State> {
 
   render() {
     const { node, ...otherProps } = this.props;
-    const { view, selectedNode, searchText, creatableClasses } = otherProps;
+    const {  selectedNode, searchText, creatableClasses } = otherProps;
     const { expanded } = this.state;
 
     let toggleIcon: string | undefined;
     if (node.derived.length > 0) {
       toggleIcon = expanded ? COLLAPSE_ICON : EXPAND_ICON;
-    }
-
-    let { icon } = view.getTypeStyle([node.model.id]);
-    if (!icon) {
-      icon = node.derived.length === 0 ? DEFAULT_LEAF_ICON : DEFAULT_PARENT_ICON;
     }
 
     let bodyClass = `${LEAF_CLASS}__body`;
@@ -73,25 +67,22 @@ export class Leaf extends React.Component<LeafProps, State> {
       <div className={LEAF_CLASS} role="tree-item">
         <div className={`${LEAF_CLASS}__row`}>
           <div className={`${LEAF_CLASS}__toggle`} onClick={this.toggle} role="button">
-            {toggleIcon ? <img className={`${LEAF_CLASS}__toggle-icon`} src={toggleIcon} /> : null}
+            {toggleIcon ? <span className={`${LEAF_CLASS}__toggle-icon`}><Icon iconType='round' iconName={toggleIcon}/></span> : null}
           </div>
           <a className={bodyClass} href={node.model.id} onClick={this.onClick}>
-            <div className={`${LEAF_CLASS}__icon-container`}>
-              <img className={`${LEAF_CLASS}__icon`} src={icon} />
-            </div>
             <span className={`${LEAF_CLASS}__label`}>{label}</span>
             {node.model.count ? <span className={`${LEAF_CLASS}__count ontodia-badge`}>{node.model.count}</span> : null}
           </a>
           {creatableClasses.get(node.model.id) ? (
-            <div className={`${LEAF_CLASS}__create ontodia-btn-group ontodia-btn-group-xs`}>
+            <div className={`${LEAF_CLASS}__create ontodia-btn-group`}>
               <button
-                className="ontodia-btn ontodia-btn-primary"
+                className="btn btn-icon"
                 title={'Click or drag to create new entity of this type'}
                 draggable={true}
                 onClick={this.onClickCreate}
                 onDragStart={this.onDragCreate}
               >
-                +
+                <Icon iconType='round' iconName='add_box' />
               </button>
             </div>
           ) : null}

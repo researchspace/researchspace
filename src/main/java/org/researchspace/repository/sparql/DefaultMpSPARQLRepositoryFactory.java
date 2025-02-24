@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -66,7 +67,9 @@ public class DefaultMpSPARQLRepositoryFactory extends AbstractMpSPARQLRepository
             } else {
                 result = new CustomSPARQLRepository(httpConfig.getQueryEndpointUrl());
             }
+           
             result.setWritable(config.isWritable());
+            result.setSilentMode(config.isSilentMode());
         } else {
             throw new RepositoryConfigException("Invalid configuration class: " + config.getClass());
         }

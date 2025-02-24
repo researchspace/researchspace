@@ -1,6 +1,7 @@
 /**
  * ResearchSpace
- * Copyright (C) 2020, © Trustees of the British Museum
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
+ * Copyright (C) 2015-2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,15 +18,83 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 @import '~react-datetime/css/react-datetime.css';
+@import '~basic-styles.scss';
 
 .rdtPicker {
-  width: auto;
+  width: 230px;
+  background: $color-white;
+  box-shadow: 0 1px 3px rgba(0,0,0,.1);
+  border: 1px solid $color-border;
 }
 
 .rdtPicker td {
   cursor: pointer;
 }
-.rdtPicker td.rdtDay:hover {
-  background: #eeeeee;
-  cursor: pointer;
+
+.rdtPicker td.rdtDay:hover,
+.rdtPicker td.rdtHour:hover,
+.rdtPicker td.rdtMinute:hover,
+.rdtPicker td.rdtSecond:hover,
+.rdtPicker .rdtTimeToggle:hover,
+.rdtPicker thead tr:first-child th:hover,
+.rdtPicker button:hover,
+td.rdtMonth:hover,
+td.rdtYear:hover,
+.rdtCounter .rdtBtn:hover {
+  background: $color-lighter;
+}
+
+.rdtPicker th {
+  border-bottom: 1px solid $color-border;
+}
+
+.rdtPicker tfoot {
+  border-top: 1px solid $color-border;
+}
+
+.rdtPicker td.rdtToday:before {
+
+  border-bottom: 7px solid $color-action;
+  border-top-color: rgba(0, 0, 0, 0.2);
+}
+
+.rdtPicker td.rdtActive,
+.rdtPicker td.rdtActive:hover {
+  background-color: $color-action;
+  color: $color-white;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+}
+
+.rdtPicker td.rdtOld,
+.rdtPicker td.rdtNew,
+.rdtPicker td.rdtDisabled,
+.rdtPicker td.rdtDisabled:hover,
+.rdtPicker td span.rdtOld,
+.rdtPicker td span.rdtDisabled,
+.rdtPicker td span.rdtDisabled:hover,
+.rdtPicker th.rdtDisabled,
+.rdtPicker th.rdtDisabled:hover {
+  color: $color-base;
+}
+
+.rdtPicker th.rdtNext,
+.rdtPicker th.rdtPrev {
+  font-size: 23px;
+  vertical-align: unset;
+}
+
+.rdtPrev,
+.rdtNext {
+
+  span {
+    display: none;
+  } 
+}
+
+.rdtPrev:before {
+  @include materialIcon('\e408', 15px);
+}
+
+.rdtNext:after {
+  @include materialIcon('\e409', 15px);
 }

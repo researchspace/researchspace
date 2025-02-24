@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -43,8 +44,11 @@ import {
 } from './MultipleValuesInput';
 import { NestedModalForm, tryExtractNestedForm } from './NestedModalForm';
 import { createDropAskQueryForField } from '../ValidationHelpers';
+import Icon from 'platform/components/ui/icon/Icon';
+
 import { ResourceLinkComponent, ResourceLinkContainer } from 'platform/api/navigation/components';
 import { Overlay, Tooltip, OverlayTrigger } from 'react-bootstrap';
+import { ValidatedTreeConfig } from '../field-editor/FieldEditorState';
 
 interface schemePageButtonConfigProps {
   iri: string;
@@ -71,7 +75,7 @@ export interface TreePickerInputProps extends MultipleValuesProps {
   /**
    * Override Tree Patterns from the Field Definition.
    */
-  treePatterns?: LightwightTreePatterns
+  treePatterns?: LightwightTreePatterns | ComplexTreePatterns;
 
   /**
    * Override scheme from Field Definitions. Overrides the scheme from tree-patterns.
@@ -88,6 +92,8 @@ export interface TreePickerInputProps extends MultipleValuesProps {
   schemePageButtonConfig?: schemePageButtonConfigProps;
 
   queryItemLabel?: string;
+  openResourceOnClick?: boolean;
+  
 }
 
 interface State {
@@ -118,6 +124,25 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
   constructor(props: TreePickerInputProps, context: any) {
     super(props, context);
     let config = props.definition.treePatterns;
+    let newConfig: TreeQueriesConfig;
+
+    if (this.props.treePatterns) {
+      if (this.props.treePatterns["rootsQuery"] && 
+          this.props.treePatterns["childrenQuery"] && 
+          this.props.treePatterns["parentsQuery"] &&
+          this.props.treePatterns["searchQuery"]) {
+        
+        newConfig = {
+          type: 'full',
+          rootsQuery: this.props.treePatterns["rootsQuery"],
+          childrenQuery: this.props.treePatterns["childrenQuery"],
+          parentsQuery: this.props.treePatterns["parentsQuery"],
+          searchQuery: this.props.treePatterns["searchQuery"],
+        };
+      }
+    }
+    
+    if (!newConfig) {
     if (props.treePatterns) {
       config = Object.assign(
         {},
@@ -129,7 +154,10 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
     } else if (props.scheme && config.type === 'simple') {
       config.scheme = props.scheme;
     }
+    } else {config = newConfig;};
+
     const treeQueries: ComplexTreePatterns = config?.type === 'full' ? config : createDefaultTreeQueries(config);
+    
     this.state = { treeVersionKey: 0, treeQueries };
   }
 
@@ -195,7 +223,7 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
   };
 
   private renderTreePicker() {
-    const { openDropdownOnFocus, closeDropdownOnSelection, definition, queryItemLabel } = this.props;
+    const { openDropdownOnFocus, closeDropdownOnSelection, definition, queryItemLabel, openResourceOnClick } = this.props;
     const { treeVersionKey, treeQueries, treeSelection } = this.state;
     const { rootsQuery, childrenQuery, parentsQuery, searchQuery } = treeQueries;
 
@@ -208,7 +236,7 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
       typeof this.props.allowForceSuggestion === 'boolean'
         ? this.props.allowForceSuggestion
         : false;
-
+   
     return (
       <SemanticTreeInput
         key={treeVersionKey}
@@ -217,7 +245,7 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
           query: createDropAskQueryForField(definition),
           styles: {
             enabled: {
-              outline: '2px solid #1D0A6E'
+              outline: '2px solid var(--color-dark)'
             },
             disabled: {}
           }
@@ -246,6 +274,7 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
           );
         }}
         queryItemLabel={queryItemLabel}
+        openResourceOnClick={openResourceOnClick}
       />
     );
   }
@@ -269,8 +298,8 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
 
   private renderCreateNewButton() {
     return (
-      <Button className={`${CLASS_NAME}__create-button`} onClick={this.toggleNestedForm}>
-        <span className="fa fa-plus btn-icon-left" />
+      <Button className={`${CLASS_NAME}__create-button btn-textAndIcon`} onClick={this.toggleNestedForm}>
+        <Icon iconType='round' iconName='add_box'/>
         <span>New</span>
       </Button>
     );
@@ -296,6 +325,8 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
               uri={iri} 
               urlqueryparam-view={view}
               urlqueryparam-resource={scheme}
+              urlqueryparam-open-as-drag-and-drop="true"
+              draggable={false}
             >
             <Button className={`${CLASS_NAME}__create-button`} style={{height: '100%'}}>
               <span className='fa fa-book'></span>
@@ -318,7 +349,7 @@ function toSetOfIris(values: Immutable.List<FieldValue>) {
 
 function createDefaultPlaceholder(definition: FieldDefinition): string {
   const entityLabel = (getPreferredLabel(definition.label) || 'entity').toLocaleLowerCase();
-  return `Search or browse for values of ${entityLabel} here...`;
+  return `Select ${entityLabel}`;
 }
 
 

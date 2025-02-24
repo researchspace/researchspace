@@ -19,6 +19,7 @@
 
 package org.researchspace.security;
 
+import javax.inject.Singleton;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -38,6 +39,7 @@ import org.apache.shiro.web.util.WebUtils;
 /**
  * @author Johannes Trame <jt@metaphacts.com>
  */
+@Singleton
 public class FormLogoutLoginFilter extends AdviceFilter {
 
     private static final Logger logger = LogManager.getLogger(FormLogoutLoginFilter.class);

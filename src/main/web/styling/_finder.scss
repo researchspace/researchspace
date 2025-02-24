@@ -1,0 +1,200 @@
+/**
+ * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
+ * Copyright (C) 2015-2020, © Trustees of the British Museum
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+ 
+/* Finder */
+.finder-container {
+
+  height: 100%;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 15px 0;
+
+  display: grid;
+  grid-template-columns: minmax(15px, .2fr) 3fr minmax(15px, .2fr);
+  grid-template-rows: minmax(140px, 40vh) minmax(140px, min-content) minmax(140px, min-content) min-content;
+
+ // column-gap: 30px;
+  row-gap: 3vh;
+
+  grid-template-areas: '. favourites .'
+                        '. libraries .'
+                        '. insystem .'
+                        '. settings .';
+}
+
+.finderPreview-container {
+
+  overflow: hidden;
+
+  grid-template-rows: auto;
+  grid-template-columns: max-content;
+  grid-template-areas: 'favourites'
+                        'libraries'
+                        'insystem';
+
+}
+
+.finder-section-favourites-container {
+  grid-area: favourites;
+}
+
+.finder-section-libraries-container {
+  grid-area: libraries;
+}
+
+.finder-section-system-container {
+  grid-area: insystem;
+}
+
+.finder-section-settings-container {
+  grid-area: settings;
+  align-self: end;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  button {
+    width: 100%;
+  }
+}
+
+.finder-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.finder-section-name {
+  color: $color-secondary-light;
+  font-size: $font-size-small;
+  font-weight: 700;
+  padding-bottom: 15px;
+}
+
+.finder-semantic-tree-container {
+  flex: 1;
+  overflow: auto;
+
+  .tree-view_children .Tree--leafNode {
+  //  margin-bottom: 6px;
+  }
+
+  .Tree--itemLink {
+  //  margin-bottom: 8px;
+    font-size: $font-size-base;
+    font-weight: 600;
+  }
+}
+
+.resource-context-page {
+
+  background: rgb(238, 238, 238);
+
+  height: calc(100vh - 70px);
+  
+  display: grid;
+  grid-template-rows: minmax(1px, auto) 1fr;
+  grid-template-columns: minmax(1px, 280px) 1fr;
+  
+  grid-template-areas: 'header header'
+                        'sidebar results';
+}
+
+.resource-header {
+  padding: 25px; 
+  background: rgb(212, 212, 212);
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  grid-area: header;
+}
+
+.resource-sidebar {
+  padding: 25px; 
+  border-right: 1px solid $color-border;
+
+  grid-area: sidebar;
+}
+
+.resource-results {
+
+  grid-area: results;
+}
+
+.resource-results-container {
+
+  height: 100%;
+  display: grid;
+  grid-template-rows: minmax(1px, auto) 1fr;
+  grid-template-columns: 3fr 1fr;
+  
+  grid-template-areas: 'header search'
+                        'resultView filters';
+}
+
+.resource-results-header {
+
+  grid-area: header;
+  border-bottom: 1px solid $color-border;
+  padding: 15px; 
+
+  display: flex;
+  align-items: center;
+}
+
+.resource-results-keywordSearch {
+
+  grid-area: search;
+  padding: 17px; 
+  border-bottom: 1px solid $color-border;
+  display: flex;
+  align-items: center;
+}
+
+.resource-results-content {
+
+  grid-area: resultView;
+  padding: 15px;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.resource-results-contentNavigation {
+
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background: rgb(212, 212, 212);
+}
+
+.resource-results-filters {
+  grid-area: filters;
+  border-left: 1px solid $color-border;
+  padding: 15px;
+}
+
+.resource-context-page .show-facet-button, .resource-context-page .facet__category-selector-holder {
+  display: none;
+}

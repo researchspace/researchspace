@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,13 +29,13 @@
 }
 .handle {
   position: absolute;
-  transform: translate(-50%, -50%);
+  transform: translate(0%, -50%);
   cursor: pointer;
   padding: 4px;
  // border: 3px solid #008cba;
   border-radius: 2px;
   background: #008cba;
-  color: white;
+  color: $color-white;
   font-size: 13px;
   font-weight: 600;
   text-align: center;
@@ -43,11 +44,15 @@
 .range {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 10px;
+  justify-content: space-between;
 
-  :global(input.form-control) {
+  :global(input.form-control),
+  :global(select.form-control) {
  //   min-width: 100px;
-    padding: 0px 7px
+    padding: 0px 7px;
+    color: $color-secondary;
+    background-color: $color-white;
   }
 
   @media (min-width: $screen-sm-min) and (max-width: 1366px) {
@@ -58,4 +63,14 @@
 .slider {
   margin-top: $padding-base-vertical;
   margin-bottom: $padding-base-vertical;
+
+
+  & > .handle ~ .handle {
+    transform: translate(-100%, -50%);
+  }
+
+  & > :global(.FacetSlider--handle:first-of-type){
+
+    transform: translate(0%, -50%);
+  }
 }

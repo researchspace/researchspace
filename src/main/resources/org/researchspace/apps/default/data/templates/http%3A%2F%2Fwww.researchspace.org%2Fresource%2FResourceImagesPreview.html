@@ -1,0 +1,44 @@
+<style>
+
+    .mirador-main-menu-bar,
+    .mirador-osd-annotation-controls  {
+      display: none !important;
+    }
+  
+    .mirador .researchspace-mirador.mirador-container .mirador-viewer {
+      top: 0;
+    }
+        
+</style>
+
+<rs-iiif-viewer-panel id='mirador'
+                    iris='[ "{{resource}}" ]'
+                    query="SELECT DISTINCT ?image WHERE {
+                            {
+                              <{{resource}}> a rs:EX_Digital_Image .
+                              BIND(<{{resource}}> as ?image)
+                            } 
+                            UNION {
+                              <{{resource}}> a rs:EX_Digital_Image_Region .
+                              <{{resource}}> crmdig:L49_is_primary_area_of ?image .
+                              ?image a rs:EX_Digital_Image .                
+                            }
+                            UNION {
+                              <{{resource}}> (crm:P138i_has_representation|rs:PX_has_main_representation) ?image .
+                              ?image a rs:EX_Digital_Image .
+                            } 
+                            UNION {
+                              <{{resource}}> (crm:P138i_has_representation|rs:PX_has_main_representation) ?imageAnnotation .
+                              ?imageAnnotation a rs:EX_Digital_Image_Region .
+                              ?imageAnnotation crmdig:L49_is_primary_area_of ?image .
+                              ?image a rs:EX_Digital_Image .
+                            }
+                        }"     
+                    [[> rsp:IIIFConfig]]>
+</rs-iiif-viewer-panel>
+
+
+
+  
+
+  

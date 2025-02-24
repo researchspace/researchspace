@@ -25,6 +25,7 @@ import { Rdf, XsdDataTypeValidation, vocabularies } from 'platform/api/rdf';
 import { SparqlUtil, SparqlClient } from 'platform/api/sparql';
 
 import { isValidChild } from 'platform/components/utils';
+import {SemanticSearchFormQueryExecuted} from './SemanticSearchFormQueryEvents'
 
 import {
   SemanticForm,
@@ -41,8 +42,11 @@ import {
 
 import { SemanticSearchContext, InitialQueryContext } from './SemanticSearchApi';
 import { setSearchDomain } from '../commons/Utils';
+import { trigger } from 'platform/api/events';
 
 export interface SemanticFormBasedQueryConfig {
+
+  id?: string;
   /**
    * Query template for form parametrization. Each query argument must have
    * corresponding form field definition.
@@ -81,6 +85,11 @@ export interface SemanticFormBasedQueryConfig {
    * Default query that should be executed when no input values are provided.
    */
   defaultQuery?: string;
+  
+  /**
+   * ID of the DOM element in the template to hide when query search has been executed
+   */
+  elementIdToHideAfterSearch?: string;
 }
 
 export interface QueryTemplate {
@@ -138,7 +147,7 @@ const PLACEHOLDER_SUBJECT = Rdf.iri(vocabularies.VocabPlatform._NAMESPACE + 'For
  *        "minOccurs": "1",
  *        "maxOccurs": "2",
  *        "valueSetPattern": "SELECT $value $label WHERE { VALUES ($value $label)
- *        { (<http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object> \"Man Made Object\")
+ *        { (<http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object> \"Human Made Object\")
  *        (<http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object> \"Information Object\") } }",
  *        "selectPattern": "SELECT $value WHERE { $subject a $value }"
  *      },
@@ -146,7 +155,7 @@ const PLACEHOLDER_SUBJECT = Rdf.iri(vocabularies.VocabPlatform._NAMESPACE + 'For
  *    ]'>
  *      <semantic-form-select-input for="type"></semantic-form-select-input>
  *      <semantic-form-text-input for="label"></semantic-form-text-input>
- *      <button type='button' name='submit' className='btn btn-default'>Search</button>
+ *      <button type='button' name='submit' className='btn btn-action'>Search</button>
  *  </semantic-search-form-query>
  */
 export class FormQuery extends React.Component<SemanticFormBasedQueryConfig> {
@@ -286,6 +295,21 @@ class FormQueryInner extends React.Component<InnerProps, State> {
 
     const parametrized = parametrizeQueryFromForm(this.props.queryTemplate, model);
 
+    // FIRE EVENT
+     trigger({
+       eventType: SemanticSearchFormQueryExecuted,
+       source: this.props.id
+     });
+
+     // if an ID is passed as prop, set that DOM element to hidden
+     if(this.props.elementIdToHideAfterSearch) {
+      const f = document.getElementById(this.props.elementIdToHideAfterSearch);
+      if(f) {
+        f.style.visibility = 'hidden';
+        f.style.height = '0';
+      }
+     }
+    
     return this.props.context.setBaseQuery(Just(parametrized));
   };
 

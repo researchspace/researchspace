@@ -1,0 +1,108 @@
+
+<http://www.researchspace.org/pattern/system/end_of_existence/took_out_of_existence_thing/context> {
+  <http://www.researchspace.org/pattern/system/end_of_existence/took_out_of_existence_thing>
+    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
+      <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-a00047679ec94933878a0f4e2a9336b6-4eehh;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E64_End_of_Existence>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/end_of_existence>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-a00047679ec94933878a0f4e2a9336b6-u3mbd;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-a00047679ec94933878a0f4e2a9336b6-35ssyb;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-a00047679ec94933878a0f4e2a9336b6-4sorlu;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Took out of existence thing"@en;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-a00047679ec94933878a0f4e2a9336b6-oki2lw;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E70_Thing>;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-03T17:54:16.707+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-a00047679ec94933878a0f4e2a9336b6-4eehh a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+	$subject crm:P93_took_out_of_existence $value . 
+    $value crm:P93i_was_taken_out_of_existence_by $subject .
+} WHERE {}""" .
+  
+  _:genid-a00047679ec94933878a0f4e2a9336b6-4sorlu a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E70_Thing .
+  { 
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+	} UNION {
+      ?value skos:prefLabel ?label .
+	} UNION {
+      ?value crm:P190_has_symbolic_content ?label .
+	}
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
+  MINUS { ?systemAuthorityTerm crm:P1_is_identified_by ?value .
+          ?systemAuthorityTerm crm:P71i_is_listed_in|skos:inScheme ?systemAuthorityDoc .
+          ?systemAuthorityDoc crm:P2_has_type Platform:System_Resource .
+        }
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label) 
+  LIMIT 10 """ .
+  
+  _:genid-a00047679ec94933878a0f4e2a9336b6-oki2lw a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+	$subject crm:P93_took_out_of_existence $value . 
+    $value crm:P93i_was_taken_out_of_existence_by $subject .
+} WHERE {
+	  $subject crm:P93_took_out_of_existence $value . 
+    $value crm:P93i_was_taken_out_of_existence_by $subject .
+      
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E70_Thing .
+    { 
+      ?value crm:P1_is_identified_by ?appellation .
+      ?appellation a crm:E41_Appellation .
+      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+      ?appellation crm:P190_has_symbolic_content ?label .
+    } UNION {
+        ?value skos:prefLabel ?label .
+    } UNION {
+        ?value crm:P190_has_symbolic_content ?label .
+    }
+}""" .
+  
+  _:genid-a00047679ec94933878a0f4e2a9336b6-u3mbd a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E70_Thing .
+  { 
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+	} UNION {
+      ?value skos:prefLabel ?label .
+	} UNION {
+      ?value crm:P190_has_symbolic_content ?label .
+	}
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-a00047679ec94933878a0f4e2a9336b6-35ssyb a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+	$subject crm:P93_took_out_of_existence $value . 
+      
+   	?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E70_Thing .
+    { 
+      ?value crm:P1_is_identified_by ?appellation .
+      ?appellation a crm:E41_Appellation .
+      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+      ?appellation crm:P190_has_symbolic_content ?label .
+    } UNION {
+        ?value skos:prefLabel ?label .
+    } UNION {
+        ?value crm:P190_has_symbolic_content ?label .
+    }
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/end_of_existence/took_out_of_existence_thing> .
+}

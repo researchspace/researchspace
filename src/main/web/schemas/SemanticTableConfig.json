@@ -15,6 +15,9 @@
         "BaseConfig": {
             "description": "The simplest table configuration can be used to show all SPARQL result set projection variables.\nThe SPARQL projection variable name is used as column header. IRIs will be rendered as resolvable links using the `<semantic-link>` component or as a simple string otherwise.",
             "properties": {
+                "className": {
+                    "type": "string"
+                },
                 "currentPage": {
                     "description": "In controlled mode sets current page in the table;\nin uncontrolled mode only sets initial page.",
                     "type": "number"
@@ -30,7 +33,7 @@
                     "type": "object"
                 },
                 "noResultTemplate": {
-                    "description": "<semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is applied when the query returns no results",
+                    "description": "<semantic-link iri='http://help.researchspace.org/resource/TemplatingSystem' target=\"_blank\">Template</semantic-link> which is applied when the query returns no results",
                     "type": "string"
                 },
                 "numberOfDisplayedRows": {
@@ -64,6 +67,7 @@
             },
             "propertyOrder": [
                 "query",
+                "className",
                 "numberOfDisplayedRows",
                 "noResultTemplate",
                 "options",
@@ -82,6 +86,9 @@
         "ColumnConfig": {
             "description": "More advanced configuration that can be used to restrict the set of columns to be visualized, to modify the column headings or to provide custom cell visualization templates",
             "properties": {
+                "className": {
+                    "type": "string"
+                },
                 "columnConfiguration": {
                     "description": "List of columns to display. If specified table shows only columns explicitly specified in the configuration",
                     "items": {
@@ -104,7 +111,7 @@
                     "type": "object"
                 },
                 "noResultTemplate": {
-                    "description": "<semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is applied when the query returns no results",
+                    "description": "<semantic-link iri='http://help.researchspace.org/resource/TemplatingSystem' target=\"_blank\">Template</semantic-link> which is applied when the query returns no results",
                     "type": "string"
                 },
                 "numberOfDisplayedRows": {
@@ -139,6 +146,7 @@
             "propertyOrder": [
                 "columnConfiguration",
                 "query",
+                "className",
                 "numberOfDisplayedRows",
                 "noResultTemplate",
                 "options",
@@ -159,7 +167,7 @@
             "description": "Table column configuration which allows to override column header or cell visualization template.\nEither `variableName` or `cellTemplate` is required to properly display column content.",
             "properties": {
                 "cellTemplate": {
-                    "description": "Custom cell visualization <semantic-link\n   uri='http://help.researchspace.org/resource/FrontendTemplating'>template</semantic-link>.\nTemplate has access to all projection variables for a single result tuple.",
+                    "description": "Custom cell visualization <semantic-link\n   uri='http://help.researchspace.org/resource/TemplatingSystem' target=\"_blank\">template</semantic-link>.\nTemplate has access to all projection variables for a single result tuple.\n\nIn addition to data from the sparql results cell template has access to current row index with \"__semanticTableIndex\" property and total table size with \"__semanticTableSize\" property.",
                     "type": "string"
                 },
                 "displayName": {
@@ -209,6 +217,9 @@
         "RowConfig": {
             "description": "The most advanced table configuration that provides the ability to customize the rendering of an entire table row via tuple templates.",
             "properties": {
+                "className": {
+                    "type": "string"
+                },
                 "currentPage": {
                     "description": "In controlled mode sets current page in the table;\nin uncontrolled mode only sets initial page.",
                     "type": "number"
@@ -224,7 +235,7 @@
                     "type": "object"
                 },
                 "noResultTemplate": {
-                    "description": "<semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is applied when the query returns no results",
+                    "description": "<semantic-link iri='http://help.researchspace.org/resource/TemplatingSystem' target=\"_blank\">Template</semantic-link> which is applied when the query returns no results",
                     "type": "string"
                 },
                 "numberOfDisplayedRows": {
@@ -256,13 +267,14 @@
                     "type": "boolean"
                 },
                 "tupleTemplate": {
-                    "description": "<semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> for the whole table row. Can be used to have visualizations different from the standard, e.g grid of thumbnails.\nThe template has access to all projection variables for a single result tuple",
+                    "description": "<semantic-link iri='http://help.researchspace.org/resource/TemplatingSystem' target=\"_blank\">Template</semantic-link> for the whole table row. Can be used to have visualizations different from the standard, e.g grid of thumbnails.\nThe template has access to all projection variables for a single result tuple.\n\nIn addition to data from the sparql results cell template has access to current row index with \"__semanticTableIndex\" property and total table size with \"__semanticTableSize\" property.",
                     "type": "string"
                 }
             },
             "propertyOrder": [
                 "tupleTemplate",
                 "query",
+                "className",
                 "numberOfDisplayedRows",
                 "noResultTemplate",
                 "options",

@@ -31,6 +31,7 @@ import { Action } from 'platform/components/utils';
 import { setSearchDomain } from '../commons/Utils';
 import { SemanticSimpleSearchBaseConfig } from '../../simple-search/Config';
 import { SemanticSearchContext, InitialQueryContext } from './SemanticSearchApi';
+import Icon from 'platform/components/ui/icon/Icon';
 
 export interface BaseConfig<T> extends SemanticSimpleSearchBaseConfig {
   /**
@@ -65,7 +66,7 @@ class KeywordSearch extends Component<KeywordSearchProps, {}> {
   render() {
     return (
       <div className='keyword-search-container'>
-        <i className='rs-icon rs-icon-search'></i>
+        <Icon iconType='rounded ' iconName='search' symbol />
         <SemanticSearchContext.Consumer>
           {(context) => <KeywordSearchInner {...this.props} context={context} />}
         </SemanticSearchContext.Consumer>

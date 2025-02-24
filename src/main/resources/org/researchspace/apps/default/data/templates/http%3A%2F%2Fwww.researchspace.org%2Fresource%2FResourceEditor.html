@@ -1,0 +1,169 @@
+{{#bind viewId=dashboardId}}
+  <mp-event-target-template-render id='{{viewId}}-resource-editor-frame' template='{{> template}}'>
+    <template id='template'>
+      {{#if iri}}
+        <semantic-query query="SELECT (COUNT(?config1) as ?c1) (COUNT(?config2) as ?c2) { {
+                          <{{iri}}> a ?resourceOntologyClass  .
+                                    ?config1 a <http://www.researchspace.org/resource/system/resource_configuration> ;
+                                            <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
+
+                                FILTER(NOT EXISTS{?config1 <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .})
+                          } UNION {
+                            <{{iri}}> a ?resourceOntologyClass ; 
+                                      crm:P2_has_type ?resourceP2Type  .
+                            ?config2 a <http://www.researchspace.org/resource/system/resource_configuration> ;
+                                          <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
+                            ?config2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .                           
+                          }                        
+                        }" 
+
+                        template="{{> countAvailableConfigurationsTemplate}}">
+        
+            <template id="countAvailableConfigurationsTemplate">      
+         
+                [[!-- Check for existing configurations available and when multiple direct the user to the Resource Config section --]]
+              
+                {{#ifCond bindings.0.c1.value ">" 1 }}
+                  {{#ifCond bindings.0.c2.value "==" 0}}
+                    {{> rsp:SimpleCollectionBrowser resourceConfigurationError=true multipleConfig=true noType=true }}
+                  {{else}}
+                    {{#ifCond bindings.0.c2.value ">" 1}} 
+                      {{> rsp:SimpleCollectionBrowser resourceConfigurationError=true multipleConfig=true multipleType=true }}
+                    {{/ifCond}}
+                  {{/ifCond}}         
+                {{/ifCond}}
+               
+                <semantic-query query='SELECT DISTINCT ?config ?resourceP2Type ?resourceFormIRI ?resourceRestrictionPattern ?resourceMembershipProperty WHERE {
+                                        {{#ifCond bindings.0.c1.value "==" 1}}   
+                                          {{#ifCond bindings.0.c2.value "==" 0}}  
+                                            {
+                                              <{{iri}}> a ?resourceOntologyClass  .
+                                              ?config a <http://www.researchspace.org/resource/system/resource_configuration> ;
+                                                      <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
+
+                                              FILTER NOT EXISTS {
+                                                ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .
+                                              }
+                                            
+                                              OPTIONAL {
+                                                ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern .
+                                              }
+                                              OPTIONAL {
+                                                ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty .
+                                              }   
+                                              
+                                              OPTIONAL {
+                                                ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
+                                              }                                
+                                            } 
+                                          {{/ifCond}}
+                                        {{/ifCond}}
+                                        
+                                        {{#ifCond bindings.0.c2.value "==" 1}}  
+                                          {
+                                            <{{iri}}> rdf:type ?resourceOntologyClass  ;
+                                                        crm:P2_has_type ?resourceP2Type .
+
+                                            ?config a <http://www.researchspace.org/resource/system/resource_configuration> ;
+                                                      <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  ;
+                                                      <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .
+
+                                            OPTIONAL {
+                                              ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern .
+                                            }                              
+                                            OPTIONAL {
+                                              ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty .
+                                            }
+                                            OPTIONAL {
+                                              ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
+                                            }
+                                          } 
+                                        {{/ifCond}}
+                                        {{#ifCond bindings.0.c1.value "==" 0}}
+                                          {{#ifCond bindings.0.c2.value "==" 0}}
+                                            {
+                                              ?config rdf:type Platform:resource_configuration;
+                                                <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>.
+                                              
+                                              OPTIONAL { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern. }
+                                              OPTIONAL { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type . }
+
+                                              OPTIONAL { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty. }
+                                              OPTIONAL { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI. }
+                                            }
+                                          {{/ifCond}}
+                                        {{/ifCond}}
+                                      }'
+                                      template='{{> template}}'
+                                      no-result-template='{{> noResults}}'>
+
+                  <template id="noResults">
+                    <div>
+                      [[!-- This can happen only if there's no config for E1 - that is used as default --]]
+                      {{> rsp:SimpleCollectionBrowser resourceConfigurationError=true missingConfiguration=true }}   
+                    </div>
+                  </template>
+
+                  <template id='template'> 
+
+                        <semantic-query query='SELECT DISTINCT ?config ?collection WHERE {
+                                                {{#each bindings}}
+                                                { 
+                                                  BIND(<{{../iri}}> as ?item) .
+                                                  BIND(<{{config.value}}> as ?config) .
+                                                  {{#if resourceRestrictionPattern.value}}
+                                                    {{{resourceRestrictionPattern.value}}}
+                                                  {{/if}} 
+
+                                                  {{#if resourceP2Type.value}}
+                                                    ?item crm:P2_has_type <{{resourceP2Type.value}}>
+                                                  {{/if}}
+
+                                                  {{#if resourceMembershipProperty.value}}
+                                                    OPTIONAL { ?item <{{{resourceMembershipProperty.value}}}> ?collection . }
+                                                  {{/if}}
+
+                                                  OPTIONAL {
+                                                    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty .
+                                                  }
+                                                  OPTIONAL {
+                                                    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property> ?resourceBroaderProperty .
+                                                  }                                  
+                                                } {{#if @last}}{{else}}UNION{{/if}}  
+                                                {{/each}}
+                                              }'
+                                        template='{{> nested}}'
+                        >
+                          <template id='nested'>
+                            {{#ifCond bindings.length "==" "1"}}
+                              {{> rsp:CollectionBrowserContent viewId=viewId configOrScheme=bindings.0.config.value iri=iri mode="edit"}}
+                            {{/ifCond}}
+
+                            {{#ifCond bindings.length ">" "1"}} 
+                              [[!-- This can happen only if there's more than 1 config for E1 (without types) --]]
+                              {{> rsp:SimpleCollectionBrowser resourceConfigurationError=true missingConfiguration=true }}   
+                            {{/ifCond}}
+                          </template>
+                        </semantic-query>
+                  </template>
+                </semantic-query>  
+            </template>
+        </semantic-query>
+      {{else}}
+        {{#if data.entityTypeConfig}}
+          {{#if data.mode}}
+              {{#if data.additional_data}}
+                {{> rsp:CollectionBrowserContent viewId=viewId  configOrScheme=data.entityTypeConfig mode=data.mode}}
+              {{else}}
+                {{> rsp:CollectionBrowserContent viewId=viewId  configOrScheme=data.entityTypeConfig mode=data.mode}}
+              {{/if}}
+          {{else}}
+              {{> rsp:CollectionBrowserContent viewId=viewId  configOrScheme=data.entityTypeConfig }}
+          {{/if}}
+        {{else}}
+          {{> rsp:ResourceContent}}
+        {{/if}}
+      {{/if}}
+    </template>
+  </mp-event-target-template-render>  
+{{/bind}}

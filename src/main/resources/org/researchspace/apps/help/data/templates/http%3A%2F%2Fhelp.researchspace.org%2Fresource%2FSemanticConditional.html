@@ -1,0 +1,127 @@
+<div class="page__grid-container help-page-container">
+  <div class='page__content-container'>
+    <h1>Semantic conditionals</h1>
+    <p>
+      There are two built-in components for branching based on query results with the template inputs:
+      <code>semantic-if</code> and <code>semantic-switch</code>.
+    </p>
+
+    <h2>Semantic if</h2>
+    <p>
+      <code>semantic-if</code> allows to conditionally render templates depending 
+      on whether the specified ASK query returns true or false.
+    </p>
+
+    <h3>Configuration</h3>
+    <mp-documentation type="SemanticIfProps"></mp-documentation>
+
+    <br>
+    <h3>Examples: semantic-if</h3>
+    <mp-code-example show-code-by-default=true>
+    <![CDATA[
+<!-- full form -->
+<semantic-if query='ASK { BIND((RAND() > 0.5) as ?x) FILTER(?x) }' then='{{> then}}' else='{{> else}}'>
+  <template id='then'><div style="color:green;">randomly true 1</div></template>
+  <template id='else'><div style="color:rgb(154, 23, 3);">randomly false 1</div></template>
+</semantic-if>
+
+<!-- same as above -->
+<semantic-if query='ASK { BIND((RAND() > 0.5) as ?x) FILTER(?x) }'>
+  <template id='then'><div style="color:green;">randomly true 2</div></template>
+  <template id='else'><div style="color:rgb(154, 23, 3);">randomly false 2</div></template>
+</semantic-if>
+
+<!-- using inline templates -->
+<semantic-if query='ASK { BIND((RAND() > 0.5) as ?x) FILTER(?x) }'
+              then='randomly true 3' else='randomly false 3'>
+</semantic-if>
+
+<!-- leave 'else' template empty -->
+<semantic-if query='ASK { BIND((RAND() > 0.5) as ?x) FILTER(?x) }' then='randomly true 4'></semantic-if>
+      ]]>
+    </mp-code-example>
+
+    <mp-code-example show-code-by-default=true>
+    <![CDATA[
+<semantic-if query='ASK { FILTER(false) }'>
+  <template id='else'>
+    <semantic-if query='ASK { }'>
+      <template id='then'>
+        <div style='color: green;'>Should be visible</div>
+      </template>
+    </semantic-if>
+  </template>
+</semantic-if>
+      ]]>
+    </mp-code-example>
+
+    <hr class="divider">
+    <h2>Semantic switch</h2>
+    <p>
+      <code>semantic-switch</code> can be useful to render, for example, different templates for different entity types.
+      It allows to choose a template to render from a list through executing a SELECT query with a single projection variable.
+    </p>
+
+    <br>
+    <h3>Configuration</h3>
+    <mp-documentation type="SemanticSwitchProps"></mp-documentation>
+
+    <br>
+    <h3>Example: semantic-switch</h3>
+    <mp-code-example show-code-by-default=true>
+    <![CDATA[
+<style>
+  .switch-sq { width: 50px; height: 50px; border: 1px dashed black; }
+</style>
+
+<!-- full form -->
+<semantic-switch query='SELECT ("*" as ?x) {}'
+                  cases='{"red": "{{> red}}", "*": "{{> [*]}}", "default": "{{> default}}"}'>
+  <template id='red'><div class='switch-sq' style='background: red'></div></template>
+  <template id='*'><div class='switch-sq' style='background: violet'></div></template>
+  <template id='default'><div class='switch-sq' style='background: green'></div></template>
+</semantic-switch>
+
+<!-- same as above -->
+<semantic-switch query='SELECT ("*" as ?x) {}'>
+  <template id='red'><div class='switch-sq' style='background: red'></div></template>
+  <template id='*'><div class='switch-sq' style='background: violet'></div></template>
+  <template id='default'><div class='switch-sq' style='background: green'></div></template>
+</semantic-switch>
+
+<!-- using inline templates -->
+<semantic-switch query='SELECT ("*" as ?x) {}'
+                  cases='{
+                    "red": "<div class=\"switch-sq\" style=\"background: red\"></div>",
+                    "*": "<div class=\"switch-sq\" style=\"background: violet\"></div>",
+                    "default": "<div class=\"switch-sq\" style=\"background: green\"></div>"
+                }'>
+</semantic-switch>
+      ]]>
+    </mp-code-example>
+
+    <p><code>semantic-switch</code> cases expects plain values and not RDF nodes or prefixed IRIs.</p>
+
+    <br>
+    <h3>Example: IRIs in semantic-switch cases</h3>
+    <mp-code-example show-code-by-default=true>
+    <![CDATA[
+<semantic-switch query='
+  PREFIX person: <http://example.com/person/>
+  PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+  PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+  SELECT ?o WHERE {
+    VALUES(?s ?p ?o) {
+      (person:alice rdf:type foaf:Person)
+    }
+  }'
+  cases='{
+    "http://xmlns.com/foaf/0.1/Person": "<i class=\"fa fa-user\"></i>",
+    "default": "<i class=\"fa fa-circle\"></i>"
+}'>
+</semantic-switch>
+      ]]>
+    </mp-code-example>
+
+  </div>
+</div>

@@ -1,0 +1,41 @@
+<div class="timespan-table" style="overflow-x: auto;">
+  <semantic-table id='timespan-table'
+                  query='SELECT DISTINCT ?timespan ?timespanLabel ?beginning ?end ?date ?startDate ?endDate WHERE {
+                          BIND(<{{node}}> as ?subject) .
+
+                          ?subject crm:P4_has_time-span ?timespan .
+                          ?timespan a crm:E52_Time-Span .
+                          ?timespan crm:P170i_time_is_defined_by ?timePrimitive .
+                          ?timePrimitive a crm:E61_Time_Primitive .
+                          ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
+                          ?timePrimitive crm:P190_has_symbolic_content ?timespanLabel .
+
+                          OPTIONAL {?timespan crm:P79_beginning_is_qualified_by ?beginning . }
+                          OPTIONAL {?timespan crm:P80_end_is_qualified_by ?end . }
+                          OPTIONAL {?timespan crm:P82_at_some_time_within ?date . }
+                          OPTIONAL {?timespan crm:P82a_begin_of_the_begin ?startDate . }
+                          OPTIONAL {?timespan crm:P82b_end_of_the_end ?endDate . }
+                        }'
+
+                  options='{"showFilter":false, "resultsPerPage":1}' 
+                  column-configuration='[
+                                          {"displayName": "Timespan value", "variableName": "timespanLabel", "cellTemplate": "{{> timespanLabel}}" },
+                                          {"displayName": "Date", "variableName": "date" },
+                                          {"displayName": "Start date", "variableName": "startDate" },
+                                          {"displayName": "End date", "variableName": "endDate" },
+                                          {"displayName": "Beginning", "variableName": "beginning" },
+                                          {"displayName": "End", "variableName": "end" }
+                                        ]'   
+  >
+  <template id='timespanLabel'>
+    <semantic-link  iri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                    urlqueryparam-resource='{{timespan.value}}'
+                    urlqueryparam-view='resource-editor' 
+                    class="text-link"
+                    >
+                    {{timespanLabel.value}}
+    </semantic-link>
+  </template>
+  </semantic-table>
+</div>
+            

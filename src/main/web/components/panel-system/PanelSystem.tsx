@@ -22,6 +22,7 @@ import * as SplitPane from 'react-split-pane';
 import { PanelSystemHolder } from './PanelSystemHolder';
 
 import * as styles from './PanelSystem.scss';
+import Icon from '../ui/icon/Icon';
 
 export interface Props {}
 
@@ -73,7 +74,7 @@ export class PanelSystem extends React.Component<Props, State> {
             className={`btn btn-default btn-xs ${styles.fullScreenButton}`}
             onClick={() => this.setState({ size: this.prevSize, expandedPanelKey: undefined })}
           >
-            <i className="fa fa-compress" />
+            <Icon iconType='rounded' iconName='close_fullscreen' symbol />
           </button>
         ) : (
           <button
@@ -85,7 +86,7 @@ export class PanelSystem extends React.Component<Props, State> {
               })
             }
           >
-            <i className="fa fa-expand" />
+            <Icon iconType='rounded' iconName='open_in_full' symbol />
           </button>
         )}
       </div>

@@ -29,25 +29,32 @@ public class CidocCRM {
 
     public static String NAMESPACE = "http://www.cidoc-crm.org/cidoc-crm/";
 
+    public static final IRI P1_IS_IDENTIFIED_BY;
+    public static final IRI P2_HAS_TYPE;
     public static final IRI P4_HAS_TIME_SPAN_PROPERTY;
     public static final IRI P82A_BEGIN_OF_THE_BEGIN_PROPERTY;
     public static final IRI P82A_END_OF_THE_END_PROPERTY;
     public static final IRI P14_CARRIED_OUT_BY_PROPERTY;
     public static final IRI P138i_HAS_REPRESENTATION_PROPERTY;
+    public static final IRI P190_HAS_SYMBOLIC_CONTENT;
 
     public static final IRI E52_TIME_SPAN_CLASS;
     public static final IRI E39_ACTOR_CLASS;
+    public static final IRI E41_APPELLATION_CLASS;
 
     static {
         ValueFactory f = SimpleValueFactory.getInstance();
+        P1_IS_IDENTIFIED_BY = f.createIRI(NAMESPACE, "P1_is_identified_by");
+        P2_HAS_TYPE = f.createIRI(NAMESPACE, "P2_has_type");
         P138i_HAS_REPRESENTATION_PROPERTY = f.createIRI(NAMESPACE, "P138i_has_representation");
+        P190_HAS_SYMBOLIC_CONTENT = f.createIRI(NAMESPACE,"P190_has_symbolic_content");
         P4_HAS_TIME_SPAN_PROPERTY = f.createIRI(NAMESPACE, "P4_has_time_span");
         P82A_BEGIN_OF_THE_BEGIN_PROPERTY = f.createIRI(NAMESPACE, "P82a_begin_of_the_begin");
         P82A_END_OF_THE_END_PROPERTY = f.createIRI(NAMESPACE, "P82a_end_of_the_end");
         P14_CARRIED_OUT_BY_PROPERTY = f.createIRI(NAMESPACE, "P14_carried_out_by");
         E52_TIME_SPAN_CLASS = f.createIRI(NAMESPACE, "E52_Time-Span");
         E39_ACTOR_CLASS = f.createIRI(NAMESPACE, "E39_Actor");
-
+        E41_APPELLATION_CLASS = f.createIRI(NAMESPACE, "E41_Appellation");
     }
 
 }

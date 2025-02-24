@@ -1,0 +1,75 @@
+
+<http://www.researchspace.org/pattern/system/birth/from_father/context> {
+  _:genid-0c15968617b84c469bda5917e08f8063-vtpnx a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+	$subject crm:P97_from_father $value . 
+    $value crm:P97i_was_father_for $subject .
+} WHERE {
+	$subject crm:P97_from_father $value . 
+    $value crm:P97i_was_father_for $subject .
+      
+    ?value a crm:E21_Person .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-0c15968617b84c469bda5917e08f8063-w806bk a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+	$subject crm:P97_from_father $value . 
+    $value crm:P97i_was_father_for $subject .
+} WHERE {}""" .
+  
+  <http://www.researchspace.org/pattern/system/birth/from_father> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-0c15968617b84c469bda5917e08f8063-6ncwd9;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E21_Person>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-0c15968617b84c469bda5917e08f8063-vtpnx;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E67_Birth>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-0c15968617b84c469bda5917e08f8063-9jkrwm;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Birth from father"@en;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-0c15968617b84c469bda5917e08f8063-w806bk;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-0c15968617b84c469bda5917e08f8063-havzoc;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/birth>;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-05T12:23:46.915+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-0c15968617b84c469bda5917e08f8063-6ncwd9 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a crm:E21_Person .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-0c15968617b84c469bda5917e08f8063-9jkrwm a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+	$subject crm:P97_from_father $value .  
+      
+    ?value a crm:E21_Person .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-0c15968617b84c469bda5917e08f8063-havzoc a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a crm:E21_Person .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/birth/from_father> .
+}

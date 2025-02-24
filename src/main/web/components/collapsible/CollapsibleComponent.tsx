@@ -35,7 +35,7 @@ interface State {
 export class CollapsibleComponent extends React.Component<Props, State> {
   static defaultProps = {
     toggleCollapsibleTemplate: `<div>
-        <i className="fa fa-pencil"></i>
+        <rs-icon icon-type="rounded" icon-name="edit" symbol="true"></rs-icon>
         <strong>
           <a>Create new...</a>
         </strong>

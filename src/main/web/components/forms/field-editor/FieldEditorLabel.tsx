@@ -21,6 +21,7 @@ import { FormGroup, InputGroup, FormControl, Button, Row, Col } from 'react-boot
 import ReactSelect from 'react-select';
 
 import { LocalizedValue } from './FieldEditorState';
+import Icon from 'platform/components/ui/icon/Icon';
 
 export interface Props {
   label: LocalizedValue;
@@ -57,15 +58,21 @@ export class FieldEditorLabel extends React.Component<Props, {}> {
             </div>
             {!isRequired ? (
               <Button className="field-editor__delete-label-button" onClick={() => onDeleteLabel()}>
-                <i className="fa fa-times" />
+                <Icon iconType='rounded' iconName='close' symbol />
               </Button>
             ) : null}
           </div>
         </InputGroup>
         {value.error ? (
-          <Row className="field-editor__error">
-            <Col md={12}>{value.error.message}</Col>
-          </Row>
+          <div className="field-editor__error">
+            <div className="field-editor__error-icon">
+              <Icon iconType='rounded' iconName='priority_high' symbol />
+            </div>
+            <div>
+              <div className="field-editor__error-title">Error!</div>
+              <div>{value.error.message}</div>
+            </div>
+          </div>
         ) : null}
       </FormGroup>
     );

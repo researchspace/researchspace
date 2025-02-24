@@ -1,6 +1,7 @@
 /**
  * ResearchSpace
- * Copyright (C) 2020, © Trustees of the British Museum
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
+ * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -20,7 +21,8 @@
 
 // Text Editor
 
-$editorWidth: 794px;
+//$editorWidth: 794px;
+$editorWidth: 100%;
 
 :global(.Dashboard--template) {
   height: 100%;
@@ -28,8 +30,17 @@ $editorWidth: 794px;
 
 .narrativeHolder {
   height: 100%;
+  width: 100%;
   background-color: $color-narrative-bg;
-  padding-bottom: 50px;
+  overflow: hidden;
+
+  display: grid;
+  grid-template-columns: minmax(3px, .2fr) 2fr minmax(3px, .2fr);
+  grid-template-rows: fit-content(100px) auto 15px;
+
+  grid-template-areas: '. toolbar .'
+                        '. editor .'
+                        '. . .';
 
   // DropArea styling
   :global(.DropArea--dropArea) {
@@ -72,43 +83,40 @@ $editorWidth: 794px;
 .titleHolder {
   display: flex;
   align-items: center;
-
-  margin-top: 3px;
+  width: 100%;
   margin-bottom: 12px;
-
-  background-color: $color-white;
-  border: 1px solid #ddddddd1;
-  border-radius: 3px;
 }
 
 .titleInput {
-  width: $editorWidth - 34px;
+  width: 100%;
   margin-left: auto;
   margin-right: auto;
 
   :global(.form-control) {
 
-    font-size: 19px;
+    font-size: 18px;
     letter-spacing: .3px;
     font-weight: bold;
-    height: 48px;
-    padding: 6px 15px;
-  //  border: none;
+    height: 40px;
+    padding: 0 15px;
   }
 }
 
 .draggableGripper {
 
-  width: 25px;
+  width: auto;
+  margin-right: 5px;
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
 
   cursor: grab;
   flex-shrink: 0;
 
-  :global(.rs-icon.rs-icon-drag_points) {
+  :global(.rs-icon.rs-icon-drag_points),
+  :global(.material-icons-round),
+  :global(.material-symbols-rounded) {
 
-    font-size: 20px;
+    font-size: 24px;
   }
 }
 
@@ -116,12 +124,16 @@ $editorWidth: 794px;
   display: flex;
   justify-content: center;
   border: 2px dashed $color-white;
-  margin: 0 0 ($line-height-computed / 2);
-  padding: 10px;
+  margin: 0 0 calc($line-height-computed / 2);
 
   // TODO
-  & > div > :global(.card.rs-object-card.rs-search-card) {
+  & > div > :global(.resource-card) {
     margin: 0;
+  }
+
+  :global(.mirador) {
+
+    border: 1px solid $color-border;
   }
 
   :global(.mirador-osd-annotation-controls) {
@@ -139,6 +151,14 @@ $editorWidth: 794px;
   :global(a.edit), :global(a.delete) {
   //  display: none;
   }
+
+  & :global(.semantic-table-holder) {
+
+    & :global(.griddle-custom-row) {
+
+      gap: 10px;
+    }
+  }
 }
 
 .resourceBlockActive {
@@ -150,35 +170,54 @@ $editorWidth: 794px;
  get relative position of the editor and use it for sidebar positioning
 */
 .sidebarAndEditorHolder {
-  overflow: auto;
+
+  grid-area: editor;
+  justify-self: center;
+
+  width: 100%;
+ // max-width: 1100px;
+
+  overflow: hidden;
+
   background-color: $color-narrative-bg;
   display: flex;
   flex-direction: column;
   align-items: center;
   height: 100%;
+
+  
+  
 }
 
 .editorContainer {
   // need for text-align to work properly
   white-space: normal;
+  overflow: auto;
 
-  border: 1px solid #ddddddd1;
+  flex: 1;
+
+  font-size: 15px;
+  line-height: 1.3;
+
+  border: 1px solid $input-border-color;
   background-color: rgb(255, 255, 255);
-  width: $editorWidth;
-  box-shadow: 0 1px 3px 1px rgba(60,64,67,.15);
+  width: 100%;
+  box-shadow: 0 0 3px #c1c1c940;
+
+  padding: 4% 10%;
 
   // for edit mode, later extract
 
   & > div {
-    padding: 20px 70px;
+  //  padding: 20px 70px;
   }
   & a {
-    cursor: text;
+    cursor: pointer;
     text-decoration: underline;
   }
 
   & a:hover {
-    background-color:  #f2f3f5;
+ //   background-color:  #f2f3f5;
   }
 }
 
@@ -190,7 +229,7 @@ $editorWidth: 794px;
 // Sidebar
 
 .sidebar {
-    border-right: 3px solid #f2f3f5;
+    border-right: 3px solid $color-border;
     padding: 0 5px;
     position: absolute;
     transition: transform .15s;
@@ -204,17 +243,26 @@ $editorWidth: 794px;
 
 // Toolbar
 .toolbar {
+
+  grid-area: toolbar;
+
   display: flex;
-  justify-content: center;
-  padding: 20px 0;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 7px 0;
+  padding: 0;
 
   :global(.btn-toolbar > .btn-group) {
-    margin-left: 8px;
+    margin-left: 0;
   }
 
-  :global(.btn) {
-      border-radius: 2px;
-      border: 1px solid #ddd;
+  &:before, &:after {
+    content: none;
+  }
+
+/*   :global(.btn) {
 
       &[disabled] {
 
@@ -224,33 +272,34 @@ $editorWidth: 794px;
               color: $color-btn-toolbar;
           }
       }
+  } */
 
-      &.active {
-          box-shadow: inset 0px -3px 0px 0px $color-dark;
-      }
-  }
-
-  :global(.btn-success) {
-      height: 38px;
-      font-size: 13.5px;
-      letter-spacing: 0.4px;
-      text-transform: uppercase;
-      padding: 0 15px;
-  }
-
-  :global(.btn-default) {
-      height: 38px;
-      font-size: 13.5px;
-      letter-spacing: 0.4px;
+/*   :global(.btn-default) {
+      height: 34px;
+      font-size: 13px;
+      letter-spacing: 0.3px;
       text-transform: uppercase;
       color: $color-btn-toolbar;
       background-color: $color-btn-toolbar-bg;
-      padding: 0 12px;
+      padding: 0 11px;
+      margin: 5px 0;
 
       &:hover {
-          box-shadow: inset 0px -2px 0px 0px $color-btn-toolbar;
+        box-shadow: inset 0px -2px 0px 0px $color-btn-toolbar;
       }
-  }
+
+      &:global(.active) {
+        color: $color-btn-toolbar;
+        background-color: $color-dark;
+    }
+  } */
+}
+
+.toolbarBtnGroup {
+
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
 }
 
 .dropdown {}
@@ -272,6 +321,13 @@ $editorWidth: 794px;
 
 .toolbar .dropdownMenuItemIcon {
     margin-right: 10px;
+    color: $color-base;
+
+    :global(.fa) {
+
+      font-size: 15px;
+    }
+
 }
 .sidebar .dropdownMenuItemIcon {
     margin-right: 5px;
@@ -305,6 +361,7 @@ $editorWidth: 794px;
   & :global(.DropArea--children) {
     align-items: center;
     justify-content: center;
+    width: fit-content;
   }
 
   & :global(.DropArea--dropArea) {
@@ -316,9 +373,9 @@ $editorWidth: 794px;
 
     font-size: 14px;
     line-height: 1.3;
-    border: 1px dashed $color-light-grey2;
+    border: 1px dashed $color-secondary-light;
     background-color: transparent;
-    color: $btn-grey-color;
+    color: $color-secondary;
   }
 
   & :global(.DropArea--dropArea.mp-droppable-hover .DropArea--dropMessage) {
@@ -327,26 +384,31 @@ $editorWidth: 794px;
 
   & a {
     text-decoration: underline;
-    color: $btn-grey-color;
+    color: $color-secondary;
   }
 
   :global(.form-control) {
     background-color: transparent;
-    color: $btn-grey-color;
-    border-color: $color-light-grey2;
+    color: $color-secondary;
+    border-color: $color-border;
 
     &::placeholder {
-      color: $color-light-grey2;
+      color: $color-base;
     }
 
     &:focus {
-      border-bottom: 1px solid $color-light-grey2;
+      border-bottom: 1px solid $color-border;
     }
   }
 
-  :global(.btn-grey), :global(.btn-success) {
+  :global(.btn-default), :global(.btn-success) {
 
     width: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid $color-border;
+    border-radius: $border-radius;
 
     :global(.fa) {
       padding: 0;
@@ -356,6 +418,10 @@ $editorWidth: 794px;
   :global(.btn-success) {
     border: none;
     margin-right: 1px;
+
+    i {
+      color:$color-light;
+    }
   }
 }
 
@@ -365,11 +431,11 @@ $editorWidth: 794px;
   #internal-link-popover {
 
     background-color: $color-narrative-popover-bg;
-    border-color: #d6dbdf;
+    border-color: $color-border;
     color: $color-dark;
 
     &.popover.top > .arrow {
-      border-top-color: #d6dbdf;
+      border-top-color: $color-border;
 
         &:after {
         border-top-color: $color-narrative-popover-bg;

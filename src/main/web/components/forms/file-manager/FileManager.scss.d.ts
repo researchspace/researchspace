@@ -2,22 +2,26 @@ declare namespace FileManagerScssNamespace {
   export interface IFileManagerScss {
     DirectFileUploader: string;
     FileManager: string;
+    FileManagerContainer: string;
+    FileManagerUploaded: string;
     FileUploader: string;
     FileVisualizer: string;
     alertComponent: string;
-    caRemoveFile: string;
     directFileUploader: string;
     emptyBody: string;
     fileContainer: string;
     fileIcon: string;
     fileManager: string;
+    fileManagerContainer: string;
+    fileManagerUploaded: string;
+    fileNameContent: string;
     fileUploader: string;
     fileVisualizer: string;
     header: string;
-    mpDropZonePlaceHolder: string;
     progress: string;
     rightInputBar: string;
     row: string;
+    selectorContainer: string;
     selectorHolder: string;
     spinner: string;
     storageInput: string;

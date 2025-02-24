@@ -4,9 +4,9 @@
  We assume that:
   * we are dealing with objects that are instances of `crm:E18_Physical_Thing` (or any subclass of it) 
   * every object has at least one image representation (crm:P138i_has_representation)
-  * images (rso:EX_Digital_Image) are serverd from IIIF server
+  * images (rs:EX_Digital_Image) are serverd from IIIF server
   * object's features are connected to the object with `crm:P56i_is_found_on` or `crm:P56_bears_feature` property
-  * object feature can have image region (rso:EX_Digital_Image_Region) as a representation (crm:P138i_has_representation)
+  * object feature can have image region (rs:EX_Digital_Image_Region) as a representation (crm:P138i_has_representation)
   * object feature can be:
       "Mark" - ?feature crm:P65_shows_visual_item/rdf:type crm:E37_Mark
       "Inscription" - ?feature crm:P65_shows_visual_item/rdf:type crm:E34_Inscription 
@@ -96,17 +96,17 @@ not used:
 
 [[!-- EVENTS --]]
 [[!--
- Listen to `Dashboard.AddFrame` for "objectImageObservation" view. Here we assume that "objectImageObservation" view in the thinking frames is marked as "unique",
+ Listen to `Dashboard.AddFrame` for "object-image-observation" view. Here we assume that "object-image-observation" view in the thinking frames is marked as "unique",
  which means that there can be only a single frame of this kind. So `Dashboard.AddFrame` is not going to add new frame, instead we define event-proxy to
- trigger `IIIFViewer.AddImagesForObject` on the active IIIF Viewer to add the object with corresponding images to the current viewer. 
+ trigger `IIIFViewer.AddImagesForResource` on the active IIIF Viewer to add the object with corresponding images to the current viewer. 
  
- For this proxy to work `Dashboard.AddFrame` event trigger should also send "objectIri" field that is expected by the IIIF Viewer, the field value should be equal to "resourceIri" field that is expected by `rs-dashboard` component.
+ For this proxy to work `Dashboard.AddFrame` event trigger should also send "resourceIri" field that is expected by the IIIF Viewer, the field value should be equal to "resourceIri" field that is expected by `rs-dashboard` component.
  
  As an example of corresponding event trigger see rsp:itemCardTemplateDefault.
 --]]
 <mp-event-proxy id='add-object-to-iiif-viewer' 
-                on-event-type='Dashboard.AddFrame' on-event-data='{"viewId": "objectImageObservation"}'
-                proxy-event-type='IIIFViewer.AddImagesForObject' proxy-targets='["image-editor"]'
+                on-event-type='Dashboard.AddFrame' on-event-data='{"viewId": "object-image-observation"}'
+                proxy-event-type='IIIFViewer.AddImagesForResource' proxy-targets='["image-editor"]'
 ></mp-event-proxy>
 
 [[!-- 
@@ -135,7 +135,7 @@ not used:
   [[#if createFromRegion]]
     <h2>Creating New Feature represented by the region: &nbsp;<strong><semantic-link iri='{{regionIri}}' class="text-underline"></semantic-link></strong></h2>
   [[else]]
-    <h2>Creating New Feature for: &nbsp;<strong><semantic-link iri='{{objectIri}}' class="text-underline"></semantic-link></strong></h2>
+    <h2>Creating New Feature for: &nbsp;<strong><semantic-link iri='{{resourceIri}}' class="text-underline"></semantic-link></strong></h2>
   [[/if]]
 
   <mp-event-target-template-render id='feature-form-area' template='{{> form}}'>
@@ -145,13 +145,13 @@ not used:
         <p>What kind of feature do you want to create?</p>
         <div class="feature-form-type-selection">
           <mp-event-trigger id='create-mark' type='Component.TemplateUpdate' data='{"featureType": "Mark"}' targets='["feature-form-area"]'>
-            <button class='btn-grey {{#ifCond featureType "==" "Mark"}}btn-selected{{/ifCond}}'>Mark</button>
+            <button class='btn btn-default {{#ifCond featureType "==" "Mark"}}btn-selected{{/ifCond}}'>Mark</button>
           </mp-event-trigger>
           <mp-event-trigger id='create-inscription' type='Component.TemplateUpdate' data='{"featureType": "Inscription"}' targets='["feature-form-area"]'>
-            <button class='btn-grey {{#ifCond featureType "==" "Inscription"}}btn-selected{{/ifCond}}'>Inscription</button>
+            <button class='btn btn-default {{#ifCond featureType "==" "Inscription"}}btn-selected{{/ifCond}}'>Inscription</button>
           </mp-event-trigger> 
           <mp-event-trigger id='create-visual-item' type='Component.TemplateUpdate' data='{"featureType": "Visual Item"}' targets='["feature-form-area"]'>
-            <button class='btn-grey {{#ifCond featureType "==" "Visual Item"}}btn-selected{{/ifCond}}'>Visual Item</button>
+            <button class='btn btn-default {{#ifCond featureType "==" "Visual Item"}}btn-selected{{/ifCond}}'>Visual Item</button>
           </mp-event-trigger>
         </div> 
       </div>
@@ -164,9 +164,9 @@ not used:
 
 [[#*inline "featureTypesQueryPattern"]]
   {
-    ?feature crm:P56i_is_found_on <{{objectIri}}> .
+    ?feature crm:P56i_is_found_on <{{resourceIri}}> .
   } UNION {
-    <{{objectIri}}> crm:P56_bears_feature ?feature . 
+    <{{resourceIri}}> crm:P56_bears_feature ?feature . 
   }  
   OPTIONAL {
     ?feature crm:P65_shows_visual_item/rdf:type crm:E37_Mark .
@@ -191,8 +191,8 @@ not used:
 [[!-- /INCLUDES --]]
 
 
-<div class="imageAnnotationWorkspace__container">
-      <div class="imageAnnotationWorkspace__viewer">
+<div class="imageAnnotation__container">
+      <div class="imageAnnotation__viewer">
 [[!-- 
  Here we assume that @partial-block is IIIF Viewer component.
  It is defined in the rsp:ThinkingFramesObjectThroughImageObservation template.
@@ -200,8 +200,7 @@ not used:
         {{> @partial-block }}
       </div>
 
-      <div class="imageAnnotationWorkspace__observationArea_bg"></div>
-      <div class="imageAnnotationWorkspace__observationArea_container">
+      <div class="imageAnnotation__resourceAnnotation-container">
         
 [[!-- 
  `two-side-panel` component functions as kind of a flip panel, with `front` and `back` templates. 
@@ -219,14 +218,14 @@ not used:
  List of all objects with features. Refreshed by `refresh-image-list` event-proxy at the top of the template.
  Variables available in the template:
  
- objects: Array of { objectIri: object iri string, images: array of image iris strings }
+ resources: Array of { resourceIri: resource iri string, images: array of image iris strings }
 --]]
                       <mp-event-target-template-render id='image-with-regions' template='{{> observations}}'>
                         <template id='observations'>
                           <mp-event-target-template-render id='remove-feature-dialog' template='{{> removeFeatureDialog}}'>
                             <template id='removeFeatureDialog'>
                               {{#if feature}}
-                              <mp-event-proxy id='close-form-removal-dialog' on-event-source='feature-creation-form' on-event-type='Form.ResourceRemoved'
+                              <mp-event-proxy id='close-annotationForm-removal-dialog' on-event-source='feature-creation-form' on-event-type='Form.ResourceRemoved'
                                               proxy-event-type='Component.TemplateUpdate' data='{}' proxy-targets='["remove-feature-dialog"]'
                               ></mp-event-proxy>
                                 <div style='display: none;'>
@@ -238,10 +237,10 @@ not used:
 
                           
                           <div class="page__main-title-row">
-                            <h1 class="rs-main-title">Observations on</h1>
+                            <h1 class="headline">Observations on</h1>
                             <mp-overlay-dialog title="Object Observations" type="modal" class="modal-documentation">
                               <mp-overlay-dialog-trigger>
-                                <i class="iconmoon iconmoon-info" style='font-size: 24px;'></i>
+                                <rs-icon icon-type="rounded" icon-name="help" symbol="true"></rs-icon>
                               </mp-overlay-dialog-trigger>
                               <mp-overlay-dialog-content>
                                 [[> rsp:ImageAnnotationObservationDocumentation]]
@@ -251,43 +250,43 @@ not used:
                           <div class="imageAnnotationWorkspace__observationArea_items">
                             
   [[!-- 
-  iterate over all objects available in the current IIIF Viewer 
+  iterate over all resources available in the current IIIF Viewer 
   --]]
-                            {{#each objects}}
+                            {{#each resources}}
                             
   [[!-- 
-  To not fully refresh rendered list of objects when image region is created/updated/removed in the IIIF Viewer,
+  To not fully refresh rendered list of resources when image region is created/updated/removed in the IIIF Viewer,
   for every object we listen to all region related events triggered by the IIIF Viewer and refresh only part of the view related to updated object.
   --]]
-                            <mp-event-proxy id='refresh-object-{{objectIri}}' 
+                            <mp-event-proxy id='refresh-object-{{resourceIri}}' 
                                             on-event-source='image-editor' 
                                             on-event-types='["IIIFViewer.RegionCreated", "IIIFViewer.RegionUpdated", "IIIFViewer.RegionRemoved"]'
-                                            on-event-data='{"objectIri": "{{objectIri}}"}'
-                                            proxy-event-type='Component.TemplateUpdate' proxy-targets='["object-template-{{objectIri}}"]'
+                                            on-event-data='{"resourceIri": "{{resourceIri}}"}'
+                                            proxy-event-type='Component.TemplateUpdate' proxy-targets='["object-template-{{resourceIri}}"]'
                             ></mp-event-proxy>
                             
-                            <mp-event-proxy id='refresh-object-on-form-action-{{objectIri}}' on-event-source='feature-creation-form'
-                                            proxy-event-type='Component.TemplateUpdate' proxy-targets='["object-template-{{objectIri}}"]'
-                                            data='{"objectIri": "{{objectIri}}"}'
+                            <mp-event-proxy id='refresh-object-on-form-action-{{resourceIri}}' on-event-source='feature-creation-form'
+                                            proxy-event-type='Component.TemplateUpdate' proxy-targets='["object-template-{{resourceIri}}"]'
+                                            data='{"resourceIri": "{{resourceIri}}"}'
                             ></mp-event-proxy>
                             
-                            <mp-event-target-template-render id='object-template-{{objectIri}}' template='{{> objectTemplate}}'>
+                            <mp-event-target-template-render id='object-template-{{resourceIri}}' template='{{> objectTemplate}}'>
                               <template id='objectTemplate'>
                                   <mp-collapsible-div expanded='true'>
                                       <mp-collapsible-div-trigger>
                                           <div class="imageAnnotationWorkspace__observationArea_resourceTitleRow">
-                                            <div class="entityLabel text-underline"><semantic-link iri='{{objectIri}}'></semantic-link></div>
+                                            <div class="entityLabel text-underline"><semantic-link iri='{{resourceIri}}'></semantic-link></div>
                                             <div style="display: flex; align-items: flex-start;">
                                               
                                               [[!-- 
                                               Event trigger that opens new slot in the IIIF Viewer with the images of the current object.
                                               --]]
                                               <mp-event-trigger id='image-view-trigger' 
-                                                            type='IIIFViewer.AddImagesForObject' 
+                                                            type='IIIFViewer.AddImagesForResource' 
                                                             targets='["image-editor"]'
-                                                            data='{ "objectIri": "{{objectIri}}" }'>
+                                                            data='{ "resourceIri": "{{resourceIri}}" }'>
                                                 <button class="btn btn-default" style="margin-right: 5px">
-                                                  <i class="rs-icon rs-icon-image" style='font-size: 15px;' title="View resource images in the viewer"></i>
+                                                  <rs-icon icon-type="rounded" icon-name="image" symbol="true" title="View resource images in the viewer"></rs-icon>
                                                 </button> 
                                               </mp-event-trigger>
                                               
@@ -297,7 +296,7 @@ not used:
                                               <mp-event-trigger id='form-event-trigger' 
                                                                 type='TwoSidePanel.ShowBack' 
                                                                 targets='["objects-panel"]'
-                                                                data='{ "objectIri": "{{objectIri}}" }'>
+                                                                data='{ "resourceIri": "{{resourceIri}}" }'>
                                                 <button class="btn btn-primary">new feature</button>
                                               </mp-event-trigger>
                                             </div>
@@ -311,19 +310,19 @@ not used:
                                         <semantic-query
                                             query='
                                               SELECT DISTINCT ?region ?regionLabel ?image {
-                                                <{{objectIri}}> crm:P138i_has_representation|rso:PX_has_main_representation ?image .
+                                                <{{resourceIri}}> crm:P138i_has_representation|rs:PX_has_main_representation ?image .
                                                 ?region crmdig:L49_is_primary_area_of ?image .
 
                                                 FILTER NOT EXISTS {
                                                   ?feature crm:P138i_has_representation ?region .
                                                 }
-                                                ?region rso:displayLabel ?regionLabel .
+                                                ?region crm:P190_has_symbolic_content ?regionLabel .
                                               }
                                             '
                                             template='{{> regionsWithoutFeature}}'
                                         >
                                           <template id='regionsWithoutFeature'>
-                                            <div class="imageAnnotationWorkspace__items page__whiteSection-container">
+                                            <div class="imageAnnotationWorkspace__items page__section-container-whiteBg">
                                               <h2>Image Regions (without associated Features)</h2>
                                               <div class="imageAnnotationWorkspace__item_container">
                                                 
@@ -344,10 +343,8 @@ not used:
                                                     <mp-event-trigger id='form-event-trigger' 
                                                                       type='TwoSidePanel.ShowBack' 
                                                                       targets='["objects-panel"]'
-                                                                      data='{ "regionIri": "{{region.value}}", "regionLabel": "{{regionLabel.value}}", "objectIri": "{{../objectIri}}" }'>
-                                                      <button class="btn-grey">
-                                                        <i class="fa fa-plus" style="font-size: 14px; padding-right:7px"></i>
-                                                         feature</button>
+                                                                      data='{ "regionIri": "{{region.value}}", "regionLabel": "{{regionLabel.value}}", "resourceIri": "{{../resourceIri}}" }'>
+                                                      <button class="btn btn-default">Add associated feature</button>
                                                     </mp-event-trigger>
 
                                                     [[!--
@@ -355,7 +352,9 @@ not used:
                                                     --]]                                         
                                                     <mp-event-trigger id='focus-event-trigger' type='IIIFViewer.ZoomToRegion' targets='["image-editor"]'
                                                                       data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
-                                                      <button class="btn-grey btn-icon"><i class="rs-icon rs-icon-image" title="Focus on image"></i></button>
+                                                      <button class="btn btn-default">
+                                                        <rs-icon icon-type="rounded" icon-name="image" title="Focus on image" symbol="true"></rs-icon>
+                                                      </button>
                                                     </mp-event-trigger>
                                                     
                                                     [[!--
@@ -363,27 +362,27 @@ not used:
                                                       --]]
                                                     <mp-overlay-dialog id='region-remove-confirmation-dialog--{{region.value}}' title="Remove image region" type="modal">
                                                       <mp-overlay-dialog-trigger>
-                                                        <button class="btn-grey btn-icon"><i class="iconmoon iconmoon-bin" title="Delete region"></i></button>
+                                                        <button class="btn btn-default">
+                                                          <rs-icon icon-type="rounded" icon-name="delete" title="Delete region" symbol="true"></rs-icon>
+                                                        </button>
                                                       </mp-overlay-dialog-trigger>
                                                       <mp-overlay-dialog-content>
                                                         <div>
                                                           <div>
-                                                            <p>Are you sure you want to remove the image region '<strong><mp-label iri='{{region.value}}'></mp-label></strong>' ?</p>
+                                                            <p>Are you sure you want to delete the image region '<strong><mp-label iri='{{region.value}}'></mp-label></strong>' ?</p>
                                                           </div>
                                                           <div class="form-btn-group">
-                                                            <div style="display: flex; justify-content: flex-end; width: 100%;">
-                                                              <mp-event-trigger id='cancel-feature-removal' type='OverlayDialog.Close' targets='["region-remove-confirmation-dialog--{{region.value}}"]'>
-                                                                <button class="btn btn-default">Cancel</button>
-                                                              </mp-event-trigger>
-                                                              <mp-event-trigger id='remove-region-event-trigger--{{region.value}}' type='IIIFViewer.RemoveRegion' targets='["image-editor"]'
-                                                                                data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
-                                                                <button class="btn btn-default">Delete Region</button>
-                                                              </mp-event-trigger>
+                                                            <mp-event-trigger id='cancel-feature-removal' type='OverlayDialog.Close' targets='["region-remove-confirmation-dialog--{{region.value}}"]'>
+                                                              <button class="btn btn-default">Cancel</button>
+                                                            </mp-event-trigger>
+                                                            <mp-event-trigger id='remove-region-event-trigger--{{region.value}}' type='IIIFViewer.RemoveRegion' targets='["image-editor"]'
+                                                                              data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
+                                                              <button class="btn btn-default">Delete Region</button>
+                                                            </mp-event-trigger>
 
-                                                              <mp-event-proxy id='close-region-removal-dialog--{{feature.value}}' on-event-source='remove-region-event-trigger--{{region.value}}'
-                                                                              proxy-event-type='OverlayDialog.Close' targets='["region-remove-confirmation-dialog--{{region.value}}"]'
-                                                              ></mp-event-proxy>
-                                                            </div>
+                                                            <mp-event-proxy id='close-region-removal-dialog--{{feature.value}}' on-event-source='remove-region-event-trigger--{{region.value}}'
+                                                                            proxy-event-type='OverlayDialog.Close' targets='["region-remove-confirmation-dialog--{{region.value}}"]'
+                                                            ></mp-event-proxy>
                                                           </div>
                                                         </div>
                                                       </mp-overlay-dialog-content>
@@ -420,7 +419,7 @@ not used:
                                             template='{{> features}}'
                                         >
                                           <template id='features'>
-                                            <div class="imageAnnotationWorkspace__items page__whiteSection-container">
+                                            <div class="imageAnnotationWorkspace__items page__section-container-whiteBg">
                                               <h2>Features</h2>
                                               <div class="imageAnnotationWorkspace__item_container">
                                               {{#each bindings}}
@@ -442,43 +441,45 @@ not used:
                                                     <div style="display: flex; align-items: center;">
                                                       <mp-event-trigger id='form-event-trigger'
                                                                         type='TwoSidePanel.ShowBack' targets='["objects-panel"]'
-                                                                        data='{ "feature": "{{feature.value}}", "featureType": "{{featureType.value}}", "objectIri": "{{../objectIri}}" }'>
-                                                        <button class="btn-grey btn-icon">
-                                                          <i class="fa fa-pencil" title="Edit Feature"></i>
+                                                                        data='{ "feature": "{{feature.value}}", "featureType": "{{featureType.value}}", "resourceIri": "{{../resourceIri}}" }'>
+                                                        <button class="btn btn-default">
+                                                          <rs-icon icon-type="rounded" icon-name="edit" title="Edit Feature" symbol="true"></rs-icon>
                                                         </button>
                                                       </mp-event-trigger>
                                                       <mp-event-trigger id='details-view-trigger'
                                                                         type='Component.TemplateUpdate'
                                                                         data='{"iri": "{{feature.value}}"}' targets='["details-view", "open-details-sidebar"]'
                                                       >
-                                                        <button class="btn-grey btn-icon">
-                                                          <i class="iconmoon iconmoon-info" title="Explore Feature details"></i>
+                                                        <button class="btn btn-default">
+                                                          <rs-icon icon-type="rounded" icon-name="info" symbol="true" title="Explore Feature details"></rs-icon>
                                                         </button>
                                                       </mp-event-trigger>
 
                                                       <mp-event-trigger id='set-action__km-add-frame' type='Dashboard.AddFrame' 
-                                                                        data='{"resourceIri": "{{feature.value}}", "viewId": "featureSimilarityKm"}'
+                                                                        data='{"resourceIri": "{{feature.value}}", "viewId": "feature-similarity-km"}'
                                                                         targets='["thinking-frames"]'>
-                                                          <button class="btn-grey btn-icon">
-                                                              <i class="rs-icon rs-icon-diagram" title="Show Connection Network"></i>
+                                                          <button class="btn btn-default">
+                                                            <rs-icon icon-type="round" icon-name="account_tree" title="Show Connection Network"></rs-icon>
                                                           </button>
                                                       </mp-event-trigger>
 
                                                         {{#if region}}
                                                           <mp-event-trigger id='focus-event-trigger' type='IIIFViewer.ZoomToRegion' targets='["image-editor"]'
                                                                             data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
-                                                              <button class="btn-grey btn-icon"><i class="rs-icon rs-icon-image" title="Focus on Feature"></i></button>
+                                                              <button class="btn btn-default">
+                                                                <rs-icon icon-type="rounded" icon-name="image" title="Focus on Feature" symbol="true"></rs-icon>
+                                                              </button>
                                                           </mp-event-trigger>
                                                         {{else}}
                                                         <div style="position: relative;">
-                                                          <button disabled class="btn-grey btn-icon">
-                                                            <i class="rs-icon rs-icon-image" title="The feature has no image associated"></i>
+                                                          <button disabled class="btn btn-default">
+                                                            <rs-icon icon-type="rounded" icon-name="image" symbol="true" title="The feature has no image associated"></rs-icon>
                                                           </button>
 
-                                                          <mp-popover class="rs-popover-white">
+                                                          <mp-popover>
 
                                                             <mp-popover-trigger placement="top" trigger='["hover"]' root-close='true'>
-                                                              <i class="fa fa-exclamation-circle"></i>
+                                                              <rs-icon icon-type="round" icon-name="report_problem"></rs-icon>
                                                             </mp-popover-trigger>
                                                             
                                                             <mp-popover-content>
@@ -492,10 +493,12 @@ not used:
 
                                                       <mp-event-trigger id='remove-feature-trigger--{{feature.value}}'
                                                                         type='Component.TemplateUpdate'
-                                                                        data='{ "feature": "{{feature.value}}", "featureType": "{{featureType.value}}", "objectIri": "{{../objectIri}}" }'
+                                                                        data='{ "feature": "{{feature.value}}", "featureType": "{{featureType.value}}", "resourceIri": "{{../resourceIri}}" }'
                                                                         targets='["remove-feature-dialog"]'
                                                                         >
-                                                        <button class="btn-grey btn-icon"><i class="iconmoon iconmoon-bin" title="Delete Feature"></i></button>
+                                                        <button class="btn btn-default">
+                                                          <rs-icon icon-type="rounded" icon-name="delete" title="Delete Feature" symbol="true"></rs-icon>
+                                                        </button>
 
                                                       </mp-event-trigger>
                                                     </div>
@@ -525,43 +528,43 @@ not used:
                                       targets='["objects-panel"]'
                     >
                       <div class="page__back-container">
-                        <i class="iconmoon iconmoon-arrow-left2"></i>
+                        <rs-icon icon-type="round" icon-name="keyboard_backspace"></rs-icon>
                       </div>
                     </mp-event-trigger>
 
                     <div class="imageAnnotationWorkspace__form-titleRow">
-                      <h1>Observation on <strong><semantic-link iri='{{objectIri}}' class="text-underline"></semantic-link></strong></h1>
+                      <h1>Observation on <strong><semantic-link iri='{{resourceIri}}' class="text-underline"></semantic-link></strong></h1>
 
                       [[!-- Event trigger that opens new slot in the IIIF Viewer with the images of the current object --]]
                       <mp-event-trigger id='image-view-trigger' 
-                                    type='IIIFViewer.AddImagesForObject' 
+                                    type='IIIFViewer.AddImagesForResource' 
                                     targets='["image-editor"]'
-                                    data='{ "objectIri": "{{objectIri}}" }'>
+                                    data='{ "resourceIri": "{{resourceIri}}" }'>
                         <button class="btn btn-default">
-                          <i class="rs-icon rs-icon-image" style='font-size: 15px;' title="View resource images in the viewer"></i>
+                          <rs-icon icon-type="round" icon-name="image" title="View resource images in the viewer"></rs-icon>
                         </button> 
                       </mp-event-trigger>
 
                     </div>
                                   
                     {{#if feature}}                    
-                      <div class="imageAnnotationWorkspace__form-container page__whiteSection-container">
+                      <div class="imageAnnotationWorkspace__form-container page__section-container-whiteBg">
                         <h2>Editing feature: &nbsp;<strong><semantic-link iri='{{feature}}' class="text-underline"></semantic-link></strong></h2>
                         <div class="imageAnnotationWorkspace__form-edit-featureType">
                           <span class="semantic-form-input-decorator__label" style="margin-right: 10px;">Kind:</span>
-                          <span class='btn-grey btn-selected'>{{featureType}}</span>
+                          <span class='btn btn-default btn-selected'>{{featureType}}</span>
                         </div>
                         {{> rsp:ImageAnnotationForm edit=true}}
                       </div>
                     {{else}}
                       {{#if regionIri}}
-                        <div class="imageAnnotationWorkspace__form-container page__whiteSection-container">
+                        <div class="imageAnnotationWorkspace__form-container page__section-container-whiteBg">
                           <semantic-if query='
                                         ASK { 
                                           {
-                                            ?feature crm:P56i_is_found_on <{{objectIri}}>.
+                                            ?feature crm:P56i_is_found_on <{{resourceIri}}>.
                                           } UNION {
-                                            <{{objectIri}}> crm:P56_bears_feature ?feature .
+                                            <{{resourceIri}}> crm:P56_bears_feature ?feature .
                                           }
                                           OPTIONAL {
                                             ?feature crm:P138i_has_representation ?region .
@@ -594,10 +597,10 @@ not used:
                                                
                                                     <mp-event-trigger id='use-existing-feature'
                                                                       type='Component.TemplateUpdate' 
-                                                                      data='{"confirmExisting": true, "feature": "{{feature.value}}", "featureType": "{{featureType.value}}", "objectIri": "{{../objectIri}}", "regionIri": "{{../regionIri}}"}' 
+                                                                      data='{"confirmExisting": true, "feature": "{{feature.value}}", "featureType": "{{featureType.value}}", "resourceIri": "{{../resourceIri}}", "regionIri": "{{../regionIri}}"}' 
                                                                       targets='["new-region-wizard-area"]'
                                                     >
-                                                      <button class='btn-grey'>Select</button>
+                                                      <button class='btn btn-action'>Select</button>
                                                     </mp-event-trigger>
                                                  
                                                 </div>
@@ -611,11 +614,11 @@ not used:
                                     {{else if confirmExisting}}
                                       
                                         <h2>
-                                          Associating image region with the feature: &nbsp;<strong><semantic-link iri='{{feature}}' class="text-underline"></semantic-link></strong> of the object: <strong><semantic-link iri='{{objectIri}}' class="text-underline"></semantic-link></strong>
+                                          Associating image region with the feature: &nbsp;<strong><semantic-link iri='{{feature}}' class="text-underline"></semantic-link></strong> of the object: <strong><semantic-link iri='{{resourceIri}}' class="text-underline"></semantic-link></strong>
                                         </h2>
                                         <div class="imageAnnotationWorkspace__form-edit-featureType">
                                           <span class="semantic-form-input-decorator__label" style="margin-right: 10px;">Kind:</span>
-                                          <span class='btn-grey btn-selected'>{{featureType}}</span>
+                                          <span class='btn btn-default btn-selected'>{{featureType}}</span>
                                         </div>
                                         <semantic-form 
                                            id='feature-creation-form'
@@ -635,26 +638,24 @@ not used:
                                             <semantic-form-drag-and-drop-input  for="P138i_has_representation_latehokusai_representation" default-value='{{regionIri}}' force-defaults=true readonly=true></semantic-form-drag-and-drop-input>
                                           </div>
                                           <div class="form-btn-group">
-                                            <div style="display: flex; justify-content: flex-end; width: 100%;">
-                                              <mp-event-target-template-render id='save-state' template='{{> template}}'>
-                                                <template id='template'>
-                                                  {{#if saved}}
-                                                  <div class='save-message fade-out_disappear'>
-                                                    The region has been updated successfully!
-                                                  </div>
-                                                  {{/if}}
-                                                </template>
-                                              </mp-event-target-template-render>
-                                              <mp-event-trigger id='cancel-region-association' type='Component.TemplateUpdate' data='{"useExisting": true}' targets='["new-region-wizard-area"]'>
-                                                <button name="cancel" class='btn btn-default'>Cancel</button>
-                                              </mp-event-trigger> 
-                                              
-                                             <button name="submit" class="btn btn-primary">Confirm</button>
+                                            <mp-event-target-template-render id='save-state' template='{{> template}}'>
+                                              <template id='template'>
+                                                {{#if saved}}
+                                                <div class='save-message fade-out_disappear'>
+                                                  The region has been updated successfully!
+                                                </div>
+                                                {{/if}}
+                                              </template>
+                                            </mp-event-target-template-render>
+                                            <mp-event-trigger id='cancel-region-association' type='Component.TemplateUpdate' data='{"useExisting": true}' targets='["new-region-wizard-area"]'>
+                                              <button name="cancel" class='btn btn-default'>Cancel</button>
+                                            </mp-event-trigger> 
+                                            
+                                            <button name="submit" class="btn btn-primary">Confirm</button>
 
-                                              <mp-event-proxy id='finish-confirmation-dialog' on-event-source='feature-creation-form'
-                                                              proxy-event-type='TwoSidePanel.ShowFront' proxy-targets='["objects-panel"]' data='{}'
-                                              ></mp-event-proxy>
-                                            </div>
+                                            <mp-event-proxy id='finish-confirmation-dialog' on-event-source='feature-creation-form'
+                                                            proxy-event-type='TwoSidePanel.ShowFront' proxy-targets='["objects-panel"]' data='{}'
+                                            ></mp-event-proxy>
                                           </div>
                                         </semantic-form>
                                       
@@ -666,10 +667,10 @@ not used:
                                       <p>Do you want to create a new feature or use the image region as a representation of an existing feature?</p>
                                       <div class="feature-form-type-selection">
                                         <mp-event-trigger id='use-existing-feature' type='Component.TemplateUpdate' data='{"createNew": true}' targets='["new-region-wizard-area"]'>
-                                          <button class='btn-grey'>Create New Feature</button>
+                                          <button class='btn btn-default'>Create New Feature</button>
                                         </mp-event-trigger> 
                                         <mp-event-trigger id='use-existing-feature' type='Component.TemplateUpdate' data='{"useExisting": true}' targets='["new-region-wizard-area"]'>
-                                          <button class='btn-grey'>Use Existing Feature</button>
+                                          <button class='btn btn-default'>Use Existing Feature</button>
                                         </mp-event-trigger> 
                                       </div>
                                     </div>
@@ -684,8 +685,8 @@ not used:
                           </semantic-if>
                         </div>
                       {{else}}
-                        {{#if objectIri}}
-                          <div class="imageAnnotationWorkspace__form-container page__whiteSection-container">
+                        {{#if resourceIri}}
+                          <div class="imageAnnotationWorkspace__form-container page__section-container-whiteBg">
  												    [[> newFeatureForm createFromRegion=false]]
                           </div>
                         {{/if}}

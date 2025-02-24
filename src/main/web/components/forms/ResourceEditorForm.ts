@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -41,7 +42,7 @@ import { ValuePatch, computeValuePatch, applyValuePatch } from './Serialization'
 
 import { TriplestorePersistence, isTriplestorePersistence } from './persistence/TriplestorePersistence';
 import { LdpPersistence } from './persistence/LdpPersistence';
-import { SparqlPersistence } from './persistence/SparqlPersistence';
+import { SparqlPersistence, SparqlPersistenceConfig } from './persistence/SparqlPersistence';
 import { RawSparqlPersistence } from './persistence/RawSparqlPersistence';
 import { SparqlPersistence as SparqlPersistenceClass } from './persistence/SparqlPersistence';
 import { RecoverNotification } from './static/RecoverNotification';
@@ -53,12 +54,21 @@ import {
 } from './ResourceEditorFormConfig';
 import { InputKind } from './inputs/InputCommpons';
 
+import * as TabsEvents from '../ui/tabs/TabEvents'
+import { SparqlUtil, SparqlClient } from 'platform/api/sparql';
+import { string } from 'prop-types';
+import { LdpService } from 'platform/api/services/ldp';
+import { RDFGraphStoreService } from 'platform/api/services/rdf-graph-store';
+import * as GraphActionEvents from 'platform/components/admin/rdf-upload/GraphActionEvents';
+
 interface State {
   readonly model?: CompositeValue;
   readonly modelState?: DataState;
   readonly submitting?: boolean;
   readonly recoveredFromStorage?: boolean;
   readonly error?: string;
+  readonly defaultTab?: any
+  readonly tabSource?: any
 }
 
 const BROWSER_PERSISTENCE = BrowserPersistence.adapter<ValuePatch>();
@@ -166,7 +176,17 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
         })
       ).observe({
         value: () => {
-          this.onSave();
+          this.onSave(true);
+        }
+      });
+
+      this.cancellation.map(
+        listen({
+          eventType: TabsEvents.TabSelected,
+        })
+      ).observe({
+        value: (e) => {
+          this.setState({defaultTab: e.data.key, tabSource: e.data.source})
         }
       });
     }
@@ -365,7 +385,7 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
     this.onSave();
   };
 
-  private onSave = () => {
+  private onSave = (isComingFromTrigger?: boolean) => {
     const validatedModel = this.form.validate(this.state.model);
     if (readyToSubmit(validatedModel, FieldError.isPreventSubmit)) {
       this.setState((state) => ({ model: validatedModel, submitting: true }));
@@ -373,14 +393,35 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
       const initialModel = this.initialState.model;
       this.form
         .finalize(this.state.model)
-        .flatMap((finalModel) =>
-          this.persistence
+        .flatMap((finalModel) => {
+
+          /**
+           * There are cases when the inputs of a form need to be stored in a graph that uses the subject of a newly created
+           * resource; The persistence props are set in the constructor by default, this can be achieved currently by setting
+           * the value of the target graphs as newSubject 
+           */
+          const isNewSubject =
+           !this.initialState.model || CompositeValue.isPlaceholder(this.initialState.model.subject);
+          if (isNewSubject && (this.props.persistence["targetGraphIri"] || this.props.persistence["targetInsertGraphIri"])) {    
+        
+              if (this.props.persistence["targetInsertGraphIri"] === "newSubject" || 
+                  this.props.persistence["targetGraphIri"] === "newSubject" ) {
+                const sparqlConfig: SparqlPersistenceConfig = {
+                  type: this.props.persistence["type"],
+                  repository: this.props.persistence["repository"],                  
+                  targetInsertGraphIri: finalModel.subject.value,
+                };
+              
+                this.persistence = normalizePersistenceMode(sparqlConfig, 'default');
+              }
+          }
+          return this.persistence
             .persist(initialModel, finalModel)
             .map(() =>
               this.props.addToDefaultSet ? addToDefaultSet(finalModel.subject, this.props.id) : Kefir.constant(true)
             )
             .map(() => finalModel)
-        )
+        })
         .observe({
           value: (finalModel) => {
             // only ignore setState() and always reset localStorage and perform post-action
@@ -396,6 +437,9 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
               subject: finalModel.subject,
               eventProps: { isNewSubject, sourceId: this.props.id },
               queryParams: getPostActionUrlQueryParams(this.props),
+              defaultTabKey: this.state.defaultTab,
+              tabSource: this.state.tabSource,
+              sendNotification: !isComingFromTrigger
             });
           },
           error: (error) => {
@@ -410,22 +454,124 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
     }
   }
 
-  private onRemove = () => {
+  private onRemove = () => { 
     const itemToRemove = this.initialState.model.subject;
+    trigger({
+      eventType: FormEvents.FormResourceRemoving,
+      source: this.props.id,
+      data: { iri: itemToRemove.value },
+    })
     this.persistence
       .remove(this.initialState.model)
       .observe({
         value: () => {
+          // if item to be removed is also a setItem also delete its connected setItems 
+          // (several sets can contain setItems connected to the resource to be removed)
+          // to delete a setItem, one needs to identify the parent set
+          this.getSetIris(itemToRemove)
+                .onValue(f => {
+                  f.results.bindings.map(binding => {
+                    new LdpService(binding["set"].value, { repository: "assets" })
+                      .deleteResource(Rdf.iri(binding["setItem"].value))
+                      .onValue(res => this.setState({}))
+                  })
+          });
+
           performFormPostAction({
             postAction: this.props.postAction,
             subject: itemToRemove,
             eventProps: { isNewSubject: false, isRemovedSubject: true, sourceId: this.props.id },
             queryParams: getPostActionUrlQueryParams(this.props),
+            sendNotification: true
+
           });
         },
         error: () => {}
       })
     ;
+
+    this.executeAskIsResourceQuery(itemToRemove)
+      .onValue(answer => {
+        if (answer) 
+          new LdpPersistence()
+            .remove(this.initialState.model)
+            .observe({
+              value: () => {
+                // if item to be removed is a set also delete the set items
+                this.getSetItemIris(itemToRemove).onValue(f => {
+                  f.results.bindings.map(binding => {
+                    new LdpService(itemToRemove.toString(), { repository: "assets" })
+                      .deleteResource(Rdf.iri(binding["setItem"].value))
+                      .onValue(res => this.setState({}))
+                  })
+                });  
+                             
+                performFormPostAction({
+                  postAction: this.props.postAction,
+                  subject: itemToRemove,
+                  eventProps: { isNewSubject: false, isRemovedSubject: true, sourceId: this.props.id },
+                  queryParams: getPostActionUrlQueryParams(this.props),
+                });
+              },
+              error: () => {}
+            })
+          ;     
+      });
+
+    this.executeAskIsAuthorityDocumentQuery(itemToRemove)
+      .onValue(answer => {
+        if (answer) {
+          //do a delete of the whole graph 
+          RDFGraphStoreService.deleteGraph({ targetGraph: itemToRemove, repository: "authorities"})
+            .onValue((_) => {
+              // FIRE EVENT
+              trigger({
+                eventType: GraphActionEvents.GraphActionSuccess,
+                source: Math.random().toString()
+              }); })
+            .onError((error: string) => {
+              addNotification({
+                level: 'error',
+                message: error,
+              });
+            });
+        }  
+      });  
+  }
+
+  private  executeAskIsResourceQuery(resourceIri: Rdf.Iri): Kefir.Property<boolean> {
+      const IS_LDP_RESOURCE_QUERY = SparqlUtil.Sparql`ASK { ?subject <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/ldp#Resource>}`;
+
+      return SparqlClient.ask(
+            SparqlClient.setBindings(IS_LDP_RESOURCE_QUERY, { subject: resourceIri }),
+                                    {context: {repository:"default"} });
+  }
+
+  private  executeAskIsAuthorityDocumentQuery(resourceIri: Rdf.Iri): Kefir.Property<boolean> {
+      const IS_AUTHORITY_DOCUMENT_QUERY = SparqlUtil.Sparql`ASK { ?subject <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.cidoc-crm.org/cidoc-crm/E32_Authority_Document>}`;
+      
+      return SparqlClient.ask(
+            SparqlClient.setBindings(IS_AUTHORITY_DOCUMENT_QUERY, { subject: resourceIri }),
+                                    {context: {repository:"default"} });
+  }
+
+  private getSetItemIris(setIri: Rdf.Iri) {
+    const SELECT_SET_ITEMS_QUERY = SparqlUtil.Sparql
+                `SELECT ?setItem {
+                  ?setIri <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://www.researchspace.org/resource/system/vocab/resource_type/set> .
+                  ?setIri <http://www.w3.org/ns/ldp#contains> ?setItem .
+                }`
+    return SparqlClient.select(SparqlClient.setBindings(SELECT_SET_ITEMS_QUERY, { setIri: setIri }));
+  }
+
+  private getSetIris(setItemIri: Rdf.Iri) {
+    const SELECT_SETS_QUERY = SparqlUtil.Sparql`SELECT ?set ?setItem {
+        ?set <http://www.w3.org/ns/ldp#contains> ?setItem .
+        ?setItem <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://www.researchspace.org/resource/system/vocab/resource_type/set_item>;
+        <http://www.cidoc-crm.org/cidoc-crm/P67_refers_to> ?referredItem .
+      }`;
+
+    return SparqlClient.select(SparqlClient.setBindings(SELECT_SETS_QUERY, { referredItem: setItemIri }));
   }
 
   private onDryRun = () => {
@@ -577,7 +723,7 @@ function loadTextFileFromInput(file: File): Kefir.Stream<string> {
   return Kefir.stream((emitter) => {
     const reader = new FileReader();
     reader.onload = (event) => {
-      emitter.emit((event.target as FileReader).result as string);
+      emitter.emit((event.target).result as string);
       emitter.end();
     };
     reader.onerror = (event) => {

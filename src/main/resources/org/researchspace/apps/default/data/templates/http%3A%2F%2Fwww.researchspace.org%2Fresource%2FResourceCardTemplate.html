@@ -101,6 +101,14 @@
               </mp-resource-thumbnail>
             </template>
           </semantic-if>
+          
+        {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Video") }}
+          <iframe src='{{props.[http://www.researchspace.org/pattern/system/entity/web_URL_embed_Max1].values.0.value}}' 
+                  frameborder="0" 
+                  width="100%" height="135"
+                  allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
+                  allowfullscreen>
+          </iframe>
         {{else}}
           <mp-resource-thumbnail iri='{{iri}}' class="resource-card__thumbnail">
             <mp-resource-thumbnail-fallback>
@@ -129,10 +137,10 @@
             </mp-resource-thumbnail>
           {{/case}}
 
-    [[!--      {{#case "http://iflastandards.info/ns/fr/frbr/frbroo/F26_Recording" break=true}}
+          {{#case "http://iflastandards.info/ns/fr/frbr/frbroo/F26_Recording" break=true}}
             <semantic-query query='SELECT DISTINCT ?video WHERE { 
-                                    <{{iri}}> crm:P129i_is_subject_of ?digital_object.
                                     <{{iri}}> crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_video> .
+                                    <{{iri}}> crm:P129i_is_subject_of ?digital_object.
                                     ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
                                     ?digital_object crm:P190_has_symbolic_content ?video .
                                   } LIMIT 1'
@@ -142,20 +150,24 @@
 
                   <template id='template'>
                     <div class="h100 w100">
-                        <iframe src='{{bindings.0.video.value}}' 
-                                frameborder="0" 
-                                allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
-                                width="100%" height="100%"
-                                allowfullscreen>
-                        </iframe>
+                      <iframe src='{{bindings.0.video.value}}' 
+                              frameborder="0" 
+                              allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
+                              width="100%" height="135"
+                              allowfullscreen>
+                      </iframe>
                     </div>
                   </template>
 
                   <template id="noResults">
-                    [[> defaultCardIcon]]
+                    <mp-resource-thumbnail iri='{{iri}}' class="resource-card__thumbnail">
+                      <mp-resource-thumbnail-fallback>
+                        [[> defaultCardIcon]]
+                      </mp-resource-thumbnail-fallback>
+                    </mp-resource-thumbnail>
                   </template>
             </semantic-query>
-          {{/case}}  --]]
+          {{/case}} 
 
           {{#default}}
             <mp-resource-thumbnail iri='{{iri}}' class="resource-card__thumbnail">

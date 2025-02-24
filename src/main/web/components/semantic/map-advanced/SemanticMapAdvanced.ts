@@ -109,7 +109,6 @@ import CircleStyle from 'ol/style/Circle';
 import { options } from 'superagent';
 import GeometryType from 'ol/geom/GeometryType';
 import { __values } from 'tslib';
-import { group } from 'platform/components/3-rd-party/ontodia/Toolbar.scss';
 import { year } from 'platform/components/search/date/SimpleDateInput.scss';
 
 enum Source {

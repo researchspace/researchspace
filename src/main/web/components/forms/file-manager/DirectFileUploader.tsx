@@ -404,7 +404,7 @@ export class DirectFileUploader extends Component<DirectFileUploaderProps, Direc
             </button>
           </div>
         </div>
-        <div className={styles.row}>{alert}</div>
+        <div>{alert}</div>
       </div>
     );
   }

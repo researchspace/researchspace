@@ -418,7 +418,9 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
 
   public componentDidMount() {
-    this.createMap();
+    requestAnimationFrame(() => {
+      this.createMap();
+    });
     this.setState({
       mapLayers: this.setTilesLayersFromTemplate(),
     });
@@ -859,10 +861,12 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
   private readWKT(wkt: string) {
     const format = new WKT();
-    return format.readGeometry(wkt, {
+    let geometry = format.readGeometry(wkt, {
       dataProjection: this.getInputCrs(),
       featureProjection: 'EPSG:3857',
     });
+
+    return geometry;
   }
 
   private areArraysEqual(arr1: string[], arr2: string[]): boolean {
@@ -897,49 +901,81 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     return geometries;
   };
 
-  private createLayer = (features: Feature[], type: string): VectorLayer<any> => {
-    console.log("Create Layer")
-    const source = new Vector({ features });
-    if (type === 'Point') {
-      const clusterSource = new Cluster({ source, distance: 40 });
-      return new AnimatedCluster({
-        source: clusterSource,
-        style: getMarkerStyle(),
-        zIndex: 1, // we want to always have markers on top of polygons
-      });
-    }
-    return new VectorLayer({
-      source,
-      style: (feature: Feature) => {
-        if (this.state.registeredControls.length > 0 && this.state.yearFiltering) {
-          let feature_eoe = "";
-          let feature_eob = "";
-          let feature_boe = "";
-          let feature_bob = "";
+  private getClusterDistance(zoom: number): number {
+    if (zoom < 6) return 100;  // Far zoom: Large clusters
+    if (zoom < 10) return 60;
+    if (zoom < 14) return 40;
+    return 20;  // Close zoom: Minimal clustering
+  }
 
-          if (feature.get('bob')) {
-            feature_bob = feature.get('bob').value;
-          } else {
-            feature_bob = "1499";
-          }
-          if (feature.get('eoe')) {
-            feature_eoe = feature.get('eoe').value;
-          } else {
-            feature_eoe = "2999";
-          }
-          if (this.dateInclusion(feature_bob, feature_eob, feature_boe, feature_eoe, this.state.year)) {
-            return this.createFeatureStyle(feature)
-          } else {
-            return this.createHiddenFeatureStyle()
-          }
-        } else {
-          return this.createFeatureStyle(feature)
-        }
-      },
-      zIndex: 0,
-      declutter: true,
+  private getClusterStyle(feature: Feature): Style {
+    const size = feature.get('features').length;
+
+    return new Style({
+        image: new CircleStyle({
+            radius: size > 1 ? 10 + Math.min(size, 20) : 6, // Scale based on cluster size
+            fill: new Fill({ color: size > 1 ? 'rgba(255, 140, 0, 0.8)' : 'rgba(0, 255, 0, 0.6)' }),
+            stroke: new Stroke({ color: 'white', width: 2 }),
+        }),
+        text: size > 1 ? new Text({
+            text: size.toString(),
+            fill: new Fill({ color: '#fff' }),
+            stroke: new Stroke({ color: '#000', width: 2 }),
+        }) : null,
     });
-  };
+  }
+
+  private getFeatureStyleWithFilters(feature: Feature): Style {
+    if (this.state.registeredControls.length > 0 && this.state.yearFiltering) {
+        const feature_bob = feature.get('bob')?.value ?? "1499";
+        const feature_eoe = feature.get('eoe')?.value ?? "2999";
+        const feature_eob = feature.get('eob')?.value ?? feature_bob;
+        const feature_boe = feature.get('boe')?.value ?? feature_eoe;
+
+        return this.dateInclusion(feature_bob, feature_eob, feature_boe, feature_eoe, this.state.year)
+            ? this.createFeatureStyle(feature)
+            : this.createHiddenFeatureStyle();
+    }
+
+    return this.createFeatureStyle(feature);
+  }
+
+  private createLayer = (features: Feature[], type: string): VectorLayer<any> => {
+    console.log("Create Layer");
+
+    const source = new Vector({ features });
+
+    if (type === 'Point') {
+        // Create a Cluster Source with Dynamic Zoom Adjustment
+        const clusterSource = new Cluster({
+            distance: this.getClusterDistance(this.map.getView().getZoom()), // Initial clustering distance
+            source,
+        });
+
+        const clusteredLayer = new AnimatedCluster({
+            distance: 80, // Default distance
+            minDistance: 40, // Ensures spacing between clusters
+            source: clusterSource,
+            style: (feature) => this.getClusterStyle(feature),
+            zIndex: 1, // Keep clusters on top
+        });
+
+        // Listen for zoom changes and update clustering dynamically
+        this.map.getView().on('change:resolution', () => {
+            const zoom = this.map.getView().getZoom();
+            clusterSource.setDistance(this.getClusterDistance(zoom));
+        });
+
+        return clusteredLayer;
+    }
+
+    return new VectorLayer({
+        source,
+        style: (feature: Feature) => this.getFeatureStyleWithFilters(feature),
+        zIndex: 0,
+        declutter: true,
+    });
+};
 
   private setTilesLayersFromTemplate() {
     let tilesLayers = [];
@@ -1081,6 +1117,8 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     }, 1000);
   }
 
+  private queryExecutionCount = 0;
+
   public BoundingBoxChanged(boundingBox: Dictionary<QueryConstantParameter>) {
     trigger({ eventType: SemanticMapBoundingBoxChanged, source: this.props.id, data: boundingBox });
   }
@@ -1089,57 +1127,69 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     const { query } = props;
 
     if (query) {
-      const stream = SparqlClient.select(query, { context: context.semanticContext });
-      console.log(this.props.id, "executing query: ", query)
-      stream.onValue((res) => {
-        const result = _.map(res.results.bindings, (v) => _.mapValues(v, (x) => x) as any);
-        console.log(this.props.id, "received response from query. Result: ", result)
-        if (SparqlUtil.isSelectResultEmpty(res)) {
-          this.setState({
-            noResults: true,
-            errorMessage: maybe.Nothing<string>(),
-            isLoading: false,
-          });
-        } else {
-          this.setState({
-            noResults: false,
-            errorMessage: maybe.Nothing<string>(),
-            isLoading: false,
-          });
+        console.log(`[DEBUG] Query Fired - Timestamp: ${Date.now()}`, query);
 
-          const geometries = this.createGeometries(result);
-          this.updateLayers(geometries)
-            .then(() => {
-              console.log("Layers updated and map view fitted to extents");
-              this.sendLayersToControls();
-            })
-            .catch((error) => {
-              console.error("An error occurred while updating the layers: ", error);
-              // Handle any errors that might occur during the update
-            });
+        // Track multiple calls
+        if (!this.queryExecutionCount) {
+            this.queryExecutionCount = 0;
         }
+        this.queryExecutionCount++;
+        console.log(`[DEBUG] Query Execution Count: ${this.queryExecutionCount}`);
+
+        const stream = SparqlClient.select(query, { context: context.semanticContext });
+
+        stream.onValue((res) => {
+            console.log(`[DEBUG] Received SPARQL Response - Timestamp: ${Date.now()}`);
+            console.log(`[DEBUG] Response Data:`, res);
+
+            const result = _.map(res.results.bindings, (v) => _.mapValues(v, (x) => x) as any);
+            
+            if (SparqlUtil.isSelectResultEmpty(res)) {
+                console.warn(`[DEBUG] No results found.`);
+                this.setState({
+                    noResults: true,
+                    errorMessage: maybe.Nothing<string>(),
+                    isLoading: false,
+                });
+            } else {
+                console.log(`[DEBUG] Updating state with new features.`);
+                this.setState({
+                    noResults: false,
+                    errorMessage: maybe.Nothing<string>(),
+                    isLoading: false,
+                });
+
+                const geometries = this.createGeometries(result);
+                this.updateLayers(geometries)
+                    .then(() => {
+                        console.log(`[DEBUG] Layers updated.`);
+                        this.sendLayersToControls();
+                    })
+                    .catch((error) => {
+                        console.error(`[DEBUG] Error updating layers: `, error);
+                    });
+            }
+
+            if (this.props.id) {
+                trigger({ eventType: BuiltInEvents.ComponentLoaded, source: this.props.id, data: { results: result } });
+            }
+        });
+
+        stream.onError((error) => {
+            console.error(`[DEBUG] Query Error: `, error);
+            this.setState({
+                errorMessage: maybe.Just(error),
+                isLoading: false,
+            });
+        });
 
         if (this.props.id) {
-          trigger({ eventType: BuiltInEvents.ComponentLoaded, source: this.props.id, data: { results: result } });
+            trigger({
+                eventType: BuiltInEvents.ComponentLoading,
+                source: this.props.id,
+                data: stream,
+            });
         }
-      });
-
-      stream.onError((error) =>
-        this.setState({
-          errorMessage: maybe.Just(error),
-          isLoading: false,
-        })
-      );
-
-      if (this.props.id) {
-
-
-        trigger({
-          eventType: BuiltInEvents.ComponentLoading,
-          source: this.props.id,
-          data: stream,
-        });
-      }
     }
   };
 
@@ -1157,8 +1207,13 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
   private updateLayers = (geometries: { [type: string]: Feature[] }): Promise<void> => {
     return new Promise<void>((resolve, reject) => {
+      const currentExtent = this.map.getView().calculateExtent();
+
+
       console.log("Map", this.map, "Updating Layers with geometries: ", geometries);
+      
       const mapLayersClone = this.state.mapLayers;
+
       _.forEach(geometries, (features, type) => {
         let layer = this.getVectorLayerByType(type);
         if (layer) {
@@ -1166,8 +1221,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
           if (source instanceof Cluster) {
             source = source.getSource();
           }
-          source.clear();
-          source.addFeatures(features);
+          source.refresh();
         } else {
           layer = this.createLayer(features, type);
           layer.set('type', type);
@@ -1677,37 +1731,37 @@ function getMarkerStyle() {
 
 function getFeatureStyle(geometry: Geometry, color: string | undefined) {
   if (geometry instanceof Point || geometry instanceof MultiPoint) {
+      return new Style({
+        geometry,
+        text: new Text({
+          text: '\uf041',
+          font: 'normal 22px FontAwesome',
+          textBaseline: 'bottom',
+          fill: new Fill({ color: color || '#000' }),
+        }),
+      });
+    } else if (geometry instanceof GeometryCollection) {
+      return geometry.getGeometries().map((geom) => getFeatureStyle(geom, color));
+    }
     return new Style({
       geometry,
       text: new Text({
-        text: '\uf041',
-        font: 'normal 22px FontAwesome',
-        textBaseline: 'bottom',
-        fill: new Fill({ color: color || '#000' }),
+        font: '12px Calibri,sans-serif',
+        overflow: true,
+        fill: new Fill({
+          color: '#000',
+        }),
+        stroke: new Stroke({
+          color: '#fff',
+          width: 2,
+        }),
+      }),
+      fill: new Fill({ color: color || 'rgba(255, 255, 255, 0.5)' }),
+      stroke: new Stroke({
+        color: color || 'rgba(202, 255, 36, .3)',
+        width: 1.25,
       }),
     });
-  } else if (geometry instanceof GeometryCollection) {
-    return geometry.getGeometries().map((geom) => getFeatureStyle(geom, color));
-  }
-  return new Style({
-    geometry,
-    text: new Text({
-      font: '12px Calibri,sans-serif',
-      overflow: true,
-      fill: new Fill({
-        color: '#000',
-      }),
-      stroke: new Stroke({
-        color: '#fff',
-        width: 2,
-      }),
-    }),
-    fill: new Fill({ color: color || 'rgba(255, 255, 255, 0.5)' }),
-    stroke: new Stroke({
-      color: color || 'rgba(202, 255, 36, .3)',
-      width: 1.25,
-    }),
-  });
 }
 
 function getPopupCoordinate(geometry: Geometry, coordinate: [number, number]) {

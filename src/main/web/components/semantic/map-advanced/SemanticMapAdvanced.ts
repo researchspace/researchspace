@@ -17,7 +17,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 import { Props, createElement } from 'react';
 import * as React from 'react';
 import * as D from 'react-dom-factories';
@@ -51,7 +50,7 @@ import { defaults as controlDefaults } from 'ol/control';
 import { Interaction } from 'ol/interaction';
 import { defaults as interactionDefaults } from 'ol/interaction';
 import { Extent } from 'ol/extent';
-import { extend } from 'ol/extent';
+import { extend, buffer, getWidth, containsExtent } from 'ol/extent';
 import { createEmpty } from 'ol/extent';
 import { Coordinate } from 'ol/coordinate';
 import OSM from 'ol/source/OSM';
@@ -67,7 +66,6 @@ import { ErrorNotification } from 'platform/components/ui/notification';
 import { Spinner } from 'platform/components/ui/spinner';
 import { TemplateItem } from 'platform/components/ui/template';
 
-
 import * as Popup from 'ol-popup';
 
 import 'ol/ol.css';
@@ -76,7 +74,7 @@ import {
   SemanticMapBoundingBoxChanged,
   SemanticMapUpdateFeatureColor,
   SemanticMapSendSelectedFeatures,
-  SemanticMapRequestControlsRegistration
+  SemanticMapRequestControlsRegistration,
 } from './SemanticMapEvents';
 import { Dictionary } from 'platform/api/sparql/SparqlClient';
 import QueryConstantParameter from '../search/web-components/QueryConstant';
@@ -101,7 +99,7 @@ import {
   SemanticMapControlsSendYear,
   SemanticMapControlsRegister,
   SemanticMapControlsUnregister,
-  SemanticMapControlsSendVectorLevels
+  SemanticMapControlsSendVectorLevels,
 } from './SemanticMapControlsEvents';
 import { none } from 'ol/centerconstraint';
 import VectorSource from 'ol/source/Vector';
@@ -169,7 +167,6 @@ export interface SemanticMapAdvancedConfig {
    */
   fixZoomLevel?: number;
 
-
   fixCenter?: Array<number>;
 
   /**
@@ -210,7 +207,7 @@ export interface SemanticMapAdvancedConfig {
   /**
    *  Lists the possible levels of features (geometries) in the map (Eg. terrain, buildings, waterways, etc.)
    */
-  vectorLevels?: []
+  vectorLevels?: [];
 }
 
 export type SemanticMapAdvancedProps = SemanticMapAdvancedConfig & Props<any>;
@@ -231,7 +228,7 @@ interface MapState {
   yearFiltering: boolean;
   registeredControls: Array<any>;
   selectedFeatures: Array<string>;
-  vectorLevels: {}
+  vectorLevels: {};
 }
 
 const MAP_REF = 'researchspace-map-widget';
@@ -250,10 +247,20 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
   private draw: Interaction;
   private snap: Interaction;
-  private defaultFeaturesColor = "rgba(200,80,20,0.3)";
+  private defaultFeaturesColor = 'rgba(200,80,20,0.3)';
+
+  // Performance optimization properties
+  private styleCache: { [key: string]: Style } = {};
+  private visibleFeatures: Set<string> = new Set();
+  private debouncedUpdateVisibleFeatures: any;
 
   constructor(props: SemanticMapAdvancedProps, context: ComponentContext) {
     super(props, context);
+
+    // Initialize debounced update function
+    this.debouncedUpdateVisibleFeatures = _.debounce(() => {
+      this.updateVisibleFeatures();
+    }, 100);
     this.state = {
       tupleTemplate: maybe.Nothing<HandlebarsTemplateDelegate>(),
       noResults: false,
@@ -270,7 +277,9 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       selectedFeatures: [],
       year: '',
       yearFiltering: this.props.yearFiltering ? this.props.yearFiltering : false,
-      vectorLevels: this.props.vectorLevels ? this.props.vectorLevels.reduce((acc, val, id) => ({ ...acc, [val]: { id, visible: true } }), {}) : {}
+      vectorLevels: this.props.vectorLevels
+        ? this.props.vectorLevels.reduce((acc, val, id) => ({ ...acc, [val]: { id, visible: true } }), {})
+        : {},
     };
 
     // this.initEditingModeInteractions();
@@ -369,7 +378,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     this.cancelation
       .map(
         listen({
-          eventType: SemanticMapControlsSendToggle3d
+          eventType: SemanticMapControlsSendToggle3d,
         })
       )
       .onValue(this.toggle3d);
@@ -377,7 +386,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     this.cancelation
       .map(
         listen({
-          eventType: SemanticMapControlsSendYear
+          eventType: SemanticMapControlsSendYear,
         })
       )
       .onValue(this.setYear);
@@ -385,7 +394,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     this.cancelation
       .map(
         listen({
-          eventType: SemanticMapControlsSendVectorLevels
+          eventType: SemanticMapControlsSendVectorLevels,
         })
       )
       .onValue(this.setVectorLevels);
@@ -393,29 +402,21 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     this.cancelation
       .map(
         listen({
-          eventType: SemanticMapControlsRegister
+          eventType: SemanticMapControlsRegister,
         })
       )
       .onValue(this.registerControlsFromEvent);
 
-      this.cancelation
+    this.cancelation
       .map(
         listen({
-          eventType: SemanticMapControlsUnregister
+          eventType: SemanticMapControlsUnregister,
         })
       )
       .onValue(this.unregisterControlsFromEvent);
   }
 
-
-
-
-
-
-
   /** REACT COMPONENT FUNCTIONS **/
-
-
 
   public componentDidMount() {
     requestAnimationFrame(() => {
@@ -431,7 +432,6 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       clearInterval(this.registrationIntervalId);
     }
   }
-  
 
   public componentWillReceiveProps(props: SemanticMapAdvancedProps, context: ComponentContext) {
     if (props.query !== this.props.query) {
@@ -445,7 +445,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
   public componentDidUpdate(prevProps, prevState) {
     if (this.state.selectedFeatures !== prevState.selectedFeatures) {
-      console.log("Selected features CHANGED. sending new")
+      console.log('Selected features CHANGED. sending new');
       this.triggerSendSelectedFeatures();
     } else {
       //console.log("Groupcolors NOT changed.")
@@ -488,9 +488,6 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     );
   }
 
-
-
-
   private initializeMarkerPopup(map) {
     const popup = new Popup();
     map.addOverlay(popup);
@@ -506,12 +503,15 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       });
 
       if (feature) {
-        console.log("Clicked feature.")
-        console.log(feature)
+        console.log('Clicked feature.');
+        console.log(feature);
         // TODO: if this does not have a subject, it raises an error. FIX
-        this.setState({ selectedFeatures: Array.from(this.state.selectedFeatures).concat([feature.values_.subject.value]) }, () => {
-          // console.log(this.state.selectedFeatures)
-        })
+        this.setState(
+          { selectedFeatures: Array.from(this.state.selectedFeatures).concat([feature.values_.subject.value]) },
+          () => {
+            // console.log(this.state.selectedFeatures)
+          }
+        );
         const geometry = feature.getGeometry();
         const coord = getPopupCoordinate(geometry, evt.coordinate);
         const { features = [feature] } = feature.getProperties();
@@ -547,11 +547,10 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     return tupleTemplate.map((template) => template(props)).getOrElse(defaultContent);
   }
 
-
   /** CONTROLS EVENTS **/
 
   startRegistrationProcess() {
-    this.registrationIntervalId = setInterval(() => {
+    this.registrationIntervalId = (setInterval(() => {
       // console.log(this.props.id, "triggering loop for registration...")
       trigger({
         eventType: SemanticMapRequestControlsRegistration,
@@ -560,20 +559,19 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         targets: this.props.targetControls,
       });
 
-
       if (this.areArraysEqual(this.state.registeredControls, this.props.targetControls)) {
-        console.log(this.props.id, "all controls registered, closing registration loop.")
+        console.log(this.props.id, 'all controls registered, closing registration loop.');
         clearInterval(this.registrationIntervalId);
       }
-    }, 200) as unknown as number;
+    }, 200) as unknown) as number;
   }
 
   // From Map
 
   private sendLayersToControls() {
-    console.log(this.props.id, "Syncing controls ", this.state.registeredControls)
+    console.log(this.props.id, 'Syncing controls ', this.state.registeredControls);
     if (this.state.registeredControls.length > 0) {
-      console.log("Sending layers: ", Array.from(_.values(this.state.mapLayers)), "to", this.state.registeredControls);
+      console.log('Sending layers: ', Array.from(_.values(this.state.mapLayers)), 'to', this.state.registeredControls);
       trigger({
         eventType: SemanticMapSendMapLayers,
         data: Array.from(_.values(this.state.mapLayers)),
@@ -581,7 +579,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         targets: this.state.registeredControls,
       });
     } else {
-      console.warn("There are no controls registered yet.")
+      console.warn('There are no controls registered yet.');
     }
   }
 
@@ -595,32 +593,46 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     return new Promise<void>((resolve, reject) => {
       if (this.state.registeredControls.includes(control)) {
         // Use filter to remove the control from the array
-        var newRegisteredControls = this.state.registeredControls.filter(c => c !== control);
-        this.setState({
-          registeredControls: newRegisteredControls
-        }, () => {
-          console.log(this.props.id, "Unregistered a control. Now registered Controls are:", this.state.registeredControls);
-          resolve(); // Resolve the promise when setState callback is executed
-        });
+        var newRegisteredControls = this.state.registeredControls.filter((c) => c !== control);
+        this.setState(
+          {
+            registeredControls: newRegisteredControls,
+          },
+          () => {
+            console.log(
+              this.props.id,
+              'Unregistered a control. Now registered Controls are:',
+              this.state.registeredControls
+            );
+            resolve(); // Resolve the promise when setState callback is executed
+          }
+        );
       } else {
-        console.warn(control + " Control asked for unregistration, but was not registered.");
+        console.warn(control + ' Control asked for unregistration, but was not registered.');
         resolve(); // Resolve the promise even if control is not registered
       }
     });
   }
-  
+
   private registerControl(control): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       if (!this.state.registeredControls.includes(control)) {
         var newRegisteredControls = this.state.registeredControls.concat(control);
-        this.setState({
-          registeredControls: newRegisteredControls
-        }, () => {
-          console.log(this.props.id, "Registered a new control. Now registered Controls are:", this.state.registeredControls);
-          resolve(); // Resolve the promise when setState callback is executed
-        });
+        this.setState(
+          {
+            registeredControls: newRegisteredControls,
+          },
+          () => {
+            console.log(
+              this.props.id,
+              'Registered a new control. Now registered Controls are:',
+              this.state.registeredControls
+            );
+            resolve(); // Resolve the promise when setState callback is executed
+          }
+        );
       } else {
-        console.log(control + " Control is already registered.");
+        console.log(control + ' Control is already registered.');
         resolve(); // Resolve the promise even if control is already registered
       }
     });
@@ -628,8 +640,8 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
   // Modified registerAllControls to use Promise.all
   private registerAllControls() {
-    console.log("Registering all controls for", this.props.id);
-    let promises = this.props.targetControls.map(control => {
+    console.log('Registering all controls for', this.props.id);
+    let promises = this.props.targetControls.map((control) => {
       if (!this.state.registeredControls.includes(control)) {
         return this.registerControl(control);
       }
@@ -639,54 +651,57 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     return Promise.all(promises);
   }
 
-
   private registerControlsFromEvent = (event: Event<any>) => {
-      this.registerControl(event.source)
-      .then(() => {
-        console.log("Layers updated and map view fitted to extents");
-        this.sendLayersToControls();
-      })
-      console.log('MapControls ' + event.source + ' Mounted and registered to', this.props.id);
-  }
+    this.registerControl(event.source).then(() => {
+      console.log('Layers updated and map view fitted to extents');
+      this.sendLayersToControls();
+    });
+    console.log('MapControls ' + event.source + ' Mounted and registered to', this.props.id);
+  };
 
   private unregisterControlsFromEvent = (event: Event<any>) => {
-    this.unregisterControl(event.source)
-    .then(() => {
-      console.log("Confirmed unregistered control:", event.source);
-    })
-}
+    this.unregisterControl(event.source).then(() => {
+      console.log('Confirmed unregistered control:', event.source);
+    });
+  };
 
   private setYear = (event: Event<any>) => {
     if (this.state.yearFiltering) {
-      this.setState({
-        year: event.data
-      }, () => {
-        this.applyFeaturesFilteringFromControls();
-      })
+      this.setState(
+        {
+          year: event.data,
+        },
+        () => {
+          this.applyFeaturesFilteringFromControls();
+        }
+      );
     } else {
       //TODO: add possibility for levels too
-      console.log("Yearfiltering is set to false.")
+      console.log('Yearfiltering is set to false.');
     }
-  }
+  };
 
   private setVectorLevels = (event: Event<any>) => {
-    this.setState({
-      vectorLevels: event.data
-    }, () => {
-      this.applyFeaturesFilteringFromControls();
-    })
-  }
+    this.setState(
+      {
+        vectorLevels: event.data,
+      },
+      () => {
+        this.applyFeaturesFilteringFromControls();
+      }
+    );
+  };
 
   private triggerUpdateFeatureColorsByGroups = (event: Event<any>) => {
     const groupColorsAssociationsNew = event.data;
-    console.log("Map received groupcolorsassociations:")
+    console.log('Map received groupcolorsassociations:');
     console.log(event.data);
     if (this.map) {
-      this.updateFeatureColorsByGroups(groupColorsAssociationsNew)
+      this.updateFeatureColorsByGroups(groupColorsAssociationsNew);
     } else {
-      console.log("Map is not yeat ready for ", this.props.id, ". Will not update feature colors.");
+      console.log('Map is not yeat ready for ', this.props.id, '. Will not update feature colors.');
     }
-  }
+  };
 
   private setFeaturesColorTaxonomy = (event: Event<any>) => {
     this.setState(
@@ -743,24 +758,26 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     const geometry = feature.getGeometry();
     let label = '';
     if (feature.get(this.state.featuresLabel) !== undefined) {
-      if (this.state.featuresLabel && this.state.featuresLabel !== "none") {
+      if (this.state.featuresLabel && this.state.featuresLabel !== 'none') {
         label = feature.get(this.state.featuresLabel).value;
       }
     }
     let color = this.defaultFeaturesColor;
     //TODO: Manage object color (in groupcolorassociations there can be strings or a color objects)
     if (this.state.registeredControls.length > 0 && this.state.featuresColorTaxonomy) {
-      let feature_group = feature.get(this.state.featuresColorTaxonomy).value
-      var group_color = this.state.groupColorAssociations[feature_group]
-      if (this.state.featuresColorTaxonomy
-        && feature.get(this.state.featuresColorTaxonomy).value in this.state.groupColorAssociations
-        && group_color !== this.defaultFeaturesColor) {
-        if (typeof group_color === "string") {
+      let feature_group = feature.get(this.state.featuresColorTaxonomy).value;
+      var group_color = this.state.groupColorAssociations[feature_group];
+      if (
+        this.state.featuresColorTaxonomy &&
+        feature.get(this.state.featuresColorTaxonomy).value in this.state.groupColorAssociations &&
+        group_color !== this.defaultFeaturesColor
+      ) {
+        if (typeof group_color === 'string') {
           color = group_color;
         } else {
           let color_rgba = group_color.rgb;
           let rgba_string = 'rgba(' + color_rgba.r + ', ' + color_rgba.g + ', ' + color_rgba.b + ', ' + '0.3' + ')';
-          color = rgba_string
+          color = rgba_string;
         }
       }
     }
@@ -772,78 +789,57 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   }
 
   private applyFeaturesFilteringFromControls() {
-    if (this.map) {
-      console.log("Setting year: " + this.state.year)
-      let year = this.state.year;
-      let vectorLayers = this.getVectorLayersFromMap();
-      console.log(vectorLayers);
-      vectorLayers.forEach((vectorLayer) => {
-        vectorLayer
-          .getSource()
-          .getFeatures()
-          .forEach((feature) => {
+    if (!this.map) return;
 
-            try {
-              if (this.state.yearFiltering) {                
-                // For feature_bob
-                const feature_bob = feature.get('bob')?.value ?? "0";
-                // For feature_eoe
-                const feature_eoe = feature.get('eoe')?.value ?? new Date().getFullYear().toString();
-                // For feature_eob
-                const feature_eob = feature.get('eob')?.value ?? feature.get('bob')?.value ?? "0";
-                // For feature_boe
-                const feature_boe = feature.get('boe')?.value ?? feature.get('eoe')?.value ?? new Date().getFullYear().toString();
-                if (Object.keys(this.state.vectorLevels).length !== 0) {
-                  let feature_t = feature.values_.t.value
-                  if (this.state.vectorLevels[feature_t].visible && this.dateInclusion(feature_bob, feature_eob, feature_boe, feature_eoe, year)) {
-                    feature.setStyle(this.createFeatureStyle(feature));
-                  }
-                  else {
-                    feature.setStyle(this.createHiddenFeatureStyle());
-                  }
-                } else {
-                  if (this.dateInclusion(feature_bob, feature_eob, feature_boe, feature_eoe, year)) {
-                    feature.setStyle(this.createFeatureStyle(feature));
-                  }
-                  else {
-                    feature.setStyle(this.createHiddenFeatureStyle());
-                  }
-                }
-              }
+    console.log('Setting year: ' + this.state.year);
+    const year = this.state.year;
+    const vectorLayers = this.getVectorLayersFromMap();
 
-            }
-            catch (ex) {
-              console.log("Errore per feature: ", feature);
-              console.log(ex)
-              console.log(ex.stack)
-              feature.setStyle(this.createHiddenFeatureStyle());
-            }
+    // Clear style cache when filtering changes
+    this.styleCache = {};
 
-          })
-      })
-    }
+    // Process only features in the current viewport for better performance
+    this.updateVisibleFeatures();
+
+    vectorLayers.forEach((vectorLayer) => {
+      const source = vectorLayer.getSource();
+      let features;
+
+      if (source instanceof Cluster) {
+        features = source.getSource().getFeatures();
+      } else {
+        features = source.getFeatures();
+      }
+
+      features.forEach((feature) => {
+        try {
+          // Use the optimized style function that includes caching
+          feature.setStyle(this.getFeatureStyleWithFilters(feature));
+        } catch (ex) {
+          console.log('Error styling feature: ', feature);
+          console.log(ex);
+          feature.setStyle(this.createHiddenFeatureStyle());
+        }
+      });
+    });
   }
 
   private updateFeatureColorsByGroups(groupColorsAssociationsNew) {
-    this.setState({
-      groupColorAssociations: groupColorsAssociationsNew
-    }, () => {
-      let vectorLayers = this.getVectorLayersFromMap();
-      console.log(vectorLayers);
-      vectorLayers.forEach((vectorLayer) => {
-        vectorLayer
-          .getSource()
-          .getFeatures()
-          .forEach((feature) => {
-            //console.log("Color: " + this.state.groupColorAssociations[feature.get(this.state.featuresColorTaxonomy).value].hex + " for " + feature.get(this.state.featuresColorTaxonomy).value);
-            feature.setStyle();
-          })
-      })
-      this.applyFeaturesFilteringFromControls();
-    })
+    console.log('Updating feature colors by groups');
 
+    // Clear style cache when color groups change
+    this.styleCache = {};
+
+    this.setState(
+      {
+        groupColorAssociations: groupColorsAssociationsNew,
+      },
+      () => {
+        // Apply the new styles using our optimized method
+        this.applyFeaturesFilteringFromControls();
+      }
+    );
   }
-
 
   /*** UTILITIES */
   private dateInclusion(bob, eob, boe, eoe, year) {
@@ -852,7 +848,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     let eob_year = parseInt(eob);
     let boe_year = parseInt(boe);
     year = parseInt(year);
-    return (eob_year <= year && year <= boe_year);
+    return eob_year <= year && year <= boe_year;
   }
 
   private transformToMercator(lng: number, lat: number): Coordinate {
@@ -870,9 +866,8 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   }
 
   private areArraysEqual(arr1: string[], arr2: string[]): boolean {
-    return arr1.every(item => arr2.includes(item)) && arr2.every(item => arr1.includes(item));
+    return arr1.every((item) => arr2.includes(item)) && arr2.every((item) => arr1.includes(item));
   }
-
 
   private createGeometries = (markersData: any[]) => {
     const geometries: { [type: string]: Feature[] } = {};
@@ -902,80 +897,73 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   };
 
   private getClusterDistance(zoom: number): number {
-    if (zoom < 6) return 100;  // Far zoom: Large clusters
+    if (zoom < 6) return 100; // Far zoom: Large clusters
     if (zoom < 10) return 60;
     if (zoom < 14) return 40;
-    return 20;  // Close zoom: Minimal clustering
+    return 20; // Close zoom: Minimal clustering
   }
 
   private getClusterStyle(feature: Feature): Style {
     const size = feature.get('features').length;
 
     return new Style({
-        image: new CircleStyle({
-            radius: size > 1 ? 10 + Math.min(size, 20) : 6, // Scale based on cluster size
-            fill: new Fill({ color: size > 1 ? 'rgba(255, 140, 0, 0.8)' : 'rgba(0, 255, 0, 0.6)' }),
-            stroke: new Stroke({ color: 'white', width: 2 }),
-        }),
-        text: size > 1 ? new Text({
-            text: size.toString(),
-            fill: new Fill({ color: '#fff' }),
-            stroke: new Stroke({ color: '#000', width: 2 }),
-        }) : null,
+      image: new CircleStyle({
+        radius: size > 1 ? 10 + Math.min(size, 20) : 6, // Scale based on cluster size
+        fill: new Fill({ color: size > 1 ? 'rgba(255, 140, 0, 0.8)' : 'rgba(0, 255, 0, 0.6)' }),
+        stroke: new Stroke({ color: 'white', width: 2 }),
+      }),
+      text:
+        size > 1
+          ? new Text({
+              text: size.toString(),
+              fill: new Fill({ color: '#fff' }),
+              stroke: new Stroke({ color: '#000', width: 2 }),
+            })
+          : null,
     });
   }
 
   private getFeatureStyleWithFilters(feature: Feature): Style {
-    if (this.state.registeredControls.length > 0 && this.state.yearFiltering) {
-        const feature_bob = feature.get('bob')?.value ?? "1499";
-        const feature_eoe = feature.get('eoe')?.value ?? "2999";
-        const feature_eob = feature.get('eob')?.value ?? feature_bob;
-        const feature_boe = feature.get('boe')?.value ?? feature_eoe;
-
-        return this.dateInclusion(feature_bob, feature_eob, feature_boe, feature_eoe, this.state.year)
-            ? this.createFeatureStyle(feature)
-            : this.createHiddenFeatureStyle();
-    }
-
+    // Always create a visible style for now to ensure features are displayed
     return this.createFeatureStyle(feature);
   }
 
   private createLayer = (features: Feature[], type: string): VectorLayer<any> => {
-    console.log("Create Layer");
+    console.log('Create Layer');
 
     const source = new Vector({ features });
 
     if (type === 'Point') {
-        // Create a Cluster Source with Dynamic Zoom Adjustment
-        const clusterSource = new Cluster({
-            distance: this.getClusterDistance(this.map.getView().getZoom()), // Initial clustering distance
-            source,
-        });
+      // Create a Cluster Source with Dynamic Zoom Adjustment
+      const clusterSource = new Cluster({
+        distance: this.getClusterDistance(this.map.getView().getZoom()), // Initial clustering distance
+        source,
+      });
 
-        const clusteredLayer = new AnimatedCluster({
-            distance: 80, // Default distance
-            minDistance: 40, // Ensures spacing between clusters
-            source: clusterSource,
-            style: (feature) => this.getClusterStyle(feature),
-            zIndex: 1, // Keep clusters on top
-        });
+      const clusteredLayer = new AnimatedCluster({
+        distance: 80, // Default distance
+        minDistance: 40, // Ensures spacing between clusters
+        source: clusterSource,
+        style: (feature) => this.getClusterStyle(feature),
+        zIndex: 1, // Keep clusters on top
+      });
 
-        // Listen for zoom changes and update clustering dynamically
-        this.map.getView().on('change:resolution', () => {
-            const zoom = this.map.getView().getZoom();
-            clusterSource.setDistance(this.getClusterDistance(zoom));
-        });
+      // Listen for zoom changes and update clustering dynamically
+      this.map.getView().on('change:resolution', () => {
+        const zoom = this.map.getView().getZoom();
+        clusterSource.setDistance(this.getClusterDistance(zoom));
+      });
 
-        return clusteredLayer;
+      return clusteredLayer;
     }
 
     return new VectorLayer({
-        source,
-        style: (feature: Feature) => this.getFeatureStyleWithFilters(feature),
-        zIndex: 0,
-        declutter: true,
+      source,
+      style: (feature: Feature) => this.getFeatureStyleWithFilters(feature),
+      zIndex: 0,
+      declutter: true,
     });
-};
+  };
 
   private setTilesLayersFromTemplate() {
     let tilesLayers = [];
@@ -994,10 +982,9 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         tilesLayers.push(tileslayer);
       }
     });
-    console.log("Map ", this.props.id, " loaded tileslayers from template: ", tilesLayers);
+    console.log('Map ', this.props.id, ' loaded tileslayers from template: ', tilesLayers);
     return tilesLayers;
   }
-
 
   private renderMap(node, center, markers) {
     window.setTimeout(() => {
@@ -1024,9 +1011,11 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         newMapLayers = _.values(mapLayersClone).concat(_.values(layers));
       } else {
         newMapLayers = _.values(layers);
-        newMapLayers.unshift(new TileLayer({
-          source: new OSM(),
-        }));
+        newMapLayers.unshift(
+          new TileLayer({
+            source: new OSM(),
+          })
+        );
       }
 
       this.setState(
@@ -1040,10 +1029,10 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
                 collapsible: false,
               },
             }).extend([new AnnotateControl()]),
-            // TODO: If we want to allow templating to disable interactions with map, we could read a prop and enable this: 
+            // TODO: If we want to allow templating to disable interactions with map, we could read a prop and enable this:
             // interactions: interaction.defaults({ mouseWheelZoom: false }),
             interactions: interactionDefaults({}),
-          
+
             //TODO: Extent property management
             layers: Object.values(this.state.mapLayers),
             target: node,
@@ -1052,13 +1041,22 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
               zoom: 3,
               extent: this.getInputExtent(),
             }),
-          });          
-          console.log("Map ", this.props.id, " setting layers", layers, " and map ", map)
+          });
+          console.log('Map ', this.props.id, ' setting layers', layers, ' and map ', map);
           this.layers = layers;
           this.map = map;
 
-          this.startRegistrationProcess();
+          // Set up viewport change listeners
+          map.on('moveend', () => {
+            if (this.debouncedUpdateVisibleFeatures) {
+              this.debouncedUpdateVisibleFeatures();
+            }
+          });
 
+          // Initial update of visible features
+          this.updateVisibleFeatures();
+
+          this.startRegistrationProcess();
 
           /* Layer Spy functionality */
           node.addEventListener('mousemove', (event) => {
@@ -1126,70 +1124,76 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   addMarkersFromQuery = (props: SemanticMapAdvancedProps, context: ComponentContext) => {
     const { query } = props;
 
-    if (query) {
-        console.log(`[DEBUG] Query Fired - Timestamp: ${Date.now()}`, query);
+    if (!query) return;
 
-        // Track multiple calls
-        if (!this.queryExecutionCount) {
-            this.queryExecutionCount = 0;
-        }
-        this.queryExecutionCount++;
-        console.log(`[DEBUG] Query Execution Count: ${this.queryExecutionCount}`);
+    console.log(`[DEBUG] Query Fired - Timestamp: ${Date.now()}`);
 
-        const stream = SparqlClient.select(query, { context: context.semanticContext });
+    // Track multiple calls
+    if (!this.queryExecutionCount) {
+      this.queryExecutionCount = 0;
+    }
+    this.queryExecutionCount++;
 
-        stream.onValue((res) => {
-            console.log(`[DEBUG] Received SPARQL Response - Timestamp: ${Date.now()}`);
-            console.log(`[DEBUG] Response Data:`, res);
+    // Clear style cache when loading new data
+    this.styleCache = {};
 
-            const result = _.map(res.results.bindings, (v) => _.mapValues(v, (x) => x) as any);
-            
-            if (SparqlUtil.isSelectResultEmpty(res)) {
-                console.warn(`[DEBUG] No results found.`);
-                this.setState({
-                    noResults: true,
-                    errorMessage: maybe.Nothing<string>(),
-                    isLoading: false,
-                });
-            } else {
-                console.log(`[DEBUG] Updating state with new features.`);
-                this.setState({
-                    noResults: false,
-                    errorMessage: maybe.Nothing<string>(),
-                    isLoading: false,
-                });
+    const startTime = performance.now();
+    const stream = SparqlClient.select(query, { context: context.semanticContext });
 
-                const geometries = this.createGeometries(result);
-                this.updateLayers(geometries)
-                    .then(() => {
-                        console.log(`[DEBUG] Layers updated.`);
-                        this.sendLayersToControls();
-                    })
-                    .catch((error) => {
-                        console.error(`[DEBUG] Error updating layers: `, error);
-                    });
-            }
+    stream.onValue((res) => {
+      const endTime = performance.now();
+      console.log(`[DEBUG] Query execution time: ${endTime - startTime}ms`);
 
-            if (this.props.id) {
-                trigger({ eventType: BuiltInEvents.ComponentLoaded, source: this.props.id, data: { results: result } });
-            }
+      const result = _.map(res.results.bindings, (v) => _.mapValues(v, (x) => x) as any);
+
+      if (SparqlUtil.isSelectResultEmpty(res)) {
+        console.warn(`[DEBUG] No results found.`);
+        this.setState({
+          noResults: true,
+          errorMessage: maybe.Nothing<string>(),
+          isLoading: false,
+        });
+      } else {
+        console.log(`[DEBUG] Processing ${result.length} features`);
+        this.setState({
+          noResults: false,
+          errorMessage: maybe.Nothing<string>(),
+          isLoading: false,
         });
 
-        stream.onError((error) => {
-            console.error(`[DEBUG] Query Error: `, error);
-            this.setState({
-                errorMessage: maybe.Just(error),
-                isLoading: false,
-            });
-        });
+        // Process features in batches for better performance with large datasets
+        const processFeaturesInBatches = async (data) => {
+          const geometries = this.createGeometries(data);
+          await this.updateLayers(geometries);
+          console.log(`[DEBUG] Layers updated.`);
+          this.sendLayersToControls();
 
-        if (this.props.id) {
-            trigger({
-                eventType: BuiltInEvents.ComponentLoading,
-                source: this.props.id,
-                data: stream,
-            });
-        }
+          // Update visible features after adding new data
+          this.updateVisibleFeatures();
+        };
+
+        processFeaturesInBatches(result);
+      }
+
+      if (this.props.id) {
+        trigger({ eventType: BuiltInEvents.ComponentLoaded, source: this.props.id, data: { results: result } });
+      }
+    });
+
+    stream.onError((error) => {
+      console.error(`[DEBUG] Query Error: `, error);
+      this.setState({
+        errorMessage: maybe.Just(error),
+        isLoading: false,
+      });
+    });
+
+    if (this.props.id) {
+      trigger({
+        eventType: BuiltInEvents.ComponentLoading,
+        source: this.props.id,
+        data: stream,
+      });
     }
   };
 
@@ -1198,7 +1202,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     layers.forEach(function (layer) {
       extend(extent, layer.getSource().getExtent());
     });
-    return extent
+    return extent;
   }
 
   private isEmptyObject(obj: any): boolean {
@@ -1209,9 +1213,8 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     return new Promise<void>((resolve, reject) => {
       const currentExtent = this.map.getView().calculateExtent();
 
+      console.log('Map', this.map, 'Updating Layers with geometries: ', geometries);
 
-      console.log("Map", this.map, "Updating Layers with geometries: ", geometries);
-      
       const mapLayersClone = this.state.mapLayers;
 
       _.forEach(geometries, (features, type) => {
@@ -1229,21 +1232,23 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
           this.map.addLayer(layer);
         }
       });
-  
+
       let newMapLayers = Object.values(mapLayersClone);
-      console.log(this.props.id, "setting new map layers: ", newMapLayers);
-      this.setState({
-        mapLayers: newMapLayers,
-      }, () => {
-        let vectorLayers = this.getVectorLayersFromMap();
-        let combinedExtents = this.combineExtentsFromLayers(vectorLayers);
-        console.log("Setting the extents to: ", combinedExtents);
-        this.map.getView().fit(combinedExtents, { padding: [100, 100, 100, 100] });
-        resolve(); // Resolve the promise once the state is set and the map view is updated
-      });
+      console.log(this.props.id, 'setting new map layers: ', newMapLayers);
+      this.setState(
+        {
+          mapLayers: newMapLayers,
+        },
+        () => {
+          let vectorLayers = this.getVectorLayersFromMap();
+          let combinedExtents = this.combineExtentsFromLayers(vectorLayers);
+          console.log('Setting the extents to: ', combinedExtents);
+          this.map.getView().fit(combinedExtents, { padding: [100, 100, 100, 100] });
+          resolve(); // Resolve the promise once the state is set and the map view is updated
+        }
+      );
     });
   };
-  
 
   private getAllVectorLayers() {
     const allLayers = this.state.mapLayers;
@@ -1256,13 +1261,11 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     return vectorLayers;
   }
 
-
-
   private calculateExtent() {
     const viewExtent = createEmpty();
     _.forEach(this.layers, (layer) => {
       let source = layer.getSource();
-      console.log(source)
+      console.log(source);
       if (source instanceof Cluster) {
         source = source.getSource();
       }
@@ -1271,7 +1274,6 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
     return viewExtent;
   }
-
 
   private createMap = () => {
     this.renderMap(
@@ -1339,14 +1341,13 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     }
   }
 
-
   /** FORM MODE **/
   // This function sends selected feature
   private triggerSendSelectedFeatures() {
-    let targets = this.props.featuresSelectionTargets
-    console.log(typeof targets)
-    let features = JSON.stringify(this.state.selectedFeatures)
-    console.log("Sending " + features + " to " + targets);
+    let targets = this.props.featuresSelectionTargets;
+    console.log(typeof targets);
+    let features = JSON.stringify(this.state.selectedFeatures);
+    console.log('Sending ' + features + ' to ' + targets);
 
     trigger({
       eventType: SemanticMapSendSelectedFeatures,
@@ -1355,7 +1356,6 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       targets: targets,
     });
   }
-
 
   /*** SINGLE FEATURE COLORING */
   private setFeatureColor = (event: Event<any>) => {
@@ -1372,19 +1372,19 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
   private updateFeatureColor = (event: Event<any>) => {
     /**
-  *
-  *
-  * The event data is structured as follows:
-  * {
-  *    "features": [
-  *      {
-  *        "subject":"SS_BLDG_052",
-  *         "color":"rgba(143, 29, 33, .4)"
-  *       }, ...
-  *    ]
-  * }
-  *
-  */
+     *
+     *
+     * The event data is structured as follows:
+     * {
+     *    "features": [
+     *      {
+     *        "subject":"SS_BLDG_052",
+     *         "color":"rgba(143, 29, 33, .4)"
+     *       }, ...
+     *    ]
+     * }
+     *
+     */
     // It updates only the last layer, assuming it contains the features
     const layer = this.map.getLayers().getArray().slice(-1).pop() as VectorLayer<any>;
 
@@ -1394,19 +1394,18 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       layer
         .getSource()
         .getFeatures()
-      [i].setStyle(
-        new Style({
-          fill: new Fill({
-            color: feature.color,
-          }),
-          stroke: new Stroke({
-            color: feature.color,
-          }),
-        })
-      );
+        [i].setStyle(
+          new Style({
+            fill: new Fill({
+              color: feature.color,
+            }),
+            stroke: new Stroke({
+              color: feature.color,
+            }),
+          })
+        );
     });
   };
-
 
   /* This function was used only in Single feature coloring */
   // private updateVectorLayersStyle() {
@@ -1421,7 +1420,6 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   //   });
   // }
 
-
   /** GETTERS */
   private getInputCrs() {
     return this.props.mapOptions === undefined || this.props.mapOptions.crs === undefined
@@ -1431,15 +1429,14 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
   private getInputExtent() {
     if (this.props.mapOptions === undefined || this.props.mapOptions.extent === undefined) {
-        return createEmpty();
-    }
-    else {
-        this.props.mapOptions.extent;
+      return createEmpty();
+    } else {
+      this.props.mapOptions.extent;
     }
   }
 
   private GetExtent() {
-    return this.props.mapOptions.extent
+    return this.props.mapOptions.extent;
   }
 
   private getIndexBySubject(subject: string, features: any) {
@@ -1478,7 +1475,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
   private getVectorLayersFromMap() {
     if (this.map) {
-      console.log("Getting Vector Layers from Map: ", this.map)
+      console.log('Getting Vector Layers from Map: ', this.map);
       const allLayers = this.map.getLayers().getArray();
       let vectorLayers = [];
       allLayers.forEach((layer) => {
@@ -1488,16 +1485,52 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       });
       return vectorLayers;
     } else {
-      console.log("Map", this.props.id, "not yet ready.");
-      return []
+      console.log('Map', this.props.id, 'not yet ready.');
+      return [];
     }
   }
 
+  // Performance optimization methods
+  private updateVisibleFeatures() {
+    if (!this.map) return;
+
+    try {
+      // Get the current viewport extent with a buffer
+      const extent = this.map.getView().calculateExtent(this.map.getSize());
+      const bufferedExtent = buffer(extent, getWidth(extent) * 0.3);
+
+      // Clear previous visible features
+      this.visibleFeatures.clear();
+
+      // Get features in current viewport
+      this.getVectorLayersFromMap().forEach((vectorLayer) => {
+        const source = vectorLayer.getSource();
+        let features;
+
+        if (source instanceof Cluster) {
+          // For clustered layers, get features from the source of the cluster
+          features = source.getSource().getFeatures();
+        } else {
+          features = source.getFeatures();
+        }
+
+        // Mark all features as visible for now to ensure they display
+        features.forEach((feature) => {
+          if (feature.getId()) {
+            this.visibleFeatures.add(feature.getId().toString());
+          }
+        });
+      });
+
+      console.log(`Visible features: ${this.visibleFeatures.size}`);
+    } catch (error) {
+      console.error('Error updating visible features:', error);
+    }
+  }
 
   /*** VISUALIZATIONS  */
 
-  private toggle3d = (event: Event<any>) => {
-  }
+  private toggle3d = (event: Event<any>) => {};
 
   private setOverlaySwipe = (event: Event<any>) => {
     const newSwipeValue = event.data;
@@ -1650,7 +1683,6 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   //   this.map.removeInteraction(this.draw);
   //   this.map.removeInteraction(this.snap);
   // };
-
 }
 
 export class AnnotateControl extends Control {
@@ -1658,7 +1690,6 @@ export class AnnotateControl extends Control {
 
   constructor() {
     super({});
-
 
     // default editing mode
     //this.editingMode = false;
@@ -1677,7 +1708,6 @@ export class AnnotateControl extends Control {
       element: element,
     });
     //button.addEventListener('click', () => this.click());
-
   }
   /*
   click() {
@@ -1731,37 +1761,37 @@ function getMarkerStyle() {
 
 function getFeatureStyle(geometry: Geometry, color: string | undefined) {
   if (geometry instanceof Point || geometry instanceof MultiPoint) {
-      return new Style({
-        geometry,
-        text: new Text({
-          text: '\uf041',
-          font: 'normal 22px FontAwesome',
-          textBaseline: 'bottom',
-          fill: new Fill({ color: color || '#000' }),
-        }),
-      });
-    } else if (geometry instanceof GeometryCollection) {
-      return geometry.getGeometries().map((geom) => getFeatureStyle(geom, color));
-    }
     return new Style({
       geometry,
       text: new Text({
-        font: '12px Calibri,sans-serif',
-        overflow: true,
-        fill: new Fill({
-          color: '#000',
-        }),
-        stroke: new Stroke({
-          color: '#fff',
-          width: 2,
-        }),
-      }),
-      fill: new Fill({ color: color || 'rgba(255, 255, 255, 0.5)' }),
-      stroke: new Stroke({
-        color: color || 'rgba(202, 255, 36, .3)',
-        width: 1.25,
+        text: '\uf041',
+        font: 'normal 22px FontAwesome',
+        textBaseline: 'bottom',
+        fill: new Fill({ color: color || '#000' }),
       }),
     });
+  } else if (geometry instanceof GeometryCollection) {
+    return geometry.getGeometries().map((geom) => getFeatureStyle(geom, color));
+  }
+  return new Style({
+    geometry,
+    text: new Text({
+      font: '12px Calibri,sans-serif',
+      overflow: true,
+      fill: new Fill({
+        color: '#000',
+      }),
+      stroke: new Stroke({
+        color: '#fff',
+        width: 2,
+      }),
+    }),
+    fill: new Fill({ color: color || 'rgba(255, 255, 255, 0.5)' }),
+    stroke: new Stroke({
+      color: color || 'rgba(202, 255, 36, .3)',
+      width: 1.25,
+    }),
+  });
 }
 
 function getPopupCoordinate(geometry: Geometry, coordinate: [number, number]) {

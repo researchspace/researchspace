@@ -6,7 +6,7 @@ export interface SemanticMapEventData {
     'SemanticMap.UpdateFeatureColor': string;
     'SemanticMap.ReplaceBasemap': string;
     'SemanticMap.ReplaceOverlay': string;
-    'SemanticMap.SendSelectedFeatures': string;
+    'SemanticMap.SendSelectedFeature': any;
     'SemanticMap.RequestControlsRegistration': string;
 }
 
@@ -16,5 +16,5 @@ export const SemanticMapBoundingBoxChanged = event('SemanticMap.BoundingBoxChang
 export const SemanticMapUpdateFeatureColor = event('SemanticMap.UpdateFeatureColor');
 export const SemanticMapReplaceBasemap = event('SemanticMap.ReplaceBasemap');
 export const SemanticMapReplaceOverlay = event('SemanticMap.ReplaceOverlay');
-export const SemanticMapSendSelectedFeatures = event('SemanticMap.SendSelectedFeatures');
+export const SemanticMapSendSelectedFeature = event('SemanticMap.SendSelectedFeature');
 export const SemanticMapRequestControlsRegistration = event('SemanticMap.RequestControlsRegistration');

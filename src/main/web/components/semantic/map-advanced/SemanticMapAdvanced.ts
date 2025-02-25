@@ -73,7 +73,7 @@ import 'ol-popup/src/ol-popup.css';
 import {
   SemanticMapBoundingBoxChanged,
   SemanticMapUpdateFeatureColor,
-  SemanticMapSendSelectedFeatures,
+  SemanticMapSendSelectedFeature,
   SemanticMapRequestControlsRegistration,
 } from './SemanticMapEvents';
 import { Dictionary } from 'platform/api/sparql/SparqlClient';
@@ -198,7 +198,7 @@ export interface SemanticMapAdvancedConfig {
   /**
    * Optional array of strings containing IDs of targets for events of the features selection functionality (map as input)
    */
-  featuresSelectionTargets?: Array<string>;
+  featureSelectionTargets?: Array<string>;
 
   /**
    * False by default. Set true to activate the filter by parameter "year" to use it with controls
@@ -227,7 +227,7 @@ interface MapState {
   year: string;
   yearFiltering: boolean;
   registeredControls: Array<any>;
-  selectedFeatures: Array<string>;
+  selectedFeature: Feature | null;
   vectorLevels: {};
 }
 
@@ -274,7 +274,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       featuresColorTaxonomy: '',
       groupColorAssociations: {},
       registeredControls: [],
-      selectedFeatures: [],
+      selectedFeature: null,
       year: '',
       yearFiltering: this.props.yearFiltering ? this.props.yearFiltering : false,
       vectorLevels: this.props.vectorLevels
@@ -444,9 +444,9 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   }
 
   public componentDidUpdate(prevProps, prevState) {
-    if (this.state.selectedFeatures !== prevState.selectedFeatures) {
-      console.log('Selected features CHANGED. sending new');
-      this.triggerSendSelectedFeatures();
+    if (this.state.selectedFeature !== prevState.selectedFeature) {
+      console.log('Selected feature CHANGED. sending new');
+      this.triggerSendSelectedFeature();
     } else {
       //console.log("Groupcolors NOT changed.")
     }
@@ -505,11 +505,11 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       if (feature) {
         console.log('Clicked feature.');
         console.log(feature);
-        // TODO: if this does not have a subject, it raises an error. FIX
+        // Store the entire feature object
         this.setState(
-          { selectedFeatures: Array.from(this.state.selectedFeatures).concat([feature.values_.subject.value]) },
+          { selectedFeature: feature },
           () => {
-            // console.log(this.state.selectedFeatures)
+            console.log(this.state.selectedFeature)
           }
         );
         const geometry = feature.getGeometry();
@@ -1343,18 +1343,19 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
   /** FORM MODE **/
   // This function sends selected feature
-  private triggerSendSelectedFeatures() {
-    let targets = this.props.featuresSelectionTargets;
-    console.log(typeof targets);
-    let features = JSON.stringify(this.state.selectedFeatures);
-    console.log('Sending ' + features + ' to ' + targets);
+  private triggerSendSelectedFeature() {
+    let targets = this.props.featureSelectionTargets;
+    let feature = this.state.selectedFeature;
+    console.log('Sending feature to', targets);
 
-    trigger({
-      eventType: SemanticMapSendSelectedFeatures,
-      data: JSON.stringify(this.state.selectedFeatures),
-      source: this.props.id,
-      targets: targets,
-    });
+    if (feature) {
+      trigger({
+        eventType: SemanticMapSendSelectedFeature,
+        data: feature,
+        source: this.props.id,
+        targets: targets,
+      });
+    }
   }
 
   /*** SINGLE FEATURE COLORING */

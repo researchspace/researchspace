@@ -4,7 +4,7 @@
  import { Cancellation } from 'platform/api/async';
 import { listen, Event } from 'platform/api/events';
 import {
-  SemanticMapSendSelectedFeatures,
+  SemanticMapSendSelectedFeature,
 } from '../../../components/semantic/map-advanced/SemanticMapEvents';
  import { FieldValue, FieldError } from '../FieldValues';
  import { ValidationMessages } from './Decorations';
@@ -45,7 +45,7 @@ import {
      this.cancelation
      .map(
        listen({
-         eventType: SemanticMapSendSelectedFeatures,
+         eventType: SemanticMapSendSelectedFeature,
        })
      )
      .onValue(this.handleValorization);

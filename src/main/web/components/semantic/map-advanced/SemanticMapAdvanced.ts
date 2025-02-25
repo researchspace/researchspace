@@ -924,7 +924,33 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   }
 
   private getFeatureStyleWithFilters(feature: Feature): Style {
-    // Always create a visible style for now to ensure features are displayed
+    // Check if feature has a group and if that group is toggled on
+    if (this.state.registeredControls.length > 0 && this.state.featuresColorTaxonomy) {
+      if (feature.get(this.state.featuresColorTaxonomy) !== undefined) {
+        let feature_group = feature.get(this.state.featuresColorTaxonomy).value;
+        
+        // If the feature's group is in groupColorAssociations
+        if (feature_group in this.state.groupColorAssociations) {
+          // Get the color for this group
+          let color = this.state.groupColorAssociations[feature_group];
+          
+          // Check if the color is a string with rgba format
+          if (typeof color === 'string' && color.startsWith('rgba')) {
+            // Extract the alpha value
+            const alphaMatch = color.match(/rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*([\d.]+)\s*\)/);
+            if (alphaMatch && parseFloat(alphaMatch[1]) === 0) {
+              // If alpha is 0, the group is toggled off, so hide the feature and its label
+              return this.createHiddenFeatureStyle();
+            }
+          } else if (typeof color === 'object' && color.rgb && color.rgb.a === 0) {
+            // If it's a color object with alpha 0
+            return this.createHiddenFeatureStyle();
+          }
+        }
+      }
+    }
+    
+    // If we get here, the feature should be visible
     return this.createFeatureStyle(feature);
   }
 

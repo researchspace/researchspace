@@ -5,6 +5,7 @@ import { trigger, listen } from 'platform/api/events';
 import { Cancellation } from 'platform/api/async';
 import * as TemplateService from 'platform/api/services/template';
 import { TemplateItem } from 'platform/components/ui/template';
+import * as styles from './SemanticMapControls.scss';
 import {
   SemanticMapControlsOverlayVisualization,
   SemanticMapControlsOverlaySwipe,
@@ -241,286 +242,12 @@ export class SemanticMapControls extends Component<Props, State> {
       },
     });
 
-    const controlsStyles = `
-    .mapLayersFiltersContainer {
-      padding: 5px;
-      border: 1px solid rgba(0, 0, 0, 0.1) !important;
-      border-radius: 3px;
-      margin-top: 5px;
-      margin-bottom: 5px;
-      -webkit-box-shadow: 1px 1px 3px 0px rgb(137 137 137 / 30%);
-      box-shadow: 1px 1px 3px 0px rgb(137 137 137 / 30%);
-      height: auto;
-      width: 98%;
-      margin-left: 1%;
-      background-color:rgba(255, 255, 255, 0.7);
-  }
-  
-  .mapLayersFiltersContainer label {
-      margin-right: 2px;
-  }
-  
-  .mapLayersFilters {
-      margin-left: 3px !important;
-      margin-right: 3px !important;
-  }
-  
-  #navigatorContainer input {
-      margin-top: 5px;
-  }
-  
-  #mapControlsTitle {
-      margin-bottom: 20px;
-      font-weight: 200;
-      font-size: 20pt;
-  }
-  
-  .draggableLayer {
-      border-radius: 3px;
-      margin-top: 5px;
-      margin-bottom: 5px;
-      /* -webkit-box-shadow: 1px 1px 3px 0px rgb(137 137 137 / 30%);
-      box-shadow: 1px 1px 3px 0px rgb(137 137 137 / 30%); */
-      backdrop-filter: blur(3px);
-      height: auto;
-      width: 98%;
-      margin-left: 1%;
-      background-color:rgb(237,237,237);
-      padding: 5px;
-  }
-  
-  .draggableMaskLayer {
-      border: 1px solid rgba(0, 0, 0, 0.1) !important;
-      border-radius: 3px;
-      margin-top: 5px;
-      margin-bottom: 5px;
-      -webkit-box-shadow: 1px 1px 3px 0px rgb(137 137 137 / 30%);
-      box-shadow: 1px 1px 3px 0px rgb(137 137 137 / 30%);
-      backdrop-filter: blur(3px);
-      height: 70px;
-      width: 98%;
-      margin-left: 1%;
-      background-color:rgb(255, 255, 255)
-  }
-  
-  #visualizationModeContainer, .layerMaskIcon.fa-eye {
-      background-color: rgb(249 249 249);
-      box-shadow: inset 2px 2px 2px rgba(200,200,200,0.5);
-  }
-  
-  #visualizationModeContainer {
-      padding: 3px;
-      border-radius: 3px;
-      margin-top: 3px;
-  }
-  
-  #visualizationModeContainer label {
-      font-weight: 300;
-      margin: 5px;
-      vertical-align: middle;
-      font-size: 10pt;
-  }
-  
-  #visualizationModeContainer label input {
-      margin-left: 4px;
-  }
-
-  .timeSliderContainer {
-    margin: 10px;
-  }
-  
-  .mapLayersTitle {
-      margin-left: 1%;
-      font-weight: 100;
-  }
-  
-  .mapControlsSeparator {
-      margin: 5px !important;
-      height: 1px !important;
-  }
-  
-  .layerTitle {
-      font-weight: 600 !important;
-  }
-  
-  .layerLabel {
-      font-size: 10pt;
-      font-weight: lighter;
-      display: block !important;
-  }
-  
-  
-  .layersContainer {
-      background-color: white;
-      padding: 5px;
-      border-radius: 3px;
-      /* box-shadow: 2px 3px 9px 0px #2929294d; */
-  }
-  
-  .featuresOptionsContainer {
-      background-color: white;
-      padding: 5px;
-      border-radius: 3px;
-  }
-  
-  .featuresOptionsTitle, .mapOptionsSectionTitle {
-      margin-left: 1%;
-      font-weight: 100;
-  }
-  
-  .layerThumbnail {
-      border-radius: 50%;
-      border: 1px solid rgba(255, 255, 255, 0.2) !important;
-      height: 60px;
-      width: 60px;
-      object-fit: cover;
-      margin-left: 5px;
-  }
-  
-  .togglesColumn .fa {
-      color: rgb(56, 56, 56);
-  }
-  
-  .togglesColumnLeft .fa-bars {
-      color: #B1B1B1;
-      font-size: 15pt;
-  }
-  
-  .togglesColumnLeft, .togglesColumnRight {
-     display: inline-block;
-     height: auto;
-     padding: 2px;
-  }
-  
-  .togglesColumnLeft {
-      vertical-align: middle;
-     width: 35px;
-  }
-  
-  .togglesColumnRight {
-      text-align: center;
-      position: absolute;
-      height: 96% !important;
-      width: 20px;
-  }
-  
-  .layerCheck {
-      top: 0;
-      font-size: 20pt;
-      color: var(--archipelago-gold);
-  }
-  
-  .layerCheck.fa-toggle-off {
-      color: darkgrey !important;
-  }
-  
-  .layerMaskIcon {
-      position:absolute;
-      bottom: -5px;
-      right: 0;
-      padding: 3px;
-      padding-bottom: 15px;
-  }
-  
-  .visualizationModeRadio {
-      vertical-align: middle;
-      margin-top: 0 !important;
-  }
-  
-  .layerMaskIcon.fa-eye {
-      border-radius: 2px 2px 0 0;
-      padding: 5px;
-      bottom: 30px !important;
-  }
-  
-  .toggle3dBtn {
-      padding: 10px;
-      width: 100px;
-  }
-  
-  .opacitySlider {
-      width: 100%;
-      height: 2px;
-      background-image: linear-gradient(to right, var(--color-dark), var(--color-dark));
-      outline: none;
-      -webkit-transition: .2s;
-      transition: opacity .2s;
-    }
-  
-  
-    .opacitySlider::-webkit-slider-thumb {
-      appearance: none;
-      width: 15px;
-      height: 15px;
-      background: var(--color-dark);
-      border: 1px solid var(--color-dark);
-      border-radius: 50%;
-      cursor: pointer;
-      background-image: linear-gradient(var(--color-dark), var(--color-dark)), linear-gradient(to right, rgba(255,250,250, 0.00), rgb(0,60,51));
-      background-attachment: fixed, fixed;
-      background-clip: padding-box, border-box;
-    }
-    
-    .opacitySlider::-moz-range-thumb {
-      width: 15px;
-      height: 15px;
-      background: var(--color-dark);
-      border: 1px solid var(--color-dark);
-      border-radius: 50%;
-      cursor: pointer;
-      background-image: linear-gradient(white, white), linear-gradient(to right, rgba(255,250,250, 0.00), rgb(0,60,51));
-      background-attachment: fixed, fixed;
-      background-clip: padding-box, border-box;
-    }
-  
-  
-  
-    .cesium-credit-logoContainer {
-        display: none !important;
-    }
-  
-  
-    .featuresOptionsDiv {
-        display: inline-block;
-    }
-  
-    .featuresOptionsDiv:nth-child(2) {
-      margin-left: 20px;
-    }
-  
-    #veniss_navbar {
-        height: var(--nav-height) !important;
-    }
-  
-    .clonedNavbar:nth-child(2) {
-        display: none !important;
-    }
-  
-    .yearLabel {
-      text-shadow: 0px 0px 5px #ffffff;
-      font-family: 'Lato' sans-serif;
-    }
-  
-  
-  
-  .colorsLegend {
-      position: fixed;
-      left: 100px;
-      top: 150px;
-      background-color: white;
-      border-radius: 5px;
-      z-index: 100000000;
-      padding: 10px;
-    }
-    `;
-
     return (
       <div>
-        <style>{controlsStyles}</style>
         {this.props.featuresOptionsEnabled && (
-          <div className={'featuresOptionsContainer'}>
-            <div className={'mapLayersFiltersContainer'}>
-              <div className={'featuresOptionsDiv'}>
+          <div className={styles.featuresOptionsContainer}>
+            <div className={styles.mapLayersFiltersContainer}>
+              <div className={styles.featuresOptionsDiv}>
                 <label style={{ marginRight: '10px', userSelect: 'none' }}>Color by: </label>
                 <select name="featuresColorsList" id="featuresColorsList" onChange={this.handleColorTaxonomyChange}>
                   {this.featuresColorTaxonomies.map((taxonomy) => (
@@ -551,7 +278,7 @@ export class SemanticMapControls extends Component<Props, State> {
                     onClick={this.handleRestartColorPalette}
                   ></i>
                 </OverlayTrigger>
-                <div className={'colorsLegend'}>
+                <div className={styles.colorsLegend}>
                 <div style={{ marginBottom: '10px' }}>
                   <button onClick={() => this.enableAllGroups()}>
                     <i className="fa fa-check-circle" style={{ marginRight: '5px' }}></i>
@@ -631,7 +358,7 @@ export class SemanticMapControls extends Component<Props, State> {
                   })}
                 </div>
               </div>
-              <div className={'featuresOptionsDiv'}>
+              <div className={styles.featuresOptionsDiv}>
                 <label style={{ marginRight: '10px', userSelect: 'none' }}>Label by: </label>
                 <select name="featuresLabelList" id="featuresLabelList" onChange={this.handleSelectedLabelChange}>
                   <option key={'none'} value={'none'}>None</option>
@@ -646,17 +373,17 @@ export class SemanticMapControls extends Component<Props, State> {
           </div>
       )}
                   {this.props.timeline && (
-                <div className={'timeSliderContainer'}>
+                <div className={styles.timeSliderContainer}>
                     {this.props.timeline.mode === "marked" && (
                         <React.Fragment>
-                            <div className={'yearLabel'} style={{ position: 'fixed', bottom: '10', left: '10', fontSize: '20pt' }}>{this.state.year}</div>
+                            <div className={styles.yearLabel} style={{ position: 'fixed', bottom: '10', left: '10', fontSize: '20pt' }}>{this.state.year}</div>
                         </React.Fragment>
                     )}
                     {this.props.timeline.mode === "normal" && (
                         <React.Fragment>
                             <input
                                 type={'range'}
-                                className={'timelineSlider'}
+                                className={styles.timelineSlider}
                                 min={this.props.timeline.min}
                                 max={this.props.timeline.max}
                                 step={1}
@@ -671,7 +398,7 @@ export class SemanticMapControls extends Component<Props, State> {
                                     });
                                 }}
                             />
-                            <div className={'yearLabel'} style={{ position: 'fixed', bottom: '10', left: '10', fontSize: '20pt' }}>{this.state.year}</div>
+                            <div className={styles.yearLabel} style={{ position: 'fixed', bottom: '10', left: '10', fontSize: '20pt' }}>{this.state.year}</div>
                         </React.Fragment>
                     )}
                 </div>
@@ -680,12 +407,12 @@ export class SemanticMapControls extends Component<Props, State> {
       <DragDropContext onDragEnd={this.onDragEnd}>
         <Droppable droppableId="droppable">
           {(provided, snapshot) => (
-            <div {...provided.droppableProps} ref={provided.innerRef} className={'layersContainer'}>
+            <div {...provided.droppableProps} ref={provided.innerRef} className={styles.layersContainer}>
               {this.props.showFilters && (
-                <div className="mapLayersFiltersContainer">
+                <div className={styles.mapLayersFiltersContainer}>
                   <label>Filter:</label>
                   <input
-                    className="mapLayersFilters"
+                    className={styles.mapLayersFilters}
                     name={'overlay-visualization'}
                     type={'checkbox'}
                     checked={this.state.filters.feature}
@@ -693,9 +420,9 @@ export class SemanticMapControls extends Component<Props, State> {
                       this.setState({ filters: { ...this.state.filters, feature: event.target.checked } }, () => { });
                     }}
                   ></input>
-                  <label className="fitersLabel">Features</label>
+                  <label className={styles.filtersLabel}>Features</label>
                   <input
-                    className="mapLayersFilters"
+                    className={styles.mapLayersFilters}
                     name={'overlay-visualization'}
                     type={'checkbox'}
                     checked={this.state.filters.overlay}
@@ -703,9 +430,9 @@ export class SemanticMapControls extends Component<Props, State> {
                       this.setState({ filters: { ...this.state.filters, overlay: event.target.checked } }, () => { });
                     }}
                   ></input>
-                  <label className="fitersLabel">Overlays</label>
+                  <label className={styles.filtersLabel}>Overlays</label>
                   <input
-                    className="mapLayersFilters"
+                    className={styles.mapLayersFilters}
                     name={'overlay-visualization'}
                     type={'checkbox'}
                     checked={this.state.filters.basemap}
@@ -713,7 +440,7 @@ export class SemanticMapControls extends Component<Props, State> {
                       this.setState({ filters: { ...this.state.filters, basemap: event.target.checked } }, () => { });
                     }}
                   ></input>
-                  <label className="fitersLabel">Basemaps</label>
+                  <label className={styles.filtersLabel}>Basemaps</label>
                 </div>
               )}
               {this.state.mapLayers.map(
@@ -722,7 +449,7 @@ export class SemanticMapControls extends Component<Props, State> {
                     <Draggable key={mapLayer.get('identifier')} draggableId={mapLayer.get('identifier')} index={index}>
                       {(provided, snapshot) => (
                         <div
-                          className={`draggableLayer ${mapLayer.get('visible') ? 'visible' : 'nonvisible'}`}
+                          className={`${styles.draggableLayer} ${mapLayer.get('visible') ? 'visible' : 'nonvisible'}`}
                           ref={provided.innerRef}
                           style={{ border: '1px solid red !important;', borderRadius: '2px' }}
                           {...provided.draggableProps}
@@ -734,7 +461,7 @@ export class SemanticMapControls extends Component<Props, State> {
                           <div style={{ verticalAlign: 'middle', display: 'inline-block' }}>
                             <img
                               src={mapLayer.get('thumbnail')}
-                              className={'layerThumbnail'}
+                              className={styles.layerThumbnail}
                               style={{
                                 borderRadius: '50%',
                                 border: '1px solid rgba(255, 255, 255, 0.2)',
@@ -747,15 +474,15 @@ export class SemanticMapControls extends Component<Props, State> {
                           </div>
                           <div style={{ display: 'inline-block', verticalAlign: 'middle', padding: '10px' }}>
                             <div style={{ width: '250px' }}>
-                              <label className={'layerTitle'}>{mapLayer.get('author')}</label>
+                              <label className={styles.layerTitle}>{mapLayer.get('author')}</label>
                               <div>
-                                <label className={'layerLabel'}>
+                                <label className={styles.layerLabel}>
                                   <span>{mapLayer.get('name')}</span>
                                 </label>
-                                <label className={'layerLabel'}>{mapLayer.get('year')}</label>
+                                <label className={styles.layerLabel}>{mapLayer.get('year')}</label>
                                 <input
                                   type={'range'}
-                                  className={'opacitySlider'}
+                                  className={styles.opacitySlider}
                                   min={0}
                                   max={1}
                                   step={0.01}
@@ -1222,285 +949,13 @@ export class SemanticMapControls extends Component<Props, State> {
         },
     });
 
-    const controlsStyles = `
-
-    .mapLayersFiltersContainer {
-      padding: 5px;
-      border: 1px solid rgba(0, 0, 0, 0.1) !important;
-      border-radius: 3px;
-      margin-top: 5px;
-      margin-bottom: 5px;
-      -webkit-box-shadow: 1px 1px 3px 0px rgb(137 137 137 / 30%);
-      box-shadow: 1px 1px 3px 0px rgb(137 137 137 / 30%);
-      height: auto;
-      width: 98%;
-      margin-left: 1%;
-      background-color:rgba(255, 255, 255, 0.7);
-  }
-  
-  .mapLayersFiltersContainer label {
-      margin-right: 2px;
-  }
-  
-  .mapLayersFilters {
-      margin-left: 3px !important;
-      margin-right: 3px !important;
-  }
-  
-  #navigatorContainer input {
-      margin-top: 5px;
-  }
-  
-  #mapControlsTitle {
-      margin-bottom: 20px;
-      font-weight: 200;
-      font-size: 20pt;
-  }
-  
-  .draggableLayer {
-      border-radius: 3px;
-      margin-top: 5px;
-      margin-bottom: 5px;
-      /* -webkit-box-shadow: 1px 1px 3px 0px rgb(137 137 137 / 30%);
-      box-shadow: 1px 1px 3px 0px rgb(137 137 137 / 30%); */
-      backdrop-filter: blur(3px);
-      height: auto;
-      width: 98%;
-      margin-left: 1%;
-      background-color:rgb(237,237,237);
-      padding: 5px;
-  }
-  
-  .draggableMaskLayer {
-      border: 1px solid rgba(0, 0, 0, 0.1) !important;
-      border-radius: 3px;
-      margin-top: 5px;
-      margin-bottom: 5px;
-      -webkit-box-shadow: 1px 1px 3px 0px rgb(137 137 137 / 30%);
-      box-shadow: 1px 1px 3px 0px rgb(137 137 137 / 30%);
-      backdrop-filter: blur(3px);
-      height: 70px;
-      width: 98%;
-      margin-left: 1%;
-      background-color:rgb(255, 255, 255)
-  }
-  
-  #visualizationModeContainer, .layerMaskIcon.fa-eye {
-      background-color: rgb(249 249 249);
-      box-shadow: inset 2px 2px 2px rgba(200,200,200,0.5);
-  }
-  
-  #visualizationModeContainer {
-      padding: 3px;
-      border-radius: 3px;
-      margin-top: 3px;
-  }
-  
-  #visualizationModeContainer label {
-      font-weight: 300;
-      margin: 5px;
-      vertical-align: middle;
-      font-size: 10pt;
-  }
-  
-  #visualizationModeContainer label input {
-      margin-left: 4px;
-  }
-
-  .timeSliderContainer {
-    margin: 10px;
-  }
-  
-  .mapLayersTitle {
-      margin-left: 1%;
-      font-weight: 100;
-  }
-  
-  .mapControlsSeparator {
-      margin: 5px !important;
-      height: 1px !important;
-  }
-  
-  .layerTitle {
-      font-weight: 600 !important;
-  }
-  
-  .layerLabel {
-      font-size: 10pt;
-      font-weight: lighter;
-      display: block !important;
-  }
-  
-  
-  .layersContainer {
-      background-color: white;
-      padding: 5px;
-      border-radius: 3px;
-      /* box-shadow: 2px 3px 9px 0px #2929294d; */
-  }
-  
-  .featuresOptionsContainer {
-      background-color: white;
-      padding: 5px;
-      border-radius: 3px;
-  }
-  
-  .featuresOptionsTitle, .mapOptionsSectionTitle {
-      margin-left: 1%;
-      font-weight: 100;
-  }
-  
-  .layerThumbnail {
-      border-radius: 50%;
-      border: 1px solid rgba(255, 255, 255, 0.2) !important;
-      height: 60px;
-      width: 60px;
-      object-fit: cover;
-      margin-left: 5px;
-  }
-  
-  .togglesColumn .fa {
-      color: rgb(56, 56, 56);
-  }
-  
-  .togglesColumnLeft .fa-bars {
-      color: #B1B1B1;
-      font-size: 15pt;
-  }
-  
-  .togglesColumnLeft, .togglesColumnRight {
-     display: inline-block;
-     height: auto;
-     padding: 2px;
-  }
-  
-  .togglesColumnLeft {
-      vertical-align: middle;
-     width: 35px;
-  }
-  
-  .togglesColumnRight {
-      text-align: center;
-      position: absolute;
-      height: 96% !important;
-      width: 20px;
-  }
-  
-  .layerCheck {
-      top: 0;
-      font-size: 20pt;
-      color: var(--archipelago-gold);
-  }
-  
-  .layerCheck.fa-toggle-off {
-      color: darkgrey !important;
-  }
-  
-  .layerMaskIcon {
-      position:absolute;
-      bottom: -5px;
-      right: 0;
-      padding: 3px;
-      padding-bottom: 15px;
-  }
-  
-  .visualizationModeRadio {
-      vertical-align: middle;
-      margin-top: 0 !important;
-  }
-  
-  .layerMaskIcon.fa-eye {
-      border-radius: 2px 2px 0 0;
-      padding: 5px;
-      bottom: 30px !important;
-  }
-  
-  .toggle3dBtn {
-      padding: 10px;
-      width: 100px;
-  }
-  
-  .opacitySlider {
-      width: 100%;
-      height: 2px;
-      background-image: linear-gradient(to right, var(--color-dark), var(--color-dark));
-      outline: none;
-      -webkit-transition: .2s;
-      transition: opacity .2s;
-    }
-  
-  
-    .opacitySlider::-webkit-slider-thumb {
-      appearance: none;
-      width: 15px;
-      height: 15px;
-      background: var(--color-dark);
-      border: 1px solid var(--color-dark);
-      border-radius: 50%;
-      cursor: pointer;
-      background-image: linear-gradient(var(--color-dark), var(--color-dark)), linear-gradient(to right, rgba(255,250,250, 0.00), rgb(0,60,51));
-      background-attachment: fixed, fixed;
-      background-clip: padding-box, border-box;
-    }
-    
-    .opacitySlider::-moz-range-thumb {
-      width: 15px;
-      height: 15px;
-      background: var(--color-dark);
-      border: 1px solid var(--color-dark);
-      border-radius: 50%;
-      cursor: pointer;
-      background-image: linear-gradient(white, white), linear-gradient(to right, rgba(255,250,250, 0.00), rgb(0,60,51));
-      background-attachment: fixed, fixed;
-      background-clip: padding-box, border-box;
-    }
-  
-  
-  
-    .cesium-credit-logoContainer {
-        display: none !important;
-    }
-  
-  
-    .featuresOptionsDiv {
-        display: inline-block;
-    }
-  
-    .featuresOptionsDiv:nth-child(2) {
-      margin-left: 20px;
-    }
-  
-    #veniss_navbar {
-        height: var(--nav-height) !important;
-    }
-  
-    .clonedNavbar:nth-child(2) {
-        display: none !important;
-    }
-  
-    .yearLabel {
-      text-shadow: 0px 0px 5px #ffffff;
-      font-family: 'Lato' sans-serif;
-    }
-  
-  
-  
-  .colorsLegend {
-      background-color: white;
-      border-radius: 5px;
-      z-index: 100000000;
-      padding: 10px;
-    }
-  
-    `;
 
     return (
       <div>
-        <style>{controlsStyles}</style>
         {this.props.featuresOptionsEnabled && (
-          <div className={'featuresOptionsContainer'}>
-            <div className={'mapLayersFiltersContainer'}>
-              <div className={'featuresOptionsDiv'}>
+          <div className={styles.featuresOptionsContainer}>
+            <div className={styles.mapLayersFiltersContainer}>
+              <div className={styles.featuresOptionsDiv}>
                 <label style={{ marginRight: '10px', userSelect: 'none' }}>Color by: </label>
                 <select name="featuresColorsList" id="featuresColorsList" onChange={this.handleColorTaxonomyChange}>
                   {this.featuresColorTaxonomies.map((taxonomy) => (
@@ -1531,7 +986,7 @@ export class SemanticMapControls extends Component<Props, State> {
                     onClick={this.handleRestartColorPalette}
                   ></i>
                 </OverlayTrigger>
-                <div className={'colorsLegend'}>
+                <div className={styles.colorsLegend}>
                 <div style={{ marginBottom: '10px' }}>
                   <button onClick={() => this.enableAllGroups()}>
                     <i className="fa fa-check-circle" style={{ marginRight: '5px' }}></i>
@@ -1611,7 +1066,7 @@ export class SemanticMapControls extends Component<Props, State> {
                   })}
                 </div>
               </div>
-              <div className={'featuresOptionsDiv'}>
+              <div className={styles.featuresOptionsDiv}>
                 <label style={{ marginRight: '10px', userSelect: 'none' }}>Label by: </label>
                 <select name="featuresLabelList" id="featuresLabelList" onChange={this.handleSelectedLabelChange}>
                   <option key={'none'} value={'none'}>None</option>
@@ -1626,17 +1081,17 @@ export class SemanticMapControls extends Component<Props, State> {
           </div>
       )}
                   {this.props.timeline && (
-                <div className={'timeSliderContainer'}>
+                <div className={styles.timeSliderContainer}>
                     {this.props.timeline.mode === "marked" && (
                         <React.Fragment>
-                            <div className={'yearLabel'} style={{ position: 'fixed', bottom: '10', left: '10', fontSize: '20pt' }}>{this.state.year}</div>
+                            <div className={styles.yearLabel} style={{ position: 'fixed', bottom: '10', left: '10', fontSize: '20pt' }}>{this.state.year}</div>
                         </React.Fragment>
                     )}
                     {this.props.timeline.mode === "normal" && (
                         <React.Fragment>
                             <input
                                 type={'range'}
-                                className={'timelineSlider'}
+                                className={styles.timelineSlider}
                                 min={this.props.timeline.min}
                                 max={this.props.timeline.max}
                                 step={1}
@@ -1651,7 +1106,7 @@ export class SemanticMapControls extends Component<Props, State> {
                                     });
                                 }}
                             />
-                            <div className={'yearLabel'} style={{ position: 'fixed', bottom: '10', left: '10', fontSize: '20pt' }}>{this.state.year}</div>
+                            <div className={styles.yearLabel} style={{ position: 'fixed', bottom: '10', left: '10', fontSize: '20pt' }}>{this.state.year}</div>
                         </React.Fragment>
                     )}
                 </div>
@@ -1660,13 +1115,13 @@ export class SemanticMapControls extends Component<Props, State> {
       <DragDropContext onDragEnd={this.onDragEnd}>
         <Droppable droppableId="droppable">
           {(provided, snapshot) => (
-            <div {...provided.droppableProps} ref={provided.innerRef} className={'layersContainer'}>
+            <div {...provided.droppableProps} ref={provided.innerRef} className={styles.layersContainer}>
               {/* <h3 className={'mapLayersTitle'}>Map Layers</h3> */}
               {this.props.showFilters && (
-                <div className="mapLayersFiltersContainer">
+                <div className={styles.mapLayersFiltersContainer}>
                   <label>Filter:</label>
                   <input
-                    className="mapLayersFilters"
+                    className={styles.mapLayersFilters}
                     name={'overlay-visualization'}
                     type={'checkbox'}
                     checked={this.state.filters.feature}
@@ -1674,9 +1129,9 @@ export class SemanticMapControls extends Component<Props, State> {
                       this.setState({ filters: { ...this.state.filters, feature: event.target.checked } }, () => { });
                     }}
                   ></input>
-                  <label className="fitersLabel">Features</label>
+                  <label className={styles.filtersLabel}>Features</label>
                   <input
-                    className="mapLayersFilters"
+                    className={styles.mapLayersFilters}
                     name={'overlay-visualization'}
                     type={'checkbox'}
                     checked={this.state.filters.overlay}
@@ -1684,9 +1139,9 @@ export class SemanticMapControls extends Component<Props, State> {
                       this.setState({ filters: { ...this.state.filters, overlay: event.target.checked } }, () => { });
                     }}
                   ></input>
-                  <label className="fitersLabel">Overlays</label>
+                  <label className={styles.filtersLabel}>Overlays</label>
                   <input
-                    className="mapLayersFilters"
+                    className={styles.mapLayersFilters}
                     name={'overlay-visualization'}
                     type={'checkbox'}
                     checked={this.state.filters.basemap}
@@ -1694,7 +1149,7 @@ export class SemanticMapControls extends Component<Props, State> {
                       this.setState({ filters: { ...this.state.filters, basemap: event.target.checked } }, () => { });
                     }}
                   ></input>
-                  <label className="fitersLabel">Basemaps</label>
+                  <label className={styles.filtersLabel}>Basemaps</label>
                 </div>
               )}
               {/* <hr className={'mapControlsSeparator'} style={{ margin: '0px !important' }}></hr> */}
@@ -1704,7 +1159,7 @@ export class SemanticMapControls extends Component<Props, State> {
                     <Draggable key={mapLayer.get('identifier')} draggableId={mapLayer.get('identifier')} index={index}>
                       {(provided, snapshot) => (
                         <div
-                          className={`draggableLayer ${mapLayer.get('visible') ? 'visible' : 'nonvisible'}`}
+                          className={`${styles.draggableLayer} ${mapLayer.get('visible') ? 'visible' : 'nonvisible'}`}
                           ref={provided.innerRef}
                           style={{ border: '1px solid red !important;', borderRadius: '2px' }}
                           {...provided.draggableProps}
@@ -1716,7 +1171,7 @@ export class SemanticMapControls extends Component<Props, State> {
                           <div style={{ verticalAlign: 'middle', display: 'inline-block' }}>
                             <img
                               src={mapLayer.get('thumbnail')}
-                              className={'layerThumbnail'}
+                              className={styles.layerThumbnail}
                               style={{
                                 borderRadius: '50%',
                                 border: '1px solid rgba(255, 255, 255, 0.2)',
@@ -1729,16 +1184,16 @@ export class SemanticMapControls extends Component<Props, State> {
                           </div>
                           <div style={{ display: 'inline-block', verticalAlign: 'middle', padding: '10px' }}>
                             <div style={{ width: '250px' }}>
-                              <label className={'layerTitle'}>{mapLayer.get('author')}</label>
+                              <label className={styles.layerTitle}>{mapLayer.get('author')}</label>
                               <div>
-                                <label className={'layerLabel'}>
+                                <label className={styles.layerLabel}>
                                   <span>{mapLayer.get('name')}</span>
                                 </label>
-                                <label className={'layerLabel'}>{mapLayer.get('year')}</label>
+                                <label className={styles.layerLabel}>{mapLayer.get('year')}</label>
                                 {/*<label className={'layerLabel'}>{mapLayer.get('location')}</label>*/}
                                 <input
                                   type={'range'}
-                                  className={'opacitySlider'}
+                                  className={styles.opacitySlider}
                                   min={0}
                                   max={1}
                                   step={0.01}

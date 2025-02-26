@@ -70,7 +70,8 @@ module.exports = function() {
             "components/timeline",
             "components/dashboard",
             "components/text-editor",
-            "components/forms/inputs/drop"
+            "components/forms/inputs/drop",
+            "components/semantic/map-advanced"
         ],
         jsonSchemTypes: [
             "SparqlDownloadProps",

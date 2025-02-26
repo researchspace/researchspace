@@ -531,7 +531,7 @@ export class SemanticMapControls extends Component<Props, State> {
     });
     
     // Otherwise, use the default rendering
-    const styles = reactCSS({
+    const stylesSwatch = reactCSS({
         default: {
             swatch: {
                 padding: '2px',
@@ -551,9 +551,20 @@ export class SemanticMapControls extends Component<Props, State> {
         {this.props.featuresOptionsEnabled && (
           <div className={styles.featuresOptionsContainer}>
             <div className={styles.mapLayersFiltersContainer}>
+            <div className={styles.featuresOptionsDiv}>
+                <label style={{ marginRight: '10px', userSelect: 'none' }}>Label by: </label>
+                <select name="featuresLabelList" id="featuresLabelList" onChange={this.handleSelectedLabelChange}>
+                  <option key={'none'} value={'none'}>None</option>
+                  {this.featuresTaxonomies.map((taxonomy) => (
+                    <option key={taxonomy} value={taxonomy}>
+                      {this.capitalizeFirstLetter(taxonomy)}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <div className={styles.featuresOptionsDiv}>
                 <label style={{ marginRight: '10px', userSelect: 'none' }}>Color by: </label>
-                <select name="featuresColorsList" id="featuresColorsList" onChange={this.handleColorTaxonomyChange}>
+                <select name="featuresColorsList" style={{width: '100px'}} id="featuresColorsList" onChange={this.handleColorTaxonomyChange}>
                   {this.featuresColorTaxonomies.map((taxonomy) => (
                     <option key={taxonomy} value={taxonomy}>
                       {this.capitalizeFirstLetter(taxonomy)}
@@ -602,7 +613,7 @@ export class SemanticMapControls extends Component<Props, State> {
                         style={{ display: 'flex', alignItems: 'center', margin: '5px' }}
                       >
                       <div
-                        style={styles.swatch}
+                        style={stylesSwatch.swatch}
                         onClick={() => this.handleColorpickerClick(group)}
                       >
                         <div
@@ -661,17 +672,6 @@ export class SemanticMapControls extends Component<Props, State> {
                     );
                   })}
                 </div>
-              </div>
-              <div className={styles.featuresOptionsDiv}>
-                <label style={{ marginRight: '10px', userSelect: 'none' }}>Label by: </label>
-                <select name="featuresLabelList" id="featuresLabelList" onChange={this.handleSelectedLabelChange}>
-                  <option key={'none'} value={'none'}>None</option>
-                  {this.featuresTaxonomies.map((taxonomy) => (
-                    <option key={taxonomy} value={taxonomy}>
-                      {this.capitalizeFirstLetter(taxonomy)}
-                    </option>
-                  ))}
-                </select>
               </div>
             </div>
           </div>

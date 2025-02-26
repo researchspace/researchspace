@@ -26,6 +26,7 @@ declare namespace SemanticMapControlsScssNamespace {
     yearLabel: string;
     colorsLegend: string;
     filtersLabel: string;
+    timelineSlider: string;
   }
 }
 

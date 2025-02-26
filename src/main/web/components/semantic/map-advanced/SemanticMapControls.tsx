@@ -1486,9 +1486,6 @@ export class SemanticMapControls extends Component<Props, State> {
   
   
   .colorsLegend {
-      position: fixed;
-      left: 100px;
-      top: 150px;
       background-color: white;
       border-radius: 5px;
       z-index: 100000000;

@@ -1,8 +1,10 @@
 import * as React from 'react';
-import { CSSProperties } from 'react';
+import { CSSProperties, createElement } from 'react';
 import { Component, ComponentContext } from 'platform/api/components';
 import { trigger, listen } from 'platform/api/events';
 import { Cancellation } from 'platform/api/async';
+import * as TemplateService from 'platform/api/services/template';
+import { TemplateItem } from 'platform/components/ui/template';
 import {
   SemanticMapControlsOverlayVisualization,
   SemanticMapControlsOverlaySwipe,
@@ -20,7 +22,8 @@ import {
   SemanticMapControlsUnregister
 } from './SemanticMapControlsEvents';
 import {
-  SemanticMapRequestControlsRegistration
+  SemanticMapRequestControlsRegistration,
+  SemanticMapSendSelectedFeature
 } from './SemanticMapEvents'
 
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -67,6 +70,7 @@ interface State {
   yearMarks: number[];
   registeredMap: string;
   groupDisabled: { [group: string]: boolean };
+  selectedFeature?: any;
 }
 
 interface Props {
@@ -79,6 +83,19 @@ interface Props {
   showFilters?: boolean;
   timeline: Timeline;
   featuresColorsPalette?: string;
+  /**
+   * Template reference to use for rendering the component.
+   * Should be a handlebars expression like {{> templateName}}
+   */
+  renderTemplate?: string;
+  /**
+   * Fallback template to use when renderTemplate is not provided or cannot be resolved.
+   */
+  fallbackTemplate?: string;
+  /**
+   * Children elements, which may include template elements
+   */
+  children?: React.ReactNode;
 }
 
 export class SemanticMapControls extends Component<Props, State> {
@@ -128,6 +145,12 @@ export class SemanticMapControls extends Component<Props, State> {
     }))
     .onValue(this.handleRequestRegistration);
 
+    this.cancelation.map(listen({
+      eventType: SemanticMapSendSelectedFeature,
+      target: this.props.id,
+    }))
+    .onValue(this.handleSelectedFeature);
+
     this.onDragEnd = this.onDragEnd.bind(this);
   }
 
@@ -137,6 +160,735 @@ export class SemanticMapControls extends Component<Props, State> {
     //this.triggerRegisterToMap();
     //this.triggerSyncFromMap();
     //TODO: the map will send the first levels autonomously after the registration 
+    this.processTemplateChildren();
+  }
+
+  /**
+   * Process template children and register them as partials
+   */
+  private processTemplateChildren() {
+    // Create a template scope builder
+    const builder = TemplateService.TemplateScope.builder();
+    let hasTemplates = false;
+
+    // Extract templates from children
+    React.Children.forEach(this.props.children, (child) => {
+      if (React.isValidElement(child) && child.type === 'template') {
+        const id = child.props.id;
+        const content = child.props.children;
+        if (id && content) {
+          // Register the template content as a partial
+          console.log(`Registering template with id: ${id}`);
+          builder.registerPartial(id, content);
+          hasTemplates = true;
+        }
+      }
+    });
+
+    // If we found templates, build a new template scope and update the component's props
+    if (hasTemplates) {
+      const scope = builder.build();
+      // We can't directly modify props, but we can use the existing markupTemplateScope
+      // property that's already part of the component system
+      (this.props as any).markupTemplateScope = scope;
+    }
+  }
+
+  /**
+   * Get template context for rendering
+   */
+  private getTemplateContext() {
+    // Return component state and props as context for the template
+    return {
+      ...this.state,
+      ...this.props,
+      // Ensure selectedFeature is explicitly included in the context
+      selectedFeature: this.state.selectedFeature,
+    };
+  }
+
+  /**
+   * Render the component using the template
+   */
+  private renderWithTemplate() {
+    const templateRef = this.props.renderTemplate;
+    if (!templateRef) {
+      return this.renderDefault();
+    }
+    
+    return createElement(TemplateItem, {
+      template: {
+        source: templateRef,
+        options: this.getTemplateContext(),
+      },
+    });
+  }
+
+  /**
+   * Default rendering method - uses the original render logic
+   */
+  private renderDefault() {
+    const styles = reactCSS({
+      default: {
+        swatch: {
+          padding: '2px',
+          background: '#fff',
+          borderRadius: '50%',
+          boxShadow: '0 0 0 1px rgba(0,0,0,.1)',
+          display: 'inline-block',
+          cursor: 'pointer',
+        },
+      },
+    });
+
+    const controlsStyles = `
+    .mapLayersFiltersContainer {
+      padding: 5px;
+      border: 1px solid rgba(0, 0, 0, 0.1) !important;
+      border-radius: 3px;
+      margin-top: 5px;
+      margin-bottom: 5px;
+      -webkit-box-shadow: 1px 1px 3px 0px rgb(137 137 137 / 30%);
+      box-shadow: 1px 1px 3px 0px rgb(137 137 137 / 30%);
+      height: auto;
+      width: 98%;
+      margin-left: 1%;
+      background-color:rgba(255, 255, 255, 0.7);
+  }
+  
+  .mapLayersFiltersContainer label {
+      margin-right: 2px;
+  }
+  
+  .mapLayersFilters {
+      margin-left: 3px !important;
+      margin-right: 3px !important;
+  }
+  
+  #navigatorContainer input {
+      margin-top: 5px;
+  }
+  
+  #mapControlsTitle {
+      margin-bottom: 20px;
+      font-weight: 200;
+      font-size: 20pt;
+  }
+  
+  .draggableLayer {
+      border-radius: 3px;
+      margin-top: 5px;
+      margin-bottom: 5px;
+      /* -webkit-box-shadow: 1px 1px 3px 0px rgb(137 137 137 / 30%);
+      box-shadow: 1px 1px 3px 0px rgb(137 137 137 / 30%); */
+      backdrop-filter: blur(3px);
+      height: auto;
+      width: 98%;
+      margin-left: 1%;
+      background-color:rgb(237,237,237);
+      padding: 5px;
+  }
+  
+  .draggableMaskLayer {
+      border: 1px solid rgba(0, 0, 0, 0.1) !important;
+      border-radius: 3px;
+      margin-top: 5px;
+      margin-bottom: 5px;
+      -webkit-box-shadow: 1px 1px 3px 0px rgb(137 137 137 / 30%);
+      box-shadow: 1px 1px 3px 0px rgb(137 137 137 / 30%);
+      backdrop-filter: blur(3px);
+      height: 70px;
+      width: 98%;
+      margin-left: 1%;
+      background-color:rgb(255, 255, 255)
+  }
+  
+  #visualizationModeContainer, .layerMaskIcon.fa-eye {
+      background-color: rgb(249 249 249);
+      box-shadow: inset 2px 2px 2px rgba(200,200,200,0.5);
+  }
+  
+  #visualizationModeContainer {
+      padding: 3px;
+      border-radius: 3px;
+      margin-top: 3px;
+  }
+  
+  #visualizationModeContainer label {
+      font-weight: 300;
+      margin: 5px;
+      vertical-align: middle;
+      font-size: 10pt;
+  }
+  
+  #visualizationModeContainer label input {
+      margin-left: 4px;
+  }
+
+  .timeSliderContainer {
+    margin: 10px;
+  }
+  
+  .mapLayersTitle {
+      margin-left: 1%;
+      font-weight: 100;
+  }
+  
+  .mapControlsSeparator {
+      margin: 5px !important;
+      height: 1px !important;
+  }
+  
+  .layerTitle {
+      font-weight: 600 !important;
+  }
+  
+  .layerLabel {
+      font-size: 10pt;
+      font-weight: lighter;
+      display: block !important;
+  }
+  
+  
+  .layersContainer {
+      background-color: white;
+      padding: 5px;
+      border-radius: 3px;
+      /* box-shadow: 2px 3px 9px 0px #2929294d; */
+  }
+  
+  .featuresOptionsContainer {
+      background-color: white;
+      padding: 5px;
+      border-radius: 3px;
+  }
+  
+  .featuresOptionsTitle, .mapOptionsSectionTitle {
+      margin-left: 1%;
+      font-weight: 100;
+  }
+  
+  .layerThumbnail {
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      height: 60px;
+      width: 60px;
+      object-fit: cover;
+      margin-left: 5px;
+  }
+  
+  .togglesColumn .fa {
+      color: rgb(56, 56, 56);
+  }
+  
+  .togglesColumnLeft .fa-bars {
+      color: #B1B1B1;
+      font-size: 15pt;
+  }
+  
+  .togglesColumnLeft, .togglesColumnRight {
+     display: inline-block;
+     height: auto;
+     padding: 2px;
+  }
+  
+  .togglesColumnLeft {
+      vertical-align: middle;
+     width: 35px;
+  }
+  
+  .togglesColumnRight {
+      text-align: center;
+      position: absolute;
+      height: 96% !important;
+      width: 20px;
+  }
+  
+  .layerCheck {
+      top: 0;
+      font-size: 20pt;
+      color: var(--archipelago-gold);
+  }
+  
+  .layerCheck.fa-toggle-off {
+      color: darkgrey !important;
+  }
+  
+  .layerMaskIcon {
+      position:absolute;
+      bottom: -5px;
+      right: 0;
+      padding: 3px;
+      padding-bottom: 15px;
+  }
+  
+  .visualizationModeRadio {
+      vertical-align: middle;
+      margin-top: 0 !important;
+  }
+  
+  .layerMaskIcon.fa-eye {
+      border-radius: 2px 2px 0 0;
+      padding: 5px;
+      bottom: 30px !important;
+  }
+  
+  .toggle3dBtn {
+      padding: 10px;
+      width: 100px;
+  }
+  
+  .opacitySlider {
+      width: 100%;
+      height: 2px;
+      background-image: linear-gradient(to right, var(--color-dark), var(--color-dark));
+      outline: none;
+      -webkit-transition: .2s;
+      transition: opacity .2s;
+    }
+  
+  
+    .opacitySlider::-webkit-slider-thumb {
+      appearance: none;
+      width: 15px;
+      height: 15px;
+      background: var(--color-dark);
+      border: 1px solid var(--color-dark);
+      border-radius: 50%;
+      cursor: pointer;
+      background-image: linear-gradient(var(--color-dark), var(--color-dark)), linear-gradient(to right, rgba(255,250,250, 0.00), rgb(0,60,51));
+      background-attachment: fixed, fixed;
+      background-clip: padding-box, border-box;
+    }
+    
+    .opacitySlider::-moz-range-thumb {
+      width: 15px;
+      height: 15px;
+      background: var(--color-dark);
+      border: 1px solid var(--color-dark);
+      border-radius: 50%;
+      cursor: pointer;
+      background-image: linear-gradient(white, white), linear-gradient(to right, rgba(255,250,250, 0.00), rgb(0,60,51));
+      background-attachment: fixed, fixed;
+      background-clip: padding-box, border-box;
+    }
+  
+  
+  
+    .cesium-credit-logoContainer {
+        display: none !important;
+    }
+  
+  
+    .featuresOptionsDiv {
+        display: inline-block;
+    }
+  
+    .featuresOptionsDiv:nth-child(2) {
+      margin-left: 20px;
+    }
+  
+    #veniss_navbar {
+        height: var(--nav-height) !important;
+    }
+  
+    .clonedNavbar:nth-child(2) {
+        display: none !important;
+    }
+  
+    .yearLabel {
+      text-shadow: 0px 0px 5px #ffffff;
+      font-family: 'Lato' sans-serif;
+    }
+  
+  
+  
+  .colorsLegend {
+      position: fixed;
+      left: 100px;
+      top: 150px;
+      background-color: white;
+      border-radius: 5px;
+      z-index: 100000000;
+      padding: 10px;
+    }
+    `;
+
+    return (
+      <div>
+        <style>{controlsStyles}</style>
+        {this.props.featuresOptionsEnabled && (
+          <div className={'featuresOptionsContainer'}>
+            <div className={'mapLayersFiltersContainer'}>
+              <div className={'featuresOptionsDiv'}>
+                <label style={{ marginRight: '10px', userSelect: 'none' }}>Color by: </label>
+                <select name="featuresColorsList" id="featuresColorsList" onChange={this.handleColorTaxonomyChange}>
+                  {this.featuresColorTaxonomies.map((taxonomy) => (
+                    <option key={taxonomy} value={taxonomy}>
+                      {this.capitalizeFirstLetter(taxonomy)}
+                    </option>
+                  ))}
+                </select>
+                <OverlayTrigger
+                  key={'random'}
+                  placement={'top'}
+                  overlay={<Tooltip id={'tooltip-right'}>Generate a random color palette.</Tooltip>}
+                >
+                  <i
+                    className={'fa fa-refresh'}
+                    style={{ display: 'inline-block', cursor: 'pointer', marginLeft: '10px', userSelect: 'none' }}
+                    onClick={this.handleGenerateColorPalette}
+                  ></i>
+                </OverlayTrigger>
+                <OverlayTrigger
+                  key={'reset'}
+                  placement={'top'}
+                  overlay={<Tooltip id={'tooltip-right'}>Restart palette to a single color.</Tooltip>}
+                >
+                  <i
+                    className={'fa fa-paint-brush'}
+                    style={{ display: 'inline-block', cursor: 'pointer', marginLeft: '10px', userSelect: 'none' }}
+                    onClick={this.handleRestartColorPalette}
+                  ></i>
+                </OverlayTrigger>
+                <div className={'colorsLegend'}>
+                <div style={{ marginBottom: '10px' }}>
+                  <button onClick={() => this.enableAllGroups()}>
+                    <i className="fa fa-check-circle" style={{ marginRight: '5px' }}></i>
+                    Select All
+                  </button>
+                  <button onClick={() => this.disableAllGroups()} style={{ marginLeft: '10px' }}>
+                    <i className="fa fa-times-circle" style={{ marginRight: '5px' }}></i>
+                    Clear All
+                  </button>
+                </div>
+                  {this.state.featuresColorGroups.map((group, index) => {
+                    const isDisabled = this.state.groupDisabled[group];
+                    return (
+                      <div
+                        key={group}
+                        id={'color-' + group}
+                        style={{ display: 'flex', alignItems: 'center', margin: '5px' }}
+                      >
+                      <div
+                        style={styles.swatch}
+                        onClick={() => this.handleColorpickerClick(group)}
+                      >
+                        <div
+                          style={{
+                            width: '15px',
+                            height: '15px',
+                            borderRadius: '50%',
+                            backgroundColor: this.getRgbaString(group, true),
+                            opacity: this.state.groupDisabled[group] ? 0.3 : 1, // lower opacity when disabled
+                            position: 'relative'
+                          }}
+                        >
+                          {this.state.groupDisabled[group] && false && (
+                            <div
+                              style={{
+                                position: 'absolute',
+                                top: '50%',
+                                left: '50%',
+                                width: '150%',     // full width of the circle
+                                height: '1px',     // thickness of the line
+                                backgroundColor: 'black', // or any color you prefer
+                                transform: 'translate(-50%, -50%) rotate(45deg)',
+                              }}
+                            />
+                          )}
+                        </div>
+                      </div>
+
+                        {/* Clicking the label toggles disabled */}
+                        <label 
+                          style={{ 
+                            marginLeft: '5px', 
+                            marginBottom: '0px', 
+                            cursor: 'pointer', 
+                            opacity: isDisabled ? 0.3 : 1 
+                          }}
+                          onClick={() => this.toggleGroupDisabled(group)}
+                        >
+                          {group}
+                        </label>
+                        {this.state.displayColorPicker[group] && (
+                          <div style={{ position: 'absolute', zIndex: 2 }}>
+                            <div
+                              style={{ position: 'fixed', top: '0px', right: '0px', left: '0px', bottom: '0px' }}
+                              onClick={this.handleClose}
+                            />
+                            <SwatchesPicker
+                              color={this.state.groupColorAssociations[group]}
+                              onChange={(color) => {
+                                this.handleColorPickerChange(color, group);
+                              }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className={'featuresOptionsDiv'}>
+                <label style={{ marginRight: '10px', userSelect: 'none' }}>Label by: </label>
+                <select name="featuresLabelList" id="featuresLabelList" onChange={this.handleSelectedLabelChange}>
+                  <option key={'none'} value={'none'}>None</option>
+                  {this.featuresTaxonomies.map((taxonomy) => (
+                    <option key={taxonomy} value={taxonomy}>
+                      {this.capitalizeFirstLetter(taxonomy)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+      )}
+                  {this.props.timeline && (
+                <div className={'timeSliderContainer'}>
+                    {this.props.timeline.mode === "marked" && (
+                        <React.Fragment>
+                            <div className={'yearLabel'} style={{ position: 'fixed', bottom: '10', left: '10', fontSize: '20pt' }}>{this.state.year}</div>
+                        </React.Fragment>
+                    )}
+                    {this.props.timeline.mode === "normal" && (
+                        <React.Fragment>
+                            <input
+                                type={'range'}
+                                className={'timelineSlider'}
+                                min={this.props.timeline.min}
+                                max={this.props.timeline.max}
+                                step={1}
+                                value={this.state.year}
+                                onChange={(event) => {
+                                    const input = event.target as HTMLInputElement;
+                                    const value = parseInt(input.value);
+                                    this.setState({
+                                        year: value,
+                                    }, () => {
+                                        this.triggerSendYear();
+                                    });
+                                }}
+                            />
+                            <div className={'yearLabel'} style={{ position: 'fixed', bottom: '10', left: '10', fontSize: '20pt' }}>{this.state.year}</div>
+                        </React.Fragment>
+                    )}
+                </div>
+            )}
+      <br/>
+      <DragDropContext onDragEnd={this.onDragEnd}>
+        <Droppable droppableId="droppable">
+          {(provided, snapshot) => (
+            <div {...provided.droppableProps} ref={provided.innerRef} className={'layersContainer'}>
+              {this.props.showFilters && (
+                <div className="mapLayersFiltersContainer">
+                  <label>Filter:</label>
+                  <input
+                    className="mapLayersFilters"
+                    name={'overlay-visualization'}
+                    type={'checkbox'}
+                    checked={this.state.filters.feature}
+                    onChange={(event) => {
+                      this.setState({ filters: { ...this.state.filters, feature: event.target.checked } }, () => { });
+                    }}
+                  ></input>
+                  <label className="fitersLabel">Features</label>
+                  <input
+                    className="mapLayersFilters"
+                    name={'overlay-visualization'}
+                    type={'checkbox'}
+                    checked={this.state.filters.overlay}
+                    onChange={(event) => {
+                      this.setState({ filters: { ...this.state.filters, overlay: event.target.checked } }, () => { });
+                    }}
+                  ></input>
+                  <label className="fitersLabel">Overlays</label>
+                  <input
+                    className="mapLayersFilters"
+                    name={'overlay-visualization'}
+                    type={'checkbox'}
+                    checked={this.state.filters.basemap}
+                    onChange={(event) => {
+                      this.setState({ filters: { ...this.state.filters, basemap: event.target.checked } }, () => { });
+                    }}
+                  ></input>
+                  <label className="fitersLabel">Basemaps</label>
+                </div>
+              )}
+              {this.state.mapLayers.map(
+                (mapLayer, index) =>
+                  this.state.filters[mapLayer.get('level')] && (
+                    <Draggable key={mapLayer.get('identifier')} draggableId={mapLayer.get('identifier')} index={index}>
+                      {(provided, snapshot) => (
+                        <div
+                          className={`draggableLayer ${mapLayer.get('visible') ? 'visible' : 'nonvisible'}`}
+                          ref={provided.innerRef}
+                          style={{ border: '1px solid red !important;', borderRadius: '2px' }}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                        >
+                          <div className="togglesColumnLeft">
+                            <i className="fa fa-bars"></i>
+                          </div>
+                          <div style={{ verticalAlign: 'middle', display: 'inline-block' }}>
+                            <img
+                              src={mapLayer.get('thumbnail')}
+                              className={'layerThumbnail'}
+                              style={{
+                                borderRadius: '50%',
+                                border: '1px solid rgba(255, 255, 255, 0.2)',
+                                height: '60px',
+                                width: '60px',
+                                objectFit: 'cover',
+                                marginLeft: '5px',
+                              }}
+                            /> 
+                          </div>
+                          <div style={{ display: 'inline-block', verticalAlign: 'middle', padding: '10px' }}>
+                            <div style={{ width: '250px' }}>
+                              <label className={'layerTitle'}>{mapLayer.get('author')}</label>
+                              <div>
+                                <label className={'layerLabel'}>
+                                  <span>{mapLayer.get('name')}</span>
+                                </label>
+                                <label className={'layerLabel'}>{mapLayer.get('year')}</label>
+                                <input
+                                  type={'range'}
+                                  className={'opacitySlider'}
+                                  min={0}
+                                  max={1}
+                                  step={0.01}
+                                  value={mapLayer.get('opacity')}
+                                  onChange={(event) => {
+                                    const input = event.target as HTMLInputElement;
+                                    const opacity = parseFloat(input.value);
+                                    const capped = isNaN(opacity) ? 0.5 : Math.min(1, Math.max(0, opacity));
+                                    this.setMapLayerProperty(mapLayer.get('identifier'), 'opacity', capped);
+                                  }}
+                                ></input>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="togglesColumnRight" style={{ display: 'inline-block' }}>
+                            {mapLayer.get('visible') && (
+                              <i
+                                className="fa fa-toggle-on layerCheck"
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => {
+                                  this.setMapLayerProperty(mapLayer.get('identifier'), 'visible', false);
+                                  if (this.state.maskIndex == index) {
+                                    this.setMaskIndex(-1);
+                                  }
+                                }}
+                              ></i>
+                            )}
+                            {!mapLayer.get('visible') && (
+                              <i
+                                className="fa fa-toggle-off layerCheck"
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => {
+                                  this.setMapLayerProperty(mapLayer.get('identifier'), 'visible', true);
+                                }}
+                              ></i>
+                            )}
+                            {this.state.maskIndex == index && (
+                              <i
+                                className="fa fa-eye layerMaskIcon"
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => {
+                                  this.setMaskIndex(-1);
+                                }}
+                              ></i>
+                            )}
+                            {this.state.maskIndex !== index && (
+                              <i
+                                className="fa fa-eye-slash layerMaskIcon"
+                                style={{ cursor: 'pointer', color: 'rgba(200,200,200,1)' }}
+                                onClick={() => {
+                                  if (!mapLayer.get('visible')) {
+                                    this.setMapLayerProperty(mapLayer.get('identifier'), 'visible', true);
+                                  }
+                                  this.setMaskIndex(index);
+                                }}
+                              ></i>
+                            )}
+                          </div>
+                          {this.state.maskIndex == index && (
+                            <div id={'visualizationModeContainer'}>
+                              <input
+                                className="visualizationModeRadio"
+                                name={'overlay-visualization'}
+                                type={'radio'}
+                                value={'normal'}
+                                checked={this.state.overlayVisualization === 'normal'}
+                                onChange={(event) => {
+                                  this.setState({ overlayVisualization: event.target.value }, () =>
+                                    this.triggerVisualization(this.state.overlayVisualization)
+                                  );
+                                }}
+                              ></input>
+                              <label style={{ margin: '2px' }}>Normal</label>
+                              <input
+                                className="visualizationModeRadio"
+                                name={'overlay-visualization'}
+                                type={'radio'}
+                                value={'spyglass'}
+                                checked={this.state.overlayVisualization === 'spyglass'}
+                                onChange={(event) => {
+                                  this.setState({ overlayVisualization: event.target.value }, () =>
+                                    this.triggerVisualization(this.state.overlayVisualization)
+                                  );
+                                }}
+                              ></input>
+                              <label style={{ margin: '2px' }}>Spyglass</label>
+                              <input
+                                className="visualizationModeRadio"
+                                name={'overlay-visualization'}
+                                type={'radio'}
+                                value={'swipe'}
+                                checked={this.state.overlayVisualization === 'swipe'}
+                                onChange={(event) => {
+                                  this.setState({ overlayVisualization: event.target.value }, () =>
+                                    this.triggerVisualization(this.state.overlayVisualization)
+                                  );
+                                }}
+                              ></input>
+                              <label style={{ margin: '2px' }}>Swipe</label>
+                              {this.state.overlayVisualization === 'swipe' && (
+                                <input
+                                  id={'swipe'}
+                                  type={'range'}
+                                  min={0}
+                                  max={100}
+                                  step={1}
+                                  style={{ width: '100%' }}
+                                  value={this.state.swipeValue as any}
+                                  onChange={(event) => {
+                                    const input = event.target as HTMLInputElement;
+                                    const input2 = input.value;
+                                    this.setState({ swipeValue: Number(input2) }, () =>
+                                      this.triggerSendSwipeValue(this.state.swipeValue)
+                                    );
+                                  }}
+                                ></input>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </Draggable>
+                  )
+              )}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
+      <br/>
+      {this.props.children}
+    </div>
+    );
   }
 
   public componentWillMount() {
@@ -183,6 +935,18 @@ export class SemanticMapControls extends Component<Props, State> {
       // console.warn("Controls", this.props.id, "already has a registered map")
     }
   }
+
+  private handleSelectedFeature = (event: any) => {
+    console.log("Received selected feature:", event.data);
+    this.setState({
+      selectedFeature: event.data
+    }, () => {
+      // If we have a renderTemplate, we need to re-render the template with the new selectedFeature
+      if (this.props.renderTemplate) {
+        this.forceUpdate();
+      }
+    });
+  };
 
   private receiveMapLayers = (event: any) => {
     this.setState(
@@ -439,6 +1203,12 @@ export class SemanticMapControls extends Component<Props, State> {
 
 
   public render() {
+    // Check if a template is provided
+    if (this.props.renderTemplate) {
+      return this.renderWithTemplate();
+    }
+
+    // Otherwise, use the default rendering
     const styles = reactCSS({
         default: {
             swatch: {
@@ -1102,6 +1872,7 @@ export class SemanticMapControls extends Component<Props, State> {
         </Droppable>
       </DragDropContext>
       <br/>
+      {this.props.children}
     </div>
   )}
 

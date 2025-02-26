@@ -65,7 +65,7 @@ RUN echo "setting up platform, apps, and runtime folders" \
 
 COPY --chown=100:0 jetty-logging.properties /var/lib/jetty/resources/jetty-logging.properties
 
-COPY --chown=100:0 shiro-tools-hasher-1.3.2-cli.jar /firstStart/
+COPY --chown=100:0 shiro-tools-hasher-2.0.2-cli.jar /firstStart/
 COPY --chown=100:0 first-passwd-init.sh /firstStart/
 
 COPY --chown=100:0 ROOT.xml /var/lib/jetty/webapps/ROOT.xml

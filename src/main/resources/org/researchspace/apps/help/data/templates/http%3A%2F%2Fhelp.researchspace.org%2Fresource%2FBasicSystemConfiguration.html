@@ -246,7 +246,7 @@
           <td>
             Specifies the ID of an existing storage from which 
             security related configuration files (e.g., <code>shiro.ini</code>) are loaded.
-          </td>
+         </td>
         </tr>
         <tr>
           <td>shiroAuthenticationFilter</td>
@@ -275,7 +275,17 @@
           <td>shiroConfig</td>
           <td>string</td>
           <td>true</td>
-          <td>Default: shiro.ini</td>
+          <td>Default: shiro.ini from the codebase at <code>src/main/resources/org/researchspace/apps/default/config</code>.              
+            To generate hashes for new passwords from the command line use:<br/>
+1. Download the <code>shiro-tools-hasher</code> locally:
+<code>mvn dependency:get -DgroupId=org.apache.shiro.tools -DartifactId=shiro-tools-hasher -Dclassifier=cli -Dversion=2.0.2</code>
+<br/>
+2. Run and generate the hash with:
+<code>java -jar ~/.m2/repository/org/apache/shiro/tools/shiro-tools-hasher/2.0.2/shiro-tools-hasher-2.0.2-cli.jar  -f shiro2 -a argon2id --iterations 500000 -gs your_password > password_file </code>
+<br/>
+3. Add the hash to the shiro.ini enclosed in double quotes, e.g:
+<code>admin="$shiro2$argon2id$v=19$t=1,m=65536,p=4$sG7Wotaz/aLfc/QMoM4NMw$caz/CheZI5xAeiH2EmYkapiYCUCagNO0lbDJz2THGc0",admin,root,query-catalog,repository-admin </code>
+          </td>
         </tr>
         <tr>
           <td>shiroLDAPConfig</td>

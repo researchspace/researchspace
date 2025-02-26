@@ -70,8 +70,8 @@ interface TextEditorProps {
   readonly?: boolean;
 
   /**
-   * ID of the <semantic-link iri='http://help.researchspace.org/resource/Storage' class='text-link-action' target='_blank'>
-   * storage</semantic-link> to load text document content.
+   * ID of the <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' urlqueryparam-view='help' urlqueryparam-resource-iri='[[resolvePrefix "Help:Storage"]]' urlqueryparam-custom-label='Storage' class='text-link-action'>Storage</semantic-link>
+   * to load text document content.
    */
   storage: string;
 

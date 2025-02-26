@@ -36,7 +36,7 @@ export interface SemanticQueryConfig {
   query: string;
 
   /**
-   * <semantic-link iri='http://help.researchspace.org/resource/TemplatingSystem' target="_blank">Template</semantic-link>, 
+   * <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' urlqueryparam-view='help' urlqueryparam-resource-iri='[[resolvePrefix "Help:TemplatingSystem"]]' urlqueryparam-custom-label='Templating system'>Template</semantic-link>, 
    * that gets a <a target='_blank' href='https://www.w3.org/TR/sparql11-results-json/#select-results'>bindings</a> object 
    * injected as template context i.e. the result binding to iterate over. 
    * <a href='https://handlebarsjs.com/guide/builtin-helpers.html#each' class='text-link-action' target='_blank'>each helper</a>
@@ -48,7 +48,7 @@ export interface SemanticQueryConfig {
   template?: string;
 
   /**
-   * <semantic-link iri='http://help.researchspace.org/resource/TemplatingSystem' target="_blank">Template</semantic-link> which is applied when query returns no results.
+   * <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' urlqueryparam-view='help' urlqueryparam-resource-iri='[[resolvePrefix "Help:TemplatingSystem"]]' urlqueryparam-custom-label='Templating system'>Template</semantic-link> which is applied when query returns no results.
    */
   noResultTemplate?: string;
 

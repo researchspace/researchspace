@@ -159,7 +159,7 @@ export class PageManager extends Component<{}, PageAdminState> {
       {
         variableName: 'iri',
         displayName: 'Page',
-        cellTemplate: "<semantic-link iri='{{iri}}' getlabel=false>{{iri}}</semantic-link>",
+        cellTemplate: "<semantic-link iri='{{iri}}' getlabel=false target='_blank'>{{iri}}</semantic-link>",
       },
       {
         variableName: 'appId',

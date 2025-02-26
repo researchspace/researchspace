@@ -51,14 +51,14 @@ export interface TextAnnotationWorkspaceProps {
    */
   documentIri: string;
   /**
-   * ID of the <semantic-link iri='http://help.researchspace.org/resource/Storage' class='text-link-action' target='_blank'>
-   * storage</semantic-link> to load text document content.
+   * ID of the <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' urlqueryparam-view='help' urlqueryparam-resource-iri='[[resolvePrefix "Help:Storage"]]' urlqueryparam-custom-label='Storage' class='text-link-action'>Storage</semantic-link>
+   *  to load text document content.
    */
   storage: string;
   /**
    * IRI template for generating annotation IRIs. See <code>new-subject-template</code>
    * attribute at
-   * <semantic-link iri='http://help.researchspace.org/resource/SemanticForm' class='text-link-action' target='_blank'></semantic-link>
+   * <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' urlqueryparam-view='help' urlqueryparam-resource-iri='[[resolvePrefix "Help:SemanticForm"]]' urlqueryparam-custom-label='Semantic Form' class='text-link-action'>Semantic Form</semantic-link>
    * for syntax.
    */
   annotationSubjectTemplate: string;

@@ -74,7 +74,7 @@ export interface SemanticTreeConfig {
   query: string;
 
   /**
-   * <semantic-link iri='http://help.researchspace.org/resource/TemplatingSystem' target="_blank">Template</semantic-link>
+   * <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' urlqueryparam-view='help' urlqueryparam-resource-iri='[[resolvePrefix "Help:TemplatingSystem"]]' urlqueryparam-custom-label='Templating system'>Template</semantic-link>
    * which is used to render every tree node. Template has access to all projection
    * variables for a single result tuple.
    * By default `<semantic-link>` component is used for node visualization.
@@ -82,7 +82,7 @@ export interface SemanticTreeConfig {
   tupleTemplate?: string;
 
   /**
-   * <semantic-link iri='http://help.researchspace.org/resource/TemplatingSystem' target="_blank">Template</semantic-link>
+   * <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' urlqueryparam-view='help' urlqueryparam-resource-iri='[[resolvePrefix "Help:TemplatingSystem"]]' urlqueryparam-custom-label='Templating system'>Template</semantic-link>
    * which is applied when the query returns no results.
    */
   noResultTemplate?: string;

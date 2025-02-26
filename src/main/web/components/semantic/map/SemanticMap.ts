@@ -84,12 +84,12 @@ export interface SemanticMapConfig {
   query: string;
 
   /**
-   * <semantic-link iri='http://help.researchspace.org/resource/TemplatingSystem' target="_blank">Template</semantic-link> for marker popup. By default shows `<semantic-link>` to the resource with a short textual description
+   * <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' urlqueryparam-view='help' urlqueryparam-resource-iri='[[resolvePrefix "Help:TemplatingSystem"]]' urlqueryparam-custom-label='Templating system'>Template</semantic-link> for marker popup. By default shows `<semantic-link>` to the resource with a short textual description
    */
   tupleTemplate?: string;
 
   /**
-   * <semantic-link iri='http://help.researchspace.org/resource/TemplatingSystem' target="_blank">Template</semantic-link> which is applied when query returns no results
+   * <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' urlqueryparam-view='help' urlqueryparam-resource-iri='[[resolvePrefix "Help:TemplatingSystem"]]' urlqueryparam-custom-label='Templating system'>Template</semantic-link> which is applied when query returns no results
    */
   noResultTemplate?: string;
 

@@ -97,7 +97,7 @@ export interface BaseSemanticGraphConfig {
   query: string;
 
   /**
-   * <semantic-link iri='http://help.researchspace.org/resource/TemplatingSystem' target="_blank">Template</semantic-link> which is applied when query returns no results
+   * <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' urlqueryparam-view='help' urlqueryparam-resource-iri='[[resolvePrefix "Help:TemplatingSystem"]]' urlqueryparam-custom-label='Templating system'>Template</semantic-link> which is applied when query returns no results
    */
   noResultTemplate?: string;
 

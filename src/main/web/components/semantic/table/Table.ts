@@ -75,8 +75,8 @@ export interface ColumnConfiguration {
    */
   variableName?: string;
   /**
-   * Custom cell visualization <semantic-link
-   *   uri='http://help.researchspace.org/resource/TemplatingSystem' target="_blank">template</semantic-link>.
+   * Custom cell visualization 
+   * <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' urlqueryparam-view='help' urlqueryparam-resource-iri='[[resolvePrefix "Help:TemplatingSystem"]]' urlqueryparam-custom-label='Templating system'>Template</semantic-link>.
    * Template has access to all projection variables for a single result tuple.
    *
    * In addition to data from the sparql results cell template has access to current row index with "__semanticTableIndex" property and total table size with "__semanticTableSize" property.

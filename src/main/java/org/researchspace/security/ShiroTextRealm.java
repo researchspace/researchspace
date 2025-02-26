@@ -131,7 +131,10 @@ public class ShiroTextRealm extends IniRealm {
         clearCachedAuthorizationInfo(principals);
         Ini ini = getIni();
         Ini.Section usersSection = ini.getSection(USERS_SECTION_NAME);
-        usersSection.put(username, password + "," + StringUtils.join(roles, ","));
+
+        // in shiro2 we need to put the whole password hash into quotes
+        // see https://github.com/apache/shiro/issues/1385#issuecomment-2016571416
+        usersSection.put(username, "\"" + password + "\"," + StringUtils.join(roles, ","));
         saveIni(ini);
 
     }

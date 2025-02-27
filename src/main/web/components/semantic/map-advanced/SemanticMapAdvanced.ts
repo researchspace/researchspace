@@ -513,19 +513,23 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
             this.triggerSendSelectedFeature();
           }
         );
-        const geometry = feature.getGeometry();
-        const coord = getPopupCoordinate(geometry, evt.coordinate);
-        const { features = [feature] } = feature.getProperties();
+        
+        // Only show the popup if tupleTemplate prop is present
+        if (this.props.tupleTemplate) {
+          const geometry = feature.getGeometry();
+          const coord = getPopupCoordinate(geometry, evt.coordinate);
+          const { features = [feature] } = feature.getProperties();
 
-        const popupContent = features.map((feature) => {
-          const props = feature.getProperties();
-          return `<div>${SemanticMapAdvanced.createPopupContent(props, this.state.tupleTemplate)}</div>`;
-        });
+          const popupContent = features.map((feature) => {
+            const props = feature.getProperties();
+            return `<div>${SemanticMapAdvanced.createPopupContent(props, this.state.tupleTemplate)}</div>`;
+          });
 
-        // info += "<p>" + props.locationtext + "</p>";
-        // Offset the popup so it points at the middle of the marker not the tip
-        popup.setOffset([0, -22]);
-        popup.show(coord, `<mp-template-item>${popupContent.join('')}</mp-template-item>`);
+          // info += "<p>" + props.locationtext + "</p>";
+          // Offset the popup so it points at the middle of the marker not the tip
+          popup.setOffset([0, -22]);
+          popup.show(coord, `<mp-template-item>${popupContent.join('')}</mp-template-item>`);
+        }
       } else {
         // No feature was clicked, reset selectedFeature to null
         this.setState(

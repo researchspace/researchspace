@@ -81,24 +81,24 @@ export class SparqlQueryEditor extends Component<SparqlQueryEditorProps, State> 
 
   render() {
     return (
-      <Row className={styles.sparqlQueryEditor}>
-        <Col componentClass="div" md={12}>
-          <SparqlEditor
-            ref={(editor) => (this.editor = editor)}
-            backdrop={this.state.isExecuting}
-            query={this.state.query}
-            onChange={(query) => {
-              this.context.queryEditorContext.setQuery(query.value, { silent: true });
-              this.setState({ query: query.value });
-            }}
-            autocompleters={['variables', 'prefixes']}
-            persistent={() => 'sparqlEndpoint'}
-          />
-          {this.state.alertState.map((config) => createElement(Alert, config)).getOrElse(null)}
-          <div className={`form-inline ${styles.controls}`}>
-            <HasPermission permission={Permissions.queryEditorSelectEndpoint}>
-              {this.renderRepositorySelector()}
-            </HasPermission>
+      <div className={styles.sparqlQueryEditor}>
+        <SparqlEditor
+          ref={(editor) => (this.editor = editor)}
+          backdrop={this.state.isExecuting}
+          query={this.state.query}
+          onChange={(query) => {
+            this.context.queryEditorContext.setQuery(query.value, { silent: true });
+            this.setState({ query: query.value });
+          }}
+          autocompleters={['variables', 'prefixes']}
+          persistent={() => 'sparqlEndpoint'}
+        />
+        {this.state.alertState.map((config) => createElement(Alert, config)).getOrElse(null)}
+        <div className={`form-inline ${styles.controls}`}>
+          <HasPermission permission={Permissions.queryEditorSelectEndpoint}>
+            {this.renderRepositorySelector()}
+          </HasPermission>
+          <div>
             <HasPermission
               permission={Permissions.toLdp('container', VocabPlatform.QueryTemplateContainer, 'create', 'owner')}
             >
@@ -126,12 +126,12 @@ export class SparqlQueryEditor extends Component<SparqlQueryEditorProps, State> 
               {this.state.isExecuting ? 'Executing...' : 'Execute'}
             </Button>
           </div>
-          <div
-            ref={(resultHolder) => (this.resultHolder = resultHolder)}
-            style={{ visibility: this.state.isExecuting ? 'hidden' : 'visible' }}
-          />
-        </Col>
-      </Row>
+        </div>
+        <div
+          ref={(resultHolder) => (this.resultHolder = resultHolder)}
+          style={{ visibility: this.state.isExecuting ? 'hidden' : 'visible' }}
+        />
+      </div>
     );
   }
 

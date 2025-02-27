@@ -61,8 +61,10 @@ export class RecentQueries extends Component<RecentQueriesProps, void> {
               queryEditorContext.setQuery(query, { repository });
             }}
           >
-            <span className="list-group-item-label">{item.get('date')}</span>
-            {item.get('repository') ? <span className="list-group-item-label">{item.get('repository')}</span> : null}
+            <div style={{ display: 'flex', gap: '5px'}}>
+              <span className="list-group-item-label">{item.get('date')}</span>
+              {item.get('repository') ? <span className="list-group-item-label">{item.get('repository')}</span> : null}
+            </div>
             <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {item.get('query')}
             </div>

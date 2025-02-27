@@ -180,11 +180,11 @@ export class SemanticMapControls extends Component<Props, State> {
     //this.triggerSyncFromMap();
     //TODO: the map will send the first levels autonomously after the registration
     this.processTemplateChildren();
-    
+
     // Add event listener for the feature-close-clicked custom event
     document.addEventListener('feature-close-clicked', this.clearSelectedFeature);
   }
-  
+
   /**
    * Process template children and register them as partials
    */
@@ -242,7 +242,7 @@ export class SemanticMapControls extends Component<Props, State> {
   public componentWillUnmount() {
     console.log('Will unmount: ', this.props.id);
     this.triggerUnregisterToMap();
-    
+
     // Remove event listener when component unmounts
     document.removeEventListener('feature-close-clicked', this.clearSelectedFeature);
   }
@@ -589,12 +589,14 @@ export class SemanticMapControls extends Component<Props, State> {
 
     const templateRef = this.props.renderTemplate;
     // Only create the template element if there's a selected feature
-    const templateElement = this.state.selectedFeature ? createElement(TemplateItem, {
-      template: {
-        source: templateRef,
-        options: this.getTemplateContext(),
-      },
-    }) : null;
+    const templateElement = this.state.selectedFeature
+      ? createElement(TemplateItem, {
+          template: {
+            source: templateRef,
+            options: this.getTemplateContext(),
+          },
+        })
+      : null;
 
     const stylesSwatch = reactCSS({
       default: {
@@ -635,15 +637,15 @@ export class SemanticMapControls extends Component<Props, State> {
             <i className="fa fa-globe" style={{ fontSize: '24px' }}></i>
           </button>
 
-          {/* Buildings Button */}
+          {/* Style Button */}
           <button
             className={`${styles.mapControlsButton} ${
               this.state.activePanel === 'buildings' ? styles.mapControlsButtonActive : ''
             }`}
             onClick={() => this.togglePanel('buildings')}
-            title="Buildings"
+            title="Style"
           >
-            <i className="fa fa-building" style={{ fontSize: '24px' }}></i>
+            <i className="fa fa-paint-brush" style={{ fontSize: '24px' }}></i>
           </button>
         </div>
 
@@ -922,24 +924,158 @@ export class SemanticMapControls extends Component<Props, State> {
             </button>
 
             <div className={styles.mapControlsPanelHeader}>
-              <h3 className={styles.mapControlsPanelTitle}>Buildings</h3>
+              <h3 className={styles.mapControlsPanelTitle}>Style</h3>
             </div>
-            {this.renderTemplate(buildingsTemplate, '<div>No buildings template specified</div>')}
+
+            {this.props.featuresOptionsEnabled && (
+              <div className={styles.featuresOptionsContainer}>
+                <div className={styles.mapLayersFiltersContainer}>
+                  <div className={styles.featuresOptionsDiv}>
+                    <label style={{ marginRight: '10px', userSelect: 'none' }}>Label by: </label>
+                    <select name="featuresLabelList" id="featuresLabelList" onChange={this.handleSelectedLabelChange}>
+                      <option key={'none'} value={'none'}>
+                        None
+                      </option>
+                      {this.featuresTaxonomies.map((taxonomy) => (
+                        <option key={taxonomy} value={taxonomy}>
+                          {this.capitalizeFirstLetter(taxonomy)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className={styles.featuresOptionsDiv}>
+                    <label style={{ marginRight: '10px', userSelect: 'none' }}>Color by: </label>
+                    <select
+                      name="featuresColorsList"
+                      style={{ width: '100px' }}
+                      id="featuresColorsList"
+                      onChange={this.handleColorTaxonomyChange}
+                    >
+                      {this.featuresColorTaxonomies.map((taxonomy) => (
+                        <option key={taxonomy} value={taxonomy}>
+                          {this.capitalizeFirstLetter(taxonomy)}
+                        </option>
+                      ))}
+                    </select>
+                    <OverlayTrigger
+                      key={'random'}
+                      placement={'top'}
+                      overlay={<Tooltip id={'tooltip-right'}>Generate a random color palette.</Tooltip>}
+                    >
+                      <i
+                        className={'fa fa-refresh'}
+                        style={{ display: 'inline-block', cursor: 'pointer', marginLeft: '10px', userSelect: 'none' }}
+                        onClick={this.handleGenerateColorPalette}
+                      ></i>
+                    </OverlayTrigger>
+                    <OverlayTrigger
+                      key={'reset'}
+                      placement={'top'}
+                      overlay={<Tooltip id={'tooltip-right'}>Restart palette to a single color.</Tooltip>}
+                    >
+                      <i
+                        className={'fa fa-paint-brush'}
+                        style={{ display: 'inline-block', cursor: 'pointer', marginLeft: '10px', userSelect: 'none' }}
+                        onClick={this.handleRestartColorPalette}
+                      ></i>
+                    </OverlayTrigger>
+                    <div className={styles.colorsLegend}>
+                      <div style={{ marginBottom: '10px' }}>
+                        <button onClick={() => this.enableAllGroups()}>
+                          <i className="fa fa-check-circle" style={{ marginRight: '5px' }}></i>
+                          Select All
+                        </button>
+                        <button onClick={() => this.disableAllGroups()} style={{ marginLeft: '10px' }}>
+                          <i className="fa fa-times-circle" style={{ marginRight: '5px' }}></i>
+                          Clear All
+                        </button>
+                      </div>
+                      {this.state.featuresColorGroups.map((group, index) => {
+                        const isDisabled = this.state.groupDisabled[group];
+                        return (
+                          <div
+                            key={group}
+                            id={'color-' + group}
+                            style={{ display: 'flex', alignItems: 'center', margin: '5px' }}
+                          >
+                            <div style={stylesSwatch.swatch} onClick={() => this.handleColorpickerClick(group)}>
+                              <div
+                                style={{
+                                  width: '15px',
+                                  height: '15px',
+                                  borderRadius: '50%',
+                                  backgroundColor: this.getRgbaString(group, true),
+                                  opacity: this.state.groupDisabled[group] ? 0.3 : 1, // lower opacity when disabled
+                                  position: 'relative',
+                                }}
+                              >
+                                {this.state.groupDisabled[group] && false && (
+                                  <div
+                                    style={{
+                                      position: 'absolute',
+                                      top: '50%',
+                                      left: '50%',
+                                      width: '150%', // full width of the circle
+                                      height: '1px', // thickness of the line
+                                      backgroundColor: 'black', // or any color you prefer
+                                      transform: 'translate(-50%, -50%) rotate(45deg)',
+                                    }}
+                                  />
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Clicking the label toggles disabled */}
+                            <label
+                              style={{
+                                marginLeft: '5px',
+                                marginBottom: '0px',
+                                cursor: 'pointer',
+                                opacity: isDisabled ? 0.3 : 1,
+                              }}
+                              onClick={() => this.toggleGroupDisabled(group)}
+                            >
+                              {group}
+                            </label>
+                            {this.state.displayColorPicker[group] && (
+                              <div style={{ position: 'absolute', zIndex: 2 }}>
+                                <div
+                                  style={{ position: 'fixed', top: '0px', right: '0px', left: '0px', bottom: '0px' }}
+                                  onClick={this.handleClose}
+                                />
+                                <SwatchesPicker
+                                  color={this.state.groupColorAssociations[group]}
+                                  onChange={(color) => {
+                                    this.handleColorPickerChange(color, group);
+                                  }}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
         <div>
           {this.state.selectedFeature ? (
-            <div style={{
-              position: 'relative',
-              padding: '15px',
-              backgroundColor: 'white',
-              borderRadius: '4px',
-              boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)',
-              marginTop: '10px',
-              pointerEvents: 'auto'
-            }}>
-              <button 
+            <div
+              style={{
+                position: 'relative',
+                padding: '15px',
+                backgroundColor: 'white',
+                borderRadius: '4px',
+                boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)',
+                marginTop: '10px',
+                pointerEvents: 'auto',
+              }}
+            >
+              <button
                 onClick={this.clearSelectedFeature}
                 style={{
                   position: 'absolute',
@@ -954,7 +1090,7 @@ export class SemanticMapControls extends Component<Props, State> {
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
                 }}
                 title="Close"
                 onMouseOver={(e) => {
@@ -972,7 +1108,6 @@ export class SemanticMapControls extends Component<Props, State> {
             </div>
           ) : null}
         </div>
-
       </div>
     );
   }

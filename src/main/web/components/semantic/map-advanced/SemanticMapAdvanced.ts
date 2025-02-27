@@ -509,7 +509,8 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         this.setState(
           { selectedFeature: feature },
           () => {
-            console.log(this.state.selectedFeature)
+            console.log(this.state.selectedFeature);
+            this.triggerSendSelectedFeature();
           }
         );
         const geometry = feature.getGeometry();
@@ -525,6 +526,15 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         // Offset the popup so it points at the middle of the marker not the tip
         popup.setOffset([0, -22]);
         popup.show(coord, `<mp-template-item>${popupContent.join('')}</mp-template-item>`);
+      } else {
+        // No feature was clicked, reset selectedFeature to null
+        this.setState(
+          { selectedFeature: null },
+          () => {
+            console.log('No feature selected, reset selectedFeature to null');
+            this.triggerSendSelectedFeature();
+          }
+        );
       }
     });
 
@@ -1374,10 +1384,12 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     let feature = this.state.selectedFeature;
     console.log('Sending feature to', targets);
 
-    if (feature) {
+    // Always send the event, even if feature is null
+    // This ensures the controls component is notified when no feature is selected
+    if (targets && targets.length > 0) {
       trigger({
         eventType: SemanticMapSendSelectedFeature,
-        data: feature,
+        data: feature, // This can be null
         source: this.props.id,
         targets: targets,
       });

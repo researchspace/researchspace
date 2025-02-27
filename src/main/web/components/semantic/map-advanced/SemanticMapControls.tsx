@@ -180,8 +180,11 @@ export class SemanticMapControls extends Component<Props, State> {
     //this.triggerSyncFromMap();
     //TODO: the map will send the first levels autonomously after the registration
     this.processTemplateChildren();
+    
+    // Add event listener for the feature-close-clicked custom event
+    document.addEventListener('feature-close-clicked', this.clearSelectedFeature);
   }
-
+  
   /**
    * Process template children and register them as partials
    */
@@ -239,6 +242,9 @@ export class SemanticMapControls extends Component<Props, State> {
   public componentWillUnmount() {
     console.log('Will unmount: ', this.props.id);
     this.triggerUnregisterToMap();
+    
+    // Remove event listener when component unmounts
+    document.removeEventListener('feature-close-clicked', this.clearSelectedFeature);
   }
 
   public componentDidUpdate(prevProps, prevState) {
@@ -278,6 +284,20 @@ export class SemanticMapControls extends Component<Props, State> {
       },
       () => {
         // If we have a renderTemplate, we need to re-render the template with the new selectedFeature
+        if (this.props.renderTemplate) {
+          this.forceUpdate();
+        }
+      }
+    );
+  };
+
+  private clearSelectedFeature = () => {
+    this.setState(
+      {
+        selectedFeature: null,
+      },
+      () => {
+        // If we have a renderTemplate, we need to re-render the template with the null selectedFeature
         if (this.props.renderTemplate) {
           this.forceUpdate();
         }
@@ -568,12 +588,13 @@ export class SemanticMapControls extends Component<Props, State> {
     const buildingsTemplate = this.props.buildingsTemplate || '';
 
     const templateRef = this.props.renderTemplate;
-    const templateElement = createElement(TemplateItem, {
+    // Only create the template element if there's a selected feature
+    const templateElement = this.state.selectedFeature ? createElement(TemplateItem, {
       template: {
         source: templateRef,
         options: this.getTemplateContext(),
       },
-    });
+    }) : null;
 
     const stylesSwatch = reactCSS({
       default: {
@@ -907,7 +928,50 @@ export class SemanticMapControls extends Component<Props, State> {
           </div>
         )}
 
-        <div>{templateElement}</div>
+        <div>
+          {this.state.selectedFeature ? (
+            <div style={{
+              position: 'relative',
+              padding: '15px',
+              backgroundColor: 'white',
+              borderRadius: '4px',
+              boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)',
+              marginTop: '10px',
+              pointerEvents: 'auto'
+            }}>
+              <button 
+                onClick={this.clearSelectedFeature}
+                style={{
+                  position: 'absolute',
+                  top: '5px',
+                  right: '5px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '16px',
+                  color: '#666',
+                  padding: '5px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+                title="Close"
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = '#f0f0f0';
+                  e.currentTarget.style.color = '#333';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = '#666';
+                }}
+              >
+                <i className="fa fa-times"></i>
+              </button>
+              {templateElement}
+            </div>
+          ) : null}
+        </div>
 
       </div>
     );

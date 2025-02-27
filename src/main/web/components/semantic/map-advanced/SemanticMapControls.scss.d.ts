@@ -27,6 +27,17 @@ declare namespace SemanticMapControlsScssNamespace {
     colorsLegend: string;
     filtersLabel: string;
     timelineSlider: string;
+    
+    // New styles for the sidebar and panels
+    mapControlsContainer: string;
+    mapControlsSidebar: string;
+    mapControlsButton: string;
+    mapControlsButtonActive: string;
+    mapControlsPanel: string;
+    mapControlsPanelHeader: string;
+    mapControlsPanelTitle: string;
+    mapControlsPanelCloseButton: string;
+    mapControlsPanelCloseX: string;
   }
 }
 

@@ -511,6 +511,12 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
           () => {
             console.log(this.state.selectedFeature);
             this.triggerSendSelectedFeature();
+            
+            // Zoom to the selected feature
+            this.zoomToFeature(feature);
+            
+            // Apply the highlight style by refreshing the layer
+            this.applyFeaturesFilteringFromControls();
           }
         );
         
@@ -525,7 +531,6 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
             return `<div>${SemanticMapAdvanced.createPopupContent(props, this.state.tupleTemplate)}</div>`;
           });
 
-          // info += "<p>" + props.locationtext + "</p>";
           // Offset the popup so it points at the middle of the marker not the tip
           popup.setOffset([0, -22]);
           popup.show(coord, `<mp-template-item>${popupContent.join('')}</mp-template-item>`);
@@ -537,6 +542,9 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
           () => {
             console.log('No feature selected, reset selectedFeature to null');
             this.triggerSendSelectedFeature();
+            
+            // Apply normal styles to all features (remove any highlight)
+            this.applyFeaturesFilteringFromControls();
           }
         );
       }
@@ -937,7 +945,132 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     });
   }
 
+  /**
+   * Zooms to a feature on the map
+   * @param feature The feature to zoom to
+   */
+  private zoomToFeature(feature: Feature) {
+    if (!feature || !this.map) return;
+    
+    // Get the geometry of the feature
+    const geometry = feature.getGeometry();
+    if (!geometry) return;
+    
+    // Create an extent from the geometry
+    const extent = geometry.getExtent();
+    
+    // Add some padding around the extent
+    const padding = [50, 50, 50, 50]; // [top, right, bottom, left] padding in pixels
+    
+    // Get the current zoom level
+    const currentZoom = this.map.getView().getZoom();
+    
+    // Calculate what the zoom level would be for the feature extent
+    const view = this.map.getView();
+    const resolution = view.getResolutionForExtent(extent, this.map.getSize());
+    const featureZoom = view.getZoomForResolution(resolution);
+    
+    // Only zoom if the current zoom is less than what would be calculated
+    // (i.e., don't "dezoom" if we're already zoomed in more)
+    if (currentZoom && featureZoom && currentZoom < featureZoom) {
+      // Animate to the feature with a smooth transition and zoom
+      this.map.getView().fit(extent, {
+        padding: padding,
+        duration: 500, // Animation duration in milliseconds
+        maxZoom: 18,   // Limit maximum zoom level
+      });
+    } else {
+      // Just center on the feature without changing zoom
+      const center = [
+        (extent[0] + extent[2]) / 2, // X center
+        (extent[1] + extent[3]) / 2  // Y center
+      ];
+      this.map.getView().animate({
+        center: center,
+        duration: 500
+      });
+    }
+  }
+  
+  /**
+   * Creates a highlighted style for the selected feature
+   * @param geometry The geometry of the feature
+   * @param color The base color to use
+   */
+  /**
+   * Creates a highlighted style for the selected feature
+   * @param geometry The geometry of the feature
+   * @param color The base color to use
+   */
+  private createHighlightedFeatureStyle(geometry: Geometry, color: string): Style {
+    if (geometry instanceof Point || geometry instanceof MultiPoint) {
+      return new Style({
+        geometry,
+        image: new CircleStyle({
+          radius: 10, // Larger radius for highlighted point
+          fill: new Fill({ color: color }),
+          stroke: new Stroke({
+            color: '#FFFFFF',
+            width: 3,
+          }),
+        }),
+        text: new Text({
+          text: '\uf041',
+          font: 'normal 26px FontAwesome', // Larger font for highlighted point
+          textBaseline: 'bottom',
+          fill: new Fill({ color: '#FFFFFF' }),
+          stroke: new Stroke({
+            color: '#000000',
+            width: 2,
+          }),
+        }),
+      });
+    } else if (geometry instanceof GeometryCollection) {
+      // For geometry collections, we'll use the first geometry's style
+      // This is a simplification - in a real app you might want to handle this differently
+      const geometries = geometry.getGeometries();
+      if (geometries.length > 0) {
+        return this.createHighlightedFeatureStyle(geometries[0], color);
+      }
+      // Fallback if no geometries
+      return new Style({
+        fill: new Fill({ color: color || 'rgba(255, 165, 0, 0.6)' }),
+        stroke: new Stroke({ color: '#FFFFFF', width: 3 }),
+      });
+    }
+    
+    // For polygons and other geometries
+    return new Style({
+      geometry,
+      fill: new Fill({ 
+        color: color || 'rgba(255, 165, 0, 0.6)' // Orange with higher opacity for highlight
+      }),
+      stroke: new Stroke({
+        color: '#FFFFFF', // White border
+        width: 3,         // Thicker border
+      }),
+      text: new Text({
+        font: '14px Calibri,sans-serif', // Larger font
+        overflow: true,
+        fill: new Fill({
+          color: '#000',
+        }),
+        stroke: new Stroke({
+          color: '#fff',
+          width: 3,
+        }),
+      }),
+    });
+  }
+
   private getFeatureStyleWithFilters(feature: Feature): Style {
+    // Check if this is the selected feature
+    if (this.state.selectedFeature && feature === this.state.selectedFeature) {
+      // Use highlighted style for selected feature
+      const geometry = feature.getGeometry();
+      return this.createHighlightedFeatureStyle(geometry, 'rgba(255, 165, 0, 0.6)'); // Orange highlight
+    }
+    
     // Check if feature has a group and if that group is toggled on
     if (this.state.registeredControls.length > 0 && this.state.featuresColorTaxonomy) {
       if (feature.get(this.state.featuresColorTaxonomy) !== undefined) {
@@ -964,7 +1097,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       }
     }
     
-    // If we get here, the feature should be visible
+    // If we get here, the feature should be visible with normal style
     return this.createFeatureStyle(feature);
   }
 
@@ -1780,7 +1913,7 @@ function getMarkerStyle() {
       }),
     });
 
-  return function (feature: Feature) {
+  return function (feature: Feature): Style {
     const features = feature.get('features');
     const size = features.length;
 
@@ -1798,11 +1931,12 @@ function getMarkerStyle() {
 
       styleCache[size] = style;
     }
-    return [style];
+    // Return the first style instead of an array
+    return style;
   };
 }
 
-function getFeatureStyle(geometry: Geometry, color: string | undefined) {
+function getFeatureStyle(geometry: Geometry, color: string | undefined): Style {
   if (geometry instanceof Point || geometry instanceof MultiPoint) {
     return new Style({
       geometry,
@@ -1814,7 +1948,16 @@ function getFeatureStyle(geometry: Geometry, color: string | undefined) {
       }),
     });
   } else if (geometry instanceof GeometryCollection) {
-    return geometry.getGeometries().map((geom) => getFeatureStyle(geom, color));
+    // For geometry collections, use the first geometry's style
+    const geometries = geometry.getGeometries();
+    if (geometries.length > 0) {
+      return getFeatureStyle(geometries[0], color);
+    }
+    // Fallback if no geometries
+    return new Style({
+      fill: new Fill({ color: color || 'rgba(255, 255, 255, 0.5)' }),
+      stroke: new Stroke({ color: color || 'rgba(202, 255, 36, .3)', width: 1.25 }),
+    });
   }
   return new Style({
     geometry,

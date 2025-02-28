@@ -545,7 +545,6 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
             color: '#333',
           },
         },
-        'Loading map...'
       )
     );
   }

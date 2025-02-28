@@ -613,8 +613,6 @@ export class SemanticMapControls extends Component<Props, State> {
   public render() {
     // Get template sources
     const historicalMapTemplate = this.props.historicalMapTemplate || '';
-    const baseMapTemplate = this.props.baseMapTemplate || '';
-    const buildingsTemplate = this.props.buildingsTemplate || '';
 
     const templateRef = this.props.renderTemplate;
     // Only create the template element if there's a selected feature
@@ -772,164 +770,167 @@ export class SemanticMapControls extends Component<Props, State> {
                             index={index}
                           >
                             {(provided, snapshot) => (
-                              <div
-                                className={`${styles.draggableLayer} ${
-                                  mapLayer.get('visible') ? 'visible' : 'nonvisible'
-                                }`}
-                                ref={provided.innerRef}
-                                style={{ border: '1px solid red !important;', borderRadius: '2px' }}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                              >
-                                <div className="togglesColumnLeft">
-                                  <i className="fa fa-bars"></i>
-                                </div>
-                                <div style={{ verticalAlign: 'middle', display: 'inline-block' }}>
-                                  <img
-                                    src={mapLayer.get('thumbnail')}
-                                    className={styles.layerThumbnail}
-                                    style={{
-                                      borderRadius: '50%',
-                                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                                      height: '60px',
-                                      width: '60px',
-                                      objectFit: 'cover',
-                                      marginLeft: '5px',
-                                    }}
-                                  />
-                                </div>
-                                <div style={{ display: 'inline-block', verticalAlign: 'middle', padding: '10px' }}>
-                                  <div style={{ width: '250px' }}>
-                                    <label className={styles.layerTitle}>{mapLayer.get('author')}</label>
-                                    <div>
-                                      <label className={styles.layerLabel}>
-                                        <span>{mapLayer.get('name')}</span>
-                                      </label>
-                                      <label className={styles.layerLabel}>{mapLayer.get('year')}</label>
-                                      {/*<label className={'layerLabel'}>{mapLayer.get('location')}</label>*/}
-                                      <input
-                                        type={'range'}
-                                        className={styles.opacitySlider}
-                                        min={0}
-                                        max={1}
-                                        step={0.01}
-                                        value={mapLayer.get('opacity')}
-                                        onChange={(event) => {
-                                          const input = event.target as HTMLInputElement;
-                                          const opacity = parseFloat(input.value);
-                                          const capped = isNaN(opacity) ? 0.5 : Math.min(1, Math.max(0, opacity));
-                                          this.setMapLayerProperty(mapLayer.get('identifier'), 'opacity', capped);
-                                        }}
-                                      ></input>
+                                <div
+                                  className={`${styles.draggableLayer} ${
+                                    mapLayer.get('visible') ? 'visible' : 'nonvisible'
+                                  } draggableLayerBorder`}
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                >
+                                  <div className="draggableLayerContainer">
+                                    {/* Drag handle on the left */}
+                                    <div className="dragHandleContainer" {...provided.dragHandleProps}>
+                                      <i className="fa fa-bars"></i>
+                                    </div>
+                                    
+                                    {/* Main content container */}
+                                    <div className="layerContentContainer">
+                                      {/* Thumbnail on the left */}
+                                      <div className="thumbnailContainer">
+                                        <img
+                                          src={mapLayer.get('thumbnail')}
+                                          className={`${styles.layerThumbnail} layerThumbnailStyle`}
+                                        />
+                                      </div>
+                                      
+                                      {/* Info container */}
+                                      <div className="layerInfoContainer">
+                                        {/* Date in top right */}
+                                        <div className="layerDateContainer">
+                                          <label className={styles.layerLabel}>{mapLayer.get('year')}</label>
+                                        </div>
+                                        
+                                        {/* Title */}
+                                        <div className="layerTitleContainer">
+                                          <label className={styles.layerTitle}>{mapLayer.get('author')}</label>
+                                        </div>
+                                        
+                                        {/* Slider at the bottom */}
+                                        <div className="sliderContainer">
+                                          <input
+                                            type={'range'}
+                                            className={styles.opacitySlider}
+                                            min={0}
+                                            max={1}
+                                            step={0.01}
+                                            value={mapLayer.get('opacity')}
+                                            onChange={(event) => {
+                                              const input = event.target as HTMLInputElement;
+                                              const opacity = parseFloat(input.value);
+                                              const capped = isNaN(opacity) ? 0.5 : Math.min(1, Math.max(0, opacity));
+                                              this.setMapLayerProperty(mapLayer.get('identifier'), 'opacity', capped);
+                                            }}
+                                          ></input>
+                                        </div>
+                                      </div>
+                                      
+                                      {/* Toggle buttons on the right */}
+                                      <div className="togglesColumnRightStyle">
+                                        {mapLayer.get('visible') && (
+                                          <i
+                                            className="fa fa-toggle-on layerCheck cursorPointer"
+                                            onClick={() => {
+                                              this.setMapLayerProperty(mapLayer.get('identifier'), 'visible', false);
+                                              if (this.state.maskIndex == index) {
+                                                this.setMaskIndex(-1);
+                                              }
+                                            }}
+                                          ></i>
+                                        )}
+                                        {!mapLayer.get('visible') && (
+                                          <i
+                                            className="fa fa-toggle-off layerCheck cursorPointer"
+                                            onClick={() => {
+                                              this.setMapLayerProperty(mapLayer.get('identifier'), 'visible', true);
+                                            }}
+                                          ></i>
+                                        )}
+                                        {this.state.maskIndex == index && (
+                                          <i
+                                            className="fa fa-eye layerMaskIcon cursorPointer"
+                                            onClick={() => {
+                                              this.setMaskIndex(-1);
+                                            }}
+                                          ></i>
+                                        )}
+                                        {this.state.maskIndex !== index && (
+                                          <i
+                                            className="fa fa-eye-slash layerMaskIcon maskIconInactive"
+                                            onClick={() => {
+                                              if (!mapLayer.get('visible')) {
+                                                this.setMapLayerProperty(mapLayer.get('identifier'), 'visible', true);
+                                              }
+                                              this.setMaskIndex(index);
+                                            }}
+                                          ></i>
+                                        )}
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                                <div className="togglesColumnRight" style={{ display: 'inline-block' }}>
-                                  {mapLayer.get('visible') && (
-                                    <i
-                                      className="fa fa-toggle-on layerCheck"
-                                      style={{ cursor: 'pointer' }}
-                                      onClick={() => {
-                                        this.setMapLayerProperty(mapLayer.get('identifier'), 'visible', false);
-                                        if (this.state.maskIndex == index) {
-                                          this.setMaskIndex(-1);
-                                        }
-                                      }}
-                                    ></i>
-                                  )}
-                                  {!mapLayer.get('visible') && (
-                                    <i
-                                      className="fa fa-toggle-off layerCheck"
-                                      style={{ cursor: 'pointer' }}
-                                      onClick={() => {
-                                        this.setMapLayerProperty(mapLayer.get('identifier'), 'visible', true);
-                                      }}
-                                    ></i>
-                                  )}
+                                  
+                                  {/* Visualization mode container */}
                                   {this.state.maskIndex == index && (
-                                    <i
-                                      className="fa fa-eye layerMaskIcon"
-                                      style={{ cursor: 'pointer' }}
-                                      onClick={() => {
-                                        this.setMaskIndex(-1);
-                                      }}
-                                    ></i>
-                                  )}
-                                  {this.state.maskIndex !== index && (
-                                    <i
-                                      className="fa fa-eye-slash layerMaskIcon"
-                                      style={{ cursor: 'pointer', color: 'rgba(200,200,200,1)' }}
-                                      onClick={() => {
-                                        if (!mapLayer.get('visible')) {
-                                          this.setMapLayerProperty(mapLayer.get('identifier'), 'visible', true);
-                                        }
-                                        this.setMaskIndex(index);
-                                      }}
-                                    ></i>
-                                  )}
-                                </div>
-                                {this.state.maskIndex == index && (
-                                  <div id={'visualizationModeContainer'}>
-                                    <input
-                                      className="visualizationModeRadio"
-                                      name={'overlay-visualization'}
-                                      type={'radio'}
-                                      value={'normal'}
-                                      checked={this.state.overlayVisualization === 'normal'}
-                                      onChange={(event) => {
-                                        this.setState({ overlayVisualization: event.target.value }, () =>
-                                          this.triggerVisualization(this.state.overlayVisualization)
-                                        );
-                                      }}
-                                    ></input>
-                                    <label style={{ margin: '2px' }}>Normal</label>
-                                    <input
-                                      className="visualizationModeRadio"
-                                      name={'overlay-visualization'}
-                                      type={'radio'}
-                                      value={'spyglass'}
-                                      checked={this.state.overlayVisualization === 'spyglass'}
-                                      onChange={(event) => {
-                                        this.setState({ overlayVisualization: event.target.value }, () =>
-                                          this.triggerVisualization(this.state.overlayVisualization)
-                                        );
-                                      }}
-                                    ></input>
-                                    <label style={{ margin: '2px' }}>Spyglass</label>
-                                    <input
-                                      className="visualizationModeRadio"
-                                      name={'overlay-visualization'}
-                                      type={'radio'}
-                                      value={'swipe'}
-                                      checked={this.state.overlayVisualization === 'swipe'}
-                                      onChange={(event) => {
-                                        this.setState({ overlayVisualization: event.target.value }, () =>
-                                          this.triggerVisualization(this.state.overlayVisualization)
-                                        );
-                                      }}
-                                    ></input>
-                                    <label style={{ margin: '2px' }}>Swipe</label>
-                                    {this.state.overlayVisualization === 'swipe' && (
+                                    <div id={'visualizationModeContainer'}>
                                       <input
-                                        id={'swipe'}
-                                        type={'range'}
-                                        min={0}
-                                        max={100}
-                                        step={1}
-                                        style={{ width: '100%' }}
-                                        value={this.state.swipeValue as any}
+                                        className="visualizationModeRadio"
+                                        name={'overlay-visualization'}
+                                        type={'radio'}
+                                        value={'normal'}
+                                        checked={this.state.overlayVisualization === 'normal'}
                                         onChange={(event) => {
-                                          const input = event.target as HTMLInputElement;
-                                          const input2 = input.value;
-                                          this.setState({ swipeValue: Number(input2) }, () =>
-                                            this.triggerSendSwipeValue(this.state.swipeValue)
+                                          this.setState({ overlayVisualization: event.target.value }, () =>
+                                            this.triggerVisualization(this.state.overlayVisualization)
                                           );
                                         }}
                                       ></input>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
+                                      <label style={{ margin: '2px' }}>Normal</label>
+                                      <input
+                                        className="visualizationModeRadio"
+                                        name={'overlay-visualization'}
+                                        type={'radio'}
+                                        value={'spyglass'}
+                                        checked={this.state.overlayVisualization === 'spyglass'}
+                                        onChange={(event) => {
+                                          this.setState({ overlayVisualization: event.target.value }, () =>
+                                            this.triggerVisualization(this.state.overlayVisualization)
+                                          );
+                                        }}
+                                      ></input>
+                                      <label style={{ margin: '2px' }}>Spyglass</label>
+                                      <input
+                                        className="visualizationModeRadio"
+                                        name={'overlay-visualization'}
+                                        type={'radio'}
+                                        value={'swipe'}
+                                        checked={this.state.overlayVisualization === 'swipe'}
+                                        onChange={(event) => {
+                                          this.setState({ overlayVisualization: event.target.value }, () =>
+                                            this.triggerVisualization(this.state.overlayVisualization)
+                                          );
+                                        }}
+                                      ></input>
+                                      <label style={{ margin: '2px' }}>Swipe</label>
+                                      {this.state.overlayVisualization === 'swipe' && (
+                                        <input
+                                          id={'swipe'}
+                                          type={'range'}
+                                          min={0}
+                                          max={100}
+                                          step={1}
+                                          style={{ width: '100%' }}
+                                          value={this.state.swipeValue as any}
+                                          onChange={(event) => {
+                                            const input = event.target as HTMLInputElement;
+                                            const input2 = input.value;
+                                            this.setState({ swipeValue: Number(input2) }, () =>
+                                              this.triggerSendSwipeValue(this.state.swipeValue)
+                                            );
+                                          }}
+                                        ></input>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
                             )}
                           </Draggable>
                         )

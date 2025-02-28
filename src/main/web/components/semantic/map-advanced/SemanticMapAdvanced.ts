@@ -208,6 +208,22 @@ export interface SemanticMapAdvancedConfig {
    *  Lists the possible levels of features (geometries) in the map (Eg. terrain, buildings, waterways, etc.)
    */
   vectorLevels?: [];
+
+  /**
+   * Optional style configuration for selected features.
+   * Allows customization of how selected features appear on the map.
+   */
+  selectedFeatureStyle?: {
+    color?: string;           // Fill color (e.g., 'rgba(255, 165, 0, 0.6)')
+    borderColor?: string;     // Stroke color (e.g., '#FFFFFF')
+    borderWidth?: number;     // Stroke width (e.g., 3)
+    pointRadius?: number;     // Circle radius for points (e.g., 10)
+    pointFontSize?: number;   // Font size for point markers (e.g., 26)
+    labelFontSize?: number;   // Font size for labels (e.g., 14)
+    labelColor?: string;      // Text color (e.g., '#000')
+    labelStrokeColor?: string; // Text outline color (e.g., '#fff')
+    labelStrokeWidth?: number; // Text outline width (e.g., 3)
+  };
 }
 
 export type SemanticMapAdvancedProps = SemanticMapAdvancedConfig & Props<any>;
@@ -1043,25 +1059,28 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
    * @param color The base color to use
    */
   private createHighlightedFeatureStyle(geometry: Geometry, color: string): Style {
+    // Get custom style from props if available
+    const customStyle = this.props.selectedFeatureStyle || {};
+    
     if (geometry instanceof Point || geometry instanceof MultiPoint) {
       return new Style({
         geometry,
         image: new CircleStyle({
-          radius: 10, // Larger radius for highlighted point
-          fill: new Fill({ color: color }),
+          radius: customStyle.pointRadius || 10, // Default: 10
+          fill: new Fill({ color: customStyle.color || color }),
           stroke: new Stroke({
-            color: '#FFFFFF',
-            width: 3,
+            color: customStyle.borderColor || '#FFFFFF',
+            width: customStyle.borderWidth || 3,
           }),
         }),
         text: new Text({
           text: '\uf041',
-          font: 'normal 26px FontAwesome', // Larger font for highlighted point
+          font: `normal ${customStyle.pointFontSize || 26}px FontAwesome`, // Default: 26px
           textBaseline: 'bottom',
-          fill: new Fill({ color: '#FFFFFF' }),
+          fill: new Fill({ color: customStyle.borderColor || '#FFFFFF' }),
           stroke: new Stroke({
             color: '#000000',
-            width: 2,
+            width: customStyle.labelStrokeWidth || 2,
           }),
         }),
       });
@@ -1074,8 +1093,11 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       }
       // Fallback if no geometries
       return new Style({
-        fill: new Fill({ color: color || 'rgba(255, 165, 0, 0.6)' }),
-        stroke: new Stroke({ color: '#FFFFFF', width: 3 }),
+        fill: new Fill({ color: customStyle.color || 'rgba(255, 165, 0, 0.6)' }),
+        stroke: new Stroke({ 
+          color: customStyle.borderColor || '#FFFFFF', 
+          width: customStyle.borderWidth || 3 
+        }),
       });
     }
 
@@ -1083,21 +1105,21 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     return new Style({
       geometry,
       fill: new Fill({
-        color: color || 'rgba(255, 165, 0, 0.6)', // Orange with higher opacity for highlight
+        color: customStyle.color || 'rgba(255, 165, 0, 0.6)', // Default: orange with opacity
       }),
       stroke: new Stroke({
-        color: '#FFFFFF', // White border
-        width: 3, // Thicker border
+        color: customStyle.borderColor || '#FFFFFF', // Default: white border
+        width: customStyle.borderWidth || 3, // Default: 3px width
       }),
       text: new Text({
-        font: '14px Calibri,sans-serif', // Larger font
+        font: `${customStyle.labelFontSize || 14}px Calibri,sans-serif`, // Default: 14px
         overflow: true,
         fill: new Fill({
-          color: '#000',
+          color: customStyle.labelColor || '#000',
         }),
         stroke: new Stroke({
-          color: '#fff',
-          width: 3,
+          color: customStyle.labelStrokeColor || '#fff',
+          width: customStyle.labelStrokeWidth || 3,
         }),
       }),
     });

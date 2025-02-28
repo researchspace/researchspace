@@ -47,6 +47,8 @@ interface Timeline {
   min: number;
   max: number;
   default: number;
+  locked?: boolean;
+  tour?: boolean;
 }
 
 interface State {
@@ -70,6 +72,8 @@ interface State {
   groupDisabled: { [group: string]: boolean };
   selectedFeature?: any;
   activePanel: string | null; // Track which panel is currently active
+  isPlaying?: boolean; // For timeline animation
+  animationInterval?: number; // For timeline animation
 }
 
 interface Props {
@@ -82,6 +86,14 @@ interface Props {
   showFilters?: boolean;
   timeline: Timeline;
   featuresColorsPalette?: string;
+  /**
+   * When true, disables timeline interaction
+   */
+  locked?: boolean;
+  /**
+   * When true, enables auto-play functionality
+   */
+  tour?: boolean;
   /**
    * Template reference to use for rendering the component.
    * Should be a handlebars expression like {{> templateName}}
@@ -183,6 +195,14 @@ export class SemanticMapControls extends Component<Props, State> {
 
     // Add event listener for the feature-close-clicked custom event
     document.addEventListener('feature-close-clicked', this.clearSelectedFeature);
+    
+    // Start animation if tour is enabled
+    if (this.props.timeline && this.props.timeline.tour) {
+      // Use setTimeout to ensure the component is fully mounted
+      setTimeout(() => {
+        this.handleTimelinePlay();
+      }, 1000);
+    }
   }
 
   /**
@@ -1108,6 +1128,73 @@ export class SemanticMapControls extends Component<Props, State> {
             </div>
           ) : null}
         </div>
+
+        {this.props.timeline && (
+          <div className={styles.timeSliderContainer}>
+
+            {/* Play button */}
+            {this.props.timeline.tour && (
+              <button
+              style={{
+                position: 'absolute',
+                right: '10px',
+                top: '10px',
+                background: this.props.timeline.locked && !this.props.timeline.tour ? '#999' : '#3498db',
+                color: 'white',
+                border: 'none',
+                borderRadius: '50%',
+                width: '30px',
+                height: '30px',
+                cursor: this.props.timeline.locked && !this.props.timeline.tour ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                opacity: this.props.timeline.locked && !this.props.timeline.tour ? 0.6 : 1,
+              }}
+              title={this.props.timeline.locked && !this.props.timeline.tour ? "Timeline is locked" : "Animate timeline"}
+              onClick={this.handleTimelinePlay}
+              disabled={this.props.timeline.locked && !this.props.timeline.tour}
+              >
+              <i className={`fa ${this.state.isPlaying ? 'fa-pause' : 'fa-play'}`}></i>
+              </button>
+            )}
+            
+            {this.props.timeline.mode === 'marked' && (
+              <React.Fragment>
+                <div className={styles.yearLabel}>
+                  {this.state.year}
+                </div>
+              </React.Fragment>
+            )}
+            
+            {this.props.timeline.mode === 'normal' && (
+              <React.Fragment>
+                <input
+                  type={'range'}
+                  className={styles.timelineSlider}
+                  min={this.props.timeline.min}
+                  max={this.props.timeline.max}
+                  step={1}
+                  value={this.state.year}
+                  onChange={this.handleTimelineChange}
+                  disabled={this.props.timeline.locked}
+                />
+                <div className={styles.yearLabel}>
+                  {this.state.year}
+                </div>
+                
+                {/* Tick marks */}
+                <div className={styles['timeline-ticks']}>
+                  {this.generateTickMarks().map(year => (
+                    <div key={year} style={{ fontSize: '12px', color: '#666' }}>
+                      {year}
+                    </div>
+                  ))}
+                </div>
+              </React.Fragment>
+            )}
+          </div>
+        )}
       </div>
     );
   }
@@ -1434,6 +1521,108 @@ export class SemanticMapControls extends Component<Props, State> {
     this.setState({ mapLayers: mapLayersClone }, () => {
       this.triggerSendLayers();
     });
+  }
+
+  /**
+   * Generate tick marks for the timeline
+   */
+  private generateTickMarks = () => {
+    if (!this.props.timeline) return [];
+    
+    const { min, max } = this.props.timeline;
+    const range = max - min;
+    
+    // For small ranges, show more ticks
+    if (range <= 100) {
+      return Array.from({ length: Math.floor(range / 10) + 1 }, (_, i) => min + i * 10);
+    }
+    
+    // For medium ranges
+    if (range <= 500) {
+      return Array.from({ length: Math.floor(range / 50) + 1 }, (_, i) => min + i * 50);
+    }
+    
+    // For large ranges, show century marks
+    const startCentury = Math.ceil(min / 100) * 100;
+    const numCenturies = Math.floor((max - startCentury) / 100) + 1;
+    return Array.from({ length: numCenturies }, (_, i) => startCentury + i * 100);
+  }
+
+  /**
+   * Handle timeline slider change
+   */
+  private handleTimelineChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    // If timeline is locked, don't allow changes
+    if (this.props.timeline && this.props.timeline.locked) {
+      return;
+    }
+    
+    const input = event.target as HTMLInputElement;
+    const value = parseInt(input.value);
+    
+    // Add pulse animation class to year label
+    const yearLabel = document.querySelector(`.${styles.yearLabel}`) as HTMLElement;
+    if (yearLabel) {
+      yearLabel.classList.add('pulse');
+      setTimeout(() => {
+        yearLabel.classList.remove('pulse');
+      }, 500);
+    }
+    
+    this.setState(
+      {
+        year: value,
+      },
+      () => {
+        this.triggerSendYear();
+      }
+    );
+  }
+
+  /**
+   * Handle timeline play button click
+   */
+  private handleTimelinePlay = () => {
+    // If timeline is locked and not in tour mode, don't allow changes
+    if (this.props.timeline && this.props.timeline.locked && !this.props.timeline.tour) {
+      return;
+    }
+    
+    if (this.state.isPlaying) {
+      // Stop animation
+      if (this.state.animationInterval) {
+        window.clearInterval(this.state.animationInterval);
+      }
+      this.setState({ isPlaying: false, animationInterval: undefined });
+    } else {
+      // Start animation
+      const min = this.props.timeline.min;
+      const max = this.props.timeline.max;
+      let current = this.state.year;
+      
+      const interval = window.setInterval(() => {
+        current += 10;
+        if (current > max) {
+          current = min;
+        }
+        
+        // Update year and send to map
+        this.setState({ year: current }, () => {
+          this.triggerSendYear();
+          
+          // Add pulse animation to year label
+          const yearLabel = document.querySelector(`.${styles.yearLabel}`) as HTMLElement;
+          if (yearLabel) {
+            yearLabel.classList.add('pulse');
+            setTimeout(() => {
+              yearLabel.classList.remove('pulse');
+            }, 500);
+          }
+        });
+      }, 500);
+      
+      this.setState({ isPlaying: true, animationInterval: interval });
+    }
   }
 }
 

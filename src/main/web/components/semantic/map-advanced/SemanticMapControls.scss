@@ -103,7 +103,118 @@
 }
 
 .timeSliderContainer {
-  margin: 10px;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 10px 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  z-index: 99999;
+  pointer-events: auto;
+  margin: 0;
+  animation: timelineAppear 1s ease-out forwards;
+}
+
+@keyframes timelineAppear {
+  0% { opacity: 0; transform: translateX(-50%) translateY(50px); }
+  100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.timelineSlider {
+  width: 100%;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: linear-gradient(to right, #3498db, #2ecc71);
+  outline: none;
+  border-radius: 3px;
+}
+
+.timelineSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #3498db;
+  cursor: pointer;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+}
+
+.timelineSlider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #3498db;
+  cursor: pointer;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Styles for disabled timeline slider */
+.timelineSlider:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.timelineSlider:disabled::-webkit-slider-thumb {
+  background: #ccc;
+  border-color: #999;
+  cursor: not-allowed;
+}
+
+.timelineSlider:disabled::-moz-range-thumb {
+  background: #ccc;
+  border-color: #999;
+  cursor: not-allowed;
+}
+
+.yearLabel {
+  position: fixed;
+  bottom: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 24px !important;
+  font-weight: bold;
+  color: #333;
+  text-shadow: 0 0 5px #fff;
+  z-index: 100000;
+  pointer-events: none;
+}
+
+@keyframes yearPulse {
+  0% { transform: translateX(-50%) scale(1); }
+  50% { transform: translateX(-50%) scale(1.1); }
+  100% { transform: translateX(-50%) scale(1); }
+}
+
+.yearLabel.pulse {
+  animation: yearPulse 0.5s ease-in-out;
+}
+
+.timeline-ticks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+  padding: 0 10px;
+}
+
+.timeline-tooltip {
+  position: fixed;
+  left: 40px;
+  top: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  width: 250px;
+  font-size: 12px;
+  display: none;
+  z-index: 100001;
 }
 
 .mapLayersTitle {
@@ -437,4 +548,7 @@
     background-color: #f0f0f0;
     color: #333;
   }
+}
+.ol-zoom {
+  right: 20em;
 }

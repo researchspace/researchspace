@@ -1133,6 +1133,26 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       return this.createHighlightedFeatureStyle(geometry, 'rgba(255, 165, 0, 0.6)'); // Orange highlight
     }
 
+    // Check if year filtering is enabled and we have a year set
+    if (this.state.yearFiltering && this.state.year) {
+      // Extract year from YYYY-MM-DD format
+      const currentYear = parseInt(this.state.year.split('-')[0]);
+      
+      // Only apply date filtering if the feature has temporal properties
+      if (feature.get('bob') && feature.get('eob') && feature.get('boe') && feature.get('eoe')) {
+        const bob = feature.get('bob').value;
+        const eob = feature.get('eob').value;
+        const boe = feature.get('boe').value;
+        const eoe = feature.get('eoe').value;
+        
+        // Check if the current year is within the feature's date range
+        if (!this.dateInclusion(bob, eob, boe, eoe, currentYear)) {
+          // If not, hide the feature
+          return this.createHiddenFeatureStyle();
+        }
+      }
+    }
+
     // Check if feature has a group and if that group is toggled on
     if (this.state.registeredControls.length > 0 && this.state.featuresColorTaxonomy) {
       if (feature.get(this.state.featuresColorTaxonomy) !== undefined) {

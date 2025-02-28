@@ -641,7 +641,8 @@ export class SemanticMapControls extends Component<Props, State> {
     });
 
     return (
-      <div className={styles.mapControlsContainer}>
+      <React.Fragment>
+        <div className={styles.mapControlsContainer}>
         {/* Sidebar with buttons */}
         <div className={styles.mapControlsSidebar}>
           {/* Historical Maps Button */}
@@ -1091,54 +1092,7 @@ export class SemanticMapControls extends Component<Props, State> {
           </div>
         )}
 
-        <div>
-          {this.state.selectedFeature ? (
-            <div
-              style={{
-                position: 'relative',
-                padding: '15px',
-                backgroundColor: 'white',
-                borderRadius: '4px',
-                boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)',
-                marginTop: '10px',
-                pointerEvents: 'auto',
-              }}
-            >
-              <button
-                onClick={this.clearSelectedFeature}
-                style={{
-                  position: 'fixed', // Changed from 'absolute' to 'fixed'
-                  top: '125px', // Positioned near the top of the panel
-                  right: '25px', // Positioned near the right edge of the panel
-                  background: 'white', // Changed to match panel background
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '16px',
-                  color: '#666',
-                  padding: '5px',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  zIndex: 10000001, // Higher than the panel's z-index (10000000)
-                  boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)', // Add shadow to match panel
-                }}
-                title="Close"
-                onMouseOver={(e) => {
-                  e.currentTarget.style.backgroundColor = '#f0f0f0';
-                  e.currentTarget.style.color = '#333';
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.backgroundColor = 'white';
-                  e.currentTarget.style.color = '#666';
-                }}
-              >
-                <i className="fa fa-times"></i>
-              </button>
-              {templateElement}
-            </div>
-          ) : null}
-        </div>
+        {/* Feature template moved out of sidebar to appear on the map */}
 
         {this.props.timeline && (
           <div className={styles.timeSliderContainer}>
@@ -1203,7 +1157,22 @@ export class SemanticMapControls extends Component<Props, State> {
             )}
           </div>
         )}
-      </div>
+        </div>
+
+        {/* Feature template positioned to appear on the map */}
+        {this.state.selectedFeature ? (
+          <div className={styles['featureTemplateContainer']}>
+            <button
+              onClick={this.clearSelectedFeature}
+              className={styles['featureTemplateCloseButton']}
+              title="Close"
+            >
+              <i className="fa fa-times"></i>
+            </button>
+            {templateElement}
+          </div>
+        ) : null}
+      </React.Fragment>
     );
   }
 

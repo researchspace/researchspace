@@ -217,6 +217,7 @@ interface MapState {
   errorMessage: Data.Maybe<string>;
   noResults?: boolean;
   isLoading?: boolean;
+  baseMapLoaded?: boolean;
   overlayVisualization?: string;
   featureColor?: string;
   mapLayers?: Array<any>;
@@ -265,6 +266,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       tupleTemplate: maybe.Nothing<HandlebarsTemplateDelegate>(),
       noResults: false,
       isLoading: true,
+      baseMapLoaded: false,
       errorMessage: maybe.Nothing<string>(),
       overlayVisualization: 'normal',
       featureColor: 'rgba(180,100,20,0.2)',
@@ -464,8 +466,10 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       return createElement(TemplateItem, { template: { source: this.props.noResultTemplate } });
     }
 
+    const isMapLoading = this.state.isLoading || !this.state.baseMapLoaded;
+
     return D.div(
-      { style: { height: '100%', width: '100%' } },
+      { style: { height: '100%', width: '100%', position: 'relative' } },
       D.div(
         {
           ref: MAP_REF,
@@ -484,7 +488,49 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
           style: { display: 'none' },
         })
       ),
-      this.state.isLoading ? createElement(Spinner) : null
+      isMapLoading ? this.renderLoadingOverlay() : null
+    );
+  }
+
+  private renderLoadingOverlay() {
+    return D.div(
+      {
+        className: 'semantic-map-loading-overlay',
+        style: {
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(255, 255, 255, 0.7)',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+          borderRadius: '4px',
+        },
+      },
+      D.div(
+        {
+          className: 'semantic-map-loading-spinner',
+          style: {
+            marginBottom: '10px',
+          },
+        },
+        createElement(Spinner)
+      ),
+      D.div(
+        {
+          className: 'semantic-map-loading-text',
+          style: {
+            fontSize: '14px',
+            fontWeight: 'bold',
+            color: '#333',
+          },
+        },
+        'Loading map...'
+      )
     );
   }
 
@@ -506,20 +552,17 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         console.log('Clicked feature.');
         console.log(feature);
         // Store the entire feature object
-        this.setState(
-          { selectedFeature: feature },
-          () => {
-            console.log(this.state.selectedFeature);
-            this.triggerSendSelectedFeature();
-            
-            // Zoom to the selected feature
-            this.zoomToFeature(feature);
-            
-            // Apply the highlight style by refreshing the layer
-            this.applyFeaturesFilteringFromControls();
-          }
-        );
-        
+        this.setState({ selectedFeature: feature }, () => {
+          console.log(this.state.selectedFeature);
+          this.triggerSendSelectedFeature();
+
+          // Zoom to the selected feature
+          this.zoomToFeature(feature);
+
+          // Apply the highlight style by refreshing the layer
+          this.applyFeaturesFilteringFromControls();
+        });
+
         // Only show the popup if tupleTemplate prop is present
         if (this.props.tupleTemplate) {
           const geometry = feature.getGeometry();
@@ -537,16 +580,13 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         }
       } else {
         // No feature was clicked, reset selectedFeature to null
-        this.setState(
-          { selectedFeature: null },
-          () => {
-            console.log('No feature selected, reset selectedFeature to null');
-            this.triggerSendSelectedFeature();
-            
-            // Apply normal styles to all features (remove any highlight)
-            this.applyFeaturesFilteringFromControls();
-          }
-        );
+        this.setState({ selectedFeature: null }, () => {
+          console.log('No feature selected, reset selectedFeature to null');
+          this.triggerSendSelectedFeature();
+
+          // Apply normal styles to all features (remove any highlight)
+          this.applyFeaturesFilteringFromControls();
+        });
       }
     });
 
@@ -951,25 +991,25 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
    */
   private zoomToFeature(feature: Feature) {
     if (!feature || !this.map) return;
-    
+
     // Get the geometry of the feature
     const geometry = feature.getGeometry();
     if (!geometry) return;
-    
+
     // Create an extent from the geometry
     const extent = geometry.getExtent();
-    
+
     // Add some padding around the extent
     const padding = [50, 50, 50, 50]; // [top, right, bottom, left] padding in pixels
-    
+
     // Get the current zoom level
     const currentZoom = this.map.getView().getZoom();
-    
+
     // Calculate what the zoom level would be for the feature extent
     const view = this.map.getView();
     const resolution = view.getResolutionForExtent(extent, this.map.getSize());
     const featureZoom = view.getZoomForResolution(resolution);
-    
+
     // Only zoom if the current zoom is less than what would be calculated
     // (i.e., don't "dezoom" if we're already zoomed in more)
     if (currentZoom && featureZoom && currentZoom < featureZoom) {
@@ -977,21 +1017,21 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       this.map.getView().fit(extent, {
         padding: padding,
         duration: 500, // Animation duration in milliseconds
-        maxZoom: 18,   // Limit maximum zoom level
+        maxZoom: 18, // Limit maximum zoom level
       });
     } else {
       // Just center on the feature without changing zoom
       const center = [
         (extent[0] + extent[2]) / 2, // X center
-        (extent[1] + extent[3]) / 2  // Y center
+        (extent[1] + extent[3]) / 2, // Y center
       ];
       this.map.getView().animate({
         center: center,
-        duration: 500
+        duration: 500,
       });
     }
   }
-  
+
   /**
    * Creates a highlighted style for the selected feature
    * @param geometry The geometry of the feature
@@ -1038,16 +1078,16 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         stroke: new Stroke({ color: '#FFFFFF', width: 3 }),
       });
     }
-    
+
     // For polygons and other geometries
     return new Style({
       geometry,
-      fill: new Fill({ 
-        color: color || 'rgba(255, 165, 0, 0.6)' // Orange with higher opacity for highlight
+      fill: new Fill({
+        color: color || 'rgba(255, 165, 0, 0.6)', // Orange with higher opacity for highlight
       }),
       stroke: new Stroke({
         color: '#FFFFFF', // White border
-        width: 3,         // Thicker border
+        width: 3, // Thicker border
       }),
       text: new Text({
         font: '14px Calibri,sans-serif', // Larger font
@@ -1070,17 +1110,17 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       const geometry = feature.getGeometry();
       return this.createHighlightedFeatureStyle(geometry, 'rgba(255, 165, 0, 0.6)'); // Orange highlight
     }
-    
+
     // Check if feature has a group and if that group is toggled on
     if (this.state.registeredControls.length > 0 && this.state.featuresColorTaxonomy) {
       if (feature.get(this.state.featuresColorTaxonomy) !== undefined) {
         let feature_group = feature.get(this.state.featuresColorTaxonomy).value;
-        
+
         // If the feature's group is in groupColorAssociations
         if (feature_group in this.state.groupColorAssociations) {
           // Get the color for this group
           let color = this.state.groupColorAssociations[feature_group];
-          
+
           // Check if the color is a string with rgba format
           if (typeof color === 'string' && color.startsWith('rgba')) {
             // Extract the alpha value
@@ -1096,7 +1136,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         }
       }
     }
-    
+
     // If we get here, the feature should be visible with normal style
     return this.createFeatureStyle(feature);
   }
@@ -1228,6 +1268,24 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
           // Initial update of visible features
           this.updateVisibleFeatures();
+
+          // Listen for base map loaded event
+          const baseMapLayer = this.state.mapLayers.find((layer) => layer instanceof TileLayer);
+          if (baseMapLayer) {
+            const source = baseMapLayer.getSource();
+            if (source) {
+              // For OSM and XYZ sources
+              source.on('tileloadend', () => {
+                // Set a small timeout to ensure all tiles are loaded
+                setTimeout(() => {
+                  this.setState({ baseMapLoaded: true });
+                }, 500);
+              });
+            }
+          } else {
+            // If no base map layer, consider it loaded
+            this.setState({ baseMapLoaded: true });
+          }
 
           this.startRegistrationProcess();
 

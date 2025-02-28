@@ -22,7 +22,7 @@ import {
   SemanticMapControlsRegister,
   SemanticMapControlsUnregister,
 } from './SemanticMapControlsEvents';
-import { SemanticMapRequestControlsRegistration, SemanticMapSendSelectedFeature } from './SemanticMapEvents';
+import { SemanticMapRequestControlsRegistration, SemanticMapSendSelectedFeature, SemanticMapClearSelectedFeature } from './SemanticMapEvents';
 
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
@@ -195,7 +195,7 @@ export class SemanticMapControls extends Component<Props, State> {
 
     // Add event listener for the feature-close-clicked custom event
     document.addEventListener('feature-close-clicked', this.clearSelectedFeature);
-    
+
     // Start animation if tour is enabled
     if (this.props.timeline && this.props.timeline.tour) {
       // Use setTimeout to ensure the component is fully mounted
@@ -321,6 +321,15 @@ export class SemanticMapControls extends Component<Props, State> {
         if (this.props.renderTemplate) {
           this.forceUpdate();
         }
+        
+        // Trigger event to clear the selected feature style on the map
+        trigger({
+          eventType: SemanticMapClearSelectedFeature,
+          source: this.props.id,
+          targets: [this.props.targetMapId],
+        });
+        
+        console.log('Cleared selected feature and triggered style reset');
       }
     );
   };
@@ -1098,10 +1107,10 @@ export class SemanticMapControls extends Component<Props, State> {
               <button
                 onClick={this.clearSelectedFeature}
                 style={{
-                  position: 'absolute',
-                  top: '5px',
-                  right: '5px',
-                  background: 'none',
+                  position: 'fixed', // Changed from 'absolute' to 'fixed'
+                  top: '125px', // Positioned near the top of the panel
+                  right: '25px', // Positioned near the right edge of the panel
+                  background: 'white', // Changed to match panel background
                   border: 'none',
                   cursor: 'pointer',
                   fontSize: '16px',
@@ -1111,6 +1120,8 @@ export class SemanticMapControls extends Component<Props, State> {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  zIndex: 10000001, // Higher than the panel's z-index (10000000)
+                  boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)', // Add shadow to match panel
                 }}
                 title="Close"
                 onMouseOver={(e) => {
@@ -1118,7 +1129,7 @@ export class SemanticMapControls extends Component<Props, State> {
                   e.currentTarget.style.color = '#333';
                 }}
                 onMouseOut={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.backgroundColor = 'white';
                   e.currentTarget.style.color = '#666';
                 }}
               >
@@ -1131,42 +1142,41 @@ export class SemanticMapControls extends Component<Props, State> {
 
         {this.props.timeline && (
           <div className={styles.timeSliderContainer}>
-
             {/* Play button */}
             {this.props.timeline.tour && (
               <button
-              style={{
-                position: 'absolute',
-                right: '10px',
-                top: '10px',
-                background: this.props.timeline.locked && !this.props.timeline.tour ? '#999' : '#3498db',
-                color: 'white',
-                border: 'none',
-                borderRadius: '50%',
-                width: '30px',
-                height: '30px',
-                cursor: this.props.timeline.locked && !this.props.timeline.tour ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                opacity: this.props.timeline.locked && !this.props.timeline.tour ? 0.6 : 1,
-              }}
-              title={this.props.timeline.locked && !this.props.timeline.tour ? "Timeline is locked" : "Animate timeline"}
-              onClick={this.handleTimelinePlay}
-              disabled={this.props.timeline.locked && !this.props.timeline.tour}
+                style={{
+                  position: 'absolute',
+                  right: '10px',
+                  top: '10px',
+                  background: this.props.timeline.locked && !this.props.timeline.tour ? '#999' : '#3498db',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '30px',
+                  height: '30px',
+                  cursor: this.props.timeline.locked && !this.props.timeline.tour ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: this.props.timeline.locked && !this.props.timeline.tour ? 0.6 : 1,
+                }}
+                title={
+                  this.props.timeline.locked && !this.props.timeline.tour ? 'Timeline is locked' : 'Animate timeline'
+                }
+                onClick={this.handleTimelinePlay}
+                disabled={this.props.timeline.locked && !this.props.timeline.tour}
               >
-              <i className={`fa ${this.state.isPlaying ? 'fa-pause' : 'fa-play'}`}></i>
+                <i className={`fa ${this.state.isPlaying ? 'fa-pause' : 'fa-play'}`}></i>
               </button>
             )}
-            
+
             {this.props.timeline.mode === 'marked' && (
               <React.Fragment>
-                <div className={styles.yearLabel}>
-                  {this.state.year}
-                </div>
+                <div className={styles.yearLabel}>{this.state.year}</div>
               </React.Fragment>
             )}
-            
+
             {this.props.timeline.mode === 'normal' && (
               <React.Fragment>
                 <input
@@ -1179,13 +1189,11 @@ export class SemanticMapControls extends Component<Props, State> {
                   onChange={this.handleTimelineChange}
                   disabled={this.props.timeline.locked}
                 />
-                <div className={styles.yearLabel}>
-                  {this.state.year}
-                </div>
-                
+                <div className={styles.yearLabel}>{this.state.year}</div>
+
                 {/* Tick marks */}
                 <div className={styles['timeline-ticks']}>
-                  {this.generateTickMarks().map(year => (
+                  {this.generateTickMarks().map((year) => (
                     <div key={year} style={{ fontSize: '12px', color: '#666' }}>
                       {year}
                     </div>
@@ -1528,25 +1536,25 @@ export class SemanticMapControls extends Component<Props, State> {
    */
   private generateTickMarks = () => {
     if (!this.props.timeline) return [];
-    
+
     const { min, max } = this.props.timeline;
     const range = max - min;
-    
+
     // For small ranges, show more ticks
     if (range <= 100) {
       return Array.from({ length: Math.floor(range / 10) + 1 }, (_, i) => min + i * 10);
     }
-    
+
     // For medium ranges
     if (range <= 500) {
       return Array.from({ length: Math.floor(range / 50) + 1 }, (_, i) => min + i * 50);
     }
-    
+
     // For large ranges, show century marks
     const startCentury = Math.ceil(min / 100) * 100;
     const numCenturies = Math.floor((max - startCentury) / 100) + 1;
     return Array.from({ length: numCenturies }, (_, i) => startCentury + i * 100);
-  }
+  };
 
   /**
    * Handle timeline slider change
@@ -1556,10 +1564,10 @@ export class SemanticMapControls extends Component<Props, State> {
     if (this.props.timeline && this.props.timeline.locked) {
       return;
     }
-    
+
     const input = event.target as HTMLInputElement;
     const value = parseInt(input.value);
-    
+
     // Add pulse animation class to year label
     const yearLabel = document.querySelector(`.${styles.yearLabel}`) as HTMLElement;
     if (yearLabel) {
@@ -1568,7 +1576,7 @@ export class SemanticMapControls extends Component<Props, State> {
         yearLabel.classList.remove('pulse');
       }, 500);
     }
-    
+
     this.setState(
       {
         year: value,
@@ -1577,7 +1585,7 @@ export class SemanticMapControls extends Component<Props, State> {
         this.triggerSendYear();
       }
     );
-  }
+  };
 
   /**
    * Handle timeline play button click
@@ -1587,7 +1595,7 @@ export class SemanticMapControls extends Component<Props, State> {
     if (this.props.timeline && this.props.timeline.locked && !this.props.timeline.tour) {
       return;
     }
-    
+
     if (this.state.isPlaying) {
       // Stop animation
       if (this.state.animationInterval) {
@@ -1599,17 +1607,17 @@ export class SemanticMapControls extends Component<Props, State> {
       const min = this.props.timeline.min;
       const max = this.props.timeline.max;
       let current = this.state.year;
-      
+
       const interval = window.setInterval(() => {
         current += 10;
         if (current > max) {
           current = min;
         }
-        
+
         // Update year and send to map
         this.setState({ year: current }, () => {
           this.triggerSendYear();
-          
+
           // Add pulse animation to year label
           const yearLabel = document.querySelector(`.${styles.yearLabel}`) as HTMLElement;
           if (yearLabel) {
@@ -1620,10 +1628,10 @@ export class SemanticMapControls extends Component<Props, State> {
           }
         });
       }, 500);
-      
+
       this.setState({ isPlaying: true, animationInterval: interval });
     }
-  }
+  };
 }
 
 export default SemanticMapControls;

@@ -75,6 +75,7 @@ import {
   SemanticMapUpdateFeatureColor,
   SemanticMapSendSelectedFeature,
   SemanticMapRequestControlsRegistration,
+  SemanticMapClearSelectedFeature,
 } from './SemanticMapEvents';
 import { Dictionary } from 'platform/api/sparql/SparqlClient';
 import QueryConstantParameter from '../search/web-components/QueryConstant';
@@ -432,6 +433,16 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         })
       )
       .onValue(this.unregisterControlsFromEvent);
+      
+    // Listen for the clear selected feature event
+    this.cancelation
+      .map(
+        listen({
+          eventType: SemanticMapClearSelectedFeature,
+          target: this.props.id,
+        })
+      )
+      .onValue(this.handleClearSelectedFeature);
   }
 
   /** REACT COMPONENT FUNCTIONS **/
@@ -1806,6 +1817,19 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   /*** VISUALIZATIONS  */
 
   private toggle3d = (event: Event<any>) => {};
+  
+  /**
+   * Handler for the SemanticMapClearSelectedFeature event
+   * Clears the selected feature and resets the styles
+   */
+  private handleClearSelectedFeature = (event: Event<any>) => {
+    console.log('Received clear selected feature event');
+    // Reset the selected feature to null
+    this.setState({ selectedFeature: null }, () => {
+      // Apply normal styles to all features (remove any highlight)
+      this.applyFeaturesFilteringFromControls();
+    });
+  };
 
   private setOverlaySwipe = (event: Event<any>) => {
     const newSwipeValue = event.data;

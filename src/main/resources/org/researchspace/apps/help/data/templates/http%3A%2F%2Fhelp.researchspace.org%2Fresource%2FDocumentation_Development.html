@@ -11,11 +11,11 @@
   }
 </style>
 
-<mp-splitpane id="help-documentation-template" 
+<mp-splitpane id="help-documentation-development" 
               class-name="help-documentation-splitpane color-blue"
-              min-size=100 
+              min-size=60 
               default-size=260 
-              snap-threshold=120
+              snap-threshold=100
               default-open=true 
               always-render=true 
               persist-resize=false>
@@ -125,7 +125,7 @@
         <section id="rs-doc_devstart">
           <h1>Development</h1>
           <h2>The lastest ResearchSpace developer documentation and sample code</h2>
-
+          
           <hr class="divider">
 
           <div class="rs-doc_2columns" style="margin-bottom: 20px;">
@@ -155,10 +155,11 @@
 
         <section id="rs-doc_templates">
           <h3>Templates</h3>
-          <p>A template is a web page into which specific ResearchSpace components and logic can be embedded like semantic-tables, semantic-search, semantic-narratives, knowledge maps and so on. It uses a templating system called handlebars that allows the use of variables and conditional logic - e.g. if this - then this. As an admin user you can edit and nest templates in the system.</p>
+          <p>A template is a web page into which specific ResearchSpace components and logic can be embedded like semantic-tables, semantic-search, semantic-narratives, knowledge maps and so on. It uses a templating system called handlebars that allows the use of variables and conditional 
+            logic - e.g. if this - then this. As an admin user you can edit and nest templates in the system.</p>
           
           <p>To create a <b>new blank page for a template</b> just define a new page in the address bar. 
-            If you append to the base URL (<a href="http://localhost:10214/resource/" target="_blank" class="text-link-action">http://localhost:10214/resource/</a>) with rsp://testpage, then a blank page is created. You can then add some content.</p>
+            If you append to the base URL (<a href="/resource/" target="_blank" class="text-link-action">http://localhost:10214/resource/</a>) with rsp://testpage, then a blank page is created. You can then add some content.</p>
           <p>Embedding templates provides flexibility, and templates can talk to each other and pass parameters.</p>
           <p>To know more about templates look at the 
             <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames' 
@@ -385,20 +386,25 @@ List of architects:
           </p>
           <ul>
               <li>Drag and drop an RDF file or LOAD a file via HTTP/FTP into the 
-                  ResearchSpace data import facility accessible going in the Administration area at 
-                  <a href="http://localhost:10214/resource/rsp:admin" target="_blank" class="text-link-action">http://localhost:10214/resource/rsp:admin</a> and 
-                  selecting 'Data import & Export'. This <a href="http://localhost:10214/resource/Admin:DataImportExport" target="_blank" class="text-link-action">utility</a>
-                  supports file import, either from a local disk or across a web connection (HTTP or FTP).
+                  ResearchSpace data import facility accessible going in the 
+                  <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                  urlqueryparam-view='admin'
+                                  urlqueryparam-resource-iri='[[resolvePrefix "Admin:DataImportExport"]]'
+                                  urlqueryparam-custom-label='Data import & Download'
+                                  class="text-link-action">
+                                  Administration area - Data import & Download
+                  </semantic-link>. This utility supports file import, either from a local disk or across a web connection (HTTP or FTP).
               </li>
 
-              <li>Use the SPARQL interface - one is available within ResearchSpace at
-                <semantic-link  uri="http://www.researchspace.org/resource/ThinkingFrames" 
+              <li>Use the 
+                <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames" 
                                 urlqueryparam-view='admin'
                                 urlqueryparam-resource-iri='http://www.researchspace.org/resource/system/SparqlEndpoint'
                                 urlqueryparam-custom-label='SPARQL'
                                 class="text-link-action"> 
-                  http://localhost:10214/sparql
-                </semantic-link>.</li>
+                  SPARQL interface
+                </semantic-link>.
+              </li>
               <li>Author data using the ResearchSpace user orientated authoring tools.</li>
               <li>Use the curl utility (if you have a large amount of data to load).</li>
               <li>Use a specialist third party tool.</li>
@@ -406,7 +412,7 @@ List of architects:
 
           <p>
             To learn more look at the 
-            <semantic-link  uri="http://www.researchspace.org/resource/ThinkingFrames" 
+            <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames" 
                             urlqueryparam-view='help'
                             urlqueryparam-resource-iri='[[resolvePrefix "Help:WorkingWithData"]]'
                             urlqueryparam-custom-label='Working with data'
@@ -414,7 +420,7 @@ List of architects:
               Working with data guide
             </semantic-link>
             and 
-            <semantic-link  uri="http://www.researchspace.org/resource/ThinkingFrames" 
+            <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames" 
                             urlqueryparam-view='help'
                             urlqueryparam-resource-iri='[[resolvePrefix "Help:GraphStoreAPI"]]'
                             urlqueryparam-custom-label='Graph Store API'
@@ -461,8 +467,14 @@ DROP GRAPH  <http://www.mygraph.org/graph>
           <h3>Quick Example</h3>
 
           <ol>
-            <li>Go to the admin page at 
-              <a href="http://localhost:10214/resource/rsp:admin" class="text-link-action" target="_blank">http://localhost:10214/resource/rsp:admin</a>.</li>
+            <li>Go to the
+              <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames" 
+                              urlqueryparam-view='admin'
+                              urlqueryparam-resource-iri='[[resolvePrefix "rsp:admin"]]'
+                              urlqueryparam-custom-label='Administration'
+                              class="text-link-action">
+                              Administration page
+              </semantic-link>.</li>
             <li>Choose 'Data Import & Export'.</li>
             <li>Download the example RDF file: 
               <a href="/assets/architects.trig" download="architects.trig">
@@ -550,15 +562,19 @@ $subject crm:P2_has_type $value .
           <p>In this case this would operate on an instance and retrieve the value of its P2_has_type for that instance. 
             Equally this can be used for INSERT and DELETE.</p>
 
-          <p>Knowledge Patterns are defined in the <b>Admin area: Knowledge Pattern catalog</b> 
-            at  
-            <a href="http://localhost:10214/resource/system/fieldDefinitionContainer" target="_blank" class="text-link-action">
-              http://localhost:10214/resource/system/fieldDefinitionContainer</a>
+          <p>Knowledge Patterns are defined in the 
+            <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames" 
+                            urlqueryparam-view='admin'
+                            urlqueryparam-resource-iri='http://www.researchspace.org/resource/system/fieldDefinitionContainer'
+                            urlqueryparam-custom-label='Knowledge Patterns'
+                            class="text-link-action">
+                            Administration area: Knowledge Pattern catalog
+            </semantic-link>
             and can make the complex world of SPARQL more manageable.
           </p>
 
           <p>See more on Knowledge Patterns in the 
-            <semantic-link  uri="http://www.researchspace.org/resource/ThinkingFrames" 
+            <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames" 
                             urlqueryparam-view='help'
                             urlqueryparam-resource-iri='[[resolvePrefix "Help:SemanticForm"]]'
                             urlqueryparam-custom-label='Semantic Form'
@@ -627,13 +643,13 @@ rdfs:subPropertyOf crmsci:O17_generated, crm:P31_has_modified, crm:P92_brought_i
             SPARQL queries determine what entities are part of a search and allow the configuration of semantic facets.</p>
 
           <p>The main search template is 
-            <a href="http://localhost:10214/resource/rsp:SearchContent" target="_blank" class="text-link-action">http://localhost:10214/resource/rsp:SearchContent</a>.
+            <a href="/resource/rsp:SearchContent" target="_blank" class="text-link-action">rsp:SearchContent</a>.
           </p>
 
           <p>
             Click the <b>edit page</b> link at the top right of the page to edit it or directly bring up editing mode going to 
-            <a href="http://localhost:10214/resource/rsp:SearchContent?action=edit" target="_blank" class="text-link-action">
-              http://localhost:10214/resource/rsp:SearchContent?action=edit</a>.
+            <a href="/resource/rsp:SearchContent?action=edit" target="_blank" class="text-link-action">
+              rsp:SearchContent?action=edit</a>.
           </p>
 
 
@@ -692,6 +708,8 @@ SELECT DISTINCT ?field WHERE {
         </section>
 
         <br>
+
+        [[!--
         <section id="rs-doc_searchKeyword">
 
           <h3>Semantic search query keyword</h3>
@@ -703,8 +721,7 @@ SELECT DISTINCT ?field WHERE {
             <p>The domain can be restricted to a particular part of the ontology. In this case the root is defined as E1_CRM_Entity and therefore all classes are available.</p>
         
             <p>Entity templates are defined in 
-              <a href="http://localhost:10214/resource/rsp:admin" target="_blank" class="text-link-action">http://localhost:10214/resource/rsp:admin</a>
-                → <b>Authority and entity configuration</b>. 
+              Administration → Authority and entity configuration.
               The entity definition includes a designation of a particular class called For type. 
               The line 
               <mp-code-highlight mode='text/html' code-text='?a <http://www.researchspace.org/resource/system/authority_manager/for_type> ?type .'></mp-code-highlight>
@@ -755,6 +772,7 @@ default-query='SELECT ?subject WHERE {
         </section>
 
         <hr class="divider">
+        --]]
 
         <section id="rs-doc_kmap">
           <h3>Knowledge Map</h3>
@@ -764,8 +782,8 @@ default-query='SELECT ?subject WHERE {
             For this reason, it can be configured to exclude patterns not wanted or needed.</p>
           <p>
             The main knowledge map template is 
-            <a href="http://localhost:10214/resource/rsp:KnowledgeMapOntodiaConfig?action=edit" target="_blank" class="text-link-action">
-              http://localhost:10214/resource/rsp:KnowledgeMapOntodiaConfig?action=edit</a>.
+            <a href="/resource/rsp:KnowledgeMapOntodiaConfig?action=edit" target="_blank" class="text-link-action">
+              rsp:KnowledgeMapOntodiaConfig</a>.
             The key configuration defines the types of patterns that you want to make available to the knowledge map system. 
             This is partly to reduce relations that you know are not required (but can be easily added later) or to avoid duplicate relations.
           </p>
@@ -844,7 +862,7 @@ image-iris='["http://www.researchspace.org/ontology/PX_has_main_representation",
           
           <template id='node'>
             <span>
-              <semantic-link  uri="http://www.researchspace.org/resource/ThinkingFrames" 
+              <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames" 
                               urlqueryparam-view='help'
                               urlqueryparam-resource-iri='{{node.value}}'
                               urlqueryparam-custom-label='{{title.value}}'
@@ -899,7 +917,7 @@ image-iris='["http://www.researchspace.org/ontology/PX_has_main_representation",
             The event system allows different components of the platform to interact and exchange data with each other.
             To learn more look at 
             the 
-            <semantic-link  uri="http://www.researchspace.org/resource/ThinkingFrames" 
+            <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames" 
                             urlqueryparam-view='help'
                             urlqueryparam-resource-iri='[[resolvePrefix "Help:EventSystem"]]'
                             urlqueryparam-custom-label='Event System'
@@ -925,7 +943,7 @@ image-iris='["http://www.researchspace.org/ontology/PX_has_main_representation",
           </p>
 
           <p>See more in the 
-            <semantic-link  uri="http://www.researchspace.org/resource/ThinkingFrames" 
+            <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames" 
                             urlqueryparam-view='help'
                             urlqueryparam-resource-iri='[[resolvePrefix "Help:RepositoryManager"]]'
                             urlqueryparam-custom-label='Repository Manager'

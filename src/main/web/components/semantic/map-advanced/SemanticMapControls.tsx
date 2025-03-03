@@ -131,7 +131,7 @@ export class SemanticMapControls extends Component<Props, State> {
     super(props, context);
     this.state = {
       overlayOpacity: 1,
-      swipeValue: 100,
+      swipeValue: 50,
       overlayVisualization: 'normal',
       color: 'rgba(200,50,50,0.5)',
       setColor: 'rgba(200,50,50,0.5)',
@@ -894,24 +894,7 @@ export class SemanticMapControls extends Component<Props, State> {
                                         }}
                                       ></input>
                                       <label style={{ margin: '2px' }}>Swipe</label>
-                                      {this.state.overlayVisualization === 'swipe' && (
-                                        <input
-                                          id={'swipe'}
-                                          type={'range'}
-                                          min={0}
-                                          max={100}
-                                          step={1}
-                                          style={{ width: '100%' }}
-                                          value={this.state.swipeValue as any}
-                                          onChange={(event) => {
-                                            const input = event.target as HTMLInputElement;
-                                            const input2 = input.value;
-                                            this.setState({ swipeValue: Number(input2) }, () =>
-                                              this.triggerSendSwipeValue(this.state.swipeValue)
-                                            );
-                                          }}
-                                        ></input>
-                                      )}
+                                      {/* Swipe slider removed from here - now rendered as a button in SemanticMapAdvanced */}
                                     </div>
                                   )}
                                 </div>
@@ -1002,23 +985,9 @@ export class SemanticMapControls extends Component<Props, State> {
               
               {this.state.overlayVisualization === 'swipe' && (
                 <div>
-                  <label style={{ display: 'block', marginBottom: '5px' }}>Swipe Position:</label>
-                  <input
-                    id="swipe"
-                    type="range"
-                    min={0}
-                    max={100}
-                    step={1}
-                    style={{ width: '100%' }}
-                    value={this.state.swipeValue as any}
-                    onChange={(event) => {
-                      const input = event.target as HTMLInputElement;
-                      const value = input.value;
-                      this.setState({ swipeValue: Number(value) }, () =>
-                        this.triggerSendSwipeValue(this.state.swipeValue)
-                      );
-                    }}
-                  />
+                  <p style={{ fontSize: '13px', color: '#666', marginTop: '10px' }}>
+                    Swipe control is now available directly on the map.
+                  </p>
                 </div>
               )}
             </div>

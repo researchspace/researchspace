@@ -1861,6 +1861,26 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     this.state.mapLayers.forEach((tilesLayer, index) => {
       this.resetVisualization(index);
     });
+    
+    // Remove swipe button and line when changing visualization mode
+    this.removeSwipeControls();
+  }
+  
+  private removeSwipeControls() {
+    const mapElement = findDOMNode(this.refs[MAP_REF]) as HTMLElement;
+    if (!mapElement) return;
+    
+    // Remove swipe button if it exists
+    const swipeButton = mapElement.querySelector('.swipe-button');
+    if (swipeButton) {
+      swipeButton.remove();
+    }
+    
+    // Remove swipe line if it exists
+    const swipeLine = mapElement.querySelector('.swipe-line');
+    if (swipeLine) {
+      swipeLine.remove();
+    }
   }
 
   private setOverlayVisualization(overlayVisualization: string, layerIndex: number) {
@@ -1944,6 +1964,151 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     ctx.lineTo(tr[0], tr[1]);
     ctx.closePath();
     ctx.clip();
+    
+    // Create or update swipe button if it doesn't exist
+    this.createOrUpdateSwipeButton(width);
+  };
+  
+  // Create or update the swipe button
+  private createOrUpdateSwipeButton(xPosition: number) {
+    const mapElement = findDOMNode(this.refs[MAP_REF]) as HTMLElement;
+    if (!mapElement) return;
+    
+    // Check if button already exists
+    let swipeButton = mapElement.querySelector('.swipe-button') as HTMLDivElement;
+    let swipeLine = mapElement.querySelector('.swipe-line') as HTMLDivElement;
+    
+    // Create button if it doesn't exist
+    if (!swipeButton) {
+      // Create vertical line first (so it appears behind the button)
+      swipeLine = document.createElement('div');
+      swipeLine.className = 'swipe-line';
+      swipeLine.style.position = 'absolute';
+      swipeLine.style.width = '1px';
+      swipeLine.style.height = '100%';
+      swipeLine.style.top = '0';
+      swipeLine.style.backgroundColor = '#999';
+      swipeLine.style.zIndex = '999';
+      mapElement.appendChild(swipeLine);
+      
+      // Create the button
+      swipeButton = document.createElement('div');
+      swipeButton.className = 'swipe-button';
+      swipeButton.style.position = 'absolute';
+      swipeButton.style.width = '30px';
+      swipeButton.style.height = '30px';
+      swipeButton.style.backgroundColor = 'white';
+      swipeButton.style.borderRadius = '50%';
+      swipeButton.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.3)';
+      swipeButton.style.cursor = 'grab';
+      swipeButton.style.zIndex = '1000';
+      swipeButton.style.display = 'flex';
+      swipeButton.style.alignItems = 'center';
+      swipeButton.style.justifyContent = 'center';
+      swipeButton.style.userSelect = 'none';
+      swipeButton.style.touchAction = 'none';
+      swipeButton.style.border = '2px solid #3498db';
+      
+      // Add inner circle
+      const innerCircle = document.createElement('div');
+      innerCircle.style.width = '10px';
+      innerCircle.style.height = '10px';
+      innerCircle.style.backgroundColor = '#3498db';
+      innerCircle.style.borderRadius = '50%';
+      swipeButton.appendChild(innerCircle);
+      
+      // Add event listeners for dragging
+      swipeButton.addEventListener('mousedown', this.handleSwipeButtonMouseDown);
+      swipeButton.addEventListener('touchstart', this.handleSwipeButtonTouchStart, { passive: false });
+      
+      // Add to map
+      mapElement.appendChild(swipeButton);
+    }
+    
+    // Position the button and line at the swipe position
+    swipeButton.style.left = `${xPosition}px`;
+    swipeButton.style.top = '50%';
+    swipeButton.style.transform = 'translate(-50%, -50%)';
+    
+    // Update line position
+    if (swipeLine) {
+      swipeLine.style.left = `${xPosition}px`;
+      swipeLine.style.transform = 'translateX(-50%)';
+    }
+  }
+  
+  // Mouse event handlers for swipe button
+  private handleSwipeButtonMouseDown = (e: MouseEvent) => {
+    e.preventDefault();
+    
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      moveEvent.preventDefault();
+      
+      const mapElement = findDOMNode(this.refs[MAP_REF]) as HTMLElement;
+      if (!mapElement) return;
+      
+      const mapRect = mapElement.getBoundingClientRect();
+      const mapWidth = mapRect.width;
+      
+      // Calculate new position relative to map
+      let newX = moveEvent.clientX - mapRect.left;
+      
+      // Constrain to map bounds
+      newX = Math.max(0, Math.min(mapWidth, newX));
+      
+      // Calculate new swipe value (0-100)
+      const newSwipeValue = (newX / mapWidth) * 100;
+      
+      // Update swipe value directly
+      this.swipeValue = newSwipeValue;
+      this.map.render();
+    };
+    
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+    
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
+  
+  // Touch event handlers for swipe button
+  private handleSwipeButtonTouchStart = (e: TouchEvent) => {
+    if (e.touches.length !== 1) return;
+    e.preventDefault();
+    
+    const handleTouchMove = (moveEvent: TouchEvent) => {
+      if (moveEvent.touches.length !== 1) return;
+      moveEvent.preventDefault();
+      
+      const mapElement = findDOMNode(this.refs[MAP_REF]) as HTMLElement;
+      if (!mapElement) return;
+      
+      const mapRect = mapElement.getBoundingClientRect();
+      const mapWidth = mapRect.width;
+      
+      // Calculate new position relative to map
+      let newX = moveEvent.touches[0].clientX - mapRect.left;
+      
+      // Constrain to map bounds
+      newX = Math.max(0, Math.min(mapWidth, newX));
+      
+      // Calculate new swipe value (0-100)
+      const newSwipeValue = (newX / mapWidth) * 100;
+      
+      // Update swipe value directly
+      this.swipeValue = newSwipeValue;
+      this.map.render();
+    };
+    
+    const handleTouchEnd = () => {
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+    
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener('touchend', handleTouchEnd);
   };
 
   // /** EDITING MODE */

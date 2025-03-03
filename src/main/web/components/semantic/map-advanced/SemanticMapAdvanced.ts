@@ -1222,12 +1222,16 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       return clusteredLayer;
     }
 
-    return new VectorLayer({
+    const vectorLayer = new VectorLayer({
       source,
       style: (feature: Feature) => this.getFeatureStyleWithFilters(feature),
       zIndex: 0,
       declutter: true,
     });
+    // Set level property to ensure it appears in controls
+    vectorLayer.set('level', 'feature');
+    vectorLayer.set('name', 'Buildings');
+    return vectorLayer;
   };
 
   private setTilesLayersFromTemplate() {

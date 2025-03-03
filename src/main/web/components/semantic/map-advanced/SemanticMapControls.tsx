@@ -531,24 +531,19 @@ export class SemanticMapControls extends Component<Props, State> {
       return;
     }
 
-    //Drag also the mask in case it corresponds to the dragged layer
-    if (result.source.index == this.state.maskIndex) {
-      this.setMaskIndex(result.destination.index);
-    }
-
-    //TODO: if destination position is occupied by a masklayer, remove the visualization mode
-    if (result.destination.index == this.state.maskIndex) {
-      this.setMaskIndex(-1);
-    }
-
     const mapLayers = this.reorder(this.state.mapLayers, result.source.index, result.destination.index);
 
     this.setState(
       {
         mapLayers,
+        // Reset visualization mode to normal when layers are reordered
+        overlayVisualization: 'normal'
       },
       () => {
         this.triggerSendLayers();
+        
+        // Trigger normal visualization mode
+        this.triggerVisualization('normal');
       }
     );
   };
@@ -674,6 +669,17 @@ export class SemanticMapControls extends Component<Props, State> {
             title="Style"
           >
             <i className="fa fa-paint-brush" style={{ fontSize: '24px' }}></i>
+          </button>
+
+          {/* Visualization Mode Button */}
+          <button
+            className={`${styles.mapControlsButton} ${
+              this.state.activePanel === 'visualization' ? styles.mapControlsButtonActive : ''
+            }`}
+            onClick={() => this.togglePanel('visualization')}
+            title="Visualization Mode"
+          >
+            <i className="fa fa-eye" style={{ fontSize: '24px' }}></i>
           </button>
         </div>
 
@@ -831,9 +837,6 @@ export class SemanticMapControls extends Component<Props, State> {
                                             className="fa fa-toggle-on layerCheck cursorPointer"
                                             onClick={() => {
                                               this.setMapLayerProperty(mapLayer.get('identifier'), 'visible', false);
-                                              if (this.state.maskIndex == index) {
-                                                this.setMaskIndex(-1);
-                                              }
                                             }}
                                           ></i>
                                         )}
@@ -842,25 +845,6 @@ export class SemanticMapControls extends Component<Props, State> {
                                             className="fa fa-toggle-off layerCheck cursorPointer"
                                             onClick={() => {
                                               this.setMapLayerProperty(mapLayer.get('identifier'), 'visible', true);
-                                            }}
-                                          ></i>
-                                        )}
-                                        {this.state.maskIndex == index && (
-                                          <i
-                                            className="fa fa-eye layerMaskIcon cursorPointer"
-                                            onClick={() => {
-                                              this.setMaskIndex(-1);
-                                            }}
-                                          ></i>
-                                        )}
-                                        {this.state.maskIndex !== index && (
-                                          <i
-                                            className="fa fa-eye-slash layerMaskIcon maskIconInactive"
-                                            onClick={() => {
-                                              if (!mapLayer.get('visible')) {
-                                                this.setMapLayerProperty(mapLayer.get('identifier'), 'visible', true);
-                                              }
-                                              this.setMaskIndex(index);
                                             }}
                                           ></i>
                                         )}
@@ -940,6 +924,104 @@ export class SemanticMapControls extends Component<Props, State> {
                 )}
               </Droppable>
             </DragDropContext>
+          </div>
+        )}
+
+        {this.state.activePanel === 'visualization' && (
+          <div className={styles.mapControlsPanel}>
+            {/* Standalone close button */}
+            <button
+              onClick={() => this.togglePanel('visualization')}
+              className={styles.mapControlsPanelCloseX}
+              title="Close panel"
+            >
+              <i className="fa fa-times"></i>
+            </button>
+
+            <div className={styles.mapControlsPanelHeader}>
+              <h3 className={styles.mapControlsPanelTitle}>Visualization Mode</h3>
+            </div>
+
+            <div style={{ padding: '10px' }}>
+              <p style={{ marginBottom: '15px', fontSize: '13px', color: '#666' }}>
+                Visualization modes affect the first two visible layers.
+              </p>
+              
+              <div style={{ marginBottom: '15px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                  <input
+                    className="visualizationModeRadio"
+                    name="overlay-visualization"
+                    type="radio"
+                    value="normal"
+                    checked={this.state.overlayVisualization === 'normal'}
+                    onChange={(event) => {
+                      this.setState({ overlayVisualization: event.target.value }, () =>
+                        this.triggerVisualization(this.state.overlayVisualization)
+                      );
+                    }}
+                    style={{ marginRight: '8px' }}
+                  />
+                  <label style={{ margin: '0' }}>Normal</label>
+                </div>
+                
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                  <input
+                    className="visualizationModeRadio"
+                    name="overlay-visualization"
+                    type="radio"
+                    value="spyglass"
+                    checked={this.state.overlayVisualization === 'spyglass'}
+                    onChange={(event) => {
+                      this.setState({ overlayVisualization: event.target.value }, () =>
+                        this.triggerVisualization(this.state.overlayVisualization)
+                      );
+                    }}
+                    style={{ marginRight: '8px' }}
+                  />
+                  <label style={{ margin: '0' }}>Spyglass</label>
+                </div>
+                
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                  <input
+                    className="visualizationModeRadio"
+                    name="overlay-visualization"
+                    type="radio"
+                    value="swipe"
+                    checked={this.state.overlayVisualization === 'swipe'}
+                    onChange={(event) => {
+                      this.setState({ overlayVisualization: event.target.value }, () =>
+                        this.triggerVisualization(this.state.overlayVisualization)
+                      );
+                    }}
+                    style={{ marginRight: '8px' }}
+                  />
+                  <label style={{ margin: '0' }}>Swipe</label>
+                </div>
+              </div>
+              
+              {this.state.overlayVisualization === 'swipe' && (
+                <div>
+                  <label style={{ display: 'block', marginBottom: '5px' }}>Swipe Position:</label>
+                  <input
+                    id="swipe"
+                    type="range"
+                    min={0}
+                    max={100}
+                    step={1}
+                    style={{ width: '100%' }}
+                    value={this.state.swipeValue as any}
+                    onChange={(event) => {
+                      const input = event.target as HTMLInputElement;
+                      const value = input.value;
+                      this.setState({ swipeValue: Number(value) }, () =>
+                        this.triggerSendSwipeValue(this.state.swipeValue)
+                      );
+                    }}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -1496,9 +1578,25 @@ export class SemanticMapControls extends Component<Props, State> {
       }
     });
 
-    this.setState({ mapLayers: mapLayersClone }, () => {
-      this.triggerSendLayers();
-    });
+    // If we're changing visibility, reset visualization mode to normal
+    if (propertyName === 'visible') {
+      this.setState(
+        { 
+          mapLayers: mapLayersClone,
+          overlayVisualization: 'normal'
+        }, 
+        () => {
+          this.triggerSendLayers();
+          // Trigger normal visualization mode
+          this.triggerVisualization('normal');
+        }
+      );
+    } else {
+      // For other property changes, just update layers
+      this.setState({ mapLayers: mapLayersClone }, () => {
+        this.triggerSendLayers();
+      });
+    }
   }
 
   /**

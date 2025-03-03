@@ -1231,6 +1231,8 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     // Set level property to ensure it appears in controls
     vectorLayer.set('level', 'feature');
     vectorLayer.set('name', 'Buildings');
+    vectorLayer.set('author', 'Buildings');
+    vectorLayer.set('identifier', 'Buildings');
     return vectorLayer;
   };
 
@@ -1862,7 +1864,17 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   }
 
   private setOverlayVisualization(overlayVisualization: string, layerIndex: number) {
-    const overlayLayer = this.state.mapLayers[this.state.maskIndex];
+    // Get the first two visible layers
+    const visibleLayers = this.state.mapLayers.filter(layer => layer.get('visible')).slice(0, 2);
+    
+    // Only proceed if we have at least two visible layers
+    if (visibleLayers.length < 2) {
+      console.warn('Visualization mode requires at least two visible layers');
+      return;
+    }
+    
+    // The top layer (index 0) will be the one that gets the visualization effect
+    const overlayLayer = visibleLayers[0];
 
     this.setState(
       {

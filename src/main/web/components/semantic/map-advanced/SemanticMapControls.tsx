@@ -585,6 +585,26 @@ export class SemanticMapControls extends Component<Props, State> {
       activePanel: prevState.activePanel === panelName ? null : panelName,
     }));
   };
+  
+  /**
+   * Toggle visualization mode on/off
+   */
+  private toggleVisualizationMode = (mode: string) => {
+    this.setState((prevState) => {
+      // If the mode is already active, turn it off (set to 'normal')
+      // Otherwise, activate the requested mode
+      const newMode = prevState.overlayVisualization === mode ? 'normal' : mode;
+      return { overlayVisualization: newMode };
+    }, () => {
+      // Trigger the visualization change event
+      this.triggerVisualization(this.state.overlayVisualization);
+      
+      // If swipe mode is activated, also send the swipe value
+      if (this.state.overlayVisualization === 'swipe') {
+        this.triggerSendSwipeValue(this.state.swipeValue);
+      }
+    });
+  };
 
   /**
    * Render a template with fallback
@@ -670,16 +690,27 @@ export class SemanticMapControls extends Component<Props, State> {
           >
             <i className="fa fa-paint-brush" style={{ fontSize: '24px' }}></i>
           </button>
-
-          {/* Visualization Mode Button */}
+          
+          {/* Spyglass Visualization Mode Button */}
           <button
             className={`${styles.mapControlsButton} ${
-              this.state.activePanel === 'visualization' ? styles.mapControlsButtonActive : ''
+              this.state.overlayVisualization === 'spyglass' ? styles.mapControlsButtonActive : ''
             }`}
-            onClick={() => this.togglePanel('visualization')}
-            title="Visualization Mode"
+            onClick={() => this.toggleVisualizationMode('spyglass')}
+            title="Spyglass Mode"
           >
-            <i className="fa fa-eye" style={{ fontSize: '24px' }}></i>
+            <i className="fa fa-search" style={{ fontSize: '24px' }}></i>
+          </button>
+          
+          {/* Swipe Visualization Mode Button */}
+          <button
+            className={`${styles.mapControlsButton} ${
+              this.state.overlayVisualization === 'swipe' ? styles.mapControlsButtonActive : ''
+            }`}
+            onClick={() => this.toggleVisualizationMode('swipe')}
+            title="Swipe Mode"
+          >
+            <i className="fa fa-columns" style={{ fontSize: '24px' }}></i>
           </button>
         </div>
 
@@ -909,91 +940,6 @@ export class SemanticMapControls extends Component<Props, State> {
             </DragDropContext>
           </div>
         )}
-
-        {this.state.activePanel === 'visualization' && (
-          <div className={styles.mapControlsPanel}>
-            {/* Standalone close button */}
-            <button
-              onClick={() => this.togglePanel('visualization')}
-              className={styles.mapControlsPanelCloseX}
-              title="Close panel"
-            >
-              <i className="fa fa-times"></i>
-            </button>
-
-            <div className={styles.mapControlsPanelHeader}>
-              <h3 className={styles.mapControlsPanelTitle}>Visualization Mode</h3>
-            </div>
-
-            <div style={{ padding: '10px' }}>
-              <p style={{ marginBottom: '15px', fontSize: '13px', color: '#666' }}>
-                Visualization modes affect the first two visible layers.
-              </p>
-              
-              <div style={{ marginBottom: '15px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-                  <input
-                    className="visualizationModeRadio"
-                    name="overlay-visualization"
-                    type="radio"
-                    value="normal"
-                    checked={this.state.overlayVisualization === 'normal'}
-                    onChange={(event) => {
-                      this.setState({ overlayVisualization: event.target.value }, () =>
-                        this.triggerVisualization(this.state.overlayVisualization)
-                      );
-                    }}
-                    style={{ marginRight: '8px' }}
-                  />
-                  <label style={{ margin: '0' }}>Normal</label>
-                </div>
-                
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-                  <input
-                    className="visualizationModeRadio"
-                    name="overlay-visualization"
-                    type="radio"
-                    value="spyglass"
-                    checked={this.state.overlayVisualization === 'spyglass'}
-                    onChange={(event) => {
-                      this.setState({ overlayVisualization: event.target.value }, () =>
-                        this.triggerVisualization(this.state.overlayVisualization)
-                      );
-                    }}
-                    style={{ marginRight: '8px' }}
-                  />
-                  <label style={{ margin: '0' }}>Spyglass</label>
-                </div>
-                
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-                  <input
-                    className="visualizationModeRadio"
-                    name="overlay-visualization"
-                    type="radio"
-                    value="swipe"
-                    checked={this.state.overlayVisualization === 'swipe'}
-                    onChange={(event) => {
-                      this.setState({ overlayVisualization: event.target.value }, () =>
-                        this.triggerVisualization(this.state.overlayVisualization)
-                      );
-                    }}
-                    style={{ marginRight: '8px' }}
-                  />
-                  <label style={{ margin: '0' }}>Swipe</label>
-                </div>
-              </div>
-              
-              {this.state.overlayVisualization === 'swipe' && (
-                <div>
-                  <p style={{ fontSize: '13px', color: '#666', marginTop: '10px' }}>
-                    Swipe control is now available directly on the map.
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
         {this.state.activePanel === 'buildings' && (
           <div className={styles.mapControlsPanel}>
             {/* Standalone close button */}

@@ -719,16 +719,6 @@ export class SemanticMapControls extends Component<Props, State> {
         <div className={styles.mapControlsContainer}>
         {/* Sidebar with buttons */}
         <div className={styles.mapControlsSidebar}>
-          {/* Historical Maps Button */}
-          <button
-            className={`${styles.mapControlsButton} ${
-              this.state.activePanel === 'historical' ? styles.mapControlsButtonActive : ''
-            }`}
-            onClick={() => this.togglePanel('historical')}
-            title="Historical Maps"
-          >
-            <i className="fa fa-map" style={{ fontSize: '24px' }}></i>
-          </button>
 
           {/* Base Maps Button */}
           <button
@@ -802,7 +792,7 @@ export class SemanticMapControls extends Component<Props, State> {
             </button>
 
             <div className={styles.mapControlsPanelHeader}>
-              <h3 className={styles.mapControlsPanelTitle}>Historical Maps</h3>
+              
             </div>
             {this.renderTemplate(historicalMapTemplate, '<div>No historical map template specified</div>')}
           </div>
@@ -820,7 +810,7 @@ export class SemanticMapControls extends Component<Props, State> {
             </button>
 
             <div className={styles.mapControlsPanelHeader}>
-              <h3 className={styles.mapControlsPanelTitle}>Base Maps</h3>
+              
             </div>
 
             <DragDropContext onDragEnd={this.onDragEnd}>
@@ -1028,7 +1018,6 @@ export class SemanticMapControls extends Component<Props, State> {
             </button>
 
             <div className={styles.mapControlsPanelHeader}>
-              <h3 className={styles.mapControlsPanelTitle}>Style</h3>
             </div>
 
             {this.props.featuresOptionsEnabled && (

@@ -745,6 +745,9 @@ export class SemanticMapControls extends Component<Props, State> {
             <i className="fa fa-paint-brush" style={{ fontSize: '24px' }}></i>
           </button>
           
+          {/* Divider between panel buttons and visualization mode buttons */}
+          <hr className={styles.mapControlsSeparator} />
+          
           {/* Spyglass Visualization Mode Button */}
           <button
             className={`${styles.mapControlsButton} ${
@@ -775,7 +778,7 @@ export class SemanticMapControls extends Component<Props, State> {
             onClick={() => this.toggleVisualizationMode('measure')}
             title="Measurement Tool"
           >
-            <i className="fa fa-ruler" style={{ fontSize: '24px' }}></i>
+            <i className="fa fa-crosshairs" style={{ fontSize: '24px' }}></i>
           </button>
         </div>
 

@@ -1978,6 +1978,9 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     // Add keyboard event listener for Escape key
     this.addEscapeKeyListener();
     
+    // Add keyboard event listener for Enter key to finish measurement
+    this.addEnterKeyListener();
+    
     // Set up draw start event
     this.measureDraw.on('drawstart', (evt: any) => {
       // Set sketch
@@ -2057,6 +2060,34 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     
     // Store the handler so we can remove it later
     this.escKeyListener = handleKeyDown;
+  }
+  
+  /**
+   * Add keyboard event listener for Enter key to finish measurement
+   */
+  private addEnterKeyListener() {
+    // Create a handler for the Enter key
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // If Enter is pressed and we're in measurement mode with an active sketch
+      if (e.key === 'Enter' && 
+          this.state.overlayVisualization === 'measure' && 
+          this.measureSketch) {
+        
+        console.log('Enter key pressed - finishing measurement');
+        
+        // Finish the current drawing
+        if (this.measureDraw) {
+          // This simulates a double-click to finish the measurement
+          this.measureDraw.finishDrawing();
+        }
+      }
+    };
+    
+    // Add the event listener
+    document.addEventListener('keydown', handleKeyDown);
+    
+    // We don't need to store this handler separately since it will be removed
+    // when the measurement tool is deactivated along with the escape key listener
   }
   
   /**

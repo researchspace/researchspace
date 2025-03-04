@@ -32,6 +32,7 @@ declare namespace SemanticMapControlsScssNamespace {
     mapControlsContainer: string;
     mapControlsSidebar: string;
     mapControlsButton: string;
+    mapControlsDivider: string;
     mapControlsButtonActive: string;
     mapControlsPanel: string;
     mapControlsPanelHeader: string;

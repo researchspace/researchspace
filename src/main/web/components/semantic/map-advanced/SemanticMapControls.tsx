@@ -21,6 +21,7 @@ import {
   SemanticMapControlsSendVectorLevels,
   SemanticMapControlsRegister,
   SemanticMapControlsUnregister,
+  SemanticMapControlsToggleMeasurement,
 } from './SemanticMapControlsEvents';
 import { SemanticMapRequestControlsRegistration, SemanticMapSendSelectedFeature, SemanticMapClearSelectedFeature } from './SemanticMapEvents';
 
@@ -590,19 +591,51 @@ export class SemanticMapControls extends Component<Props, State> {
    * Toggle visualization mode on/off
    */
   private toggleVisualizationMode = (mode: string) => {
-    this.setState((prevState) => {
-      // If the mode is already active, turn it off (set to 'normal')
-      // Otherwise, activate the requested mode
-      const newMode = prevState.overlayVisualization === mode ? 'normal' : mode;
-      return { overlayVisualization: newMode };
-    }, () => {
-      // Trigger the visualization change event
-      this.triggerVisualization(this.state.overlayVisualization);
+    // Get the current mode before updating state
+    const currentMode = this.state.overlayVisualization;
+    
+    // If the mode is already active, turn it off (set to 'normal')
+    // Otherwise, activate the requested mode
+    const newMode = currentMode === mode ? 'normal' : mode;
+    
+    console.log(`Toggling visualization mode from ${currentMode} to ${newMode}`);
+    
+    // First, deactivate the current mode if it's not 'normal'
+    if (currentMode !== 'normal') {
+      // If we're in measurement mode, explicitly deactivate it
+      if (currentMode === 'measure') {
+        this.triggerMeasurement('deactivated');
+      }
+      
+      // If we're in swipe mode, reset swipe
+      if (currentMode === 'swipe') {
+        // No specific action needed here as the map will handle cleanup
+      }
+    }
+    
+    // Update state with the new mode
+    this.setState({ overlayVisualization: newMode }, () => {
+      // Trigger the visualization change event to update the map
+      this.triggerVisualization(newMode);
       
       // If swipe mode is activated, also send the swipe value
-      if (this.state.overlayVisualization === 'swipe') {
+      if (newMode === 'swipe') {
         this.triggerSendSwipeValue(this.state.swipeValue);
       }
+      
+      // If measurement mode is activated, trigger measurement
+      if (newMode === 'measure') {
+        this.triggerMeasurement('toggle');
+      }
+    });
+  };
+  
+  private triggerMeasurement = (action: string) => {
+    trigger({
+      eventType: SemanticMapControlsToggleMeasurement,
+      source: this.props.id,
+      data: action,
+      targets: [this.props.targetMapId],
     });
   };
 
@@ -711,6 +744,17 @@ export class SemanticMapControls extends Component<Props, State> {
             title="Swipe Mode"
           >
             <i className="fa fa-columns" style={{ fontSize: '24px' }}></i>
+          </button>
+          
+          {/* Measurement Tool Button */}
+          <button
+            className={`${styles.mapControlsButton} ${
+              this.state.overlayVisualization === 'measure' ? styles.mapControlsButtonActive : ''
+            }`}
+            onClick={() => this.toggleVisualizationMode('measure')}
+            title="Measurement Tool"
+          >
+            <i className="fa fa-ruler" style={{ fontSize: '24px' }}></i>
           </button>
         </div>
 

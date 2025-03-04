@@ -38,6 +38,16 @@ declare namespace SemanticMapControlsScssNamespace {
     mapControlsPanelTitle: string;
     mapControlsPanelCloseButton: string;
     mapControlsPanelCloseX: string;
+    
+    // Feature template styles
+    featureTemplateContainer: string;
+    featureTemplateCloseButton: string;
+    
+    // Measurement tool styles
+    'ol-tooltip': string;
+    'ol-tooltip-measure': string;
+    'ol-tooltip-static': string;
+    hidden: string;
   }
 }
 

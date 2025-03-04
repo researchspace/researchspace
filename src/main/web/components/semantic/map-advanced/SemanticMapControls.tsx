@@ -183,6 +183,16 @@ export class SemanticMapControls extends Component<Props, State> {
         })
       )
       .onValue(this.handleSelectedFeature);
+      
+    // Listen for visualization mode changes from the map (e.g., when ESC is pressed)
+    this.cancelation
+      .map(
+        listen({
+          eventType: SemanticMapControlsOverlayVisualization,
+          target: this.props.id,
+        })
+      )
+      .onValue(this.handleVisualizationModeChange);
 
     this.onDragEnd = this.onDragEnd.bind(this);
   }
@@ -637,6 +647,17 @@ export class SemanticMapControls extends Component<Props, State> {
       data: action,
       targets: [this.props.targetMapId],
     });
+  };
+  
+  /**
+   * Handle visualization mode changes from the map (e.g., when ESC is pressed)
+   */
+  private handleVisualizationModeChange = (event: any) => {
+    const newMode = event.data;
+    console.log(`Received visualization mode change from map: ${newMode}`);
+    
+    // Update the state to match the map's visualization mode
+    this.setState({ overlayVisualization: newMode });
   };
 
   /**

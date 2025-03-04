@@ -814,55 +814,37 @@ export class SemanticMapControls extends Component<Props, State> {
                                   ref={provided.innerRef}
                                   {...provided.draggableProps}
                                 >
-                                  <div className="draggableLayerContainer">
-                                    {/* Drag handle on the left */}
-                                    <div className="dragHandleContainer" {...provided.dragHandleProps}>
+                                  <div className={styles.draggableLayerContainer}>
+                                    {/* Left column with drag handle */}
+                                    <div className={styles.leftColumnContainer} {...provided.dragHandleProps}>
                                       <i className="fa fa-bars"></i>
                                     </div>
                                     
                                     {/* Main content container */}
-                                    <div className="layerContentContainer">
-                                      {/* Thumbnail on the left */}
-                                      <div className="thumbnailContainer">
+                                    <div className={styles.layerContentContainer}>
+                                      {/* Thumbnail */}
+                                      <div className={styles.thumbnailContainer}>
                                         <img
                                           src={mapLayer.get('thumbnail')}
-                                          className={`${styles.layerThumbnail} layerThumbnailStyle`}
+                                          className={`${styles.layerThumbnail} ${styles.layerThumbnailStyle}`}
                                         />
                                       </div>
                                       
                                       {/* Info container */}
-                                      <div className="layerInfoContainer">
+                                      <div className={styles.layerInfoContainer}>
                                         {/* Date in top right */}
-                                        <div className="layerDateContainer">
+                                        <div className={styles.layerDateContainer}>
                                           <label className={styles.layerLabel}>{mapLayer.get('year')}</label>
                                         </div>
                                         
                                         {/* Title */}
-                                        <div className="layerTitleContainer">
+                                        <div className={styles.layerTitleContainer}>
                                           <label className={styles.layerTitle}>{mapLayer.get('author')}</label>
-                                        </div>
-                                        
-                                        {/* Slider at the bottom */}
-                                        <div className="sliderContainer">
-                                          <input
-                                            type={'range'}
-                                            className={styles.opacitySlider}
-                                            min={0}
-                                            max={1}
-                                            step={0.01}
-                                            value={mapLayer.get('opacity')}
-                                            onChange={(event) => {
-                                              const input = event.target as HTMLInputElement;
-                                              const opacity = parseFloat(input.value);
-                                              const capped = isNaN(opacity) ? 0.5 : Math.min(1, Math.max(0, opacity));
-                                              this.setMapLayerProperty(mapLayer.get('identifier'), 'opacity', capped);
-                                            }}
-                                          ></input>
                                         </div>
                                       </div>
                                       
                                       {/* Toggle buttons on the right */}
-                                      <div className="togglesColumnRightStyle">
+                                      <div className={styles.togglesColumnRightStyle}>
                                         {mapLayer.get('visible') && (
                                           <i
                                             className="fa fa-toggle-on layerCheck cursorPointer"
@@ -881,6 +863,25 @@ export class SemanticMapControls extends Component<Props, State> {
                                         )}
                                       </div>
                                     </div>
+                                  </div>
+                                  
+                                  {/* Opacity slider at the bottom with label above */}
+                                  <div className={styles.opacitySliderContainer}>
+                                    <label className={styles.opacitySliderLabel}>Opacity:</label>
+                                    <input
+                                      type={'range'}
+                                      className={styles.opacitySlider}
+                                      min={0}
+                                      max={1}
+                                      step={0.01}
+                                      value={mapLayer.get('opacity')}
+                                      onChange={(event) => {
+                                        const input = event.target as HTMLInputElement;
+                                        const opacity = parseFloat(input.value);
+                                        const capped = isNaN(opacity) ? 0.5 : Math.min(1, Math.max(0, opacity));
+                                        this.setMapLayerProperty(mapLayer.get('identifier'), 'opacity', capped);
+                                      }}
+                                    ></input>
                                   </div>
                                   
                                   {/* Visualization mode container */}

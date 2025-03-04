@@ -38,6 +38,27 @@ declare namespace SemanticMapControlsScssNamespace {
     mapControlsPanelTitle: string;
     mapControlsPanelCloseButton: string;
     mapControlsPanelCloseX: string;
+    
+    // New styles for the draggable layer layout
+    draggableLayerContainer: string;
+    leftColumnContainer: string;
+    layerContentContainer: string;
+    thumbnailContainer: string;
+    layerThumbnailStyle: string;
+    layerInfoContainer: string;
+    layerDateContainer: string;
+    layerTitleContainer: string;
+    togglesColumnRightStyle: string;
+    opacitySliderContainer: string;
+    opacitySliderLabel: string;
+    
+    // Additional utility classes
+    cursorPointer: string;
+    maskIconInactive: string;
+    
+    // Swipe button styles
+    swipeButton: string;
+    swipeButtonHidden: string;
   }
 }
 

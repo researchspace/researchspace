@@ -43,7 +43,11 @@ import MultiPoint from 'ol/geom/MultiPoint';
 import Polygon from 'ol/geom/Polygon';
 import MultiPolygon from 'ol/geom/MultiPolygon';
 import GeometryCollection from 'ol/geom/GeometryCollection';
+import LineString from 'ol/geom/LineString';
 import WKT from 'ol/format/WKT';
+import { unByKey } from 'ol/Observable';
+import Overlay from 'ol/Overlay';
+import { getLength } from 'ol/sphere';
 import { Draw, Modify, Snap } from 'ol/interaction';
 import { transform } from 'ol/proj';
 import { defaults as controlDefaults } from 'ol/control';
@@ -101,6 +105,7 @@ import {
   SemanticMapControlsRegister,
   SemanticMapControlsUnregister,
   SemanticMapControlsSendVectorLevels,
+  SemanticMapControlsToggleMeasurement,
 } from './SemanticMapControlsEvents';
 import { none } from 'ol/centerconstraint';
 import VectorSource from 'ol/source/Vector';
@@ -443,6 +448,16 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         })
       )
       .onValue(this.handleClearSelectedFeature);
+      
+    // Listen for measurement tool toggle event
+    this.cancelation
+      .map(
+        listen({
+          eventType: SemanticMapControlsToggleMeasurement,
+          target: this.props.id,
+        })
+      )
+      .onValue(this.handleMeasurementToggle);
   }
 
   /** REACT COMPONENT FUNCTIONS **/
@@ -497,6 +512,28 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
     return D.div(
       { style: { height: '100%', width: '100%', position: 'relative' } },
+      // Visualization mode notification
+      this.state.overlayVisualization !== 'normal' && D.div(
+        {
+          style: {
+            position: 'absolute',
+            top: '10px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            color: 'white',
+            padding: '8px 16px',
+            borderRadius: '4px',
+            zIndex: 1000,
+            fontWeight: 'bold',
+            fontSize: '14px',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+            textAlign: 'center',
+            pointerEvents: 'none',
+          }
+        },
+        `${this.state.overlayVisualization.toUpperCase()} mode active. Press ESC to exit`
+      ),
       D.div(
         {
           ref: MAP_REF,
@@ -564,7 +601,13 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     const popup = new Popup();
     map.addOverlay(popup);
 
+    // Add the click handler to the map
     map.on('click', (evt) => {
+      // Skip feature selection if measurement tool is active
+      if (this.state.overlayVisualization === 'measure') {
+        return; // Early return to prevent feature selection during measurement
+      }
+      
       // Hide existing popup and reset it's offset
       popup.hide();
       popup.setOffset([0, 0]);
@@ -617,8 +660,13 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     });
 
     map.on('pointermove', (e) => {
-      const hasFeatureAtPixel = map.hasFeatureAtPixel(e.pixel);
-      map.getTarget().style.cursor = hasFeatureAtPixel ? 'pointer' : '';
+      // Change cursor based on whether measurement tool is active
+      if (this.state.overlayVisualization === 'measure') {
+        map.getTarget().style.cursor = 'crosshair';
+      } else {
+        const hasFeatureAtPixel = map.hasFeatureAtPixel(e.pixel);
+        map.getTarget().style.cursor = hasFeatureAtPixel ? 'pointer' : '';
+      }
     });
   }
 
@@ -1825,6 +1873,393 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   private toggle3d = (event: Event<any>) => {};
   
   /**
+   * Handler for the measurement tool toggle event
+   * Activates or deactivates the measurement tool
+   */
+  private handleMeasurementToggle = (event: Event<any>) => {
+    console.log('Measurement tool toggled:', event.data);
+    
+    if (event.data === 'deactivated' || this.state.overlayVisualization === 'measure') {
+      // Deactivate measurement tool
+      this.deactivateMeasurementTool();
+      
+      // Update the controls to show the button as inactive
+      trigger({
+        eventType: SemanticMapControlsToggleMeasurement,
+        source: this.props.id,
+        data: 'deactivated',
+        targets: this.state.registeredControls,
+      });
+    } else {
+      // Activate measurement tool
+      this.activateMeasurementTool();
+    }
+  };
+  
+  // Variables for measurement tool
+  private measureSource: VectorSource;
+  private measureVector: VectorLayer<any>;
+  private measureDraw: Draw;
+  private measureTooltipElement: HTMLElement;
+  private measureTooltip: Overlay;
+  private helpTooltipElement: HTMLElement;
+  private helpTooltip: Overlay;
+  private measureSketch: Feature;
+  private measureListener: any;
+  private escKeyListener: any;
+  
+  /**
+   * Activates the measurement tool
+   */
+  private activateMeasurementTool() {
+    if (!this.map) return;
+    
+    // Set state to indicate measurement mode is active
+    this.setState({ overlayVisualization: 'measure' });
+    
+    // Create vector source and layer for measurements if they don't exist
+    if (!this.measureSource) {
+      this.measureSource = new VectorSource();
+      this.measureVector = new VectorLayer({
+        source: this.measureSource,
+        style: new Style({
+          fill: new Fill({
+            color: 'rgba(255, 255, 255, 0.2)',
+          }),
+          stroke: new Stroke({
+            color: '#ffcc33',
+            width: 2,
+          }),
+          image: new CircleStyle({
+            radius: 7,
+            fill: new Fill({
+              color: '#ffcc33',
+            }),
+          }),
+        }),
+        zIndex: 1000, // Ensure it's on top
+      });
+      this.map.addLayer(this.measureVector);
+    }
+    
+    // Create tooltips
+    this.createMeasureTooltip();
+    this.createHelpTooltip();
+    
+    // Add pointer move handler
+    this.map.on('pointermove', this.measurePointerMoveHandler);
+    
+    // Add mouseout handler
+    this.map.getViewport().addEventListener('mouseout', () => {
+      if (this.helpTooltipElement) {
+        this.helpTooltipElement.classList.add('hidden');
+      }
+    });
+    
+    // Create draw interaction with improved styling for both active and completed lines
+    this.measureDraw = new Draw({
+      source: this.measureSource,
+      type: 'LineString',
+      style: new Style({
+        fill: new Fill({
+          color: 'rgba(255, 255, 255, 0.2)',
+        }),
+        stroke: new Stroke({
+          color: 'rgba(0, 0, 0, 0.5)',
+          lineDash: [10, 10],
+          width: 2,
+        }),
+        image: new CircleStyle({
+          radius: 5,
+          stroke: new Stroke({
+            color: 'rgba(0, 0, 0, 0.7)',
+          }),
+          fill: new Fill({
+            color: 'rgba(255, 255, 255, 0.2)',
+          }),
+        }),
+      }),
+    });
+    
+    // Apply a style to the vector layer for completed measurements
+    this.measureVector.setStyle(new Style({
+      stroke: new Stroke({
+        color: '#ffcc33',
+        width: 3,
+      }),
+      image: new CircleStyle({
+        radius: 7,
+        fill: new Fill({
+          color: '#ffcc33',
+        }),
+      }),
+    }));
+    
+    this.map.addInteraction(this.measureDraw);
+    
+    // Add keyboard event listener for Escape key
+    this.addEscapeKeyListener();
+    
+    // Add keyboard event listener for Enter key to finish measurement
+    this.addEnterKeyListener();
+    
+    // Set up draw start event
+    this.measureDraw.on('drawstart', (evt: any) => {
+      // Set sketch
+      this.measureSketch = evt.feature;
+      
+      // Get the coordinate from the event
+      let tooltipCoord = evt.coordinate || this.map.getView().getCenter();
+      
+      // Add listener to update tooltip while drawing
+      this.measureListener = this.measureSketch.getGeometry().on('change', (e) => {
+        const geom = e.target;
+        let output;
+        if (geom instanceof LineString) {
+          output = this.formatLength(geom);
+          tooltipCoord = geom.getLastCoordinate();
+        }
+        
+        if (this.measureTooltipElement) {
+          this.measureTooltipElement.innerHTML = output;
+          this.measureTooltip.setPosition(tooltipCoord);
+        }
+      });
+    });
+    
+    // Set up draw end event
+    this.measureDraw.on('drawend', () => {
+      if (this.measureTooltipElement) {
+        this.measureTooltipElement.className = 'ol-tooltip ol-tooltip-static';
+        this.measureTooltip.setOffset([0, -7]);
+      }
+      
+      // Unset sketch
+      this.measureSketch = null;
+      
+      // Unset tooltip so that a new one can be created
+      this.measureTooltipElement = null;
+      this.createMeasureTooltip();
+      
+      // Remove listener
+      if (this.measureListener) {
+        unByKey(this.measureListener);
+      }
+    });
+  }
+  
+  /**
+   * Add keyboard event listener for Escape key to cancel measurement or any visualization mode
+   */
+  private addEscapeKeyListener() {
+    // Store the original document keydown handler
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // If Escape is pressed and we're in any special visualization mode
+      if (e.key === 'Escape' && this.state.overlayVisualization !== 'normal') {
+        const previousMode = this.state.overlayVisualization;
+        
+        // First, clean up the current visualization mode
+        this.cleanupVisualizationMode(previousMode);
+        
+        // Reset to normal mode
+        this.setState({ overlayVisualization: 'normal' }, () => {
+          // Reset all visualizations to ensure clean state
+          this.resetAllVisualizations();
+          
+          // Force a re-render of the map
+          this.map.render();
+          
+          // Notify controls that we've returned to normal mode
+          // This will update all visualization buttons in the sidebar
+          trigger({
+            eventType: SemanticMapControlsOverlayVisualization,
+            source: this.props.id,
+            data: 'normal',
+            targets: this.state.registeredControls,
+          });
+        });
+      }
+    };
+    
+    // Add the event listener
+    document.addEventListener('keydown', handleKeyDown);
+    
+    // Store the handler so we can remove it later
+    this.escKeyListener = handleKeyDown;
+  }
+  
+  /**
+   * Add keyboard event listener for Enter key to finish measurement
+   */
+  private addEnterKeyListener() {
+    // Create a handler for the Enter key
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // If Enter is pressed and we're in measurement mode with an active sketch
+      if (e.key === 'Enter' && 
+          this.state.overlayVisualization === 'measure' && 
+          this.measureSketch) {
+        
+        console.log('Enter key pressed - finishing measurement');
+        
+        // Finish the current drawing
+        if (this.measureDraw) {
+          // This simulates a double-click to finish the measurement
+          this.measureDraw.finishDrawing();
+        }
+      }
+    };
+    
+    // Add the event listener
+    document.addEventListener('keydown', handleKeyDown);
+    
+    // We don't need to store this handler separately since it will be removed
+    // when the measurement tool is deactivated along with the escape key listener
+  }
+  
+  /**
+   * Deactivates the measurement tool
+   */
+  private deactivateMeasurementTool() {
+    // Remove draw interaction
+    if (this.measureDraw) {
+      this.map.removeInteraction(this.measureDraw);
+      this.measureDraw = null;
+    }
+    
+    // Remove tooltips
+    if (this.helpTooltip) {
+      this.map.removeOverlay(this.helpTooltip);
+      if (this.helpTooltipElement && this.helpTooltipElement.parentNode) {
+        this.helpTooltipElement.parentNode.removeChild(this.helpTooltipElement);
+      }
+      this.helpTooltipElement = null;
+      this.helpTooltip = null;
+    }
+    
+    if (this.measureTooltip) {
+      this.map.removeOverlay(this.measureTooltip);
+      if (this.measureTooltipElement && this.measureTooltipElement.parentNode) {
+        this.measureTooltipElement.parentNode.removeChild(this.measureTooltipElement);
+      }
+      this.measureTooltipElement = null;
+      this.measureTooltip = null;
+    }
+    
+    // Remove pointer move handler
+    this.map.un('pointermove', this.measurePointerMoveHandler);
+    
+    // Note: We don't remove the ESC key listener here anymore
+    // It will be removed only when going back to normal mode
+    
+    // Clear measurement layer
+    if (this.measureSource) {
+      this.measureSource.clear();
+    }
+    
+    // Remove all static tooltips from the DOM
+    const mapElement = findDOMNode(this.refs[MAP_REF]) as HTMLElement;
+    if (mapElement) {
+      // Find and remove all tooltip elements
+      const tooltips = mapElement.querySelectorAll('.ol-tooltip-static');
+      tooltips.forEach(tooltip => {
+        if (tooltip.parentNode) {
+          tooltip.parentNode.removeChild(tooltip);
+        }
+      });
+    }
+    
+    // Remove the measurement vector layer from the map
+    if (this.measureVector) {
+      this.map.removeLayer(this.measureVector);
+      this.measureVector = null;
+      this.measureSource = null;
+    }
+  }
+  
+  /**
+   * Handle pointer move for measurement tool
+   */
+  private measurePointerMoveHandler = (evt) => {
+    if (evt.dragging || !this.helpTooltipElement) {
+      return;
+    }
+    
+    let helpMsg = 'Click to start measuring';
+    
+    if (this.measureSketch) {
+      const geom = this.measureSketch.getGeometry();
+      if (geom instanceof LineString) {
+        helpMsg = 'Click to continue measuring the line';
+      }
+    }
+    
+    this.helpTooltipElement.innerHTML = helpMsg;
+    this.helpTooltip.setPosition(evt.coordinate);
+    
+    this.helpTooltipElement.classList.remove('hidden');
+  };
+  
+  /**
+   * Creates a new help tooltip
+   */
+  private createHelpTooltip() {
+    if (this.helpTooltipElement && this.helpTooltipElement.parentNode) {
+      this.helpTooltipElement.parentNode.removeChild(this.helpTooltipElement);
+    }
+    
+    this.helpTooltipElement = document.createElement('div');
+    this.helpTooltipElement.className = 'ol-tooltip hidden';
+    
+    this.helpTooltip = new Overlay({
+      element: this.helpTooltipElement,
+      offset: [15, 0],
+      positioning: 'center-left',
+    });
+    
+    this.map.addOverlay(this.helpTooltip);
+  }
+  
+  /**
+   * Creates a new measure tooltip
+   */
+  private createMeasureTooltip() {
+    if (this.measureTooltipElement && this.measureTooltipElement.parentNode) {
+      this.measureTooltipElement.parentNode.removeChild(this.measureTooltipElement);
+    }
+    
+    this.measureTooltipElement = document.createElement('div');
+    this.measureTooltipElement.className = 'ol-tooltip ol-tooltip-measure';
+    
+    this.measureTooltip = new Overlay({
+      element: this.measureTooltipElement,
+      offset: [0, -15],
+      positioning: 'bottom-center',
+      stopEvent: false,
+      insertFirst: false,
+    });
+    
+    this.map.addOverlay(this.measureTooltip);
+  }
+  
+  /**
+   * Format length output
+   * @param {LineString} line The line
+   * @return {string} The formatted length
+   */
+  private formatLength(line) {
+    const length = getLength(line);
+    let output;
+    
+    if (length > 100) {
+      output = Math.round((length / 1000) * 100) / 100 + ' km';
+    } else {
+      output = Math.round(length * 100) / 100 + ' m';
+    }
+    
+    return output;
+  }
+  
+  /**
    * Handler for the SemanticMapClearSelectedFeature event
    * Clears the selected feature and resets the styles
    */
@@ -1843,9 +2278,64 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     this.map.render();
   };
 
-  private setOverlayVisualizationFromEvent = (event: Event<any>) => {
-    this.setOverlayVisualization(event.data, this.state.maskIndex);
+  /**
+   * Sets the visualization mode for the map
+   * @param mode The visualization mode to set: 'normal', 'spyglass', 'measure', or 'swipe'
+   */
+  private setVisualizationMode = (mode: string): void => {
+    const currentMode = this.state.overlayVisualization;
+    
+    console.log(`Changing visualization mode from ${currentMode} to ${mode}`);
+    
+    // If we're already in this mode, do nothing
+    if (currentMode === mode) {
+      return;
+    }
+    
+    // First, clean up the current mode
+    this.cleanupVisualizationMode(currentMode);
+    
+    // Then set the new mode
+    this.setOverlayVisualization(mode, this.state.maskIndex);
+    
+    // Notify controls about the mode change
+    if (this.state.registeredControls.length > 0) {
+      trigger({
+        eventType: SemanticMapControlsOverlayVisualization,
+        source: this.props.id,
+        data: mode,
+        targets: this.state.registeredControls,
+      });
+    }
   };
+  
+  private setOverlayVisualizationFromEvent = (event: Event<any>) => {
+    const newMode = event.data;
+    this.setVisualizationMode(newMode);
+  };
+  
+  /**
+   * Clean up a specific visualization mode
+   */
+  private cleanupVisualizationMode(mode: string) {
+    console.log(`Cleaning up visualization mode: ${mode}`);
+    
+    // Clean up based on the mode
+    switch (mode) {
+      case 'measure':
+        this.deactivateMeasurementTool();
+        break;
+      case 'swipe':
+        this.removeSwipeControls();
+        break;
+      case 'spyglass':
+        // No specific cleanup needed for spyglass beyond resetAllVisualizations
+        break;
+    }
+    
+    // Reset all visualizations to ensure clean state
+    this.resetAllVisualizations();
+  }
 
   private resetVisualization(layerIndex: number) {
     const overlayLayer = this.state.mapLayers[layerIndex];
@@ -1881,6 +2371,9 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     if (swipeLine) {
       swipeLine.remove();
     }
+    
+    // Reset swipe value to default
+    this.swipeValue = 50;
   }
 
   private setOverlayVisualization(overlayVisualization: string, layerIndex: number) {
@@ -1888,13 +2381,19 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     const visibleLayers = this.state.mapLayers.filter(layer => layer.get('visible')).slice(0, 2);
     
     // Only proceed if we have at least two visible layers
-    if (visibleLayers.length < 2) {
+    if (visibleLayers.length < 2 && overlayVisualization !== 'normal' && overlayVisualization !== 'measure') {
       console.warn('Visualization mode requires at least two visible layers');
       return;
     }
     
     // The top layer (index 0) will be the one that gets the visualization effect
-    const overlayLayer = visibleLayers[0];
+    const overlayLayer = visibleLayers.length > 0 ? visibleLayers[0] : null;
+
+    // Remove ESC key listener if we're going to normal mode
+    if (overlayVisualization === 'normal' && this.escKeyListener) {
+      document.removeEventListener('keydown', this.escKeyListener);
+      this.escKeyListener = null;
+    }
 
     this.setState(
       {
@@ -1913,6 +2412,10 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
             overlayLayer.on('postrender', function (event) {
               event.context.restore();
             });
+            // Add ESC key listener for spyglass mode
+            if (!this.escKeyListener) {
+              this.addEscapeKeyListener();
+            }
             this.map.render();
             break;
           }
@@ -1922,6 +2425,10 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
             overlayLayer.on('postrender', function (event) {
               event.context.restore();
             });
+            // Add ESC key listener for swipe mode
+            if (!this.escKeyListener) {
+              this.addEscapeKeyListener();
+            }
             this.map.render();
             break;
           }

@@ -32,6 +32,7 @@ declare namespace SemanticMapControlsScssNamespace {
     mapControlsContainer: string;
     mapControlsSidebar: string;
     mapControlsButton: string;
+    mapControlsDivider: string;
     mapControlsButtonActive: string;
     mapControlsPanel: string;
     mapControlsPanelHeader: string;
@@ -59,6 +60,19 @@ declare namespace SemanticMapControlsScssNamespace {
     // Swipe button styles
     swipeButton: string;
     swipeButtonHidden: string;
+
+    // Feature template styles
+    featureTemplateContainer: string;
+    featureTemplateCloseButton: string;
+    
+    // Visualization mode notification
+    visualizationModeNotification: string;
+    
+    // Measurement tool styles
+    'ol-tooltip': string;
+    'ol-tooltip-measure': string;
+    'ol-tooltip-static': string;
+    hidden: string;
   }
 }
 

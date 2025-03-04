@@ -709,6 +709,13 @@ export class SemanticMapControls extends Component<Props, State> {
 
     return (
       <React.Fragment>
+        {/* Visualization mode notification */}
+        {this.state.overlayVisualization !== 'normal' && (
+          <div className={styles.visualizationModeNotification}>
+            <strong>{this.state.overlayVisualization.toUpperCase()}</strong> mode active. Press <kbd>ESC</kbd> to exit
+          </div>
+        )}
+        
         <div className={styles.mapControlsContainer}>
         {/* Sidebar with buttons */}
         <div className={styles.mapControlsSidebar}>

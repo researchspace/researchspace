@@ -44,6 +44,9 @@ declare namespace SemanticMapControlsScssNamespace {
     featureTemplateContainer: string;
     featureTemplateCloseButton: string;
     
+    // Visualization mode notification
+    visualizationModeNotification: string;
+    
     // Measurement tool styles
     'ol-tooltip': string;
     'ol-tooltip-measure': string;

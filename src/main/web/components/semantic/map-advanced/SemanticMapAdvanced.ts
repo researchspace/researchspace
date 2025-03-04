@@ -512,6 +512,28 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
     return D.div(
       { style: { height: '100%', width: '100%', position: 'relative' } },
+      // Visualization mode notification
+      this.state.overlayVisualization !== 'normal' && D.div(
+        {
+          style: {
+            position: 'absolute',
+            top: '10px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            color: 'white',
+            padding: '8px 16px',
+            borderRadius: '4px',
+            zIndex: 1000,
+            fontWeight: 'bold',
+            fontSize: '14px',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+            textAlign: 'center',
+            pointerEvents: 'none',
+          }
+        },
+        `${this.state.overlayVisualization.toUpperCase()} mode active. Press ESC to exit`
+      ),
       D.div(
         {
           ref: MAP_REF,
@@ -2036,12 +2058,16 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       if (e.key === 'Escape' && this.state.overlayVisualization !== 'normal') {
         const previousMode = this.state.overlayVisualization;
         
+        // First, clean up the current visualization mode
+        this.cleanupVisualizationMode(previousMode);
+        
         // Reset to normal mode
         this.setState({ overlayVisualization: 'normal' }, () => {
-          // If we were in measurement mode, deactivate the measurement tool
-          if (previousMode === 'measure') {
-            this.deactivateMeasurementTool();
-          }
+          // Reset all visualizations to ensure clean state
+          this.resetAllVisualizations();
+          
+          // Force a re-render of the map
+          this.map.render();
           
           // Notify controls that we've returned to normal mode
           // This will update all visualization buttons in the sidebar
@@ -2094,9 +2120,6 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
    * Deactivates the measurement tool
    */
   private deactivateMeasurementTool() {
-    // Reset state to indicate measurement mode is off
-    this.setState({ overlayVisualization: 'normal' });
-    
     // Remove draw interaction
     if (this.measureDraw) {
       this.map.removeInteraction(this.measureDraw);
@@ -2125,11 +2148,8 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     // Remove pointer move handler
     this.map.un('pointermove', this.measurePointerMoveHandler);
     
-    // Remove escape key listener
-    if (this.escKeyListener) {
-      document.removeEventListener('keydown', this.escKeyListener);
-      this.escKeyListener = null;
-    }
+    // Note: We don't remove the ESC key listener here anymore
+    // It will be removed only when going back to normal mode
     
     // Clear measurement layer
     if (this.measureSource) {
@@ -2258,14 +2278,17 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     this.map.render();
   };
 
-  private setOverlayVisualizationFromEvent = (event: Event<any>) => {
-    const newMode = event.data;
+  /**
+   * Sets the visualization mode for the map
+   * @param mode The visualization mode to set: 'normal', 'spyglass', 'measure', or 'swipe'
+   */
+  private setVisualizationMode = (mode: string): void => {
     const currentMode = this.state.overlayVisualization;
     
-    console.log(`Changing visualization mode from ${currentMode} to ${newMode}`);
+    console.log(`Changing visualization mode from ${currentMode} to ${mode}`);
     
     // If we're already in this mode, do nothing
-    if (currentMode === newMode) {
+    if (currentMode === mode) {
       return;
     }
     
@@ -2273,7 +2296,22 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     this.cleanupVisualizationMode(currentMode);
     
     // Then set the new mode
-    this.setOverlayVisualization(newMode, this.state.maskIndex);
+    this.setOverlayVisualization(mode, this.state.maskIndex);
+    
+    // Notify controls about the mode change
+    if (this.state.registeredControls.length > 0) {
+      trigger({
+        eventType: SemanticMapControlsOverlayVisualization,
+        source: this.props.id,
+        data: mode,
+        targets: this.state.registeredControls,
+      });
+    }
+  };
+  
+  private setOverlayVisualizationFromEvent = (event: Event<any>) => {
+    const newMode = event.data;
+    this.setVisualizationMode(newMode);
   };
   
   /**
@@ -2333,6 +2371,9 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     if (swipeLine) {
       swipeLine.remove();
     }
+    
+    // Reset swipe value to default
+    this.swipeValue = 50;
   }
 
   private setOverlayVisualization(overlayVisualization: string, layerIndex: number) {
@@ -2340,13 +2381,19 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     const visibleLayers = this.state.mapLayers.filter(layer => layer.get('visible')).slice(0, 2);
     
     // Only proceed if we have at least two visible layers
-    if (visibleLayers.length < 2) {
+    if (visibleLayers.length < 2 && overlayVisualization !== 'normal' && overlayVisualization !== 'measure') {
       console.warn('Visualization mode requires at least two visible layers');
       return;
     }
     
     // The top layer (index 0) will be the one that gets the visualization effect
-    const overlayLayer = visibleLayers[0];
+    const overlayLayer = visibleLayers.length > 0 ? visibleLayers[0] : null;
+
+    // Remove ESC key listener if we're going to normal mode
+    if (overlayVisualization === 'normal' && this.escKeyListener) {
+      document.removeEventListener('keydown', this.escKeyListener);
+      this.escKeyListener = null;
+    }
 
     this.setState(
       {
@@ -2365,6 +2412,10 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
             overlayLayer.on('postrender', function (event) {
               event.context.restore();
             });
+            // Add ESC key listener for spyglass mode
+            if (!this.escKeyListener) {
+              this.addEscapeKeyListener();
+            }
             this.map.render();
             break;
           }
@@ -2374,6 +2425,10 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
             overlayLayer.on('postrender', function (event) {
               event.context.restore();
             });
+            // Add ESC key listener for swipe mode
+            if (!this.escKeyListener) {
+              this.addEscapeKeyListener();
+            }
             this.map.render();
             break;
           }

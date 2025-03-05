@@ -532,7 +532,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
             pointerEvents: 'none',
           }
         },
-        `${this.state.overlayVisualization.toUpperCase()} mode active. Press ESC to exit`
+      `${this.state.overlayVisualization.charAt(0).toUpperCase() + this.state.overlayVisualization.slice(1).toLowerCase()} mode active. Press ESC to exit`
       ),
       D.div(
         {
@@ -603,9 +603,11 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
     // Add the click handler to the map
     map.on('click', (evt) => {
-      // Skip feature selection if measurement tool is active
-      if (this.state.overlayVisualization === 'measure') {
-        return; // Early return to prevent feature selection during measurement
+      // Skip feature selection if measurement tool, spyglass or swipe mode is active
+      if (this.state.overlayVisualization === 'measure' || 
+          this.state.overlayVisualization === 'spyglass' || 
+          this.state.overlayVisualization === 'swipe') {
+        return; // Early return to prevent feature selection during special visualization modes
       }
       
       // Hide existing popup and reset it's offset
@@ -660,9 +662,13 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     });
 
     map.on('pointermove', (e) => {
-      // Change cursor based on whether measurement tool is active
+      // Change cursor based on active visualization mode
       if (this.state.overlayVisualization === 'measure') {
         map.getTarget().style.cursor = 'crosshair';
+      } else if (this.state.overlayVisualization === 'spyglass' || 
+                 this.state.overlayVisualization === 'swipe') {
+        // Use move cursor for spyglass and swipe modes
+        map.getTarget().style.cursor = 'move';
       } else {
         const hasFeatureAtPixel = map.hasFeatureAtPixel(e.pixel);
         map.getTarget().style.cursor = hasFeatureAtPixel ? 'pointer' : '';

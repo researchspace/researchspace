@@ -388,6 +388,75 @@
   border-radius: 5px;
   z-index: 100000000;
   padding: 10px;
+  position: absolute;
+  top: 63px; /* Same as the mapControlsPanel margin-top */
+  width: auto; /* Auto width to fit content */
+  min-width: 150px; /* Minimum width for stability */
+  max-width: 250px; /* Maximum width for readability */
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  pointer-events: auto;
+  /* Use animation instead of transition for better synchronization with panel */
+  animation-duration: 0.3s;
+  animation-fill-mode: forwards;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+}
+
+/* Position when panel is closed - place it to the right of the sidebar */
+.colorsLegendExternal {
+  animation-name: moveLegendToSidebar;
+}
+
+/* When panel is open, move it to the right of the panel */
+.colorsLegendWithPanel {
+  animation-name: moveLegendToPanel;
+}
+
+/* Hover effect */
+.colorsLegend:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+}
+
+/* Button container - initially hidden */
+.colorsLegend > div:first-child {
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.3s ease, opacity 0.3s ease, margin-bottom 0.3s ease;
+  overflow: hidden;
+  margin-bottom: 0;
+}
+
+/* Show buttons on hover */
+.colorsLegend:hover > div:first-child {
+  max-height: 50px; /* Enough height for the buttons */
+  opacity: 1;
+  margin-bottom: 10px;
+}
+
+/* Button styles */
+.colorsLegend button {
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.colorsLegend button:hover {
+  background-color: #e0e0e0;
+}
+
+@keyframes moveLegendToSidebar {
+  from { left: 420px; }
+  to { left: 70px; }
+}
+
+@keyframes moveLegendToPanel {
+  from { left: 70px; }
+  to { left: 420px; }
 }
 
 .filtersLabel {
@@ -416,8 +485,9 @@
   height: 100%;
   padding: 10px 0;
   align-items: center;
-  z-index: 1000;
+  z-index: 1002; /* Higher than the panel to ensure it's always on top */
   pointer-events: auto;
+  position: relative; /* Ensure z-index works properly */
 }
 
 .mapControlsButton {
@@ -467,9 +537,41 @@
   padding: 15px;
   overflow-y: auto;
   z-index: 1001; /* Higher than sidebar */
-  transition: all 0.3s ease-in-out;
+  transition: opacity 0.3s ease-in-out; /* Only transition opacity by default */
   border-left: 1px solid rgba(0,0,0,0.1);
   pointer-events: auto;
+}
+
+/* Animation class for panel opening */
+.mapControlsPanelOpening {
+  animation: panelAppear 0.3s ease-out forwards;
+}
+
+/* Animation class for panel closing */
+.mapControlsPanelClosing {
+  animation: panelDisappear 0.3s ease-out forwards;
+}
+
+@keyframes panelAppear {
+  0% { 
+    opacity: 0; 
+    transform: translateX(-100%);
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateX(0);
+  }
+}
+
+@keyframes panelDisappear {
+  0% { 
+    opacity: 1; 
+    transform: translateX(0);
+  }
+  100% { 
+    opacity: 0; 
+    transform: translateX(-100%);
+  }
 }
 
 .mapControlsPanelHeader {

@@ -25,6 +25,8 @@ declare namespace SemanticMapControlsScssNamespace {
     featuresOptionsDiv: string;
     yearLabel: string;
     colorsLegend: string;
+    colorsLegendExternal: string;
+    colorsLegendWithPanel: string;
     filtersLabel: string;
     timelineSlider: string;
     
@@ -35,6 +37,8 @@ declare namespace SemanticMapControlsScssNamespace {
     mapControlsDivider: string;
     mapControlsButtonActive: string;
     mapControlsPanel: string;
+    mapControlsPanelOpening: string;
+    mapControlsPanelClosing: string;
     mapControlsPanelHeader: string;
     mapControlsPanelTitle: string;
     mapControlsPanelCloseButton: string;

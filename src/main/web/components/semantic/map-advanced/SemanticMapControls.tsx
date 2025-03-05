@@ -588,13 +588,121 @@ export class SemanticMapControls extends Component<Props, State> {
     this.setState({ displayColorPicker: displayColorPickerClone });
   };
 
+  // Track if we're opening, closing, or switching panels
+  private isPanelOpening = false;
+  private isPanelClosing = false;
+  private previousPanel = null;
+  private panelAnimationState = ''; // Track animation state for CSS
+  private legendPosition = 'external'; // Track legend position for direct DOM manipulation
+
   /**
    * Toggle a panel open/closed
    */
   private togglePanel = (panelName: string) => {
-    this.setState((prevState) => ({
-      activePanel: prevState.activePanel === panelName ? null : panelName,
-    }));
+    // If we're closing the current panel
+    if (this.state.activePanel === panelName) {
+      // Set animation state for CSS
+      this.panelAnimationState = 'closing';
+      this.isPanelClosing = true;
+      this.isPanelOpening = false;
+      
+      // Immediately start moving the legend with the panel
+      this.animateLegendPosition('external');
+      
+      // Update state immediately to trigger re-render with animation
+      this.setState({
+        // Keep the activePanel value so the panel stays in DOM during animation
+        // but mark it as closing so we can apply the animation
+      });
+      
+      // Listen for the animation end event
+      const panel = document.querySelector(`.${styles.mapControlsPanel}`);
+      if (panel) {
+        const handleAnimationEnd = () => {
+          // Remove the event listener
+          panel.removeEventListener('animationend', handleAnimationEnd);
+          
+          // Now actually close the panel by setting activePanel to null
+          this.setState({
+            activePanel: null,
+          });
+          
+          // Reset animation state
+          this.panelAnimationState = '';
+        };
+        
+        // Add the event listener
+        panel.addEventListener('animationend', handleAnimationEnd);
+      } else {
+        // Fallback if we can't find the panel element
+        this.setState({
+          activePanel: null,
+        });
+      }
+    } 
+    // If we're opening a panel when none is open
+    else if (this.state.activePanel === null) {
+      this.isPanelOpening = true;
+      this.isPanelClosing = false;
+      this.panelAnimationState = 'opening';
+      this.previousPanel = null;
+      
+      // Immediately start moving the legend with the panel
+      this.animateLegendPosition('withPanel');
+      
+      this.setState({
+        activePanel: panelName,
+      });
+    }
+    // If we're switching from one panel to another
+    else {
+      this.previousPanel = this.state.activePanel;
+      this.isPanelOpening = false;
+      this.isPanelClosing = false;
+      this.panelAnimationState = '';
+      this.setState({
+        activePanel: panelName,
+      });
+    }
+  };
+  
+  /**
+   * Directly animate the legend position using DOM manipulation
+   * This ensures perfect synchronization with panel animations
+   */
+  private animateLegendPosition = (position: 'external' | 'withPanel') => {
+    this.legendPosition = position;
+    
+    // Find the legend element
+    const legend = document.querySelector(`.${styles.colorsLegend}`) as HTMLElement;
+    if (!legend) return;
+    
+    // Remove any existing animation
+    legend.classList.remove(styles.colorsLegendExternal, styles.colorsLegendWithPanel);
+    
+    // Force a reflow to ensure the animation starts fresh
+    void legend.offsetWidth;
+    
+    // Add the appropriate class to trigger the animation
+    if (position === 'external') {
+      legend.classList.add(styles.colorsLegendExternal);
+    } else {
+      legend.classList.add(styles.colorsLegendWithPanel);
+    }
+  };
+  
+  /**
+   * Determine if a panel should have the opening animation class
+   */
+  private getPanelAnimationClass = (panelName: string) => {
+    if (this.state.activePanel === panelName) {
+      if (this.panelAnimationState === 'opening' || this.isPanelOpening) {
+        return styles.mapControlsPanelOpening;
+      } else if (this.panelAnimationState === 'closing' || this.isPanelClosing) {
+        return styles.mapControlsPanelClosing;
+      }
+    }
+    return '';
   };
   
   /**
@@ -781,7 +889,7 @@ export class SemanticMapControls extends Component<Props, State> {
 
         {/* Panels */}
         {this.state.activePanel === 'historical' && (
-          <div className={styles.mapControlsPanel}>
+          <div className={`${styles.mapControlsPanel} ${this.getPanelAnimationClass('historical')}`}>
             {/* Standalone close button */}
             <button
               onClick={() => this.togglePanel('historical')}
@@ -799,7 +907,7 @@ export class SemanticMapControls extends Component<Props, State> {
         )}
 
         {this.state.activePanel === 'base' && (
-          <div className={styles.mapControlsPanel}>
+          <div className={`${styles.mapControlsPanel} ${this.getPanelAnimationClass('base')}`}>
             {/* Standalone close button */}
             <button
               onClick={() => this.togglePanel('base')}
@@ -1007,7 +1115,7 @@ export class SemanticMapControls extends Component<Props, State> {
           </div>
         )}
         {this.state.activePanel === 'buildings' && (
-          <div className={styles.mapControlsPanel}>
+          <div className={`${styles.mapControlsPanel} ${this.getPanelAnimationClass('buildings')}`}>
             {/* Standalone close button */}
             <button
               onClick={() => this.togglePanel('buildings')}
@@ -1072,82 +1180,6 @@ export class SemanticMapControls extends Component<Props, State> {
                         onClick={this.handleRestartColorPalette}
                       ></i>
                     </OverlayTrigger>
-                    <div className={styles.colorsLegend}>
-                      <div style={{ marginBottom: '10px' }}>
-                        <button onClick={() => this.enableAllGroups()}>
-                          <i className="fa fa-check-circle" style={{ marginRight: '5px' }}></i>
-                          Select All
-                        </button>
-                        <button onClick={() => this.disableAllGroups()} style={{ marginLeft: '10px' }}>
-                          <i className="fa fa-times-circle" style={{ marginRight: '5px' }}></i>
-                          Clear All
-                        </button>
-                      </div>
-                      {this.state.featuresColorGroups.map((group, index) => {
-                        const isDisabled = this.state.groupDisabled[group];
-                        return (
-                          <div
-                            key={group}
-                            id={'color-' + group}
-                            style={{ display: 'flex', alignItems: 'center', margin: '5px' }}
-                          >
-                            <div style={stylesSwatch.swatch} onClick={() => this.handleColorpickerClick(group)}>
-                              <div
-                                style={{
-                                  width: '15px',
-                                  height: '15px',
-                                  borderRadius: '50%',
-                                  backgroundColor: this.getRgbaString(group, true),
-                                  opacity: this.state.groupDisabled[group] ? 0.3 : 1, // lower opacity when disabled
-                                  position: 'relative',
-                                }}
-                              >
-                                {this.state.groupDisabled[group] && false && (
-                                  <div
-                                    style={{
-                                      position: 'absolute',
-                                      top: '50%',
-                                      left: '50%',
-                                      width: '150%', // full width of the circle
-                                      height: '1px', // thickness of the line
-                                      backgroundColor: 'black', // or any color you prefer
-                                      transform: 'translate(-50%, -50%) rotate(45deg)',
-                                    }}
-                                  />
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Clicking the label toggles disabled */}
-                            <label
-                              style={{
-                                marginLeft: '5px',
-                                marginBottom: '0px',
-                                cursor: 'pointer',
-                                opacity: isDisabled ? 0.3 : 1,
-                              }}
-                              onClick={() => this.toggleGroupDisabled(group)}
-                            >
-                              {group}
-                            </label>
-                            {this.state.displayColorPicker[group] && (
-                              <div style={{ position: 'absolute', zIndex: 2 }}>
-                                <div
-                                  style={{ position: 'fixed', top: '0px', right: '0px', left: '0px', bottom: '0px' }}
-                                  onClick={this.handleClose}
-                                />
-                                <SwatchesPicker
-                                  color={this.state.groupColorAssociations[group]}
-                                  onChange={(color) => {
-                                    this.handleColorPickerChange(color, group);
-                                  }}
-                                />
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
                   </div>
                 </div>
               </div>
@@ -1221,6 +1253,87 @@ export class SemanticMapControls extends Component<Props, State> {
           </div>
         )}
         </div>
+
+        {/* Colors Legend positioned outside the panel */}
+        {this.props.featuresOptionsEnabled && (
+          <div className={`${styles.colorsLegend} ${this.state.activePanel === null ? styles.colorsLegendExternal : styles.colorsLegendWithPanel}`}>
+            {/* Button container - will be hidden/shown on hover */}
+            <div>
+              <button onClick={() => this.enableAllGroups()}>
+                <i className="fa fa-check-circle" style={{ marginRight: '5px' }}></i>
+                Select All
+              </button>
+              <button onClick={() => this.disableAllGroups()} style={{ marginLeft: '10px' }}>
+                <i className="fa fa-times-circle" style={{ marginRight: '5px' }}></i>
+                Clear All
+              </button>
+            </div>
+            {this.state.featuresColorGroups.map((group, index) => {
+              const isDisabled = this.state.groupDisabled[group];
+              return (
+                <div
+                  key={group}
+                  id={'color-' + group}
+                  style={{ display: 'flex', alignItems: 'center', margin: '5px' }}
+                >
+                  <div style={stylesSwatch.swatch} onClick={() => this.handleColorpickerClick(group)}>
+                    <div
+                      style={{
+                        width: '15px',
+                        height: '15px',
+                        borderRadius: '50%',
+                        backgroundColor: this.getRgbaString(group, true),
+                        opacity: this.state.groupDisabled[group] ? 0.3 : 1, // lower opacity when disabled
+                        position: 'relative',
+                      }}
+                    >
+                      {this.state.groupDisabled[group] && false && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            width: '150%', // full width of the circle
+                            height: '1px', // thickness of the line
+                            backgroundColor: 'black', // or any color you prefer
+                            transform: 'translate(-50%, -50%) rotate(45deg)',
+                          }}
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Clicking the label toggles disabled */}
+                  <label
+                    style={{
+                      marginLeft: '5px',
+                      marginBottom: '0px',
+                      cursor: 'pointer',
+                      opacity: isDisabled ? 0.3 : 1,
+                    }}
+                    onClick={() => this.toggleGroupDisabled(group)}
+                  >
+                    {group}
+                  </label>
+                  {this.state.displayColorPicker[group] && (
+                    <div style={{ position: 'absolute', zIndex: 2 }}>
+                      <div
+                        style={{ position: 'fixed', top: '0px', right: '0px', left: '0px', bottom: '0px' }}
+                        onClick={this.handleClose}
+                      />
+                      <SwatchesPicker
+                        color={this.state.groupColorAssociations[group]}
+                        onChange={(color) => {
+                          this.handleColorPickerChange(color, group);
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* Feature template positioned to appear on the map */}
         {this.state.selectedFeature ? (

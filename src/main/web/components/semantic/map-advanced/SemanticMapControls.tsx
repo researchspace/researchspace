@@ -580,12 +580,81 @@ export class SemanticMapControls extends Component<Props, State> {
     });
   };
 
+  // Store the timeout ID so we can clear it if needed
+  private closeTimeoutId: number | null = null;
+
   handleClose = () => {
+    // Clear any existing timeout to prevent conflicts
+    if (this.closeTimeoutId !== null) {
+      window.clearTimeout(this.closeTimeoutId);
+      this.closeTimeoutId = null;
+    }
+
+    // Find the swatches-picker element
+    const swatchesPicker = document.querySelector('.swatches-picker') as HTMLElement;
+    if (!swatchesPicker) {
+      // If no picker is found, just close it immediately
+      this.closePickerImmediately();
+      return;
+    }
+
+    // Set up the transition directly on the element
+    swatchesPicker.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
+    
+    // Start with full opacity
+    swatchesPicker.style.opacity = '1';
+    swatchesPicker.style.transform = 'scale(1)';
+    
+    // Force a reflow to ensure the transition starts fresh
+    void swatchesPicker.offsetWidth;
+    
+    // Apply the fade-out effect
+    swatchesPicker.style.opacity = '0';
+    swatchesPicker.style.transform = 'scale(0.95)';
+
+    // Listen for the transition end event
+    const handleTransitionEnd = () => {
+      // Remove the event listener
+      swatchesPicker.removeEventListener('transitionend', handleTransitionEnd);
+      
+      // Close the picker
+      this.closePickerImmediately();
+    };
+
+    // Add the event listener
+    swatchesPicker.addEventListener('transitionend', handleTransitionEnd);
+    
+    // Set a backup timeout in case the transition event doesn't fire
+    this.closeTimeoutId = window.setTimeout(() => {
+      this.closePickerImmediately();
+      this.closeTimeoutId = null;
+    }, 600); // Slightly longer than the transition duration
+  };
+
+  // Helper method to close the picker immediately
+  private closePickerImmediately = () => {
     var displayColorPickerClone = this.state.displayColorPicker;
     for (let key in displayColorPickerClone) {
       displayColorPickerClone[key] = false;
     }
     this.setState({ displayColorPicker: displayColorPickerClone });
+  };
+
+  // Cancel the close timeout if the user moves back to the color picker
+  handleColorPickerMouseEnter = () => {
+    // Clear the timeout to prevent the picker from closing
+    if (this.closeTimeoutId !== null) {
+      window.clearTimeout(this.closeTimeoutId);
+      this.closeTimeoutId = null;
+      
+      // Reset the opacity and transform
+      const swatchesPicker = document.querySelector('.swatches-picker') as HTMLElement;
+      if (swatchesPicker) {
+        swatchesPicker.style.transition = 'opacity 0.2s ease-out, transform 0.2s ease-out';
+        swatchesPicker.style.opacity = '1';
+        swatchesPicker.style.transform = 'scale(1)';
+      }
+    }
   };
 
   // Track if we're opening, closing, or switching panels
@@ -1274,6 +1343,7 @@ export class SemanticMapControls extends Component<Props, State> {
                 <div
                   key={group}
                   id={'color-' + group}
+                  className={isDisabled ? styles.disabledColorGroup : ''}
                   style={{ display: 'flex', alignItems: 'center', margin: '5px' }}
                 >
                   <div style={stylesSwatch.swatch} onClick={() => this.handleColorpickerClick(group)}>
@@ -1316,17 +1386,32 @@ export class SemanticMapControls extends Component<Props, State> {
                     {group}
                   </label>
                   {this.state.displayColorPicker[group] && (
-                    <div style={{ position: 'absolute', zIndex: 2 }}>
+                    <div className={styles.colorPickerContainer}>
+                      {/* Invisible overlay to capture clicks outside the picker */}
                       <div
                         style={{ position: 'fixed', top: '0px', right: '0px', left: '0px', bottom: '0px' }}
                         onClick={this.handleClose}
                       />
-                      <SwatchesPicker
-                        color={this.state.groupColorAssociations[group]}
-                        onChange={(color) => {
-                          this.handleColorPickerChange(color, group);
+                      
+                      <div 
+                        onMouseLeave={this.handleClose}
+                        onMouseEnter={this.handleColorPickerMouseEnter}
+                        style={{
+                          transition: 'opacity 0.5s ease-out, transform 0.5s ease-out',
+                          opacity: 1,
+                          transform: 'scale(1)'
                         }}
-                      />
+                        className="swatches-picker-wrapper"
+                      >
+                        <SwatchesPicker
+                          color={this.state.groupColorAssociations[group]}
+                          onChange={(color) => {
+                            this.handleColorPickerChange(color, group);
+                            // Close the color picker after selecting a color
+                            this.handleClose();
+                          }}
+                        />
+                      </div>
                     </div>
                   )}
                 </div>

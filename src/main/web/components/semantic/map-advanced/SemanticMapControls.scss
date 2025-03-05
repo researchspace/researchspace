@@ -388,31 +388,24 @@
   border-radius: 5px;
   z-index: 100000000;
   padding: 10px;
-  position: absolute;
-  top: 63px; /* Same as the mapControlsPanel margin-top */
+  position: fixed; /* Changed from absolute to fixed for consistent positioning */
+  top: 70px; /* Position at the top of the screen with some margin */
+  right: 30px; /* Position at the right of the screen with some margin */
   width: auto; /* Auto width to fit content */
   min-width: 150px; /* Minimum width for stability */
   max-width: 250px; /* Maximum width for readability */
   box-shadow: 0 0 15px rgba(0,0,0,0.2);
   pointer-events: auto;
-  /* Use animation instead of transition for better synchronization with panel */
-  animation-duration: 0.3s;
-  animation-fill-mode: forwards;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  overflow: hidden;
+  overflow: visible; /* Changed from hidden to visible to allow color picker to overflow */
 }
 
-/* Position when panel is closed - place it to the right of the sidebar */
-.colorsLegendExternal {
-  animation-name: moveLegendToSidebar;
+/* No longer need these classes since we're not animating based on panel state */
+.colorsLegendExternal, .colorsLegendWithPanel {
+  /* No animations needed */
 }
 
-/* When panel is open, move it to the right of the panel */
-.colorsLegendWithPanel {
-  animation-name: moveLegendToPanel;
-}
-
-/* Hover effect */
+/* Hover effect - keeping this for consistency */
 .colorsLegend:hover {
   transform: scale(1.05);
   box-shadow: 0 0 20px rgba(0,0,0,0.3);
@@ -434,6 +427,81 @@
   margin-bottom: 10px;
 }
 
+/* Animate disabled color groups */
+.disabledColorGroup {
+  max-height: 0;
+  height: 0;
+  opacity: 0;
+  margin: 0 !important;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  position: absolute;
+  pointer-events: none;
+  transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease, height 0.3s ease;
+}
+
+/* Show all color groups on hover, including disabled ones */
+.colorsLegend:hover .disabledColorGroup {
+  max-height: 50px; /* Enough height for the content */
+  height: auto;
+  opacity: 1;
+  margin: 5px !important;
+  position: relative;
+  pointer-events: auto;
+  display: flex;
+}
+
+/* Individual color group hover effect - removed scaling */
+[id^="color-"] {
+  /* No transitions needed */
+}
+
+[id^="color-"]:hover {
+  z-index: 1; /* Keep z-index change on hover */
+}
+
+/* No text effects on hover for color group labels */
+[id^="color-"] label {
+  /* No transitions needed */
+}
+
+/* No text style changes on hover */
+
+/* Color picker container styles */
+.colorPickerContainer {
+  position: absolute;
+  z-index: 2;
+}
+
+/* Color picker styles */
+:global(.swatches-picker) {
+  z-index: 9999999 !important; /* Ensure color picker is on top of everything */
+  position: absolute !important;
+  left: -320px !important; /* Position to the left of the colorsLegend */
+  top: 0 !important; /* Align with the top of the parent element */
+  transform: none !important; /* Override any transform that might be applied */
+  opacity: 1 !important; /* Ensure it's fully visible by default */
+  transition: opacity 0.5s ease !important; /* Add fade transition */
+  animation: swatchesPickerFadeIn 0.3s ease-out !important; /* Initial fade in animation */
+}
+
+/* Add a fade-in animation for the color picker */
+@keyframes swatchesPickerFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Add a fade-out animation for the color picker */
+.colorPickerFadeOut {
+  animation: swatchesPickerFadeOut 0.5s ease-out forwards !important;
+}
+
+@keyframes swatchesPickerFadeOut {
+  0% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.95); }
+}
+
 /* Button styles */
 .colorsLegend button {
   background-color: #f5f5f5;
@@ -449,15 +517,7 @@
   background-color: #e0e0e0;
 }
 
-@keyframes moveLegendToSidebar {
-  from { left: 420px; }
-  to { left: 70px; }
-}
-
-@keyframes moveLegendToPanel {
-  from { left: 70px; }
-  to { left: 420px; }
-}
+/* These animations are no longer needed since the legend has a fixed position */
 
 .filtersLabel {
   margin-right: 10px;
@@ -834,8 +894,31 @@
   color: rgba(200, 200, 200, 1);
 }
 
-.ol-zoom {
-  right: 20em;
+/* Override OpenLayers default zoom control positioning */
+.ol-zoom,
+div.ol-zoom,
+.ol-viewport .ol-zoom,
+html body .ol-zoom,
+.ol-overlaycontainer-stopevent .ol-zoom,
+.ol-overlaycontainer .ol-zoom,
+.ol-unselectable .ol-zoom,
+.ol-viewport > .ol-zoom,
+:global(.ol-zoom) {
+  position: absolute !important;
+  right: 20px !important;
+  bottom: 20px !important;
+  top: auto !important;
+  left: auto !important;
+  z-index: 1000 !important;
+}
+
+/* Target the individual zoom buttons to ensure they're properly positioned */
+.ol-zoom .ol-zoom-in,
+.ol-zoom .ol-zoom-out,
+:global(.ol-zoom .ol-zoom-in),
+:global(.ol-zoom .ol-zoom-out) {
+  position: relative !important;
+  display: block !important;
 }
 
 /* Visualization mode notification */

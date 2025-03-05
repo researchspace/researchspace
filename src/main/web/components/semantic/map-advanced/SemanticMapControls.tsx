@@ -890,6 +890,9 @@ export class SemanticMapControls extends Component<Props, State> {
         {this.state.overlayVisualization !== 'normal' && (
           <div className={styles.visualizationModeNotification}>
             <strong>{this.state.overlayVisualization.toUpperCase()}</strong> mode active. Press <kbd>ESC</kbd> to exit
+            {this.state.overlayVisualization === 'spyglass' && (
+              <span>. Right click (or Ctrl+click) to change radius.</span>
+            )}
           </div>
         )}
         

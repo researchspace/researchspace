@@ -532,7 +532,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
             pointerEvents: 'none',
           }
         },
-      `${this.state.overlayVisualization.charAt(0).toUpperCase() + this.state.overlayVisualization.slice(1).toLowerCase()} mode active. Press ESC to exit`
+      `${this.state.overlayVisualization.charAt(0).toUpperCase() + this.state.overlayVisualization.slice(1).toLowerCase()} mode active. Press ESC to exit${this.state.overlayVisualization === 'spyglass' ? '. Right click (or Ctrl+click) to change radius.' : ''}`
       ),
       D.div(
         {

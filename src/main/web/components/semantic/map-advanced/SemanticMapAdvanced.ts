@@ -665,10 +665,16 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       // Change cursor based on active visualization mode
       if (this.state.overlayVisualization === 'measure') {
         map.getTarget().style.cursor = 'crosshair';
-      } else if (this.state.overlayVisualization === 'spyglass' || 
-                 this.state.overlayVisualization === 'swipe') {
-        // Use move cursor for spyglass and swipe modes
+      } else if (this.state.overlayVisualization === 'swipe') {
+        // Use move cursor for swipe mode
         map.getTarget().style.cursor = 'move';
+      } else if (this.state.overlayVisualization === 'spyglass') {
+        // For spyglass mode, only show ns-resize cursor during resizing
+        if (this.isResizingSpyglass) {
+          map.getTarget().style.cursor = 'ns-resize';
+        } else {
+          map.getTarget().style.cursor = ''; // Default cursor when not resizing
+        }
       } else {
         const hasFeatureAtPixel = map.hasFeatureAtPixel(e.pixel);
         map.getTarget().style.cursor = hasFeatureAtPixel ? 'pointer' : '';
@@ -1403,13 +1409,71 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
           /* Layer Spy functionality */
           node.addEventListener('mousemove', (event) => {
-            this.mousePosition = map.getEventPixel(event);
+            // Update mouse position for spyglass to follow cursor when not resizing
+            if (!this.isResizingSpyglass) {
+              this.mousePosition = map.getEventPixel(event);
+            }
+            
+            // Handle spyglass resizing if active
+            if (this.isResizingSpyglass) {
+              // Calculate Y-axis movement
+              const deltaY = event.clientY - this.spyglassResizeStartY;
+              
+              // Adjust radius based on Y movement (negative deltaY means moving up, which increases radius)
+              // Use a scaling factor to make the adjustment more natural
+              const newRadius = Math.max(30, this.spyglassResizeStartRadius - deltaY * 0.5);
+              
+              // Update the radius
+              this.spyglassRadius = newRadius;
+            }
+            
+            // Always render the map to update spyglass position and/or size
             this.map.render();
           });
 
           node.addEventListener('mouseout', () => {
             this.mousePosition = null;
             this.map.render();
+          });
+          
+          // Add event listener for right-click or ctrl+click to start resizing spyglass
+          node.addEventListener('mousedown', (event) => {
+            // Only handle if we're in spyglass mode
+            if (this.state.overlayVisualization !== 'spyglass') {
+              return;
+            }
+            
+            // Check if it's a right-click (button 2) or ctrl+click
+            if (event.button === 2 || (event.button === 0 && event.ctrlKey)) {
+              event.preventDefault(); // Prevent context menu
+              
+              // Start resizing
+              this.isResizingSpyglass = true;
+              this.spyglassResizeStartY = event.clientY;
+              this.spyglassResizeStartRadius = this.spyglassRadius;
+              
+              // Change cursor to indicate resizing
+              node.style.cursor = 'ns-resize';
+            }
+          });
+          
+          // Add event listener to stop resizing on mouse up
+          document.addEventListener('mouseup', () => {
+            if (this.isResizingSpyglass) {
+              this.isResizingSpyglass = false;
+              
+              // Reset cursor
+              if (this.state.overlayVisualization === 'spyglass') {
+                node.style.cursor = 'move';
+              }
+            }
+          });
+          
+          // Prevent context menu when in spyglass mode
+          node.addEventListener('contextmenu', (event) => {
+            if (this.state.overlayVisualization === 'spyglass') {
+              event.preventDefault();
+            }
           });
 
           // asynch execute query and add markers
@@ -2443,17 +2507,23 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     );
   }
 
+  // Variables for spyglass functionality
+  private spyglassRadius = 120; // Default radius
+  private isResizingSpyglass = false;
+  private spyglassResizeStartY = 0;
+  private spyglassResizeStartRadius = 0;
+  private spyglassFixedPosition = null; // Store fixed position during resize
+  
   private spyglassFunction = (event) => {
-    const radius = 120;
     const ctx = event.context;
     ctx.save();
     ctx.beginPath();
     if (this.mousePosition) {
       const pixel = getRenderPixel(event, this.mousePosition);
-      const offset = getRenderPixel(event, [this.mousePosition[0] + radius, this.mousePosition[1]]);
+      const offset = getRenderPixel(event, [this.mousePosition[0] + this.spyglassRadius, this.mousePosition[1]]);
       const canvasRadius = Math.sqrt(Math.pow(offset[0] - pixel[0], 2) + Math.pow(offset[1] - pixel[1], 2));
       ctx.arc(pixel[0], pixel[1], canvasRadius, 0, 2 * Math.PI);
-      ctx.lineWidth = (2 * canvasRadius) / radius;
+      ctx.lineWidth = (2 * canvasRadius) / this.spyglassRadius;
       ctx.strokeStyle = 'rgba(102,0,0,0.5)';
       ctx.stroke();
     }

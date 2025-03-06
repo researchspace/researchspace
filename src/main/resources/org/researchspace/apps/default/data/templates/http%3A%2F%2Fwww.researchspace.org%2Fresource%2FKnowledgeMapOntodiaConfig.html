@@ -34,7 +34,6 @@ uses client-side templates:
 
   left-panel-initially-open=false
   default-node-template="{{> default}}"
-  node-templates='{"http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object": "{{> object-template}}"}'
   additional-tree-item-template='{{> additionalTreeItemTemplate}}'
   provider-settings='{
     "classTreeQuery": "
@@ -72,7 +71,10 @@ uses client-side templates:
                             default-label-iri='http://www.researchspace.org/pattern/system/entity/primary_appellation'
                             default-image-iri='http://www.researchspace.org/pattern/system/entity/main_image'
                             default-subject-template='/{{{{raw}}}}{{FIELD_VALUE_LOCAL_NAME http://www.w3.org/1999/02/22-rdf-syntax-ns#type}}{{{{/raw}}}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
-                            force-datatype-fields='["http://www.researchspace.org/ontology/PX_has_video","http://www.researchspace.org/pattern/system/entity/file_identifier_duplicate"]'
+                            force-datatype-fields='["http://www.researchspace.org/pattern/system/recording/file_identifier", 
+                            "http://www.researchspace.org/pattern/system/recording/file_url",
+                            "http://www.researchspace.org/pattern/system/image/file_identifier",
+                            "http://www.researchspace.org/pattern/system/document/file_identifier"]'
 
                             persistence='{
                                 "type": "sparql",
@@ -107,11 +109,10 @@ uses client-side templates:
                               (<http://www.researchspace.org/ontology/PX_has_file_name>)
                               (<http://www.researchspace.org/ontology/PX_has_media_type>)
                               (<http://www.ics.forth.gr/isl/CRMdig/L49_is_primary_area_of>)
-                              (<http://www.researchspace.org/pattern/system/image_annotation/boundingBox>)
-                              (<http://www.researchspace.org/pattern/system/image_annotation/value>)
-                              (<http://www.researchspace.org/pattern/system/image_annotation/viewport>)
-                              (<http://www.researchspace.org/pattern/system/image_annotation/area_of_image>)  
-                              (<http://www.researchspace.org/pattern/system/entity/web_URL_embed_Max1>)
+                              (<http://www.researchspace.org/pattern/system/recording/file_url>)
+                              (<http://www.researchspace.org/pattern/system/recording/file_identifier>)
+                              (<http://www.researchspace.org/pattern/system/document/file_identifier>)
+                              (<http://www.researchspace.org/pattern/system/image/file_identifier>)
                           	 } 
 
                         BIND(?value as ?field)
@@ -125,61 +126,9 @@ uses client-side templates:
                       FILTER (!CONTAINS(STR(?field),"http://www.cidoc-crm.org/cidoc-crm/P3_has_note"))
                     }'>
     </rs-ontodia-metadata-from-fields>
- [[#> rsp:ontodia-entity-metadata ]][[/rsp:ontodia-entity-metadata]]
-    
-  
-	
-	
- [[!--
-       <ontodia-entity-metadata
-                                fields='["http://www.researchspace.org/pattern/system/symbolic_object/has_symbolic_contentMin1Max1"]'
-    entity-type-iri="http://iflastandards.info/ns/fr/frbr/frbroo/F2_Expression"    
-    type-iri='http://www.w3.org/1999/02/22-rdf-syntax-ns#type'
-    label-iri='http://www.researchspace.org/pattern/system/symbolic_object/has_symbolic_contentMin1Max1'
-    image-iri='http://www.researchspace.org/pattern/system/entity/main_image'
-  ></ontodia-entity-metadata>
-      
-      <ontodia-entity-metadata
-    entity-type-iri="http://iflastandards.info/ns/fr/frbr/frbroo/F22_Self-Contained_Expression"
-     fields='["http://www.researchspace.org/pattern/system/symbolic_object/has_symbolic_contentMin1Max1"]'
-    type-iri='http://www.w3.org/1999/02/22-rdf-syntax-ns#type'
-    label-iri='http://www.researchspace.org/pattern/system/symbolic_object/has_symbolic_contentMin1Max1'
-                               image-iri='http://www.researchspace.org/pattern/system/entity/main_image'
-  ></ontodia-entity-metadata> 
+ 
+    [[#> rsp:ontodia-entity-metadata ]][[/rsp:ontodia-entity-metadata]]
 
-  --]]
-    <ontodia-field-input-override for-field="http://www.researchspace.org/pattern/system/entity/web_URL_embed_Max1">
-    	<semantic-form-text-input for="http://www.researchspace.org/pattern/system/entity/web_URL_embed_Max1"></semantic-form-text-input>
-    </ontodia-field-input-override>
-    
-    <ontodia-field-input-override for-field="http://www.researchspace.org/pattern/system/entity/file_identifier_duplicate">
-     <semantic-form-file-input   for='http://www.researchspace.org/pattern/system/entity/file_identifier_duplicate' 
-                                        label='Image file'
-                                        render-header='true'
-                                        resource-iri='http://www.researchspace.org/resource/EX_File/7813031373618381720_949842036925755910_2010EL4437.jpg'
-                                        from-url-or-drop='true'
-                                        accept-pattern='image/jpg,image/jpeg,image/png,image/tiff,image/gif' 
-                                        storage='images'
-                                        temp-storage='tmp'
-                                        name-predicate-iri='http://www.researchspace.org/ontology/PX_has_file_name'
-                                        media-type-predicate-iri='http://www.researchspace.org/ontology/PX_has_media_type'
-                                        resource-query='PREFIX rs: <http://www.researchspace.org/ontology/>
-                                                        CONSTRUCT {
-                                                            ?__resourceIri__ a rs:EX_File.
-                                                            ?__resourceIri__ rs:PX_has_file_name ?__fileName__.
-                                                            ?__resourceIri__ rs:PX_has_media_type ?__mediaType__.
-                                                        } WHERE {}'
-                                        generate-iri-query='SELECT ?resourceIri {
-                                                                BIND(IRI(CONCAT(STR(Default:), "EX_File/", ?__fileName__)) AS ?resourceIri) .
-                                                            }'
-            >
-            <div className='placeholder-item'>
-                <rs-icon icon-type='rounded' icon-name='upload' class='upload_icon' symbol='true'></rs-icon>
-                <p>{{#if onlyUpload}}Click to upload{{else}}Drag image <span>or </span><span class='text-link'>click to upload</span>{{/if}}</p>
-                <div>Supported image format: .jpg .jpeg .png .tiff .gif</div>
-            </div>
-     </semantic-form-file-input>
-    </ontodia-field-input-override>
     <ontodia-field-input-override for-field="http://www.researchspace.org/pattern/system/entity/main_image">
       <div class="dragAndDrop-input-container">
         <semantic-form-drag-and-drop-input  for='http://www.researchspace.org/pattern/system/entity/main_image' 
@@ -231,6 +180,91 @@ uses client-side templates:
                                             nested-form-template='{{{{raw}}}}{{> forms:Image_minimal nested=true editable=true mode="new"}}{{{{/raw}}}}'>
         </semantic-form-drag-and-drop-input>
       </div>
+    </ontodia-field-input-override>
+
+    <ontodia-field-input-override for-field="http://www.researchspace.org/pattern/system/image/file_identifier">
+      <semantic-form-file-input   for='http://www.researchspace.org/pattern/system/image/file_identifier' 
+                                  label='Image file'
+                                  from-url-or-drop='true'
+                                  accept-pattern='image/jpg,image/jpeg,image/png,image/tiff,image/gif' 
+                                  storage='images'
+                                  temp-storage='tmp'
+                                  name-predicate-iri='http://www.researchspace.org/ontology/PX_has_file_name'
+                                  media-type-predicate-iri='http://www.researchspace.org/ontology/PX_has_media_type'
+                                  resource-query='PREFIX rs: <http://www.researchspace.org/ontology/>
+                                                  CONSTRUCT {
+                                                      ?__resourceIri__ a rs:EX_File.
+                                                      ?__resourceIri__ rs:PX_has_file_name ?__fileName__.
+                                                      ?__resourceIri__ rs:PX_has_media_type ?__mediaType__.                                                	
+                                                  } WHERE {}'
+                                  generate-iri-query='SELECT ?resourceIri {
+                                                          BIND(IRI(CONCAT(STR(Default:), "EX_File/", ?__fileName__)) AS ?resourceIri) .
+                                                      }'
+      >
+          <div className='placeholder-item'>
+              <rs-icon icon-type='rounded' icon-name='upload' class='upload_icon' symbol='true'></rs-icon>
+              <p>Drag image <span>or </span><span class='text-link'>click to upload</span></p>
+              <div>Supported image format: .jpg .jpeg .png .tiff .gif</div>
+          </div>
+      </semantic-form-file-input>
+    </ontodia-field-input-override>
+
+    <ontodia-field-input-override for-field="http://www.researchspace.org/pattern/system/document/file_identifier">
+      <semantic-form-file-input for='http://www.researchspace.org/pattern/system/document/file_identifier' 
+                                label='Document file'
+                                accept-pattern='application/*,text/*' 
+                                storage='images'
+                                temp-storage='tmp'
+                                name-predicate-iri='http://www.researchspace.org/ontology/PX_has_file_name'
+                                media-type-predicate-iri='http://www.researchspace.org/ontology/PX_has_media_type'
+                                resource-query='PREFIX rs: <http://www.researchspace.org/ontology/>
+                                                CONSTRUCT {
+                                                  ?__resourceIri__ a rs:EX_File.
+                                                  ?__resourceIri__ rs:PX_has_file_name ?__fileName__.
+                                                  ?__resourceIri__ rs:PX_has_media_type ?__mediaType__.
+                                                } WHERE {}'
+                                generate-iri-query='SELECT ?resourceIri {
+                                                      BIND(IRI(CONCAT(STR(Default:), "EX_File/", ?__fileName__)) AS ?resourceIri) .
+                                                    }'
+      >
+          <div className='placeholder-item'>
+            <rs-icon icon-type='rounded' icon-name='upload' class='upload_icon' symbol='true'></rs-icon>
+            <p>Drag file or <span>or </span><span class='text-link'>click to upload</span></p>
+            <div>Supported document format: .pdf .zip .doc .xlsx .ppt .pptx .txt .csv .html .json .ics .rdf .rtf .xml</div>
+          </div>
+      </semantic-form-file-input>
+    </ontodia-field-input-override>
+
+    <ontodia-field-input-override for-field="http://www.researchspace.org/pattern/system/recording/file_url">
+    	<semantic-form-text-input for="http://www.researchspace.org/pattern/system/recording/file_url"></semantic-form-text-input>
+    </ontodia-field-input-override>
+    
+    <ontodia-field-input-override for-field="http://www.researchspace.org/pattern/system/recording/file_identifier">
+      <semantic-form-file-input   for='http://www.researchspace.org/pattern/system/recording/file_identifier' 
+                                  label='File'
+                                  from-url-or-drop='false'
+                                  accept-pattern='video/*,audio/*' 
+                                  storage='images'
+                                  temp-storage='tmp'
+                                  name-predicate-iri='http://www.researchspace.org/ontology/PX_has_file_name'
+                                  media-type-predicate-iri='http://www.researchspace.org/ontology/PX_has_media_type'
+                                  resource-query='PREFIX rs: <http://www.researchspace.org/ontology/>
+                                                  PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+                                                  CONSTRUCT {
+                                                      ?__resourceIri__ a rs:EX_File.
+                                                    #  ?__resourceIri__ crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/video> .
+                                                      ?__resourceIri__ rs:PX_has_file_name ?__fileName__.
+                                                      ?__resourceIri__ rs:PX_has_media_type ?__mediaType__.
+                                                  } WHERE {}'
+                                  generate-iri-query='SELECT ?resourceIri {
+                                                          BIND(IRI(CONCAT(STR(Default:), "EX_File/", ?__fileName__)) AS ?resourceIri) .
+                                                      }'
+      >
+        <div className='placeholder-item'>
+          <rs-icon icon-type='rounded' icon-name='upload' class='upload_icon' symbol='true'></rs-icon>
+          <div>Drag file <span>or </span><span class='text-link'>click to upload</span></div>
+        </div>
+      </semantic-form-file-input>
     </ontodia-field-input-override>
 
   </ontodia-field-configuration>
@@ -296,9 +330,6 @@ uses client-side templates:
     {{/if}}
   </template>
 
-  <template id="object-template">
-    <div>test</div>
-  </template>
   <template id="knowledge-map-dropdown">
     <rs-resource-dropdown id="{{ontodiaVariable}}-{{iri}}-item-actions-dropdown" class-name="dropdown-no-caret">
       {{> rsp:ResourceDropdownActions viewId=ontodiaVariable

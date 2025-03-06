@@ -200,7 +200,7 @@ function extractAuthoringMetadata(props: OntodiaEntityMetadataProps, context: Fi
   context.collectedMetadata.set(metadata.entityType, metadata);
 }
 
-function checkField(f:FieldDefinition, excludeFields:string[]):boolean { if (excludeFields.length>0) console.log("exclude "+excludeFields);
+function checkField(f:FieldDefinition, excludeFields:string[]):boolean {
   if (f.xsdDatatype.value !== "http://www.w3.org/2001/XMLSchema#anyURI")
     return false;
   if (excludeFields.includes(f.iri))

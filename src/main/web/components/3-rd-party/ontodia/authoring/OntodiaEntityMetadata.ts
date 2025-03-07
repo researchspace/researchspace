@@ -51,11 +51,6 @@ export interface OntodiaEntityMetadataProps {
   enableOntodiaContextFields?:boolean;   
 
   /**
-   * A list of fields to be removed from the metadata available for a particular entity type 
-  */
-  excludeFields?:string[];
-
-  /**
    * Field Iri for entity label override
    */
   labelIri?: string;
@@ -140,7 +135,6 @@ function extractAuthoringMetadata(props: OntodiaEntityMetadataProps, context: Fi
     imageIri = context.defaultImageIri,
     newSubjectTemplate = context.defaultSubjectTemplate,
     enableOntodiaContextFields = props.enableOntodiaContextFields?props.enableOntodiaContextFields:false,
-    excludeFields = props.excludeFields?props.excludeFields:[]
   } = props;
 
   if (typeof entityTypeIri !== 'string') {
@@ -163,11 +157,11 @@ function extractAuthoringMetadata(props: OntodiaEntityMetadataProps, context: Fi
   if (!labelField) {
     throw new Error(`<ontodia-entity-metadata> for <${entityTypeIri}>: missing label field <${labelIri}>`);
   }
-  
-  const extendedFields = (enableOntodiaContextFields === true)?
-                            [].concat(fields,allFieldByIri.filter(f=>checkField(f,excludeFields)).keySeq().toArray()):
-                            fields;
-  const mappedFields = extendedFields.map((fieldIri) => {
+ 
+  const excludeFields = context.datatypeFields;//map(obj=>obj["target"]["fieldIri"]);
+ 
+  const extendedFields = enableOntodiaContextFields === true ? [...fields, ...allFieldByIri.filter(f => checkField(f, excludeFields)).keySeq().toArray()]: fields;
+  const mappedFields = extendedFields.map(function (fieldIri) {
     const field = allFieldByIri.get(fieldIri);
     if (!field) {
       throw new Error(`<ontodia-entity-metadata> for <${entityTypeIri}>: missing field <${labelIri}>`);
@@ -200,7 +194,7 @@ function extractAuthoringMetadata(props: OntodiaEntityMetadataProps, context: Fi
   context.collectedMetadata.set(metadata.entityType, metadata);
 }
 
-function checkField(f:FieldDefinition, excludeFields:string[]):boolean { if (excludeFields.length>0) console.log("exclude "+excludeFields);
+function checkField(f:FieldDefinition, excludeFields:readonly string[]):boolean { 
   if (f.xsdDatatype.value !== "http://www.w3.org/2001/XMLSchema#anyURI")
     return false;
   if (excludeFields.includes(f.iri))

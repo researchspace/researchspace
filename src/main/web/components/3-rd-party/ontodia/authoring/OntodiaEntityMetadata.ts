@@ -158,7 +158,7 @@ function extractAuthoringMetadata(props: OntodiaEntityMetadataProps, context: Fi
     throw new Error(`<ontodia-entity-metadata> for <${entityTypeIri}>: missing label field <${labelIri}>`);
   }
  
-  const excludeFields = context.datatypeFields;//map(obj=>obj["target"]["fieldIri"]);
+  const excludeFields = context.datatypeFields;
  
   const extendedFields = enableOntodiaContextFields === true ? [...fields, ...allFieldByIri.filter(f => checkField(f, excludeFields)).keySeq().toArray()]: fields;
   const mappedFields = extendedFields.map(function (fieldIri) {

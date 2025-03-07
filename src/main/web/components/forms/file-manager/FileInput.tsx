@@ -337,8 +337,15 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
   }
 
   fetchFileFromUrl = () => {
+    /** 
+     * Using AllOrigins Raw Endpoint:
+     *  This solution uses AllOrigins’ raw endpoint (/raw) which is designed to return the fetched content directly. 
+     *  By appending the encoded target URL to the proxy URL, the request is routed through AllOrigins
+     */
+    const proxyUrl = 'https://api.allorigins.win/raw?url=';
+
     if (!_.isEmpty(this.urlInputRef?.value)) {
-      fetch(this.urlInputRef.value)
+      fetch(proxyUrl + encodeURIComponent(this.urlInputRef.value))
         .then((response) => {
           if (!response.ok) {
             this.setState({

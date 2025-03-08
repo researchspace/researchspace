@@ -17,4 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export { StorageSelector, StorageSelectorProps, AppStatus, chooseDefaultTargetApp } from './StorageSelector';
+export {
+  StorageSelector,
+  type StorageSelectorProps,
+  type AppStatus,
+  chooseDefaultTargetApp,
+} from './StorageSelector';

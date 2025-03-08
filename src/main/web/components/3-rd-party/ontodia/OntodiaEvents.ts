@@ -19,7 +19,6 @@
  */
 
 import { EventMaker } from 'platform/api/events';
-import Rdf = require('platform/api/rdf/core/Rdf');
 
 // Workaround: 'typescript-json-schema' doesn't support void type.
 export type OpaqueElementModel = {};

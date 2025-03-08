@@ -20,6 +20,6 @@
 export * from './StaticComponent';
 
 export * from './Description';
-export { FormErrors, FormErrorsProps } from './FormErrors';
+export { FormErrors, type FormErrorsProps } from './FormErrors';
 export * from './Label';
-export { RecoverNotification, RecoverNotificationProps } from './RecoverNotification';
+export { RecoverNotification, type RecoverNotificationProps } from './RecoverNotification';

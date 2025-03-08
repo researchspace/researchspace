@@ -19,7 +19,7 @@
 
 import * as Rdf from '../core/Rdf';
 
-module workflow {
+namespace workflow {
   const NAMESPACE = 'http://www.researchspace.org/resource/system/workflow#';
   const iri = (s: string) => Rdf.iri(NAMESPACE + s);
 

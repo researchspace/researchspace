@@ -18,8 +18,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React = require("react");
+import * as React from 'react';
 import { Tab } from 'react-bootstrap';
+
 interface Props {
   title: string;
   eventKey: number;

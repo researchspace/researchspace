@@ -18,12 +18,13 @@
  */
 
 import * as React from 'react';
-import { DiagramModel, AuthoringState, sameElement, ElementTypeIri } from 'ontodia';
+import * as Reactodia from '@reactodia/workspace';
 
 import { Component } from 'platform/api/components';
 import { TemplateItem } from 'platform/components/ui/template';
 import { Cancellation } from 'platform/api/async/Cancellation';
 import { listen, trigger, BuiltInEvents } from 'platform/api/events';
+import { rdfs } from 'platform/api/rdf/vocabularies';
 
 import * as OntodiaEvents from 'platform/components/3-rd-party/ontodia/OntodiaEvents';
 
@@ -222,7 +223,10 @@ export class ImageGraphAuthoringComponent extends Component<ImageGraphAuthoringC
       {
         miradorId: props.id,
         ontodiaId: props.ontodiaId,
-        fields: props.fields,
+        fields: {
+          ...props.fields,
+          label: props.fields.label ?? rdfs.label.value,
+        },
       },
       {}
     );
@@ -250,7 +254,10 @@ export class ImageGraphAuthoringComponent extends Component<ImageGraphAuthoringC
       .observe({
         value: ({ data: { model, authoringState } }) => {
           const { miradorRegions } = this.annotationEndpoint;
-          const newMiradorRegions = this.findRegionsOnDiagram(model as DiagramModel, authoringState as AuthoringState);
+          const newMiradorRegions = this.findRegionsOnDiagram(
+            model as Reactodia.DataDiagramModel,
+            authoringState as Reactodia.AuthoringState
+          );
           const shouldUpdate = this.shouldUpdate(miradorRegions, newMiradorRegions);
           if (shouldUpdate) {
             this.annotationEndpoint.setMiradorRegions(newMiradorRegions);
@@ -272,20 +279,29 @@ export class ImageGraphAuthoringComponent extends Component<ImageGraphAuthoringC
     this.unsubscribeFromMiradorEvents();
   }
 
-  private findRegionsOnDiagram(model: DiagramModel, authoringState: AuthoringState): MiradorRegions {
+  private findRegionsOnDiagram(
+    model: Reactodia.DataDiagramModel,
+    authoringState: Reactodia.AuthoringState
+  ): MiradorRegions {
     const newRegions = {};
     model.elements.forEach((element) => {
-      if (element.data.types.indexOf(rso.EX_Digital_Image.value as ElementTypeIri) >= 0) {
+      if (!(element instanceof Reactodia.EntityElement)) {
+        return;
+      }
+      if (element.data.types.indexOf(rso.EX_Digital_Image.value) >= 0) {
         if (!newRegions[element.iri]) {
           newRegions[element.iri] = [];
         }
       }
-      if (element.data.types.indexOf(rso.EX_Digital_Image_Region.value as ElementTypeIri) >= 0) {
+      if (element.data.types.indexOf(rso.EX_Digital_Image_Region.value) >= 0) {
         const event = authoringState.elements.get(element.iri);
-        if (event && event.deleted) {
+        if (event && event.type === 'entityDelete') {
           return;
         }
-        element.links.forEach((link) => {
+        model.getElementLinks(element).forEach((link) => {
+          if (!(link instanceof Reactodia.RelationLink)) {
+            return;
+          }
           if (link.typeId === this.props.fields.isPrimaryAreaOf && link.sourceId === element.id) {
             const region = {
               region: element.data,
@@ -318,7 +334,7 @@ export class ImageGraphAuthoringComponent extends Component<ImageGraphAuthoringC
       }
       for (const { region } of regions) {
         const isChanged = !newRegions.some(({ region: newRegion }) => {
-          return sameElement(region, newRegion);
+          return Reactodia.equalElements(region, newRegion);
         });
         if (isChanged) {
           return true;

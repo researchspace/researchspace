@@ -19,7 +19,7 @@
 import * as React from 'react';
 import { createElement, cloneElement, ReactNode } from 'react';
 import * as maybe from 'data.maybe';
-import { DiagramModel, AuthoringState, TemporaryState } from 'ontodia';
+import * as Reactodia from '@reactodia/workspace';
 
 import { Component } from 'platform/api/components';
 import { listen } from 'platform/api/events';
@@ -77,9 +77,9 @@ export class OntodiaContents extends Component<Props, State> {
       .observe({
         value: ({ data: { model, authoringState, temporaryState } }) =>
           this.updateElements({
-            model: model as DiagramModel,
-            authoringState: authoringState as AuthoringState,
-            temporaryState: temporaryState as TemporaryState,
+            model: model as Reactodia.DiagramModel,
+            authoringState: authoringState as Reactodia.AuthoringState,
+            temporaryState: temporaryState as Reactodia.TemporaryState,
           }),
       });
   };
@@ -89,14 +89,14 @@ export class OntodiaContents extends Component<Props, State> {
     authoringState,
     temporaryState,
   }: {
-    model: DiagramModel;
-    authoringState: AuthoringState;
-    temporaryState: TemporaryState;
+    model: Reactodia.DiagramModel;
+    authoringState: Reactodia.AuthoringState;
+    temporaryState: Reactodia.TemporaryState;
   }) {
     const elements: Array<{ iri: string; persisted: boolean }> = [];
     const isPersisted = (iri) => !authoringState.elements.has(iri) && !temporaryState.elements.has(iri);
     model.elements.forEach((element) => {
-      if (!element.temporary) {
+      if (element instanceof Reactodia.EntityElement) {
         elements.push({
           iri: element.iri,
           persisted: isPersisted(element.iri),

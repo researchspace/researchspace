@@ -18,16 +18,10 @@
  */
 
 import * as Kefir from 'kefir';
+import { pick } from 'lodash';
 import * as maybe from 'data.maybe';
 import * as SparqlJs from 'sparqljs';
-import {
-  Dictionary,
-  ElementModel,
-  PropertySuggestionParams,
-  PropertyScore,
-  SerializedDiagram,
-  DIAGRAM_CONTEXT_URL_V1,
-} from 'ontodia';
+import * as Reactodia from '@reactodia/workspace';
 
 import { Rdf } from 'platform/api/rdf';
 import * as JsonLd from 'platform/api/rdf/formats/JsonLd';
@@ -35,7 +29,6 @@ import { rdf, rdfs, crm, VocabPlatform } from 'platform/api/rdf/vocabularies/voc
 import { SparqlClient, SparqlUtil, QueryContext } from 'platform/api/sparql';
 import { LdpService } from 'platform/api/services/ldp';
 import { getThumbnails } from 'platform/api/services/resource-thumbnail';
-import { convertToSerializedDiagram } from 'ontodia';
 
 import { ontodiaNsv0 } from './OntodiaVocabulary';
 
@@ -45,7 +38,10 @@ export const OntodiaContextV1 = require('platform/ontodia/schema/context-v1.json
  * Returns dictionary of images by sparql query
  * Will run on default context
  */
-export function prepareImages(elementsInfo: Dictionary<ElementModel>, imageQuery: string) {
+export function prepareImages(
+  elementsInfo: Iterable<Reactodia.ElementModel>,
+  imageQuery: string
+): Promise<Map<Reactodia.ElementIri, string>> {
   let parametrized: SparqlJs.Query;
   try {
     const parsedQuery = SparqlUtil.parseQuery(imageQuery);
@@ -53,7 +49,7 @@ export function prepareImages(elementsInfo: Dictionary<ElementModel>, imageQuery
       throw new Error('Image query must be a SELECT query');
     }
 
-    const params = Object.keys(elementsInfo).map((id): Dictionary<Rdf.Node> => ({ element: Rdf.iri(id) }));
+    const params = Object.keys(elementsInfo).map((id): Record<string, Rdf.Node> => ({ element: Rdf.iri(id) }));
     parametrized = SparqlClient.prepareParsedQuery(params)(parsedQuery);
   } catch (error) {
     return Promise.reject(error);
@@ -62,10 +58,10 @@ export function prepareImages(elementsInfo: Dictionary<ElementModel>, imageQuery
   return SparqlClient.select(parametrized)
     .map((response) => {
       const elements = response.results.bindings;
-      const images: { [elementIri: string]: string } = {};
+      const images = new Map<Reactodia.ElementIri, string>();
 
       for (const elem of elements) {
-        images[elem['element'].value] = elem['image'].value;
+        images.set(elem['element'].value, elem['image'].value);
       }
 
       return images;
@@ -73,10 +69,17 @@ export function prepareImages(elementsInfo: Dictionary<ElementModel>, imageQuery
     .toPromise();
 }
 
-export function fetchThumbnails(elementsInfo: Dictionary<ElementModel>, context: QueryContext) {
-  const iris = Object.keys(elementsInfo).map((iri) => Rdf.iri(iri));
+export function fetchThumbnails(
+  elementsInfo: Iterable<Reactodia.ElementModel>,
+  context: QueryContext
+): Promise<Map<Reactodia.ElementIri, string>> {
+  const iris = Array.from(elementsInfo, (data) => Rdf.iri(data.id));
   return getThumbnails(iris, { context })
-    .map((res) => res.mapKeys((iri) => iri.value).toObject())
+    .map((res) => {
+      const thumbnails = new Map<Reactodia.ElementIri, string>();
+      res.forEach((thumbnailUrl, iri) => thumbnails.set(iri.value, thumbnailUrl));
+      return thumbnails;
+    })
     .toPromise();
 }
 
@@ -107,12 +110,12 @@ export function getDiagramByIri(
   context: QueryContext
 ): Promise<{
   label: string;
-  diagram: SerializedDiagram;
+  diagram: Reactodia.SerializedDiagram;
 }> {
   const ldpService = new LdpService(VocabPlatform.OntodiaDiagramContainer.value, context);
   const documentLoader = JsonLd.makeDocumentLoader({
     overrideContexts: {
-      [DIAGRAM_CONTEXT_URL_V1]: OntodiaContextV1,
+      [Reactodia.DiagramContextV1]: OntodiaContextV1,
     },
   });
   return ldpService
@@ -125,7 +128,7 @@ export function getDiagramByIri(
       })
     )
     .flatMap(
-      (json): Kefir.Property<{ label: string; diagram: SerializedDiagram }> => {
+      (json): Kefir.Property<{ label: string; diagram: Reactodia.SerializedDiagram }> => {
         // check for old version
         if (
           json.length > 0 &&
@@ -150,7 +153,7 @@ export function getDiagramByIri(
               linkTypeOptions: [],
               ...diagram['@graph'][0],
               ...{ '@context': diagram['@context'] },
-            } as SerializedDiagram,
+            } as Reactodia.SerializedDiagram,
           }));
         }
       }
@@ -159,7 +162,7 @@ export function getDiagramByIri(
 }
 
 function makeDiagramResource(
-  diagram: SerializedDiagram,
+  diagram: Reactodia.SerializedDiagram,
   name: string,
   metadata: ReadonlyArray<Rdf.Triple>,
   diagramIri = ''
@@ -167,7 +170,7 @@ function makeDiagramResource(
   const jsonldDiagram: any = { ...diagram };
 
   // force inline context to disable fetching of the context by RDF4J
-  if ((jsonldDiagram['@context'] = DIAGRAM_CONTEXT_URL_V1)) {
+  if ((jsonldDiagram['@context'] = Reactodia.DiagramContextV1)) {
     jsonldDiagram['@context'] = OntodiaContextV1['@context'];
   }
   jsonldDiagram[crm.symbolic_content.value] = name;
@@ -186,7 +189,7 @@ function makeDiagramResource(
  */
 export function saveDiagram(
   name: string,
-  diagram: SerializedDiagram,
+  diagram: Reactodia.SerializedDiagram,
   metadata: ReadonlyArray<Rdf.Triple>
 ): Kefir.Property<Rdf.Iri> {
   const jsonldDiagram = makeDiagramResource(diagram, name, metadata);
@@ -204,7 +207,7 @@ export function saveDiagram(
  */
 export function updateDiagram(
   diagramIri: string,
-  diagram: SerializedDiagram,
+  diagram: Reactodia.SerializedDiagram,
   label: string,
   metadata: ReadonlyArray<Rdf.Triple>
 ): Kefir.Property<void> {
@@ -219,7 +222,10 @@ export function updateDiagram(
     });
 }
 
-export function suggestProperties(params: PropertySuggestionParams, query: string): Promise<Dictionary<PropertyScore>> {
+export function suggestProperties(
+  params: Reactodia.PropertySuggestionParams,
+  query: string
+): Promise<Record<string, Reactodia.PropertyScore>> {
   const { token, properties } = params;
   const options = {
     context: {
@@ -239,7 +245,7 @@ export function suggestProperties(params: PropertySuggestionParams, query: strin
     .flatMap((bound) => SparqlClient.select(bound, options))
     .map((response) => {
       const result = response.results.bindings;
-      const dictionary: Dictionary<PropertyScore> = {};
+      const dictionary: Record<string, Reactodia.PropertyScore> = {};
 
       result.forEach((res) => {
         const propertyIri = res.id.value;
@@ -257,4 +263,82 @@ export function suggestProperties(params: PropertySuggestionParams, query: strin
       return dictionary;
     })
     .toPromise();
+}
+
+const serializedCellProperties = [
+  // common properties
+  'id',
+  'type',
+  // element properties
+  'size',
+  'fixedSize',
+  'angle',
+  'isExpanded',
+  'position',
+  'iri',
+  'group',
+  // link properties
+  'typeId',
+  'source',
+  'target',
+  'vertices',
+];
+
+function convertToSerializedDiagram(params: {
+  layoutData: any;
+  linkTypeOptions: any;
+}): Reactodia.SerializedDiagram {
+  const elements: Reactodia.SerializedEntityElement[] = [];
+  const links: Reactodia.SerializedRelationLink[] = [];
+
+  for (const cell of params.layoutData.cells) {
+    // get rid of unused properties
+    const newCell: any = pick(cell, serializedCellProperties);
+
+    // normalize type
+    if (newCell.type === 'Ontodia.Element' || newCell.type === 'element') {
+      newCell.type = 'Element';
+    }
+
+    // normalize type
+    if (newCell.type === 'link') {
+      newCell.type = 'Link';
+    }
+
+    if (!newCell.iri) {
+      newCell.iri = newCell.id;
+    }
+
+    // rename to @id and @type to match JSON-LD
+    newCell['@id'] = newCell.id;
+    delete newCell.id;
+
+    newCell['@type'] = newCell.type;
+    delete newCell.type;
+
+    // make two separate lists
+    switch (newCell['@type']) {
+      case 'Element':
+        elements.push(newCell);
+        break;
+      case 'Link':
+        // rename internal IDs
+        newCell.source['@id'] = newCell.source.id;
+        delete newCell.source.id;
+        newCell.target['@id'] = newCell.target.id;
+        delete newCell.target.id;
+        // rename typeID to property
+        newCell.property = newCell.typeId;
+        delete newCell.typeId;
+        links.push(newCell);
+        break;
+    }
+  }
+
+  return {
+    '@context': Reactodia.DiagramContextV1,
+    '@type': 'Diagram',
+    layoutData: { '@type': 'Layout', elements, links },
+    linkTypeOptions: params.linkTypeOptions,
+  };
 }

@@ -35,7 +35,7 @@ BIND(0 as ?score)
   VALUES (?target) {\${ids}}
 }`,
 
-  elementInfoQuery: `PREFIX ontodia: <https://ontodia.org/context/v1.json/>
+  elementInfoQuery: `PREFIX ontodia: <urn:reactodia:sparql:>
 
 CONSTRUCT {
   ?inst ontodia:type ?class .

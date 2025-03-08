@@ -17,11 +17,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 import * as React from 'react';
-import { EmbeddedLayer } from 'ontodia';
 
 export class OntodiaNestedNodes extends React.Component<void, void> {
   render() {
-    return <EmbeddedLayer />;
+    // TODO: remove the component as grouping is done differently in Reactodia
+    return null;
   }
 }
 

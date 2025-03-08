@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { SparqlDataProviderSettings } from 'ontodia';
+import { SparqlDataProviderSettings } from '@reactodia/workspace';
 
 export const WikidataSettings: SparqlDataProviderSettings = {
   linkConfigurations: [],
@@ -64,7 +64,7 @@ BIND(IF(STRLEN(?strInst) > 33,
   VALUES (?target) {\${ids}}
 }`,
 
-  elementInfoQuery: `PREFIX ontodia: <https://ontodia.org/context/v1.json/>
+  elementInfoQuery: `PREFIX ontodia: <urn:reactodia:sparql:>
 CONSTRUCT {
   ?inst ontodia:type ?class .
   ?inst ?propType ?propValue.
@@ -160,7 +160,7 @@ BIND(0 as ?score)
   VALUES (?target) {\${ids}}
 }`,
 
-  elementInfoQuery: `PREFIX ontodia: <https://ontodia.org/context/v1.json/>
+  elementInfoQuery: `PREFIX ontodia: <urn:reactodia:sparql:>
 
 CONSTRUCT {
   ?inst ontodia:type ?class .

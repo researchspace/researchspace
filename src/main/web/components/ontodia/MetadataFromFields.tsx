@@ -20,7 +20,7 @@ import * as Immutable from 'immutable';
 import * as Kefir from 'kefir';
 import * as React from 'react';
 import * as SparqlJs from 'sparqljs';
-import { ElementTypeIri, CancellationToken } from 'ontodia';
+import * as Reactodia from '@reactodia/workspace';
 
 import { Rdf } from 'platform/api/rdf';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
@@ -71,7 +71,7 @@ export class MetadataFromFields extends React.Component<MetadataFromFieldsProps,
     return null;
   }
 
-  static async getRequiredFields(props: MetadataFromFieldsProps, ct: CancellationToken): Promise<Rdf.Iri[]> {
+  static async getRequiredFields(props: MetadataFromFieldsProps, ct: AbortSignal): Promise<Rdf.Iri[]> {
     const { fieldsQuery = DEFAULT_FIELDS_QUERY } = props;
     const { results } = await observableToCancellablePromise(
       SparqlClient.select(fieldsQuery, { context: { repository: 'assets' } }),
@@ -99,11 +99,11 @@ export class MetadataFromFields extends React.Component<MetadataFromFieldsProps,
     }
     const imageField = context.defaultImageIri ? fieldByIri.get(context.defaultImageIri) : undefined;
 
-    const directTypeSet = new Set<ElementTypeIri>();
+    const directTypeSet = new Set<Reactodia.ElementTypeIri>();
     context.fieldByIri.forEach((field) => {
       if (field.domain) {
         for (const type of field.domain) {
-          directTypeSet.add(type.value as ElementTypeIri);
+          directTypeSet.add(type.value);
         }
       }
     });
@@ -169,17 +169,19 @@ const ALL_TYPES_QUERY = SparqlUtil.parseQuerySync(`
     { ?relatedType rdfs:subClassOf* ?type }
   }`) as SparqlJs.SelectQuery;
 
-function queryAllRelatedTypes(directTypeSet: ReadonlySet<ElementTypeIri>): Kefir.Property<Set<ElementTypeIri>> {
+function queryAllRelatedTypes(
+  directTypeSet: ReadonlySet<Reactodia.ElementTypeIri>
+): Kefir.Property<Set<Reactodia.ElementTypeIri>> {
   const values: Array<{ type: Rdf.Iri }> = [];
   directTypeSet.forEach((type) => {
     values.push({ type: Rdf.iri(type) });
   });
   const preparedQuery = SparqlClient.prepareParsedQuery(values)(ALL_TYPES_QUERY);
   return SparqlClient.select(preparedQuery).map(({ results }) => {
-    const relatedTypes = new Set<ElementTypeIri>();
+    const relatedTypes = new Set<Reactodia.ElementTypeIri>();
     for (const { relatedType } of results.bindings) {
       if (relatedType && relatedType.isIri()) {
-        relatedTypes.add(relatedType.value as ElementTypeIri);
+        relatedTypes.add(relatedType.value);
       }
     }
     return relatedTypes;

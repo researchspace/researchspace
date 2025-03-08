@@ -35,6 +35,7 @@ export interface TemplateItemProps extends Props<TemplateItem> {
     [key: string]: any;
   };
   componentMapper?: (component: JSX.Element) => JSX.Element;
+  onLoad?: () => void;
 }
 
 type Template = {
@@ -146,7 +147,7 @@ export class TemplateItem extends Component<TemplateItemProps, State> {
     }
   }
 
-  private compileTemplate(props) {
+  private compileTemplate(props: TemplateItemProps) {
     const { templateDataContext } = this.context;
 
     const capturer = CapturedContext.inheritAndCapture(templateDataContext);
@@ -158,11 +159,14 @@ export class TemplateItem extends Component<TemplateItemProps, State> {
         return ModuleRegistry.parseHtmlToReact(renderedHtml);
       })
       .then((parsedTemplate) => {
-        this.setState({ parsedTemplate, capturedContext: capturer.getResult() });
+        this.setState(
+          { parsedTemplate, capturedContext: capturer.getResult() },
+          () => props.onLoad?.()
+        );
       })
       .catch((error) => {
         console.error(error);
-        this.setState({ error });
+        this.setState({ error }, () => props.onLoad?.());
       });
   }
 }

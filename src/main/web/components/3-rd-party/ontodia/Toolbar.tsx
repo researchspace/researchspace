@@ -20,32 +20,55 @@
 import * as React from 'react';
 import { OverlayTrigger, Popover, Button, ButtonGroup, Dropdown, DropdownButton, MenuItem, SplitButton } from 'react-bootstrap';
 import * as classnames from 'classnames';
-import { Workspace, ToolbarProps as BaseProps, CommandHistory, EventObserver, ElementTemplate } from 'ontodia';
+import * as Reactodia from '@reactodia/workspace';
 
 import { Component } from 'platform/api/components';
+import { trigger } from 'platform/api/events';
 import { VocabPlatform } from 'platform/api/rdf/vocabularies';
 import { Permissions } from 'platform/api/services/security';
 import ResourceLinkContainer from 'platform/api/navigation/components/ResourceLinkContainer';
 import { ConfigHolder } from 'platform/api/services/config-holder';
 
+import Icon from 'platform/components/ui/icon/Icon';
 import { HasPermission } from 'platform/components/security/HasPermission';
 
+import type { FieldBasedValidationApi } from './authoring/FieldBasedValidationApi';
+
 import * as styles from './Toolbar.scss';
-import Icon from 'platform/components/ui/icon/Icon';
-import { trigger } from 'platform/api/events';
 export const ToolbarStyles = styles;
 import * as ToolbarEvents from './ToolbarEvents'
 
+interface BaseProps {
+  canSaveDiagram?: boolean;
+  onSaveDiagram?: () => void;
+  canPersistChanges?: boolean;
+  hasUnpersistedChanges?: boolean;
+  onPersistChanges?: () => void;
+  onForceLayout?: () => void;
+  onClearAll?: () => void;
+  onZoomIn?: () => void;
+  onZoomOut?: () => void;
+  onZoomToFit?: () => void;
+  onExportSVG?: (fileName?: string) => void;
+  onExportPNG?: (fileName?: string) => void;
+  onPrint?: () => void;
+  languages: ReadonlyArray<Reactodia.WorkspaceLanguage>;
+  selectedLanguage?: string;
+  onChangeLanguage?: (language: string) => void;
+}
+
 export interface ToolbarProps extends BaseProps {
-  getWorkspace?: () => Workspace;
-  history?: CommandHistory;
+  className?: string;
+  getWorkspace?: () => Reactodia.Workspace;
+  history?: Reactodia.CommandHistory;
   persistChangesLabel?: string;
   saveDiagramLabel?: string;
   onClearAll?: () => void;
   onSaveDiagramAs?: () => void;
   onPersistChangesAndSaveDiagram?: () => void;
+  validationProvider?: FieldBasedValidationApi;
   diagramIri?: string;
-  dropdownTemplate?: ElementTemplate;
+  dropdownTemplate?: React.ReactNode;
 }
 
 export interface ToolbarCommand {
@@ -54,12 +77,102 @@ export interface ToolbarCommand {
   readonly invoke: () => void;
 }
 
-export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Component<P, S> {
+export function Toolbar(props: ToolbarProps) {
+  const { canvas } = Reactodia.useCanvas();
+  const { model, editor, performLayout } = Reactodia.useWorkspace();
+
+  const selectedLanguage = Reactodia.useObservedProperty(
+    model.events, 'changeLanguage', () => model.language
+  );
+
+  const authoringState = Reactodia.useObservedProperty(
+    editor.events, 'changeAuthoringState', () => editor.authoringState
+  );
+  const validationState = Reactodia.useObservedProperty(
+    editor.events, 'changeValidationState', () => editor.validationState
+  );
+
+  const hasUnpersistedChanges = !Reactodia.AuthoringState.isEmpty(authoringState);
+  let canPersistChanges = props.onPersistChanges ? hasUnpersistedChanges : undefined;
+  let canSaveDiagram = !canPersistChanges;
+
+  if (props.onPersistChanges && props.validationProvider?.shouldEnforceConstraints()) {
+    let validating = false;
+    let hasError = false;
+    validationState.elements.forEach(validation => {
+      validating ||= validation.loading;
+      for (const item of validation.items) {
+        hasError ||= item.severity === 'error';
+      }
+    });
+    validationState.links.forEach(validation => {
+      validating ||= validation.loading;
+      for (const item of validation.items) {
+        hasError ||= item.severity === 'error';
+      }
+    });
+
+    canSaveDiagram = !hasUnpersistedChanges;
+    canPersistChanges = canPersistChanges && !validating && !hasError;
+  }
+
+  const extendedProps: ToolbarProps = {
+    onZoomIn: () => canvas.zoomIn(),
+    onZoomOut: () => canvas.zoomOut(),
+    onZoomToFit: () => canvas.zoomToFit({animate: true}),
+    onPrint: () => {
+      const printWindow = window.open('', undefined, 'width=1280,height=720')!;
+      canvas.exportSvg().then(svg => {
+          printWindow.document.write(svg);
+          printWindow.document.close();
+          printWindow.print();
+      });
+    },
+    onExportSVG: () => {
+      canvas.exportSvg({ addXmlHeader: true }).then(svg => {
+        const blob = new Blob([svg], {type: 'image/svg+xml'});
+        saveAs(blob, 'diagram.svg');
+      });
+    },
+    onExportPNG: () => {
+      canvas.exportRaster({ backgroundColor: 'white' }).then(dataUri => {
+          const blob = dataURLToBlob(dataUri);
+          saveAs(blob, 'diagram.png');
+      });
+    },
+    canSaveDiagram,
+    onSaveDiagram: props.onSaveDiagram ? () => props.onSaveDiagram() : undefined,
+    canPersistChanges,
+    hasUnpersistedChanges,
+    onPersistChanges: props.onPersistChanges ? () => props.onPersistChanges() : undefined,
+    onForceLayout: () => performLayout({ canvas, animate: true }),
+    onClearAll: () => {
+      const batch = model.history.startBatch();
+      editor.removeItems([...model.elements]);
+      batch.store();
+    },
+    selectedLanguage,
+    onChangeLanguage: (lang) => model.setLanguage(lang),
+    ...props,
+  };
+
+  return (
+    <Reactodia.ViewportDock dock='nw'>
+      <ToolbarInner
+        canPersistChanges={canPersistChanges}
+        canSaveDiagram={canSaveDiagram}
+        {...extendedProps}
+      />
+    </Reactodia.ViewportDock>
+  );
+}
+
+class ToolbarInner extends Component<ToolbarProps> {
   static defaultProps: Partial<ToolbarProps> = {
     saveDiagramLabel: 'Save map',
     persistChangesLabel: 'Save data',
   };
-  protected readonly listener = new EventObserver();
+  protected readonly listener = new Reactodia.EventObserver();
 
   componentDidMount() {
     const { history } = this.props;
@@ -194,7 +307,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
 
   render() {
     const { redo, undo } = this.getUndoReduCommands(this.props.history);
-    const {diagramIri} = this.props
+    const { className, diagramIri } = this.props
     
     function onRefreshButtonClicked() {
       trigger({
@@ -204,7 +317,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
     }
 
     return (
-      <div className={styles.component}>
+      <div className={classnames(styles.component, className)}>
         <div className={styles.buttonsContainer}>
           {undo && redo ? (
             <ButtonGroup>
@@ -368,7 +481,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
       return null
     }
 
-    return dropdownTemplate
+    return dropdownTemplate;
   }
 
   protected renderLanguages() {
@@ -392,7 +505,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
     );
   }
 
-  protected getUndoReduCommands(history: CommandHistory) {
+  protected getUndoReduCommands(history: Reactodia.CommandHistory) {
     let undo: ToolbarCommand;
     let redo: ToolbarCommand;
     if (history) {
@@ -424,4 +537,34 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
 
 function last<T>(array: ReadonlyArray<T>): T | undefined {
   return array.length > 0 ? array[array.length - 1] : undefined;
+}
+
+/**
+ * Creates and returns a blob from a data URL (either base64 encoded or not).
+ *
+ * @param {string} dataURL The data URL to convert.
+ * @return {Blob} A blob representing the array buffer data.
+ */
+export function dataURLToBlob(dataURL: string): Blob {
+  const BASE64_MARKER = ';base64,';
+  if (dataURL.indexOf(BASE64_MARKER) === -1) {
+    const parts = dataURL.split(',');
+    const contentType = parts[0].split(':')[1];
+    const raw = decodeURIComponent(parts[1]);
+
+    return new Blob([raw], {type: contentType});
+  } else {
+    const parts = dataURL.split(BASE64_MARKER);
+    const contentType = parts[0].split(':')[1];
+    const raw = window.atob(parts[1]);
+    const rawLength = raw.length;
+
+    const uInt8Array = new Uint8Array(rawLength);
+
+    for (let i = 0; i < rawLength; ++i) {
+      uInt8Array[i] = raw.charCodeAt(i);
+    }
+
+    return new Blob([uInt8Array], {type: contentType});
+  }
 }

@@ -34,7 +34,7 @@ uses client-side templates:
 
   left-panel-initially-open=false
   default-node-template="{{> default}}"
-  [[!-- additional-tree-item-template='{{> additionalTreeItemTemplate}}' --]]
+  additional-tree-item-template='{{> additionalTreeItemTemplate}}'
   provider-settings='{
     "classTreeQuery": "
       PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -53,7 +53,8 @@ uses client-side templates:
 
           ?class rdfs:subClassOf ?parent.
           ?class ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.    
-          FILTER (!CONTAINS(STR(?parent),\"opengis\"))             
+          FILTER (!CONTAINS(STR(?parent),\"opengis\"))
+          FILTER (!CONTAINS(STR(?parent),\"PC0_Typed_CRM_Property\"))
         }  
       }       
       
@@ -65,7 +66,7 @@ uses client-side templates:
     	 
   		}
   	",
-		"dataLabelProperty":"((crm:P1_is_identified_by/crm:P190_has_symbolic_content)|rdfs:label|crm:P190_has_symbolic_content|skos:prefLabel)"
+		"dataLabelProperty":"((crm:P1_is_identified_by/crm:P190_has_symbolic_content)|(crm:P1_is_identified_by/rdfs:label)|rdfs:label|crm:P190_has_symbolic_content|skos:prefLabel)"
   }'>
 
 	<ontodia-field-configuration

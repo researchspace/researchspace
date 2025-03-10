@@ -1068,12 +1068,18 @@ export class SemanticMapControls extends Component<Props, State> {
                                     {/* Main content container */}
                                     <div className={styles.layerContentContainer}>
                                       {/* Thumbnail */}
-                                      <div className={styles.thumbnailContainer}>
-                                        <img
+                                        <div className={styles.thumbnailContainer}>
+                                        {mapLayer.get('identifier') === 'Buildings' ? (
+                                          <i className={`fa fa-home ${styles.layerThumbnail} ${styles.layerThumbnailStyle}`}
+                                            style={{ fontSize: '40px', textAlign: 'center', verticalAlign: 'middle', lineHeight: '60px' }}
+                                          ></i>
+                                        ) : (
+                                          <img
                                           src={mapLayer.get('thumbnail')}
                                           className={`${styles.layerThumbnail} ${styles.layerThumbnailStyle}`}
-                                        />
-                                      </div>
+                                          />
+                                        )}
+                                        </div>
                                       
                                       {/* Info container */}
                                       <div className={styles.layerInfoContainer}>

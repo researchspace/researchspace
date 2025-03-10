@@ -1,5 +1,12 @@
 import { EventMaker } from 'platform/api/events';
 
+// Interface for generalized data handling
+export interface GeneralizedEventData {
+  kind: string;           // Type of data (e.g., "Person", "selectedFeature")
+  data: any;              // The actual data (e.g., person details, feature ID)
+  highlightPattern?: string; // Optional SPARQL query pattern to highlight features
+}
+
 export interface SemanticMapControlsEventData {
   'SemanticMapControls.OverlayOpacity': number;
   'SemanticMapControls.OverlayVisualization': string;
@@ -20,6 +27,8 @@ export interface SemanticMapControlsEventData {
   'SemanticMapControls.Register': string;
   'SemanticMapControls.Unregister': string;
   'SemanticMapControls.ToggleMeasurement': string;
+  'SemanticMapControls.HandleGeneralizedData': GeneralizedEventData;
+  'SemanticMapControls.HighlightFeatures': string;
 }
 
 const event: EventMaker<SemanticMapControlsEventData> = EventMaker;
@@ -42,3 +51,5 @@ export const SemanticMapControlsSendVectorLevels = event('SemanticMapControls.Se
 export const SemanticMapControlsRegister = event('SemanticMapControls.Register');
 export const SemanticMapControlsUnregister = event('SemanticMapControls.Unregister');
 export const SemanticMapControlsToggleMeasurement = event('SemanticMapControls.ToggleMeasurement');
+export const SemanticMapControlsHandleGeneralizedData = event('SemanticMapControls.HandleGeneralizedData');
+export const SemanticMapControlsHighlightFeatures = event('SemanticMapControls.HighlightFeatures');

@@ -22,6 +22,9 @@ import {
   SemanticMapControlsRegister,
   SemanticMapControlsUnregister,
   SemanticMapControlsToggleMeasurement,
+  SemanticMapControlsHandleGeneralizedData,
+  SemanticMapControlsHighlightFeatures,
+  GeneralizedEventData,
 } from './SemanticMapControlsEvents';
 import { SemanticMapRequestControlsRegistration, SemanticMapSendSelectedFeature, SemanticMapClearSelectedFeature } from './SemanticMapEvents';
 
@@ -75,6 +78,7 @@ interface State {
   activePanel: string | null; // Track which panel is currently active
   isPlaying?: boolean; // For timeline animation
   animationInterval?: number; // For timeline animation
+  generalizedData?: GeneralizedEventData; // For generalized data handling
 }
 
 interface Props {
@@ -120,6 +124,12 @@ interface Props {
    * Template for buildings panel
    */
   buildingsTemplate?: string;
+  /**
+   * Mapping of data kinds to template references.
+   * Used for the generalized data handling functionality.
+   * Example: { "Person": "{{> person-template}}", "Building": "{{> building-template}}" }
+   */
+  templateMapping?: { [kind: string]: string };
 }
 
 export class SemanticMapControls extends Component<Props, State> {
@@ -193,6 +203,16 @@ export class SemanticMapControls extends Component<Props, State> {
         })
       )
       .onValue(this.handleVisualizationModeChange);
+      
+    // Listen for generalized data events
+    this.cancelation
+      .map(
+        listen({
+          eventType: SemanticMapControlsHandleGeneralizedData,
+          target: this.props.id,
+        })
+      )
+      .onValue(this.handleGeneralizedData);
 
     this.onDragEnd = this.onDragEnd.bind(this);
   }
@@ -257,7 +277,26 @@ export class SemanticMapControls extends Component<Props, State> {
       ...this.props,
       // Ensure selectedFeature is explicitly included in the context
       selectedFeature: this.state.selectedFeature,
+      // Include generalizedData in the context
+      generalizedData: this.state.generalizedData,
     };
+  }
+  
+  /**
+   * Get the appropriate template reference based on the current data
+   */
+  private getTemplateForCurrentData(): string {
+    // If we have generalized data and a template mapping, use the appropriate template
+    if (this.state.generalizedData && this.props.templateMapping) {
+      const kind = this.state.generalizedData.kind;
+      if (this.props.templateMapping[kind]) {
+        console.log(`Using template for kind: ${kind}`);
+        return this.props.templateMapping[kind];
+      }
+    }
+    
+    // Fall back to the default render template
+    return this.props.renderTemplate;
   }
 
   public componentWillMount() {
@@ -836,6 +875,46 @@ export class SemanticMapControls extends Component<Props, State> {
     // Update the state to match the map's visualization mode
     this.setState({ overlayVisualization: newMode });
   };
+  
+  /**
+   * Handle generalized data events
+   * This method processes events with different kinds of data (e.g., Person, Building)
+   * and triggers appropriate template rendering and feature highlighting
+   */
+  private handleGeneralizedData = (event: any) => {
+    console.log('Received generalized data:', event.data);
+    
+    // Store the generalized data in state
+    this.setState(
+      {
+        generalizedData: event.data,
+      },
+      () => {
+        // If there's a highlight pattern, trigger feature highlighting
+        if (event.data.highlightPattern) {
+          console.log('Triggering highlight with pattern:', event.data.highlightPattern);
+          this.triggerHighlightFeatures(event.data.highlightPattern);
+        } else {
+          console.log('No highlight pattern provided in the generalized data');
+        }
+        
+        // Force re-render to update template with the new data
+        this.forceUpdate();
+      }
+    );
+  };
+  
+  /**
+   * Trigger feature highlighting based on a SPARQL pattern
+   */
+  private triggerHighlightFeatures = (pattern: string) => {
+    trigger({
+      eventType: SemanticMapControlsHighlightFeatures,
+      source: this.props.id,
+      targets: [this.props.targetMapId],
+      data: pattern,
+    });
+  };
 
   /**
    * Render a template with fallback
@@ -860,9 +939,11 @@ export class SemanticMapControls extends Component<Props, State> {
     // Get template sources
     const historicalMapTemplate = this.props.historicalMapTemplate || '';
 
-    const templateRef = this.props.renderTemplate;
-    // Only create the template element if there's a selected feature
-    const templateElement = this.state.selectedFeature
+    // Get the appropriate template reference based on the current data
+    const templateRef = this.getTemplateForCurrentData();
+    
+    // Create the template element if there's a selected feature or generalized data
+    const templateElement = (this.state.selectedFeature || this.state.generalizedData)
       ? createElement(TemplateItem, {
           template: {
             source: templateRef,
@@ -1475,11 +1556,11 @@ export class SemanticMapControls extends Component<Props, State> {
           </div>
         )}
 
-        {/* Feature template positioned to appear on the map */}
-        {this.state.selectedFeature ? (
+        {/* Feature or generalized data template positioned to appear on the map */}
+        {(this.state.selectedFeature || this.state.generalizedData) ? (
           <div className={styles['featureTemplateContainer']}>
             <button
-              onClick={this.clearSelectedFeature}
+              onClick={this.state.selectedFeature ? this.clearSelectedFeature : () => this.setState({ generalizedData: null })}
               className={styles['featureTemplateCloseButton']}
               title="Close"
             >

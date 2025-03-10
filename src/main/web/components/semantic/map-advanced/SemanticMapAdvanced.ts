@@ -106,6 +106,7 @@ import {
   SemanticMapControlsUnregister,
   SemanticMapControlsSendVectorLevels,
   SemanticMapControlsToggleMeasurement,
+  SemanticMapControlsHighlightFeatures,
 } from './SemanticMapControlsEvents';
 import { none } from 'ol/centerconstraint';
 import VectorSource from 'ol/source/Vector';
@@ -458,6 +459,16 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         })
       )
       .onValue(this.handleMeasurementToggle);
+      
+    // Listen for highlight features event
+    this.cancelation
+      .map(
+        listen({
+          eventType: SemanticMapControlsHighlightFeatures,
+          target: this.props.id,
+        })
+      )
+      .onValue(this.handleHighlightFeatures);
   }
 
   /** REACT COMPONENT FUNCTIONS **/
@@ -2343,6 +2354,244 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       this.applyFeaturesFilteringFromControls();
     });
   };
+  
+  /**
+   * Handler for the highlight features event
+   * Executes a SPARQL query to find features matching the pattern and highlights them
+   */
+  private handleHighlightFeatures = (event: Event<any>) => {
+    console.log('Received highlight features event with pattern:', event.data);
+    
+    if (!event.data || !this.map) {
+      console.warn('No highlight pattern provided or map not initialized');
+      return;
+    }
+    
+    const pattern = event.data;
+    
+    // Construct a SPARQL query using the provided pattern
+    const query = `
+      PREFIX rs_sql_sail: <http://www.researchspace.org/resource/system/sql#>
+      PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+      PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+      PREFIX florentiaIllustrata_sql: <http://www.researchspace.org/resource/system/service/florentiaIllustrata_sql#>
+      PREFIX geosparql: <http://www.opengis.net/ont/geosparql#>
+
+      SELECT ?subject
+      WHERE {
+        ${pattern}
+      }
+    `;
+    
+    console.log('Executing highlight query:', query);
+    
+    // Execute the SPARQL query
+    const stream = SparqlClient.select(query, { context: this.context.semanticContext });
+    
+    stream.onValue((res) => {
+      if (SparqlUtil.isSelectResultEmpty(res)) {
+        console.warn('No features found matching the highlight pattern');
+        return;
+      }
+      
+      // Extract subject IRIs from the query results
+      const subjectIris = res.results.bindings.map(binding => binding.subject.value);
+      console.log('Found features to highlight:', subjectIris);
+      
+      // Find and highlight the matching features
+      this.highlightFeaturesByIris(subjectIris);
+    });
+    
+    stream.onError((error) => {
+      console.error('Error executing highlight query:', error);
+    });
+  };
+  
+  /**
+   * Highlights features by their subject IRIs
+   */
+  private highlightFeaturesByIris(subjectIris: string[]) {
+    if (!this.map || subjectIris.length === 0) return;
+    
+    // Get all vector layers
+    const vectorLayers = this.getVectorLayersFromMap();
+    
+    // Track if we found any features to highlight
+    let foundFeatures = false;
+    
+    // Process each vector layer
+    vectorLayers.forEach(vectorLayer => {
+      const source = vectorLayer.getSource();
+      let features;
+      
+      if (source instanceof Cluster) {
+        features = source.getSource().getFeatures();
+      } else {
+        features = source.getFeatures();
+      }
+      
+      // Find features that match the subject IRIs
+      features.forEach(feature => {
+        // Check if this feature has a subject property that matches one of our IRIs
+        if (feature.get('subject') && subjectIris.includes(feature.get('subject').value)) {
+          console.log('Highlighting feature:', feature.get('subject').value);
+          
+          // Create a custom style that preserves the original color but with full opacity
+          const originalStyle = this.getFeatureStyleWithFilters(feature);
+          
+          // For polygon features
+          if (feature.getGeometry() instanceof Polygon || feature.getGeometry() instanceof MultiPolygon) {
+            // Get the original fill color
+            const originalFill = originalStyle.getFill();
+            let fillColor = originalFill ? originalFill.getColor() : 'rgba(200,50,50,0.5)';
+            
+            // If the color is in rgba format, set opacity to 1
+            if (typeof fillColor === 'string' && fillColor.startsWith('rgba')) {
+              fillColor = fillColor.replace(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*[\d.]+\)/, 'rgba($1, $2, $3, 0.8)');
+            }
+            
+            // Get the original stroke color
+            const originalStroke = originalStyle.getStroke();
+            let strokeColor = originalStroke ? originalStroke.getColor() : fillColor;
+            
+            // Create a new style with the original color but full opacity
+            const highlightStyle = new Style({
+              fill: new Fill({
+                color: fillColor,
+              }),
+              stroke: new Stroke({
+                color: strokeColor, // Use original stroke color
+                width: 2, // Thinner border
+              }),
+              text: originalStyle.getText(),
+            });
+            
+            feature.setStyle(highlightStyle);
+          } 
+          // For point features
+          else if (feature.getGeometry() instanceof Point || feature.getGeometry() instanceof MultiPoint) {
+            // Create a new style with the original color but full opacity and larger size
+            const highlightStyle = new Style({
+              image: new CircleStyle({
+                radius: 10,
+                fill: new Fill({
+                  color: 'rgba(255, 165, 0, 1.0)', // Full opacity
+                }),
+                stroke: new Stroke({
+                  color: '#FFFFFF',
+                  width: 3,
+                }),
+              }),
+              text: originalStyle.getText(),
+            });
+            
+            feature.setStyle(highlightStyle);
+          }
+          // For other geometry types
+          else {
+            // Default highlight style
+            const highlightStyle = new Style({
+              stroke: new Stroke({
+                color: '#FFFFFF',
+                width: 1,
+              }),
+              text: originalStyle.getText(),
+            });
+            
+            feature.setStyle(highlightStyle);
+          }
+          
+          foundFeatures = true;
+          
+          // Zoom to the first matching feature
+          if (!this.state.selectedFeature) {
+            this.zoomToFeature(feature);
+          }
+        } else {
+          // Set low opacity style for non-highlighted features
+          const originalStyle = this.getFeatureStyleWithFilters(feature);
+          
+          // For polygon features
+          if (feature.getGeometry() instanceof Polygon || feature.getGeometry() instanceof MultiPolygon) {
+            // Get the original fill color
+            const originalFill = originalStyle.getFill();
+            let fillColor = originalFill ? originalFill.getColor() : 'rgba(200,50,50,0.5)';
+            
+            // If the color is in rgba format, set opacity to 0.1 (even lower)
+            if (typeof fillColor === 'string' && fillColor.startsWith('rgba')) {
+              fillColor = fillColor.replace(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*[\d.]+\)/, 'rgba($1, $2, $3, 0.1)');
+            }
+            
+            // Get the original stroke color and reduce its opacity too
+            const originalStroke = originalStyle.getStroke();
+            let strokeColor = originalStroke ? originalStroke.getColor() : fillColor;
+            
+            // If the stroke color is in rgba format, set opacity to 0.5
+            if (typeof strokeColor === 'string' && strokeColor.startsWith('rgba')) {
+              strokeColor = strokeColor.replace(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*[\d.]+\)/, 'rgba($1, $2, $3, 0.3)');
+            } else if (typeof strokeColor === 'string') {
+              // If it's a solid color, add transparency
+              strokeColor = `rgba(${parseInt(strokeColor.slice(1, 3), 16)}, ${parseInt(strokeColor.slice(3, 5), 16)}, ${parseInt(strokeColor.slice(5, 7), 16)}, 0.3)`;
+            }
+            
+            // Create a new style with low opacity
+            const lowOpacityStyle = new Style({
+              fill: new Fill({
+                color: fillColor,
+              }),
+              stroke: new Stroke({
+                color: strokeColor,
+                width: originalStroke ? originalStroke.getWidth() : 1,
+              }),
+              text: originalStyle.getText(),
+            });
+            
+            feature.setStyle(lowOpacityStyle);
+          } 
+          // For point features
+          else if (feature.getGeometry() instanceof Point || feature.getGeometry() instanceof MultiPoint) {
+            // Create a new style with low opacity
+            const lowOpacityStyle = new Style({
+              image: new CircleStyle({
+                radius: 6,
+                fill: new Fill({
+                  color: 'rgba(200, 50, 50, 0.1)', // Low opacity
+                }),
+                stroke: new Stroke({
+                  color: 'rgba(255, 255, 255, 0.1)',
+                  width: 1,
+                }),
+              }),
+              text: originalStyle.getText(),
+            });
+            
+            feature.setStyle(lowOpacityStyle);
+          }
+          // For other geometry types
+          else {
+            // Default low opacity style
+            const lowOpacityStyle = new Style({
+              stroke: new Stroke({
+                color: 'rgba(255, 255, 255, 0.1)',
+                width: 1,
+              }),
+              text: originalStyle.getText(),
+            });
+            
+            feature.setStyle(lowOpacityStyle);
+          }
+        }
+      });
+    });
+    
+    if (!foundFeatures) {
+      console.warn('No features found on the map matching the highlight IRIs');
+    }
+    
+    // Force a re-render of the map
+    this.map.render();
+  }
 
   private setOverlaySwipe = (event: Event<any>) => {
     const newSwipeValue = event.data;

@@ -900,63 +900,109 @@ export class SemanticMapControls extends Component<Props, State> {
         {/* Sidebar with buttons */}
         <div className={styles.mapControlsSidebar}>
 
-          {/* Base Maps Button */}
-          <button
-            className={`${styles.mapControlsButton} ${
-              this.state.activePanel === 'base' ? styles.mapControlsButtonActive : ''
-            }`}
-            onClick={() => this.togglePanel('base')}
-            title="Base Maps"
+        <OverlayTrigger
+            placement="right"
+            overlay={<Tooltip id="tooltip-base-maps">Details</Tooltip>}
           >
-            <i className="fa fa-globe" style={{ fontSize: '24px' }}></i>
-          </button>
+            <button
+              className={`${styles.mapControlsButton} ${
+                this.state.activePanel === 'historical' ? styles.mapControlsButtonActive : ''
+              } map-control-button-details`}
+              onClick={() => this.togglePanel('historical')}
+            >
+              <span className="map-control-icon-details">
+                <i className="fa fa-home" style={{ fontSize: '24px' }}></i>
+              </span>
+            </button>
+          </OverlayTrigger>
+
+          {/* Base Maps Button */}
+          <OverlayTrigger
+            placement="right"
+            overlay={<Tooltip id="tooltip-base-maps">Layers</Tooltip>}
+          >
+            <button
+              className={`${styles.mapControlsButton} ${
+                this.state.activePanel === 'base' ? styles.mapControlsButtonActive : ''
+              } map-control-button-basemap`}
+              onClick={() => this.togglePanel('base')}
+            >
+              <span className="map-control-icon-basemap">
+                <i className="fa fa-globe" style={{ fontSize: '24px' }}></i>
+              </span>
+            </button>
+          </OverlayTrigger>
 
           {/* Style Button */}
-          <button
-            className={`${styles.mapControlsButton} ${
-              this.state.activePanel === 'buildings' ? styles.mapControlsButtonActive : ''
-            }`}
-            onClick={() => this.togglePanel('buildings')}
-            title="Style"
+          <OverlayTrigger
+            placement="right"
+            overlay={<Tooltip id="tooltip-style">Style</Tooltip>}
           >
-            <i className="fa fa-paint-brush" style={{ fontSize: '24px' }}></i>
-          </button>
+            <button
+              className={`${styles.mapControlsButton} ${
+                this.state.activePanel === 'buildings' ? styles.mapControlsButtonActive : ''
+              } map-control-button-style`}
+              onClick={() => this.togglePanel('buildings')}
+            >
+              <span className="map-control-icon-style">
+                <i className="fa fa-paint-brush" style={{ fontSize: '24px' }}></i>
+              </span>
+            </button>
+          </OverlayTrigger>
           
           {/* Divider between panel buttons and visualization mode buttons */}
           <hr className={styles.mapControlsSeparator} />
           
           {/* Spyglass Visualization Mode Button */}
-          <button
-            className={`${styles.mapControlsButton} ${
-              this.state.overlayVisualization === 'spyglass' ? styles.mapControlsButtonActive : ''
-            }`}
-            onClick={() => this.toggleVisualizationMode('spyglass')}
-            title="Spyglass Mode"
+          <OverlayTrigger
+            placement="right"
+            overlay={<Tooltip id="tooltip-spyglass">Spyglass Mode</Tooltip>}
           >
-            <i className="fa fa-search" style={{ fontSize: '24px' }}></i>
-          </button>
+            <button
+              className={`${styles.mapControlsButton} ${
+                this.state.overlayVisualization === 'spyglass' ? styles.mapControlsButtonActive : ''
+              } map-control-button-spyglass`}
+              onClick={() => this.toggleVisualizationMode('spyglass')}
+            >
+              <span className="map-control-icon-spyglass">
+                <i className="fa fa-search" style={{ fontSize: '24px' }}></i>
+              </span>
+            </button>
+          </OverlayTrigger>
           
           {/* Swipe Visualization Mode Button */}
-          <button
-            className={`${styles.mapControlsButton} ${
-              this.state.overlayVisualization === 'swipe' ? styles.mapControlsButtonActive : ''
-            }`}
-            onClick={() => this.toggleVisualizationMode('swipe')}
-            title="Swipe Mode"
+          <OverlayTrigger
+            placement="right"
+            overlay={<Tooltip id="tooltip-swipe">Swipe Mode</Tooltip>}
           >
-            <i className="fa fa-columns" style={{ fontSize: '24px' }}></i>
-          </button>
+            <button
+              className={`${styles.mapControlsButton} ${
+                this.state.overlayVisualization === 'swipe' ? styles.mapControlsButtonActive : ''
+              } map-control-button-swipe`}
+              onClick={() => this.toggleVisualizationMode('swipe')}
+            >
+              <span className="map-control-icon-swipe">
+                <i className="fa fa-columns" style={{ fontSize: '24px' }}></i>
+              </span>
+            </button>
+          </OverlayTrigger>
           
           {/* Measurement Tool Button */}
-          <button
-            className={`${styles.mapControlsButton} ${
-              this.state.overlayVisualization === 'measure' ? styles.mapControlsButtonActive : ''
-            }`}
-            onClick={() => this.toggleVisualizationMode('measure')}
-            title="Measurement Tool"
+          <OverlayTrigger
+            placement="right"
+            overlay={<Tooltip id="tooltip-measure">Measurement Tool</Tooltip>}
           >
-            <i className="fa fa-arrows" style={{ fontSize: '24px' }}></i>
-          </button>
+            <button
+              className={`${styles.mapControlsButton} ${
+                this.state.overlayVisualization === 'measure' ? styles.mapControlsButtonActive : ''
+              } map-control-button-measure`}
+              onClick={() => this.toggleVisualizationMode('measure')}
+            >
+              <span className="map-control-icon-measure">
+                <i className="fa fa-arrows" style={{ fontSize: '24px' }}></i>
+              </span>
+            </button>
+          </OverlayTrigger>
         </div>
 
         {/* Panels */}

@@ -107,6 +107,7 @@ import {
   SemanticMapControlsSendVectorLevels,
   SemanticMapControlsToggleMeasurement,
   SemanticMapControlsHighlightFeatures,
+  SemanticMapControlsHandleGeneralizedData,
 } from './SemanticMapControlsEvents';
 import { none } from 'ol/centerconstraint';
 import VectorSource from 'ol/source/Vector';
@@ -633,16 +634,49 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       if (feature) {
         console.log('Clicked feature.');
         console.log(feature);
+        
         // Store the entire feature object
         this.setState({ selectedFeature: feature }, () => {
           console.log(this.state.selectedFeature);
-          this.triggerSendSelectedFeature();
+          
+          // Extract the subject IRI from the feature
+          let subjectIri = null;
+          if (feature.get('subject') && feature.get('subject').value) {
+            subjectIri = feature.get('subject').value;
+          }
+          
+          // Create a highlight pattern for this feature
+          let highlightPattern = null;
+          if (subjectIri) {
+            highlightPattern = `?subject = <${subjectIri}>`;
+            
+            // Highlight the feature using the highlightFeaturesByIris function
+            this.highlightFeaturesByIris([subjectIri]);
+          }
+          
+          // Send the feature to the controls using the generalized data event
+          if (this.props.featureSelectionTargets && this.props.featureSelectionTargets.length > 0) {
+            // Send the generalized data event
+            trigger({
+              eventType: SemanticMapControlsHandleGeneralizedData,
+              data: {
+                kind: 'selectedFeature',
+                data: feature,
+                highlightPattern: highlightPattern
+              },
+              source: this.props.id,
+              targets: this.props.featureSelectionTargets,
+            });
+            
+            // Also send the legacy event for backward compatibility
+            this.triggerSendSelectedFeature();
+          } else {
+            // If no targets are specified, just use the legacy event
+            this.triggerSendSelectedFeature();
+          }
 
           // Zoom to the selected feature
           this.zoomToFeature(feature);
-
-          // Apply the highlight style by refreshing the layer
-          this.applyFeaturesFilteringFromControls();
         });
 
         // Only show the popup if tupleTemplate prop is present
@@ -664,6 +698,22 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         // No feature was clicked, reset selectedFeature to null
         this.setState({ selectedFeature: null }, () => {
           console.log('No feature selected, reset selectedFeature to null');
+          
+          // Send null to the controls using the generalized data event
+          if (this.props.featureSelectionTargets && this.props.featureSelectionTargets.length > 0) {
+            trigger({
+              eventType: SemanticMapControlsHandleGeneralizedData,
+              data: {
+                kind: 'selectedFeature',
+                data: null,
+                highlightPattern: null
+              },
+              source: this.props.id,
+              targets: this.props.featureSelectionTargets,
+            });
+          }
+          
+          // Also send the legacy event for backward compatibility
           this.triggerSendSelectedFeature();
 
           // Apply normal styles to all features (remove any highlight)
@@ -1207,13 +1257,6 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   }
 
   private getFeatureStyleWithFilters(feature: Feature): Style {
-    // Check if this is the selected feature
-    if (this.state.selectedFeature && feature === this.state.selectedFeature) {
-      // Use highlighted style for selected feature
-      const geometry = feature.getGeometry();
-      return this.createHighlightedFeatureStyle(geometry, 'rgba(255, 165, 0, 0.6)'); // Orange highlight
-    }
-
     // Check if year filtering is enabled and we have a year set
     if (this.state.yearFiltering && this.state.year) {
       // Extract year from YYYY-MM-DD format
@@ -1233,6 +1276,9 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         }
       }
     }
+    
+    // We don't need special handling for selected features anymore
+    // The highlightFeaturesByIris method handles all highlighting
 
     // Check if feature has a group and if that group is toggled on
     if (this.state.registeredControls.length > 0 && this.state.featuresColorTaxonomy) {

@@ -64,8 +64,11 @@
 
       {{#if props}}
         [[!-- for card in KM --]]
-        
-        {{#if props.[http://www.researchspace.org/pattern/system/image_annotation/area_of_image]}}
+        {{#if props.[http://www.researchspace.org/pattern/system/image/file_identifier].values.0.value}}        
+          <div class="resource-card__thumbnail">
+            <img class="resource-card__thumbnail" src="/file?storage=images&fileName={{extractFilename props.[http://www.researchspace.org/pattern/system/image/file_identifier].values.0.value}}"">
+          </div>
+        {{else if props.[http://www.researchspace.org/pattern/system/image_annotation/area_of_image]}}
           [[!-- when the resource is an Image annotation created in Image graph authoring, before saving the data --]]
           <rs-iiif-image-thumbnail  height='480' width='640' style='height: 100%; width: 100%;'
                                     image-or-region='{{props.[http://www.researchspace.org/pattern/system/image_annotation/area_of_image].values.0.value}}' 

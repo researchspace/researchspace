@@ -1337,6 +1337,8 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         });
 
         basemapLayers[0].set('visible', true);
+        basemapLayers[1].set('visible', true);
+
 
         let mapLayersClone = this.state.mapLayers;
         newMapLayers = _.values(mapLayersClone).concat(_.values(layers));

@@ -308,20 +308,30 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
                 urlqueryparam-resource-iri="http://www.researchspace.org/resource/OntologyElementsSearch"
                 urlqueryparam-view="ontology-page-view"
                 urlqueryparam-open-as-drag-and-drop="true"
-                urlqueryparam-custom-label="Search Ontology Classes" 
+                urlqueryparam-custom-label="Search Ontology Elements Descriptions" 
                 draggable={false}
               >
-                <MenuItem>Search ontology classes</MenuItem>
+                <MenuItem>Search ontology elements descriptions</MenuItem>
               </ResourceLinkContainer>
               <ResourceLinkContainer 
                 uri={ConfigHolder.getDashboard().value} 
                 urlqueryparam-resource-iri="http://www.researchspace.org/resource/OntologyPropertiesSearch"
                 urlqueryparam-view="ontology-page-view"
                 urlqueryparam-open-as-drag-and-drop="true"
-                urlqueryparam-custom-label="Search Ontology Properties" 
+                urlqueryparam-custom-label="Search Ontology Properties by Class" 
                 draggable={false}
               >
-                <MenuItem>Search ontology properties</MenuItem>
+                <MenuItem>Search ontology properties by class</MenuItem>
+              </ResourceLinkContainer>
+              <ResourceLinkContainer 
+                uri={ConfigHolder.getDashboard().value} 
+                urlqueryparam-resource-iri="http://www.researchspace.org/resource/OntologyConnectionsBetweenClassesSearch"
+                urlqueryparam-view="ontology-page-view"
+                urlqueryparam-open-as-drag-and-drop="true"
+                urlqueryparam-custom-label="Search Ontology Connections between Classes" 
+                draggable={false}
+              >
+                <MenuItem>Search ontology connections between classes</MenuItem>
               </ResourceLinkContainer>
             </DropdownButton>
           {this.props.diagramIri && 

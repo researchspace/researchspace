@@ -1,0 +1,525 @@
+<style>
+  body {
+    font-size: 13px;
+  }
+
+
+  .SemanticTreeInput--tree {
+    height: 300px;
+  }
+
+  ol.page-breadcrumb.ontology-class-breadcrumb,
+  ol.page-breadcrumb.field-page-breadcrumb {
+    display: none;
+  }
+
+  .page.ontology-class-page,
+  .page.field-page {
+    padding-top: 0;
+  }
+
+  .page.field-page .btn-inline-container {
+    display: none;
+  }
+
+  .modal-body .field-page {
+    margin-top: -30px;
+  }
+  
+
+</style>
+
+<div style="padding: 30px;">
+
+  <h2 style="margin: 0 0 15px 0;">Search ontology connections between classes</h2>
+
+
+ 
+  <div>
+        <h5 style="margin-bottom: 5px;">Select ontology</h5> 
+
+        <semantic-tree-input  id='{{viewId}}-ontology-selection'
+                              close-dropdown-on-selection='false'
+                              open-dropdown-on-focus='true'
+                              multiple-selection='true'
+                              open-resource-on-click='false'
+                              initial-selection='["http://www.cidoc-crm.org/cidoc-crm/CRMsci/","http://www.ics.forth.gr/isl/CRMdig/","http://www.ics.forth.gr/isl/CRMinf/","http://www.cidoc-crm.org/cidoc-crm/","http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/","http://www.ics.forth.gr/isl/CRMgeo/","http://www.cidoc-crm.org/cidoc-crm/CRMba/","http://iflastandards.info/ns/fr/frbr/frbroo/"]'
+                              [[!-- initial-selection='["http://www.cidoc-crm.org/cidoc-crm/"]'--]]
+                              placeholder="Select ontology"
+
+                              roots-query='SELECT DISTINCT ?item ?label ?hasChildren WHERE {
+                                          {  ?item a owl:Ontology .
+                                            ?item rdfs:label ?label .}
+                                            BIND(false AS ?hasChildren) .
+                                          } ORDER BY ASC(?item)'
+                              
+                              children-query='SELECT ?item ?label ?hasChildren WHERE {}'
+                              
+                              parents-query='SELECT ?item ?parent ?parentLabel WHERE {}'
+                              
+                              search-query='SELECT DISTINCT ?item ?label ?score ?hasChildren WHERE {
+                                              ?item a owl:Ontology .
+                                              ?item rdfs:label ?label .
+                                            
+                                              ?label bds:search ?__token__;
+                                              bds:minRelevance "0.3";
+                                              bds:relevance ?score;
+                                              bds:matchAllTerms "true".
+                                              BIND(false AS ?hasChildren) .
+                                            } ORDER BY DESC (?score) (?item)'
+                          >
+        </semantic-tree-input>
+        
+        <mp-event-proxy id='{{viewId}}-on-ontology-selection-proxy' 
+                        on-event-source='{{viewId}}-ontology-selection'
+                        on-event-types='["SemanticTreeInput.ItemSelectionChanged"]'
+                        proxy-event-type='Component.TemplateUpdate' 
+                        proxy-targets='["{{viewId}}-ontology-properties-search-result-holder"]'>
+        </mp-event-proxy>
+        
+        <mp-event-target-template-render id='{{viewId}}-ontology-properties-search-result-holder' template='{{> template}}'>
+          <template id='template'>
+                      
+            {{#if iris}}
+              {{#bind selectedOntology=iris}}
+                <semantic-search config='[[searchConfigForFieldsFromQuery "SELECT DISTINCT ?field WHERE {?field a <http://www.researchspace.org/resource/system/fields/Field> . ?field  <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/object_property> .  } "]]'>
+                  <semantic-search-form-query query-template='{"queryString": "SELECT DISTINCT ?subject ?superclassdomain ?superclassrange ?selectedclass ?selectedclassrange  
+                                                                                                                  
+                                            {
+                                        					{
+                                                  ?ontologyclass (rdfs:subClassOf*) ?superclassdomain .
+                                                  ?subject rdfs:domain ?superclassdomain.
+                                                             
+                                                   }          
+                                                	{
+                                                 ?ontologyclassrange (rdfs:subClassOf*) ?superclassrange.
+    																							?subject rdfs:range ?superclassrange.
+                                                	 
+                                        					}
+                                                  
+                                                              
+                                                   ?subject rdfs:subPropertyOf* ?higherproperty . 
+                                                            
+                                                 
+                                        
+                                         BIND(?ontologyclass AS ?selectedclass)
+                                        
+                                         BIND(?ontologyclassrange AS ?selectedclassrange) 
+                                         BIND(REPLACE(STR(?subject), \"(.*)/.*$\", \"$1\") AS ?prefix)
+                                                           
+                                         BIND(IRI(IF(CONTAINS(STR(?subject), \"skos\"), CONCAT(?prefix, \"/core\"), CONCAT(STR(?prefix), \"/\"))) AS ?propertyOntology)
+																				                 
+                                        
+                                         FILTER(?propertyOntology IN ({{selectedOntology}}))   
+                                        } GROUP BY ?subject ?superclassdomain ?superclassrange",                                                    
+                                                                                    
+                                                                             
+
+                                                                "arguments": { "ontologyclass": {"type": "xsd:anyURI"}, "ontologyclassrange": {"type": "xsd:anyURI"} }
+                                                              }'
+                                              fields='[{
+                                                        "id": "ontologyclass",
+                                                        "label": "Class",
+                                                        "xsdDatatype": "xsd:anyURI",
+                                                        "minOccurs": "0",
+                                                        "maxOccurs": "1",
+                                                        "treePatterns": {
+                                                                          "type": "simple",
+                                                                          "schemePattern":  "?ontologyclass a ?class . VALUES ?class {owl:Class rdfs:Class} ",
+                                                                          "relationPattern": "?item rdfs:subClassOf ?parent",
+                                                                          "labelPattern": "?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label .
+                                                                                          FILTER (lang(?label) = \"en\")"
+                                                                        }
+                                                      },
+                                                      {
+                                                       "id": "ontologyclassrange",
+                                                        "label": "Class",
+                                                        "xsdDatatype": "xsd:anyURI",
+                                                        "minOccurs": "0",
+                                                        "maxOccurs": "1",
+                                                        "treePatterns": {
+                                                                          "type": "simple",
+                                                                          "schemePattern":  "?ontologyclassrange a ?class . VALUES ?class {owl:Class rdfs:Class} ",
+                                                                          "relationPattern": "?item rdfs:subClassOf ?parent",
+                                                                          "labelPattern": "?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label .
+                                                                                          FILTER (lang(?label) = \"en\")"
+                                                                        }
+                                                      
+                                                      
+                                                      
+                                                      
+                                                      }
+                                                      ]'
+                                              domain='<http://www.w3.org/2002/07/owl#ObjectProperty>'
+
+                                              >
+
+                            <semantic-query query='SELECT ?ontologyLabel WHERE {
+                                                      ?selectedOntology rdfs:label ?ontologyLabel .
+                                                      FILTER (?selectedOntology in ({{selectedOntology}}))
+                                                    }'
+                                            template='{{> template}}'
+                                            no-result-template='{{> noResults}}'
+                            >
+                                      
+                                <template id="template">
+                                  [[!--<div>  {{bindings.0.ontologyLabel.value}} 
+                                    {{selectedOntology}}
+                                    <h5 style="margin-bottom: 5px; margin-top: 15px;">Select class</h5>
+                                    {{bindings.0.ontologyLabel.value}}
+                                  </div>--]]
+                                </template>
+
+                                <template id='noResults'>
+                                  <div>
+                                    <h5 style="margin-bottom: 5px; margin-top: 15px;">Select ontology class</h5>
+                                  </div>
+                                </template>
+                            </semantic-query> 
+                            
+                            <h5 style="margin-bottom: 5px; margin-top: 15px;">Select ontology class</h5>
+
+                            <div class="btn-inline-container" style="align-items: flex-start;">
+                              <div style="flex: 1;">                               
+                                <semantic-form-tree-picker-input for="ontologyclass" 
+                                                                  render-header="false" 
+                                                                  placeholder='Select class'
+                                                                  readonly-resource="true"
+                                                                  close-dropdown-on-selection='true'
+                                                                  tree-patterns='{
+                                                                    "rootsQuery":"SELECT DISTINCT ?item ?label ?hasChildren WHERE {
+                                                                                    ?item rdf:type ?class . 
+                                                                                    VALUES ?class {owl:Class rdfs:Class} 
+                                                                                    BIND(REPLACE(STR(?item), \"(.*)/.*$\", \"$1\") AS ?prefix)
+                                                                                    BIND(IF(CONTAINS(STR(?item), \"skos\"), CONCAT(?prefix, \"/core\"), CONCAT(STR(?prefix), \"/\")) AS ?ontologyString)
+                                                                                    BIND(URI(?ontologyString) as ?ontology)
+                                                                                    FILTER(?ontology IN ({{selectedOntology}}))
+                                                                                    FILTER(NOT EXISTS { 
+                                                                                      ?item rdfs:subClassOf ?parent .  
+                                                                                      BIND(CONCAT(REPLACE(STR(?parent), \"(.*)/.*$\", \"$1\"), \"/\") AS ?prefixParent)
+                                                                                      BIND(IF(CONTAINS(STR(?parent), \"skos\"), CONCAT(?prefixParent, \"core\"), CONCAT(STR(?prefixParent), \"\")) AS ?parentOntologyString)
+                                                                                      BIND(URI(?parentOntologyString) as ?parentOntology)
+                                                                                      FILTER(?parentOntology IN ({{selectedOntology}}))
+                                                                                    })
+                                                                                    ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.
+                                                                                    FILTER((LANG(?label)) = \"en\")
+                                                                                    OPTIONAL {
+                                                                                      ?child rdfs:subClassOf ?item.
+                                                                                      
+                                                                                    }
+                                                                                    BIND(BOUND(?child) AS ?hasChildren)
+                                                                                    OPTIONAL { BIND(?label AS ?order) }
+                                                                                  }
+                                                                                  ORDER BY (?order) (?label)
+                                                                                  LIMIT 200", 
+
+                                                                    "childrenQuery":"SELECT DISTINCT ?item ?label ?hasChildren WHERE {
+                                                                                      ?item rdfs:subClassOf ?parent.
+                                                                                      ?item rdf:type ?class . 
+                                                                                      VALUES ?class {owl:Class rdfs:Class} 
+                                                                                      BIND(REPLACE(STR(?item), \"(.*)/.*$\", \"$1\") AS ?prefix)
+                                                                                      BIND(IF(CONTAINS(STR(?item), \"skos\"), CONCAT(?prefix, \"/core\"), CONCAT(STR(?prefix), \"/\")) AS ?ontologyString)
+                                                                                      BIND(URI(?ontologyString) as ?ontology)
+                                                                                      FILTER(?ontology IN (<http://www.cidoc-crm.org/cidoc-crm/>, <http://www.cidoc-crm.org/cidoc-crm/CRMsci>, {{selectedOntology}}))
+                                                                                                                              
+                                                                                      ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.
+                                                                                      FILTER((LANG(?label)) = \"en\")
+                                                                                      OPTIONAL { ?child rdfs:subClassOf ?item. 
+                                                                                          
+                                                                                      }
+                                                                                      BIND(BOUND(?child) AS ?hasChildren)
+                                                                                      OPTIONAL { BIND(?label AS ?order) }
+                                                                                    }
+                                                                                    ORDER BY (?order) (?label)",
+
+                                                                    "parentsQuery":"SELECT DISTINCT ?item ?parent ?parentLabel WHERE {
+                                                                                      ?item rdfs:subClassOf ?parent.
+                                                                                      BIND(REPLACE(STR(?parent), \"(.*)/.*$\", \"$1\") AS ?prefix)
+                                                                                      BIND(IF(CONTAINS(STR(?parent), \"skos\"), CONCAT(?prefix, \"/core\"), CONCAT(STR(?prefix), \"/\")) AS ?ontologyString)
+                                                                                      BIND(URI(?ontologyString) as ?ontology)
+                                                                                      FILTER(?ontology IN ( {{selectedOntology}}))
+
+                                                                                      ?parent ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?parentLabel.
+                                                                                      FILTER((LANG(?parentLabel)) = \"en\")
+                                                                                    }",
+
+                                                                    "searchQuery":"SELECT DISTINCT ?item ?label ?score ?hasChildren WHERE {
+                                                                                    ?item rdf:type ?class . 
+                                                                                    VALUES ?class {owl:Class rdfs:Class} 
+                                                                                    BIND(REPLACE(STR(?item), \"(.*)/.*$\", \"$1\") AS ?prefix)
+                                                                                    BIND(IF(CONTAINS(STR(?item), \"skos\"), CONCAT(?prefix, \"/core\"), CONCAT(STR(?prefix), \"/\")) AS ?ontologyString)
+                                                                                    BIND(URI(?ontologyString) as ?ontology)
+                                                                                    FILTER(?ontology IN ({{selectedOntology}}))                                        
+                                                                                    ?item ((crm:P1_is_identified_by/rdfs:label)|rso:displayLabel|rdfs:label|skos:prefLabel) ?label.
+                                                                                    FILTER((LANG(?label)) = \"en\")
+                                                                                    ?label bds:search ?__token__;
+                                                                                      bds:minRelevance \"0.3\";
+                                                                                      bds:relevance ?score;
+                                                                                      bds:matchAllTerms \"true\".
+                                                                                    
+                                                                                    OPTIONAL { ?child rdfs:subClassOf ?item. 
+                                                                                      BIND(REPLACE(STR(?child), \"(.*)/.*$\", \"$1\") AS ?childPrefix)
+                                                                                      BIND(IF(CONTAINS(STR(?child), \"skos\"), CONCAT(?prefix, \"/core\"), CONCAT(STR(?prefix), \"/\")) AS ?childOntologyString)
+                                                                                      BIND(URI(?childOntologyString) as ?childOntology)
+                                                                                      FILTER(?childOntology IN ({{selectedOntology}})) 
+                                                                                      }
+                                                                                      BIND(BOUND(?child) AS ?hasChildren)
+                                                                                      OPTIONAL { BIND(?label AS ?order) }
+                                                                                    }
+                                                                                    ORDER BY DESC (?score) (?order) (?label)
+                                                                                    LIMIT 200"
+                                                                                  }'
+
+                                                                  query-item-label='SELECT ?label WHERE {
+                                                                                      ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.
+                                                                                      FILTER (lang(?label) = "en")
+                                                                                    }'>
+                                </semantic-form-tree-picker-input>
+                                 <semantic-form-tree-picker-input for="ontologyclassrange" 
+                                                                  render-header="false" 
+                                                                  placeholder='Select class'
+                                                                  readonly-resource="true"
+                                                                  close-dropdown-on-selection='true'
+                                                                  tree-patterns='{
+                                                                    "rootsQuery":"SELECT DISTINCT ?item ?label ?hasChildren WHERE {
+                                                                                    ?item rdf:type ?class . 
+                                                                                    VALUES ?class {owl:Class rdfs:Class} 
+                                                                                    BIND(REPLACE(STR(?item), \"(.*)/.*$\", \"$1\") AS ?prefix)
+                                                                                    BIND(IF(CONTAINS(STR(?item), \"skos\"), CONCAT(?prefix, \"/core\"), CONCAT(STR(?prefix), \"/\")) AS ?ontologyString)
+                                                                                    BIND(URI(?ontologyString) as ?ontology)
+                                                                                    FILTER(?ontology IN ({{selectedOntology}}))
+                                                                                    FILTER(NOT EXISTS { 
+                                                                                      ?item rdfs:subClassOf ?parent .  
+                                                                                      BIND(CONCAT(REPLACE(STR(?parent), \"(.*)/.*$\", \"$1\"), \"/\") AS ?prefixParent)
+                                                                                      BIND(IF(CONTAINS(STR(?parent), \"skos\"), CONCAT(?prefixParent, \"core\"), CONCAT(STR(?prefixParent), \"\")) AS ?parentOntologyString)
+                                                                                      BIND(URI(?parentOntologyString) as ?parentOntology)
+                                                                                      FILTER(?parentOntology IN ({{selectedOntology}}))
+                                                                                    })
+                                                                                    ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.
+                                                                                    FILTER((LANG(?label)) = \"en\")
+                                                                                    OPTIONAL {
+                                                                                      ?child rdfs:subClassOf ?item.
+                                                                                      
+                                                                                    }
+                                                                                    BIND(BOUND(?child) AS ?hasChildren)
+                                                                                    OPTIONAL { BIND(?label AS ?order) }
+                                                                                  }
+                                                                                  ORDER BY (?order) (?label)
+                                                                                  LIMIT 200", 
+
+                                                                    "childrenQuery":"SELECT DISTINCT ?item ?label ?hasChildren WHERE {
+                                                                                      ?item rdfs:subClassOf ?parent.
+                                                                                      ?item rdf:type ?class . 
+                                                                                      VALUES ?class {owl:Class rdfs:Class} 
+                                                                                      BIND(REPLACE(STR(?item), \"(.*)/.*$\", \"$1\") AS ?prefix)
+                                                                                      BIND(IF(CONTAINS(STR(?item), \"skos\"), CONCAT(?prefix, \"/core\"), CONCAT(STR(?prefix), \"/\")) AS ?ontologyString)
+                                                                                      BIND(URI(?ontologyString) as ?ontology)
+                                                                                      FILTER(?ontology IN (<http://www.cidoc-crm.org/cidoc-crm/>, <http://www.cidoc-crm.org/cidoc-crm/CRMsci>, {{selectedOntology}}))
+                                                                                                                              
+                                                                                      ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.
+                                                                                      FILTER((LANG(?label)) = \"en\")
+                                                                                      OPTIONAL { ?child rdfs:subClassOf ?item. 
+                                                                                          
+                                                                                      }
+                                                                                      BIND(BOUND(?child) AS ?hasChildren)
+                                                                                      OPTIONAL { BIND(?label AS ?order) }
+                                                                                    }
+                                                                                    ORDER BY (?order) (?label)",
+
+                                                                    "parentsQuery":"SELECT DISTINCT ?item ?parent ?parentLabel WHERE {
+                                                                                      ?item rdfs:subClassOf ?parent.
+                                                                                      BIND(REPLACE(STR(?parent), \"(.*)/.*$\", \"$1\") AS ?prefix)
+                                                                                      BIND(IF(CONTAINS(STR(?parent), \"skos\"), CONCAT(?prefix, \"/core\"), CONCAT(STR(?prefix), \"/\")) AS ?ontologyString)
+                                                                                      BIND(URI(?ontologyString) as ?ontology)
+                                                                                      FILTER(?ontology IN ( {{selectedOntology}}))
+
+                                                                                      ?parent ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?parentLabel.
+                                                                                      FILTER((LANG(?parentLabel)) = \"en\")
+                                                                                    }",
+
+                                                                    "searchQuery":"SELECT DISTINCT ?item ?label ?score ?hasChildren WHERE {
+                                                                                    ?item rdf:type ?class . 
+                                                                                    VALUES ?class {owl:Class rdfs:Class} 
+                                                                                    BIND(REPLACE(STR(?item), \"(.*)/.*$\", \"$1\") AS ?prefix)
+                                                                                    BIND(IF(CONTAINS(STR(?item), \"skos\"), CONCAT(?prefix, \"/core\"), CONCAT(STR(?prefix), \"/\")) AS ?ontologyString)
+                                                                                    BIND(URI(?ontologyString) as ?ontology)
+                                                                                    FILTER(?ontology IN ({{selectedOntology}}))                                        
+                                                                                    ?item ((crm:P1_is_identified_by/rdfs:label)|rso:displayLabel|rdfs:label|skos:prefLabel) ?label.
+                                                                                    FILTER((LANG(?label)) = \"en\")
+                                                                                    ?label bds:search ?__token__;
+                                                                                      bds:minRelevance \"0.3\";
+                                                                                      bds:relevance ?score;
+                                                                                      bds:matchAllTerms \"true\".
+                                                                                    
+                                                                                    OPTIONAL { ?child rdfs:subClassOf ?item. 
+                                                                                      BIND(REPLACE(STR(?child), \"(.*)/.*$\", \"$1\") AS ?childPrefix)
+                                                                                      BIND(IF(CONTAINS(STR(?child), \"skos\"), CONCAT(?prefix, \"/core\"), CONCAT(STR(?prefix), \"/\")) AS ?childOntologyString)
+                                                                                      BIND(URI(?childOntologyString) as ?childOntology)
+                                                                                      FILTER(?childOntology IN ({{selectedOntology}})) 
+                                                                                      }
+                                                                                      BIND(BOUND(?child) AS ?hasChildren)
+                                                                                      OPTIONAL { BIND(?label AS ?order) }
+                                                                                    }
+                                                                                    ORDER BY DESC (?score) (?order) (?label)
+                                                                                    LIMIT 200"
+                                                                                  }'
+
+                                                                  query-item-label='SELECT ?label WHERE {
+                                                                                      ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.
+                                                                                      FILTER (lang(?label) = "en")
+                                                                                    }'>
+                                </semantic-form-tree-picker-input>
+                                
+                              </div>
+                              <button type='button' name='submit' class='btn btn-action' style="height: 39px;">Search properties</button>
+                    {{ontologyclass}} {{ontologyclassrange}}   
+                    </div>
+                    
+                  </semantic-search-form-query>
+                  
+                    <semantic-search-result-holder>
+                      <div>
+                        <h3 style="margin: 25px 0 15px 0;">Class properties</h3> 
+                        <div style="display: flex;">
+                          <div style="height: inherit;">
+                            <semantic-search-facet id="facets"></semantic-search-facet>
+                          </div>
+                          <div style='height: inherit; flex: 1;'> 
+                            <semantic-search-facet-breadcrumbs></semantic-search-facet-breadcrumbs>
+                            <mp-event-target-template-render id='{{viewId}}-ontology-property-table-render' template='{{> template}}'>
+                              <template id='template'>
+                                <semantic-search-result>
+                                  <div class="ontology-property-table">
+                                    <semantic-table 
+                                        id='ontology-property-table' 
+                                        query="SELECT DISTINCT ?propertydomain ?scopeNote ?propertydomainstr ?selectedclass ?selectedclassrange ?superclassdomain ?superclassrange 
+                                                 (GROUP_CONCAT(DISTINCT ?higherproperty; separator=',') AS ?higher)
+
+                                                 WHERE {                                                                                                                  
+                                                   BIND(?subject as ?propertydomain)
+                                               		 OPTIONAL { ?subject rdfs:comment ?scopeNote . }
+
+                                                   BIND(?propertydomain AS ?propertydomainURI) 
+                                                   BIND(REPLACE(STR(?propertydomainURI), '.*/(.*$)', '$1') AS ?propertydomainstr) 
+
+                                                 } 
+                                               GROUP BY ?propertydomain ?scopeNote ?propertydomainstr ?selectedclass ?selectedclassrange ?superclassdomain ?superclassrange ?higherproperty
+
+                                               "
+
+                                          options='{"showFilter":true, "resultsPerPage":20}' 
+                                          no-result-template='{{> noResults}}'
+                                          column-configuration='[
+                                             {"displayName": "Property",  "cellTemplate": "{{> PropertyDomainCell}}"},
+                                             {"displayName": "domain", "variableName": "selectedclass", "cellTemplate": "{{> SelectedClassCell}}"},
+                                             {"displayName": "range", "variableName": "selectedclassrange", "cellTemplate": "{{> SelectedClassRangeCell}}"},
+                                             {"displayName": "inherited domain", "variableName": "superclassdomain", "cellTemplate": "{{> SuperClassDomainCell}}"},
+                                             {"displayName": "inherited range", "variableName": "superclassrange", "cellTemplate": "{{> SuperClassRangeCell}}"},
+                                             {"displayName": "super properties", "variableName": "higher", "cellTemplate": "{{> HigherPropertiesCell}}"}
+                                             ]'>
+                                                
+                                      <template id="noResults">
+                                        <div>No results available</div>
+                                      </template>
+                                      
+                                      <template id="PropertyDomainCell">
+                                        <div>
+                                          <semantic-link iri={{propertydomain.value}}>                                              
+                                           {{propertydomainstr.value}} {{scope.note}}
+                                       <mp-popover title="Description">
+                                <mp-popover-trigger placement="bottom" trigger='["hover", "click"]'>
+                                  <div class="badge badge--default">
+                                    <rs-icon icon-type="rounded" icon-name="question_mark" symbol="true"></rs-icon>
+                                  </div>
+                                </mp-popover-trigger>
+                                <mp-popover-content>
+                                  <div> {{scopeNote.value}}</div>
+                                </mp-popover-content>
+                              </mp-popover>
+                                          </semantic-link>
+                         							  </div>
+                                      </template>
+                                      
+                                      <template id="SelectedClassCell">
+                                        <div>
+                                       
+                                            <semantic-link iri={{selectedclass.value}}>
+                                               
+                                           <mp-label iri={{selectedclass.value}}></mp-label>
+                                              
+                                              </semantic-link>
+                                     
+                                           </div>
+                                      </template>    
+                                      
+                                      <template id="SelectedClassRangeCell">
+                                        <div>
+                                       
+                                            <semantic-link iri={{selectedclassrange.value}}>
+                                               
+                                           <mp-label iri={{selectedclassrange.value}}></mp-label>
+                                              
+                                              </semantic-link>
+                                     
+                                           </div>
+                                      </template>    
+                                      
+                                      <template id="SuperClassDomainCell">
+                                        <div>
+                                       
+                                            <semantic-link iri={{superclassdomain.value}}>
+                                               
+                                           <mp-label iri={{superclassdomain.value}}></mp-label>
+                                              
+                                              </semantic-link>
+                                     
+                                           </div>
+                                      </template>    
+                                      
+                                     <template id="SuperClassRangeCell">
+                                        <div>
+                                       
+                                            <semantic-link iri={{superclassrange.value}}>
+                                               
+                                           <mp-label iri={{superclassrange.value}}></mp-label>
+                                              
+                                              </semantic-link>
+                                     
+                                           </div>
+                                      </template>    
+                                      
+                                       <template id="HigherPropertiesCell">
+                                         <div>
+
+                                              {{#each (split higher.value ",")}}
+                                                <semantic-link iri="{{this}}"><mp-label iri="{{this}}"></mp-label></semantic-link><br/>
+                                              {{/each}}
+                                            
+                                          </div>
+                                      </template>    
+                                      
+                                      
+                                                
+                                    </semantic-table>
+                                  </div>  
+                                </semantic-search-result>
+                              </template>
+                            </mp-event-target-template-render>
+                          </div>
+                        </div>
+                      </div>
+                    </semantic-search-result-holder>
+                 
+                </semantic-search> 
+              {{/bind}}
+            {{/if}}
+   
+          </template>
+        </mp-event-target-template-render>
+        
+       
+        
+      
+  </div>
+
+</div>

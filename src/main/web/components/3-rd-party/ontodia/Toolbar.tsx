@@ -311,7 +311,10 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
                 urlqueryparam-custom-label="Search Ontology Elements Descriptions" 
                 draggable={false}
               >
-                <MenuItem>Search ontology elements descriptions</MenuItem>
+                <MenuItem>
+                  <Icon iconType="rounded" iconName='search' className="icon-left" symbol />
+                  Ontology Elements descriptions
+                </MenuItem>
               </ResourceLinkContainer>
               <ResourceLinkContainer 
                 uri={ConfigHolder.getDashboard().value} 
@@ -321,17 +324,23 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
                 urlqueryparam-custom-label="Search Ontology Properties by Class" 
                 draggable={false}
               >
-                <MenuItem>Search ontology properties by class</MenuItem>
+                <MenuItem>
+                  <Icon iconType="rounded" iconName='search' className="icon-left" symbol />
+                  Ontology Properties by class
+                </MenuItem>
               </ResourceLinkContainer>
               <ResourceLinkContainer 
                 uri={ConfigHolder.getDashboard().value} 
-                urlqueryparam-resource-iri="http://www.researchspace.org/resource/OntologyConnectionsBetweenClassesSearch"
+                urlqueryparam-resource-iri="http://www.researchspace.org/resource/OntologyPropertiesBetweenClassesSearch"
                 urlqueryparam-view="ontology-page-view"
                 urlqueryparam-open-as-drag-and-drop="true"
-                urlqueryparam-custom-label="Search Ontology Connections between Classes" 
+                urlqueryparam-custom-label="Search Ontology Properties between Classes" 
                 draggable={false}
               >
-                <MenuItem>Search ontology connections between classes</MenuItem>
+                <MenuItem>
+                  <Icon iconType="rounded" iconName='search' className="icon-left" symbol />
+                  Ontology Properties between classes
+                </MenuItem>
               </ResourceLinkContainer>
             </DropdownButton>
           {this.props.diagramIri && 

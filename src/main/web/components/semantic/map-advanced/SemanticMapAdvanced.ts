@@ -2588,12 +2588,12 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
             const originalStroke = originalStyle.getStroke();
             let strokeColor = originalStroke ? originalStroke.getColor() : fillColor;
             
-            // If the stroke color is in rgba format, set opacity to 0.5
+            // If the stroke color is in rgba format, set opacity to 0.1
             if (typeof strokeColor === 'string' && strokeColor.startsWith('rgba')) {
-              strokeColor = strokeColor.replace(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*[\d.]+\)/, 'rgba($1, $2, $3, 0.3)');
+              strokeColor = strokeColor.replace(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*[\d.]+\)/, 'rgba($1, $2, $3, 0.1)');
             } else if (typeof strokeColor === 'string') {
               // If it's a solid color, add transparency
-              strokeColor = `rgba(${parseInt(strokeColor.slice(1, 3), 16)}, ${parseInt(strokeColor.slice(3, 5), 16)}, ${parseInt(strokeColor.slice(5, 7), 16)}, 0.3)`;
+              strokeColor = `rgba(${parseInt(strokeColor.slice(1, 3), 16)}, ${parseInt(strokeColor.slice(3, 5), 16)}, ${parseInt(strokeColor.slice(5, 7), 16)}, 0.1)`;
             }
             
             // Create a new style with low opacity

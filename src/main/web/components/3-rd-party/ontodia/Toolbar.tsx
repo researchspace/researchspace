@@ -308,7 +308,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
                 urlqueryparam-resource-iri="http://www.researchspace.org/resource/OntologyElementsSearch"
                 urlqueryparam-view="ontology-page-view"
                 urlqueryparam-open-as-drag-and-drop="true"
-                urlqueryparam-custom-label="Search Ontology Elements Descriptions" 
+                urlqueryparam-custom-label="Ontology Elements Descriptions" 
                 draggable={false}
               >
                 <MenuItem>
@@ -321,7 +321,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
                 urlqueryparam-resource-iri="http://www.researchspace.org/resource/OntologyPropertiesSearch"
                 urlqueryparam-view="ontology-page-view"
                 urlqueryparam-open-as-drag-and-drop="true"
-                urlqueryparam-custom-label="Search Ontology Properties by Class" 
+                urlqueryparam-custom-label="Ontology Properties by Class" 
                 draggable={false}
               >
                 <MenuItem>
@@ -334,7 +334,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
                 urlqueryparam-resource-iri="http://www.researchspace.org/resource/OntologyPropertiesBetweenClassesSearch"
                 urlqueryparam-view="ontology-page-view"
                 urlqueryparam-open-as-drag-and-drop="true"
-                urlqueryparam-custom-label="Search Ontology Properties between Classes" 
+                urlqueryparam-custom-label="Ontology Properties between Classes" 
                 draggable={false}
               >
                 <MenuItem>

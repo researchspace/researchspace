@@ -1175,13 +1175,6 @@ export class SemanticMapControls extends Component<Props, State> {
             {/* Feature or generalized data template positioned to appear on the map */}
             {(this.state.selectedFeature || this.state.generalizedData) ? (
               <div className={styles['featureTemplateContainer']}>
-                <button
-                  onClick={this.state.selectedFeature ? this.clearSelectedFeature : () => this.setState({ generalizedData: null })}
-                  className={styles['featureTemplateCloseButton']}
-                  title="Close"
-                >
-                  <i className="fa fa-times"></i>
-                </button>
                 {templateElement}
               </div>
             ) : null}
@@ -1280,7 +1273,7 @@ export class SemanticMapControls extends Component<Props, State> {
                                       {/* Thumbnail */}
                                         <div className={styles.thumbnailContainer}>
                                         {mapLayer.get('identifier') === 'Buildings' ? (
-                                          <i className={`fa fa-home ${styles.layerThumbnail} ${styles.layerThumbnailStyle}`}
+                                          <i className={`buildings ${styles.layerThumbnail} ${styles.layerThumbnailStyle}`}
                                             style={{ fontSize: '40px', textAlign: 'center', verticalAlign: 'middle', lineHeight: '60px' }}
                                           ></i>
                                         ) : (

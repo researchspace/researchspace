@@ -113,9 +113,9 @@ interface Props {
    */
   children?: React.ReactNode;
   /**
-   * Template for historical maps panel
+   * Template for details maps panel
    */
-  historicalMapTemplate?: string;
+  detailsMapTemplate?: string;
   /**
    * Template for base maps panel
    */
@@ -318,7 +318,7 @@ export class SemanticMapControls extends Component<Props, State> {
   }
 
   public componentDidUpdate(prevProps, prevState) {
-    // TODO: if we care about colors (i.e. historical maps controls don't)
+    // TODO: if we care about colors (i.e. details maps controls don't)
     if (this.state.groupColorAssociations !== prevState.groupColorAssociations) {
       console.log('Groupcolors changed. Sending...');
       this.triggerSendFeaturesColorsAssociationsToMap();
@@ -348,17 +348,50 @@ export class SemanticMapControls extends Component<Props, State> {
 
   private handleSelectedFeature = (event: any) => {
     console.log('Received selected feature:', event.data);
-    this.setState(
-      {
-        selectedFeature: event.data,
-      },
-      () => {
-        // If we have a renderTemplate, we need to re-render the template with the new selectedFeature
-        if (this.props.renderTemplate) {
-          this.forceUpdate();
-        }
+    
+    // If we're receiving a feature (not null)
+    if (event.data) {
+      // Check if the panel is currently closed
+      const isPanelClosed = this.state.activePanel === null;
+      
+      // Set animation state for opening if panel is currently closed
+      if (isPanelClosed) {
+        this.isPanelOpening = true;
+        this.isPanelClosing = false;
+        this.panelAnimationState = 'opening';
+        
+        // Immediately start moving the legend with the panel
+        this.animateLegendPosition('withPanel');
       }
-    );
+      
+      // Update state with the new feature and open the panel
+      this.setState(
+        {
+          selectedFeature: event.data,
+          activePanel: 'details' // Always open the details panel when a feature is selected
+        },
+        () => {
+          // If we have a renderTemplate, we need to re-render the template with the new selectedFeature
+          if (this.props.renderTemplate) {
+            this.forceUpdate();
+          }
+        }
+      );
+    } else {
+      // If we're receiving null (no feature selected)
+      this.setState(
+        {
+          selectedFeature: null
+          // Don't change the panel state here - that's handled by togglePanel
+        },
+        () => {
+          // If we have a renderTemplate, we need to re-render the template with the null selectedFeature
+          if (this.props.renderTemplate) {
+            this.forceUpdate();
+          }
+        }
+      );
+    }
   };
 
   private clearSelectedFeature = () => {
@@ -717,11 +750,24 @@ export class SemanticMapControls extends Component<Props, State> {
       // Immediately start moving the legend with the panel
       this.animateLegendPosition('external');
       
-      // Update state immediately to trigger re-render with animation
-      this.setState({
-        // Keep the activePanel value so the panel stays in DOM during animation
-        // but mark it as closing so we can apply the animation
-      });
+      // When closing the details panel, clear both generalizedData and selectedFeature
+      // Do this BEFORE the animation starts to ensure immediate visual feedback
+      if (panelName === "details") {
+        console.log('Closing details panel - clearing feature selection');
+        // Clear both generalizedData and selectedFeature when closing the details panel
+        this.setState({ 
+          generalizedData: null,
+          // Keep the activePanel value so the panel stays in DOM during animation
+        }, () => {
+          // After state update, trigger the clear selected feature event
+          this.clearSelectedFeature();
+        });
+      } else {
+        // For other panels, just update state to trigger re-render with animation
+        this.setState({
+          // Keep the activePanel value so the panel stays in DOM during animation
+        });
+      }
       
       // Listen for the animation end event
       const panel = document.querySelector(`.${styles.mapControlsPanel}`);
@@ -884,24 +930,48 @@ export class SemanticMapControls extends Component<Props, State> {
   private handleGeneralizedData = (event: any) => {
     console.log('Received generalized data:', event.data);
     
-    // Store the generalized data in state
-    this.setState(
-      {
-        generalizedData: event.data,
-      },
-      () => {
-        // If there's a highlight pattern, trigger feature highlighting
-        if (event.data.highlightPattern) {
-          console.log('Triggering highlight with pattern:', event.data.highlightPattern);
-          this.triggerHighlightFeatures(event.data.highlightPattern);
-        } else {
-          console.log('No highlight pattern provided in the generalized data');
+    // Check if we have data (not null)
+    if (event.data && event.data.data) {
+      // Store the generalized data in state and always open the details panel
+      this.setState(
+        {
+          generalizedData: event.data,
+          activePanel: 'details' // Always open the details panel when data is received
+        },
+        () => {
+          // If there's a highlight pattern, trigger feature highlighting
+          if (event.data.highlightPattern) {
+            console.log('Triggering highlight with pattern:', event.data.highlightPattern);
+            this.triggerHighlightFeatures(event.data.highlightPattern);
+          } else {
+            console.log('No highlight pattern provided in the generalized data');
+          }
+          
+          // If the panel is opening, animate it
+          if (this.state.activePanel === 'details' && !this.isPanelOpening && !this.isPanelClosing) {
+            this.isPanelOpening = true;
+            this.panelAnimationState = 'opening';
+            
+            // Immediately start moving the legend with the panel
+            this.animateLegendPosition('withPanel');
+          }
+          
+          // Force re-render to update template with the new data
+          this.forceUpdate();
         }
-        
-        // Force re-render to update template with the new data
-        this.forceUpdate();
-      }
-    );
+      );
+    } else {
+      // If data is null, just update the state without changing the panel
+      this.setState(
+        {
+          generalizedData: event.data
+        },
+        () => {
+          // Force re-render to update template with the new data
+          this.forceUpdate();
+        }
+      );
+    }
   };
   
   /**
@@ -937,7 +1007,7 @@ export class SemanticMapControls extends Component<Props, State> {
 
   public render() {
     // Get template sources
-    const historicalMapTemplate = this.props.historicalMapTemplate || '';
+    const detailsMapTemplate = this.props.detailsMapTemplate || '';
 
     // Get the appropriate template reference based on the current data
     const templateRef = this.getTemplateForCurrentData();
@@ -987,9 +1057,9 @@ export class SemanticMapControls extends Component<Props, State> {
           >
             <button
               className={`${styles.mapControlsButton} ${
-                this.state.activePanel === 'historical' ? styles.mapControlsButtonActive : ''
+                this.state.activePanel === 'details' ? styles.mapControlsButtonActive : ''
               } map-control-button-details`}
-              onClick={() => this.togglePanel('historical')}
+              onClick={() => this.togglePanel('details')}
             >
               <span className="map-control-icon-details">
                 <i className="fa fa-home" style={{ fontSize: '24px' }}></i>
@@ -1087,11 +1157,11 @@ export class SemanticMapControls extends Component<Props, State> {
         </div>
 
         {/* Panels */}
-        {this.state.activePanel === 'historical' && (
-          <div className={`${styles.mapControlsPanel} ${this.getPanelAnimationClass('historical')}`}>
+        {this.state.activePanel === 'details' && (
+          <div className={`${styles.mapControlsPanel} ${this.getPanelAnimationClass('details')}`}>
             {/* Standalone close button */}
             <button
-              onClick={() => this.togglePanel('historical')}
+              onClick={() => this.togglePanel('details')}
               className={styles.mapControlsPanelCloseX}
               title="Close panel"
             >
@@ -1101,7 +1171,20 @@ export class SemanticMapControls extends Component<Props, State> {
             <div className={styles.mapControlsPanelHeader}>
               
             </div>
-            {this.renderTemplate(historicalMapTemplate, '<div>No historical map template specified</div>')}
+            {/* {this.renderTemplate(detailsMapTemplate, '<div>No details map template specified</div>')} */}
+            {/* Feature or generalized data template positioned to appear on the map */}
+            {(this.state.selectedFeature || this.state.generalizedData) ? (
+              <div className={styles['featureTemplateContainer']}>
+                <button
+                  onClick={this.state.selectedFeature ? this.clearSelectedFeature : () => this.setState({ generalizedData: null })}
+                  className={styles['featureTemplateCloseButton']}
+                  title="Close"
+                >
+                  <i className="fa fa-times"></i>
+                </button>
+                {templateElement}
+              </div>
+            ) : null}
           </div>
         )}
 
@@ -1556,19 +1639,7 @@ export class SemanticMapControls extends Component<Props, State> {
           </div>
         )}
 
-        {/* Feature or generalized data template positioned to appear on the map */}
-        {(this.state.selectedFeature || this.state.generalizedData) ? (
-          <div className={styles['featureTemplateContainer']}>
-            <button
-              onClick={this.state.selectedFeature ? this.clearSelectedFeature : () => this.setState({ generalizedData: null })}
-              className={styles['featureTemplateCloseButton']}
-              title="Close"
-            >
-              <i className="fa fa-times"></i>
-            </button>
-            {templateElement}
-          </div>
-        ) : null}
+        
       </React.Fragment>
     );
   }

@@ -631,53 +631,66 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         return f;
       });
 
+      // Check if we're clicking on the same feature that's already selected
+      const isSameFeature = feature && this.state.selectedFeature && 
+                           feature.get('subject') && this.state.selectedFeature.get('subject') &&
+                           feature.get('subject').value === this.state.selectedFeature.get('subject').value;
+      
       if (feature) {
-        console.log('Clicked feature.');
-        console.log(feature);
+        console.log('Clicked feature:', feature);
         
-        // Store the entire feature object
-        this.setState({ selectedFeature: feature }, () => {
-          console.log(this.state.selectedFeature);
+        // If we're clicking on a different feature than what's already selected
+        // or if no feature is currently selected
+        if (!isSameFeature) {
+          console.log('Selecting new feature');
           
-          // Extract the subject IRI from the feature
-          let subjectIri = null;
-          if (feature.get('subject') && feature.get('subject').value) {
-            subjectIri = feature.get('subject').value;
-          }
-          
-          // Create a highlight pattern for this feature
-          let highlightPattern = null;
-          if (subjectIri) {
-            highlightPattern = `?subject = <${subjectIri}>`;
+          // Store the entire feature object
+          this.setState({ selectedFeature: feature }, () => {
+            console.log('Selected feature state updated:', this.state.selectedFeature);
             
-            // Highlight the feature using the highlightFeaturesByIris function
-            this.highlightFeaturesByIris([subjectIri]);
-          }
-          
-          // Send the feature to the controls using the generalized data event
-          if (this.props.featureSelectionTargets && this.props.featureSelectionTargets.length > 0) {
-            // Send the generalized data event
-            trigger({
-              eventType: SemanticMapControlsHandleGeneralizedData,
-              data: {
-                kind: 'selectedFeature',
-                data: feature,
-                highlightPattern: highlightPattern
-              },
-              source: this.props.id,
-              targets: this.props.featureSelectionTargets,
-            });
+            // Extract the subject IRI from the feature
+            let subjectIri = null;
+            if (feature.get('subject') && feature.get('subject').value) {
+              subjectIri = feature.get('subject').value;
+            }
             
-            // Also send the legacy event for backward compatibility
-            this.triggerSendSelectedFeature();
-          } else {
-            // If no targets are specified, just use the legacy event
-            this.triggerSendSelectedFeature();
-          }
+            // Create a highlight pattern for this feature
+            let highlightPattern = null;
+            if (subjectIri) {
+              // Skip creating a SPARQL pattern as it's causing issues
+              // Just directly highlight the feature by IRI
+              this.highlightFeaturesByIris([subjectIri]);
+            }
+            
+            // Send the feature to the controls using the generalized data event
+            if (this.props.featureSelectionTargets && this.props.featureSelectionTargets.length > 0) {
+              console.log('Sending feature to targets:', this.props.featureSelectionTargets);
+              
+              // Send the generalized data event
+              trigger({
+                eventType: SemanticMapControlsHandleGeneralizedData,
+                data: {
+                  kind: 'selectedFeature',
+                  data: feature,
+                  highlightPattern: highlightPattern
+                },
+                source: this.props.id,
+                targets: this.props.featureSelectionTargets,
+              });
+              
+              // Also send the legacy event for backward compatibility
+              this.triggerSendSelectedFeature();
+            } else {
+              // If no targets are specified, just use the legacy event
+              this.triggerSendSelectedFeature();
+            }
 
-          // Zoom to the selected feature
-          this.zoomToFeature(feature);
-        });
+            // Zoom to the selected feature
+            this.zoomToFeature(feature);
+          });
+        } else {
+          console.log('Clicked on already selected feature - no state change needed');
+        }
 
         // Only show the popup if tupleTemplate prop is present
         if (this.props.tupleTemplate) {
@@ -696,29 +709,31 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         }
       } else {
         // No feature was clicked, reset selectedFeature to null
-        this.setState({ selectedFeature: null }, () => {
-          console.log('No feature selected, reset selectedFeature to null');
+        if (this.state.selectedFeature !== null) {
+          console.log('No feature selected, clearing previous selection');
           
-          // Send null to the controls using the generalized data event
-          if (this.props.featureSelectionTargets && this.props.featureSelectionTargets.length > 0) {
-            trigger({
-              eventType: SemanticMapControlsHandleGeneralizedData,
-              data: {
-                kind: 'selectedFeature',
-                data: null,
-                highlightPattern: null
-              },
-              source: this.props.id,
-              targets: this.props.featureSelectionTargets,
-            });
-          }
-          
-          // Also send the legacy event for backward compatibility
-          this.triggerSendSelectedFeature();
+          this.setState({ selectedFeature: null }, () => {
+            // Send null to the controls using the generalized data event
+            if (this.props.featureSelectionTargets && this.props.featureSelectionTargets.length > 0) {
+              trigger({
+                eventType: SemanticMapControlsHandleGeneralizedData,
+                data: {
+                  kind: 'selectedFeature',
+                  data: null,
+                  highlightPattern: null
+                },
+                source: this.props.id,
+                targets: this.props.featureSelectionTargets,
+              });
+            }
+            
+            // Also send the legacy event for backward compatibility
+            this.triggerSendSelectedFeature();
 
-          // Apply normal styles to all features (remove any highlight)
-          this.applyFeaturesFilteringFromControls();
-        });
+            // Apply normal styles to all features (remove any highlight)
+            this.applyFeaturesFilteringFromControls();
+          });
+        }
       }
     });
 

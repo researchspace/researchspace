@@ -6,29 +6,29 @@
       [[!-- when autosize is set we don't set any fixed height and width, used in semantic narratives where user can resize the card --]]
 
       [[!-- to render smaller card add class resource-card resource-card-small and give to card height=150 width=120 --]]
-  {{#if newKMCard}}
   
-  <div class="resource-card__header-actions">
-  		<div class="resource-card__buttons-container">   
-        {{#if knowledgeMapCard}}
-          <mp-draggable iri='{{iri}}'>
-            <button type="button" class="btn btn-default resource-card__button" title="Drag item {{#if knowledgeMapCard}}outside the map{{/if}}">
-              <rs-icon icon-type="rounded" icon-name="drag_pan" symbol="true"></rs-icon>
-            </button>
-          </mp-draggable>
-        {{/if}}
-        
-        <rs-resource-dropdown id="{{viewId}}-{{iri}}-item-actions-dropdown" class-name="dropdown-no-caret" toggle-class-name="border-none resource-card__button">
-          {{> rsp:ResourceDropdownActions viewId=viewId
-                                          iri=iri
-                                          resourceConfig=resourceConfig
-                                          resourceLabel=resourceLabel
-                                          resourceFormIRI=resourceFormIRI
-                                          resourceOntologyClass=resourceOntologyClass
-          }}
-        </rs-resource-dropdown>
-  		</div>
-  </div>
+  {{#if newKMCard}}
+    <div class="resource-card__header-actions">
+        <div class="resource-card__buttons-container">   
+          {{#if knowledgeMapCard}}
+            <mp-draggable iri='{{iri}}'>
+              <button type="button" class="btn btn-default resource-card__button" title="Drag item {{#if knowledgeMapCard}}outside the map{{/if}}">
+                <rs-icon icon-type="rounded" icon-name="drag_pan" symbol="true"></rs-icon>
+              </button>
+            </mp-draggable>
+          {{/if}}
+          
+          <rs-resource-dropdown id="{{viewId}}-{{iri}}-item-actions-dropdown" class-name="dropdown-no-caret" toggle-class-name="border-none resource-card__button">
+            {{> rsp:ResourceDropdownActions viewId=viewId
+                                            iri=iri
+                                            resourceConfig=resourceConfig
+                                            resourceLabel=resourceLabel
+                                            resourceFormIRI=resourceFormIRI
+                                            resourceOntologyClass=resourceOntologyClass
+            }}
+          </rs-resource-dropdown>
+        </div>
+    </div>
   {{else}}
     <div class="resource-card__header-actions">
       [[#if (hasPermission "forms:ldp:*")]]
@@ -136,7 +136,24 @@
                     allowfullscreen>
             </iframe>
           {{else if props.[http://www.researchspace.org/pattern/system/recording/file_identifier].values.0.value}}
-          <div>test</div>
+            <semantic-query query='SELECT DISTINCT ?fileName ?fileMediaType WHERE {     
+                                    <{{props.[http://www.researchspace.org/pattern/system/recording/file_identifier].values.0.value}}> rs:PX_has_file_name ?fileName .
+                                    <{{props.[http://www.researchspace.org/pattern/system/recording/file_identifier].values.0.value}}> rs:PX_has_media_type ?fileMediaType .
+                                  }'
+                                                  
+                            template='{{> template}}'>
+                  
+              <template id='template'>
+                <video controls preload="metadata" width="152" height="80" class="object-fit-cover">
+                    <source src="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}" type="{{bindings.0.fileMediaType.value}}" />
+                    <mp-resource-thumbnail iri='{{iri}}' class="resource-card__thumbnail">
+                      <mp-resource-thumbnail-fallback>
+                        [[> defaultCardIcon]]
+                      </mp-resource-thumbnail-fallback>
+                    </mp-resource-thumbnail>
+                </video>
+              </template>
+            </semantic-query>
           {{else}}
             <mp-resource-thumbnail iri='{{iri}}' class="resource-card__thumbnail">
               <mp-resource-thumbnail-fallback>
@@ -173,25 +190,46 @@
           {{/case}}
 
           {{#case "http://iflastandards.info/ns/fr/frbr/frbroo/F26_Recording" break=true}}
-            <semantic-query query='SELECT DISTINCT ?video WHERE { 
+            <semantic-query query='SELECT DISTINCT ?video ?fileName ?fileMediaType WHERE { 
                                     <{{iri}}> crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_video> .
-                                    <{{iri}}> crm:P129i_is_subject_of ?digital_object.
-                                    ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
-                                    ?digital_object crm:P190_has_symbolic_content ?video .
-                                  } LIMIT 1'
+                                    {
+                                      <{{iri}}> crm:P129i_is_subject_of ?digital_object.
+                                      ?digital_object rdf:type crmdig:D1_Digital_Object .
+                                      ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                                      ?digital_object crm:P190_has_symbolic_content ?video .
+                                    } UNION {
+                                      <{{iri}}> crmdig:L60i_is_documented_by ?digitizationProcess .
+                                      ?digitizationProcess a crmdig:D2_Digitization_Process .    
+                                      ?digitizationProcess crmdig:L11_had_output ?file .
+                                      ?file crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/video> .
+                                      ?file rs:PX_has_file_name ?fileName .
+                                      ?file rs:PX_has_media_type ?fileMediaType .
+                                    }
+                                  }'
                                 
                             template='{{> template}}'
                             no-result-template='{{> noResults}}'>
 
                   <template id='template'>
-                    <div class="h100 w100">
-                      <iframe src='{{bindings.0.video.value}}' 
-                              frameborder="0" 
-                              allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
-                              width="100%" height="135"
-                              allowfullscreen>
-                      </iframe>
-                    </div>
+                    {{#if bindings.0.video.value}}
+                      <div class="h100 w100">
+                        <iframe src='{{bindings.0.video.value}}' 
+                                frameborder="0" 
+                                allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
+                                width="100%" height="135"
+                                allowfullscreen>
+                        </iframe>
+                      </div>
+                    {{else if bindings.0.fileName.value}}
+                        <video controls preload="metadata" width="147" height="80" class="object-fit-cover">
+                          <source src="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}" type="{{bindings.0.fileMediaType.value}}" />
+                          <mp-resource-thumbnail iri='{{iri}}' class="resource-card__thumbnail">
+                            <mp-resource-thumbnail-fallback>
+                              [[> defaultCardIcon]]
+                            </mp-resource-thumbnail-fallback>
+                          </mp-resource-thumbnail>
+                        </video>
+                    {{/if}}
                   </template>
 
                   <template id="noResults">

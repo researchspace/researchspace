@@ -21,7 +21,7 @@ import * as ModuleRegistry from './Registry';
 import * as ReactErrorCatcher from './ReactErrorCatcher';
 import * as ComponentsLoader from './ComponentsLoader';
 
-export { ComponentClassMetadata } from './ComponentsStore';
+export type { ComponentClassMetadata } from './ComponentsStore';
 export { ModuleRegistry, ReactErrorCatcher, ComponentsLoader };
 
 export { ExtensionPoint } from './ExtensionPoint';

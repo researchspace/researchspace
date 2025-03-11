@@ -358,7 +358,7 @@
                                     <semantic-table 
                                         id='ontology-property-betweenClasses-table' 
                                         query="SELECT DISTINCT ?propertydomain ?scopeNote ?propertydomainstr ?selectedclass ?selectedclassrange ?superclassdomain ?superclassrange 
-                                                 (GROUP_CONCAT(DISTINCT ?hh; separator=',') AS ?higher)
+                                                 (GROUP_CONCAT(DISTINCT ?higherproperty; separator=',') AS ?higher)
 
                                                  WHERE {                                                                                                                  
                                                     BIND(?subject AS ?propertydomain)
@@ -367,8 +367,6 @@
                                                    
                                                     BIND(REPLACE(STR(?subject), '(.*)/.*$', '$1') AS ?prefix)
                                                			BIND(URI(IF(CONTAINS(STR(?subject), 'skos'), CONCAT(?prefix, '/core'), CONCAT(STR(?prefix), '/'))) AS ?propertyOntology)
-                                               			
-                                               			BIND((IF(STR(?subject) = STR(?higherproperty), "", ?higherproperty)) AS ?hh)
                                                				
    																									BIND (
                                                       COALESCE(

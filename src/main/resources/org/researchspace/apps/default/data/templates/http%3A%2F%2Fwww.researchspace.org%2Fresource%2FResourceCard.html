@@ -9,7 +9,6 @@
 [[#*inline "resourceCardQuery"]]
  <semantic-query query='SELECT ?iri ?resourceOntologyClass ?resourceConfig ?resourceLabel ?resourceIcon WHERE {
                           BIND(<{{iri}}> as ?iri)
-                          {{#if data.types}}BIND(<{{data.types}}> as ?resourceOntologyClass){{/if}}
                           OPTIONAL {  
                             ?iri a ?resourceOntologyClass .
                             ?resourceOntologyClass a owl:Class .                          
@@ -49,8 +48,9 @@
           }}
         {{else}}
           <semantic-query query='SELECT ?resourceOntologyClass WHERE {
-                                    BIND(<{{iri}}> as ?iri)
-                                     {{#if data.types}}?iri a <{{data.types}}> . 
+                                      BIND(<{{iri}}> as ?iri)
+                                     {{#if data.types}}
+                                      ?iri a <{{data.types}}> . 
                                      {{else}}
                                        	?iri a ?resourceOntologyClass .
                                      {{/if}}

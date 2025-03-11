@@ -358,17 +358,38 @@
                                     <semantic-table 
                                         id='ontology-property-betweenClasses-table' 
                                         query="SELECT DISTINCT ?propertydomain ?scopeNote ?propertydomainstr ?selectedclass ?selectedclassrange ?superclassdomain ?superclassrange 
-                                                 (GROUP_CONCAT(DISTINCT ?higherproperty; separator=',') AS ?higher)
+                                                 (GROUP_CONCAT(DISTINCT ?hh; separator=',') AS ?higher)
 
                                                  WHERE {                                                                                                                  
-                                                   BIND(?subject as ?propertydomain)
-                                               		 OPTIONAL { ?subject rdfs:comment ?scopeNote . }
-
-                                                   BIND(?propertydomain AS ?propertydomainURI) 
-                                                   BIND(REPLACE(STR(?propertydomainURI), '.*/(.*$)', '$1') AS ?propertydomainstr) 
-
+                                                    BIND(?subject AS ?propertydomain)
+                                                    OPTIONAL { ?subject rdfs:comment ?scopeNote1. }
+                                                    OPTIONAL {?subject owl:inverseOf/rdfs:comment ?scopeNote2 } 
+                                                   
+                                                    BIND(REPLACE(STR(?subject), '(.*)/.*$', '$1') AS ?prefix)
+                                               			BIND(URI(IF(CONTAINS(STR(?subject), 'skos'), CONCAT(?prefix, '/core'), CONCAT(STR(?prefix), '/'))) AS ?propertyOntology)
+                                               			
+                                               			BIND((IF(STR(?subject) = STR(?higherproperty), "", ?higherproperty)) AS ?hh)
+                                               				
+   																									BIND (
+                                                      COALESCE(
+                                                        IF(CONTAINS(STR(?propertyOntology), 'http://iflastandards.info/ns/fr/frbr/frbroo/'), REPLACE(STR(?propertydomain), 'http://iflastandards.info/ns/fr/frbr/frbroo/', 'frbroo:'), 1/0),
+                                                        IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/'), REPLACE(STR(?propertydomain), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/', 'crmarchaeo:'), 1/0),
+                                                        IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/'), REPLACE(STR(?propertydomain), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/', 'crmba:'), 1/0),
+                                                        IF(CONTAINS(STR(?propertyOntology), 'http://www.ics.forth.gr/isl/CRMdig/'), REPLACE(STR(?propertydomain), 'http://www.ics.forth.gr/isl/CRMdig/', 'crmdig:'), 1/0),
+                                                        IF(CONTAINS(STR(?propertyOntology), 'http://www.ics.forth.gr/isl/CRMgeo/'), REPLACE(STR(?propertydomain), 'http://www.ics.forth.gr/isl/CRMgeo/', 'crmgeo:'), 1/0),
+                                                        IF(CONTAINS(STR(?propertyOntology), 'http://www.ics.forth.gr/isl/CRMinf/'), REPLACE(STR(?propertydomain), 'http://www.ics.forth.gr/isl/CRMinf/', 'crminf:'), 1/0),
+                                                        IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/influence/'), REPLACE(STR(?propertydomain), 'http://www.cidoc-crm.org/cidoc-crm/influence/', 'crminfluence:'), 1/0),                                                
+                                                        IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/CRMsci/'), REPLACE(STR(?propertydomain), 'http://www.cidoc-crm.org/cidoc-crm/CRMsci/', 'crmsci:'), 1/0),
+                                                        IF(CONTAINS(STR(?propertyOntology), 'http://www.researchspace.org/ontology/'), REPLACE(STR(?propertydomain), 'http://www.researchspace.org/ontology/', 'rso:'), 1/0),
+                                                        IF(CONTAINS(STR(?propertyOntology), 'http://www.w3.org/2004/02/skos/core#'), REPLACE(STR(?propertydomain), 'http://www.w3.org/2004/02/skos/core#', 'skos:'), 1/0),
+                                                        IF((CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/')), REPLACE(STR(?propertydomain), 'http://www.cidoc-crm.org/cidoc-crm/', 'crm:'), 1/0),
+                                                        ?propertydomain
+                                                      ) AS ?propertydomainstr
+                                                    ) 
+                                               			   #BIND(REPLACE(STR(?propertydomainURI), '.*/(.*$)', '$1') AS ?propertydomainstr)
+                                                    BIND(IF(BOUND(?scopeNote1), ?scopeNote1, IF(BOUND(?scopeNote2), ?scopeNote2, '')) AS ?scopeNote)
                                                  } 
-                                               GROUP BY ?propertydomain ?scopeNote ?propertydomainstr ?selectedclass ?selectedclassrange ?superclassdomain ?superclassrange ?higherproperty
+                                               GROUP BY ?propertydomain ?scopeNote ?propertydomainstr ?selectedclass ?selectedclassrange ?superclassdomain ?superclassrange
 
                                                "
 
@@ -377,9 +398,7 @@
                                           column-configuration='[
                                              {"displayName": "Property",  "cellTemplate": "{{> PropertyDomainCell}}"},
                                              {"displayName": "Property description",  "cellTemplate": "{{> PropertyNote}}"},
-                                             {"displayName": "Domain class", "variableName": "selectedclass", "cellTemplate": "{{> SelectedClassCell}}"},
-                                             {"displayName": "Range class", "variableName": "selectedclassrange", "cellTemplate": "{{> SelectedClassRangeCell}}"},
-                                             {"displayName": "inherited domain", "variableName": "superclassdomain", "cellTemplate": "{{> SuperClassDomainCell}}"},
+                                              {"displayName": "inherited domain", "variableName": "superclassdomain", "cellTemplate": "{{> SuperClassDomainCell}}"},
                                              {"displayName": "inherited range", "variableName": "superclassrange", "cellTemplate": "{{> SuperClassRangeCell}}"},
                                              {"displayName": "super properties", "variableName": "higher", "cellTemplate": "{{> HigherPropertiesCell}}"}
                                              ]'>
@@ -437,7 +456,36 @@
                                       <template id="HigherPropertiesCell">
                                         <div>
                                           {{#each (split higher.value ",")}}
-                                            <semantic-link iri="{{this}}"><mp-label iri="{{this}}"></mp-label></semantic-link><br/>
+                                          	<semantic-query query="select ?higherproperty ?higherpropertystr where {
+                                                                   BIND(<{{this}}> as ?higherproperty)
+                                                                   BIND(REPLACE(STR(?higherproperty), '(.*)/.*$', '$1') AS ?higherPropertyPrefix)
+                                               			BIND(URI(IF(CONTAINS(STR(?higherproperty), 'skos'), CONCAT(?higherPropertyPrefix, '/core'), CONCAT(STR(?higherPropertyPrefix), '/'))) AS ?higherPropertyOntology)
+   																								
+                                               			BIND (
+                                                      COALESCE(
+                                                        IF(CONTAINS(STR(?higherPropertyOntology), 'http://iflastandards.info/ns/fr/frbr/frbroo/'), REPLACE(STR(?higherproperty), 'http://iflastandards.info/ns/fr/frbr/frbroo/', 'frbroo:'), 1/0),
+                                                        IF(CONTAINS(STR(?higherPropertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/'), REPLACE(STR(?higherproperty), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/', 'crmarchaeo:'), 1/0),
+                                                        IF(CONTAINS(STR(?higherPropertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/'), REPLACE(STR(?higherproperty), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/', 'crmba:'), 1/0),
+                                                        IF(CONTAINS(STR(?higherPropertyOntology), 'http://www.ics.forth.gr/isl/CRMdig/'), REPLACE(STR(?higherproperty), 'http://www.ics.forth.gr/isl/CRMdig/', 'crmdig:'), 1/0),
+                                                        IF(CONTAINS(STR(?higherPropertyOntology), 'http://www.ics.forth.gr/isl/CRMgeo/'), REPLACE(STR(?higherproperty), 'http://www.ics.forth.gr/isl/CRMgeo/', 'crmgeo:'), 1/0),
+                                                        IF(CONTAINS(STR(?higherPropertyOntology), 'http://www.ics.forth.gr/isl/CRMinf/'), REPLACE(STR(?higherproperty), 'http://www.ics.forth.gr/isl/CRMinf/', 'crminf:'), 1/0),
+                                                        IF(CONTAINS(STR(?higherPropertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/influence/'), REPLACE(STR(?higherproperty), 'http://www.cidoc-crm.org/cidoc-crm/influence/', 'crminfluence:'), 1/0),                                                
+                                                        IF(CONTAINS(STR(?higherPropertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/CRMsci/'), REPLACE(STR(?higherproperty), 'http://www.cidoc-crm.org/cidoc-crm/CRMsci/', 'crmsci:'), 1/0),
+                                                        IF(CONTAINS(STR(?higherPropertyOntology), 'http://www.researchspace.org/ontology/'), REPLACE(STR(?higherproperty), 'http://www.researchspace.org/ontology/', 'rso:'), 1/0),
+                                                        IF(CONTAINS(STR(?higherPropertyOntology), 'http://www.w3.org/2004/02/skos/core#'), REPLACE(STR(?higherproperty), 'http://www.w3.org/2004/02/skos/core#', 'skos:'), 1/0),
+                                                        IF((CONTAINS(STR(?higherPropertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/')), REPLACE(STR(?higherproperty), 'http://www.cidoc-crm.org/cidoc-crm/', 'crm:'), 1/0),
+                                                        ?higherproperty
+                                                      ) AS ?higherpropertystr
+                                                    )      
+                                            
+                                                    }
+                                                                   limit 1" template='{{> fieldTemplate}}'>	
+                                              	<template id="fieldTemplate">
+                                                  
+                                           			<semantic-link iri='{{bindings.0.higherproperty.value}}'>{{bindings.0.higherpropertystr.value}}</semantic-link><br/> 
+                                              </template>
+                                             </semantic-query>
+                                          
                                           {{/each}}
                                         </div>
                                       </template>    

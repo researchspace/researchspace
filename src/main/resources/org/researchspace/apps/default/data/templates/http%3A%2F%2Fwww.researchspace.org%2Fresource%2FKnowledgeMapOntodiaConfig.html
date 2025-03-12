@@ -26,7 +26,6 @@ uses client-side templates:
   [[/if]]
 
   hide-panels='{{#if readonly}}true{{/if}}'
-
   diagram='{{#if diagram}}{{diagram}}{{/if}}'
   iri='{{#if iri}}{{iri}}{{/if}}'
   iris='{{#if iris}}{{iris}}{{/if}}'
@@ -36,31 +35,38 @@ uses client-side templates:
   left-panel-initially-open=false
   default-node-template="{{> default}}"
   additional-tree-item-template='{{> additionalTreeItemTemplate}}'
-
   provider-settings='{
     "classTreeQuery": "
       PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
       PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX owl: <http://www.w3.org/2002/07/owl#>
+			prefix crm: <http://www.cidoc-crm.org/cidoc-crm/>
+			prefix skos: <http://www.w3.org/2004/02/skos/core#>
 
-      SELECT ?class ?label ?parent WHERE {
-        GRAPH ?g {
-          ?ontology a owl:Ontology .
+      SELECT DISTINCT ?class ?label ?parent WHERE {
+       ?ontology a owl:Ontology .
+        
+        BIND(URI(CONCAT(STR(?ontology),\"context\")) as ?g)
+        GRAPH ?g {     
           ?class a ?type .
-          FILTER(?type in (rdfs:Class, owl:Class))
-          OPTIONAL {
-          	?class rdfs:label ?label.
-          }
+          FILTER(?type in (rdfs:Class, owl:Class))            	
 
-          OPTIONAL {
-          	?class rdfs:subClassOf ?p.
-         	  ?p a ?subClassType .
-            FILTER(?subClassType in (rdfs:Class, owl:Class)) 
-          }
-          BIND(IF(BOUND(?p), ?p, ?ontology) AS ?parent)
-        }
-      }
-    "
+          ?class rdfs:subClassOf ?parent.
+          ?class ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.    
+          FILTER (!CONTAINS(STR(?parent),\"opengis\"))
+          FILTER (!CONTAINS(STR(?parent),\"PC0_Typed_CRM_Property\"))
+        }  
+      }       
+      
+    ",
+    "classInfoQuery":"SELECT ?class ?label WHERE {
+        VALUES(?class) {${ids} }
+        OPTIONAL { ?class rdfs:comment ?label }
+        
+    	 
+  		}
+  	",
+		"dataLabelProperty":"((crm:P1_is_identified_by/crm:P190_has_symbolic_content)|(crm:P1_is_identified_by/rdfs:label)|rdfs:label|crm:P190_has_symbolic_content|skos:prefLabel)"
   }'>
 
 	<ontodia-field-configuration
@@ -74,7 +80,10 @@ uses client-side templates:
                             default-label-iri='http://www.researchspace.org/pattern/system/entity/primary_appellation'
                             default-image-iri='http://www.researchspace.org/pattern/system/entity/main_image'
                             default-subject-template='/{{{{raw}}}}{{FIELD_VALUE_LOCAL_NAME http://www.w3.org/1999/02/22-rdf-syntax-ns#type}}{{{{/raw}}}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
-                            force-datatype-fields='["http://www.researchspace.org/ontology/PX_has_video"]'
+                            force-datatype-fields='["http://www.researchspace.org/pattern/system/recording/file_identifier", 
+                            "http://www.researchspace.org/pattern/system/recording/file_url",
+                            "http://www.researchspace.org/pattern/system/image/file_identifier",
+                            "http://www.researchspace.org/pattern/system/document/file_identifier"]'
 
                             persistence='{
                                 "type": "sparql",
@@ -101,20 +110,20 @@ uses client-side templates:
                       }
                       UNION {
                         VALUES (?value){
-                              (<http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation>)
-                              (<http://www.researchspace.org/pattern/system/entity/primary_appellation>)
+                              (<http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation>)                           
                               (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>)
+                              (<http://www.researchspace.org/pattern/system/entity/primary_appellation>)
+                              (<http://www.researchspace.org/pattern/system/symbolic_object/has_symbolic_contentMin1Max1>)
                               (<http://www.researchspace.org/pattern/system/entity/main_image>)
+                              (<http://www.researchspace.org/ontology/PX_has_file_name>)
+                              (<http://www.researchspace.org/ontology/PX_has_media_type>)
                               (<http://www.ics.forth.gr/isl/CRMdig/L49_is_primary_area_of>)
-                              (<http://www.researchspace.org/pattern/system/image_annotation/boundingBox>)
-                              (<http://www.researchspace.org/pattern/system/image_annotation/value>)
-                              (<http://www.researchspace.org/pattern/system/image_annotation/viewport>)
-                              (<http://www.researchspace.org/pattern/system/image_annotation/area_of_image>)
-                              (<http://www.researchspace.org/pattern/system/entity/web_URL_embed_Max1>)}
+                               	 } 
 
                         BIND(?value as ?field)
                       }
                       FILTER (!CONTAINS(STR(?field),"http://www.ics.forth.gr/isl/CRMdig/L47_has_comment"))
+                      FILTER (!CONTAINS(STR(?field),"http://www.ics.forth.gr/isl/CRMdig/L59_has_serial_number"))
                       FILTER (!CONTAINS(STR(?field),"http://www.w3.org/2000/01/rdf-schema#label"))
                       FILTER (!CONTAINS(STR(?field),"http://www.ics.forth.gr/isl/CRMdig/L53_is_not_uniquely_identified_by"))
                       FILTER (!CONTAINS(STR(?field),"http://www.ics.forth.gr/isl/CRMdig/L55_has_inventory_no"))
@@ -122,11 +131,8 @@ uses client-side templates:
                       FILTER (!CONTAINS(STR(?field),"http://www.cidoc-crm.org/cidoc-crm/P3_has_note"))
                     }'>
     </rs-ontodia-metadata-from-fields>
+ 
     [[#> rsp:ontodia-entity-metadata ]][[/rsp:ontodia-entity-metadata]]
-
-		<ontodia-field-input-override for-field="label">
-        <semantic-form-text-input></semantic-form-text-input>
-    </ontodia-field-input-override>
 
     <ontodia-field-input-override for-field="http://www.researchspace.org/pattern/system/entity/main_image">
       <div class="dragAndDrop-input-container">
@@ -179,6 +185,92 @@ uses client-side templates:
                                             nested-form-template='{{{{raw}}}}{{> forms:Image_minimal nested=true editable=true mode="new"}}{{{{/raw}}}}'>
         </semantic-form-drag-and-drop-input>
       </div>
+    </ontodia-field-input-override>
+
+    <ontodia-field-input-override for-field="http://www.researchspace.org/pattern/system/image/file_identifier">
+    
+      <semantic-form-file-input   for='http://www.researchspace.org/pattern/system/image/file_identifier' 
+                                  label='Image file'
+                                  from-url-or-drop='true'
+                                  accept-pattern='image/jpg,image/jpeg,image/png,image/tiff,image/gif' 
+                                  storage='images'
+                                  temp-storage='tmp'
+                                  name-predicate-iri='http://www.researchspace.org/ontology/PX_has_file_name'
+                                  media-type-predicate-iri='http://www.researchspace.org/ontology/PX_has_media_type'
+                                  resource-query='PREFIX rs: <http://www.researchspace.org/ontology/>
+                                                  CONSTRUCT {
+                                                      ?__resourceIri__ a rs:EX_File.
+                                                      ?__resourceIri__ rs:PX_has_file_name ?__fileName__.
+                                                      ?__resourceIri__ rs:PX_has_media_type ?__mediaType__.                                                	
+                                                  } WHERE {}'
+                                  generate-iri-query='SELECT ?resourceIri {
+                                                          BIND(IRI(CONCAT(STR(Default:), "EX_File/", ?__fileName__)) AS ?resourceIri) .
+                                                      }'
+      >
+          <div className='placeholder-item'>
+              <rs-icon icon-type='rounded' icon-name='upload' class='upload_icon' symbol='true'></rs-icon>
+              <p>Drag image <span>or </span><span class='text-link'>click to upload</span></p>
+              <div>Supported image format: .jpg .jpeg .png .tiff .gif</div>
+          </div>
+      </semantic-form-file-input>
+    </ontodia-field-input-override>
+    
+    <ontodia-field-input-override for-field="http://www.researchspace.org/pattern/system/document/file_identifier">
+      <semantic-form-file-input for='http://www.researchspace.org/pattern/system/document/file_identifier' 
+                                label='Document file'
+                                accept-pattern='application/*,text/*' 
+                                storage='images'
+                                temp-storage='tmp'
+                                name-predicate-iri='http://www.researchspace.org/ontology/PX_has_file_name'
+                                media-type-predicate-iri='http://www.researchspace.org/ontology/PX_has_media_type'
+                                resource-query='PREFIX rs: <http://www.researchspace.org/ontology/>
+                                                CONSTRUCT {
+                                                  ?__resourceIri__ a rs:EX_File.
+                                                  ?__resourceIri__ rs:PX_has_file_name ?__fileName__.
+                                                  ?__resourceIri__ rs:PX_has_media_type ?__mediaType__.
+                                                } WHERE {}'
+                                generate-iri-query='SELECT ?resourceIri {
+                                                      BIND(IRI(CONCAT(STR(Default:), "EX_File/", ?__fileName__)) AS ?resourceIri) .
+                                                    }'
+      >
+          <div className='placeholder-item'>
+            <rs-icon icon-type='rounded' icon-name='upload' class='upload_icon' symbol='true'></rs-icon>
+            <p>Drag file or <span>or </span><span class='text-link'>click to upload</span></p>
+            <div>Supported document format: .pdf .zip .doc .xlsx .ppt .pptx .txt .csv .html .json .ics .rdf .rtf .xml</div>
+          </div>
+      </semantic-form-file-input>
+    </ontodia-field-input-override>
+
+    <ontodia-field-input-override for-field="http://www.researchspace.org/pattern/system/recording/file_url">
+    	<semantic-form-text-input for="http://www.researchspace.org/pattern/system/recording/file_url"></semantic-form-text-input>
+    </ontodia-field-input-override>
+    
+    <ontodia-field-input-override for-field="http://www.researchspace.org/pattern/system/recording/file_identifier">
+      <semantic-form-file-input   for='http://www.researchspace.org/pattern/system/recording/file_identifier' 
+                                  label='File'
+                                  from-url-or-drop='false'
+                                  accept-pattern='video/*,audio/*' 
+                                  storage='images'
+                                  temp-storage='tmp'
+                                  name-predicate-iri='http://www.researchspace.org/ontology/PX_has_file_name'
+                                  media-type-predicate-iri='http://www.researchspace.org/ontology/PX_has_media_type'
+                                  resource-query='PREFIX rs: <http://www.researchspace.org/ontology/>
+                                                  PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+                                                  CONSTRUCT {
+                                                      ?__resourceIri__ a rs:EX_File.
+                                                    #  ?__resourceIri__ crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/video> .
+                                                      ?__resourceIri__ rs:PX_has_file_name ?__fileName__.
+                                                      ?__resourceIri__ rs:PX_has_media_type ?__mediaType__.
+                                                  } WHERE {}'
+                                  generate-iri-query='SELECT ?resourceIri {
+                                                          BIND(IRI(CONCAT(STR(Default:), "EX_File/", ?__fileName__)) AS ?resourceIri) .
+                                                      }'
+      >
+        <div className='placeholder-item'>
+          <rs-icon icon-type='rounded' icon-name='upload' class='upload_icon' symbol='true'></rs-icon>
+          <div>Drag file <span>or </span><span class='text-link'>click to upload</span></div>
+        </div>
+      </semantic-form-file-input>
     </ontodia-field-input-override>
 
   </ontodia-field-configuration>

@@ -306,7 +306,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
               <ResourceLinkContainer 
                 uri={ConfigHolder.getDashboard().value} 
                 urlqueryparam-resource-iri="http://www.researchspace.org/resource/OntologyElementsSearch"
-                urlqueryparam-view="ontology-page-view"
+                urlqueryparam-view="admin"
                 urlqueryparam-open-as-drag-and-drop="true"
                 urlqueryparam-custom-label="Ontology Elements Descriptions" 
                 draggable={false}
@@ -319,7 +319,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
               <ResourceLinkContainer 
                 uri={ConfigHolder.getDashboard().value} 
                 urlqueryparam-resource-iri="http://www.researchspace.org/resource/OntologyPropertiesSearch"
-                urlqueryparam-view="ontology-page-view"
+                urlqueryparam-view="admin"
                 urlqueryparam-open-as-drag-and-drop="true"
                 urlqueryparam-custom-label="Ontology Properties by Class" 
                 draggable={false}
@@ -332,7 +332,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
               <ResourceLinkContainer 
                 uri={ConfigHolder.getDashboard().value} 
                 urlqueryparam-resource-iri="http://www.researchspace.org/resource/OntologyPropertiesBetweenClassesSearch"
-                urlqueryparam-view="ontology-page-view"
+                urlqueryparam-view="admin"
                 urlqueryparam-open-as-drag-and-drop="true"
                 urlqueryparam-custom-label="Ontology Properties between Classes" 
                 draggable={false}

@@ -40,16 +40,15 @@
       <div>Ontologies</div>
     </semantic-link-container>
   </li>
-  <li class="active">Search ontology properties</li>
+  <li class="active">Ontology Properties by class</li>
 </ol> --]]
 
 <div class="page__grid-container application-page-container">
   <div class='page__content-container'>
 
-    [[> rsp:adminPageHeader title="Search ontology properties"]]
+    [[> rsp:adminPageHeader title="Ontology Properties by class"]]
 
-    <h5 style="margin-bottom: 5px;">Select ontology</h5> 
-
+    <div style="margin-top: 20px; margin-bottom: 5px; font-weight: 600;" class="text-font-size__base">Ontology</div> 
     <semantic-tree-input  id='{{viewId}}-ontology-selection'
                           close-dropdown-on-selection='false'
                           open-dropdown-on-focus='true'
@@ -133,40 +132,15 @@
                                                                                       FILTER (lang(?label) = \"en\")"
                                                                     }
                                                   }]'
-                                          domain='<http://www.w3.org/2002/07/owl#ObjectProperty>'
-
-                                          >
-
-                        <semantic-query query='SELECT ?ontologyLabel WHERE {
-                                                  ?selectedOntology rdfs:label ?ontologyLabel .
-                                                  FILTER (?selectedOntology in ({{selectedOntology}}))
-                                                }'
-                                        template='{{> template}}'
-                                        no-result-template='{{> noResults}}'
-                        >
-                                  
-                            <template id="template">
-                              [[!--<div>  {{bindings.0.ontologyLabel.value}} 
-                                {{selectedOntology}}
-                                <h5 style="margin-bottom: 5px; margin-top: 15px;">Select class</h5>
-                                {{bindings.0.ontologyLabel.value}}
-                              </div>--]]
-                            </template>
-
-                            <template id='noResults'>
-                              <div>
-                                <h5 style="margin-bottom: 5px; margin-top: 15px;">Select ontology class</h5>
-                              </div>
-                            </template>
-                        </semantic-query> 
+                                          domain='<http://www.w3.org/2002/07/owl#ObjectProperty>'>
                         
-                        <h5 style="margin-bottom: 5px; margin-top: 15px;">Select ontology class</h5>
 
-                        <div class="btn-inline-container" style="align-items: flex-start;">
+                        <div class="btn-inline-container" style="align-items: end;">
                           <div style="flex: 1;">                               
                             <semantic-form-tree-picker-input for="ontologyclass" 
-                                                              render-header="false" 
-                                                              placeholder='Select class'
+                                                              label="Ontology class" 
+                                                              placeholder='Select ontology class'
+                                                              open-resource-on-click='false'
                                                               readonly-resource="true"
                                                               close-dropdown-on-selection='true'
                                                               tree-patterns='{
@@ -345,9 +319,9 @@
                                               options='{"showFilter":true, "resultsPerPage":20}' 
                                               no-result-template='{{> noResults}}'
                                               column-configuration='[
-                                                                      {"displayName": "Property URI", "variableName": "propertyOntologyURI", "cellTemplate": "{{> propertyURI}}" },
+                                                                      {"displayName": "Property", "variableName": "propertyOntologyURI", "cellTemplate": "{{> propertyURI}}" },
                                                                       {"displayName": "Range class",  "cellTemplate": "{{> rangeClass}}"},
-                                                                      {"displayName": "Description/Examples", "variableName": "description", "cellTemplate": "{{> description}}"},
+                                                                      {"displayName": "Property description", "variableName": "description", "cellTemplate": "{{> description}}"},
                                                                       {"displayName": "Property inherited from class", "variableName": "propertyFromClass"}
                                                                       
                                                                     ]'  

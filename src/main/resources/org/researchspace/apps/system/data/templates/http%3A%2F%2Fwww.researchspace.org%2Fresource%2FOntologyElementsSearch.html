@@ -21,13 +21,13 @@
       <div>Ontologies</div>
     </semantic-link-container>
   </li>
-  <li class="active">Search ontology elements</li>
+  <li class="active">Ontology Elements descriptions</li>
 </ol> --]]
 
 <div class="page__grid-container application-page-container">
   <div class='page__content-container'>
 
-    [[> rsp:adminPageHeader title="Search ontology elements"]]
+    [[> rsp:adminPageHeader title="Ontology Elements descriptions"]]
     <semantic-search selector-mode="dropdown" categories='{
           "<http://www.w3.org/2001/XMLSchema#Decimal>": [{
             "kind": "numeric-range",
@@ -45,7 +45,7 @@
           }]
         }'>
       <semantic-search-query-keyword domain='<http://www.w3.org/2000/01/rdf-schema#Resource>'
-        placeholder='Search for ontology elements by label. Type at least three characters to start searching.'
+        placeholder='Search ontology class or property (minimum 3 characters)'
         query='
               SELECT ?subject WHERE { 
                 GRAPH ?g {
@@ -86,15 +86,12 @@
         <semantic-search-result-holder>
           <div data-flex-self="md-full">
             <semantic-search-result>
-              
-                <mp-sparql-result-counts id='result-count' 
-                                          query="SELECT DISTINCT ?subject {}" 
-                                          template='{{#if hasLimit}} 
-                                          <bs-alert bs-style="warning">Showing {{numberOfResults}} of {{totalNumberOfResults}} matches. <strong>Refine your search.</strong> </bs-alert>
-                                          {{else}} <div class="color-action" style="font-weight: 600; margin: 10px 0;"> Found {{numberOfResults}} matches. </div>{{/if}}'>
-                </mp-sparql-result-counts>
-              
-              
+              <mp-sparql-result-counts id='result-count' 
+                                        query="SELECT DISTINCT ?subject {}" 
+                                        template='{{#if hasLimit}} 
+                                        <bs-alert bs-style="warning">Showing {{numberOfResults}} of {{totalNumberOfResults}} matches. <strong>Refine your search.</strong> </bs-alert>
+                                        {{else}} <div class="color-action" style="font-weight: 600; margin: 10px 0;"> Found {{numberOfResults}} matches. </div>{{/if}}'>
+              </mp-sparql-result-counts>
             </semantic-search-result>
             <semantic-search-result>
               <semantic-table id='grid-result' query='SELECT DISTINCT ?subject ?description WHERE {
@@ -106,24 +103,47 @@
                 <template id="tuple-template">
                   <div style="width:100%;">
                     <mp-panel>
+
                       <mp-panel-header>
-                        <div>
-                          <h4 style="margin-top: 0;">
-                            <semantic-link iri="{{subject.value}}" class="text-underline"></semantic-link>
-                          </h4>
-                          <div style="font-size: 11px;">{{subject.value}}</div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: space-between;">
+                          <div>
+                            <h4 style="margin-top: 0;">
+                              <mp-label iri='{{subject.value}}'></mp-label>
+                            </h4>
+                            <div style="font-size: 11px;">{{subject.value}}</div>
+                          </div>
+
+                          <semantic-query  query='SELECT DISTINCT ?ontologyIri WHERE { 
+                                                    GRAPH ?g {
+                                                      ?ontologyIri a owl:Ontology .
+                                                      <{{subject.value}}> a ?class . 
+                                                    }
+                                                  }'
+                                            template='{{> template}}'>
+                          
+                            <template id='template'>
+                              <mp-label iri="{{bindings.0.ontologyIri.value}}" class="badge"></mp-label>
+                            </template>
+                          
+                          </semantic-query>
                         </div>
                       </mp-panel-header>
+
                       <mp-panel-body>
                         <div class="text-font-size__base text-lineHeight-1-3">
-                          <p><b>Types: </b>
-                            <semantic-query query='SELECT ?type WHERE { <{{subject.value}}> a ?type}'
-                                            style='display:inline;' 
-                                            class="text-underline"
-                                            no-result-template='<span>-</span>'>
-                            </semantic-query>
-                          </p>
-                          <p>
+                          <p><b>Types:</b></p>
+                          <semantic-query query='SELECT ?type WHERE { <{{subject.value}}> a ?type}'
+                                          no-result-template='<span>-</span>'
+                                          template='{{> template}}'
+                                          >
+                            <template id='template'>
+                              <div>
+                                {{#each bindings}}<div>{{type.value}}</div>{{/each}}
+                              </div>
+                            </template>
+                          </semantic-query>
+                          <hr>
+                          <p style="text-align: justify;">
                             {{#if description.value}}
                               {{description.value}}
                             {{else}}

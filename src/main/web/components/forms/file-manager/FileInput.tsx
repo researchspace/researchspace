@@ -336,9 +336,60 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
     );
   }
 
+  /**
+    * Checks if the given file name ends with a file extension.
+    * Returns true if a dot is followed by one or more alphanumeric characters at the end.
+    */
+  endsWithFileExtension(fileName: string): boolean {
+    return /\.[a-zA-Z0-9]+$/.test(fileName);
+  }
+
+  /**
+  * Given a file name and a blob MIME type, this function returns a new file name.
+  * If the file name already has an extension, it is returned unchanged.
+  * Otherwise, an extension (determined from the blob type) is appended.
+  *
+  * @param fileName - The original file name, possibly without an extension.
+  * @param mediaType - The MIME type (e.g., "image/jpeg", "application/pdf").
+  * @returns The file name with an extension appended if it was missing.
+  */
+  addExtensionIfMissing(fileName: string, mediaType: string): string {
+    // If the file name already ends with an extension, return it unchanged.
+    if (this.endsWithFileExtension(fileName)) {
+      return fileName;
+    }
+
+    // Define a mapping from MIME types to preferred file extensions.
+    const mapping: { [key: string]: string } = {
+      "image/jpeg": "jpg",
+      "image/png": "png",
+      "image/gif": "gif",
+      "text/plain": "txt",
+      "application/pdf": "pdf",
+      // Add additional mappings as needed.
+    };
+    // Try to get the extension from our mapping.
+    let ext = mapping[mediaType];
+
+    // If no mapping exists but the MIME type has a slash, use the part after the slash.
+    if (!ext && mediaType.includes('/')) {
+      ext = mediaType.split('/')[1];
+    }
+
+    // Append the extension if determined; otherwise, return the original file name.
+    return ext ? `${fileName}.${ext}` : fileName;
+  }            
+
   fetchFileFromUrl = () => {
+    /** 
+     * Using AllOrigins Raw Endpoint:
+     *  This solution uses AllOrigins’ raw endpoint (/raw) which is designed to return the fetched content directly. 
+     *  By appending the encoded target URL to the proxy URL, the request is routed through AllOrigins
+     */
+    const proxyUrl = 'https://api.allorigins.win/raw?url=';
+
     if (!_.isEmpty(this.urlInputRef?.value)) {
-      fetch(this.urlInputRef.value)
+      fetch(proxyUrl + encodeURIComponent(this.urlInputRef.value))
         .then((response) => {
           if (!response.ok) {
             this.setState({
@@ -351,8 +402,11 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
           return response.blob();
         })
         .then(
-          blob => {
-            this.onDropAccepted([new File([blob], this.urlInputRef.value, {type: blob.type})]);
+          blob => { 
+            const tmpFileName = this.endsWithFileExtension(this.urlInputRef.value)?
+                                this.urlInputRef.value:this.addExtensionIfMissing(this.urlInputRef.value,blob.type);
+ 
+            this.onDropAccepted([new File([blob], tmpFileName, {type: blob.type})]);
           }
         ).catch((e: Error) => {
           this.setState({
@@ -419,6 +473,8 @@ class FileHandler extends AtomicValueHandler {
     this.fileManager = fileManager;
   }
 
+ 
+
   finalize(value: EmptyValue | AtomicValue, owner: EmptyValue | CompositeValue): Kefir.Property<FieldValue> {
     if (value.type === EmptyValue.type) {
       return Kefir.constant(value);
@@ -430,7 +486,7 @@ class FileHandler extends AtomicValueHandler {
       return this.fileManager
         .getFileResource(resourceIri)
         .flatMap((resource) => {
-          return this.fileManager
+            return this.fileManager
             .createResourceFromTemporaryFile({
               fileName: resource.fileName,
               storage: this.baseInputProps.storage,

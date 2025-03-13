@@ -81,6 +81,7 @@ import {
   SemanticMapRequestControlsRegistration,
   SemanticMapClearSelectedFeature,
 } from './SemanticMapEvents';
+import { SemanticMapControlsZoomToFeature } from './SemanticMapControlsEvents';
 import { Dictionary } from 'platform/api/sparql/SparqlClient';
 import QueryConstantParameter from '../search/web-components/QueryConstant';
 import { Cancellation } from 'platform/api/async';
@@ -470,7 +471,82 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         })
       )
       .onValue(this.handleHighlightFeatures);
+      
+    // Listen for zoom to feature event
+    this.cancelation
+      .map(
+        listen({
+          eventType: SemanticMapControlsZoomToFeature,
+          target: this.props.id,
+        })
+      )
+      .onValue(this.handleZoomToFeature);
   }
+
+  /**
+   * Handler for the zoom to feature event
+   * Zooms to the feature specified in the event data
+   */
+  private handleZoomToFeature = (event: Event<any>) => {
+    console.log('Received zoom to feature event:', event);
+    console.log('Event data type:', typeof event.data);
+    console.log('Event data value:', event.data);
+    
+    if (!event.data || !this.map) {
+      console.warn('No feature provided or map not initialized');
+      return;
+    }
+    
+    // The event data should be a feature or a feature ID
+    if (event.data instanceof Feature) {
+      console.log('Data is a Feature object, zooming directly');
+      // If it's a feature object, zoom to it directly
+      this.zoomToFeature(event.data);
+    } else if (typeof event.data === 'string') {
+      console.log('Data is a string, treating as feature ID:', event.data);
+      // If it's a feature ID (subject IRI), find the feature and zoom to it
+      const featureId = event.data;
+      const vectorLayers = this.getVectorLayersFromMap();
+      console.log('Vector layers found:', vectorLayers.length);
+      
+      // Look for the feature in all vector layers
+      let foundFeature = null;
+      vectorLayers.forEach((vectorLayer, index) => {
+        console.log(`Searching in vector layer ${index}`);
+        const source = vectorLayer.getSource();
+        let features;
+        
+        if (source instanceof Cluster) {
+          features = source.getSource().getFeatures();
+          console.log('Source is a Cluster, features count:', features.length);
+        } else {
+          features = source.getFeatures();
+          console.log('Source is not a Cluster, features count:', features.length);
+        }
+        
+        // Find the feature with the matching ID
+        features.forEach(feature => {
+          const subject = feature.get('subject');
+          console.log('Feature subject:', subject);
+          
+          if (subject && subject.value === featureId) {
+            console.log('Found matching feature!', feature);
+            foundFeature = feature;
+          }
+        });
+      });
+      
+      if (foundFeature) {
+        console.log('Zooming to found feature');
+        this.zoomToFeature(foundFeature);
+      } else {
+        console.warn(`Feature with ID ${featureId} not found`);
+      }
+    } else {
+      console.warn('Invalid feature data provided, type:', typeof event.data);
+      console.warn('Data value:', event.data);
+    }
+  };
 
   /** REACT COMPONENT FUNCTIONS **/
 

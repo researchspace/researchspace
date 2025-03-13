@@ -58,7 +58,8 @@ import { extend, buffer, getWidth, containsExtent } from 'ol/extent';
 import { createEmpty } from 'ol/extent';
 import { Coordinate } from 'ol/coordinate';
 import OSM from 'ol/source/OSM';
-import { getRenderPixel } from 'ol/render';
+import { getRenderPixel, getVectorContext } from 'ol/render';
+import { easeOut } from 'ol/easing';
 import AnimatedCluster from 'ol-ext/layer/AnimatedCluster';
 import XYZ from 'ol/source/XYZ';
 
@@ -1240,7 +1241,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   }
 
   /**
-   * Zooms to a feature on the map
+   * Zooms to a feature on the map with a pulsing animation effect
    * @param feature The feature to zoom to
    */
   private zoomToFeature(feature: Feature) {
@@ -1264,6 +1265,9 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     const resolution = view.getResolutionForExtent(extent, this.map.getSize());
     const featureZoom = view.getZoomForResolution(resolution);
 
+    // Start the flash animation
+    this.flashFeature(feature);
+
     // Only zoom if the current zoom is less than what would be calculated
     // (i.e., don't "dezoom" if we're already zoomed in more)
     if (currentZoom && featureZoom && currentZoom < featureZoom) {
@@ -1284,6 +1288,92 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         duration: 500,
       });
     }
+  }
+
+  /**
+   * Creates a pulsing animation effect around a feature
+   * @param feature The feature to animate
+   */
+  private flashFeature(feature: Feature) {
+    // Find a suitable layer to use for the animation
+    const vectorLayers = this.getVectorLayersFromMap();
+    if (!vectorLayers.length) return;
+    
+    // Use the first vector layer for the animation
+    const animationLayer = vectorLayers[0];
+    
+    // Clone the geometry to avoid modifying the original
+    const flashGeom = feature.getGeometry().clone();
+    
+    // Animation duration in milliseconds
+    const duration = 1500;
+    
+    // Animation start time
+    const start = Date.now();
+    
+    // Register a postrender listener for the animation
+    const listenerKey = animationLayer.on('postrender', (event) => {
+      const frameState = event.frameState;
+      const elapsed = frameState.time - start;
+      
+      // Stop the animation when duration is reached
+      if (elapsed >= duration) {
+        unByKey(listenerKey);
+        return;
+      }
+      
+      // Get the vector context for drawing
+      const vectorContext = getVectorContext(event);
+      
+      // Calculate the animation progress ratio
+      const elapsedRatio = elapsed / duration;
+      
+      // Use easeOut for a smooth animation curve
+      const easeOutPct = easeOut(elapsedRatio);
+      
+      // Determine the appropriate style based on geometry type
+      let style: Style;
+      
+      if (flashGeom instanceof Point || flashGeom instanceof MultiPoint) {
+        // For point geometries, animate the radius and stroke
+        const radius = easeOutPct * 15 + 5;
+        const opacity = easeOut(1 - elapsedRatio);
+        
+        style = new Style({
+          image: new CircleStyle({
+            radius: radius,
+            stroke: new Stroke({
+              color: `rgba(255, 255, 255, ${opacity})`,
+              width: 2 + opacity * 2,
+            }),
+          }),
+        });
+      } else {
+        // For line and polygon geometries, animate the stroke
+        const opacity = easeOut(1 - elapsedRatio);
+        const width = 1 + easeOutPct * 4;
+        
+        style = new Style({
+          stroke: new Stroke({
+            color: `rgba(255, 255, 255, ${opacity})`,
+          }),
+          // For polygons, add a subtle fill
+          fill: flashGeom instanceof Polygon || flashGeom instanceof MultiPolygon ? 
+            new Fill({
+              color: `rgba(255, 255, 255, ${opacity * 0.2})`,
+            }) : undefined,
+        });
+      }
+      
+      // Apply the style to the vector context
+      vectorContext.setStyle(style);
+      
+      // Draw the geometry
+      vectorContext.drawGeometry(flashGeom);
+      
+      // Request a render on the next animation frame
+      this.map.render();
+    });
   }
 
   /**

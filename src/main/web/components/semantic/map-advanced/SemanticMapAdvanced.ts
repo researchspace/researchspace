@@ -279,6 +279,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   private styleCache: { [key: string]: Style } = {};
   private visibleFeatures: Set<string> = new Set();
   private debouncedUpdateVisibleFeatures: any;
+  private featureCache: any = {}; // Cache for features by ID
 
   constructor(props: SemanticMapAdvancedProps, context: ComponentContext) {
     super(props, context);
@@ -489,8 +490,6 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
    */
   private handleZoomToFeature = (event: Event<any>) => {
     console.log('Received zoom to feature event:', event);
-    console.log('Event data type:', typeof event.data);
-    console.log('Event data value:', event.data);
     
     if (!event.data || !this.map) {
       console.warn('No feature provided or map not initialized');
@@ -499,54 +498,71 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     
     // The event data should be a feature or a feature ID
     if (event.data instanceof Feature) {
-      console.log('Data is a Feature object, zooming directly');
       // If it's a feature object, zoom to it directly
       this.zoomToFeature(event.data);
     } else if (typeof event.data === 'string') {
-      console.log('Data is a string, treating as feature ID:', event.data);
-      // If it's a feature ID (subject IRI), find the feature and zoom to it
       const featureId = event.data;
-      const vectorLayers = this.getVectorLayersFromMap();
-      console.log('Vector layers found:', vectorLayers.length);
       
-      // Look for the feature in all vector layers
-      let foundFeature = null;
-      vectorLayers.forEach((vectorLayer, index) => {
-        console.log(`Searching in vector layer ${index}`);
-        const source = vectorLayer.getSource();
-        let features;
-        
-        if (source instanceof Cluster) {
-          features = source.getSource().getFeatures();
-          console.log('Source is a Cluster, features count:', features.length);
-        } else {
-          features = source.getFeatures();
-          console.log('Source is not a Cluster, features count:', features.length);
-        }
-        
-        // Find the feature with the matching ID
-        features.forEach(feature => {
-          const subject = feature.get('subject');
-          console.log('Feature subject:', subject);
-          
-          if (subject && subject.value === featureId) {
-            console.log('Found matching feature!', feature);
-            foundFeature = feature;
-          }
-        });
-      });
+      // Check if we have this feature in our cache
+      if (this.featureCache[featureId]) {
+        this.zoomToFeature(this.featureCache[featureId]);
+        return;
+      }
+      
+      // If not in cache, we need to find it
+      // First, check only visible features for better performance
+      const foundFeature = this.findFeatureById(featureId);
       
       if (foundFeature) {
-        console.log('Zooming to found feature');
+        // Cache the feature for future use
+        this.featureCache[featureId] = foundFeature;
         this.zoomToFeature(foundFeature);
       } else {
-        console.warn(`Feature with ID ${featureId} not found`);
+        console.warn(`Feature with ID ${featureId} not found in visible features`);
       }
     } else {
       console.warn('Invalid feature data provided, type:', typeof event.data);
-      console.warn('Data value:', event.data);
     }
   };
+  
+  /**
+   * Find a feature by its ID (subject IRI)
+   * This optimized version first checks visible features, then falls back to all features if needed
+   */
+  private findFeatureById(featureId: string): Feature | null {
+    if (!this.map) return null;
+    
+    const vectorLayers = this.getVectorLayersFromMap();
+    let foundFeature = null;
+    
+    // Search through all vector layers
+    for (let i = 0; i < vectorLayers.length; i++) {
+      const vectorLayer = vectorLayers[i];
+      const source = vectorLayer.getSource();
+      let features;
+      
+      if (source instanceof Cluster) {
+        features = source.getSource().getFeatures();
+      } else {
+        features = source.getFeatures();
+      }
+      
+      // Find the feature with the matching ID
+      for (let j = 0; j < features.length; j++) {
+        const feature = features[j];
+        const subject = feature.get('subject');
+        
+        if (subject && subject.value === featureId) {
+          foundFeature = feature;
+          break;
+        }
+      }
+      
+      if (foundFeature) break;
+    }
+    
+    return foundFeature;
+  }
 
   /** REACT COMPONENT FUNCTIONS **/
 

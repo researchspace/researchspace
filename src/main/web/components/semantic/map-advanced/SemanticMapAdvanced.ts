@@ -1251,41 +1251,34 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     const geometry = feature.getGeometry();
     if (!geometry) return;
 
-    // Create an extent from the geometry
-    const extent = geometry.getExtent();
-
-    // Add some padding around the extent
-    const padding = [50, 50, 50, 50]; // [top, right, bottom, left] padding in pixels
-
-    // Get the current zoom level
-    const currentZoom = this.map.getView().getZoom();
-
-    // Calculate what the zoom level would be for the feature extent
-    const view = this.map.getView();
-    const resolution = view.getResolutionForExtent(extent, this.map.getSize());
-    const featureZoom = view.getZoomForResolution(resolution);
-
     // Start the flash animation
     this.flashFeature(feature);
 
-    // Only zoom if the current zoom is less than what would be calculated
-    // (i.e., don't "dezoom" if we're already zoomed in more)
-    if (currentZoom && featureZoom && currentZoom < featureZoom) {
+    // Check if this is a point feature
+    const isPoint = geometry instanceof Point || geometry instanceof MultiPoint;
+    
+    if (isPoint) {
+      // For point features, use a fixed higher zoom level
+      const coordinates = (geometry as Point).getCoordinates();
+      
+      // Animate to the point with a higher zoom level
+      this.map.getView().animate({
+        center: coordinates,
+        zoom: 18, // Higher zoom for points
+        duration: 500, // Animation duration in milliseconds
+      });
+    } else {
+      // For other geometries, fit the extent with smaller padding
+      const extent = geometry.getExtent();
+      
+      // Use smaller padding for a closer zoom
+      const padding = [20, 20, 20, 20]; // [top, right, bottom, left] padding in pixels
+      
       // Animate to the feature with a smooth transition and zoom
       this.map.getView().fit(extent, {
         padding: padding,
         duration: 500, // Animation duration in milliseconds
-        maxZoom: 18, // Limit maximum zoom level
-      });
-    } else {
-      // Just center on the feature without changing zoom
-      const center = [
-        (extent[0] + extent[2]) / 2, // X center
-        (extent[1] + extent[3]) / 2, // Y center
-      ];
-      this.map.getView().animate({
-        center: center,
-        duration: 500,
+        maxZoom: 19, // Higher maximum zoom level
       });
     }
   }

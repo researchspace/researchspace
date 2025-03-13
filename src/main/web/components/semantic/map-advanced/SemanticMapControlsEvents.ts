@@ -29,6 +29,7 @@ export interface SemanticMapControlsEventData {
   'SemanticMapControls.ToggleMeasurement': string;
   'SemanticMapControls.HandleGeneralizedData': GeneralizedEventData;
   'SemanticMapControls.HighlightFeatures': string;
+  'SemanticMapControls.ZoomToFeature': string;
 }
 
 const event: EventMaker<SemanticMapControlsEventData> = EventMaker;

@@ -3,8 +3,10 @@ package org.researchspace.services.info;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
@@ -26,13 +28,15 @@ import org.researchspace.services.storage.api.StoragePath;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
 public class ResourceInfoService implements PlatformCache {
 
-    private static final int MAX_RECURSION_DEPTH = 5000;
+    private static final Logger logger = LogManager.getLogger(ResourceInfoService.class);
+
+
+    private static final int MAX_RECURSION_DEPTH = 10000;
     public static final StoragePath INFO_PROFILES = StoragePath.parse("config/resource-info-profiles");
 
     private final FieldDefinitionManager fieldDefinitionManager;
@@ -147,28 +151,47 @@ public class ResourceInfoService implements PlatformCache {
     }
 
     public String getResourceInfo(IRI iri, String profileName, String repositoryId, String preferredLanguage) {
-//        long startTime = System.currentTimeMillis();
-//        System.out.println("ResourceInfo for: " + iri.stringValue());
+        if (logger.isTraceEnabled()) {
+            logger.trace("getResourceInfo called with IRI: {}, profileName: {}, repositoryId: {}, preferredLanguage: {}", 
+                        iri.stringValue(), profileName, repositoryId, preferredLanguage);
+        }
         
         try {
             ResourceInfoProfile profile = this.profiles.get(profileName);
+            if (profile == null) {
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Profile not found: {}", profileName);
+                    logger.trace("Available profiles: {}", this.profiles.keySet());
+                }
+                return "";
+            }
+            
+            if (logger.isTraceEnabled()) {
+                logger.trace("Profile subject: {}", profile.getSubject());
+                logger.trace("Profile has provenance: {}", (profile.getProvenance() != null));
+            }
+            
             Repository repo = this.repositoryManager.getRepository(repositoryId);
     
             Context initialContext = new Context();
             initialContext.addVariable(profile.getSubject(), iri);
+            if (logger.isTraceEnabled()) {
+                logger.trace("Initial context: {}", initialContext);
+            }
     
             List<BindingSet> allBindings = processProfile(profile, repo, preferredLanguage, initialContext);
     
             String result = buildFinalJson(iri, allBindings, repo, preferredLanguage);
             
   //          long executionTime = System.currentTimeMillis() - startTime;
-  //          System.out.println("ResourceInfo for: " + iri.stringValue() +" executed in " + executionTime + "ms for IRI: " + iri);
+  //          logger.trace("ResourceInfo for: {} executed in {}ms for IRI: {}", iri.stringValue(), executionTime, iri);
             
             return result;
         } catch (Exception e) {
     //        long executionTime = System.currentTimeMillis() - startTime;
-    //        System.out.println("getResourceInfo failed in " + executionTime + "ms for IRI: " + iri + ": " + e.getMessage());
-                System.out.println("getResourceInfo failed in for IRI: " + iri + ": " + e.getMessage());
+    //        logger.trace("getResourceInfo failed in {}ms for IRI: {}: {}", executionTime, iri, e.getMessage());
+                e.printStackTrace();
+                logger.trace("getResourceInfo failed for IRI: {}: {}", iri, e.getMessage());
                 return "";
         }
     }
@@ -176,23 +199,61 @@ public class ResourceInfoService implements PlatformCache {
 
     private List<BindingSet> processProfile(ResourceInfoProfile profile, Repository repo, String preferredLanguage,
             Context initialContext) {
+        if (logger.isTraceEnabled()) {
+            logger.trace("Processing profile with subject: {}", profile.getSubject());
+            logger.trace("Profile fields count: {}", (profile.getFields() != null ? profile.getFields().size() : 0));
+        }
+        
         List<BindingSet> allBindings = new ArrayList<>();
         Map<Integer, ResourceInfoProfileField> nodeMap = new HashMap<>();
         int lastId = assignNodeIds(profile.getFields(), nodeMap, 0);
+        if (logger.isTraceEnabled()) {
+            logger.trace("Assigned {} nodeIds", nodeMap.size());
+
+            // Log field structure
+            logger.trace("Field structure:");
+            for (Map.Entry<Integer, ResourceInfoProfileField> entry : nodeMap.entrySet()) {
+                ResourceInfoProfileField field = entry.getValue();
+                logger.trace("Field {} has returns: {}", 
+                            field.getFieldIri(), 
+                            (field.getReturns() != null ? field.getReturns().size() : "null"));
+                if (field.getReturns() != null) {
+                    for (ResourceInfoInputMapping mapping : field.getReturns()) {
+                        logger.trace("Return mapping - localVar: {}, sparqlVar: {}", 
+                                    mapping.getLocalVar(), mapping.getSparqlVar());
+                    }
+                }
+            }
+        }
 
         List<List<ResourceInfoProfileField>> levels = groupFieldsByLevel(nodeMap);
 
         Context context = initialContext;
 
+        if (logger.isTraceEnabled()) {
+            logger.trace("Grouped fields into {} levels", levels.size());
+            for (int i = 0; i < levels.size(); i++) {
+                logger.trace("Level {} has {} fields", i, levels.get(i).size());
+            }
+        }
+
         for (List<ResourceInfoProfileField> level : levels) {
+            if (logger.isTraceEnabled()) {
+                logger.trace("Building query for level with {} fields", level.size());
+                for (ResourceInfoProfileField field : level) {
+                    logger.trace("Level includes field: {}", field.getFieldIri());
+                }
+            }
+            
             String query = buildLevelQuery(level, context, nodeMap, false);
-            //System.out.println(query);
+            if (logger.isTraceEnabled()) {
+                logger.trace("Executing query: \n{}", query);
+            }
             List<BindingSet> levelBindings = executeQuery(repo, query);
             allBindings.addAll(levelBindings);
             context = updateContext(context, levelBindings, nodeMap);
         }
 
-        // Process provenance fields
         // Process provenance fields
         if (profile.getProvenance() != null && profile.getProvenance().getFields() != null
                 && !profile.getProvenance().getFields().isEmpty()) {
@@ -209,7 +270,9 @@ public class ResourceInfoService implements PlatformCache {
                 String query = buildLevelQuery(level, provenanceContext, provenanceNodeMap, true); // Pass a flag
                                                                                                    // indicating this is
                                                                                                    // for provenance
-                //System.out.println(query);
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Executing provenance query: \n{}", query);
+                }
                 List<BindingSet> levelBindings = executeQuery(repo, query);
                 allBindings.addAll(levelBindings);
                 provenanceContext = updateContext(provenanceContext, levelBindings, provenanceNodeMap);
@@ -223,6 +286,9 @@ public class ResourceInfoService implements PlatformCache {
             int currentId) {
         for (ResourceInfoProfileField field : fields.values()) {
             nodeMap.put(currentId, field);
+            if (logger.isTraceEnabled()) {
+                logger.trace("Added nodeId: {} to nodeMap for field: {}", currentId, field.getFieldIri());
+            }
             currentId++;
 
             if (field.getFields() != null) {
@@ -251,6 +317,11 @@ public class ResourceInfoService implements PlatformCache {
 
     private String buildLevelQuery(List<ResourceInfoProfileField> fields, Context context,
             Map<Integer, ResourceInfoProfileField> nodeMap, boolean isProvenance) {
+        if (logger.isTraceEnabled()) {
+            logger.trace("Building {} query for {} fields", 
+                        (isProvenance ? "provenance" : "regular"), fields.size());
+        }
+        
         StringBuilder queryBuilder = new StringBuilder();
 
         queryBuilder.append(this.cachedPrefixes).append("\n");
@@ -262,12 +333,22 @@ public class ResourceInfoService implements PlatformCache {
             queryBuilder.append("SELECT DISTINCT ?config_node ?field ?value ?subject WHERE {\n");
         }
 
+        int fieldsWithSubjects = 0;
         boolean firstUnion = true;
         for (Map.Entry<Integer, ResourceInfoProfileField> entry : nodeMap.entrySet()) {
             Integer nodeId = entry.getKey();
             ResourceInfoProfileField field = entry.getValue();
 
-            if (fields.contains(field) && context.hasSubjectFor(field.getSubject())) {
+            boolean hasSubject = context.hasSubjectFor(field.getSubject());
+            boolean containsField = fields.contains(field);
+            
+            if (logger.isTraceEnabled()) {
+                logger.trace("Field {} - in fields list: {}, has subject: {} (subject: {})", 
+                            field.getFieldIri(), containsField, hasSubject, field.getSubject());
+            }
+            
+            if (containsField && hasSubject) {
+                fieldsWithSubjects++;
                 if (!firstUnion) {
                     queryBuilder.append("UNION\n");
                 }
@@ -276,11 +357,20 @@ public class ResourceInfoService implements PlatformCache {
                 queryBuilder.append("{\n");
                 appendFieldPattern(queryBuilder, field, context, isProvenance);
                 queryBuilder.append("BIND(").append(nodeId).append(" AS ?config_node)\n");
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Adding nodeId: {} to query for field: {}", nodeId, field.getFieldIri());
+                }
                 queryBuilder.append("}\n");
             }
         }
 
         queryBuilder.append("}");
+        
+        if (logger.isTraceEnabled()) {
+            logger.trace("Query includes {} fields with subjects out of {} total fields", 
+                        fieldsWithSubjects, fields.size());
+        }
+        
         return queryBuilder.toString();
     }
 
@@ -434,7 +524,32 @@ public class ResourceInfoService implements PlatformCache {
 
     private List<BindingSet> executeQuery(Repository repo, String query) {
         try (RepositoryConnection conn = repo.getConnection()) {
-            return QueryResults.asList(conn.prepareTupleQuery(query).evaluate());
+            long startTime = System.currentTimeMillis();
+            List<BindingSet> results = QueryResults.asList(conn.prepareTupleQuery(query).evaluate());
+            long executionTime = System.currentTimeMillis() - startTime;
+            
+            if (logger.isTraceEnabled()) {
+                logger.trace("Query executed in {}ms and returned {} results", executionTime, results.size());
+                
+                if (!results.isEmpty()) {
+                    logger.trace("Sample result binding names: {}", results.get(0).getBindingNames());
+                    logger.trace("Sample result values: {}", results.get(0));
+                    
+                    // Log the first few results in more detail
+                    int resultsToPrint = Math.min(results.size(), 3);
+                    for (int i = 0; i < resultsToPrint; i++) {
+                        BindingSet binding = results.get(i);
+                        logger.trace("Result {}:", i);
+                        for (String name : binding.getBindingNames()) {
+                            logger.trace("  {} = {}", name, binding.getValue(name));
+                        }
+                    }
+                } else {
+                    logger.trace("Query returned no results");
+                }
+            }
+            
+            return results;
         }
     }
 
@@ -442,11 +557,67 @@ public class ResourceInfoService implements PlatformCache {
             Map<Integer, ResourceInfoProfileField> nodeMap) {
         Context newContext = new Context(oldContext);
         for (BindingSet binding : bindings) {
+            // Check if binding has the required values before proceeding
+            if (!binding.hasBinding("config_node")) {
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Binding does not have config_node, skipping");
+                }
+                continue;
+            }
+            
             int configNode = ((Literal) binding.getValue("config_node")).intValue();
+            if (logger.isTraceEnabled()) {
+                logger.trace("Looking up configNode: {} in nodeMap with size: {}", configNode, nodeMap.size());
+                logger.trace("nodeMap contains key? {}", nodeMap.containsKey(configNode));
+            }
+            
             ResourceInfoProfileField field = nodeMap.get(configNode);
-            if (field.getReturns() != null) {
+            if (logger.isTraceEnabled()) {
+                logger.trace("field is null? {}", (field == null));
+            }
+            
+            if (field != null && field.getReturns() != null) {
+                if (logger.isTraceEnabled()) {
+                    // Only access size if getReturns() is not null
+                    int returnsSize = field.getReturns().size();
+                    logger.trace("field.getReturns() size: {}", returnsSize);
+                }
+                
+                // Only iterate if getReturns() is not null (this check is redundant with the outer if, but kept for clarity)
                 for (ResourceInfoInputMapping returnMapping : field.getReturns()) {
-                    newContext.addVariable(returnMapping.getLocalVar(), binding.getValue(returnMapping.getSparqlVar()));
+                    String localVar = returnMapping.getLocalVar();
+                    String sparqlVar = returnMapping.getSparqlVar();
+                    
+                    if (logger.isTraceEnabled()) {
+                        logger.trace("returnMapping.getLocalVar(): {}", localVar);
+                        logger.trace("returnMapping.getSparqlVar(): {}", sparqlVar);
+                        logger.trace("binding.hasBinding(sparqlVar): {}", binding.hasBinding(sparqlVar));
+                    }
+                    
+                    if (localVar != null && sparqlVar != null && binding.hasBinding(sparqlVar)) {
+                        Value value = binding.getValue(sparqlVar);
+                        if (logger.isTraceEnabled()) {
+                            logger.trace("binding.getValue(sparqlVar): {}", value);
+                        }
+                        
+                        if (value != null) {
+                            newContext.addVariable(localVar, value);
+                        } else if (logger.isTraceEnabled()) {
+                            logger.trace("Value is null for sparqlVar: {}", sparqlVar);
+                        }
+                    } else if (logger.isTraceEnabled()) {
+                        logger.trace("Cannot add variable. localVar: {}, sparqlVar: {}, hasBinding: {}", 
+                                     localVar, sparqlVar, 
+                                     (sparqlVar != null ? binding.hasBinding(sparqlVar) : "N/A"));
+                    }
+                }
+            } else if (logger.isTraceEnabled()) {
+                if (field == null) {
+                    logger.trace("Null field for configNode: {}", configNode);
+                    // Print all keys in nodeMap for debugging
+                    logger.trace("Available keys in nodeMap: {}", nodeMap.keySet());
+                } else if (field.getReturns() == null) {
+                    logger.trace("field.getReturns() is null for configNode: {}", configNode);
                 }
             }
         }
@@ -499,6 +670,14 @@ public class ResourceInfoService implements PlatformCache {
         // Create an index of bindings by subject
         Map<IRI, List<BindingSet>> bindingIndex = new HashMap<>();
         for (BindingSet binding : allBindings) {
+            // Skip bindings that don't have a subject
+            if (!binding.hasBinding("subject")) {
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Binding does not have subject, skipping");
+                }
+                continue;
+            }
+            
             IRI subject = (IRI) binding.getValue("subject");
             bindingIndex.computeIfAbsent(subject, k -> new ArrayList<>()).add(binding);
         }

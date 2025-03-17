@@ -1282,6 +1282,31 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       });
     }
   }
+  
+  /**
+   * Zooms to a specified extent with animation
+   * @param extent The extent to zoom to
+   */
+  private zoomToExtent(extent: Extent) {
+    if (!this.map || !extent) return;
+    
+    // Check if the extent is valid (not empty)
+    if (extent[0] === Infinity || extent[1] === Infinity || 
+        extent[2] === -Infinity || extent[3] === -Infinity) {
+      console.warn('Invalid extent for zooming:', extent);
+      return;
+    }
+    
+    // Use padding for a better view
+    const padding = [50, 50, 50, 50]; // [top, right, bottom, left] padding in pixels
+    
+    // Animate to the extent with a smooth transition
+    this.map.getView().fit(extent, {
+      padding: padding,
+      duration: 800, // Animation duration in milliseconds
+      maxZoom: 19, // Higher maximum zoom level
+    });
+  }
 
   /**
    * Creates a pulsing animation effect around a feature
@@ -2656,6 +2681,12 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     // Track if we found any features to highlight
     let foundFeatures = false;
     
+    // Create an empty extent to combine all highlighted features
+    const combinedExtent = createEmpty();
+    
+    // Collection to store all highlighted features for zooming
+    const highlightedFeatures: Feature[] = [];
+    
     // Process each vector layer
     vectorLayers.forEach(vectorLayer => {
       const source = vectorLayer.getSource();
@@ -2672,6 +2703,15 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         // Check if this feature has a subject property that matches one of our IRIs
         if (feature.get('subject') && subjectIris.includes(feature.get('subject').value)) {
           console.log('Highlighting feature:', feature.get('subject').value);
+          
+          // Add this feature to our collection for zooming
+          highlightedFeatures.push(feature);
+          
+          // Extend the combined extent with this feature's geometry
+          const geometry = feature.getGeometry();
+          if (geometry) {
+            extend(combinedExtent, geometry.getExtent());
+          }
           
           // Create a custom style that preserves the original color but with full opacity
           const originalStyle = this.getFeatureStyleWithFilters(feature);
@@ -2823,6 +2863,10 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     
     if (!foundFeatures) {
       console.warn('No features found on the map matching the highlight IRIs');
+    } else {
+      // If we found features to highlight, zoom to their combined extent
+      console.log('Zooming to combined extent of highlighted features');
+      this.zoomToExtent(combinedExtent);
     }
     
     // Force a re-render of the map

@@ -50,9 +50,9 @@
       {{else if resourceConfigurationError}}
         <div class="page__grid-container">
           <div class="page__content-container resource-editView-form-container">
-            <div class='resource-editView-formHeader'>
-              <div class="resource-editView-formHeader-title-container">
-                <h2 class="resource-editView-formHeader-title">
+            <div class='resource-record-header'>
+              <div class="resource-record-header-title-container">
+                <h2 class="resource-record-header-title">
                   <div class="link-draggable">
                     <mp-draggable iri='{{iri}}'>
                       <div class="text-truncate">
@@ -76,7 +76,6 @@
                                                   iri=iri
                                                   resourceEditorButton=true
                                                   hidePreview=true
-                                                  headerButton=true
                   }}
                 </rs-resource-dropdown>
               </div>
@@ -431,12 +430,12 @@
             <div class="page__content-container resource-editView-form-container">
               <mp-event-target-template-render id='{{viewId}}-term-forms' template='{{> template}}'>
                 <template id='template'>
-                  <div class='resource-editView-formHeader'>
-                    <div class="{{#if (eq mode 'deleted')}}{{else}}resource-editView-formHeader-title-container{{/if}}" style="{{#if (eq mode 'deleted')}}width: 100%;{{/if}}">
+                  <div class='resource-record-header'>
+                    <div class="{{#if (eq mode 'deleted')}}{{else}}resource-record-header-title-container{{/if}}" style="{{#if (eq mode 'deleted')}}width: 100%;{{/if}}">
                       {{#switch mode}}
                         {{#case "new" break=true}}
                           {{#if broader}}
-                            <h2 class="resource-editView-formHeader-title">
+                            <h2 class="resource-record-header-title">
                               New 
                               {{#if collectionLabel}}
                                 <span style="text-transform: lowercase;">{{collectionLabel}}</span>
@@ -464,7 +463,7 @@
                               {{/if}}
                             </h2>
                           {{else}}
-                            <h2 class="resource-editView-formHeader-title">New
+                            <h2 class="resource-record-header-title">New
                               {{#if collection}}
                                 {{#if collectionLabel}}
                                   <span style="text-transform: lowercase;">{{collectionLabel}}</span>
@@ -483,7 +482,7 @@
                         {{/case}}
 
                         {{#case "edit" break=true}}
-                          <h2 class="resource-editView-formHeader-title">
+                          <h2 class="resource-record-header-title">
                             <div class="link-draggable">
                             [[!--  <rs-icon icon-type="rounded" icon-name="drag_indicator" symbol="true"></rs-icon> --]]
                             
@@ -535,7 +534,7 @@
                         {{/case}}
 
                         {{#case "view" break=true}}
-                          <h2 class="resource-editView-formHeader-title">
+                          <h2 class="resource-record-header-title">
                             <div>
                               <div class="link-draggable">
                             [[!--    <rs-icon icon-type="rounded" icon-name="drag_indicator" symbol="true"></rs-icon> --]]
@@ -646,7 +645,6 @@
                                                             resourceLabel=resourceName
                                                             resourceEditorButton=true
                                                             hidePreview=true
-                                                            headerButton=true
                             }}
                           </rs-resource-dropdown>
                         {{/if}}
@@ -703,7 +701,6 @@
                                       no-result-template='{{> noResults}}'>
 
                         <template id='template'>
-                          <div>
                           [[!--  
                             {{#if (eq resourceConfiguration "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
                               <mp-event-proxy id='{{viewId}}-update-form-on-graph-action-delete' 
@@ -715,20 +712,18 @@
                               ></mp-event-proxy>
                             {{/if}}
                           --]]
-                            <mp-event-proxy id='{{viewId}}-tree-refresh-on-delete' 
-                                            on-event-source='{{iri}}-resource-form' 
-                                            on-event-types='["Form.ResourceRemoved"]'
-                                            proxy-event-type='Component.TemplateUpdate' 
-                                            proxy-targets='[{{#if collection}}"{{collection}}-mytree",{{/if}} "{{viewId}}-term-forms"]'
-                                            additional-data='{"mode": "deleted", 
-                                                              "iri": "{{iri}}",
-                                                              "label": "{{bindings.0.label.value}}" }'
-                            ></mp-event-proxy>
-                          </div>
+                          <mp-event-proxy id='{{viewId}}-tree-refresh-on-delete' 
+                                          on-event-source='{{iri}}-resource-form' 
+                                          on-event-types='["Form.ResourceRemoved"]'
+                                          proxy-event-type='Component.TemplateUpdate' 
+                                          proxy-targets='[{{#if collection}}"{{collection}}-mytree",{{/if}} "{{viewId}}-term-forms"]'
+                                          additional-data='{"mode": "deleted", 
+                                                            "iri": "{{iri}}",
+                                                            "label": "{{bindings.0.label.value}}" }'
+                          ></mp-event-proxy>
                         </template>
 
                         <template id="noResults">
-                          <div>
                           [[!-- 
                             {{#if (eq resourceConfiguration "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
                               <mp-event-proxy id='{{viewId}}-noResults-on-graph-action-delete' 
@@ -741,16 +736,14 @@
                             {{/if}}
                           --]]
 
-                            <mp-event-proxy id='{{viewId}}-noResults-tree-refresh-on-delete' 
-                                            on-event-source='{{iri}}-resource-form' 
-                                            on-event-types='["Form.ResourceRemoved"]'
-                                            proxy-event-type='Component.TemplateUpdate' 
-                                            proxy-targets='[{{#if collection}}"{{collection}}-mytree",{{/if}} "{{viewId}}-term-forms"]'
-                                            additional-data='{"mode": "deleted",
-                                                            "label": "{{label}}" }'
-                            ></mp-event-proxy>
-                          </div>
-                          
+                          <mp-event-proxy id='{{viewId}}-noResults-tree-refresh-on-delete' 
+                                          on-event-source='{{iri}}-resource-form' 
+                                          on-event-types='["Form.ResourceRemoved"]'
+                                          proxy-event-type='Component.TemplateUpdate' 
+                                          proxy-targets='[{{#if collection}}"{{collection}}-mytree",{{/if}} "{{viewId}}-term-forms"]'
+                                          additional-data='{"mode": "deleted",
+                                                          "label": "{{label}}" }'
+                          ></mp-event-proxy>
                         </template>
                       </semantic-query>
                     {{/if}}
@@ -798,8 +791,6 @@
                       {{/ifCond}}
                     {{/if}}
               
-                  {{else}}
-                    <div></div>
                   {{/if}}
                 </template>
               </mp-event-target-template-render>

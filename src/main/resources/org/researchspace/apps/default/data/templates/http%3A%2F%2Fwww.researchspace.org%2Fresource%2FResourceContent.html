@@ -1,754 +1,137 @@
-[[#if (urlParam "details")]]
-<div class="details-content">
-
-    [[#block "detailsResourceHeader"]]
-    <div class="details-header">
-
-        <mp-resource-thumbnail iri='[[this]]' class='detail-img'>
-            <mp-resource-thumbnail-fallback>
-                <with-types iri='[[this]]'
-                        template='{{> noImage}}'
-                        [[> rsp:TypeMappings]]
-                    >
-                    <template id="noImage">
-                        <span class="rs-icon {{getValueByKey typeToImage allTypes 'rs-icon-no-image'}} detail-icon-noimg" alt="{{directTypesLabels}}" title='{{directTypesLabels}}'></span>
-                    </template>
-                </with-types>
-            </mp-resource-thumbnail-fallback>
-        </mp-resource-thumbnail>
-
-        <div style="max-width: 70%;">
-            
-            <mp-draggable iri='[[this]]'>
-                <div class="draggable-container">
-                    <semantic-query query='SELECT ?type ?typeLabel WHERE {
-                                            <[[this]]> a ?type .
-                                            ?type rdfs:label ?typeLabel .
-                                            FILTER (lang(?typeLabel) = "en")}'
-                        template='{{> resourceType }}'>
-                        <template id='resourceType'>
-                            <div class="detail-type">
-                                {{#each bindings}}{{typeLabel.value}}{{#if @last}}{{else}}, {{/if}}{{/each}}
+<div class="page__grid-container">
+   <div class="page__content-container resource-relatedResourcesView-container">
+        <div class="resource-header-container">
+            <div class='resource-record-header'>
+                <div class="resource-record-header-title-container">
+                    <h2 class="resource-record-header-title">
+                    <div class="link-draggable">
+                        <mp-draggable iri='{{iri}}'>
+                            <div class="text-truncate">
+                                <mp-label iri='{{iri}}'></mp-label>
                             </div>
-                        </template>
-                    </semantic-query>
-            
-                    <mp-label iri='[[this]]' class="detail-label"></mp-label>
+                        </mp-draggable>
+                    </div>
+                    </h2>
                 </div>
-            </mp-draggable>
-
-            <mp-copy-to-clipboard text='[[this]]'>
-                <div class="rs-copy-IRI">Copy IRI</div>
-            </mp-copy-to-clipboard>
-                
+                <div class="btn-inline-container">
+                    <mp-event-trigger id='{{iri}}-relatedResourcesView-refresh-trigger' 
+                                    type='Component.TemplateUpdate' 
+                                    targets='["{{iri}}-resource-view"]'
+                                    >
+                        <button class="btn btn-default btn-textAndIcon" title="Refresh page">
+                            <rs-icon icon-type="rounded" icon-name="refresh" symbol="true"></rs-icon>
+                        </button>
+                    </mp-event-trigger>
+                    <rs-resource-dropdown id="{{viewId}}-{{iri}}-item-actions-dropdown" class-name="dropdown-no-caret">
+                        {{> rsp:ResourceDropdownActions viewId=viewId
+                                                        iri=iri
+                                                        resourceConfig=resourceConfiguration
+                                                        resourceLabel=resourceName
+                                                        hidePreview=true
+                                                        hideRelatedResources=true
+                        }}
+                    </rs-resource-dropdown>
+                </div>
+            </div>
         </div>
 
-    </div>
-    [[/block]]
-  
-    <bs-tabs class="details-tabs">
-    [[#if withSummary]]
-        <bs-tab title='Summary' event-key='summary' mount-on-enter=true>
-            <div class="rs-resource-data-table table-responsive">
-                <table class="table table-hover">
-                [[#block "summary"]]
-                <tbody>
-                    <tr>
-                    <td>No further data available</td>
-                    <td></td>
-                    </tr>
-                </tbody>
-                [[/block]]
-                </table>
-            </div>
-        </bs-tab>
-    [[/if]]
-        <bs-tab title='Raw data' event-key='raw-data' mount-on-enter=true class="rawdata-tab">
-            <mp-field-visualization subject='[[this]]'
-                fields='[[fieldDefinitionsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE {?resource ?field ?o . ?field a <http://www.researchspace.org/resource/system/fields/Field> } ORDER BY DESC(?field)" resource=this.iri) ]]'
-                template='{{> template}}'>
-            <template id="template">{{> rsp:ResourceFieldBasedVisualization subject="[[this]]"}}</template>
-            </mp-field-visualization>
-        </bs-tab>
-  </bs-tabs>
-</div>
+        <div class="resource-relatedResourcesView-content">
+            <mp-splitpane id="resource-config-sidebar" 
+                        min-size=165 
+                        default-size=220 
+                        snap-threshold=20
+                        default-open=true 
+                        always-render=true 
+                        persist-resize=false>
 
-[[else]]
-<with-types fixed-key='resource-[[this]]' iri='[[this]]'
-        template='{{> resource}}'
-        [[> rsp:TypeMappings]]
->
-    <template id='resource'>
-        <div class="rs-resource-container">
-            [[#block "resourceHeader"]]
-            [[!-- Resource Header --]]
-                <div class="rs-resource-header {{getValueByKey entityBgColor allTypes 'rs-entity-bg-thing'}}">
+                <div class="split-pane__sidebar split-pane__leftsidebar">
 
-                    [[!-- Header top with draggable link --]]
-                    <div class="rs-resource-header-topContainer">
-                        [[!-- defaul Header top customisable inline --]]
-                        [[#block "resourceHeaderTop"]]
-                            <mp-popover class="rs-resource-header-popover">
-                                <mp-popover-trigger placement="right" trigger='["hover"]' root-close='true'>
-                                    <div class="h4 rs-resource-header-topContent">
-                                        <mp-draggable iri='[[this]]'>
-                                            <div>
-                                                <i class="rs-icon {{getValueByKey typeToIcon allTypes 'rs-icon-entity'}}"></i>
-                                                <span style="margin-left: 8px;">{{directTypesLabels}} -&nbsp;</span>
-                                                <mp-label iri='[[this]]'></mp-label>
-                                            </div>
-                                        </mp-draggable>
-                                    </div>
-                                </mp-popover-trigger>
-                                
-                                <mp-popover-content>
-                                    <div>Drag and drop in the Clipboard</div>
-                                </mp-popover-content>
-                            
-                            </mp-popover>
-                        [[/block]]
-                        
-                        <div class="rs-resource-header-topButtons">
+                    <mp-splitpane-toggle-on>
+                        <button class="btn-toggle-on">
+                            <div class="btn-toggle-on-content">
+                                Related resources
+                                <rs-icon icon-type="rounded" icon-name="chevron_right" symbol="true"></rs-icon>
+                            </div>
+                        </button>
+                    </mp-splitpane-toggle-on>
 
-                            <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                                    urlqueryparam-view='knowledge-map' urlqueryparam-resource='[[this]]'>
-                                <button type="button" title="Author Resource in Knowledge Map">
-                                    <rs-icon icon-type="round" icon-name="account_tree"></rs-icon>
-                                </button>
-                            </semantic-link-container>
-
-                            <mp-event-trigger id='details-view-trigger' type='Component.TemplateUpdate'
-                                data='{"iri": "{{iri}}"}' targets='["details-view", "open-details-sidebar"]'>
-                                <button type="button" title="Resource Details">
-                                    <rs-icon icon-type="rounded" icon-name="info" symbol="true"></rs-icon>
-                                </button>
-                            </mp-event-trigger>
-                            
-                            <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                                    urlqueryparam-view='resource-editor' urlqueryparam-resource='[[this]]'>
-                                <button type="button" title="Author Resource in Form">
-                                    <rs-icon icon-type="rounded" icon-name="edit_note" symbol="true"></rs-icon>
-                                </button>
-                            </semantic-link-container>
-                           
+                    <mp-splitpane-toggle-off>
+                        <div class="split-pane__sidebar-header">
+                            <button class="btn-toggle-off">
+                                Related resources
+                                <rs-icon icon-type="rounded" icon-name="chevron_left" symbol="true"></rs-icon>
+                            </button>
                         </div>
-                    </div>
+                    </mp-splitpane-toggle-off>
 
-                    [[!-- Header content with image (if available) and resource primary informations --]]
-                    <div class="rs-resource-header-content-container">
-                        <div class="rs-resource-header--image-container">
+                    <mp-splitpane-sidebar-open style="flex: 1;">
+                        <div class="split-pane__sidebar-open">
+                            <mp-event-target-template-render id='{{iri}}-resource-relatedResourcesView-sidebar' template='{{> sidebar}}'>
+                                <template id='sidebar'>
+                                    <div class="resource-relatedResourcesView-sidebar-container">
+                                        <div class="resource-relatedResourcesView-sidebar-section resource-relatedResourcesView-sidebar-section-system-container">
+                                            <div class="resource-relatedResourcesView-sidebar-section-name">System</div>
+                                            [[> sidebarSemanticTree]]
+                                        </div>
 
-                            <semantic-if query='ASK {
-                                                    {<[[this]]> crm:P138i_has_representation|rs:PX_has_main_representation ?image . }
-                                                    UNION 
-                                                    {<[[this]]> a rs:EX_Digital_Image . }
-                                                    UNION 
-                                                    {<[[this]]> a rs:EX_Digital_Image_Region . }
-                                                }'
-                                then='{{> then}}'>
-                            
-                                <template id="then">
-                                    <div class="rs-resource-img__btngroup">
-
-                                        {{#if (hasKey allTypes "http://www.researchspace.org/ontology/EX_Digital_Image_Region")}}
-                                        [[!-- don't show resource media icon for image regions --]]
-                                        {{else}}
-                                        <mp-overlay-dialog title="Resource Media" type="modal" class="modal-xlSize">
-                                            <mp-overlay-dialog-trigger>
-                                                <button type="button" class="btn btn-icon" title="Explore Media">
-                                                    <rs-icon icon-type="rounded" icon-name="fullscreen" symbol="true"></rs-icon>
-                                                </button>
-                                            </mp-overlay-dialog-trigger>
-                                            <mp-overlay-dialog-content>
-                                                <mp-page-loader urlqueryparam-frame=true iri='http://www.researchspace.org/resource/ItemCardMedia' context='[[this]]'>
-                                                </mp-page-loader>
-                                            </mp-overlay-dialog-content>
-                                        </mp-overlay-dialog>
-                                        {{/if}}
-
-                                        <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                                urlqueryparam-view='iiif' urlqueryparam-resource='[[this]]'>
-                                            <button type="button" class="btn btn-icon" title="Explore Images in high resolution Viewer">
-                                                <rs-icon icon-type="rounded" icon-name="image" symbol="true"></rs-icon>
-                                            </button>
-                                        </semantic-link-container>
-
-                                        [[#if (hasPermission "forms:ldp:*")]]
-                                            {{#if (hasKey allTypes "http://www.cidoc-crm.org/cidoc-crm/E18_Physical_Thing")}}
-                                            {{#if (hasKey allTypes "http://www.researchspace.org/ontology/EX_Digital_Image_Region")}}
-                                            [[!-- don't show annotation icon for image regions --]]
-                                            {{else}}
-                                                <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                                        urlqueryparam-view='image-annotation' urlqueryparam-resource='[[this]]'>
-                                                    <button type="button" class="btn btn-icon" title="Annotate Images">
-                                                        <rs-icon icon-type="round" icon-name="photo_size_select_large"></rs-icon>
-                                                    </button>
-                                                </semantic-link-container>
-                                            {{/if}}
-                                            {{/if}}
-                                        [[/if]]
-
+                                        [[#*inline "sidebarSemanticTree"]]
+                                            <div class="resource-relatedResourcesView-sidebar-semantic-tree-container">
+                                                <semantic-tree query='SELECT ?node ?nodeLabel ?icon  WHERE {
+                                                                            VALUES (?node ?nodeLabel ?icon  ?order) { 
+                                                                                (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart> "Chart" "finance" "1")
+                                                                                (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map> "Knowledge map" "account_tree" "2")
+                                                                                (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative> "Semantic narrative" "description" "3")
+                                                                                (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Set> "Set" "topic" "4")
+                                                                                (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline> "Timeline" "timeline" "5")
+                                                                            }
+                                                                        }
+                                                                        ORDER BY (?order) ASC(?nodeLabel)' 
+                                                                tuple-template='{{> nodeTemplate}}'
+                                                                no-result-template='{{> noResults}}'
+                                                                collapsed=true>
+                                                                    
+                                                    <template id='nodeTemplate'>
+                                                        <mp-event-trigger   id='{{node.value}}-open-resource-search-page--trigger' 
+                                                                            type='Component.TemplateUpdate'
+                                                                            targets='["resource-relatedResourcesView-search-container"]'
+                                                                            data='{ "viewId": "resource-search",
+                                                                                    "iri":"{{node.value}}",
+                                                                                    "resourceIri": "{{node.value}}",
+                                                                                    "title":"{{nodeLabel.value}}",
+                                                                                    "treeItemSelected":"true"
+                                                                                }'>
+                                                            <div class="Tree--itemLink">
+                                                                {{#if icon.value}}<rs-icon icon-type="outlined" icon-name="{{icon.value}}" symbol="true"></rs-icon>{{/if}}
+                                                                <div>{{nodeLabel.value}}</div> 
+                                                            </div>
+                                                        </mp-event-trigger>
+                                        
+                                                    </template>  
+                                        
+                                                    <template id='noResults'>
+                                                        <div class="text-font-size__xsmall">No resource available</div>
+                                                    </template>
+                                                </semantic-tree>
+                                            </div>
+                                        [[/inline]]
                                     </div>
                                 </template>
-
-                            </semantic-if>
-
-                            [[#block "imageContent"]]
-                            <rs-object-representations query='SELECT DISTINCT ?label ?imgURL ?isMainRep
-                                                                WHERE {
-                                                                OPTIONAL { <[[this]]> rdfs:label ?label . }  
-                                                                OPTIONAL {
-                                                                {
-                                                                    <[[this]]> a ?type ;
-                                                                    FILTER(?type != rs:EX_Digital_Image) .
-                                                                    ?representationProp rdfs:subPropertyOf* crm:P138i_has_representation .
-                                                                    <[[this]]> ?representationProp ?representation .
-
-                                                                    OPTIONAL {
-                                                                    <[[this]]> ?representationProp ?representation .
-                                                                    ?representation a rs:EX_Digital_Image ;
-                                                                                    crmdig:L60i_is_documented_by/crmdig:L11_had_output/rs:PX_has_file_name ?fileName.
-                                                                    BIND(CONCAT("/proxy/IIIF/", ?fileName, "/full/!640,480/0/default.jpg") AS ?uploadIiifUrl)
-                                                                    }
-
-                                                                    OPTIONAL {
-                                                                    <[[this]]> ?representationProp ?representation .
-                                                                    ?representation a rs:EX_Digital_Image .
-                                                                    BIND(REPLACE(STR(?representation), "^.*/(.*)$", "$1") as ?imageID) .
-                                                                    BIND(?imageID as ?imgIiifId)
-                                                                    BIND(CONCAT("/proxy/IIIF/", ?imageID, "/full/!640,480/0/default.jpg") AS ?iiifUrl)
-                                                                    }
-
-                                                                    OPTIONAL {
-                                                                    <[[this]]> crm:P138i_has_representation ?representation .
-                                                                    ?representation a rs:EX_Digital_Image_Region .
-                                                                    ?representation crmdig:L49_is_primary_area_of ?image .
-                                                                    ?image crmdig:L60i_is_documented_by/crmdig:L11_had_output/rs:PX_has_file_name ?fileName.
-                                                                    ?representation rs:boundingBox ?bb.
-                                                                    BIND(STRAFTER(?bb, "xywh=") AS ?boundingBox).
-                                                                    BIND(CONCAT("/proxy/IIIF/", ?fileName, "/", ?boundingBox, "/!640,480/0/default.jpg") AS ?uploadIiifRegionUrl)
-                                                                    }
-
-                                                                    OPTIONAL {
-                                                                    <[[this]]> crm:P138i_has_representation ?representation .
-                                                                    ?representation a rs:EX_Digital_Image_Region .
-                                                                    ?representation crmdig:L49_is_primary_area_of ?image .
-                                                                    ?representation rs:boundingBox ?bb.
-                                                                    BIND(STRAFTER(?bb, "xywh=") AS ?boundingBox).
-                                                                    BIND(REPLACE(STR(?image), "^.*/(.*)$", "$1") as ?imageID) .
-                                                                    BIND(CONCAT("/proxy/IIIF/", ?imageID, "/", ?boundingBox, "/!640,480/0/default.jpg") AS ?iiifRegionUrl)
-                                                                    }
-
-
-                                                                    BIND(COALESCE(?uploadIiifUrl, ?iiifUrl, ?uploadIiifRegionUrl, ?iiifRegionUrl, ?representation) AS ?imgURLx)
-                                                                    BIND(IF(EXISTS { <[[this]]> rs:PX_has_main_representation ?representation }, true, false) AS ?isMainRepx)
-                                                                } UNION {
-                                                                    <[[this]]> a rs:EX_Digital_Image ;
-                                                                    OPTIONAL {
-                                                                    <[[this]]> a rs:EX_Digital_Image ;
-                                                                    crmdig:L60i_is_documented_by/crmdig:L11_had_output/rs:PX_has_file_name ?fileName. 
-                                                                    BIND(CONCAT("/proxy/IIIF/", ?fileName, "/full/!640,480/0/default.jpg") AS ?uploadIiifUrl)
-                                                                    }
-
-                                                                    OPTIONAL {
-                                                                    <[[this]]> a rs:EX_Digital_Image ;
-                                                                    BIND(REPLACE(STR(<[[this]]>), "^.*/(.*)$", "$1") as ?imageID) .
-                                                                    BIND(CONCAT("/proxy/IIIF/", ?imageID, "/full/!640,480/0/default.jpg") AS ?iiifUrl)
-                                                                    }
-                                                                    BIND(COALESCE(?uploadIiifUrl, ?iiifUrl, <[[this]]>) AS ?imgURLx)
-                                                                    BIND(true AS ?isMainRepy)
-                                                                }  
-                                                            }
-                                                            BIND(?imgURLx AS ?imgURL)
-                                                            BIND(COALESCE(?isMainRepx, ?isMainRepy) AS ?isMainRep)
-                                                            } ORDER BY ?imgURL '
-
-                                                            no-image-template = '{{> noImage}}'
-                                                        
-                            >
-
-                            <template id='noImage'>
-                                <div class="object-representations__image--focused">
-                                    <span class="rs-icon {{getValueByKey typeToImage allTypes 'rs-icon-entity_no-image'}} {{getValueByKey entityIconColor allTypes 'rs-icon-entity_no-image'}}"></span>
-                                </div>
-                            </template>>
-                                
-                            </rs-object-representations>
-                            [[/block]]
+                            </mp-event-target-template-render>
                         </div>
-                        
-                        <div style="padding: 1.8% 1.5% 1.5% 5%;">
-                            [[> resourceHeaderData image=true]]
-                        </div>
-                    </div>
+                    </mp-splitpane-sidebar-open>
                 </div>
-            [[/block]]      
 
-            [[!-- Tabs: Summary, raw data, Images, Annotation, Assertion, Related resources --]]
-            <bs-tab-container id="tab-container" class="rs-resource-tabs"
-                default-active-key="[[#if withSummary]]summary[[else]]raw-data[[/if]]">
-                <div>
-                    <bs-nav bs-style="tabs">
-                        [[#if withSummary]]
-                        <bs-nav-item event-key="summary">Summary</bs-nav-item>
-                        [[/if]]
-                        <bs-nav-item event-key="raw-data">Raw data</bs-nav-item>
-                        [[#if withGeoData]]
-                        <bs-nav-item event-key="places">Related Places</bs-nav-item>
-                        [[/if]]
-                        [[#if (hasPermission "forms:ldp:*")]]
-                        <bs-nav-item event-key="media">Media</bs-nav-item>
-                        [[/if]]
-                        <!-- [[#if (hasPermission "forms:ldp:*")]]
-                        <bs-nav-item event-key="annotations" disabled=true>Annotations
-                            <span class="badge badge--action text-s color-white"
-                                style="margin-left:8px;">0</span>
-                        </bs-nav-item>
-                        [[/if]]
-                        [[#if (hasPermission "forms:ldp:*")]]
-                        <bs-nav-item event-key="assertions" disabled=true>Assertions
-                            <span class="badge badge--action text-s color-white"
-                                style="margin-left:8px;">0</span>
-                        </bs-nav-item>
-                        [[/if]] -->
-                        [[#if (hasPermission "forms:ldp:*")]]
-                        <bs-nav-item event-key="related" disabled=true>Explore Related</bs-nav-item>
-                        [[/if]]
-                    </bs-nav>
-
-                    <bs-tab-content animation="true">
-                        [[#if withSummary]]
-                        <bs-tab-pane event-key="summary">
-                            <div class="rs-resource-tab-container">
-                                <div>
-                                    <hr class="rs-resource-section--headerLine">
-                                    [[#block "instituteHeader"]]
-                                    <span class="h1 rs-resource-section--header">Dataset</span>
-                                    [[/block]]
-
-                                    <span class="text-underline rs-resource-section--header">Latest confirmed data set from
-                                        [[currentDateTime format="dd-MM-yyyy"]].</span>
-                                </div>
-
-                                <div class="rs-resource-data-table">
-                                    <div class="table-responsive rs-table">
-                                        <table class="table table-hover">
-                                            <thead>
-                                                <tr>
-                                                    <th scope="col" style="width: 30%">Field</th>
-                                                    <th scope="col">Value</th>
-                                                </tr>
-                                            </thead>
-                                            [[#block "summary"]]
-                                            <tbody>
-                                                <tr>
-                                                    <td>No further data available</td>
-                                                    <td></td>
-                                                </tr>
-                                            </tbody>
-                                            [[/block]]
-                                        </table>
-                                    </div>
-                                </div>
-                            </div> 
-
-                            [[#if (hasPermission "forms:ldp:*")]]
-                            <div class="rs-resource-tab-container">
-                                <div style=" display:flex; justify-content:space-between;">
-                                    <div>
-                                        <hr class="rs-resource-section--headerLine">
-                                        <span class="h1 rs-resource-section--header">Public Discussion</span>
-                                        <span class="text-underline rs-resource-section--header">Documents the ongoing discussion
-                                            about findings.
-                                            <a style="padding-left:5px; text-decoration: underline;">Read more</a>
-                                        </span>
-                                    </div>
-                                    
-                                    <input type="text" placeholder="Assert new value..."
-                                        class="text-s">
-                                    
-                                </div>
-
-                                    <div class="rs-resource-data-table">
-                                        <div class="table-responsive rs-table">
-                                            <table class="table table-hover">
-                                                <thead>
-                                                    <tr>
-                                                        <th scope="col">Field</th>
-                                                        <th scope="col">Value</th>
-                                                        <th scope="col">Annotation</th>
-                                                        <th scope="col">Assertion</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr>
-                                                        <td>No data available</td>
-                                                        <td></td>
-                                                        <td>
-                                                            <semantic-query
-                                                                query="SELECT (COUNT(DISTINCT ?s) AS ?count) WHERE {
-                                                                ?s <http://www.ics.forth.gr/isl/CRMdig/L43_annotates> <[[this]]>;}"
-                                                                template='{{#each bindings}}
-                                                                    <span class="badge badge--white text-s active" style="text-decoration:none;">0</span>
-                                                                    {{/each}}'
-                                                                no-result-template='<span class="badge badge--white text-s" style="text-decoration:none;">0</span>'>
-                                                            </semantic-query>
-                                                        </td>
-
-                                                        <td>
-                                                            <semantic-query
-                                                                query="SELECT (COUNT(DISTINCT ?s) AS ?count) WHERE {
-                                                                ?s <http://www.ics.forth.gr/isl/CRMdig/L43_annotates> <[[this]]>;}"
-                                                                template='{{#each bindings}}
-                                                                    <span class="badge badge--white text-s" style="text-decoration:none;">0</span>
-                                                                    {{/each}}'
-                                                                no-result-template='<span class="badge badge--white text-s" style="text-decoration:none;">0</span>'>
-                                                            </semantic-query>
-                                                        </td>
-
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                            </div>
-                            [[/if]]
-
-                        </bs-tab-pane>
-                        [[/if]]
-
-                        <bs-tab-pane event-key="raw-data">
-                            <div class="rs-resource-tab-container">
-
-                                <div>
-                                    <hr class="rs-resource-section--headerLine">
-                                    [[#block "instituteHeader"]]
-                                    <span class="h1 rs-resource-section--header">Dataset</span>
-                                    [[/block]]
-
-                                    <span class="text-underline rs-resource-section--header">Latest confirmed data set from
-                                        [[currentDateTime format="dd-MM-yyyy"]].</span>
-                                </div>
-
-                                <div class="rs-resource-data-table">
-                                    <mp-field-visualization subject='[[this]]'
-                                                            fields='[[fieldDefinitionsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE {?resource ?field ?o . ?field a <http://www.researchspace.org/resource/system/fields/Field> } ORDER BY DESC(?field)" resource=this.iri) ]]'
-                                                            template='{{> template}}'>
-                                        <template id="template">{{> rsp:ResourceFieldBasedVisualization subject="[[this]]"}}</template>
-                                    </mp-field-visualization>
-                                </div>
-
-                            </div>
-
-                        </bs-tab-pane>
-
-                        [[#if withGeoData]]
-                        <bs-tab-pane event-key="places" mount-on-enter=true style="padding-top: 0px;">
-                            [[#block "geoData"]]
-                                <div></div>
-                            [[/block]]
-                        </bs-tab-pane>
-                        [[/if]]
-
-                        [[#if (hasPermission "forms:ldp:*")]]
-                        <bs-tab-pane event-key="media" mount-on-enter=true>
-                            <div class="rs-resource-tab-container">
-                                <div>
-                                    <hr class="rs-resource-section--headerLine">
-
-                                    <span class="h1 rs-resource-section--header">Images</span>
-                                    <span class="text-underline rs-resource-section--header">Latest confirmed data set from
-                                        [[currentDateTime format="dd-MM-yyyy"]].</span>
-                                </div>
-
-                                <div>
-                                    <hr class="rs-resource-section--headerLine">
-
-                                    <span class="h1 rs-resource-section--header">Videos</span>
-                                    <span class="text-underline rs-resource-section--header">Latest confirmed data set from
-                                        [[currentDateTime format="dd-MM-yyyy"]].</span>
-                                    </div>
-
-                                <div>
-                                    <hr class="rs-resource-section--headerLine">
-
-                                    <span class="h1 rs-resource-section--header">3D Models</span>
-                                    <span class="text-underline rs-resource-section--header">Latest confirmed data set from
-                                        [[currentDateTime format="dd-MM-yyyy"]].</span>
-                                </div>
-
-                                [[!-- 
-                                    <div class="rs-resource-data-table">
-                                        <div class="rs-resource-mirador-container">
-                                            <rs-iiif-side-by-side
-                                                selection='[[jsonArrayFromSelect "SELECT DISTINCT ?value WHERE {  <[[this]]> crm:P138i_has_representation ?value } LIMIT 2" ]]'
-                                                [[> rsp:IIIFConfig]]/>
-                                        </div>
-                                    </div>
-                                --]]
-
-                            </div>
-                        </bs-tab-pane>
-                        [[/if]]
-
-                       <!--  [[#if (hasPermission "forms:ldp:*")]]
-                        <bs-tab-pane event-key="annotations">
-                            <div class="rs-resource-tab-container">
-                     
-                                <div>
-                                    <hr class="rs-resource-section--headerLine">
-                                    <span class="h1 rs-resource-section--header">Annotations made</span>
-                                    <span style="position: absolute; top: -1px; margin-left: 12px;">
-                                        <button type="button"
-                                            class="rs-button rs-button-icon-S rs-button-icon-S--dark"
-                                            title="Add annotation">
-                                            <rs-icon icon-type="round" icon-name="add"></rs-icon>
-                                    </span>
-                                </div>
-                            
-                                <div class="rs-resource-data-table">
-
-                                    [[!-- <div class="table-responsive rs-table">
-                                        <semantic-table query="" number-of-displayed-rows=1
-                                            options='{"showFilter": true}' column-configuration='[
-                                                                {"displayName": "Field", "cellTemplate": "<semantic-link class=annotationWidth iri=\"{{o.value}}\">no data available</semantic-link>"},
-                                                                {"displayName": "Annotation Title" },
-                                                                {"displayName": "Author"},
-                                                                {"displayName": "Modified"},
-                                                                {"displayName": "Role"}
-                                                                ]'>
-                                        </semantic-table>
-                                    </div>
-                                    --]]
-
-                                    <div class="table-responsive rs-table">
-                                        <table class="table table-hover">
-                                            <thead>
-                                                <tr>
-                                                    <th scope="col">Field</th>
-                                                    <th scope="col">Annotation Title</th>
-                                                    <th scope="col">Author</th>
-                                                    <th scope="col">Modified</th>
-                                                    <th scope="col">Role</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td>No data available</td>
-                                                    <td></td>
-                                                    <td></td>
-                                                    <td></td>
-                                                    <td></td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </bs-tab-pane>
-                        [[/if]] -->
-
-                        <!-- [[#if (hasPermission "forms:ldp:*")]]
-                        <bs-tab-pane event-key="assertions">
-                            <div class="rs-resource-tab-container">
-                                <div>
-                                    <hr class="rs-resource-section--headerLine">
-                                    <span class="h1 rs-resource-section--header">Assertions made</span>
-                                    <span style="position: absolute; top: -1px; margin-left: 12px;">
-                                        <button type="button"
-                                            class="rs-button rs-button-icon-S rs-button-icon-S--dark"
-                                            title="Add assertion">
-                                            <rs-icon icon-type="round" icon-name="add"></rs-icon>
-                                    </span>
-                                </div> 
-
-                                <div>
-                                    <div class="table-responsive rs-table">
-                                        [[!-- <semantic-table query="" number-of-displayed-rows=1
-                                            options='{"showFilter": true}' column-configuration='[
-                                                                {"displayName": "Field", "cellTemplate": "<semantic-link class=annotationWidth iri=\"{{o.value}}\">no data available</semantic-link>"},
-                                                                {"displayName": "Annotation Title" },
-                                                                {"displayName": "Author"},
-                                                                {"displayName": "Modified"},
-                                                                {"displayName": "Role"}
-                                                                ]'>
-                                        </semantic-table> --]]
-                                    </div>
-                                </div>
-
-                            </div>
-                        </bs-tab-pane>
-                        [[/if]] -->
-
-                        [[#if (hasPermission "forms:ldp:*")]]
-                        <bs-tab-pane event-key="related">
-                            <div class="rs-resource-tab-container">
-
-                                <div>
-                                    <hr class="rs-resource-section--headerLine">
-                                    <span class="h1 rs-resource-section--header">Resources</span>
-                                </div>
-                                <div>
-                                    <input type="text" placeholder="Search in related data ..."
-                                        class="rs-searchInput text-s">
-                                </div>
-
-                                <div>
-                                    [[#block "relatedResources"]]
-                                    [[/block]]
-                                </div>
-
-                                [[!-- <div class="rs-resource-section-showall">
-                                    <button type="button" class="rs-button rs-button-icon-M--dark">
-                                        <rs-icon icon-type="rounded" icon-name="expand_more" symbol="true"></rs-icon>
-                                    </button>
-                                    <span class="text-underline" style="margin-left:8px;">Show all fields</span>
-                                </div> --]]
-
-                            </div>
-
-                            <div class="rs-resource-tab-container">
-                                <div>
-                                    <hr class="rs-resource-section--headerLine">
-                                    <span class="h1 rs-resource-section--header">Pages</span>
-                                </div> 
-
-                                <div class="rs-resource-data-table">
-                                    <div class="table-responsive rs-table">
-                                        <table class="table table-hover">
-                                            <thead>
-                                                <tr>
-                                                    <th scope="col">Modified</th>
-                                                    <th scope="col">Page type</th>
-                                                    <th scope="col">Link</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td>12.12.2018</td>
-                                                    <td>Narrative</td>
-                                                    <td><a>page link</a></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>12.12.2018</td>
-                                                    <td>Narrative</td>
-                                                    <td><a>page link</a></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>12.12.2018</td>
-                                                    <td>Narrative</td>
-                                                    <td><a>page link</a></td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-
-                                <div class="rs-resource-section-showall">
-                                    <button type="button" class="rs-button rs-button-icon-M--dark">
-                                        <rs-icon icon-type="rounded" icon-name="expand_more" symbol="true"></rs-icon>
-                                    </button>
-                                    <span class="text-underline" style="margin-left:8px;">Show all fields</span>
-                                </div>
-
-                            </div> 
-
-                            <div class="rs-resource-page-section">
-               
-                                <div>
-                                    <hr class="rs-resource-section--headerLine">
-                                    <span class="h1 rs-resource-section--header">Assertions</span>
-                                </div>
-
-                                <div class="rs-resource-section-cards">
-                                    [[#block "relatedAssertions"]]
-                                    [[/block]]
-                                </div>
-
-                            </div> 
-
-                            <div class="rs-resource-tab-container">
-                              
-                                <div>
-                                    <hr class="rs-resource-section--headerLine">
-                                    <span class="h1 rs-resource-section--header">Wikidata</span>
-                                </div>
-
-                                [[#block "relatedWikidata"]]
-                                [[/block]]
-
-                            </div> 
-                        </bs-tab-pane>
-                        [[/if]]
-
-                    </bs-tab-content>
-                </div>
-            </bs-tab-container>
-         
+                <mp-event-target-template-render id='resource-relatedResourcesView-search-container' template='{{> searchContent}}'>
+                    <template id='searchContent'>
+                        {{#if treeItemSelected}}
+                            <div class='search-page-container'>
+                                [[> rsp:ResourceSearchContent config='{{iri}}']] 
+                        </div>  
+                        {{/if}}
+                    </template>
+                </mp-event-target-template-render>
+            </mp-splitpane>
         </div>
-    </template>
-</with-types>
-[[/if]]
-
-[[#*inline "resourceHeaderData"]]
-[[#block "headerData"]]
-<!-- RESOURCE LABEL-->
-<div class="rs-resource-header--singletitle">
-    <div class="rs-resource-header--title" style="text-transform: capitalize;">
-        <mp-label iri='[[this]]'></mp-label>
-    </div>
-    <div style="display: flex ;">
-        <mp-copy-to-clipboard text='[[this]]'>
-            <div class="rs-copy-IRI">Copy IRI</div>
-        </mp-copy-to-clipboard>
-        <div class="statements">Statements</div>
-    </div>
-    
+    </div> 
 </div>
 
-<semantic-query query='SELECT (<[[this]]> as ?iri)
-                                (GROUP_CONCAT(DISTINCT(?typeLabel); SEPARATOR = " - ") AS ?typeList)
-                                (GROUP_CONCAT(DISTINCT(?instituteLabel); SEPARATOR = "; ") AS ?instituteList) 
-                        WHERE {
-                            OPTIONAL {
-                                <[[this]]> a ?type .
-                                ?type rdfs:label ?typeLabel .
-                                BIND( LANG(?typeLabel) AS ?language). 
-                            }
-
-                            FILTER (?language = "en" || ?language = "")
-                              
-                            OPTIONAL {
-                                <[[this]]> crm:P105_right_held_by ?institute .
-                                ?institute rdfs:label ?instituteLabel .
-                            }
-                            
-                        } GROUP BY ?iri' template='{{> headerDefaultData}}'>
-
-    <template id="headerDefaultData">
-        <div>
-            {{#each bindings}}
-            <!-- RESOURCE DATA SOURCE -->
-            {{#ifCond instituteList.value "!==" ""}}
-            <div class="row pb-2-5">
-                <div class="[[#if image]]col-xs-4[[else]]col-xs-2[[/if]]">Data source</div>
-                <div class="[[#if image]]col-xs-8[[else]]col-xs-10[[/if]]">{{instituteList.value}}</div>
-            </div>
-            {{/ifCond}}
-
-            <!-- RESOURCE TYPE -->
-            {{#ifCond typeList.value "!==" ""}}
-            <div class="row" style="margin-bottom:16px;">
-                <div class="[[#if image]]col-xs-4[[else]]col-xs-2[[/if]]">Type</div>
-                <div class="[[#if image]]col-xs-8[[else]]col-xs-10[[/if]]" style="text-transform:capitalize;">
-                    {{typeList.value}}
-                </div>
-            </div>
-            {{/ifCond}}
-
-            {{/each}}
-        </div>
-    </template>
-</semantic-query>
-[[/block]]
-[[/inline]]

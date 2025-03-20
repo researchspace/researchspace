@@ -292,7 +292,7 @@
                           <div data-flex-self="md-full">
                               <semantic-search-result id='{{node}}-listOfResources-result'>
                                   <semantic-table id='{{node}}-listOfResources-table'
-                                                  class-name="table-fixed-header table-scrollable-content table-expanded search-table-container table-with-checkbox"
+                                                  class-name="table-fixed-header table-scrollable-content table-expanded search-table-container"
                                                   query='SELECT DISTINCT ?subject ?iri ?resourceLabel ?description 
                                                           WHERE {
                                                               BIND(?subject as ?iri) .
@@ -347,7 +347,6 @@
                                                                       </div>'
                       
                                                   column-configuration='[
-                                                                          {"variableName": "subject", "displayName": "", "cellTemplate": "{{> selectionCheckbox}}" },
                                                                           {"variableName": "subject", "displayName": "{{#if columnTitle1}}{{columnTitle1}}{{else}}{{resourceConfigLabel}} name{{/if}}", "cellTemplate": "{{> column1}}" },
                                                                           {"variableName": "", "displayName": "{{#if columnTitle2}}{{columnTitle2}}{{else}}Description{{/if}}", "cellTemplate": "{{> column2}}" },
                                                                           {"variableName": "", "displayName": "{{#if columnTitle3}}{{columnTitle3}}{{else}}{{/if}}", "cellTemplate": "{{> column3}}" },
@@ -356,93 +355,91 @@
                                                                       ]'
                       
                                   >
-                                    <template id='selectionCheckbox'>
-                                      [[#if (hasPermission "forms:ldp:*")]]
-                                        <div>
-                                          <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
-                                        </div>
-                                      [[/if]]
-                                    </template>
 
                                     <template id='column1'>
                                       <div>
-                                        <div style="display: flex; align-items: center; gap: 15px;">                               
-                                          <mp-draggable iri='{{iri.value}}'>
-                                            <mp-overlay-dialog  id="{{iri.value}}-resource-preview-dialog"  
-                                                                type="modal" 
-                                                                class="modal-xlSize preview_modal"
-                                                                title="Preview">
-                                              <mp-overlay-dialog-trigger>
-                                                <div class="resource-thumbnail-small-container">
-                                                  {{#if (eq listedResourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation")}}
-                                                    <rs-iiif-image-thumbnail  height='40' width='45' style='height: 100%; width: 100%;'
-                                                                              image-or-region='{{iri.value}}'      
-                                                                              [[> rsp:IIIFConfig]]
-                                                                            >
-                                                    </rs-iiif-image-thumbnail>
-                                                  {{else}}
-                                                    <mp-resource-thumbnail iri='{{iri.value}}' class='resource-thumbnail-small'>
-                                                        <mp-resource-thumbnail-fallback>
-                                                          <mp-draggable iri='{{iri.value}}'>
-                                                            {{#if resourceIcon}}
-                                                              <rs-icon icon-type="rounded" icon-name="{{resourceIcon}}" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
-                                                            {{else}}
-                                                              <rs-icon icon-type="rounded" icon-name="image" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
-                                                            {{/if}}
-                                                          </mp-draggable>
-                                                        </mp-resource-thumbnail-fallback>
-                                                    </mp-resource-thumbnail>
-                                                  {{/if}}         
-                                                </div>
-                                              </mp-overlay-dialog-trigger>
-                                              <mp-overlay-dialog-content>
-                                                <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
-                                                                options='{"resource": "{{iri.value}}", 
-                                                                            "listedResourceConfig": "{{listedResourceConfig.value}}", 
-                                                                            "resourceConfigLabel": "{{resourceConfigLabel}}",
-                                                                            "resourceDescription": "{{description.value}}",
-                                                                            "resourceDetailSection": true
-                                                                            }' >
-                                                </inline-template> 
-                                              </mp-overlay-dialog-content>
-                                            </mp-overlay-dialog>
-                                          </mp-draggable>
-      
-                                          <div>
+                                        <div style="display: flex; align-items: center; gap: 5px;">
+                                          [[#if (hasPermission "forms:ldp:*")]]
+                                            <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
+                                          [[/if]]  
+                                          <div style="display: flex; align-items: center; gap: 15px;">                          
                                             <mp-draggable iri='{{iri.value}}'>
-                                              <div>
-                                                {{#if (eq listedResourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
-                                                  <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                                  urlqueryparam-view='authority-list'
-                                                                  urlqueryparam-resource='{{iri.value}}'>
-                                                    <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
-                                                  </semantic-link>
-                                                {{else}}
-                                                  <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                                  urlqueryparam-view='resource-editor'
-                                                                  urlqueryparam-resource='{{iri.value}}'>
-                                                    <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
-                                                  </semantic-link>
-                                                {{/if}}
-                                              </div>
+                                              <mp-overlay-dialog  id="{{iri.value}}-resource-preview-dialog"  
+                                                                  type="modal" 
+                                                                  class="modal-xlSize preview_modal"
+                                                                  title="Preview">
+                                                <mp-overlay-dialog-trigger>
+                                                  <div class="resource-thumbnail-small-container">
+                                                    {{#if (eq listedResourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation")}}
+                                                      <rs-iiif-image-thumbnail  height='40' width='45' style='height: 100%; width: 100%;'
+                                                                                image-or-region='{{iri.value}}'      
+                                                                                [[> rsp:IIIFConfig]]
+                                                                              >
+                                                      </rs-iiif-image-thumbnail>
+                                                    {{else}}
+                                                      <mp-resource-thumbnail iri='{{iri.value}}' class='resource-thumbnail-small'>
+                                                          <mp-resource-thumbnail-fallback>
+                                                            <mp-draggable iri='{{iri.value}}'>
+                                                              {{#if resourceIcon}}
+                                                                <rs-icon icon-type="rounded" icon-name="{{resourceIcon}}" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
+                                                              {{else}}
+                                                                <rs-icon icon-type="rounded" icon-name="image" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
+                                                              {{/if}}
+                                                            </mp-draggable>
+                                                          </mp-resource-thumbnail-fallback>
+                                                      </mp-resource-thumbnail>
+                                                    {{/if}}         
+                                                  </div>
+                                                </mp-overlay-dialog-trigger>
+                                                <mp-overlay-dialog-content>
+                                                  <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
+                                                                  options='{"resource": "{{iri.value}}", 
+                                                                              "listedResourceConfig": "{{listedResourceConfig.value}}", 
+                                                                              "resourceConfigLabel": "{{resourceConfigLabel}}",
+                                                                              "resourceDescription": "{{description.value}}",
+                                                                              "resourceDetailSection": true
+                                                                              }' >
+                                                  </inline-template> 
+                                                </mp-overlay-dialog-content>
+                                              </mp-overlay-dialog>
                                             </mp-draggable>
-      
-                                            {{#if (eq listedResourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/User")}}
-                                              <semantic-query query='SELECT DISTINCT ?systemUser WHERE { 
-                                                                      BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
-                                                                    } LIMIT 1'>
-                                                <template id='template'>
-                                                  {{#ifCond bindings.0.systemUser.value "===" iri.value}}
-                                                    <div class="color-action text-bold600 text-font-size__xsmall text-truncate-line1">My profile</div>
+        
+                                            <div>
+                                              <mp-draggable iri='{{iri.value}}'>
+                                                <div>
+                                                  {{#if (eq listedResourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
+                                                    <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                    urlqueryparam-view='authority-list'
+                                                                    urlqueryparam-resource='{{iri.value}}'>
+                                                      <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
+                                                    </semantic-link>
                                                   {{else}}
-                                                    <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">{{resourceConfigLabel}}</div>
-                                                  {{/ifCond}}
-                                                </template>
-                                              </semantic-query>
-                                            {{else}}
-                                              <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">{{resourceConfigLabel}}</div>
-                                            {{/if}}
-                                          </div>
+                                                    <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                    urlqueryparam-view='resource-editor'
+                                                                    urlqueryparam-resource='{{iri.value}}'>
+                                                      <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
+                                                    </semantic-link>
+                                                  {{/if}}
+                                                </div>
+                                              </mp-draggable>
+        
+                                              {{#if (eq listedResourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/User")}}
+                                                <semantic-query query='SELECT DISTINCT ?systemUser WHERE { 
+                                                                        BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
+                                                                      } LIMIT 1'>
+                                                  <template id='template'>
+                                                    {{#ifCond bindings.0.systemUser.value "===" iri.value}}
+                                                      <div class="color-action text-bold600 text-font-size__xsmall text-truncate-line1">My profile</div>
+                                                    {{else}}
+                                                      <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">{{resourceConfigLabel}}</div>
+                                                    {{/ifCond}}
+                                                  </template>
+                                                </semantic-query>
+                                              {{else}}
+                                                <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">{{resourceConfigLabel}}</div>
+                                              {{/if}}
+                                            </div>
+                                          </div>   
                                         </div>
                                       </div>
                                     </template>

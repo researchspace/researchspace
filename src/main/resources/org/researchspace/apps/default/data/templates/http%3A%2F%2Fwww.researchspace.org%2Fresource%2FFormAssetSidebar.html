@@ -1149,7 +1149,10 @@
                                     <div>
                                         <bs-nav class="icon-tabs">
                                             <bs-nav-item event-key="listView" title="list view">
-                                                <rs-icon icon-type="rounded" icon-name="view_list" symbol="true"></rs-icon>
+                                                <rs-icon icon-type="sharp" icon-name="view_list"></rs-icon>
+                                            </bs-nav-item>
+                                            <bs-nav-item event-key="tableView" title="List of web URL links">
+                                                <rs-icon icon-type="sharp" icon-name="link"></rs-icon>
                                             </bs-nav-item>
                                         </bs-nav>
                                     </div>
@@ -1159,6 +1162,36 @@
                                     <bs-tab-pane event-key="listView">
                                         <div class="tab-pane-content">
                                             <semantic-form-text-input for='entity_web_URL' label="Web URL link" render-header="false" placeholder="Enter web URL link"></semantic-form-text-input>
+                                        </div>
+                                    </bs-tab-pane>
+                                    <bs-tab-pane event-key="tableView">
+                                        <div class="tab-pane-content">
+                                            <semantic-table id='web-link-table'
+                                                            class-name="table-no-header table-no-margin"
+                                                            query='SELECT DISTINCT ?link WHERE {
+                                                                        <{{node}}> crm:P129i_is_subject_of ?digital_object .
+                                                                        ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                                                                        ?digital_object crm:P190_has_symbolic_content ?link .
+                                                                    
+                                                                        ?digital_object crmdig:L11i_was_output_of ?digital_object_embed .
+                                                                        ?digital_object_embed crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/digital_object_embed> .
+                                                                        
+                                                                    } 
+                                                                    ORDER BY ASC(STR(LCASE(?link)))'
+                                                            number-of-displayed-rows=10
+                                                            options='{"showTableHeading":false}'
+                                                            no-result-template='{{> noResults}}'
+                                                            column-configuration='[ {"variableName": "vocabularyLabel", "displayName": "Web URL link", "cellTemplate": "{{> link}}" }
+                                                                                ]'>
+                                                
+                                                <template id="noResults">
+                                                    <div></div>
+                                                </template>
+
+                                                <template id='link'>
+                                                    <a href="{{link.value}}" target="_blank" class="text-link">{{link.value}}</a>
+                                                </template>
+                                            </semantic-table>
                                         </div>
                                     </bs-tab-pane>
                                 </bs-tab-content>

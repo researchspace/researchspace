@@ -1166,32 +1166,34 @@
                                     </bs-tab-pane>
                                     <bs-tab-pane event-key="tableView">
                                         <div class="tab-pane-content">
-                                            <semantic-table id='web-link-table'
-                                                            class-name="table-no-header table-no-margin"
-                                                            query='SELECT DISTINCT ?link WHERE {
-                                                                        <{{node}}> crm:P129i_is_subject_of ?digital_object .
-                                                                        ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
-                                                                        ?digital_object crm:P190_has_symbolic_content ?link .
-                                                                    
-                                                                        ?digital_object crmdig:L11i_was_output_of ?digital_object_embed .
-                                                                        ?digital_object_embed crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/digital_object_embed> .
+                                            {{#if node}}
+                                                <semantic-table id='web-link-table'
+                                                                class-name="table-no-header table-no-margin"
+                                                                query='SELECT DISTINCT ?link WHERE {
+                                                                            <{{node}}> crm:P129i_is_subject_of ?digital_object .
+                                                                            ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                                                                            ?digital_object crm:P190_has_symbolic_content ?link .
                                                                         
-                                                                    } 
-                                                                    ORDER BY ASC(STR(LCASE(?link)))'
-                                                            number-of-displayed-rows=10
-                                                            options='{"showTableHeading":false}'
-                                                            no-result-template='{{> noResults}}'
-                                                            column-configuration='[ {"variableName": "vocabularyLabel", "displayName": "Web URL link", "cellTemplate": "{{> link}}" }
-                                                                                ]'>
-                                                
-                                                <template id="noResults">
-                                                    <div></div>
-                                                </template>
+                                                                            ?digital_object crmdig:L11i_was_output_of ?digital_object_embed .
+                                                                            ?digital_object_embed crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/digital_object_embed> .
+                                                                            
+                                                                        } 
+                                                                        ORDER BY ASC(STR(LCASE(?link)))'
+                                                                number-of-displayed-rows=10
+                                                                options='{"showTableHeading":false}'
+                                                                no-result-template='{{> noResults}}'
+                                                                column-configuration='[ {"variableName": "vocabularyLabel", "displayName": "Web URL link", "cellTemplate": "{{> link}}" }
+                                                                                    ]'>
+                                                    
+                                                    <template id="noResults">
+                                                        <div></div>
+                                                    </template>
 
-                                                <template id='link'>
-                                                    <a href="{{link.value}}" target="_blank" class="text-link">{{link.value}}</a>
-                                                </template>
-                                            </semantic-table>
+                                                    <template id='link'>
+                                                        <a href="{{link.value}}" target="_blank" class="text-link">{{link.value}}</a>
+                                                    </template>
+                                                </semantic-table>
+                                            {{/if}}
                                         </div>
                                     </bs-tab-pane>
                                 </bs-tab-content>

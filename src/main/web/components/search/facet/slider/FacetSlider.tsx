@@ -25,7 +25,7 @@ import * as moment from 'moment';
 import { createFactory, Props, Component } from 'react';
 import * as React from 'react';
 import { FormControl } from 'react-bootstrap';
-import { Range as Slider } from 'rc-slider';
+import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 
 import { DateValue, DateRange, NumericRange, YearValue } from 'platform/components/semantic/search/data/search/Model';
@@ -212,12 +212,13 @@ export class FacetSliderComponent extends Component<FacetSliderProps, FacetSlide
             </div>
           )}
           <Slider
+            range
             allowCross={false}
             min={min}
             max={max}
             className={styles.slider}
             value={[value.begin, value.end]}
-            handle={(props) => <CustomHandle {...props} toStringFn={toStringFn} />}
+            handleRender={(props) => <CustomHandle {...props} toStringFn={toStringFn} />}
             onChange={this.onSliderValueChange}
           />
           {this.props.kind === 'numeric-range' ? (

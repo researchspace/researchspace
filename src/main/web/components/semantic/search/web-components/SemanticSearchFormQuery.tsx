@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 import * as React from 'react';
-import { each } from 'lodash';
+import { each, debounce } from 'lodash';
 import * as SparqlJs from 'sparqljs';
 import { Just } from 'data.maybe';
 
@@ -90,6 +90,21 @@ export interface SemanticFormBasedQueryConfig {
    * ID of the DOM element in the template to hide when query search has been executed
    */
   elementIdToHideAfterSearch?: string;
+
+  /**
+   * When true, the search will be executed as the form changes.
+   * 
+   * @default false
+   */
+  evaluateOnChange?: boolean;
+
+  /**
+   * Number of milliseconds to wait after the last form change before sending the query.
+   * Only used when evaluateOnChange is true.
+   * 
+   * @default 300
+   */
+  evaluateOnChangeDelay?: number;
 }
 
 export interface QueryTemplate {
@@ -180,6 +195,7 @@ interface State {
 
 class FormQueryInner extends React.Component<InnerProps, State> {
   private form: SemanticForm;
+  private debouncedExecuteSearch: () => void;
 
   constructor(props: InnerProps) {
     super(props);
@@ -190,6 +206,10 @@ class FormQueryInner extends React.Component<InnerProps, State> {
         multi: this.props.multi,
       }),
     };
+
+    // noop by default, we set it to real function only when 
+    // state is initialized in onChange
+    this.debouncedExecuteSearch = () => {}
   }
 
   componentWillReceiveProps(props: InnerProps) {
@@ -231,7 +251,21 @@ class FormQueryInner extends React.Component<InnerProps, State> {
   };
 
   private onFormChanged = (model: CompositeValue) => {
-    this.setState({ model });
+    if (this.props.evaluateOnChange && !this.state.model) {
+      // we need to do this because the form triggers on change even when it is initializing
+      // setting default values, etc.
+      // because there is no nice way to distinguish between the two cases
+      // we just wait for a second and only then start executing the search on change    
+      setTimeout( () => {
+        // Create debounced version of executeSearch
+        this.debouncedExecuteSearch = debounce(
+          this.executeSearch,
+          this.props.evaluateOnChangeDelay || 300
+        );
+      }, 1000);
+    }
+
+    this.setState({ model }, this.debouncedExecuteSearch);
   };
 
   private onFormLoaded = (model: CompositeValue) => {

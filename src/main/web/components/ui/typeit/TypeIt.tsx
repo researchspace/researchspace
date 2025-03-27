@@ -41,7 +41,11 @@ interface PauseInstruction {
   duration: number;
 }
 
-type TypeItInstruction = TypeInstruction | DeleteInstruction | EraseInstruction | PauseInstruction;
+interface BreakInstruction {
+  type: 'break';
+}
+
+type TypeItInstruction = TypeInstruction | DeleteInstruction | EraseInstruction | PauseInstruction | BreakInstruction;
 
 export interface TypeItProps extends HTMLAttributes<HTMLElement> {
   /**
@@ -161,6 +165,9 @@ export class TypeItComponent extends React.Component<TypeItProps> {
               break;
             case 'pause':
               this.typeItInstance.pause(instruction.duration);
+              break;
+            case 'break':
+              this.typeItInstance.break();
               break;
             default:
               console.warn(`Unknown TypeIt instruction type: ${(instruction as any).type}`);

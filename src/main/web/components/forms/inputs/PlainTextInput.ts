@@ -47,16 +47,17 @@ export interface PlainTextInputProps extends AtomicValueInputProps {
   requireLanguage?: boolean;
 }
 
-interface State {
+export interface PlainTextInputState {
   text: string;
   language: string;
 }
 
-export class PlainTextInput extends AtomicValueInput<PlainTextInputProps, State> {
-  private hasFocus = false;
+export class PlainTextInput<P extends PlainTextInputProps, S extends PlainTextInputState> 
+  extends AtomicValueInput<P, S> {
+  protected hasFocus = false;
   private languages: string[];
 
-  constructor(props: PlainTextInputProps, context: any) {
+  constructor(props: P, context: any) {
     super(props, context);
     this.state = this.reformatText(props);
     this.languages = this.getAvailableLanguages();
@@ -68,7 +69,7 @@ export class PlainTextInput extends AtomicValueInput<PlainTextInputProps, State>
     }
   }
 
-  componentWillReceiveProps(nextProps: PlainTextInputProps) {
+  componentWillReceiveProps(nextProps: P) {
     if (!this.hasFocus) {
       this.setState(this.reformatText(nextProps));
     }
@@ -104,16 +105,20 @@ export class PlainTextInput extends AtomicValueInput<PlainTextInputProps, State>
     return languages;
   }
 
-  private reformatText(props: PlainTextInputProps): State {
+  protected reformatText(props: P): S {
     const rdfNode = FieldValue.asRdfNode(props.value);
     const selectedLanguage = this.state ? this.state.language : undefined;
-    return {
-      text: rdfNode ? rdfNode.value : '',
-      language: rdfNode ? getLanguageFromNode(rdfNode) : selectedLanguage,
-    };
+    
+    // Create a new state object based on the current state (if it exists)
+    // or create a new object that will be cast to type S
+    // we need to do this because PlainTextInput is a generic class
+    const state = this.state ? { ...this.state } : {} as S;    
+    state.text = rdfNode ? rdfNode.value : '';
+    state.language = rdfNode ? getLanguageFromNode(rdfNode) : selectedLanguage;
+    return state;
   }
 
-  private onTextChanged = (event: FormEvent<FormControl> | ChangeEvent<HTMLTextAreaElement>) => {
+  protected onTextChanged = (event: FormEvent<FormControl> | ChangeEvent<HTMLTextAreaElement>) => {
     const text = (event.target as any).value;
     const language = this.state.language;
     this.setState({ text, language });
@@ -129,7 +134,7 @@ export class PlainTextInput extends AtomicValueInput<PlainTextInputProps, State>
     }
   }
 
-  private createValue(text: string, language: string): AtomicValue | EmptyValue {
+  protected createValue(text: string, language: string): AtomicValue | EmptyValue {
     if (text.length === 0) {
       return FieldValue.empty;
     }
@@ -197,7 +202,6 @@ export class PlainTextInput extends AtomicValueInput<PlainTextInputProps, State>
           },
           onBlur: () => {
             this.hasFocus = false;
-            this.setState(this.reformatText(this.props));
           },
           title: rdfNode ? rdfNode.toString() : undefined,
           readOnly: !this.canEdit(),

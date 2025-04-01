@@ -36,12 +36,14 @@ export class Dropzone extends React.Component<DropzoneProps, {}> {
     const classNames = [BASE_CLASSNAME, className].join(' ')
     return (
       <ReactDropzone {...otherProps}>
-        {(state) => (
-          <div {...state.getRootProps()} className={classNames} style={style}>
+        {(state) => { 
+          const className = classNames + (state.isDragAccept ? ' drag-accept' : '');
+          return (
+          <div {...state.getRootProps()} className={className} style={style}>
             {isFunction(children) ? children(state) : children}
             <input {...state.getInputProps()} />
           </div>
-        )}
+        )}}
       </ReactDropzone>
     );
   }

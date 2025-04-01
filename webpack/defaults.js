@@ -72,7 +72,8 @@ module.exports = function() {
             "components/text-editor",
             "components/forms/inputs/drop",
             "components/editors",
-            "components/x3ml"
+            "components/x3ml",
+            "pharos/components"
         ],
         jsonSchemTypes: [
             "TextAnnotationTemplateBindings",

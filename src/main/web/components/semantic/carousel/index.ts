@@ -18,3 +18,4 @@
  */
 
 export { SemanticCarousel, SemanticCarouselConfig, SemanticCarouselProps } from './SemanticCarousel';
+export { Carousel, CarouselConfig, CarouselProps, ReactSlickOptions } from './Carousel';

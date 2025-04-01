@@ -17,6 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//import { getCurrentUrl } from 'platform/api/navigation';
+
 export const UriComponentFunctions = {
   /**
    * Encodes a URI component.
@@ -34,4 +36,8 @@ export const UriComponentFunctions = {
   decodeUriComponent: function (uri: string) {
     return decodeURIComponent(uri);
   },
+
+  //urlParam: function (param: string) {
+  //  return getCurrentUrl().search(true)[param];
+  //}
 };

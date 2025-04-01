@@ -28,10 +28,25 @@ export class FormWithEventTrigger extends Component<any, any> {
           [element.name]: element.value
         }), {});
 
+    // Find the query input and determine input type
+    let inputType = "text";
+    if (formData.query) {
+      // Trim whitespace and update the query value
+      formData.query = formData.query.trim();
+      
+      // Check if it starts with http
+      if (formData.query.startsWith('http')) {
+        inputType = "imageUrl";
+      }
+    }
+
     trigger({
       eventType: "FormWithEvent.Submit",
       source: this.props.id,
-      data: formData,
+      data: {
+        queryParams: formData,
+        inputType: inputType, // Add the input type to the data
+      },
     });
   }
 }

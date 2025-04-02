@@ -93,11 +93,8 @@
                                                     <template id='nodeTemplate'>
                                                         <mp-event-trigger   id='{{node.value}}-open-resource-search-page--trigger' 
                                                                             type='Component.TemplateUpdate'
-                                                                            targets='["resource-relatedResourcesView-search-container"]'
-                                                                            data='{ "viewId": "resource-search",
-                                                                                    "iri":"{{node.value}}",
-                                                                                    "resourceIri": "{{node.value}}",
-                                                                                    "title":"{{nodeLabel.value}}",
+                                                                            targets='["resource-relatedResourcesView-results-container"]'
+                                                                            data='{ "config":"{{node.value}}",
                                                                                     "treeItemSelected":"true"
                                                                                 }'>
                                                             <div class="Tree--itemLink">
@@ -114,6 +111,21 @@
                                                 </semantic-tree>
                                             </div>
                                         [[/inline]]
+
+                                        <div class="resource-relatedResourcesView-sidebar-section-settings-container">
+                                            <mp-event-trigger   id='{{iri}}-open-allConnectionsView--trigger' 
+                                                                type='Component.TemplateUpdate'
+                                                                targets='["resource-relatedResourcesView-results-container"]'
+                                                                data='{ "viewAllConnections":"true"
+                                                                      }'>
+                                  
+                                              <button class="btn btn-default btn-textAndIcon" style="justify-content: space-between;">
+                                  
+                                                <div>View all connections</div>
+                                                <rs-icon icon-type="rounded" icon-name="chevron_right" symbol="true"></rs-icon>
+                                              </button>
+                                            </mp-event-trigger> 
+                                        </div>
                                     </div>
                                 </template>
                             </mp-event-target-template-render>
@@ -121,12 +133,18 @@
                     </mp-splitpane-sidebar-open>
                 </div>
 
-                <mp-event-target-template-render id='resource-relatedResourcesView-search-container' template='{{> searchContent}}'>
-                    <template id='searchContent'>
+                <mp-event-target-template-render id='resource-relatedResourcesView-results-container' template='{{> resultsContent}}'>
+                    <template id='resultsContent'>
                         {{#if treeItemSelected}}
                             <div class='search-page-container'>
-                                [[> rsp:ResourceSearchContent config='{{iri}}']] 
+                                [[> rsp:ResourceSearchContent config='{{config}}']] 
                             </div>  
+                        {{else if viewAllConnections}}
+                            <mp-field-visualization subject='{{iri}}'
+                                                    fields='[[fieldDefinitionsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE {?resource ?field ?o . ?field a <http://www.researchspace.org/resource/system/fields/Field> } ORDER BY DESC(?field)" resource=this.iri) ]]'
+                                                    template='{{> template}}'>
+                                <template id="template">{{> rsp:ResourceFieldBasedVisualization subject="{{iri}}"}}</template>
+                            </mp-field-visualization>
                         {{/if}}
                     </template>
                 </mp-event-target-template-render>

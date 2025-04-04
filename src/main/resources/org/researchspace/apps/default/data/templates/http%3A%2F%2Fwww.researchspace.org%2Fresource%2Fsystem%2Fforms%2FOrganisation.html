@@ -499,12 +499,13 @@
                                                         {{#ifCond bindings.0.node.value "===" place}}
                                                             <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
                                                         {{else}}
-                                                            <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                            urlqueryparam-view='resource-editor' 
-                                                                            urlqueryparam-resource-iri='{{node.value}}'
-                                                                            >
-                                                                <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                            </semantic-link>
+                                                            <mp-draggable iri="{{node.value}}">
+                                                                <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                        urlqueryparam-view='resource-editor' 
+                                                                                        urlqueryparam-resource-iri='{{node.value}}'>
+                                                                    <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                                </semantic-link-container>
+                                                            </mp-draggable>
                                                         {{/ifCond}}
                                                     </div>
                                                 </template>
@@ -1253,96 +1254,6 @@
             </rs-tab>
     
             [[> rsp:FormMetadataTab]]
-
-
-    [[!--        {{#if onlyDetails}}
-            {{else}}
-                <rs-tab event-key="exhibition" title="Exhibitions">
-                    <semantic-form-select-input for='organisation_exhibition' 
-                                                label="Exhibition at the organisation"
-                                                placeholder="Select exhibition title" 
-                                                nested-form-templates='[ 
-                                                    {
-                                                        "label": "Exhibition",
-                                                        "nestedForm": "{{{{raw}}}}
-                                                                        {{> \"http://www.researchspace.org/resource/system/forms/Exhibition\" nested=true editable=true mode=\"new\"}}
-                                                                    {{{{/raw}}}}"
-                                                    }
-                                                ]'> 
-                    </semantic-form-select-input> 
-
-                    {{#if node}}
-                        <div style="margin-top: 20px;">
-                            <semantic-table id='exhibition-table'
-                                            query='SELECT DISTINCT ?exhibition ?exhibitionTitle ?statusLabel 
-                                                                    (CONCAT(STR(DAY(?startDate)),"-",STR(MONTH(?startDate)),"-",STR(YEAR(?startDate))) as ?finalStartDate)
-                                                                    (CONCAT(STR(DAY(?endDate)),"-",STR(MONTH(?endDate)),"-",STR(YEAR(?endDate))) as ?finalEndDate)
-                                                                    (GROUP_CONCAT(?exhibitionType;SEPARATOR=", ") AS ?types)
-                                                    WHERE {
-                                                        BIND(<{{node}}> as ?organisation) .
-                                                        ?exhibition crm:P14_carried_out_by ?organisation .
-
-                                                        ?exhibition crm:P1_is_identified_by ?appellation .
-                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
-                                                        ?appellation crm:P190_has_symbolic_content ?exhibitionTitle .  
-
-                                                        OPTIONAL {
-                                                        ?exhibition crm:P2_has_type ?exhibitionTypeURI .
-                                                        ?exhibitionTypeURI crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/exhibition_type> .
-                                                        ?exhibitionTypeURI skos:prefLabel ?exhibitionType .
-                                                        }
-
-                                                        OPTIONAL {
-                                                        ?exhibition crm:P2_has_type ?status .
-                                                        ?status crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/status> .
-                                                        ?status skos:prefLabel ?statusLabel .
-                                                        }
-
-                                                        OPTIONAL {
-                                                        ?exhibition crm:P4_has_time-span ?timespanStart .
-                                                        ?timespanStart crm:P82a_begin_of_the_begin ?startDate .
-                                                        }
-                                                        
-                                                        OPTIONAL {
-                                                        ?exhibition crm:P4_has_time-span ?timespanEnd .
-                                                        ?timespanEnd crm:P82b_end_of_the_end ?endDate .
-                                                        }
-                                                    } GROUP BY ?exhibition ?exhibitionTitle ?statusLabel ?startDate ?endDate
-                                                    ORDER BY ASC( ?exhibitionTitle)'
-                                            
-                                            number-of-displayed-rows=5
-                                            options='{"showFilter": true}'
-                                            column-configuration='[
-                                                                    {"variableName": "exhibitionTitle", "displayName": "Exhibition title", "cellTemplate": "{{> title}}"},
-                                                                    {"variableName": "types", "displayName": "Exhibition type" },
-                                                                    {"variableName": "statusLabel", "displayName": "Status" },
-                                                                    {"variableName": "finalStartDate", "displayName": "Start date" },
-                                                                    {"variableName": "finalEndDate", "displayName": "End date" }
-                                                                ]'   >
-
-                                <template id='title'>
-                                    <mp-draggable iri='{{exhibition.value}}'>
-                                    <div style="display: flex; align-items: center; cursor: grab;">
-                                        <i class="rs-icon rs-icon-drag_points" style="margin-right: 12px;"></i>
-                                        <semantic-link iri='[[resolvePrefix "rsp:ThinkingFrames"]]' 
-                                                        urlqueryparam-resource='{{exhibition.value}}' 
-                                                        urlqueryparam-view='resource-editor' 
-                                                        class='a-draggable'
-                                                        >
-                                            <div style="display: flex; align-items: center;">
-                                            {{exhibitionTitle.value}}
-                                        </div>
-                                        </semantic-link>
-                                    </div>
-                                    </mp-draggable>
-                                </template>
-
-                            </semantic-table>
-                        </div>
-                    {{/if}}
-                </rs-tab>
-            {{/if}}
-    --]]
 
         </rs-tabs>
    

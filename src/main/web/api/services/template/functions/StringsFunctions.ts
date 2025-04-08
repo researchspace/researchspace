@@ -26,5 +26,12 @@ export const StringsFunctions = {
       separator = ' ';
     }
     return text.split(separator);
+  },
+
+  escapeForJson: function(text: string) {
+    if (typeof text !== 'string') {
+      return '';
+    }
+    return text.replace(/"/g, '\\"');
   }
 };

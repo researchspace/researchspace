@@ -1,0 +1,646 @@
+@prefix : <http://www.researchspace.org/resource/> .
+@prefix rs: <http://www.researchspace.org/ontology/> .
+@prefix User: <http://www.researchspace.org/resource/user/> .
+@prefix Help: <http://help.researchspace.org/resource/> .
+@prefix Platform: <http://www.researchspace.org/resource/system/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix crmdig: <http://www.ics.forth.gr/isl/CRMdig/> .
+@prefix rshelp: <http://researchspace.org/help/> .
+@prefix crmsci: <http://www.cidoc-crm.org/cidoc-crm/CRMsci/> .
+@prefix assets: <http://www.researchspace.org/resource/assets/> .
+@prefix crmgeo: <http://www.ics.forth.gr/isl/CRMgeo/> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix crminfluence: <http://www.cidoc-crm.org/cidoc-crm/influence/> .
+@prefix crm: <http://www.cidoc-crm.org/cidoc-crm/> .
+@prefix crminf: <http://www.ics.forth.gr/isl/CRMinf/> .
+@prefix Admin: <http://www.researchspace.org/resource/admin/> .
+@prefix bds: <http://www.bigdata.com/rdf/search#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix crmba: <http://www.cidoc-crm.org/cidoc-crm/CRMba/> .
+@prefix fedsail: <http://www.openrdf.org/config/sail/federation#> .
+@prefix ontodia: <http://ontodia.org/schema/v1#> .
+@prefix crmarchaeo: <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/> .
+@prefix forms: <http://www.researchspace.org/resource/system/forms/> .
+@prefix lrmoo: <http://iflastandards.info/ns/lrm/lrmoo/> .
+
+lrmoo:context {
+
+  <http://iflastandards.info/ns/lrm/lrmoo/> a owl:Ontology;
+  rdfs:label "LRMoo v1.0"@en;
+  owl:versionInfo "1.0"@en ;
+  rdfs:comment """LRMoo (Library Reference Model) is a formal ontology intended to capture and represent the underlying semantics of bibliographic 
+  information and to facilitate the integration, mediation, and interchange of bibliographic and museum information. 
+  LRMoo is designed as an extension to the CIDOC CRM model that aligns with the IFLA Library Reference Model (IFLA LRM), which was approved in August 2017."""@en .
+
+  <http://iflastandards.info/ns/lrm/lrmoo/R80i_is_performed_in> a rdf:Property;
+    rdfs:label "is performed in"@en;
+    rdfs:subPropertyOf crm:P130i_features_are_also_found_on;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R80_performed>;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F31_Performance>;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F1_Work> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R81_recorded> a rdf:Property;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F28_Expression_Creation>;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F31_Performance>;
+    rdfs:label "recorded"@en;
+    rdfs:comment "This property associates an instance of F28 Expression Creation with an instance of F31 Performance that it records. This property allows for the documentation of the association that exists between the outcome of an instance of F28 Expression Creation such as a performance recording, and the instance of F31 Performance that it is a recording of. For documenting performances that are more integral and planned parts of an expression creation (such as the recording of a performance solely done for the purpose of audio or video productions), the use of the property P9 consist of (forms part of) is more specific (and appropriate)."@en;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R81i_is_recorded_in> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R8i_is_combined_to_form> a rdf:Property;
+    rdfs:label "is combined to form"@en;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F12_Nomen>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R8_combines>;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F12_Nomen> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R81i_is_recorded_in> a rdf:Property;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F31_Performance>;
+    rdfs:label "is recorded in"@en;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R81_recorded>;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F28_Expression_Creation> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R16i_was_created_by> a rdf:Property;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F1_Work>;
+    rdfs:label "was created by"@en;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F27_Work_Creation>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R16_created>;
+    rdfs:subPropertyOf crm:P94i_was_created_by .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R1i_has_successor> a rdf:Property;
+    rdfs:label "has successor"@en;
+    rdfs:subPropertyOf crm:P130i_features_are_also_found_on;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F1_Work>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R1_is_logical_successor_of>;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F1_Work> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R27_materialized> a rdf:Property;
+    rdfs:label "materialized"@en;
+    rdfs:subPropertyOf crm:P16_used_specific_object;
+    rdfs:comment "This property associates an instance of F32 Item Production Event with the set of signs provided by the publisher to be carried by all of the produced items (i.e., the instances of F5 Item) and any other physical features foreseen as integral to the instance of F3 Manifestation that is materialised."@en;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R27i_was_materialized_by>;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F32_Item_Production_Event>;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F3_Manifestation> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R16_created> a rdf:Property;
+    rdfs:label "created"@en;
+    rdfs:subPropertyOf crm:P94_has_created;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F27_Work_Creation>;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F1_Work>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R16i_was_created_by>;
+    rdfs:comment "This property associates the initial creation of a work and the instance of F1 Work that was created."@en .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R28_produced> a rdf:Property;
+    rdfs:subPropertyOf crm:P108_has_produced;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F32_Item_Production_Event>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R28i_was_produced_by>;
+    rdfs:label "produced"@en;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F5_Item>;
+    rdfs:comment "This property associates an instance of F32 Item Production Event with any one of the produced items (i.e., the instances of F5 Item)."@en .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R15_has_fragment> a rdf:Property;
+    rdfs:range crm:E90_Symbolic_Object;
+    rdfs:label "has fragment"@en;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R15i_is_fragment_of>;
+    rdfs:comment "This property associates an instance of E90 Symbolic Object with an instance of F2 Expression of which it is a fragment. The fragment is not itself an instance of F2 Expression as it does not express any instance of F1 Work. When the fragment consists of intelligible words it is an instance of E33 Linguistic Object. An instance of E90 Symbolic Object is only considered a fragment of an instance of F2 Expression when related to its occurrence in a known or assumed whole by the R15 has fragment (is fragment of) property. The size of an instance of E90 Symbolic Object ranges from more than 99% of an instance of F2 Expression to tiny bits (a few words from a text, one bar from a musical composition, one detail from a still image, a two-second clip from a video, etc.). An instance of E90 Symbolic Object can become a fragment of an instance of F2 Expression through the deterioration over time of a carrier of the expression, such as when only fragments of a manuscript of an ancient text survive. Typically instances of E90 Symbolic Object that are of interest as fragments of expressions are formed deliberately, such as when excerpts are taken from a text by the compiler of a collection of excerpts, or citations from one expression are used in another text."@en;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F2_Expression>;
+    rdfs:subPropertyOf crm:P106_is_composed_of .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R2_is_derivative_of> a rdf:Property;
+    rdfs:comment "This property associates an instance of F1 Work which modifies the content of another instance of F1 Work with the latter. This property is transitive, asymmetric and irreflexive. The inverse of this property is equivalent to the developed path: F1 Work(1). R3 is realised in: F2 Expression(1). P16i was used for: F28 Expression Creation. R17 created : F2 Expression(2). R3i realises : F1 Work(2). That is, F1 Work(1). R2i has derivative: F1 Work (2), without needing to specify the specific expressions involved in the derivation."@en;
+    rdfs:subPropertyOf <http://iflastandards.info/ns/lrm/lrmoo/R68_is_inspired_by>;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F1_Work>;
+    rdfs:label "is derivative of"@en;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R2i_has_derivative>;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F1_Work> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R15i_is_fragment_of> a rdf:Property;
+    rdfs:subPropertyOf crm:P106i_forms_part_of;
+    rdfs:label "is fragment of"@en;
+    rdfs:domain crm:E90_Symbolic_Object;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F2_Expression>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R15_has_fragment> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R17_created> a rdf:Property;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F28_Expression_Creation>;
+    rdfs:comment "This property associates an instance of F2 Expression that was externalised during a particular instance of F28 Expression Creation event with that particular creation event. An instance of expression creation creates an instance of expression and also creates any expressions that are parts of that expression."@en;
+    rdfs:label "created"@en;
+    rdfs:subPropertyOf crm:P94_has_created;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R17i_was_created_by>;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F2_Expression> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R24_created> a rdf:Property;
+    rdfs:subPropertyOf crm:P94_has_created;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F3_Manifestation>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R24i_was_created_through>;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F30_Manifestation_Creation>;
+    rdfs:comment "This property associates the instance of F3 Manifestation that was created during a particular instance of F30 Manifestation Creation with that instance of F30 Manifestation Creation event."@en;
+    rdfs:label "created"@en .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R28i_was_produced_by> a rdf:Property;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F5_Item>;
+    rdfs:label "was produced by"@en;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F32_Item_Production_Event>;
+    rdfs:subPropertyOf crm:P108i_was_produced_by;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R28_produced> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R17i_was_created_by> a rdf:Property;
+    rdfs:subPropertyOf crm:P94i_was_created_by;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F2_Expression>;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F28_Expression_Creation>;
+    rdfs:label "was created by"@en;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R17_created> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R19_created_a_realisation_of> a rdf:Property;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R19i_was_realised_through>;
+    rdfs:subPropertyOf crm:P16_used_specific_object;
+    rdfs:comment "This property associates an instance of F28 Expression Creation with the instance of F1 Work which was externalised in an instance of F2 Expression created by this creation event."@en;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F28_Expression_Creation>;
+    rdfs:label "created a realisation of"@en;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F1_Work> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R24i_was_created_through> a rdf:Property;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R24_created>;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F30_Manifestation_Creation>;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F3_Manifestation>;
+    rdfs:label "was created through"@en;
+    rdfs:subPropertyOf crm:P94i_was_created_by .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R19i_was_realised_through> a rdf:Property;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F1_Work>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R19_created_a_realisation_of>;
+    rdfs:label "was realised through"@en;
+    rdfs:subPropertyOf crm:P16i_was_used_for;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F28_Expression_Creation> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R27i_was_materialized_by> a rdf:Property;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F3_Manifestation>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R27_materialized>;
+    rdfs:label "was materialized by"@en;
+    rdfs:subPropertyOf crm:P16i_was_used_for;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F32_Item_Production_Event> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/F18_Serial_Work> a rdfs:Class;
+    rdfs:comment "This class comprises works that are, or have been, planned to result in sequences of Expressions or Manifestations with common features. Whereas a work can acquire new members during the time it evolves, Expressions and Manifestations are identified with a certain state achieved at a particular point in time. Therefore there is in general no single Expression or Manifestation representing a complete serial work, unless the serial work has ended. Serial Works may or may not have a plan for an overall expression. The retrospective reprinting of all issues of a Serial Work at once, in the form of a monograph, is regarded to be another member of the F1 Work, which contains the Serial Work and the Work realised in the monograph. This does not make the monograph part of the Serial Work."@en;
+    rdfs:subClassOf <http://iflastandards.info/ns/lrm/lrmoo/F1_Work>;
+    rdfs:label "Serial Work"@en .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/F32_Item_Production_Event> a rdfs:Class;
+    rdfs:label "Item Production Event"@en;
+    rdfs:subClassOf crm:E12_Production;
+    rdfs:comment "This class comprises activities that result in one or more instances of F5 Item coming into existence. The production of a series of physical objects (printed books, scores, CDs, DVDs, CD-ROMs, etc.), producing a unique item (writing a manuscript on parchment, painting a watercolour, etc.), and the creation of a new copy of a file on an electronic carrier are all regarded as instances of F32 Item Production Event. For mass-produced items, the production process (no matter whether it is a book, a sound recording, a DVD, a cartographic resource, etc.) strives to produce items all as similar as possible to a prototype that displays all the features that all the copies of the publication should also display, which is reflected in the property R27 materialized: F3 Manifestation."@en .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R1_is_logical_successor_of> a rdf:Property;
+    rdfs:label "is logical successor of"@en;
+    rdfs:comment "This property associates an instance of F1 Work which logically continues the content of another instance of F1 Work with the latter. This property is not transitive. It is asymmetric and irreflexive."@en;
+    rdfs:subPropertyOf crm:P130_shows_features_of;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F1_Work>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R1i_has_successor>;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F1_Work> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/F28_Expression_Creation> a rdfs:Class;
+    rdfs:subClassOf crm:E65_Creation, crm:E12_Production;
+    rdfs:comment "This class comprises activities that result in instances of F2 Expression coming into existence. An instance of F2 Expression is considered to be created when it is captured on a carrier other than the creator’s brain. Although F2 Expression is an abstract entity, a conceptual object, the creation of an expression inevitably also affects the physical world: when you scribble the first draft of a poem on a sheet of paper, you produce an instance of F3 Manifestation and an instance of F5 Item. F28 Expression Creation is a subclass of E12 Production because the recording of the expression causes a physical modification of the E18 Physical Thing that serves as the carrier. The creation of an instance of F2 Expression coincides with the creation of the first instance of F3 Manifestation that R4 embodies (is embodied in) this instance of F2 Expression. The P2 has type (is type of) property can be used to specify the type of the instance of F28 Expression Creation (i.e., activities such as translating, revising, or arranging music are types of creation process). The type of the process is distinct from the type of result even though the typology frequently used for instances of the resulting F2 Expressions may imply the category of the instance of the F28 Expression Creation. An instance of F28 Expression Creation may use as source material one or more specific instances of F2 Expression. When the source expression is documented this is also expressed by the property R76 is derivative of (has derivative) ."@en;
+    rdfs:label "Expression Creation"@en .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/F33_Reproduction_Event> a rdfs:Class;
+    rdfs:label "Reproduction Event"@en;
+    rdfs:subClassOf <http://iflastandards.info/ns/lrm/lrmoo/F30_Manifestation_Creation>,
+      crm:E12_Production;
+    rdfs:comment "This class comprises activities that consist in producing items of a new instance of F3 Manifestation that preserve both the content and layout found on items of a pre-existing instance of F3 Manifestation. The individual instance or instances of F5 Item that was or were used as a source for this process may be precisely identified or not. Such activities result in products known as facsimiles, reproductions, reprints, reissues, or new releases."@en .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/F39_Family> a rdfs:Class;
+    rdfs:label "Family"@en;
+    rdfs:subClassOf <http://iflastandards.info/ns/lrm/lrmoo/F55_Collective_Agent>;
+    rdfs:comment "This class comprises groups of two or more persons presented as a family and justified by relationships of birth, marriage, adoption, civil union, or similar social or legal status and an assumed common tradition, including examples such as royal families, dynasties, houses of nobility, etc."@en .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/F30_Manifestation_Creation> a rdfs:Class;
+    rdfs:subClassOf crm:E12_Production, crm:E65_Creation;
+    rdfs:label "Manifestation Creation"@en;
+    rdfs:comment "This class comprises the activities of selecting, arranging and presenting one or more instances of F2 Expression on a carrier or other persistent presentation means with the purpose of communicating it to some public. It includes the specification of the presentation as to sensory impression (such as visual appearance or audio rendition)."@en .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/F31_Performance> a rdfs:Class;
+    rdfs:comment "This class comprises activities where an instance of F1 Work is presented or communicated directly or indirectly to an audience, such as a theatrical play, a musical work or a choreographic work. Performances can be identified at various levels of granularity, but an instance of F31 Performance is always associated with a single identified instance of F1 Work. An instance of F31 Performance may consist of other instances of F31 Performance as parts, such as a piano concerto that has multiple movements. In addition, a complete run of equivalent performances of the same work can also be seen as an instance of F31 Performance, with the individual performances as parts. Activities that include performing multiple individual works, e.g., that are put together as a program for a show or concert, but where the activity as a whole is not associated with an instance of F1 Work, should be represented as instances of E7 Activity consisting of individual instances of F31 Performances as parts (the property P9 consists of (forms part of) expresses the relationship). Instances of F31 Performance may be created according to specific staging directions, be based on specific known instances of F2 Expression (such as translations), or be influenced by or include elements that relate to different works other than the single work the performance is dominated by. This can be documented using the properties P16 used specific object (was used for) or P15 was influenced by (influenced) ."@en;
+    rdfs:subClassOf crm:E7_Activity;
+    rdfs:label "Performance"@en .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/F5_Item> a rdfs:Class;
+    rdfs:subClassOf crm:E24_Physical_Human-Made_Thing;
+    rdfs:comment "This class comprises physical objects (printed books, scores, CDs, DVDs, CD-ROMS, etc.) that were produced by (P186i) an industrial process involving a given instance of F3 Manifestation. As a result, all the instances of F5 Item associated with a given instance of F3 Manifestation are expected to carry the content defined in that instance of F3 Manifestation, although some or even all of them may happen to carry a content that significantly differs from it, due to either an accident in the course of industrial production, or subsequent physical modification or degradation. An instance of F5 Item that consists of a physical object or set of objects with clear physical boundaries is also an instance of E22 Human-Made Object. An instance of F5 Item that is stored on a part of a larger physical support (such as an electronic file among others on a disc) can also be considered to be an instance of E25 Human-Made Feature. The notion of F5 Item is only relevant with regard to the production process, from a bibliographic point of view. The physical units managed by cultural heritage institutions in their holdings are a distinct notion: a unit of holdings certainly can be equal to an instance of F5 Item, but it also can be either “bigger” than one (e.g., when two instances of F5 Item are bound together (in the case of printed books)), or “smaller” than one (e.g., for incomplete holdings, such as when only one CD from a two-CD set is held). From an operational point of view, cultural heritage institutions typically do not manage instances of F5 Item, but physical holdings units, instances of E19 Physical Object, although for libraries in most cases this is not significant because each item corresponds with a single unit. When this is not the case, the linkage between items and the units relevant for collection management can be recorded through the P46 is composed of (forms part of) property between instances of F5 Item and instances of E19 Physical Object. If needed, an instance of E19 Physical Object can be typed as a unit through the P2 has type (is type of) property."@en;
+    rdfs:label "Item"@en .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R10_is_member_of> a rdf:Property;
+    rdfs:range crm:E28_Conceptual_Object;
+    rdfs:label "is member of"@en;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R10i_has_member>;
+    rdfs:comment "This property associates an instance of F1 Work with an instance of E28 Conceptual Object that represents a generalization of the work. The property can be used to group variant, alternative or related works that are considered to share a common concept. Whereas instances of F1 Work are always realised in instances of F2 Expression, there is no particular expression that fully conveys the instance of Conceptual Object that a work may be a member of. Intended usage of the property includes what is discussed as “superwork” in the library community. Typical examples are novels that can be grouped by fictional universes or common characters, paintings or graphical works that exist as a family of alternatives, musical compositions that are referred to as the same although they exist as particular versions that are each identified as an individual work. The instance of E28 Conceptual Object that has works as members will often be constructed for a specific purpose, such as bibliographic organization or retrieval."@en;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F1_Work> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R11_has_issuing_rule> a rdf:Property;
+    rdfs:range crm:E29_Design_or_Procedure;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F18_Serial_Work>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R11i_is_issuing_rule_of>;
+    rdfs:label "has issuing rule"@en;
+    rdfs:comment "This property associates an instance of F18 Serial Work with the instance of E29 Design or Procedure that specifies the issuing policy planned by this instance of F18 Serial Work, such as sequencing pattern, expected frequency and expected regularity."@en .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/F1_Work> a rdfs:Class;
+    rdfs:label "Work"@en;
+    rdfs:subClassOf crm:E89_Propositional_Object;
+    rdfs:comment "This class comprises distinct intellectual ideas conveyed in artistic and intellectual creations, such a poems, stories or musical compositions. A Work is the outcome of an intellectual process of one or more persons. Inherent to the notion of work is the existence of recognisable realizations of the work in the form of one or more expressions. Works are often regarded as finished and discrete e.g. when declared as such by the creator of the work or based on the elaboration or logical coherence of its content. However, works may be recognized as existing but unfinished e.g. if the creators deliberately or accidentally never explicitly finished a particular Expression but have left behind partial expressions. In the absence of explicit information about the initial conception, which is rarely available, the first expression created constitutes witness of the beginning of existence of a Work. A Work can evolve over time, such as through revised editions. A Work may be elaborated by one or more Actors simultaneously, in parallel, or over time. Additional expressions of a Work can continue to be created over time. The boundaries of a Work have nothing to do with the value of the intellectual achievement but only with the dominance of a concept. The main purpose of this class is to enable bringing together intellectually equivalent Expressions in order to display to a user all available alternatives of the same intellectual or artistic content."@en .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/F27_Work_Creation> a rdfs:Class;
+    rdfs:comment "This class comprises activities by which instances of F1 Work come into existence. An instance of F27 Work Creation can serve to document the period a work was coming into existence and the circumstances of it, when these are known. An instance of F27 Work Creation marks the initial creation of an instance of F1 Work through expressions or other externalisations that are sufficiently elaborated so that the characteristic conceptual identity of the work could be recognized as existing. In many cases this will coincide with the first known complete externalisation of an expression of the work. In other cases, the initial creation of an instance of F1 Work may be inferred from multiple, or later, expressions or other forms of evidence. For instance, commissioning of a work may explicitly be agreed on after the presentation of an already complete and detailed elaboration of the work that was not made public. Performances may be prior to written expressions, as in the case of Shakespeare’s works. The work, as an intellectual construction, may evolve from its initial creation onwards, until the last known expression of it. An instance of E39 Actor with which a work is associated through the chain of properties F1 Work. R16i was created by: F27 Work Creation. P14 carried out by (performed): E39 Actor corresponds to the notion of the “creator” of the work. In the situation where an expression of one instance of F1 Work serves as source material for the creation of the first expression of a new instance of F1 Work, the direct relationship between the works is indicated using the property R2 is derivative of (has derivative) between the two instances of F1 Work. The link to the specific source expression is indicated with the property P16 used specific object (was used for) using the path: F1 Work(1). R3 is realised in: F2 Expression(1). P16i was used for: F27 Work Creation. R16 created : F1 Work(2)."@en;
+    rdfs:subClassOf crm:E65_Creation;
+    rdfs:label "Work Creation"@en .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/F11_Corporate_Body> a rdfs:Class;
+    rdfs:label "Corporate Body"@en;
+    rdfs:comment "This class comprises organisations and groups of two or more people and/or organisations acting as a unit. To be considered an instance of F11 Corporate Body a gathering of people needs to bear a name and exhibit organisational characteristics sufficient to allow the body as a whole to participate in the creation, modification or production of an E73 Information Object. Groups such as conferences, congresses, expeditions, exhibitions, festivals, fairs, etc. are modelled as F11 Corporate Bodies when they are named and can take collective action, such as approving a report or publishing their proceedings."@en;
+    rdfs:subClassOf <http://iflastandards.info/ns/lrm/lrmoo/F55_Collective_Agent> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R10i_has_member> a rdf:Property;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R10_is_member_of>;
+    rdfs:label "has member"@en;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F1_Work>;
+    rdfs:domain crm:E28_Conceptual_Object .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R11i_is_issuing_rule_of> a rdf:Property;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R11_has_issuing_rule>;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F18_Serial_Work>;
+    rdfs:domain crm:E29_Design_or_Procedure;
+    rdfs:label "is issuing rule of"@en .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/F12_Nomen> a rdfs:Class;
+    rdfs:label "Nomen"@en;
+    rdfs:comment "This class comprises associations between an instance of any class, and signs or arrangements of signs that are used to refer to and identify that instance. Signs include alphanumeric characters, ideograms, notations such as chemical structure symbols, sound symbols, etc. The scripts or type sets for the symbols used to compose an instance of F12 Nomen have to be sufficiently specified. Spelling variants are regarded as different nomens, whereas the use of different fonts (visual representation variants) or different digital encodings do not change the identity. An arbitrary combination of signs or symbols cannot be regarded as an appellation or designation until it is associated with something in some context. In that sense, the F12 Nomen class can be understood as the reification of a relationship between an instance of E1 CRM Entity and an instance of E41 Appellation. Two instances of F12 Nomen can happen to be associated with equivalent strings and yet remain distinct, as long as they refer to distinct instances of E1 CRM Entity. Furthermore, two instances of F12 Nomen referring to the same instance of E1 CRM Entity may be associated with equivalent strings, and remain distinct as long as they are associated with distinct properties of the F12 Nomen class (for example, having the same spelling in different languages, or being defined in different controlled vocabularies). An instance of F12 Nomen associates a combination of signs with an instance of E1 CRM Entity on the basis of a cultural or linguistic convention: by associating a string with anything, the instance of F12 Nomen establishes a meaning that is not inherent in the instance of E62 String that is associated with it. Depending on context of use, nomens associated with equivalent strings can be associated with instances of different things in the real world even within the same language (polysemy and homonymy). Conversely, the same thing can be referred to through any number of nomens (synonymy). In the controlled environment of a bibliographic information system, though, homonymy is avoided. Instances of F12 Nomen are assigned and associated with instances of E1 CRM Entity either formally (such as by bibliographic agencies) or informally through common usage. When they are assigned formally, the construction of the instances of E62 String that represent them may follow predetermined rules."@en;
+    rdfs:subClassOf crm:E89_Propositional_Object .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/F2_Expression> a rdfs:Class;
+    rdfs:comment "This class comprises the intellectual or artistic realisations of Works in the form of identifiable immaterial objects, such as texts, poems, jokes, musical or choreographic notations, movement pattern, sound pattern, images, multimedia objects, or any combination of such forms. The substance of F2 Expression is signs. An Expression is the outcome of the intellectual or creative process of realizing a Work. Subsequent expressions conveying the same work may be created over time. Expressions do not depend on a specific physical carrier and can exist on one or more carriers simultaneously. As far as bibliographic practice is concerned, only instances of F2 Expression that are externalised on physical carriers other than both the creator’s brain and an auditor’s brain are taken into account. The form of F2 Expression is an inherent characteristic of the F2 Expression. Differences in form imply different Expressions (e.g., from text to spoken word, a transcript of a recording). Similarly, differences in language or means of performance imply different Expressions (e.g., translations or arrangements for different instruments). Thus, if a text is revised or modified, the result is considered to be a new F2 Expression. While theoretically any change in signs will result in a new Expression, conventionally the context and use will determine the rules for distinguishing among expressions. An instance of F2 Expression which includes spoken or written text may be multiply instantiated as an instance of E33 Linguistic Object. This allows for the association of the E56 Language of the text with the instance of F2 Expression by using the property P72 has language (is language of) ."@en;
+    rdfs:subClassOf crm:E73_Information_Object;
+    rdfs:label "Expression"@en .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/F3_Manifestation> a rdfs:Class;
+    rdfs:label "Manifestation"@en;
+    rdfs:comment "This class comprises products rendering one or more Expressions. A Manifestation is defined by both the overall content and the form of its presentation. The substance of F3 Manifestation is not only signs, but also the manner in which they are presented to be consumed by users, including the kind of media adopted. An F3 Manifestation is the outcome of a publication process where one or more F2 Expressions are prepared for public dissemination, but it may also be a unique form created directly on some material carrier without the intent of being formally published. An instance of F3 Manifestation typically incorporates one or more instances of F2 Expression representing a distinct logical content and all additional input by a publisher such as text layout and cover design. Additionally an F3 Manifestation can be identified by the physical features for the medium of distribution, if applicable. For example, publications in the form of hard-cover and paperback editions would be two distinct instances of F3 Manifestation, even though authorial and editorial content are otherwise identical in both publications. In the case of industrial products such as printed books or music CDs, but also digital material, an instance of F3 Manifestation can be regarded as the prototype for all copies of it. In these cases, an instance of F3 Manifestation specifies all of the features or traits that instances of F5 Item display in order to be copies of a particular publication. In the case of industrial products, instances of F3 Manifestation are also instances of E99 Product Type, normally nowadays identified by characteristic identifiers such as ISBN numbers."@en;
+    rdfs:subClassOf crm:E73_Information_Object .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/F55_Collective_Agent> a rdfs:Class;
+    rdfs:subClassOf crm:E74_Group;
+    rdfs:label "Collective Agent"@en;
+    rdfs:comment "This class comprises recognizable groups or organizations of persons that have the potential of acting as a unit to produce some intentional result of bibliographic interest for which they can be collectively considered responsible. A group of people becomes an instance of F55 Collective Agent when it identifies itself by a name that identifies it within an appropriate context and exhibits sufficient organizational characteristics to permit it to perform actions that reflect agency. Groups that are constituted as meetings, conferences, congresses, expeditions, festivals, fairs, etc. are examples of F55 Collective Agent as long as they self-identify by a specific name, rather than being referred to by a generic description of the gathering, and can act as a unit (such as by publishing their proceedings, or approving a report). These collective actions may be performed by representatives selected by the whole, rather than by all individual members acting together. Collective Agents may be members of other Collective Agents, although directly or indirectly all Collective Agents are composed of persons. The membership of many types of Collective Agents will continue to evolve over time. A Collective Agent may continue to exist even if it has no members for a time (for example, a committee whose members all resign prior to the expiration of their terms but then a new complement of members is appointed). Instances of F55 Collective Agent include instances of its subclass F11 Corporate Body: commercial or corporate entities and other legally registered bodies, as well as organizations and associations, musical, artistic or performing groups, governments, and any of their sub-units. Married couples and other concepts of family (instances of F39 Family) are instances of a subclass of F55 Collective Agent. In the wider sense, this class also comprises holders of official positions viewed collectively, independent of the current holder of the office, such as the president of a country. In such cases, it is possible that the instance of F55 Collective Agent has only ever had a single member. A group of persons known by/using a joint pseudonym (i.e., a name that seems indicative of an individual but that is actually adopted as a persona by two or more people acting together) is a case of F55 Collective Agent."@en .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/F36_Script_Conversion> a rdfs:Class;
+    rdfs:subClassOf crm:E29_Design_or_Procedure;
+    rdfs:comment "This class comprises rule sets for converting signs or arrangements of signs from one script or type set to another."@en;
+    rdfs:label "Script Conversion"@en .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R54_has_language> a rdf:Property;
+    rdfs:label "has language"@en;
+    rdfs:range crm:E56_Language;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F12_Nomen>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R54i_is_language_of>;
+    rdfs:subPropertyOf crm:P2_has_type;
+    rdfs:comment "This property associates an instance of F12 Nomen with an instance of E56 Language which is the language used for or associated with the nomen."@en .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R71_has_part> a rdf:Property;
+    rdfs:comment "This property associates an instance of F3 Manifestation with a structural part of it that is itself an instance of F3 Manifestation. This property is transitive, asymmetric and irreflexive."@en;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F3_Manifestation>;
+    rdfs:subPropertyOf crm:P148_has_component;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F3_Manifestation>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R71i_is_part_of>;
+    rdfs:label "has part"@en .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R69_has_physical_form> a rdf:Property;
+    rdfs:comment "This property associates an instance of F3 Manifestation with an instance of E55 Type describing the kind of physical form that characterizes instances of F5 Item carrying this F3 Manifestation. In the case of instances of manifestations intended to be rendered by mediation (such as with electronic devices), the form also indicates the kind of equipment and software tools necessary."@en;
+    rdfs:label "has physical form"@en;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R69i_is_physical_form_of>;
+    rdfs:subPropertyOf crm:P2_has_type;
+    rdfs:range crm:E55_Type;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F3_Manifestation> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R7_exemplifies> a rdf:Property;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F3_Manifestation>;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F5_Item>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R7i_is_exemplified_by>;
+    rdfs:comment "This property associates an instance of F3 Manifestation with an instance of F5 Item that is one of its exemplars or its only exemplar. Instances of F5 Item correspond to the kinds of physical unit(s) specified in the manifestation, regardless of possible later changes. Even though an item may exhibit defects with respect to the intended manifestation, it is still regarded to carry the manifestation, as long as it is produced or made accessible as a functional item by its creators."@en;
+    rdfs:label "exemplifies"@en;
+    rdfs:subPropertyOf crm:P128_carries .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R67_has_part> a rdf:Property;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F1_Work>;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F1_Work>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R67i_forms_part_of>;
+    rdfs:comment "This property associates an instance of F1 Work with another instance of F1 Work that forms part of it in a complementary role to other sibling parts, conceived at some point in time to form together a logical whole, such as the parts of a trilogy. This property is transitive, asymmetric and irreflexive."@en;
+    rdfs:label "has part"@en;
+    rdfs:subPropertyOf crm:P148_has_component .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R56i_is_related_form_of> a rdf:Property;
+    rdfs:label "is related form of"@en;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F12_Nomen>;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F12_Nomen>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R56_has_related_form> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R67i_forms_part_of> a rdf:Property;
+    rdfs:label "forms part of"@en;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F1_Work>;
+    rdfs:subPropertyOf crm:P148i_is_component_of;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R67_has_part>;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F1_Work> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R56_has_related_form> a rdf:Property;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F12_Nomen>;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F12_Nomen>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R56i_is_related_form_of>;
+    rdfs:label "has related form"@en;
+    rdfs:comment "This property associates an instance of F12 Nomen with another instance of F12 Nomen which co-refers to the same instance of E1 CRM Entity. This property is not transitive. It is symmetric and irreflexive."@en .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R5i_is_component_of> a rdf:Property;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F2_Expression>;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F2_Expression>;
+    rdfs:label "is component of"@en;
+    rdfs:subPropertyOf crm:P148i_is_component_of;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R5_has_component> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R68i_is_inspiration_for> a rdf:Property;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F1_Work>;
+    rdfs:subPropertyOf crm:P130i_features_are_also_found_on;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F1_Work>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R68_is_inspired_by>;
+    rdfs:label "is inspiration for"@en .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R68_is_inspired_by> a rdf:Property;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R68i_is_inspiration_for>;
+    rdfs:label "is inspired by"@en;
+    rdfs:comment "This property associates an instance of F1 Work with another instance of F1 Work whose content was inspired by that instance of F1 Work. The content of the range work instance served in some way as a source of ideas for the domain work instance. Neither instance of F1 Work may be a part of the other. This property is not transitive. It is irreflexive."@en;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F1_Work>;
+    rdfs:subPropertyOf crm:P130_shows_features_of;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F1_Work> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R54i_is_language_of> a rdf:Property;
+    rdfs:subPropertyOf crm:P2i_is_type_of;
+    rdfs:label "is language of"@en;
+    rdfs:domain crm:E56_Language;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F12_Nomen>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R54_has_language> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R69i_is_physical_form_of> a rdf:Property;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R69_has_physical_form>;
+    rdfs:subPropertyOf crm:P2i_is_type_of;
+    rdfs:label "is physical form of"@en;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F3_Manifestation>;
+    rdfs:domain crm:E55_Type .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R70_has_dimension> a rdf:Property;
+    rdfs:range crm:E54_Dimension;
+    rdfs:subPropertyOf crm:P43_has_dimension;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R70i_is_dimension_of>;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F3_Manifestation>;
+    rdfs:label "has dimension"@en;
+    rdfs:comment "This property associates an instance of F3 Manifestation with an instance of E54 Dimension that describes aspects of its symbolic content, such as word counts, or describes the kind of physical form that characterizes instances of F5 Item carrying this F3 Manifestation, such as number of pages. This inference is an induction along the path that can be modelled as: F3 Manifestation. R7i is exemplified by: F5 Item. P43 has dimension (is dimension of): E54 Dimension. It can happen that a given item, or subset of items, originally produced, or intended to be produced, with a certain value for a particular kind of dimension, has a different value for this kind of dimension by accident. This fact should be recorded as a property of F5 Item, and not of F3 Manifestation."@en .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R70i_is_dimension_of> a rdf:Property;
+    rdfs:label "is dimension of"@en;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F3_Manifestation>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R70_has_dimension>;
+    rdfs:domain crm:E54_Dimension;
+    rdfs:subPropertyOf crm:P43i_is_dimension_of .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R71i_is_part_of> a rdf:Property;
+    rdfs:label "is part of"@en;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F3_Manifestation>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R71_has_part>;
+    rdfs:subPropertyOf crm:P148i_is_component_of;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F3_Manifestation> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R30_reproduced_publication> a rdf:Property;
+    rdfs:comment "This property associates an instance of F33 Reproduction Event with an instance of F3 Manifestation it reproduces."@en;
+    rdfs:subPropertyOf crm:P16_used_specific_object;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R30i_was_publication_reproduced_by>;
+    rdfs:label "reproduced publication"@en;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F33_Reproduction_Event>;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F3_Manifestation> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R33_has_string> a rdf:Property;
+    rdfs:comment "This property associates an instance of F12 Nomen with a sign or arrangement of signs that is used to refer to something through that instance of F12 Nomen."@en;
+    rdfs:subPropertyOf crm:P3_has_note;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F12_Nomen>;
+    rdfs:range rdfs:Literal;
+    rdfs:label "has string"@en .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R35i_specifies> a rdf:Property;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R35_is_specified_by>;
+    rdfs:label "specifies"@en;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F2_Expression>;
+    rdfs:subPropertyOf crm:P67_refers_to;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F12_Nomen> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R3i_realises> a rdf:Property;
+    rdfs:label "realises"@en;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F2_Expression>;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F1_Work>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R3_is_realised_in>;
+    rdfs:subPropertyOf crm:P130i_features_are_also_found_on .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R2i_has_derivative> a rdf:Property;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R2_is_derivative_of>;
+    rdfs:label "has derivative"@en;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F1_Work>;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F1_Work>;
+    rdfs:subPropertyOf <http://iflastandards.info/ns/lrm/lrmoo/R68i_is_inspiration_for> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R4_embodies> a rdf:Property;
+    rdfs:label "embodies"@en;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F3_Manifestation>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R4i_is_embodied_in>;
+    rdfs:comment "This property associates an instance of F3 Manifestation with one or more instances of F2 Expression which are rendered by this instance of F3 Manifestation. The manifestation formats the expression(s) in the way they are to be presented to some public, including specifying the intended sensory impression (such as visual appearance or audio rendition)."@en;
+    rdfs:subPropertyOf crm:P165_incorporates;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F2_Expression> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R29i_was_object_reproduced_by> a rdf:Property;
+    rdfs:label "was object reproduced by"@en;
+    rdfs:subPropertyOf crm:P16i_was_used_for;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F33_Reproduction_Event>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R29_reproduced_object>;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F5_Item> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R36i_is_script_conversion_used_in> a rdf:Property;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F12_Nomen>;
+    rdfs:label "is script conversion used in"@en;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F36_Script_Conversion>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R36_uses_script_conversion> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R29_reproduced_object> a rdf:Property;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F33_Reproduction_Event>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R29i_was_object_reproduced_by>;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F5_Item>;
+    rdfs:comment "This property associates an instance of F33 Reproduction Event with an instance of F5 Item it reproduces."@en;
+    rdfs:subPropertyOf crm:P16_used_specific_object;
+    rdfs:label "reproduced object"@en .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R4i_is_embodied_in> a rdf:Property;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F2_Expression>;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F3_Manifestation>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R4_embodies>;
+    rdfs:label "is embodied in"@en;
+    rdfs:subPropertyOf crm:P165i_is_incorporated_in .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R36_uses_script_conversion> a rdf:Property;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F12_Nomen>;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F36_Script_Conversion>;
+    rdfs:label "uses script conversion"@en;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R36i_is_script_conversion_used_in>;
+    rdfs:comment "This property associates an instance of F12 Nomen with an instance of F36 Script Conversion that is used to create the E62 String used in that instance of F12 Nomen from the string used in another instance of F12 Nomen that co-refers with the first nomen (the instances of F12 Nomen are related via the R56 has related form (is related form of) property). The source of this conversion may or may not be explicitly mentioned."@en .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R3_is_realised_in> a rdf:Property;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F2_Expression>;
+    rdfs:subPropertyOf crm:P130_shows_features_of;
+    rdfs:label "is realised in"@en;
+    rdfs:comment "This property associates an instance of F2 Expression with an instance of F1 Work. This property expresses the association that exists between an expression and the work that this expression conveys. Our factual knowledge of how a given work is historically realised into expressions is often limited. Therefore, this property makes it possible to express the association between an instance of F2 Expression and the instance of F1 Work it conveys without identifying the particular instances of F2 Expression that were part of a chain of derivation from the source."@en;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R3i_realises>;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F1_Work> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R5_has_component> a rdf:Property;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F2_Expression>;
+    rdfs:label "has component"@en;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F2_Expression>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R5i_is_component_of>;
+    rdfs:comment "This property associates an instance of an F2 Expression X with a structural component Y that conveys a part of the overall work realized by X, such as volumes, chapters, or sections. This property is transitive, asymmetric and irreflexive. Any part of an expression that conveys complete propositions, such as a single phrase, can be documented using the more general property P148 has component (is component of) . Any part of an expression that does not completely follow meaningful boundaries, such as lines or pages of text or portions visible on images, can be documented using the property P106 is composed of (forms part of), and not with R5 has component (is component of) . Fragments, in particular, can be documented with the more specific property R15 has fragment (is fragment of) . This property does not cover the relationship that exists between expressions that are realisations of different works, where one is re-used in a new, larger expression. Such a relationship is modelled by R75 incorporates (is incorporated in) ."@en;
+    rdfs:subPropertyOf crm:P148_has_component .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R35_is_specified_by> a rdf:Property;
+    rdfs:label "is specified by"@en;
+    rdfs:comment "This property associates an instance of F12 Nomen with an instance of F2 Expression which documents, defines or provides evidence for the particular nomen in the stated sense."@en;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F12_Nomen>;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F2_Expression>;
+    rdfs:subPropertyOf crm:P67i_is_referred_to_by;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R35i_specifies> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R30i_was_publication_reproduced_by> a rdf:Property;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F3_Manifestation>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R30_reproduced_publication>;
+    rdfs:subPropertyOf crm:P16i_was_used_for;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F33_Reproduction_Event>;
+    rdfs:label "was publication reproduced by"@en .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R79_has_representative_expression_attribute>
+    a rdf:Property;
+    rdfs:range crm:E55_Type;
+    rdfs:label "has representative expression attribute"@en;
+    rdfs:comment "This property associates an instance of F1 Work with an instance of E55 Type that describes a category of attribute that is considered essential in characterizing instances of F1 Work. The types of interest will vary depending on the kind of work. The value of the attribute is considered representative of the instance of F1 Work. It is normally inferred from the values attributed to instances of F2 Expression that realize the work and that are considered canonical or best representative of the work. The values may also be assigned from characteristics abstracted from a more or less nebulous network of similar expressions. There is no requirement to precisely identify one or more expressions which serve as sources for the values of the types serving as representative expression attributes; however, if this is known, an instance of F2 Expression considered representative of an F1 Work may be related to the instance of F1 Work using the R73 takes representative attribute from (bears representative attribute for) property."@en;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F1_Work>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R79i_is_representative_expression_attribute_of>;
+    rdfs:subPropertyOf crm:P2_has_type .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R74_uses_expression_of> a rdf:Property;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F1_Work>;
+    rdfs:comment "This property associates an instance of F1 Work with another instance of F1 Work where all expressions of the former will include some expression of the latter. This property is not transitive. It is irreflexive. This property represents the generalized relationship between works that is described at the expression level using R75 incorporates (is incorporated in) ."@en;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R74i_has_expression_used_in>;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F1_Work>;
+    rdfs:label "uses expression of"@en;
+    rdfs:subPropertyOf crm:P130_shows_features_of .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R75_incorporates> a rdf:Property;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F2_Expression>;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F2_Expression>;
+    rdfs:label "incorporates"@en;
+    rdfs:comment "This property associates an instance of F2 Expression with an instance of F2 Expression that is an integral part of the first, but where the latter realises a different instance of F1 Work from the first. This property is transitive, asymmetric and irreflexive."@en;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R75i_is_incorporated_in>;
+    rdfs:subPropertyOf crm:P165_incorporates .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R77_accompanies_or_complements> a rdf:Property;
+    rdfs:comment "This property associates one instance of F1 Work with another instance of F1 Work which is intended to accompany it or to function as a complement for it. This property is neither transitive nor intransitive. It is generally not symmetric and it is irreflexive. In many but not all cases, one of the instances of F1 Work is primary and can be used without the other work, while the other is secondary and depends on the first work (such as a work that is a concordance for another work). In some cases a work may have been created to accompany or complement a specific expression of another work. The link to the source expression can be indicated using the property P16 used specific object (was used for) using the path: F1 Work(1). R3 is realised in: F2 Expression(1). P16i was used for: F27 Work Creation. R16 created : F1 Work(2)."@en;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F1_Work>;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F1_Work>;
+    rdfs:label "accompanies or complements"@en;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R77i_is_accompanied_or_complemented_by> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R73i_bears_representative_attribute_for> a
+      rdf:Property;
+    rdfs:label "bears representative attribute for"@en;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F2_Expression>;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F1_Work>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R73_takes_representative_attribute_from> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R78_has_alternate> a rdf:Property;
+    rdfs:label "has alternate"@en;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F3_Manifestation>;
+    rdfs:comment "This property associates one instance of F3 Manifestation with another instance of F3 Manifestation that exemplifies the same instance of F2 Expression, when the two instances of F3 Manifestation can be used as alternatives for each other in particular use cases. This property is transitive and symmetric. It is irreflexive. The alternative manifestations may be in the same physical form, for example, simultaneous publications in different markets. More frequently, the alternative relationship is established when the alternative manifestations are in different physical forms, designed to enable use of the same content with different playback equipment (such as a DVD and Blu-ray disc version of the same videorecording)."@en;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F3_Manifestation> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R74i_has_expression_used_in> a rdf:Property;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F1_Work>;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F1_Work>;
+    rdfs:subPropertyOf crm:P130i_features_are_also_found_on;
+    rdfs:label "has expression used in"@en;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R74_uses_expression_of> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R7i_is_exemplified_by> a rdf:Property;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F3_Manifestation>;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F5_Item>;
+    rdfs:subPropertyOf crm:P128i_is_carried_by;
+    rdfs:label "is exemplified by"@en;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R7_exemplifies> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R76_is_derivative_of> a rdf:Property;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F2_Expression>;
+    rdfs:subPropertyOf crm:P130_shows_features_of;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R76i_has_derivative>;
+    rdfs:label "is derivative of"@en;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F2_Expression>;
+    rdfs:comment "This property associates an instance of F2 Expression with another instance of F2 Expression which was its source or one of its sources. This property is not transitive. It is asymmetric and irreflexive. This property is also a shortcut of the fully developed path: F2 Expression (1). P16i was used for : F28 Expression Creation. R17 created : F2 Expression (2)."@en .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R79i_is_representative_expression_attribute_of>
+    a rdf:Property;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R79_has_representative_expression_attribute>;
+    rdfs:subPropertyOf crm:P2i_is_type_of;
+    rdfs:domain crm:E55_Type;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F1_Work>;
+    rdfs:label "is representative expression attribute of"@en .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R8_combines> a rdf:Property;
+    rdfs:label "combines"@en;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F12_Nomen>;
+    rdfs:comment "This property associates an instance of F12 Nomen with another instance of F12 Nomen where the string of the domain instance of F12 Nomen includes the complete symbolic content of the string of the range instance of F12 Nomen. This property is not transitive. It is asymmetric and irreflexive."@en;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F12_Nomen>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R8i_is_combined_to_form> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R76i_has_derivative> a rdf:Property;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F2_Expression>;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F2_Expression>;
+    rdfs:label "has derivative"@en;
+    rdfs:subPropertyOf crm:P130i_features_are_also_found_on;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R76_is_derivative_of> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R73_takes_representative_attribute_from> a
+      rdf:Property;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F1_Work>;
+    rdfs:comment "This property associates an instance of F1 Work with instances of F2 Expression that bear attributes which are used to characterize the work. The instance of F2 Expression in question must be one that realizes that instance of F1 Work. An instance of F2 Expression may or may not serve as source of representative expression attributes for its associated instance of F1 Work. If it does, it may provide one attribute or many. Only one or more than one of the instances of F2 Expression associated with an instance of F1 Work may provide attributes that characterize that instance of F1 Work. The representative expression attributes can all come from the same expression or from more than one expressions."@en;
+    rdfs:label "takes representative attribute from"@en;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F2_Expression>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R73i_bears_representative_attribute_for> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R77i_is_accompanied_or_complemented_by> a
+      rdf:Property;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F1_Work>;
+    rdfs:label "is accompanied or complemented by"@en;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F1_Work>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R77_accompanies_or_complements> .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R80_performed> a rdf:Property;
+    rdfs:label "performed"@en;
+    rdfs:subPropertyOf crm:P130_shows_features_of;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F1_Work>;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F31_Performance>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R80i_is_performed_in>;
+    rdfs:comment "This property associates an instance of F31 Performance with an instance of F1 Work. The property is used to express the association between an instance of F31 Performance and the instance of F1 Work it conveys."@en .
+  
+  <http://iflastandards.info/ns/lrm/lrmoo/R75i_is_incorporated_in> a rdf:Property;
+    rdfs:subPropertyOf crm:P165i_is_incorporated_in;
+    rdfs:range <http://iflastandards.info/ns/lrm/lrmoo/F2_Expression>;
+    rdfs:label "is incorporated in"@en;
+    rdfs:domain <http://iflastandards.info/ns/lrm/lrmoo/F2_Expression>;
+    owl:inverseOf <http://iflastandards.info/ns/lrm/lrmoo/R75_incorporates> .
+}

@@ -49,4 +49,53 @@ export const DateTimeFunctions = {
     }
     return moment().format(format);
   },
+
+  /**
+   * Formats a date or date range string to show years only.
+   * If input is a single date, returns just that year.
+   * If input is a date range "startDate#endDate", checks if both dates are in the same year.
+   * If they are, returns only that year, otherwise returns "startYear-endYear".
+   * If the input can't be parsed as a date, returns the original string.
+   * @example
+   * {{dateRangeFormat "1472-01-01T00:00:00#1519-12-31T23:59:59"}} // returns "1472-1519"
+   * {{dateRangeFormat "1472-01-01T00:00:00#1472-12-31T23:59:59"}} // returns "1472"
+   * {{dateRangeFormat "1472-01-01T00:00:00"}} // returns "1472"
+   * {{dateRangeFormat "1979/ ca."}} // returns "1979/ ca."
+   */
+  dateRangeFormat: function(dateString: string): string {
+    if (!dateString || typeof dateString !== 'string') {
+      return '';
+    }
+    
+    if (dateString.includes('#')) {
+      const [startDateStr, endDateStr] = dateString.split('#');
+      if (!startDateStr || !endDateStr) {
+        return dateString;
+      }
+      
+      const startMoment = moment(startDateStr);
+      const endMoment = moment(endDateStr);
+      
+      if (!startMoment.isValid() || !endMoment.isValid()) {
+        return dateString;
+      }
+      
+      const startYear = startMoment.year();
+      const endYear = endMoment.year();
+      
+      if (startYear === endYear) {
+        return startYear.toString();
+      } else {
+        return `${startYear}-${endYear}`;
+      }
+    } else {
+      // Single date case
+      const dateMoment = moment(dateString);
+      if (dateMoment.isValid()) {
+        return dateMoment.year().toString();
+      } else {
+        return dateString;
+      }
+    }
+  }
 };

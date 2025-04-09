@@ -228,5 +228,27 @@ export function GenericFunctions(handlebars) {
     },
 
     isEmpty: _.isEmpty,
-  };
+
+    orderBy: function(array, keyPath, order = 'desc') {    
+      // Create a Handlebars template that evaluates the path expression
+      const template = handlebars.compile('{{#with item}}{{' + keyPath + '}}{{/with}}');
+      
+      console.log('in orderBy');
+      return _.orderBy(array, item => {
+        // Use the compiled template to access the value
+        const context = { item: item };
+        const value = template(context);
+        // An empty string is returned by Handlebars when the path doesn't exist
+        let returnValue;
+        if (value == '') {
+          returnValue = order === 'desc' ? 0 : 1;
+        } else {
+          returnValue = order === 'desc' ? 1 : 0;
+        }
+        console.log(returnValue)
+        return returnValue;
+      }, [order]);
+    },
+    
+  };  
 };

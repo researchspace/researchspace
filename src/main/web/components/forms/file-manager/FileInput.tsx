@@ -52,7 +52,7 @@ interface FileInputConfig {
   /**
    * Media type pattern to allow only specific types of files.
    * See 
-   * <a href='https://github.com/okonet/attr-accept' class='text-link-action' target='_blank'>https://github.com/okonet/attr-accept</a>
+   * <a href='https://github.com/okonet/attr-accept' class='text-link-action' target='_blank' draggable='false'>https://github.com/okonet/attr-accept</a>
    *  for more information.
    */
   acceptPattern?: string;

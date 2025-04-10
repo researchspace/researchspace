@@ -39,7 +39,7 @@ export interface SemanticConfigProps {
    * Defaults to an empty array, which usually means all graphs.
    * However, this may differ across database vendors (for example, in Stardog you will have to configure the database with query.all.graphs=true )
    *
-   * See <a href='https://www.w3.org/TR/rdf-sparql-query/#unnamedGraph' target='_blank'> https://www.w3.org/TR/rdf-sparql-query/#unnamedGraph </a> for details.
+   * See <a href='https://www.w3.org/TR/rdf-sparql-query/#unnamedGraph' target='_blank' draggable='false'> https://www.w3.org/TR/rdf-sparql-query/#unnamedGraph </a> for details.
    *
    * This functionality is still beta and not yet well tested.
    */
@@ -47,7 +47,7 @@ export interface SemanticConfigProps {
   /**
    * List of named graphs that will restrict any GRAPH ?g{} clause within the query body to the enumerated graphs.
    *
-   * See <a href='https://www.w3.org/TR/rdf-sparql-query/#namedGraphs' target='_blank'>https://www.w3.org/TR/rdf-sparql-query/#namedGraphs</a> for details.
+   * See <a href='https://www.w3.org/TR/rdf-sparql-query/#namedGraphs' target='_blank' draggable='false'>https://www.w3.org/TR/rdf-sparql-query/#namedGraphs</a> for details.
    *
    * This functionality is still beta and not yet well tested.
    */

@@ -63,7 +63,7 @@ export interface ProviderSpecificStyle {
 
   /**
    * Options specific to the provider. These options will be merged with widget-generated options and specified style will override defaults.
-   * See <a href="https://www.chartjs.org/docs/" target="_blank">ChartJS Docs</a> and <a href="https://www.highcharts.com/docs/" target="_blank">Highcharts Docs</a> for further information.
+   * See <a href="https://www.chartjs.org/docs/" target="_blank" draggable='false'>ChartJS Docs</a> and <a href="https://www.highcharts.com/docs/" target="_blank" draggable='false'>Highcharts Docs</a> for further information.
    */
   style: any;
 }
@@ -116,7 +116,7 @@ export interface SemanticChartConfig {
 
   /**
    * Charting library provider.
-   * <a target='_blank' href='http://www.chartjs.org/'>Chart.js</a> is used by default.
+   * <a target='_blank' href='http://www.chartjs.org/' draggable='false'>Chart.js</a> is used by default.
    */
   provider?: ChartProvider;
 

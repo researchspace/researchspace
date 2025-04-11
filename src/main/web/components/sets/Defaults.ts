@@ -28,7 +28,7 @@ const DefaultSetItemActions = `
     <bs-dropdown-button pull-right=true bs-style='link' title=''
                         id='set-actions-{{iri.value}}'>
       <mp-set-management-action-remove-set-item item={{iri.value}}>
-        <bs-menu-item event-key='remove'>Remove</bs-menu-item>
+        <bs-menu-item event-key='remove' draggable="false">Remove</bs-menu-item>
       </mp-set-management-action-remove-set-item>
     </bs-dropdown-button>
   </div>
@@ -55,13 +55,13 @@ export const SetListTemplate = `
       <bs-dropdown-button pull-right=true bs-style='link' title=''
                           id='set-actions-{{iri.value}}'>
         <mp-set-management-action-manage-set>
-          <bs-menu-item event-key='manage'>Manage set</bs-menu-item>
+          <bs-menu-item event-key='manage' draggable="false">Manage set</bs-menu-item>
         </mp-set-management-action-manage-set>
         <mp-set-management-action-rename-set>
-          <bs-menu-item event-key='rename'>Rename set</bs-menu-item>
+          <bs-menu-item event-key='rename' draggable="false">Rename set</bs-menu-item>
         </mp-set-management-action-rename-set>
         <mp-set-management-action-remove-set>
-          <bs-menu-item event-key='remove'>Remove set</bs-menu-item>
+          <bs-menu-item event-key='remove' draggable="false">Remove set</bs-menu-item>
         </mp-set-management-action-remove-set>
       </bs-dropdown-button>
     </div>
@@ -93,7 +93,7 @@ export const SetListTemplate = `
 export const ItemListTemplate = `
   <div style='display: flex; align-items: center; justify-content: space-between;'>
     <div style='overflow: hidden;'>
-      <semantic-link-container uri="{{iri.value}}" draggable=false>
+      <semantic-link-container uri="{{iri.value}}">
         ${DefaultItemLabel}
       </semantic-link-container>
     </div>

@@ -37,9 +37,9 @@ export interface SemanticQueryConfig {
 
   /**
    * <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' urlqueryparam-view='help' urlqueryparam-resource-iri='[[resolvePrefix "Help:TemplatingSystem"]]' urlqueryparam-custom-label='Templating system'>Template</semantic-link>, 
-   * that gets a <a target='_blank' href='https://www.w3.org/TR/sparql11-results-json/#select-results'>bindings</a> object 
+   * that gets a <a target='_blank' href='https://www.w3.org/TR/sparql11-results-json/#select-results' draggable='false'>bindings</a> object 
    * injected as template context i.e. the result binding to iterate over. 
-   * <a href='https://handlebarsjs.com/guide/builtin-helpers.html#each' class='text-link-action' target='_blank'>each helper</a>
+   * <a href='https://handlebarsjs.com/guide/builtin-helpers.html#each' class='text-link-action' target='_blank' draggable='false'>each helper</a>
    * can be used to iterate over the bindings.
    * The template will only be rendered if and only if the result is not empty, so that one does not need to have additional if expressions around the component in order to hide it, for example, a list header if actually no result are to be displayed.
    * **Example:** `My Result: {{#each bindings}}{{bindingName.value}}{{/each}}` .

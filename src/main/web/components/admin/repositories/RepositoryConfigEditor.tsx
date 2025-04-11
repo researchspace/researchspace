@@ -253,7 +253,7 @@ export class RepositoryConfigEditor extends Component<Props, State> {
     }
     const items = repositoryTemplates.map((id) => {
       return (
-        <MenuItem eventKey={id} key={id}>
+        <MenuItem eventKey={id} key={id} draggable={false}>
           {id}
         </MenuItem>
       );

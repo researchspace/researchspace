@@ -37,7 +37,7 @@ export interface ResourceLinkContainerConfig {
   /**
    * Specify if link should be draggable, e.g. into sets.
    *
-   * @default true
+   * @default false
    */
   draggable?: boolean;
 
@@ -57,6 +57,7 @@ export type ResourceLinkContainerProps = ResourceLinkContainerConfig & ReactProp
 export class ResourceLinkContainer extends Component<ResourceLinkContainerProps, {}> {
   static defaultProps = {
     target: '_self',
+    draggable: false,
   };
 
   onClick = (event: MouseEvent<HTMLAnchorElement>) => {

@@ -170,7 +170,7 @@ export class SemanticTree extends Component<Props, State> {
     nodeBindingName: 'node',
     roots: [],
     keysOpened: [],
-    tupleTemplate: '<semantic-link iri="{{node.value}}"></semantic-link>',
+    tupleTemplate: '<semantic-link iri="{{node.value}}" draggable="true"></semantic-link>',
   };
 
   private readonly cancellation = new Cancellation();

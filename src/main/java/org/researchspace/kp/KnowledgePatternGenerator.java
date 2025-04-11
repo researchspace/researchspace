@@ -256,9 +256,9 @@ public class KnowledgePatternGenerator {
 
         // generate KP select pattern and add it to the KP
         String selectPattern =
-            "SELECT ?value ?label WHERE {\n" +
+            "SELECT ?value WHERE {\n" +
             "  $subject <" + prop.stringValue() + "> ?value . \n" +
-            "  ?value skos:prefLabel|rdfs:label|crm:P190_has_symbolic_content ?label ." +
+           // "  ?value skos:prefLabel|rdfs:label|crm:P190_has_symbolic_content ?label ." +
             "}";
         BNode selectQueryNode = this.vf.createBNode();
         builder

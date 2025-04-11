@@ -231,7 +231,7 @@
                                                     </mp-selection-action-choice>
 
                                                     <semantic-search-action-save-set-result id='{{viewId}}-new-set-with-results'>
-                                                        <bs-menu-item>
+                                                        <bs-menu-item draggable="false">
                                                             <rs-icon icon-type="rounded" icon-name="create_new_folder" class="icon-left" symbol="true"></rs-icon>
                                                             <span>New set with all annotations</span>
                                                         </bs-menu-item>  
@@ -558,12 +558,13 @@
                                                                 {{#ifCond bindings.0.node.value "===" propositionalObject}}
                                                                     <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
                                                                 {{else}}
-                                                                    <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                                    urlqueryparam-view='resource-editor' 
-                                                                                    urlqueryparam-resource-iri='{{node.value}}'
-                                                                                    >
-                                                                        <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                                    </semantic-link>
+                                                                    <mp-draggable iri="{{node.value}}">
+                                                                        <semantic-link-container     uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                                    urlqueryparam-view='resource-editor' 
+                                                                                                    urlqueryparam-resource-iri='{{node.value}}'>
+                                                                            <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                                        </semantic-link-container>
+                                                                    </mp-draggable>
                                                                 {{/ifCond}}
                                                             </div>
                                                         </template>
@@ -711,12 +712,13 @@
                                                             {{#ifCond bindings.0.node.value "===" informationObject}}
                                                                 <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
                                                             {{else}}
-                                                                <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                                urlqueryparam-view='resource-editor' 
-                                                                                urlqueryparam-resource-iri='{{node.value}}'
-                                                                                >
-                                                                    <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                                </semantic-link>
+                                                                <mp-draggable iri="{{node.value}}">
+                                                                    <semantic-link-container    uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                                urlqueryparam-view='resource-editor' 
+                                                                                                urlqueryparam-resource-iri='{{node.value}}'>
+                                                                        <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                                    </semantic-link-container>
+                                                                </mp-draggable>
                                                             {{/ifCond}}
                                                         </div>
                                                     </template>
@@ -1397,12 +1399,15 @@
                                         </rs-iiif-image-thumbnail>
                                     </div>
                                     <div style="font-size: 13.5px; font-weight: 600; margin-top: 10px; margin-bottom: 8px;">
-                                        <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                      urlqueryparam-view='resource-editor' 
-                                                      urlqueryparam-resource-iri='{{imageSource.value}}'
-                                                      >
-                                          <span>Image: </span><mp-label iri='{{imageSource.value}}' class="text-link"></mp-label>
-                                        </semantic-link>
+                                        <span>Image: </span>
+                                        <mp-draggable iri="{{imageSource.value}}">
+                                            <semantic-link-container    uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                        urlqueryparam-view='resource-editor' 
+                                                                        urlqueryparam-resource-iri='{{imageSource.value}}'
+                                                                        >
+                                                <span><mp-label iri='{{imageSource.value}}' class="text-link"></mp-label></span> 
+                                            </semantic-link-container>
+                                        </mp-draggable>
                                     </div>
                                 {{/each}}
                             </div>

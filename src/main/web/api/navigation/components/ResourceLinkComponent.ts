@@ -115,6 +115,9 @@ interface ParamMap {
  */
 export class ResourceLinkComponent extends Component<ResourceLinkProps, State> {
   private cancellation = new Cancellation();
+  static defaultProps = {
+    draggable: false,
+  };
 
   constructor(props: ResourceLinkProps, context) {
     super(props, context);

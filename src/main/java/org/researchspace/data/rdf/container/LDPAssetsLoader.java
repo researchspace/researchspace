@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,8 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.io.FileHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.BNode;
@@ -46,6 +49,7 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 
 import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.Models;
@@ -97,7 +101,7 @@ public class LDPAssetsLoader {
 
     @Inject
     private PlatformStorage platformStorage;
-
+    
     @Inject
     private Configuration configuration;
 
@@ -107,7 +111,7 @@ public class LDPAssetsLoader {
     public LDPAssetsLoader() {
 
     }
-
+    
     private String getRepositoryIdFromObjectId(StoragePath path) {
         StoragePath repositoryPrefix = path.getParent();
         if (!ObjectKind.LDP.equals(repositoryPrefix.getParent())) {
@@ -125,7 +129,7 @@ public class LDPAssetsLoader {
     private boolean isForceLoadFromStorage(String storageId) {
         return configuration.getGlobalConfig().getForceLDPLoadFromStorages().contains(storageId);
     }
-
+    
     public void load() throws StorageException, IOException, UnknownConfigurationException, Exception {
         Map<StoragePath, FindResult> mapResults = platformStorage.findAll(ObjectKind.LDP);
         Map<String, Map<String, Map<StoragePath, FindResult>>> mapResultsByRepositoryIdAndStorageId = Maps.newHashMap();
@@ -173,7 +177,7 @@ public class LDPAssetsLoader {
 
             currentStorageMap.put(entry.getKey(), entry.getValue());
         }
- 
+    
         // Load each batch separately into the corresponding repository
         for (Entry<String, Map<String, Map<StoragePath, FindResult>>> entry : mapResultsByRepositoryIdAndStorageId
                 .entrySet()) {
@@ -243,33 +247,33 @@ public class LDPAssetsLoader {
         logger.info("results");logger.info(!results.isEmpty());
         return !results.isEmpty();
     }
-
+    
     private void checkIfKPsExistForPreloadedOntologiesAndLoad() {
         //generate KPs if they don't already exist
         String checkIfKPsExistForPreloadedOntologies = "" +
                         "PREFIX owl: <http://www.w3.org/2002/07/owl#>" +
                         "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
                         "SELECT ?ontology (count(?prop) as ?propCount) (count(?kp) as ?kpCount) {" +
-                             "?ontology a owl:Ontology . " +
-                             "BIND((IF((STRENDS(STR(?ontology),\"/\")),STR(?ontology),CONCAT(STR(?ontology),\"/\"))) as ?ontologyURI)" +
-                             "BIND(IRI(CONCAT(STR(?ontologyURI),\"context\")) as ?ontologyContext)" +
-                             "{" +
+                                "?ontology a owl:Ontology . " +
+                                "BIND((IF((STRENDS(STR(?ontology),\"/\")),STR(?ontology),CONCAT(STR(?ontology),\"/\"))) as ?ontologyURI)" +
+                                "BIND(IRI(CONCAT(STR(?ontologyURI),\"context\")) as ?ontologyContext)" +
+                                "{" +
                                 "graph ?ontologyContext {" +
                                 "  ?prop a ?owlType . " +
                                 "  FILTER (?owlType IN (owl:DatatypeProperty,owl:ObjectProperty)) " +    
                                 "  FILTER(CONTAINS(STR(?prop),REPLACE(STR(?ontologyContext),\"/context\",\"\"))) " +
                                 "}" +
-                             "}" +
-                             "UNION { " +
-                             "  ?kp a <http://www.researchspace.org/resource/system/fields/Field> ." +
-                             "  ?kp a ?owlType ." +
-                             "  VALUES ?owlType {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}" +
+                                "}" +
+                                "UNION { " +
+                                "  ?kp a <http://www.researchspace.org/resource/system/fields/Field> ." +
+                                "  ?kp a ?owlType ." +
+                                "  VALUES ?owlType {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}" +
                             "}" +
-                          "}" + 
-                          "group by ?ontology";
-     
+                            "}" + 
+                            "group by ?ontology";
+        
         Repository defaultRepository = repositoryManager.getDefault();
-         
+            
         // connection and to run the sparql query
         logger.trace(checkIfKPsExistForPreloadedOntologies);
         try (RepositoryConnection con = defaultRepository.getConnection()) {
@@ -303,7 +307,7 @@ public class LDPAssetsLoader {
         for (Entry<String, Map<StoragePath, FindResult>> storageEntry : mapResults.entrySet()) {
             LinkedHashModel loadedAssetsModel = new LinkedHashModel();
             logger.info("Loading " + storageEntry.getValue().size() + " LDP assets into the \"" + repositoryId + "\" repository");
-                     
+                        
             for (Entry<StoragePath, FindResult> entry : storageEntry.getValue().entrySet()) {
                 StoragePath path = entry.getKey(); 
                 boolean hasKnownFormat = (path.hasExtension(".trig") || path.hasExtension(".nq")
@@ -324,7 +328,7 @@ public class LDPAssetsLoader {
                 }
                 ObjectRecord record = entry.getValue().getRecord();
                 try (InputStream in = record.getLocation().readContent()) {
-                    Model model = Rio.parse(in, "", format);              
+                    Model model = Rio.parse(in, "", format);             
                     loadedAssetsModel.addAll(model);                   
                 } catch (IOException | RDFParseException e) {
                     logger.error("Failed to parse LDP asset: " + record.getLocation() + ". Details: " + e.getMessage());
@@ -339,7 +343,7 @@ public class LDPAssetsLoader {
                     Set<Resource> contextsToLoad = loadedAssetsModel.contexts();
                     conn.clear(contextsToLoad.toArray(new Resource[contextsToLoad.size()]));
                     contextsToLoad.forEach(res -> logger.info(res.stringValue()));
-                     
+                        
                     LDPImplManager.getLDPImplementation(
                                     FieldDefinitionContainer.IRI,
                                     Sets.newIdentityHashSet(),
@@ -352,6 +356,38 @@ public class LDPAssetsLoader {
                     // We only load the contexts, which are not present in the assets repository
                     // If present with different content, an error is thrown.
                     List<Resource> toLoad = selectContentToLoad(repositoryId, loadedAssetsModel, conn);
+                    
+                    // From selected toLoad determine if any should be overwritten by default
+                    for (Resource ctx : toLoad) {                       
+                        // Process each resource as needed
+                        if (repositoryId.equals("system")) {  
+                            logger.info("Reload system knowledge pattern: "+ctx.stringValue());  
+                            conn.clear(ctx);                           
+                        }
+                        else if (repositoryId.equals("authorities")) {                                                    
+                            List<PlatformStorage.FindResult> overrides = getOverrides(ctx, repositoryId);
+                            if (overrides.size() == 1) {
+                                if (overrides.get(0).getAppId().equals("default")) {
+                                    logger.info("Reload default authority document from: "+ctx.stringValue()); 
+                                    conn.clear(ctx);
+                                }
+                            } else if (overrides.size() > 1) {
+                                // do not load from default
+                            }
+                        }
+                        else if (repositoryId.equals("configurations")) {  
+                            List<PlatformStorage.FindResult> overrides = getOverrides(ctx, repositoryId);  
+                            if (overrides.size() == 1) {
+                                if (overrides.get(0).getAppId().equals("default")) {
+                                    logger.info("Reload default configuration from: "+ctx.stringValue()); 
+                                    conn.clear(ctx);
+                                }
+                            } else if (overrides.size() > 1) {
+                                // do not load from default
+                            }                                       
+                            
+                        }
+                    }
                     
                     ldpContainersConsistencyCheck(repositoryId, loadedAssetsModel, conn);
                     for (Resource ctx : toLoad) {
@@ -366,13 +402,13 @@ public class LDPAssetsLoader {
     }
 
     /**
-     * Check if the loaded data references includes some not available containers.
-     * Those containers we would need to add to the assets repository.
-     * 
-     * @param repositoryId
-     * @param loadedAssetsModel
-     * @param conn
-     */
+        * Check if the loaded data references includes some not available containers.
+        * Those containers we would need to add to the assets repository.
+        * 
+        * @param repositoryId
+        * @param loadedAssetsModel
+        * @param conn
+        */
     private void ldpContainersConsistencyCheck(String repositoryId, Model loadedAssetsModel, RepositoryConnection conn)
             throws IllegalStateException {
         // Select all containers mentioned in the loaded data
@@ -406,16 +442,16 @@ public class LDPAssetsLoader {
     }
 
     /**
-     * Check whether the content of loaded assets data is consistent with the
-     * content of the assets repository, i.e., if the same named graph is contained
-     * in both the loaded data and the assets repository, their content must be
-     * equivalent.
-     * 
-     * @param repositoryId
-     * @param loadedAssetsModel
-     * @param conn
-     * @throws IllegalStateException
-     */
+        * Check whether the content of loaded assets data is consistent with the
+        * content of the assets repository, i.e., if the same named graph is contained
+        * in both the loaded data and the assets repository, their content must be
+        * equivalent.
+        * 
+        * @param repositoryId
+        * @param loadedAssetsModel
+        * @param conn
+        * @throws IllegalStateException
+        */
     // static package private for testing
     static List<Resource> selectContentToLoad(String repositoryId, Model loadedAssetsModel, RepositoryConnection conn)
             throws IllegalStateException {
@@ -437,24 +473,23 @@ public class LDPAssetsLoader {
             } 
             else {
                 if (!LDPAssetsLoader.compareModelsWithoutDates(modelExisting, modelLoaded)) {
-                    inconsistentContexts.add(ctx);
                     if (repositoryId.equals("system")) {  
-                        logger.info("Reload system KP that changed: "+ctx.stringValue());                        
-                        conn.clear(ctx);
                         toLoad.add(ctx);
                     }
-                    if (repositoryId.equals("authorities")) {  
-                        logger.info("Do not reload authority document as it's been changed by application:"+ctx.stringValue());                                             
-                        toLoad.remove(ctx);
+                    else if (repositoryId.equals("authorities")) {                         
+                        toLoad.add(ctx);
                     }
-
-                    if (repositoryId.equals("configurations")) {  
-                        logger.info("Do not reload configuration as it's been changed by application:"+ctx.stringValue());                                             
-                        toLoad.remove(ctx);
-                    }
+                    else if (repositoryId.equals("configurations")) {  
+                        toLoad.add(ctx);
+                    }                    
                 } 
+                else {
+                    inconsistentContexts.add(ctx);
+                }
+                
             } 
-        }
+        } 
+    
 
         if (!inconsistentContexts.isEmpty() && ! repositoryId.equals("system") && !(repositoryId.equals("authorities")) 
                 && !(repositoryId.equals("configurations"))) {            
@@ -466,6 +501,25 @@ public class LDPAssetsLoader {
         }
         logger.info("Selected to load: " + toLoad.size());
         return toLoad;
+    }
+
+    private List<PlatformStorage.FindResult> getOverrides(Resource ctx, String repositoryId) {
+        ValueFactory VF = SimpleValueFactory.getInstance();
+        StoragePath objectId = ObjectKind.LDP.resolve(repositoryId)
+                                .resolve(StoragePath.encodeIri(VF.createIRI(ctx.stringValue()))).addExtension(".trig");
+        List<PlatformStorage.FindResult> overrides = null;
+        try {
+            overrides = platformStorage.findOverrides(objectId);
+            logger.info("Found overrides: "+overrides.size());
+
+            for (PlatformStorage.FindResult override : overrides) {
+                ObjectRecord record = override.getRecord();
+                logger.info("Location"+record.getPath()+override.getAppId().toString());                    
+            }
+        } catch(StorageException e) {
+            return null;
+        }
+        return overrides;
     }
 
     /**

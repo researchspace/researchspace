@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import * as React from 'react';
 
-class DocMenu extends Component<{ children: React.ReactNode }, {}> {
+class SideNavigationMenu extends Component<{ children: React.ReactNode }, {}> {
 
   navRef: React.RefObject<HTMLDivElement>;
   observer: IntersectionObserver | null
@@ -95,4 +95,4 @@ class DocMenu extends Component<{ children: React.ReactNode }, {}> {
 }
 
 
-export default DocMenu;
+export default SideNavigationMenu;

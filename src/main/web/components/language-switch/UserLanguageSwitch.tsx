@@ -88,7 +88,7 @@ export class UserLanguageSwitch extends Component<UserLanguagePropsProps, State>
         onSelect={(e) => this.onLanguageChanged(e as string)}
       >
         {map(options, (option) => (
-          <MenuItem key={option.key} eventKey={option.key}>
+          <MenuItem key={option.key} eventKey={option.key} draggable={false}>
             {option.label}
           </MenuItem>
         ))}

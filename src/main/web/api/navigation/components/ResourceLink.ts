@@ -106,7 +106,7 @@ export class ResourceLink extends Component<ResourceLinkProps, State> {
 
     // by default all links are draggable, but sometimes we want to disable this behavior
     if (draggable === false) {
-      return D.a(props, this.props.children);
+      return D.a({...props, 'draggable': false}, this.props.children);
     } else {
       return createElement(Draggable, { iri: resource.value }, D.a(props, this.props.children));
     }

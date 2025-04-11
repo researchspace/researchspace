@@ -175,13 +175,13 @@
                                   <div class="all-annotations" id="annotation-viewer-{{windowId}}">{{#each annotations}}<div class="annotation-display annotation-tooltip" data-anno-id="{{id}}"><div class="button-container">
                                     {{#if id}}
                                       <mp-template-item>
-                                        <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames" 
-                                                        draggable="false"
-                                                        urlqueryparam-view="resource-editor"
-                                                        urlqueryparam-resource-iri="{{id}}"
-                                                          >
+                                        <mp-draggable iri="{{id}}">
+                                          <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                                                    urlqueryparam-view="resource-editor"
+                                                                    urlqueryparam-resource-iri="{{id}}">
                                             <div style="width: 100%;text-decoration: underline;font-weight: 600;cursor: pointer;color: #525156;">{{{annoText}}}</div>
-                                          </semantic-link>
+                                          </semantic-link-container>
+                                        </mp-draggable>
                                       </mp-template-item>
                                     {{/if}}</div></div>{{/each}}</div>
                                 {{{{/raw}}}}
@@ -216,11 +216,13 @@
 
           <template id='setGrid'>
             <div>
-              <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                        urlqueryparam-view="resource-editor"
-                                        urlqueryparam-resource-iri='{{iri.value}}'>
-                <div style="margin-bottom: 10px;">Set: <mp-label iri='{{iri.value}}' class="text-link-action"></mp-label></div>
-              </semantic-link-container>
+              <mp-draggable iri='{{iri.value}}'>
+                <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                          urlqueryparam-view="resource-editor"
+                                          urlqueryparam-resource-iri='{{iri.value}}'>
+                  <div style="margin-bottom: 10px;">Set: <mp-label iri='{{iri.value}}' class="text-link-action"></mp-label></div>
+                </semantic-link-container>
+              </mp-draggable>
 
               <semantic-table number-of-displayed-rows=1000
                               query='SELECT ?iri WHERE {
@@ -247,11 +249,13 @@
 
           <template id='setList'>
             <div>
-              <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                        urlqueryparam-view="resource-editor"
-                                        urlqueryparam-resource-iri='{{iri.value}}'>
-                <div style="margin-bottom: 10px;">Set: <mp-label iri='{{iri.value}}' class="text-link-action"></mp-label></div>
-              </semantic-link-container>
+              <mp-draggable iri='{{iri.value}}'>
+                <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                          urlqueryparam-view="resource-editor"
+                                          urlqueryparam-resource-iri='{{iri.value}}'>
+                  <div style="margin-bottom: 10px;">Set: <mp-label iri='{{iri.value}}' class="text-link-action"></mp-label></div>
+                </semantic-link-container>
+              </mp-draggable>
 
               <semantic-table class-name="narrative-set-list-table"
                               number-of-displayed-rows=1000
@@ -320,11 +324,13 @@
                   <div style="min-width:250px; font-size: 13.5px; overflow: hidden;">
                     <div class="place-row">
                       <div>Place:</div>
-                      <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                urlqueryparam-view="resource-editor"
-                                                urlqueryparam-resource='{{place.value}}'>
-                        <div><mp-label iri='{{place.value}}' style="text-decoration: underline; cursor: pointer; color:#396EFE; font-weight: 600;"></mp-label></div>
-                      </semantic-link-container>
+                      <mp-draggable iri='{{place.value}}'>
+                        <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                  urlqueryparam-view="resource-editor"
+                                                  urlqueryparam-resource-iri='{{place.value}}'>
+                          <div><mp-label iri='{{place.value}}' style="text-decoration: underline; cursor: pointer; color:#396EFE; font-weight: 600;"></mp-label></div>
+                        </semantic-link-container>
+                      </mp-draggable>
                     </div>
                   </div>
                 </template>

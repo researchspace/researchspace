@@ -323,7 +323,8 @@
                                                                     query='SELECT DISTINCT ?subject ?iri ?resourceConfig ?resourceLabel ?resourceFormIRI ?resourceIcon ?description WHERE {
                                                                                 BIND(?subject AS ?iri)
                                                                                 ?iri rdf:type ?resourceOntologyClass.
-                                                                                ?resourceOntologyClass rdf:type owl:Class.
+                                                                                ?resourceOntologyClass a ?resourceOntologyClassType .
+                                                                                FILTER(?resourceOntologyClassType in (rdfs:Class, owl:Class))
                                                                                 OPTIONAL {
                                                                                     ?iri crm:P2_has_type ?resourceType .
                                                                                     OPTIONAL {

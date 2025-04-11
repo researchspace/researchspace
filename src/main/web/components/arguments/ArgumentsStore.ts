@@ -105,7 +105,7 @@ function deserializeObservation(pg: Rdf.PointedGraph): Observation {
     note: Rdf.getValueFromPropertyPath([crm.P3_has_note], pg)
       .map((v) => v.value)
       .getOrElse(''),
-    place: Rdf.getValueFromPropertyPath<Rdf.Iri>([crmsci.O21_has_found_at], pg).getOrElse(undefined),
+    place: Rdf.getValueFromPropertyPath<Rdf.Iri>([crmsci.O21_encountered_at], pg).getOrElse(undefined),
     date: Rdf.getValueFromPropertyPath<Rdf.Literal>([crm.P4_has_time_span, crm.P82a_begin_of_the_begin], pg).getOrElse(
       undefined
     ),
@@ -294,7 +294,7 @@ export function serializeObservation(observation: Observation): Rdf.Graph {
   return Rdf.graph([
     Rdf.triple(Rdf.BASE_IRI, vocabularies.rdf.type, crmsci.S19_Encounter_Event),
     Rdf.triple(Rdf.BASE_IRI, vocabularies.rdf.type, crmsci.S4_Observation),
-    Rdf.triple(Rdf.BASE_IRI, crmsci.O21_has_found_at, observation.place),
+    Rdf.triple(Rdf.BASE_IRI, crmsci.O21_encountered_at, observation.place),
     Rdf.triple(Rdf.BASE_IRI, crm.P4_has_time_span, observationTimePg.pointer),
     ...observationTimePg.graph.triples.toJS(),
   ]);

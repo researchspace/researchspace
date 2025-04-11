@@ -148,11 +148,11 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
       PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
       PREFIX crmdig: <http://www.ics.forth.gr/isl/CRMdig/>
       PREFIX rs: <http://www.researchspace.org/ontology/>
-      PREFIX frbroo: <http://iflastandards.info/ns/fr/frbr/frbroo/>
+      PREFIX lrmoo: <http://iflastandards.info/ns/lrm/lrmoo/>
 
       CONSTRUCT {
         ?__resourceIri__ a crm:E33_Linguistic_Object,
-                frbroo:F2_Expression.
+                lrmoo:F2_Expression.
         ?__resourceIri__ crm:P190_has_symbolic_content ?__label__ .
         ?__resourceIri__ crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative> .
         ?__resourceIri__ mp:fileName ?__fileName__.

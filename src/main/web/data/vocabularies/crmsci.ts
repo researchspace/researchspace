@@ -26,8 +26,8 @@ module crmsci {
   export const S19_Encounter_Event = iri('S19_Encounter_Event');
 
   export const O8_observed = iri('O8_observed');
-  export const O19_has_found_object = iri('O19_has_found_object');
-  export const O21_has_found_at = iri('O21_has_found_at');
+  export const O19_encountered_object = iri('O19_encountered_object');
+  export const O21_encountered_at = iri('O21_encountered_at');
 }
 
 export default crmsci;

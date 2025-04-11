@@ -1,0 +1,533 @@
+@prefix : <http://www.researchspace.org/resource/> .
+@prefix rs: <http://www.researchspace.org/ontology/> .
+@prefix User: <http://www.researchspace.org/resource/user/> .
+@prefix Help: <http://help.researchspace.org/resource/> .
+@prefix Platform: <http://www.researchspace.org/resource/system/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix crmdig: <http://www.ics.forth.gr/isl/CRMdig/> .
+@prefix rshelp: <http://researchspace.org/help/> .
+@prefix crmsci: <http://www.cidoc-crm.org/cidoc-crm/CRMsci/> .
+@prefix assets: <http://www.researchspace.org/resource/assets/> .
+@prefix crmgeo: <http://www.ics.forth.gr/isl/CRMgeo/> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix crminfluence: <http://www.cidoc-crm.org/cidoc-crm/influence/> .
+@prefix crm: <http://www.cidoc-crm.org/cidoc-crm/> .
+@prefix crminf: <http://www.ics.forth.gr/isl/CRMinf/> .
+@prefix Admin: <http://www.researchspace.org/resource/admin/> .
+@prefix bds: <http://www.bigdata.com/rdf/search#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix crmba: <http://www.cidoc-crm.org/cidoc-crm/CRMba/> .
+@prefix fedsail: <http://www.openrdf.org/config/sail/federation#> .
+@prefix ontodia: <http://ontodia.org/schema/v1#> .
+@prefix crmarchaeo: <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/> .
+@prefix forms: <http://www.researchspace.org/resource/system/forms/> .
+@prefix lrmoo: <http://iflastandards.info/ns/lrm/lrmoo/> .
+
+crmarchaeo:context {
+
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/> a owl:Ontology;
+  rdfs:label "CRMarchaeo v2.1.1"@en;
+  owl:versionInfo "2.1.1"@en;
+  rdfs:comment "CRMarchaeo is an extension of CIDOC CRM created to support the archaeological excavation process and all the various entities and activities related to it. The model has been created starting from standards and models already in use by national and international cultural heritage institutions, and has evolved through deep analysis of existing metadata from real archaeological documentation. It has been enriched by continuous collaboration with various communities of archaeologists from different countries and schools. Furthermore, it takes advantage of the concepts provided by CRMsci, from which it inherits most of the geological and stratigraphic principles that govern archaeological stratigraphy, extending these principles."@en .
+
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP9i_provided_matter_to> a owl:ObjectProperty;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A4_Stratigraphic_Genesis>;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP9_took_matter_from>;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMsci/S10_Material_Substantial>;
+    rdfs:subPropertyOf <http://www.cidoc-crm.org/cidoc-crm/CRMsci/O18i_was_altered_by>;
+    rdfs:label "provided matter to"@en .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP8_disturbed> a owl:ObjectProperty;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP8i_was_disturbed_by>;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A5_Stratigraphic_Modification>;
+    rdfs:comment "This property identifies an A8 Stratigraphic Unit that was disturbed through an A5 Stratigraphic Modification. One A5 Stratigraphic Modification may disturb several A8 Stratigraphic Units."@en;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A8_Stratigraphic_Unit>;
+    rdfs:subPropertyOf <http://www.cidoc-crm.org/cidoc-crm/CRMsci/O18_altered>;
+    rdfs:label "disturbed"@en .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP8i_was_disturbed_by> a owl:ObjectProperty;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP8_disturbed>;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A8_Stratigraphic_Unit>;
+    rdfs:label "was disturbed by"@en;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A5_Stratigraphic_Modification>;
+    rdfs:subPropertyOf <http://www.cidoc-crm.org/cidoc-crm/CRMsci/O18i_was_altered_by> .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP7i_was_produced_by> a owl:ObjectProperty;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A8_Stratigraphic_Unit>;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP7_produced>;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A4_Stratigraphic_Genesis>;
+    rdfs:label "was produced by"@en;
+    rdfs:subPropertyOf <http://www.cidoc-crm.org/cidoc-crm/CRMsci/O17i_was_generated_by> .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP7_produced> a owl:ObjectProperty;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP7i_was_produced_by>;
+    rdfs:subPropertyOf <http://www.cidoc-crm.org/cidoc-crm/CRMsci/O17_generated>;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A4_Stratigraphic_Genesis>;
+    rdfs:label "produced"@en;
+    rdfs:comment "This property identifies the instance of A8 Stratigraphic Unit that was produced during an instance of A4 Stratigraphic Genesis Event."@en;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A8_Stratigraphic_Unit> .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP9_took_matter_from> a owl:ObjectProperty;
+    rdfs:label "took matter from"@en;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP9i_provided_matter_to>;
+    rdfs:comment "This property associates an instance of A4 Stratigraphic Genesis with an instance of S10 Material Substantial, from which matter was incorporated in the instance of A8 Stratigraphic Unit produced by this genesis. The instance of A8 Stratigraphic Unit produced by an instance of A4 Stratigraphic Genesis can be documented by using the property AP7 produced (was produced by) and should be distinct from the instance of S10 Material Substantial from which matter was taken. The latter instance will be modified or cease to exist due to this genesis process."@en;
+    rdfs:subPropertyOf <http://www.cidoc-crm.org/cidoc-crm/CRMsci/O18_altered>;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A4_Stratigraphic_Genesis>;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMsci/S10_Material_Substantial> .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMsci/O7_confines> rdfs:subPropertyOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP12_confines> .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMsci/O7i_is_confined_by> rdfs:subPropertyOf
+      <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP12i_is_confined_by> .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP26_overlaps_in_time_with> a owl:ObjectProperty;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP26i_is_overlapped_in_time_by>;
+    rdfs:subPropertyOf crm:P174i_ends_after_the_start_of, crm:P185_ends_before_the_end_of,
+      crm:P176_starts_before_the_start_of;
+    rdfs:domain crm:E2_Temporal_Entity;
+    rdfs:label "overlaps in time with"@en;
+    rdfs:range crm:E2_Temporal_Entity;
+    rdfs:comment "This property identifies a situation in which there is an overlap between the temporal extents of two instances of E2 Temporal Entity. It implies a temporal order between the two entities: if A overlaps in time B, then A must start before B, and B must end after A. This property is only necessary if the relevant time spans are unknown (otherwise the relationship can be calculated). This property is the same as the \"overlaps / overlapped-by\" relationships of Allen’s temporal logic (Allen, 1983, pp. 832-843)."@en .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP24i_is_started_by> a owl:ObjectProperty;
+    rdfs:subPropertyOf crm:P175_starts_before_or_with_the_start_of, crm:P175i_starts_after_or_with_the_start_of,
+      crm:P185i_ends_after_the_end_of;
+    rdfs:label "is started by"@en;
+    rdfs:range crm:E2_Temporal_Entity;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP24_starts>;
+    rdfs:domain crm:E2_Temporal_Entity .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP29_appears_in> a owl:ObjectProperty;
+    rdfs:domain crm:E55_Type;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP29i_has_appearing_type>;
+    rdfs:range crm:E4_Period;
+    rdfs:label "appears in"@en;
+    rdfs:comment "This property associates a kind of object (documented as an instance of E55 Type) with an instance of E4 Period indicating that objects of this kind have been brought into existence during this period. The genesis of such objects may be the result of human, biological, geological or other processes. This property makes a weak statement about the distribution of the associated object kind in the archaeological record: that is, if the genesis of an object of the type can plausibly be assumed to fall within the genesis of the context within which it was found, then this property supports reasoning, ceteris paribus, that the genesis period of the context forms part of, or overlaps with, one of the instances of E4 Period in which the respective object type has appeared. Such weak statements may also be useful in the context of geological or paleontological observations. Stronger claims can be made using the properties AP30 restricted to and AP31 typical for ."@en .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP27_meets_in_time_with> a owl:ObjectProperty;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP27i_is_met_in_time_by>;
+    rdfs:subPropertyOf crm:P182_ends_before_or_with_the_start_of, crm:P173i_ends_after_or_with_the_start_of;
+    rdfs:range crm:E2_Temporal_Entity;
+    rdfs:label "meets in time with"@en;
+    rdfs:comment "This property identifies a situation in which one instance of E2 Temporal Entity immediately follows another instance of E2 Temporal Entity. It implies a particular order between the two entities: if A meets in time with B, then A must precede B. This property is only necessary if the relevant time spans are unknown (otherwise the relationship can be calculated). This property is the same as the \"meets / met-by\" relationships of Allen’s temporal logic (Allen, 1983, pp. 832-843)."@en;
+    rdfs:domain crm:E2_Temporal_Entity .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP28_occurs_before> a owl:ObjectProperty;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP28i_occurs_after>;
+    rdfs:domain crm:E2_Temporal_Entity;
+    rdfs:subPropertyOf crm:P183_ends_before_the_start_of;
+    rdfs:range crm:E2_Temporal_Entity;
+    rdfs:label "occurs before"@en;
+    rdfs:comment "This property identifies the relative chronological sequence of two temporal entities. It implies that a temporal gap exists between the end of A and the start of B. This property is only necessary if the relevant time spans are unknown (otherwise the relationship can be calculated). This property is the same as the \"before / after\" relationships of Allen’s temporal logic(Allen, 1983). This property is transitive."@en .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP25i_includes> a owl:ObjectProperty;
+    rdfs:label "includes"@en;
+    rdfs:domain crm:E2_Temporal_Entity;
+    rdfs:subPropertyOf crm:P176_starts_before_the_start_of, crm:P185i_ends_after_the_end_of;
+    rdfs:range crm:E2_Temporal_Entity;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP25_occurs_during> .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP23_finishes> a owl:ObjectProperty;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP23i_is_finished_by>;
+    rdfs:subPropertyOf crm:P184i_ends_with_or_after_the_end_of, crm:P176i_starts_after_the_start_of,
+      crm:P184_ends_before_or_with_the_end_of;
+    rdfs:range crm:E2_Temporal_Entity;
+    rdfs:label "finishes"@en;
+    rdfs:comment "This property identifies a situation in which the ending point of an instance of E2 Temporal Entity is equal to the ending point of another temporal entity of longer duration. There is no causal relationship implied by this property. This property is only necessary if the time span is unknown (otherwise the relationship can be calculated). This property is the same as the \"finishes / finished-by\" relationships of Allen’s temporal logic (Allen, 1983, pp. 832-843). This property is transitive."@en;
+    rdfs:domain crm:E2_Temporal_Entity .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP24_starts> a owl:ObjectProperty;
+    rdfs:domain crm:E2_Temporal_Entity;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP24i_is_started_by>;
+    rdfs:label "starts"@en;
+    rdfs:subPropertyOf crm:P175i_starts_after_or_with_the_start_of, crm:P185_ends_before_the_end_of,
+      crm:P175_starts_before_or_with_the_start_of;
+    rdfs:range crm:E2_Temporal_Entity;
+    rdfs:comment "This property identifies a situation in which the starting point for an instance of E2 Temporal Entity is equal to the starting point of another instance of E2 Temporal Entity of longer duration. This property is only necessary if the time span is unknown (otherwise the relationship can be calculated). This property is the same as the \"starts / started-by\" relationships of Allen’s temporal logic (Allen, 1983, pp. 832-843). This property is transitive."@en .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP25_occurs_during> a owl:ObjectProperty;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP25i_includes>;
+    rdfs:domain crm:E2_Temporal_Entity;
+    rdfs:comment "This property identifies the situation in which the entire temporal extent of an instance of E2 Temporal Entity is within the temporal extent of another instance of E2 Temporal Entity that starts before and ends after the included temporal entity. This property is only necessary if the time span is unknown (otherwise the relationship can be calculated). This property is the same as the \"during / includes\" relationships of Allen’s temporal logic (Allen, 1983, pp. 832-843). This property is transitive."@en;
+    rdfs:range crm:E2_Temporal_Entity;
+    rdfs:subPropertyOf crm:P176i_starts_after_the_start_of, crm:P185_ends_before_the_end_of;
+    rdfs:label "occurs during"@en .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP29i_has_appearing_type> a owl:ObjectProperty;
+    rdfs:range crm:E55_Type;
+    rdfs:label "has appearing type"@en;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP29_appears_in>;
+    rdfs:domain crm:E4_Period .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP28i_occurs_after> a owl:ObjectProperty;
+    rdfs:range crm:E2_Temporal_Entity;
+    rdfs:label "occurs after"@en;
+    rdfs:subPropertyOf crm:P183i_starts_after_the_end_of;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP28_occurs_before>;
+    rdfs:domain crm:E2_Temporal_Entity .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP26i_is_overlapped_in_time_by> a
+      owl:ObjectProperty;
+    rdfs:label "is overlapped in time by"@en;
+    rdfs:subPropertyOf crm:P176i_starts_after_the_start_of, crm:P174_starts_before_the_end_of,
+      crm:P185i_ends_after_the_end_of;
+    rdfs:domain crm:E2_Temporal_Entity;
+    rdfs:range crm:E2_Temporal_Entity;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP26_overlaps_in_time_with> .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP23i_is_finished_by> a owl:ObjectProperty;
+    rdfs:subPropertyOf crm:P184i_ends_with_or_after_the_end_of, crm:P184_ends_before_or_with_the_end_of,
+      crm:P176_starts_before_the_start_of;
+    rdfs:range crm:E2_Temporal_Entity;
+    rdfs:domain crm:E2_Temporal_Entity;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP23_finishes>;
+    rdfs:label "is finished by"@en .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP27i_is_met_in_time_by> a owl:ObjectProperty;
+    rdfs:subPropertyOf crm:P182i_starts_after_or_with_the_end_of, crm:P173_starts_before_or_with_the_end_of;
+    rdfs:domain crm:E2_Temporal_Entity;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP27_meets_in_time_with>;
+    rdfs:label "is met in time by"@en;
+    rdfs:range crm:E2_Temporal_Entity .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP2i_was_discarded_by> a owl:ObjectProperty;
+    rdfs:label "was discarded by"@en;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMsci/S11_Amount_of_Matter>;
+    rdfs:subPropertyOf <http://www.cidoc-crm.org/cidoc-crm/CRMsci/O2i_was_removed_by>;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A1_Excavation_Processing_Unit>;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP2_discarded> .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP31_typical_for> a owl:ObjectProperty;
+    rdfs:subPropertyOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP29_appears_in>;
+    rdfs:range crm:E4_Period;
+    rdfs:domain crm:E55_Type;
+    rdfs:comment "This property associates a kind of object (documented as an instance of E55 Type) with an instance of E4 Period indicating that objects of this kind have been generated in this period in significantly greater numbers and in wider distributions, than in other periods. This property makes a moderate statement concerning the distribution of the associated object kind in the observed record: If a \"sufficient number\" of objects of this type are found in a context, and their genesis can plausibly be assumed to fall within the genesis of the find context, then the statement made with this property would support reasoning, ceteris paribus , that the genesis period of the find context is likely to form part of the related instance of E4 Period, or at least overlap with it. “Sufficient number” means that the density of objects of this kind in the find context is compatible with the general density that this kind of object had during the associated period in contexts of a comparable nature and deposition history. A stronger claim can be made using AP30 restricted to (restricts appearance of) while a weaker claim would use AP29 appears in (has appearing type) ."@en;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP31i_has_typical_type>;
+    rdfs:label "typical for"@en .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP30_restricted_to> a owl:ObjectProperty;
+    rdfs:label "restricted to"@en;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP30i_restricts_appearance_of>;
+    rdfs:range crm:E4_Period;
+    rdfs:subPropertyOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP29_appears_in>;
+    rdfs:comment "This property associates a kind of object (documented as an instance of E55 Type) with an instance of E4 Period indicating that objects of this kind have been generated exclusively in this period. This property makes a strong statement concerning the distribution of the associated object kind in the observed record: If the genesis of an object of this type can plausibly be assumed to fall within the genesis of the context in which it was found, then the statement made with this property would support reasoning, ceteris paribus , that the genesis period of the find context actually forms part of the related instance of E4 Period, or at least overlaps with it. In contrast, objects from previous periods may appear in a context because they are still in use, and objects from later periods may have been displaced into an older context. Weaker claims can be made using the properties AP29 appears in (gas appearing type) and AP31 typical for (has typical type) ."@en;
+    rdfs:domain crm:E55_Type .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP3i_was_investigated_by> a owl:ObjectProperty;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A9_Archaeological_Excavation>;
+    rdfs:label "was investigated by"@en;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP3_investigated>;
+    rdfs:subPropertyOf <http://www.cidoc-crm.org/cidoc-crm/CRMsci/O8i_was_observed_by>;
+    rdfs:domain crm:E27_Site .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP4i_was_surface_produced_by> a owl:ObjectProperty;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A10_Excavation_Interface>;
+    rdfs:label "was surface produced by"@en;
+    rdfs:subPropertyOf crm:P108i_was_produced_by;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A1_Excavation_Processing_Unit>;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP4_produced_surface> .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP4_produced_surface> a owl:ObjectProperty;
+    rdfs:comment "This property identifies the instance of A10 Excavation Interface that constitutes the new surface produced during an instance of A1 Excavation Processing Unit in the excavated area. Frequently this surface or parts of it are documented through drawing and/or measured by technical means such as photography, tachymetry or laser scanning."@en;
+    rdfs:subPropertyOf crm:P108_has_produced;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A1_Excavation_Processing_Unit>;
+    rdfs:label "produced surface"@en;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A10_Excavation_Interface>;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP4i_was_surface_produced_by> .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP5_removed_part_or_all_of> a owl:ObjectProperty;
+    rdfs:comment "This property identifies the instance of A8 Stratigraphic Unit that was cut during an A1 Excavation Processing Unit."@en;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A8_Stratigraphic_Unit>;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A1_Excavation_Processing_Unit>;
+    rdfs:label "removed part or all of"@en;
+    rdfs:subPropertyOf <http://www.cidoc-crm.org/cidoc-crm/CRMsci/O1_diminished>;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP5i_was_partially_or_totally_removed_by> .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP3_investigated> a owl:ObjectProperty;
+    rdfs:comment "This property identifies the 3D excavated volume instance of E27 Site, i.e., a three- dimensional volume, that was actually investigated during an A9 Archaeological Excavation."@en;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP3i_was_investigated_by>;
+    rdfs:label "investigated"@en;
+    rdfs:subPropertyOf <http://www.cidoc-crm.org/cidoc-crm/CRMsci/O8_observed>;
+    rdfs:range crm:E27_Site;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A9_Archaeological_Excavation> .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP32i_was_discarded_by> a owl:ObjectProperty;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP32_discarded_into>;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMsci/S11_Amount_of_Matter>;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A1_Excavation_Processing_Unit>;
+    rdfs:label "was discarded by"@en .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP31i_has_typical_type> a owl:ObjectProperty;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP31_typical_for>;
+    rdfs:subPropertyOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP29i_has_appearing_type>;
+    rdfs:label "has typical type"@en;
+    rdfs:domain crm:E4_Period;
+    rdfs:range crm:E55_Type .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP6_intended_to_approximate> a owl:ObjectProperty;
+    rdfs:comment "This property identifies the A3 Stratigraphic Interface that was intended to approximate during an A1 Excavation Processing Unit. This property should be assigned when a stratigraphic excavation methodology is used. It enables the linkage of the surface produced by an A1 Excavation Processing Unit and an A3 Stratigraphic Interface."@en;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A3_Stratigraphic_Interface>;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A1_Excavation_Processing_Unit>;
+    rdfs:label "intended to approximate"@en;
+    rdfs:subPropertyOf <http://www.cidoc-crm.org/cidoc-crm/CRMsci/O8_observed>;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP6i_was_approximated_by> .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP30i_restricts_appearance_of> a owl:ObjectProperty;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP30_restricted_to>;
+    rdfs:subPropertyOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP29i_has_appearing_type>;
+    rdfs:domain crm:E4_Period;
+    rdfs:label "restricts appearance of"@en;
+    rdfs:range crm:E55_Type .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP32_discarded_into> a owl:ObjectProperty;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMsci/S11_Amount_of_Matter>;
+    rdfs:label "discarded into"@en;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP32i_was_discarded_by>;
+    rdfs:comment "This property identifies the S11 Amount of Matter (e.g. a heap) into which material from an A1 Excavation Processing Unit is discarded. The same instance of A1 Excavation Processing Unit may discard matter into multiple heaps, but also simply throw away the excavated matter without any order or exported to be deposited elsewhere, thereby breaking any close correspondence between the excavation and the deposit."@en;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A1_Excavation_Processing_Unit> .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP6i_was_approximated_by> a owl:ObjectProperty;
+    rdfs:label "was approximated by"@en;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A1_Excavation_Processing_Unit>;
+    rdfs:subPropertyOf <http://www.cidoc-crm.org/cidoc-crm/CRMsci/O8i_was_observed_by>;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A3_Stratigraphic_Interface>;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP6_intended_to_approximate> .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP5i_was_partially_or_totally_removed_by>
+    a owl:ObjectProperty;
+    rdfs:label "was partially or totally removed by"@en;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A8_Stratigraphic_Unit>;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP5_removed_part_or_all_of>;
+    rdfs:subPropertyOf <http://www.cidoc-crm.org/cidoc-crm/CRMsci/O1i_was_diminished_by>;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A1_Excavation_Processing_Unit> .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP16i_was_attributed_by> a owl:ObjectProperty;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A6_Group_Declaration_Event>;
+    rdfs:domain crm:E18_Physical_Thing;
+    rdfs:label "was attributed by"@en;
+    rdfs:subPropertyOf crm:P140i_was_attributed_by;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP16_assigned_attribute_to> .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP19_is_embedding_in> a owl:ObjectProperty;
+    rdfs:comment "This property identifies the instance of A2 Stratigraphic Volume Unit that contains the A7 Embedding. An Embedding may not extend over more than one instance of A2 Stratigraphic Volume Unit."@en;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A7_Embedding>;
+    rdfs:label "is embedding in"@en;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP19i_contains_embedding>;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A2_Stratigraphic_Volume_Unit> .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP22_is_equal_in_time_to> a owl:ObjectProperty;
+    rdfs:subPropertyOf crm:P184i_ends_with_or_after_the_end_of, crm:P184_ends_before_or_with_the_end_of,
+      crm:P175i_starts_after_or_with_the_start_of, crm:P175_starts_before_or_with_the_start_of;
+    rdfs:range crm:E2_Temporal_Entity;
+    rdfs:comment "This property symmetrically identifies a situation in which the starting point and the ending point for an instance of E2 Temporal Entity is equal to the starting point and the ending point of another instance of E2 Temporal Entity, respectively. This property is only necessary if the time span is unknown (otherwise the equivalence can be calculated). This property is the same as the \"equal\" relationship of Allen’s temporal logic (Allen, 1983, pp. 832-843). This property is transitive."@en;
+    rdfs:domain crm:E2_Temporal_Entity;
+    rdfs:label "is equal in time to"@en .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP17_is_found_by> a owl:ObjectProperty;
+    rdfs:comment "This property associates an instance of S19 Encounter Event with an instance of A7 Embedding that has been found during this event."@en;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMsci/S19_Encounter_Event>;
+    rdfs:subPropertyOf <http://www.cidoc-crm.org/cidoc-crm/CRMsci/O8_observed>;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP17i_found>;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A7_Embedding>;
+    rdfs:label "is found by"@en .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP21_contains> a owl:ObjectProperty;
+    rdfs:range crm:E18_Physical_Thing;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A2_Stratigraphic_Volume_Unit>;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP21i_is_contained_in>;
+    rdfs:label "contains"@en;
+    rdfs:comment "This property associates an E18 Physical Thing that is found within an A2 Stratigraphic Volume Unit with the stratigraphic volume unit. AP21 contains (is contained in) is a shortcut for the more detailed path from E18 Physical Thing through AP18i is embedded, A7 Embedding, AP19 is embedding in, A2 Stratigraphic Volume Unit."@en .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP19i_contains_embedding> a owl:ObjectProperty;
+    rdfs:label "contains embedding"@en;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP19_is_embedding_in>;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A2_Stratigraphic_Volume_Unit>;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A7_Embedding> .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP1i_was_produced_by> a owl:ObjectProperty;
+    rdfs:subPropertyOf <http://www.cidoc-crm.org/cidoc-crm/CRMsci/O2i_was_removed_by>;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMsci/S11_Amount_of_Matter>;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP1_produced>;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A1_Excavation_Processing_Unit>;
+    rdfs:label "was produced by"@en .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP15_is_or_contains_remains_of> a
+      owl:ObjectProperty;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMsci/S10_Material_Substantial>;
+    rdfs:label "is or contains remains of"@en;
+    rdfs:comment "This property indicates that an instance of A2 Stratigraphic Volume Unit can be the remains of or contain the remains of an instance of S10 Material Substantial."@en;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A2_Stratigraphic_Volume_Unit>;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP15i_is_or_has_remains_contained_in> .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP2_discarded> a owl:ObjectProperty;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP2i_was_discarded_by>;
+    rdfs:label "discarded"@en;
+    rdfs:comment "This property identifies an instance of S11 Amount of Matter discarded (e.g. onto a heap) by an instance of A1 Excavation Processing Unit."@en;
+    rdfs:subPropertyOf <http://www.cidoc-crm.org/cidoc-crm/CRMsci/O2_removed>;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMsci/S11_Amount_of_Matter>;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A1_Excavation_Processing_Unit> .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP21i_is_contained_in> a owl:ObjectProperty;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A2_Stratigraphic_Volume_Unit>;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP21_contains>;
+    rdfs:label "is contained in"@en;
+    rdfs:domain crm:E18_Physical_Thing .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP15i_is_or_has_remains_contained_in>
+    a owl:ObjectProperty;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A2_Stratigraphic_Volume_Unit>;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP15_is_or_contains_remains_of>;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMsci/S10_Material_Substantial>;
+    rdfs:label "is or has remains contained in"@en .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP18i_is_embedded> a owl:ObjectProperty;
+    rdfs:subPropertyOf crm:P46i_forms_part_of;
+    rdfs:label "is embedded"@en;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP18_is_embedding_of>;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A7_Embedding>;
+    rdfs:domain crm:E18_Physical_Thing .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP18_is_embedding_of> a owl:ObjectProperty;
+    rdfs:label "is embedding of"@en;
+    rdfs:comment "This property identifies the E18 Physical Thing that is contained in an A7 Embedding."@en;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP18i_is_embedded>;
+    rdfs:range crm:E18_Physical_Thing;
+    rdfs:subPropertyOf crm:P46_is_composed_of;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A7_Embedding> .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP16_assigned_attribute_to> a owl:ObjectProperty;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A6_Group_Declaration_Event>;
+    rdfs:label "assigned attribute to"@en;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP16i_was_attributed_by>;
+    rdfs:range crm:E18_Physical_Thing;
+    rdfs:comment "This property indicates an instance of E18 Physical Thing that was assigned by an instance of A6 Group Declaration Event as remains of the target of this instance of A6 Group Declaration Event."@en;
+    rdfs:subPropertyOf crm:P140_assigned_attribute_to .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP17i_found> a owl:ObjectProperty;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A7_Embedding>;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP17_is_found_by>;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMsci/S19_Encounter_Event>;
+    rdfs:subPropertyOf <http://www.cidoc-crm.org/cidoc-crm/CRMsci/O8i_was_observed_by>;
+    rdfs:label "found"@en .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP13i_is_stratigraphic_relation_of>
+    a owl:ObjectProperty;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP13_has_stratigraphic_relation_to>;
+    rdfs:label "is stratigraphic relation of"@en;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A5_Stratigraphic_Modification>;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A5_Stratigraphic_Modification> .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP10i_was_destroyed_by> a owl:ObjectProperty;
+    rdfs:label "was destroyed by"@en;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP10_destroyed>;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMsci/S22_Segment_of_Matter>;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A1_Excavation_Processing_Unit>;
+    rdfs:subPropertyOf crm:P93i_was_taken_out_of_existence_by .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP11i_is_physical_relation_from> a
+      owl:ObjectProperty;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP11_has_physical_relation_to>;
+    rdfs:label "is physical relation from"@en;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A8_Stratigraphic_Unit>;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A8_Stratigraphic_Unit> .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A7_Embedding> a owl:Class;
+    rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A8_Stratigraphic_Unit>;
+    rdfs:label "Embedding"@en;
+    rdfs:comment "This class comprises instances of A8 Stratigraphic Unit partially or completely embedding one or more instances of E20 Physical Thing and at a particular position with relative stability in one or more instances of A2 Stratigraphic Volume Units. Normally, an embedding is expected to have been stable from the time of generation of the first instance of A2 Stratigraphic Volume Unit that surrounds it. However, it may also be due to later intrusion. As an empirical fact, the expert may only be able to decide that a particular embedding is not recent, i.e. has been persisting for longer than the activity that encountered it. This class can be used to document the fact of embedding generally with respect to the surrounding matter or, more specifically, with respect to a more precise position within this matter."@en .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP13_has_stratigraphic_relation_to>
+    a owl:ObjectProperty;
+    rdfs:label "has stratigraphic relation to"@en;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A5_Stratigraphic_Modification>;
+    rdfs:comment "This property identifies the stratigraphic relation between two A5 Stratigraphic Modification events. This relation may be inferred from the kind of physical relation that exists between the two AP 8 Stratigraphic Units that have been created or modified during the corresponding A5 Stratigraphic Modification events. The type of stratigraphic relationships in archaeological documentation assigned to two A5 Stratigraphic Modification events is documented through the property AP 13.1 has type."@en;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP13i_is_stratigraphic_relation_of>;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A5_Stratigraphic_Modification> .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A1_Excavation_Processing_Unit> a owl:Class;
+    rdfs:subClassOf crm:E12_Production, <http://www.cidoc-crm.org/cidoc-crm/CRMsci/S1_Matter_Removal>,
+      <http://www.cidoc-crm.org/cidoc-crm/CRMsci/S4_Observation>, crm:E64_End_of_Existence;
+    rdfs:label "Excavation Processing Unit"@en;
+    rdfs:comment "This class comprises activities of excavating in the sense of archaeology, which are documented as a coherent set of actions of progressively recording and removing matter from a pre-specified location under specific rules. Typically, an instance of A1 Excavation Processing Unit would be terminated if significant discontinuities of substance or finds come to light, or if the activity is interrupted due to external factors, such as end of a working day. In other cases, the termination would be based on predefined physical specifications, such as the boundaries of a maximal volume of matter to be excavated in one unit of excavation. Depending on the methodology, an instance of A1 Excavation Processing Unit may intend to remove matter only within the boundaries of a particular stratigraphic unit, or it may follow a pre-declared spatial extent such as a trench. It may only uncover, clean or expose a structure or parts of it. The process of excavation results in the production of a set of recorded (documentation) data that should be sufficient to provide researchers enough information regarding the consistency and spatial distribution of the excavated Segment of Matter and things and features embedded in it. Some parts or all of the removed physical material (instances of S11 Amount of Matter) may be dispersed, whereas others may be kept in custody in the form of finds or samples, while others (such as parts of walls) may be left at the place of their discovery. The data produced by an instance of A1 Excavation Processing Unit should pertain to the material state of matter at excavation time only and should be clearly distinguished from subsequent interpretation about the causes for this state of matter. The current class A1 Excavation Processing Unit is somewhat overloaded and may be split into two subclasses, one for the intellectual process and one for the physical process. This is left for a future refinement of the model."@en .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP1_produced> a owl:ObjectProperty;
+    rdfs:subPropertyOf <http://www.cidoc-crm.org/cidoc-crm/CRMsci/O2_removed>;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMsci/S11_Amount_of_Matter>;
+    rdfs:comment "This property identifies the S11 Amount of Matter, e.g. a basket, that is preserved (part or total of) from an instance of A1 Excavation Processing Unit for further examination or evidence keeping."@en;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A1_Excavation_Processing_Unit>;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP1i_was_produced_by>;
+    rdfs:label "produced"@en .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A2_Stratigraphic_Volume_Unit> a owl:Class;
+    rdfs:label "Stratigraphic Volume Unit"@en;
+    rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A8_Stratigraphic_Unit>;
+    rdfs:comment "This class comprises instances of A8 Stratigraphic Unit which are connected portions of terrain or other solid structures on, in, or under the surface of earth or seafloor exhibiting some homogeneity of structure or substance and which are completely bounded by surfaces or discontinuities in substance or structure with respect to other portions of the terrain or surfaces of objects or finds. Normally at least one of the surfaces, i.e. instances of A3 Stratigraphic Interface (such as the lower one), from the genesis event of the A2 Stratigraphic Volume Unit will remain during its existence. An instance of A2 Stratigraphic Volume Unit may contain physical objects."@en .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A10_Excavation_Interface> a owl:Class;
+    rdfs:subClassOf crm:E25_Human-Made_Feature, <http://www.cidoc-crm.org/cidoc-crm/CRMsci/S20_Rigid_Physical_Feature>;
+    rdfs:comment "This class comprises instances of S20 Rigid Physical Feature that constitutes a surface produced through one or several instances of A1 Excavation Processing Unit. Instances are often documented through drawing and/or measured by technical means such as photography, tachymetry or laser scanning. Using a planar excavation methodology this is typically the surface of a planum or the surface of a profile. Using a stratigraphic excavation methodology, the instance of A10 Excavation Interface would have the intention to approximate an instance of A3 Stratigraphic Interface. The drawing and measurement of profiles is also common practice when a stratigraphic excavation methodology is used."@en;
+    rdfs:label "Excavation Interface"@en .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A3_Stratigraphic_Interface> a owl:Class;
+    rdfs:label "Stratigraphic Interface"@en;
+    rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A8_Stratigraphic_Unit>;
+    rdfs:comment "This class comprises instances of A8 Stratigraphic Unit, which are coherent parts of a boundary surface that appear as the result of a stratigraphic genesis event or process. The interface marks the limit of the geometric extent of the effect of a genesis or modification event, and indicates in particular where the effect of this event ended. Each event of creation or destruction of a deposition layer implies the creation of new interfaces. Thus, there are two main types of interfaces: those that are surfaces of strata (that can be directly related to the corresponding stratum via the AP12 confines property), and those that are only surfaces, formed by the removal or destruction of existing stratifications."@en .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A8_Stratigraphic_Unit> a owl:Class;
+    rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/CRMsci/S20_Rigid_Physical_Feature>;
+    rdfs:comment "This class comprises instances of S20 Rigid Physical Features which appear as the result of a stratigraphic genesis event or process. The form of an instance of A8 Stratigraphic Unit should be of a kind that can be attributed to a single genesis event or process and has the potential to be observed. One genesis event may have created more than one SU. An instance of A8 Stratigraphic Unit is regarded to exist as long as a part of its matter is still in place with respect to a surrounding reference space, such that its spatial features can be associated with effects of the genesis process of interest. This also implies that a certain degree of coherent (“conformal”) deformation is tolerable within its time-span of existence. Therefore, the place an instance of A8 Stratigraphic Unit occupies can be uniquely identified with respect to the surrounding reference space of archaeological interest"@en;
+    rdfs:label "Stratigraphic Unit"@en .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP10_destroyed> a owl:ObjectProperty;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMsci/S22_Segment_of_Matter>;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP10i_was_destroyed_by>;
+    rdfs:subPropertyOf crm:P93_took_out_of_existence;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A1_Excavation_Processing_Unit>;
+    rdfs:comment "This property identifies the S22 Segment of Matter that was destroyed through an A1 Excavation Processing Unit. The spatial extent of the instance of S22 Segment of Matter is defined by the extent of the spatial 3-dimensional projection of the A1 Excavation Processing Unit. Depending on the granularity of the documented instance of A1 Excavation Processing Unit, different instances of S22 Segment of Matter may be identified by the A10 property."@en;
+    rdfs:label "destroyed"@en .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP12_confines> a owl:ObjectProperty;
+    rdfs:comment "This property identifies partly or completely the surface (A3 Stratigraphic Interface) of an A2 Stratigraphic Volume Unit. One A3 Stratigraphic Interface may confine two or more A2 Stratigraphic Volume Units."@en;
+    rdfs:label "confines"@en;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A2_Stratigraphic_Volume_Unit>;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP12i_is_confined_by>;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A3_Stratigraphic_Interface> .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A6_Group_Declaration_Event> a owl:Class;
+    rdfs:label "Group Declaration Event"@en;
+    rdfs:comment "This class comprises interpretive activities that lead to the recognition two or more instances of Stratigraphic Units (A8) or other Physical Thing (E18) that simultaneously exist at the time of this activity or at the time of an archaeological observation this activity refers to as source and that are attributed to be the remains of one complete instance of Physical Thing (E18) that had existed at a time of reference in the past. Instances of this class could be, for example: two stratigraphic units (with no evident contact) cut through by a ditch having been segments of the same original stratigraphic unit, two or more surviving parts of a structure having been segments of the same wall (B5), a number of postholes being the indication of a past wooden house or a number of potsherds being segments of the same original artefact."@en;
+    rdfs:subClassOf crm:E13_Attribute_Assignment .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP11_has_physical_relation_to> a owl:ObjectProperty;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A8_Stratigraphic_Unit>;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP11i_is_physical_relation_from>;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A8_Stratigraphic_Unit>;
+    rdfs:comment "This property identifies the physical relationship between two A8 Stratigraphic Units. The described relationship may be between two adjacent instances of A2 Stratigraphic Volume Unit sharing a common interface (instance of A3 Stratigraphic Interface), between an instance of A2 Stratigraphic Volume Unit and one of its adjacent interfaces, such as human-made cuts or earthquake induced faults, or even between two intersecting interfaces. The type of physical relationships found between stratigraphic units in archaeological or geological documentation is documented through the property AP11.1 has type. The type applies to the direction from the domain to the range of the property AP11 has physical relation to (is physically related from). The type of physical relationship typically constitutes strong evidence for the sequence of genesis of the related stratigraphic units, which can be documented by the property AP13 has stratigraphic relation to (is stratigraphically related by). The type may either pertain to a relative topology, such as the one being “under” the other, or to the fine-structure of the interface between them, such as a layer of concrete having filled out earlier micro-cavities in various directions in the interface before solidifying."@en;
+    rdfs:label "has physical relation to"@en .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A5_Stratigraphic_Modification> a owl:Class;
+    rdfs:label "Stratigraphic Modification"@en;
+    rdfs:comment "This class comprises activities or processes resulting in the modification of Stratigraphic Units after their genesis through instances of A4 Stratigraphic Genesis Event."@en;
+    rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/CRMsci/S18_Alteration> .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A9_Archaeological_Excavation> a owl:Class;
+    rdfs:label "Archaeological Excavation"@en;
+    rdfs:comment "This class describes the general concept of archaeological excavation intended as a coordinated set of activities performed on an area considered as part of a broader topographical, rural, urban, or monumental context. An archaeological excavation is usually under the responsibility of a coordinator, officially designated, which is legally and scientifically responsible for all the activities carried out within each instance of A1 Excavation Processing Unit and is also responsible for the documentation of the whole process."@en;
+    rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/CRMsci/S4_Observation> .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A4_Stratigraphic_Genesis> a owl:Class;
+    rdfs:label "Stratigraphic Genesis"@en;
+    rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/CRMsci/S17_Physical_Genesis>,
+      <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A5_Stratigraphic_Modification>;
+    rdfs:comment "This class comprises activities or processes that have produced homogeneous, distinguishable units of stratification that are in a relatively stable form from the time of their genesis until they are observed. Such processes may be the aggregation of cycles of erosion/destruction, deposit/accumulation, or transformation/modification occurring on a particular site throughout a particular period of time. These processes are usually not only due to natural forces (i.e., climate, the impact of flora and fauna, other natural events), but also to human activities, in particular excavation and construction. An event of stratification genesis typically produces two main forms of stratification units, both a deposit and an interface."@en .
+  
+  <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP12i_is_confined_by> a owl:ObjectProperty;
+    rdfs:label "is confined by"@en;
+    owl:inverseOf <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/AP12_confines>;
+    rdfs:domain <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A2_Stratigraphic_Volume_Unit>;
+    rdfs:range <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/A3_Stratigraphic_Interface> .
+}

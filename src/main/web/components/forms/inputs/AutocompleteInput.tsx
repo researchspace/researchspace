@@ -267,7 +267,7 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
         { showCreateNewDropdown && (
           <DropdownButton title="New" pullRight id="add-form" onSelect={(label) => this.onDropdownSelectHandler(label)}>
             {this.state.nestedFormTemplates.map((e) => {
-                return (<MenuItem key={e.label} eventKey={e.label}>{e.label}</MenuItem>)
+                return (<MenuItem key={e.label} eventKey={e.label} draggable={false}>{e.label}</MenuItem>)
               }
             )}
           </DropdownButton>
@@ -283,7 +283,6 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
             urlqueryparam-view="resource-editor"
             urlqueryparam-open-as-drag-and-drop="true"
             urlqueryparam-resource={current_value}
-            draggable={false}
           >
             <Button className={`${CLASS_NAME}__open-in-new-tab`} title='Edit in new draggable tab'>
               <Icon iconType='rounded' iconName='read_more' symbol={true} />

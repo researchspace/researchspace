@@ -69,7 +69,7 @@ export class Leaf extends React.Component<LeafProps, State> {
           <div className={`${LEAF_CLASS}__toggle`} onClick={this.toggle} role="button">
             {toggleIcon ? <span className={`${LEAF_CLASS}__toggle-icon`}><Icon iconType='round' iconName={toggleIcon}/></span> : null}
           </div>
-          <a className={bodyClass} href={node.model.id} onClick={this.onClick}>
+          <a className={bodyClass} href={node.model.id} onClick={this.onClick} draggable={false}>
             <span className={`${LEAF_CLASS}__label`}>{label}</span>
             {node.model.count ? <span className={`${LEAF_CLASS}__count ontodia-badge`}>{node.model.count}</span> : null}
           </a>

@@ -15,9 +15,8 @@ class SideNavigationMenu extends Component<{ children: React.ReactNode }, {}> {
   }
 
   componentDidMount() {
-    // this.initObserver();
+    this.initObserver();
     this.attachClickListeners();
-    window.addEventListener("wheel", this.initObserver.bind(this));
   }
 
   componentWillUnmount() {
@@ -30,8 +29,15 @@ class SideNavigationMenu extends Component<{ children: React.ReactNode }, {}> {
         link.removeEventListener("click", this.handleClick);
       });
     }
+  }
 
-    window.removeEventListener("wheel", this.initObserver.bind(this));
+  // Build a finer-grained threshold list for more accurate ratio comparison
+  buildThresholdList() {
+    const thresholds = [];
+    for (let i = 0; i <= 1.0; i += 0.01) {
+      thresholds.push(i);
+    }
+    return thresholds;
   }
 
   initObserver() {
@@ -39,23 +45,44 @@ class SideNavigationMenu extends Component<{ children: React.ReactNode }, {}> {
       return
     }
     
+    const sections = Array.from(document.querySelectorAll('section'));
+    const navLinks = Array.from(document.querySelectorAll('.rs-doc-navigation .nav-link'));
+
     const options = {
       root: null,
       rootMargin: "0px",
-      threshold: 0.6,
+      threshold: this.buildThresholdList(),
     };
+
+    const sectionVisibility = new Map();
     
-    this.observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry: IntersectionObserverEntry) => {
-        if (entry.isIntersecting) {
-          this.updateActiveLink(document.querySelector(`a[href="#${entry.target.id}"`));
-        }
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        sectionVisibility.set(entry.target.id, entry.intersectionRatio);
       });
-    });
+  
+      // Get the most visible section
+      const mostVisibleSection = Array.from(sectionVisibility.entries())
+        .filter(([id, ratio]) => ratio > 0)
+        .sort((a, b) => b[1] - a[1])[0];
+  
+      if (mostVisibleSection) {
+        const [visibleId] = mostVisibleSection;
+  
+        navLinks.forEach(link => {
+          if (link.getAttribute('href') === `#${visibleId}`) {
+            this.updateActiveLink(link);
+          }
+        });
+      }
+    }, options);
     
     
-    document.querySelectorAll("section[id]") .forEach((section) => {
-      this.observer.observe(section);
+    sections.forEach(section => {
+      if (section.id) {
+        sectionVisibility.set(section.id, 0);
+        observer.observe(section);
+      }
     });
   }
 
@@ -76,7 +103,9 @@ class SideNavigationMenu extends Component<{ children: React.ReactNode }, {}> {
   }
 
   updateActiveLink(currentElement) {
-    if(!currentElement.classList.contains("nav-link")) {return}
+    if(!currentElement.classList.contains("nav-link")) {
+      return
+    }
 
     // Remove 'active' class from all links
     document.querySelectorAll(".nav-link").forEach(el => el.classList.remove("active"));

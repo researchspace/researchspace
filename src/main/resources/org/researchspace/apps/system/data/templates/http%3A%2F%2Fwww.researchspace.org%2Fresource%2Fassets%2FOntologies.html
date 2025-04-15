@@ -180,7 +180,7 @@
                       
                       <semantic-table id='field-results' 
                                       number-of-displayed-rows=10 
-                                      query='SELECT DISTINCT ?subject (SAMPLE(?g) as ?graph) (SAMPLE(?l) as ?name) (SAMPLE(?v) as ?version) (SAMPLE(?d) AS ?description) WHERE {
+                                      query='SELECT DISTINCT ?subject ?l (SAMPLE(?g) as ?graph) (SAMPLE(?l) as ?name) (SAMPLE(?v) as ?version) (SAMPLE(?d) AS ?description) WHERE {
                                               FILTER(isIRI(?subject)) .
                                               GRAPH ?g {
                                                 ?subject a owl:Ontology .
@@ -188,7 +188,8 @@
                                               OPTIONAL {?subject rdfs:label ?l}
                                               OPTIONAL { ?subject owl:versionInfo ?v } 
                                               OPTIONAL { ?subject rdfs:comment ?d }
-                                            } GROUP BY ?subject ORDER BY ASC(?subject) LIMIT 100' 
+                                            } GROUP BY ?subject ?l
+                                              ORDER BY ASC(LCASE(STR(?l))) ASC(?subject) LIMIT 100' 
                                       tuple-template='{{> ontology}}'
                                       options='{"showFilter": false}'>
 

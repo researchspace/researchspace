@@ -442,7 +442,7 @@ export class DashboardComponent extends Component<Props, State> {
 
   private onAddNewItem = (item: Item = this.frameLabel()) => {
     // check if item.resourceIri exists and is an actual iri to prevent errors
-    if (item?.resourceIri && !(item?.resourceIri.startsWith("http://")))
+    if (item?.resourceIri && !(item?.resourceIri.startsWith("http://")) && !(item?.resourceIri.startsWith("https://")))
       return;
   
     // check if an item with the same resourceIri is already in the tabset

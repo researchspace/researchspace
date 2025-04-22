@@ -258,7 +258,6 @@ public class KnowledgePatternGenerator {
         String selectPattern =
             "SELECT ?value WHERE {\n" +
             "  $subject <" + prop.stringValue() + "> ?value . \n" +
-           // "  ?value skos:prefLabel|rdfs:label|crm:P190_has_symbolic_content ?label ." +
             "}";
         BNode selectQueryNode = this.vf.createBNode();
         builder

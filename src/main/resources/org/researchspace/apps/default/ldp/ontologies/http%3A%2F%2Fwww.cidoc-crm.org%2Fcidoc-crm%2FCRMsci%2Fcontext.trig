@@ -7,9 +7,9 @@
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix crmdig: <http://www.ics.forth.gr/isl/CRMdig/> .
-@prefix rsp: <http://www.researchspace.org/resource/> .
 @prefix rshelp: <http://researchspace.org/help/> .
 @prefix crmsci: <http://www.cidoc-crm.org/cidoc-crm/CRMsci/> .
+@prefix assets: <http://www.researchspace.org/resource/assets/> .
 @prefix crmgeo: <http://www.ics.forth.gr/isl/CRMgeo/> .
 @prefix sp: <http://spinrdf.org/sp#> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
@@ -20,419 +20,563 @@
 @prefix bds: <http://www.bigdata.com/rdf/search#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix crmba: <http://www.cidoc-crm.org/cidoc-crm/CRMba/> .
+@prefix fedsail: <http://www.openrdf.org/config/sail/federation#> .
 @prefix ontodia: <http://ontodia.org/schema/v1#> .
 @prefix crmarchaeo: <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/> .
 @prefix forms: <http://www.researchspace.org/resource/system/forms/> .
-@prefix frbroo: <http://iflastandards.info/ns/fr/frbr/frbroo/> .
+@prefix lrmoo: <http://iflastandards.info/ns/lrm/lrmoo/> .
 
 crmsci:context {
-  <http://www.cidoc-crm.org/cidoc-crm/CRMsci/> a owl:Ontology;
-  owl:versionInfo "1.2.3"@en;
-  rdfs:label "CRMsci"@en;
-  rdfs:comment "An Extension of CIDOC-CRM to support scientific observation"@en.
 
-  crmsci:O3_sampled_from a owl:ObjectProperty;
-    rdfs:label "sampled from"@en;
-    rdfs:domain crmsci:S2_Sample_Taking;
+  <http://www.cidoc-crm.org/cidoc-crm/CRMsci/> a owl:Ontology;
+    owl:versionInfo "2.0"@en;
+    rdfs:label "CRMsci v2.0"@en;
+    rdfs:comment "The Scientific Observation Model (CRMsci) is a formal ontology intended to be used as a global schema for integrating metadata about scientific observation, measurements and processed data in descriptive and empirical sciences such as biodiversity, geology, geography, archaeology, cultural heritage conservation and others in research IT environments and research data libraries. Its primary purpose is facilitating the management, integration, mediation, interchange and access to research data by description of semantic relationships, in particular causal ones. It is not primarily a model to process the data themselves in order to produce new research results, even though its representations offer themselves to be used for some kind of processing."@en .
+
+  crmsci:S4_Observation a owl:Class;
+    rdfs:comment "This class comprises the activity of gaining scientific knowledge about particular states of physical reality through empirical evidence, experiments and measurements. We define observation in the sense of natural sciences, as a kind of human activity: at some place and within some time-span, certain physical things and their behavior and interactions are observed by human sensory impression, and often enhanced by tools and measurement devices. Observed situations or dimensions may pertain to properties confined to a single instance of S15 Observable Entity or pertain to constellations of multiple instances and relations between them, in particular distances between them. The output of the internal processes of measurement devices that do not require additional human interaction are in general regarded as part of the observation and not as additional inference. Primary data from measurement devices are regarded in this model to be results of observation and can be interpreted as propositions believed to be true within the (known) tolerances and degree of reliability of the device. Measurements and witnessing of events are special cases of observations. Observations result in a belief that certain propositions held at a time within the time-span of the observation. In this model, the degree of confidence in the observed properties is regarded to be “true” by default, but could be described differently by adding a property P3 has note to an instance of S4 Observation"@en;
+    rdfs:label "Observation"@en;
+    rdfs:subClassOf crm:E13_Attribute_Assignment .
+  
+  crm:E80_Part_Removal rdfs:subClassOf crmsci:S1_Matter_Removal .
+  
+  crm:E27_Site rdfs:subClassOf crmsci:S20_Rigid_Physical_Feature .
+  
+  crmsci:S7_Simulation_or_Prediction a owl:Class;
+    rdfs:label "Simulation or Prediction"@en;
+    rdfs:comment "This class comprises activities of executing algorithms or software for simulating the behavior and the properties of a system of interacting components that form part of reality or not by using a mathematical model of the respective interactions. In particular it implies making predictions about the future behaviors of a system of interacting components of reality by starting simulation from an actually observed state, such as weather forecasts. Simulations may also be used to understand the effects of a theory, to compare theoretical predictions with reality, or to show differences with another theory."@en;
+    rdfs:subClassOf crmsci:S5_Inference_Making .
+  
+  crm:P112_diminished rdfs:subPropertyOf crmsci:O1_diminished .
+  
+  crmsci:S3_Measurement_by_Sampling a owl:Class;
+    rdfs:subClassOf crmsci:S21_Measurement, crmsci:S2_Sample_Taking;
+    rdfs:comment "This class comprises activities of taking a sample and measuring or analyzing it as one unit of activity, in which the sample is typically not identified and preserved beyond the context of this activity. Instances of this class describe the taking of one or more samples regardless whether they are explicitly identified in documentation or preserved beyond this activity. The dimensions observed by the respective measurement of this particular sample are regarded as dimensions of the instance of S10 Material Substantial at the place from which the samples were taken. Therefore, the class S3 Measurement by Sampling inherits the properties of S2 Sample Taking, O3 sampled from: S10 Material Substantial and O4 sampled at: E53 Place, and the properties of S21 Measurement O24 measured: S15 Observable Entity. It needs not instantiate the properties O5 removed: S13 Sample and O24 measured: S15 Observable Entity, if the sample is not documented beyond the context of the activity."@en;
+    rdfs:label "Measurement by Sampling"@en .
+  
+  crmsci:S8_Categorical_Hypothesis_Building a owl:Class;
+    rdfs:label "Categorical Hypothesis Building"@en;
+    rdfs:comment "This class comprises the action of making categorical hypotheses based on inference rules and theories; By categorical hypotheses we mean assumptions about the kinds of interactions and related kinds of structures of a domain that have the character of “laws” of nature or human behavior, be it necessary or probabilistic. Categorical hypotheses are developed by “induction” from finite numbers of observation and the absence of observations of particular kinds. As such, categorical hypotheses are always subject to falsification by new evidence. Instances of S8 Categorical Hypothesis Building include making and questioning categorical hypotheses."@en;
+    rdfs:subClassOf crmsci:S5_Inference_Making .
+  
+  crmsci:S23_Position_Determination a owl:Class;
+    rdfs:comment "This class comprises activities of determining positions in space and time. The determined position is intended to approximate a part or all of the extent of the presence (instance of E93 Presence) of an instance of E18 Physical Thing or E4 Period of interest, such as the outer walls of an excavated settlement, the position of a ship sailing or the start and end of athlete's run in a competition. Characteristically, a theodolite or GPS device may be positioned on some persistent feature. Determining the position of the device will yield an approximation of the position of the feature of interest. Alternatively, some material item may be observed moving through a determined position at a given time. This class does not inherit properties from class S21 Measurement. A position determination is an evaluation of a combination of measurement of multiple associated distances and/or angles (instances of E54 Dimension) from a particular spot to certain reference points of previously known position in the same reference space. A particular role is played by the Earth's magnetic field and rotational axis as reference for an angle or direction. Often, the observed constituting dimensions are not documented, or hidden in an electronic device software. The determined position is given as an E94 Space Primitive corresponding to a declarative place. Together with the measured time-span covering the time-critical observations it forms a spacetime volume, which should normally overlap with the spatiotemporal extent of the thing or phenomenon of interest."@en;
+    rdfs:subClassOf crmsci:S4_Observation;
+    rdfs:label "Position Determination"@en .
+  
+  crm:E16_Measurement rdfs:subClassOf crmsci:S21_Measurement .
+  
+  crmsci:S24_Sample_Splitting a owl:Class;
+    rdfs:subClassOf crmsci:S2_Sample_Taking;
+    rdfs:comment "This class comprises the activity of dividing an instance of S13 Sample into new instances of S13 Sample. This activity describes cases of sub-sampling where the resulting instance maintains the characteristic qualities of the original instance. Any observations of these qualities made on the new instance also apply to the original one. This class should be used to model cases of splitting a homogenous sample into multiple ones."@en;
+    rdfs:label "Sample Splitting"@en .
+  
+  crm:P31i_was_modified_by rdfs:subPropertyOf crmsci:O18i_was_altered_by .
+  
+  crm:E5_Event rdfs:subClassOf crmsci:S15_Observable_Entity .
+  
+  crm:P108_has_produced rdfs:subPropertyOf crmsci:O17_generated .
+  
+  crm:P108i_was_produced_by rdfs:subPropertyOf crmsci:O17i_was_generated_by .
+  
+  crmsci:S6_Data_Evaluation a owl:Class;
+    rdfs:subClassOf crmsci:S5_Inference_Making;
+    rdfs:comment "This class comprises the action of concluding propositions on a respective reality from observational data by making evaluations based on mathematical inference rules and calculations using established hypotheses, such as the calculation of an earthquake epicenter. S6 Data Evaluation is not defined as S21/E16 Measurement; Secondary derivations of dimensions of an object from data measured by different processes are regarded as S6 Data Evaluation and not determining instances of Measurement in its own right. For instance, the volume of a statue concluded from a 3D model is an instance of S6 Data Evaluation and not of Measurement."@en;
+    rdfs:label "Data Evaluation"@en .
+  
+  crm:P31_has_modified rdfs:subPropertyOf crmsci:O18_altered .
+  
+  crm:P40_observed_dimension rdfs:subPropertyOf crmsci:O16_observed_value .
+  
+  crmsci:S9_Property_Type a owl:Class;
+    rdfs:comment "This class comprises types of properties. Typically, instances of S9 Property Type would be taken from an ontology or terminological system. In particular, instances of this class can be used to describe in a parametric way what kind of properties the values in scientific data sets are about. By virtue of such descriptions, numeric data can be interpreted as sets of propositions in terms of a formal ontology, such as “concentration of nitrate”, observed in the ground water from a certain borehole."@en;
+    rdfs:subClassOf crm:E55_Type;
+    rdfs:label "Property Type"@en .
+  
+  crm:E11_Modification rdfs:subClassOf crmsci:S18_Alteration .
+  
+  crm:P40i_was_observed_in rdfs:subPropertyOf crmsci:O16i_value_was_observed_by .
+  
+  crmsci:S5_Inference_Making a owl:Class;
+    rdfs:subClassOf crm:E13_Attribute_Assignment;
+    rdfs:label "Inference Making"@en;
+    rdfs:comment "This class comprises the action of making propositions and statements about particular states of affairs in reality or in possible realities or categorical descriptions of reality by using inferences from other statements based on hypotheses and any form of formal or informal logic. It includes evaluations, calculations, and interpretations based on mathematical formulations and propositions."@en .
+  
+  crm:P39i_was_measured_by rdfs:subPropertyOf crmsci:O24i_was_measured_by .
+  
+  crm:P39_measured rdfs:subPropertyOf crmsci:O24_measured .
+  
+  crm:P112i_was_diminished_by rdfs:subPropertyOf crmsci:O1i_was_diminished_by .
+  
+  crm:P46_is_composed_of rdfs:subPropertyOf crmsci:O25_contains .
+  
+  crm:P46i_forms_part_of rdfs:subPropertyOf crmsci:O25i_is_contained_in .
+  
+  crm:E18_Physical_Thing rdfs:subClassOf crmsci:S10_Material_Substantial .
+  
+  crm:E12_Production rdfs:subClassOf crmsci:S17_Physical_Genesis .
+  
+  crmsci:O1_diminished a owl:ObjectProperty;
+    rdfs:range crmsci:S10_Material_Substantial;
+    rdfs:domain crmsci:S1_Matter_Removal;
+    rdfs:comment "This property associates an instance of S1 Matter Removal with the instance of S10 Material Substantial that this activity diminished. Although an instance of S1 Matter Removal activity normally concerns only one item of S10 Material Substantial, it is possible to imagine circumstances under which more than one item might be diminished by a single Matter Removal activity. An instance S1 Matter Removal activity requires to diminish at least one item of S10 Material Substantial. This may be realized by any of the subproperties of O1 diminished . Therefore the instantiation of a particular subproperty of O1 diminished is not necessary."@en;
+    rdfs:label "diminished"@en;
+    owl:inverseOf crmsci:O1i_was_diminished_by .
+  
+  crmsci:O13i_was_triggered_by a owl:ObjectProperty;
+    rdfs:label "was triggered by"@en;
+    rdfs:domain crm:E5_Event;
+    owl:inverseOf crmsci:O13_triggered;
+    rdfs:range crm:E5_Event .
+  
+  crmsci:O17_generated a owl:ObjectProperty;
+    rdfs:label "generated"@en;
+    rdfs:range crm:E18_Physical_Thing;
+    rdfs:domain crmsci:S17_Physical_Genesis;
+    rdfs:comment "This property associates an instance of S17 Physical Genesis event with an instance of E18 Physical Thing that the event generated."@en;
+    owl:inverseOf crmsci:O17i_was_generated_by;
+    rdfs:subPropertyOf crmsci:O18_altered .
+  
+  crmsci:O18_altered a owl:ObjectProperty;
+    rdfs:label "altered"@en;
+    rdfs:comment "This property associates an instance of S18 Alteration process with an instance of E18 Physical Thing which was altered by this activity."@en;
+    owl:inverseOf crmsci:O18i_was_altered_by;
+    rdfs:domain crmsci:S18_Alteration;
+    rdfs:range crm:E18_Physical_Thing .
+  
+  crmsci:O10_assigned_dimension a owl:ObjectProperty;
+    rdfs:comment "This property associates an instance of S6 Data Evaluation with an instance of E54 Dimension that a data evaluation activity has assigned. In that case, dimensions may be determined by making evaluations on observational data based on mathematical inference rules and calculations."@en;
+    rdfs:domain crmsci:S6_Data_Evaluation;
+    rdfs:subPropertyOf crm:P141_assigned;
+    owl:inverseOf crmsci:O10i_dimension_was_assigned_by;
+    rdfs:range crm:E54_Dimension;
+    rdfs:label "assigned dimension"@en .
+  
+  crmsci:O11_described a owl:ObjectProperty;
+    rdfs:comment "This property associates an instance of S6 Data Evaluation with an instance of S15 Observable Entity for which a data evaluation activity provides a description. This description of any Observable Entity is based on data evaluations."@en;
+    rdfs:domain crmsci:S6_Data_Evaluation;
+    rdfs:label "described"@en;
+    owl:inverseOf crmsci:O11i_was_described_by;
+    rdfs:range crmsci:S15_Observable_Entity .
+  
+  crmsci:O11i_was_described_by a owl:ObjectProperty;
+    rdfs:label "was described by"@en;
+    owl:inverseOf crmsci:O11_described;
+    rdfs:range crmsci:S6_Data_Evaluation;
+    rdfs:domain crmsci:S15_Observable_Entity .
+  
+  crmsci:O16i_value_was_observed_by a owl:ObjectProperty;
+    rdfs:domain crm:E1_CRM_Entity;
+    owl:inverseOf crmsci:O16_observed_value;
+    rdfs:label "value was observed by"@en;
+    rdfs:subPropertyOf crm:P141i_was_assigned_by;
+    rdfs:range crmsci:S4_Observation .
+  
+  crmsci:O16_observed_value a owl:ObjectProperty;
+    rdfs:subPropertyOf crm:P141_assigned;
+    rdfs:label "observed value"@en;
+    rdfs:range crm:E1_CRM_Entity;
+    rdfs:comment "This property associates a value assigned to an entity observed by S4 Observation."@en;
+    owl:inverseOf crmsci:O16i_value_was_observed_by;
+    rdfs:domain crmsci:S4_Observation .
+  
+  crmsci:O12i_is_dimension_of a owl:ObjectProperty;
+    rdfs:label "is dimension of"@en;
+    rdfs:range crmsci:S15_Observable_Entity;
+    owl:inverseOf crmsci:O12_has_dimension;
+    rdfs:domain crm:E54_Dimension .
+  
+  crmsci:O17i_was_generated_by a owl:ObjectProperty;
+    rdfs:subPropertyOf crmsci:O18i_was_altered_by;
+    rdfs:label "was generated by"@en;
+    owl:inverseOf crmsci:O17_generated;
+    rdfs:range crmsci:S17_Physical_Genesis;
+    rdfs:domain crm:E18_Physical_Thing .
+  
+  crmsci:O15_occupied a owl:ObjectProperty;
+    rdfs:comment "This property associates an instance of S10 Material Substantial with the instance of E53 Place that this substance occupied. It describes the space filled (occupied) by a physical matter. This property is the development of the shortcut expressed in the proposition of classification: “S20 Physical Feature” isA “E53 Place”. This property is equivalent to P156 occupies (is occupied by) with domain E18 Physical Thing and range E53 Place."@en;
+    rdfs:label "occupied"@en;
+    rdfs:range crm:E53_Place;
+    rdfs:domain crmsci:S10_Material_Substantial;
+    owl:inverseOf crmsci:O15i_was_occupied_by .
+  
+  crmsci:O13_triggered a owl:ObjectProperty;
+    rdfs:comment "This property associates an instance of E5 Event that triggered another instance of E5 Event with the latter. It identifies the interaction between events: an event can activate (trigger) other events in a target system that is in a situation of sustained tension, such as a trap or an unstable mountain slope giving way to a land slide after a rain or earthquake. In that sense the triggering event is interpreted as a cause. However, the association of the two events is based on their temporal proximity, with the triggering event ending when the triggered event starts."@en;
+    rdfs:range crm:E5_Event;
+    rdfs:label "triggered"@en;
+    rdfs:domain crm:E5_Event;
+    owl:inverseOf crmsci:O13i_was_triggered_by .
+  
+  crmsci:O10i_dimension_was_assigned_by a owl:ObjectProperty;
+    rdfs:domain crm:E54_Dimension;
+    rdfs:range crmsci:S6_Data_Evaluation;
+    owl:inverseOf crmsci:O10_assigned_dimension;
+    rdfs:subPropertyOf crm:P141i_was_assigned_by;
+    rdfs:label "dimension was assigned by"@en .
+  
+  crmsci:O12_has_dimension a owl:ObjectProperty;
+    rdfs:comment "This property associates an instance of S15 Observable Entity with an instance of E54 Dimension that the observable entity has. It offers no information about how and when an E54 Dimension was established. In case the instance of S15 Observable Entity is more specifically an instance of E18 Physical Thing, using the property O12 has dimension (is dimension of) is equivalent to using the property P43 has dimension (is dimension of). In other words, using the one implies the other."@en;
+    rdfs:range crm:E54_Dimension;
+    owl:inverseOf crmsci:O12i_is_dimension_of;
+    rdfs:domain crmsci:S15_Observable_Entity;
+    rdfs:label "has dimension"@en .
+  
+  crmsci:O15i_was_occupied_by a owl:ObjectProperty;
+    owl:inverseOf crmsci:O15_occupied;
+    rdfs:domain crm:E53_Place;
+    rdfs:label "was occupied by"@en;
     rdfs:range crmsci:S10_Material_Substantial .
   
-  crmsci:S11_Amount_of_Matter a owl:Class;
-    rdfs:label "Amount of Matter"@en;
-    rdfs:subClassOf crmsci:S10_Material_Substantial;
-    rdfs:comment """This class comprises fixed amounts of matter specified as some air, some water, some soil, etc., defined by the total and integrity of their material content."""@en .
+  crmsci:O18i_was_altered_by a owl:ObjectProperty;
+    rdfs:domain crm:E18_Physical_Thing;
+    rdfs:label "was altered by"@en;
+    rdfs:range crmsci:S18_Alteration;
+    owl:inverseOf crmsci:O18_altered .
   
-  crmsci:O6_forms_former_or_current_part_of a owl:ObjectProperty;
-    rdfs:label "forms former or current part of"@en;
-    rdfs:domain crmsci:S12_Amount_of_Fluid;
-    rdfs:range crmsci:S14_Fluid_Body .
-  
-  crmsci:S12_Amount_of_Fluid a owl:Class;
-    rdfs:subClassOf crmsci:S14_Fluid_Body, crmsci:S11_Amount_of_Matter;
-    rdfs:label "Amount of Fluid"@en;
-    rdfs:comment """This class comprises fixed amounts of fluid defined by the total of its material content, typically molecules. They frequently acquire identity in laboratory practice by the fact of being kept or handled together within some adequate containers."""@en .
-  
-  crmsci:O4i_was_sampling_location_of a owl:ObjectProperty;
-    rdfs:label "was sampling location of"@en;
-    rdfs:domain crm:E53_Place;
-    rdfs:range crmsci:S2_Sample_Taking .
-  
-  crmsci:O23_is_defined_by a owl:ObjectProperty;
-    rdfs:label "is defined by"@en;
-    rdfs:domain crmsci:S22_Segment_of_Matter;
-    rdfs:range crm:E92_Spacetime_Volume .
-  
-  crmsci:O5i_was_removed_by a owl:ObjectProperty;
-    rdfs:label "was removed by"@en;
-    rdfs:domain crmsci:S13_Sample;
-    rdfs:subPropertyOf crmsci:O2i_was_removed_by;
-    rdfs:range crmsci:S2_Sample_Taking .
+  crmsci:O2_removed a owl:ObjectProperty;
+    rdfs:label "removed"@en;
+    owl:inverseOf crmsci:O2i_was_removed_by;
+    rdfs:domain crmsci:S1_Matter_Removal;
+    rdfs:range crmsci:S11_Amount_of_Matter;
+    rdfs:comment "This property associates an instance of S1 Matter Removal with the instance of S11 Amount of Matter that it has removed."@en .
   
   crmsci:O20_sampled_from_type_of_part a owl:ObjectProperty;
     rdfs:label "sampled from type of part"@en;
     rdfs:domain crmsci:S2_Sample_Taking;
-    rdfs:range crm:E55_Type .
+    rdfs:range crm:E55_Type;
+    owl:inverseOf crmsci:O20i_type_of_part_was_sampled_by;
+    rdfs:comment "This property associates the activity of a Sample Taking with the type of the location part from which a sample was taken. It is a shortcut of the property O4 sampled at, and it is used as an alternative property, identifying features and material substantial as types of parts of sampling positions."@en .
+  
+  crmsci:O23i_defines a owl:ObjectProperty;
+    rdfs:range crmsci:S22_Segment_of_Matter;
+    rdfs:label "defines"@en;
+    owl:inverseOf crmsci:O23_is_defined_by;
+    rdfs:domain crm:E92_Spacetime_Volume .
+  
+  crmsci:O27_split a owl:ObjectProperty;
+    rdfs:subPropertyOf crmsci:O3_sampled_from;
+    rdfs:comment "This property associates an instance of S24 Sample Splitting with the instance of S13 Sample which is the original sample being split."@en;
+    rdfs:range crmsci:S13_Sample;
+    rdfs:label "split"@en;
+    rdfs:domain crmsci:S24_Sample_Splitting;
+    owl:inverseOf crmsci:O27i_was_source_for .
+  
+  crmsci:O19i_was_object_encountered_through a owl:ObjectProperty;
+    rdfs:domain crm:E18_Physical_Thing;
+    owl:inverseOf crmsci:O19_encountered_object;
+    rdfs:range crmsci:S19_Encounter_Event;
+    rdfs:label "was object encountered through"@en .
+  
+  crmsci:O25_contains a owl:ObjectProperty;
+    rdfs:domain crmsci:S10_Material_Substantial;
+    rdfs:range crmsci:S10_Material_Substantial;
+    rdfs:comment "This property describes that an instance of S10 Material Substantial was or is contained in another instance of S10 Material Substantial regardless of whether the identity of the involved instances is based on the persistence of the form of material or on material substance that may change form."@en;
+    rdfs:label "contains"@en;
+    owl:inverseOf crmsci:O25i_is_contained_in .
+  
+  crmsci:O21i_witnessed_encounter a owl:ObjectProperty;
+    rdfs:label "witnessed encounter"@en;
+    owl:inverseOf crmsci:O21_encountered_at;
+    rdfs:range crmsci:S19_Encounter_Event;
+    rdfs:domain crm:E53_Place .
+  
+  crmsci:O27i_was_source_for a owl:ObjectProperty;
+    rdfs:subPropertyOf crmsci:O3i_was_sample_by;
+    rdfs:range crmsci:S24_Sample_Splitting;
+    rdfs:label "was source for"@en;
+    owl:inverseOf crmsci:O27_split;
+    rdfs:domain crmsci:S13_Sample .
   
   crmsci:O1i_was_diminished_by a owl:ObjectProperty;
-    rdfs:label "was diminished by"@en;
+    owl:inverseOf crmsci:O1_diminished;
+    rdfs:range crmsci:S1_Matter_Removal;
     rdfs:domain crmsci:S10_Material_Substantial;
-    rdfs:range crmsci:S1_Matter_Removal .
+    rdfs:label "was diminished by"@en .
   
-  crmsci:O22i_is_part_of a owl:ObjectProperty;
-    rdfs:label "is part of"@en;
-    rdfs:range crmsci:S22_Segment_of_Matter;
-    rdfs:domain crmsci:S20_Physical_Feature .
+  crmsci:O24i_was_measured_by a owl:ObjectProperty;
+    rdfs:domain crmsci:S15_Observable_Entity;
+    owl:inverseOf crmsci:O24_measured;
+    rdfs:subPropertyOf crmsci:O8i_was_observed_by;
+    rdfs:range crmsci:S21_Measurement;
+    rdfs:label "was measured by"@en .
   
-  crmsci:O9i_property_type_was_observed_by a owl:ObjectProperty;
-    rdfs:label "property type was observed by"@en;
-    rdfs:range crmsci:S4_Observation;
-    rdfs:domain crmsci:S9_Property_Type .
+  crmsci:O25i_is_contained_in a owl:ObjectProperty;
+    rdfs:range crmsci:S10_Material_Substantial;
+    rdfs:label "is contained in"@en;
+    owl:inverseOf crmsci:O25_contains;
+    rdfs:domain crmsci:S10_Material_Substantial .
+  
+  crmsci:O19_encountered_object a owl:ObjectProperty;
+    rdfs:label "encountered object"@en;
+    rdfs:domain crmsci:S19_Encounter_Event;
+    rdfs:comment "This property associates an instance of S19 Encounter Event with an instance of E18 Physical Thing that was encountered or observed as present during the event."@en;
+    owl:inverseOf crmsci:O19i_was_object_encountered_through;
+    rdfs:range crm:E18_Physical_Thing .
+  
+  crmsci:O20i_type_of_part_was_sampled_by a owl:ObjectProperty;
+    owl:inverseOf crmsci:O20_sampled_from_type_of_part;
+    rdfs:domain crm:E55_Type;
+    rdfs:label "type of part was sampled by"@en;
+    rdfs:range crmsci:S2_Sample_Taking .
+  
+  crmsci:O28_is_conceptually_greater_than a owl:ObjectProperty;
+    rdfs:domain crm:E55_Type;
+    rdfs:comment "This property allows an instance of E55 Type from a particular concept scheme or vocabulary to be declared as having an order relative to other instances of E55 Type in the same or other concept schemes, without necessarily having a specific value associated with either instance. This allows, for example, for an E55 Type instance representing the concept of \"good\" in a conservation report vocabulary to be greater than the E55 Type instance representing the concept of \"average\" in the same vocabulary. This property is transitive, and thus if \"average\" is greater than \"poor\", then \"good\" is also greater than \"poor\". In the domain of statistics, types that participate in this kind of relationship are called \"Ordinal Variables\"; as opposed to those without order which are called \"Nominal Variables\". This property allows for queries that select based on the relative position of participating E55 Types."@en;
+    rdfs:range crm:E55_Type;
+    rdfs:label "is conceptually greater than"@en;
+    owl:inverseOf crmsci:O28i_is_conceptually_less_than .
+  
+  crmsci:O21_encountered_at a owl:ObjectProperty;
+    owl:inverseOf crmsci:O21i_witnessed_encounter;
+    rdfs:range crm:E53_Place;
+    rdfs:domain crmsci:S19_Encounter_Event;
+    rdfs:comment "This property associates an instance of S19 Encounter Event with an instance of E53 Place at which the things, which were encountered, were observed to be present. This may be given in absolute terms or in terms relative to the observed thing. The associated place must be within the boundaries of the E53 Place at which the S19 Encounter Event took place, if that has been given. Note, that the encountered object may be larger and extend beyond the place of encounter, such as a corner of a building being excavated."@en;
+    rdfs:label "encountered at"@en .
+  
+  crmsci:O23_is_defined_by a owl:ObjectProperty;
+    rdfs:label "is defined by"@en;
+    rdfs:domain crmsci:S22_Segment_of_Matter;
+    owl:inverseOf crmsci:O23i_defines;
+    rdfs:range crm:E92_Spacetime_Volume;
+    rdfs:comment "This property identifies the E92 Spacetime Volume that defines a S22 Segment of Matter. The spatial boundaries of the E92 Spacetime Volume are defined through S4 Observation or declaration while the temporal boundaries are confined by S18 Alteration events."@en .
+  
+  crmsci:O24_measured a owl:ObjectProperty;
+    rdfs:label "measured"@en;
+    owl:inverseOf crmsci:O24i_was_measured_by;
+    rdfs:domain crmsci:S21_Measurement;
+    rdfs:range crmsci:S15_Observable_Entity;
+    rdfs:comment "This property associates an instance of S21 Measurement with the instance of S15 Observable Entity to which it applied. An instance of S15 Observable Entity may be measured more than once. Material and immaterial things and processes may be measured, e.g. the number of words in a text, or the duration of an event."@en;
+    rdfs:subPropertyOf crmsci:O8_observed .
+  
+  crmsci:O28i_is_conceptually_less_than a owl:ObjectProperty;
+    rdfs:domain crm:E55_Type;
+    rdfs:label "is conceptually less than"@en;
+    rdfs:range crm:E55_Type;
+    owl:inverseOf crmsci:O28_is_conceptually_greater_than .
+  
+  crmsci:O29i_was_sub-sample_removed_by a owl:ObjectProperty;
+    rdfs:range crmsci:S24_Sample_Splitting;
+    rdfs:subPropertyOf crmsci:O5i_was_removed_by;
+    rdfs:domain crmsci:S13_Sample;
+    owl:inverseOf crmsci:O29_removed_sub-sample;
+    rdfs:label "was sub-sample removed by"@en .
+  
+  crmsci:O3_sampled_from a owl:ObjectProperty;
+    rdfs:range crmsci:S10_Material_Substantial;
+    rdfs:label "sampled from"@en;
+    owl:inverseOf crmsci:O3i_was_sample_by;
+    rdfs:comment "This property associates an instance of S2 Sample Taking with the instance S10 Material Substantial from which a sample was taken. In particular, it may be a feature or a fluid body from which a sample was removed."@en;
+    rdfs:domain crmsci:S2_Sample_Taking .
+  
+  crmsci:O4i_was_sampling_location_of a owl:ObjectProperty;
+    rdfs:label "was sampling location of"@en;
+    rdfs:range crmsci:S2_Sample_Taking;
+    owl:inverseOf crmsci:O4_sampled_at;
+    rdfs:domain crm:E53_Place .
+  
+  crmsci:O2i_was_removed_by a owl:ObjectProperty;
+    rdfs:domain crmsci:S11_Amount_of_Matter;
+    rdfs:label "was removed by"@en;
+    rdfs:range crmsci:S1_Matter_Removal;
+    owl:inverseOf crmsci:O2_removed .
+  
+  crmsci:O3i_was_sample_by a owl:ObjectProperty;
+    owl:inverseOf crmsci:O3_sampled_from;
+    rdfs:domain crmsci:S10_Material_Substantial;
+    rdfs:label "was sample by"@en;
+    rdfs:range crmsci:S2_Sample_Taking .
+  
+  crmsci:O4_sampled_at a owl:ObjectProperty;
+    rdfs:comment "This property associates an instance of S2 Sample Taking with the instance of E53 Place (\"spot\") at which this activity sampled. It identifies the narrowest relevant area on the material substantial from which the sample was taken. This may be known or given in absolute terms or relative to an instance of the material substantial from which it was taken. If samples are taken from more than one spot, the sample taking activity must be documented by separate instances for each spot. The property P7 took place at, inherited from E4 Period, describes the position of the area in which the sampling activity occurred; this latter comprises the space within which operators and instruments were contained during the activity, and the sample taking spot."@en;
+    rdfs:domain crmsci:S2_Sample_Taking;
+    rdfs:range crm:E53_Place;
+    rdfs:label "sampled at"@en;
+    owl:inverseOf crmsci:O4i_was_sampling_location_of .
+  
+  crmsci:O30_determined_position a owl:ObjectProperty;
+    rdfs:label "determined position"@en;
+    rdfs:comment "This property associates an instance of S23 Position Determination with the instance of E94 Space Primitive which is the result of that determination. The instance of E94 Space Primitive approximates the place occupied by the entity whose position is being determined."@en;
+    rdfs:domain crmsci:S23_Position_Determination;
+    rdfs:range rdfs:Literal .
+  
+  crmsci:O32_determined_position_of a owl:ObjectProperty;
+    rdfs:subPropertyOf crmsci:O8_observed;
+    rdfs:range crmsci:S15_Observable_Entity;
+    rdfs:label "determined position of"@en;
+    owl:inverseOf crmsci:O32i_was_located_by;
+    rdfs:comment "This property connects an instance of S23 Position Determination with the instance of S15 Observable Entity whose position is being determined."@en;
+    rdfs:domain crmsci:S23_Position_Determination .
   
   crmsci:O5_removed a owl:ObjectProperty;
     rdfs:label "removed"@en;
     rdfs:subPropertyOf crmsci:O2_removed;
     rdfs:range crmsci:S13_Sample;
-    rdfs:domain crmsci:S2_Sample_Taking .
+    rdfs:domain crmsci:S2_Sample_Taking;
+    rdfs:comment "This property associates an instance of S2 Sample Taking with the instance of S13 Sample that was taken during the activity."@en;
+    owl:inverseOf crmsci:O5i_was_removed_by .
   
-  crmsci:S1_Matter_Removal a owl:Class;
-    rdfs:subClassOf crm:E7_Activity;
-    rdfs:comment """This class comprises the activities that result in an instance of S10 Material Substantial being decreased by the removal of an amount of matter.
-Typical scenarios include the removal of a component or piece of a physical object, removal of an archaeological or geological layer, taking a tissue sample from a body or a sample of fluid from a body of water. The removed matter may acquire a persistent identity of different nature beyond the act of its removal, such as becoming a physical object in the narrower sense. 
-Such cases should be modeled by using multiple instantiation with adequate concepts of creating the respective items."""@en;
-    rdfs:label "Matter Removal"@en .
+  crmsci:O31_has_validity_time-span a owl:ObjectProperty;
+    rdfs:comment "This property associates an instance of S23 Position Determination with the instance of E52 Time-Span for which the determination is valid according to the observer at the time of the observation. No inferences can be made in relation to the validity of the determination outside this time-span despite the fact that some entities are relatively stable and their positions may remain the same after the determination. The time-span of validity should fall within the overall time-span of the process of determination."@en;
+    rdfs:label "has validity time-span"@en;
+    rdfs:range crm:E52_Time-Span;
+    owl:inverseOf crmsci:O31i_is_time-span_validity_for;
+    rdfs:subPropertyOf crm:P4_has_time-span;
+    rdfs:domain crmsci:S23_Position_Determination .
   
-  crmsci:O19_has_found_object a owl:ObjectProperty;
-    rdfs:label "has found object"@en;
-    rdfs:range crm:E18_Physical_Thing;
-    rdfs:domain crmsci:S19_Encounter_Event .
-  
-  crmsci:O21i_witnessed a owl:ObjectProperty;
-    rdfs:label "witnessed"@en;
-    rdfs:domain crm:E53_Place;
-    rdfs:range crmsci:S19_Encounter_Event .
-  
-  crmsci:O7i_is_contained_or_confined a owl:ObjectProperty;
-    rdfs:label "is contained or confined"@en;
-    rdfs:range crm:E53_Place;
-    rdfs:domain crm:E53_Place .
-  
-  crmsci:O24i_was_measured_by a owl:ObjectProperty;
-    rdfs:label "was measured by"@en;
-    rdfs:range crmsci:S21_Measurement;
-    rdfs:domain crmsci:S15_Observable_Entity .
-  
-  crmsci:S10_Material_Substantial a owl:Class;
-    rdfs:subClassOf crm:E70_Thing;
-    rdfs:comment """This class comprises constellations of matter with a relative stability of any form sufficient to associate them with a persistent identity, such as being confined to certain extent, having a relative stability of form or structure, or containing a fixed amount of matter. In particular, it comprises physical things in the narrower sense and fluid bodies. It is an abstraction of physical substance for solid and non-solid things of matter."""@en;
-    rdfs:label "Material Substantial"@en .
-  
-  crmsci:O2i_was_removed_by a owl:ObjectProperty;
-    rdfs:label "was removed by"@en;
-    rdfs:range crmsci:S1_Matter_Removal;
-    rdfs:domain crmsci:S11_Amount_of_Matter .
-  
-  crmsci:O8i_was_observed_by a owl:ObjectProperty;
-    rdfs:label "was observed by"@en;
+  crmsci:O32i_was_located_by a owl:ObjectProperty;
+    owl:inverseOf crmsci:O32_determined_position_of;
     rdfs:domain crmsci:S15_Observable_Entity;
-    rdfs:range crmsci:S4_Observation;
-    rdfs:subPropertyOf crm:P140i_was_attributed_by .
+    rdfs:subPropertyOf crmsci:O8i_was_observed_by;
+    rdfs:range crmsci:S23_Position_Determination;
+    rdfs:label "was located by"@en .
   
-  crmsci:O3i_was_sample_by a owl:ObjectProperty;
-    rdfs:label "was sample by"@en;
+  crmsci:O5i_was_removed_by a owl:ObjectProperty;
     rdfs:range crmsci:S2_Sample_Taking;
-    rdfs:domain crmsci:S10_Material_Substantial .
+    rdfs:label "was removed by"@en;
+    owl:inverseOf crmsci:O5_removed;
+    rdfs:subPropertyOf crmsci:O2i_was_removed_by;
+    rdfs:domain crmsci:S13_Sample .
   
-  crmsci:O4_sampled_at a owl:ObjectProperty;
-    rdfs:label "sampled at"@en;
-    rdfs:range crm:E53_Place;
-    rdfs:domain crmsci:S2_Sample_Taking .
+  crmsci:O31i_is_time-span_validity_for a owl:ObjectProperty;
+    owl:inverseOf crmsci:O31_has_validity_time-span;
+    rdfs:label "is time-span validity for"@en;
+    rdfs:range crmsci:S23_Position_Determination;
+    rdfs:subPropertyOf crm:P4i_is_time-span_of;
+    rdfs:domain crm:E52_Time-Span .
   
-  crmsci:O22_partly_or_completely_contains a owl:ObjectProperty;
-    rdfs:label "partly or completely contains"@en;
-    rdfs:range crmsci:S20_Physical_Feature;
-    rdfs:domain crmsci:S22_Segment_of_Matter .
+  crmsci:O29_removed_sub-sample a owl:ObjectProperty;
+    rdfs:label "removed sub-sample"@en;
+    rdfs:domain crmsci:S24_Sample_Splitting;
+    rdfs:subPropertyOf crmsci:O5_removed;
+    rdfs:range crmsci:S13_Sample;
+    rdfs:comment "This property associates an instance of S24 Sample Splitting with the resulting instance of S13 Sample that has been removed from the original sample. The new sample (i.e. the sub-sample) maintains the characteristic qualities of the original."@en;
+    owl:inverseOf crmsci:O29i_was_sub-sample_removed_by .
   
-  crmsci:O20i_type_of_part_was_sampled_by a owl:ObjectProperty;
-    rdfs:label "partly or completely contains"@en;
-    rdfs:domain crm:E55_Type;
-    rdfs:range crmsci:S2_Sample_Taking .
-  
-  crmsci:O24_measured a owl:ObjectProperty;
-    rdfs:label "measured"@en;
-    rdfs:domain crmsci:S21_Measurement;
-    rdfs:range crmsci:S15_Observable_Entity .
-  
-  crmsci:O21_has_found_at a owl:ObjectProperty;
-    rdfs:label "has found at"@en;
-    rdfs:range crm:E53_Place;
-    rdfs:domain crmsci:S19_Encounter_Event .
+  crmsci:O6_is_former_or_current_part_of a owl:ObjectProperty;
+    rdfs:comment "This property associates an instance of S12 Amount of Fluid with an instance of S14 Fluid Body which formed or forms part of it. It allows instances of S14 Fluid Body to be analyzed into elements of S12 Amount of Fluid."@en;
+    rdfs:label "is former or current part of"@en;
+    rdfs:subPropertyOf crmsci:O25_contains;
+    rdfs:domain crmsci:S12_Amount_of_Fluid;
+    rdfs:range crmsci:S14_Fluid_Body;
+    owl:inverseOf crmsci:O6i_has_former_or_current_part .
   
   crmsci:O6i_has_former_or_current_part a owl:ObjectProperty;
     rdfs:label "has former or current part"@en;
     rdfs:domain crmsci:S14_Fluid_Body;
-    rdfs:range crmsci:S12_Amount_of_Fluid .
-  
-  crmsci:O23i_defines a owl:ObjectProperty;
-    rdfs:label "defines"@en;
-    rdfs:domain crm:E92_Spacetime_Volume;
-    rdfs:range crmsci:S22_Segment_of_Matter .
-  
-  crmsci:O7_contains_or_confines a owl:ObjectProperty;
-    rdfs:label "contains or confines"@en;
-    rdfs:range crm:E53_Place;
-    rdfs:domain crm:E53_Place .
-  
-  crmsci:O19i_was_object_found_by a owl:ObjectProperty;
-    rdfs:label "was object found by"@en;
-    rdfs:domain crm:E18_Physical_Thing;
-    rdfs:range crmsci:S19_Encounter_Event .
-  
-  crmsci:O2_removed a owl:ObjectProperty;
-    rdfs:label "removed"@en;
-    rdfs:domain crmsci:S1_Matter_Removal;
-    rdfs:range crmsci:S11_Amount_of_Matter .
+    rdfs:subPropertyOf crmsci:O25i_is_contained_in;
+    rdfs:range crmsci:S12_Amount_of_Fluid;
+    owl:inverseOf crmsci:O6_is_former_or_current_part_of .
   
   crmsci:O8_observed a owl:ObjectProperty;
-    rdfs:label "observed"@en;
+    rdfs:comment "This property associates an instance of S4 Observation with an instance of S15 Observable Entity that was observed. Specifically it describes that a thing, a feature, a phenomenon or its reaction is observed by an activity of Observation."@en;
     rdfs:subPropertyOf crm:P140_assigned_attribute_to;
-    rdfs:range crmsci:S15_Observable_Entity;
-    rdfs:domain crmsci:S4_Observation .
-  
-  crmsci:O10i_dimension_was_assigned_by a owl:ObjectProperty;
-    rdfs:label "dimension was assigned by"@en;
-    rdfs:domain crm:E54_Dimension;
-    rdfs:range crmsci:S6_Data_Evaluation .
-  
-  crmsci:S7_Simulation_or_Prediction a owl:Class;
-    rdfs:comment """This class comprises activities of executing algorithms or software for simulating the behavior and the properties of a system of interacting components that form part of reality or not by using a mathematical model of the respective interactions. In particular it implies making predictions about the future behaviors of a system of interacting components of reality by starting simulation from an actually observed state, such as weather forecasts. Simulations may also be used to understand the effects of a theory, to compare theoretical predictions with reality, or to show differences with another theory."""@en;
-    rdfs:subClassOf crmsci:S5_Inference_Making;
-    rdfs:label "Simulation or Prediction"@en .
-  
-  crmsci:O14_initializes a owl:ObjectProperty;
-    rdfs:label "initializes"@en;
-    rdfs:range crmsci:S16_State;
-    rdfs:domain crm:E5_Event .
-  
-  crmsci:O15_occupied a owl:ObjectProperty;
-    rdfs:label "occupied"@en;
-    rdfs:range crm:E53_Place;
-    rdfs:domain crmsci:S10_Material_Substantial .
-  
-  crmsci:O16_observed_value a owl:ObjectProperty;
-    rdfs:label "observed value"@en;
     rdfs:domain crmsci:S4_Observation;
-    rdfs:subPropertyOf crm:P141_assigned;
-    rdfs:range crm:E1_CRM_Entity .
+    rdfs:label "observed"@en;
+    rdfs:range crmsci:S15_Observable_Entity;
+    owl:inverseOf crmsci:O8i_was_observed_by .
   
-  crmsci:O17i_was_generated_by a owl:ObjectProperty;
-    rdfs:label "was generated by "@en;
-    rdfs:domain crm:E18_Physical_Thing;
-    rdfs:range crmsci:S17_Physical_Genesis .
+  crmsci:O9i_property_type_was_observed_by a owl:ObjectProperty;
+    rdfs:subPropertyOf crm:P177i_is_type_of_property_assigned;
+    rdfs:domain crmsci:S9_Property_Type;
+    owl:inverseOf crmsci:O9_observed_property_type;
+    rdfs:range crmsci:S4_Observation;
+    rdfs:label "property type was observed by"@en .
   
-  crmsci:O14i_is_initialized_by a owl:ObjectProperty;
-    rdfs:label "is initialized by"@en;
-    rdfs:range crm:E5_Event;
-    rdfs:domain crmsci:S16_State .
+  crmsci:S1_Matter_Removal a owl:Class;
+    rdfs:comment "This class comprises the activities that result in an instance of S10 Material Substantial being decreased by the removal of an amount of matter. Typical scenarios include the removal of a component or piece of a physical object, removal of an archaeological or geological layer, taking a tissue sample from a body or a sample of fluid from a body of water. The removed matter may acquire a persistent identity of different nature beyond the act of its removal, such as becoming a physical object in the narrower sense. Such cases should be modeled by using multiple instantiation with adequate concepts of creating the respective items."@en;
+    rdfs:subClassOf crm:E7_Activity;
+    rdfs:label "Matter Removal"@en .
+  
+  crmsci:S21_Measurement a owl:Class;
+    rdfs:label "Measurement"@en;
+    rdfs:subClassOf crmsci:S4_Observation;
+    rdfs:comment "This class comprises actions measuring instances of S15 Observable Entity, properties of physical things, or phenomena, states and interactions or events, that can be determined by a systematic procedure. Primary data from measurement devices are regarded to be results of an observation process."@en .
+  
+  crmsci:O7_confines a owl:ObjectProperty;
+    rdfs:comment "This property associates an instance of S20 Rigid Physical Feature with an instance of S10 Material Substantial that it partially or completely confines. It describes cases in which rigid features such as stratigraphic layers, walls, dams, riverbeds, etc. form the boundaries of some item such as another stratigraphic layer or the waters of a river."@en;
+    rdfs:label "confines"@en;
+    rdfs:range crmsci:S10_Material_Substantial;
+    owl:inverseOf crmsci:O7i_is_confined_by;
+    rdfs:domain crmsci:S20_Rigid_Physical_Feature .
+  
+  crmsci:S10_Material_Substantial a owl:Class;
+    rdfs:label "Material Substantial"@en;
+    rdfs:comment "This class comprises constellations of matter with a relative stability of any form sufficient to associate them with a persistent identity, such as being confined to certain extent, having a relative stability of form or structure, or containing a fixed amount of matter. In particular, it comprises physical things in the narrower sense and fluid bodies. It is an abstraction of physical substance for solid and non-solid things of matter."@en;
+    rdfs:subClassOf crm:E70_Thing, crmsci:S15_Observable_Entity .
   
   crmsci:S15_Observable_Entity a owl:Class;
     rdfs:label "Observable Entity"@en;
-    rdfs:comment """This class comprises instances of E2 Temporal Entity or E77 Persistent Item, i.e. items or phenomena that can be observed, either directly by human sensory impression, or enhanced with tools and measurement devices, such as physical things, their behavior, states and interactions or events.
-Conceptual objects can be present in events by their carriers such as books, digital media, or even human memory. By virtue of this presence, properties of conceptual objects, such as number of words can be observed on their carriers. If the respective properties between carriers differ, either they carry different instances of conceptual objects or the difference can be attributed to accidental deficiencies in one of the carriers. In that sense even immaterial objects are observable. By this model we give credit to the fact that frequently, the actually observed carriers of conceptual objects are not explicitly identified in documentation, i.e., the actual carrier is assumed having existed but is unknown as an individual."""@en;
-    rdfs:subClassOf crm:E1_CRM_Entity .
-  
-  crmsci:O16i_value_was_observed_by a owl:ObjectProperty;
-    rdfs:label "value was observed by"@en;
-    rdfs:subPropertyOf crm:P141i_was_assigned_by;
-    rdfs:domain crm:E1_CRM_Entity;
-    rdfs:range crmsci:S4_Observation .
-  
-  crmsci:S9_Property_Type a owl:Class;
-    rdfs:subClassOf crm:E55_Type;
-    rdfs:comment """This class comprises types of properties. Typically, instances of S9 Property Type would be taken from an ontology or terminological system. In particular, instances of this class can be used to describe in a parametric way what kind of properties the values in scientific data sets are about. By virtue of such descriptions, numeric data can be interpreted as sets of propositions in terms of a formal ontology, such as “concentration of nitrate”, observed in the ground water from a certain borehole."""@en;
-    rdfs:label "Property Type"@en .
-  
-  crmsci:O12_has_dimension a owl:ObjectProperty;
-    rdfs:label "has dimension"@en;
-    rdfs:range crm:E54_Dimension;
-    rdfs:domain crmsci:S15_Observable_Entity .
-  
-  crmsci:O12i_is_dimension_of a owl:ObjectProperty;
-    rdfs:label "is dimension of"@en;
-    rdfs:range crmsci:S15_Observable_Entity;
-    rdfs:domain crm:E54_Dimension .
-  
-  crmsci:O9_observed_property_type a owl:ObjectProperty;
-    rdfs:label "observed property type"@en;
-    rdfs:range crmsci:S9_Property_Type;
-    rdfs:domain crmsci:S4_Observation .
-  
-  crmsci:S8_Categorical_Hypothesis_Building a owl:Class;
-    rdfs:label "Categorical Hypothesis Building"@en;
-    rdfs:comment """This class comprises the action of making categorical hypotheses based on inference rules and theories; By categorical hypotheses we mean assumptions about the kinds of interactions and related kinds of structures of a domain that have the character of “laws” of nature or human behavior, be it necessary or probabilistic. Categorical hypotheses are developed by “induction” from finite numbers of observation and the absence of observations of particular kinds. As such, categorical hypotheses are always subject to falsification by new evidence. Instances of S8 Categorical Hypothesis Building include making and questioning categorical hypotheses."""@en;
-    rdfs:subClassOf crmsci:S5_Inference_Making .
-  
-  crmsci:O13_triggers a owl:ObjectProperty;
-    rdfs:label "triggers"@en;
-    rdfs:range crm:E5_Event;
-    rdfs:domain crm:E5_Event .
-  
-  crmsci:O18i_was_altered_by a owl:ObjectProperty;
-    rdfs:label "was altered by"@en;
-    rdfs:domain crm:E18_Physical_Thing;
-    rdfs:range crmsci:S18_Alteration .
-  
-  crmsci:O1_diminished a owl:ObjectProperty;
-    rdfs:label "diminished"@en;
-    rdfs:domain crmsci:S1_Matter_Removal;
-    rdfs:range crmsci:S10_Material_Substantial .
-  
-  crmsci:O18_altered a owl:ObjectProperty;
-    rdfs:label "altered"@en;
-    rdfs:range crm:E18_Physical_Thing;
-    rdfs:domain crmsci:S18_Alteration .
-  
-  crmsci:S4_Observation a owl:Class;
-    rdfs:subClassOf crm:E13_Attribute_Assignment;
-    rdfs:comment """This class comprises the activity of gaining scientific knowledge about particular states of physical reality gained by empirical evidence, experiments and by measurements. We define observation in the sense of natural sciences, as a kind of human activity: at some Place and within some Time-Span, certain Physical Things and their behavior and interactions are observed, either directly by human sensory impression, or enhanced with tools and measurement devices. The output of the internal processes of measurement devices that do not require additional human interaction are in general regarded as part of the observation and not as additional inference. Manual recordings may serve as additional evidence. Measurements and witnessing of events are special cases of observations. Observations result in a belief about certain propositions. In this model, the degree of confidence in the observed properties is regarded to be “true” per default, but could be described differently by adding a property P3 has note to an instance of S4 Observation, or by reification of the property O16 observed value. Primary data from measurement devices are regarded in this model to be results of observation and can be interpreted as propositions believed to be true within the (known) tolerances and degree of reliability of the device. Observations represent the transition between reality and propositions in the form of instances of a formal ontology, and can be subject to data evaluation from this point on."""@en;
-    rdfs:label "Observation"@en .
-  
-  crmsci:O13i_is_triggered_by a owl:ObjectProperty;
-    rdfs:label "is triggered by"@en;
-    rdfs:range crm:E5_Event;
-    rdfs:domain crm:E5_Event .
-  
-  crmsci:O17_generated a owl:ObjectProperty;
-    rdfs:label "generated"@en;
-    rdfs:range crm:E18_Physical_Thing;
-    rdfs:domain crmsci:S17_Physical_Genesis .
-  
-  crmsci:O15i_was_occupied_by a owl:ObjectProperty;
-    rdfs:label "was occupied by"@en;
-    rdfs:range crmsci:S10_Material_Substantial;
-    rdfs:domain crm:E53_Place .
-  
-  crmsci:O11i_was_described_by a owl:ObjectProperty;
-    rdfs:label "was described by"@en;
-    rdfs:range crmsci:S6_Data_Evaluation;
-    rdfs:domain crmsci:S15_Observable_Entity .
-  
-  crmsci:S6_Data_Evaluation a owl:Class;
-    rdfs:comment """This class comprises the action of concluding propositions on a respective reality from observational data by making evaluations based on mathematical inference rules and calculations using established hypotheses, such as the calculation of an earthquake epicenter. S6 Data Evaluation is not defined as S21/E16 Measurement; Secondary derivations of dimensions of an object from data measured by different processes are regarded as S6 Data Evaluation and not determining instances of Measurement in its own right. For instance, the volume of a statue concluded from a 3D model is an instance of S6 Data Evaluation and not of Measurement."""@en;
-    rdfs:label "Data Evaluation"@en;
-    rdfs:subClassOf crmsci:S5_Inference_Making .
-  
-  crmsci:O11_described a owl:ObjectProperty;
-    rdfs:label "described"@en;
-    rdfs:domain crmsci:S6_Data_Evaluation;
-    rdfs:range crmsci:S15_Observable_Entity .
-  
-  crmsci:O10_assigned_dimension a owl:ObjectProperty;
-    rdfs:label "assigned dimension"@en;
-    rdfs:range crm:E54_Dimension;
-    rdfs:domain crmsci:S6_Data_Evaluation .
-  
-  crmsci:S3_Measurement_by_Sampling a owl:Class;
-    rdfs:subClassOf crmsci:S2_Sample_Taking, crmsci:S21_Measurement;
-    rdfs:comment """This class comprises activities of taking a sample and measuring or analyzing it as one managerial unit of activity, in which the sample may not be identified and preserved beyond the context of this activity. Instances of this class are constrained to describe the taking of exactly one sample, in general not further identified, and the dimensions observed by the respective measurement are implicitly understood to describe this particular sample as representative of the place on the instance of S10 Material Substantial from which the sample was taken. Therefore the class S3 Measurement by Sampling inherits the properties of S2 Sample Taking.O3 sampled from: S10 Material Substantial and O4 sampled at: E53 Place, and the properties of S21(E16) Measurement.P40 observed dimension: E54 Dimension, due to multiple inheritance, whereas it needs not instantiate the properties O5 removed: S13 Sample and O24 measured: S15 Observable Entity, if the sample is not documented beyond the context of the activity."""@en;
-    rdfs:label "Measurement by Sampling"@en .
-  
-  crmsci:S17_Physical_Genesis a owl:Class;
-    rdfs:subClassOf crm:E63_Beginning_of_Existence, crmsci:S18_Alteration;
-    rdfs:comment """This class comprises events or processes that result in (generate) physical things, human-made or natural, coming into being in the form by which they are later identified. The creation of a new physical item, at the same time, can be a result of an alteration (modification) – it can become a new thing due to an alteration activity."""@en;
-    rdfs:label "Physical Genesis"@en .
-  
-  crmsci:S20_Physical_Feature a owl:Class;
-    rdfs:label "Physical Feature"@en;
-    rdfs:comment """This class comprises identifiable features that are physically attached in an integral way to particular physical objects. An instance of S20 Physical Feature also represents the place it occupies with respect to the surrounding matter. More precisely, it is the maximal real volume in space that an instance of S20 Physical Feature is occupying during its lifetime with respect to the default reference space relative to which the feature is at rest. In cases of features on or in the surface of earth, the default reference is typically fixed to the closer environment of the tectonic plate or sea floor. In cases of features on mobile objects, the reference space is typically fixed to the geometry of the bearing object.
-Instances of E26 Physical Feature share many of the attributes of instances of E19 Physical Object. They may have a one-, two- or three-dimensional geometric extent, but there are no natural borders that separate them completely in an objective way from the carrier objects. For example, a doorway is a feature but the door itself, being attached by hinges, is not.
-Instances of E26 Physical Feature can be features in a narrower sense, such as scratches, holes, reliefs, surface colors, reflection zones in an opal crystal or a density change in a piece of wood. In the wider sense, they are portions of particular objects with partially imaginary borders, such as the core of the Earth, an area of property on the surface of the Earth, a landscape or the head of a contiguous marble statue. They can be measured and dated, and it is sometimes possible to state who or what is or was responsible for them. They cannot be separated from the carrier object, but a segment of the carrier object may be identified (or sometimes removed) carrying the complete feature.
-This definition coincides with the definition of \"fiat objects\" (Smith and Varzi, 2000, pp.401-420), with the exception of aggregates of “bona fide objects”."""@en;
-    rdfs:subClassOf crm:E18_Physical_Thing, crm:E53_Place .
-  
-  crm:E77_Persistent_Item a owl:Class;
-    rdfs:subClassOf crmsci:S15_Observable_Entity .
-  
-  crmsci:S16_State a owl:Class;
-    rdfs:label "State"@en;
-    rdfs:subClassOf crm:E2_Temporal_Entity;
-    rdfs:comment """This class comprises the persistence of a particular value range of the properties of a particular thing or things over a time-span."""@en .
-  
-  crmsci:S21_Measurement a owl:Class;
-    rdfs:subClassOf crmsci:S4_Observation, crm:E16_Measurement;
-    rdfs:comment """This class comprises actions measuring instances of E2 Temporal Entity or E77 Persistent Items, properties of physical things, or phenomena, states and interactions or events, that can be determined by a systematic procedure. Primary data from measurement devices are regarded to be results of an observation process."""@en;
-    rdfs:label "Measurement"@en .
-  
-  crm:E11_Modification a owl:Class;
-    rdfs:subClassOf crmsci:S18_Alteration .
-  
-  crmsci:S18_Alteration a owl:Class;
-    rdfs:comment """This class comprises natural events or human-made processes that create, alter or change physical things, by affecting permanently their form or consistency without changing their identity. Examples include alterations on depositional features-layers by natural factors or disturbance by roots or insects, organic alterations, petrification, etc."""@en;
-    rdfs:subClassOf crm:E5_Event;
-    rdfs:label "Alteration"@en .
-  
-  crmsci:S5_Inference_Making a owl:Class;
-    rdfs:subClassOf crm:E13_Attribute_Assignment;
-    rdfs:label "Inference Making"@en;
-    rdfs:comment """This class comprises the action of concluding propositions on a respective reality from observational data by making evaluations based on mathematical inference rules and calculations using established hypotheses, such as the calculation of an earthquake epicenter. S6 Data Evaluation is not defined as S21/E16 Measurement; Secondary derivations of dimensions of an object from data measured by different processes are regarded as S6 Data Evaluation and not determining instances of Measurement in its own right. For instance, the volume of a statue concluded from a 3D model is an instance of S6 Data Evaluation and not of Measurement."""@en .
-  
-  crm:P108_has_produced a owl:ObjectProperty;
-    rdfs:subPropertyOf crmsci:O17_generated .
-  
-  crmsci:S2_Sample_Taking a owl:Class;
-    rdfs:label "Sample Taking"@en;
-    rdfs:comment """This class comprises the activity that results in taking an amount of matter as sample for further analysis from a material substantial such as a body of water, a geological formation or an archaeological object. The removed matter may acquire a persistent identity of different nature beyond the act of its removal, such as becoming a physical object in the narrower sense. The sample is typically removed from a physical feature which is used as a frame of reference, the place of sampling. In case of non-rigid Material Substantials, the source of sampling may regarded not to be modified by the activity of sample taking."""@en;
-    rdfs:subClassOf crmsci:S1_Matter_Removal .
-  
-  crm:E18_Physical_Thing a owl:Class;
-    rdfs:subClassOf crmsci:S10_Material_Substantial .
-  
-  crm:E80_Part_Removal a owl:Class;
-    rdfs:subClassOf crmsci:S1_Matter_Removal .
-  
-  crm:E25_Human-Made_Feature a owl:Class;
-    rdfs:subClassOf crmsci:S20_Physical_Feature .
-  
-  crm:E3_Condition_State a owl:Class;
-    rdfs:subClassOf crmsci:S16_State .
-  
-  crmsci:S19_Encounter_Event a owl:Class;
-    rdfs:subClassOf crmsci:S4_Observation;
-    rdfs:label "Encounter Event"@en;
-    rdfs:comment """This class comprises activities of S4 Observation (substance) where an E39 Actor encounters an instance of E18 Physical Thing of a kind relevant for the mission of the observation or regarded as potentially relevant for some community (identity). This observation produces knowledge about the existence of the respective thing at a particular place in or on surrounding matter. This knowledge may be new to the group of people the actor belongs to. In that case we would talk about a discovery. The observer may recognize or assign an individual identity of the thing encountered or regard only the type as noteworthy in the associated documentation or report.
-In archaeology there is a particular interest if an object is found “in situ”, i.e. if its embedding in the surrounding matter supports the assumption that the object was not moved since the archaeologically relevant deposition event. The surrounding matter with the relative position of the object in it as well as the absolute position and time of the observation may be recorded in order to enable inferences about the history of the E18 Physical Thing.
-In Biology, additional parameters may be recorded like the kind of ecosystem, if the biological individual survives the observation, what detection or catching devices have been used or if the encounter event supported the detection of a new biological kind (“taxon”)."""@en .
-  
-  crm:P31i_was_modified_by a owl:ObjectProperty;
-    rdfs:subPropertyOf crmsci:O18i_was_altered_by .
-  
-  crm:P108i_was_produced_by a owl:ObjectProperty;
-    rdfs:subPropertyOf crmsci:O17i_was_generated_by .
-  
-  crm:P31_has_modified a owl:ObjectProperty;
-    rdfs:subPropertyOf crmsci:O18_altered .
-  
-  crmsci:S14_Fluid_Body a owl:Class;
-    rdfs:subClassOf crmsci:S10_Material_Substantial;
-    rdfs:label "Fluid Body"@en;
-    rdfs:comment """This class comprises a mass of matter in fluid form environmentally constraint in some persistent form allowing for identifying it for the management or research of material phenomena, such as a part of the sea, a river, the atmosphere or the milk in a bottle. Fluids are generally defined by the continuity criterion which is characteristic of their substance: their amorphous matter is continuous and tends to flow. Therefore, contiguous amounts of matter within a fluid body may stay contiguous or at least be locally spatially confined for a sufficiently long time in order to be temporarily identified and traced. This is a much weaker concept of stability of form than the one we would apply to what one would call a physical object. In general, an instance of Fluid Body may gain or lose matter over time through so-called sources or sinks in its surface, in contrast to physical things, which may lose or gain matter by exchange of pieces such as spare parts or corrosion."""@en .
+    rdfs:subClassOf crm:E1_CRM_Entity;
+    rdfs:comment "This class comprises instances of E5 Event or S10 Material Substantial (i.e. items or phenomena, such as physical things, their behaviour, states and interactions or events), that can be observed by measurement or detection devices or by human sensory impression including when enhanced by tools. In order to be observable, instances of E5 Event must consist of some interaction or action of material substance. In some cases, the spatiotemporal confinement of the event itself, such as a flash, a car stopping etc. marks the limits of a documented observation of an event. In other cases, such as the situation of a car passing by a certain object, the spatiotemporal limits of the event of observing itself, as well as the direction of attention or the orientation of used instruments, may constrain the observed detail of a larger process, e.g., noticing the sight of a car passing by; a light emission, etc. Conceptual objects manifest through their carriers such as books, digital media, or even human memory. Attributes of conceptual objects, such as number of words, can be observed on their carriers. If the respective properties between carriers differ, either they carry different instances of conceptual objects or the difference can be attributed to accidental deficiencies in one of the carriers. In that sense even immaterial objects are observable. By this model we address the fact that frequently, the actually observed carriers of conceptual objects are not explicitly identified in documentation, i.e., they are assumed to have existed but they are unknown as individuals."@en .
   
   crmsci:S13_Sample a owl:Class;
-    rdfs:comment """This class comprises instances of S11 Amount of Matter taken from some instance of S10 Material Substantial with the intention to be representative for some material qualities of the instance of S10 Material Substantial or part of it was taken from for further analysis. We typically regard a sample as ceasing to exist when the respective representative qualities become corrupted, such as the purity of a water sample or the layering of a bore core."""@en;
-    rdfs:label "Sample"@en;
-    rdfs:subClassOf crmsci:S11_Amount_of_Matter .
+    rdfs:subClassOf crmsci:S11_Amount_of_Matter;
+    rdfs:comment "This class comprises instances of S11 Amount of Matter taken from some instance of S10 Material Substantial with the intention to be representative for some material qualities of the instance of S10 Material Substantial or part of it was taken for further analysis. We typically regard a sample as ceasing to exist when the respective representative qualities become corrupted, such as the purity of a water sample or the layering of a bore core."@en;
+    rdfs:label "Sample"@en .
   
-  crm:E27_Site a owl:Class;
-    rdfs:subClassOf crmsci:S20_Physical_Feature .
+  crmsci:S12_Amount_of_Fluid a owl:Class;
+    rdfs:label "Amount of Fluid"@en;
+    rdfs:subClassOf crmsci:S14_Fluid_Body, crmsci:S11_Amount_of_Matter;
+    rdfs:comment "This class comprises fixed amounts of fluid (be they gas or liquid) defined by the total of its material content, typically molecules. They frequently acquire identity in laboratory practice by the fact of being kept or handled together within some adequate containers."@en .
   
-  crm:E2_Temporal_Entity a owl:Class;
-    rdfs:subClassOf crmsci:S15_Observable_Entity .
+  crmsci:S20_Rigid_Physical_Feature a owl:Class;
+    rdfs:label "Rigid Physical Feature"@en;
+    rdfs:comment "Any instance of this class is a physical feature with sufficient stability of form in itself and with respect to the physical object bearing it in order to associate a permanent reference space within which its form is invariant and at rest. The maximum volume in space that an instance of S20 Rigid Physical Feature occupies defines uniquely a place for the feature with respect to its surrounding matter. Therefore we model S20 Rigid Physical Feature as a subclass of E26 Physical Feature and of E53 Place. The latter is intended as a phenomenal place as defined in CRMgeo (Doerr and Hiebel 2013). By virtue of this multiple inheritance we can discuss positions relative to the extent of an instance of S20 Rigid Physical Feature without representing each instance of it together with an instance of its associated place. However, since the identity and existence of this place depends uniquely on the identity of the instance of S20 Rigid Physical Feature as matter, this multiple inheritance is unambiguous and effective and furthermore corresponds to the intuitions of natural language. It shortcuts an implicit self-referential path from E26 Physical Feature through P156 occupies, E53 Place, P157 is at rest relative to E26 Physical Feature. In cases of instances of S20 Rigid Physical Feature on or in the surface of earth, the default reference is typically fixed to the closer environment of the tectonic plate or sea floor. In cases of features on mobile objects, the reference space is typically fixed to the geometry of the bearing object. Note that the reference space associated with the instance of S20 Rigid Physical Feature may quite well be deformed over time, as long the continuity of its topology does not become unclear, such as the compression of dinosaur bones in geological layers, or the distortions of the hull of a ship by the waves of the sea. Defined in this way, the reference space can be used as a means to infer from current topological relationships past topological relationships of interest."@en;
+    rdfs:subClassOf crm:E53_Place, crm:E26_Physical_Feature .
+  
+  crmsci:S2_Sample_Taking a owl:Class;
+    rdfs:subClassOf crmsci:S1_Matter_Removal;
+    rdfs:comment "This class comprises the activity that results in taking an amount of matter as sample for further analysis from a material substantial such as a body of water, a geological formation or an archaeological object. The removed matter may acquire a persistent identity of different nature beyond the act of its removal, such as becoming a physical object in the narrower sense. The sample is typically removed from a physical feature which is used as a frame of reference, the place of sampling. In case of non-rigid Material Substantials, the source of sampling may regarded not to be modified by the activity of sample taking."@en;
+    rdfs:label "Sample Taking"@en .
+  
+  crmsci:S11_Amount_of_Matter a owl:Class;
+    rdfs:subClassOf crmsci:S10_Material_Substantial;
+    rdfs:label "Amount of Matter"@en;
+    rdfs:comment "This class comprises fixed amounts of matter specified as some air, some water, some soil, etc., defined by the total and integrity of their material content. In order to be able to identify and recognize in practice one instance of S11 Amount of Matter, some sort of confinement is needed that serves as a constraint for the enclosed matter and the integrity of the content, such as a bottle. In contrast to instances of E18 Physical Thing, no stability of form is required. The content may be put into another bottle without losing its identity. Subclasses may define very different identity conditions for the integrity of the content, such as chemical composition, or the sequence of layers of a bore core. Whereas an instance of E18 Physical Thing may gradually change form and chemical composition while preserving its identity, such as living beings, an instance of S11 Amount of Matter may lose its identifying features by such processes. What matters for the identity of an instance of S1 Amount of Matter is the preservation of a relevant composition from the initial state of definition onwards."@en .
+  
+  crmsci:S17_Physical_Genesis a owl:Class;
+    rdfs:label "Physical Genesis"@en;
+    rdfs:subClassOf crmsci:S18_Alteration, crm:E63_Beginning_of_Existence;
+    rdfs:comment "This class comprises events or processes that result in (generate) physical things, man-made or natural, coming into being in the form by which they are later identified. The creation of a new physical item, at the same time, can be a result of an alteration (modification) – it can become a new thing due to an alteration activity."@en .
+  
+  crmsci:O9_observed_property_type a owl:ObjectProperty;
+    rdfs:range crmsci:S9_Property_Type;
+    rdfs:subPropertyOf crm:P177_assigned_property_of_type;
+    rdfs:domain crmsci:S4_Observation;
+    rdfs:comment "This property associates an instance of S4 Observation with the instance of S9 Property Type for which the observation provides a value or evidence, such as “concentration of nitrate” observed in the water from a particular borehole. Encoding the observed property by type, observed entity and value (properties O9, O10, O16) is a method to circumscribe the reification of the observed property by the respective instance of S4 Observation. In an RDFS encoding, this circumscription can be transformed into an explicit representation of the observed property in terms of a formal ontology either by use of a reification construct or by the use of a Named Graph containing the observed property. The latter representation allows for more formal reasoning with the model, the former is more flexible about the kinds of observations."@en;
+    owl:inverseOf crmsci:O9i_property_type_was_observed_by;
+    rdfs:label "observed property type"@en .
+  
+  crmsci:S14_Fluid_Body a owl:Class;
+    rdfs:comment "This class comprises a mass of matter in fluid form environmentally constraint in some persistent form allowing for identifying it for the management or research of material phenomena, such as a part of the sea, a river, the atmosphere or the milk in a bottle. Fluids are generally defined by the continuity criterion which is characteristic of their substance: their amorphous matter is continuous and tends to flow. Therefore, contiguous amounts of matter within a fluid body may stay contiguous or at least be locally spatially confined for a sufficiently long time in order to be temporarily identified and traced. This is a much weaker concept of stability of form than the one we would apply to what one would call a physical object. In general, an instance of Fluid Body may gain or lose matter over time through so-called sources or sinks in its surface, in contrast to physical things, which may lose or gain matter by exchange of pieces such as spare parts or corrosion."@en;
+    rdfs:label "Fluid Body"@en;
+    rdfs:subClassOf crmsci:S10_Material_Substantial .
+  
+  crmsci:O7i_is_confined_by a owl:ObjectProperty;
+    rdfs:label "is confined by"@en;
+    owl:inverseOf crmsci:O7_confines;
+    rdfs:domain crmsci:S10_Material_Substantial;
+    rdfs:range crmsci:S20_Rigid_Physical_Feature .
+  
+  crmsci:S18_Alteration a owl:Class;
+    rdfs:subClassOf crm:E5_Event;
+    rdfs:comment "This class comprises natural events or man-made processes that create, alter or change physical things, by affecting permanently their form or consistency without changing their identity. Examples include alterations on depositional features-layers by natural factors or disturbance by roots or insects, organic alterations, petrification, etc."@en;
+    rdfs:label "Alteration"@en .
+  
+  crmsci:O8i_was_observed_by a owl:ObjectProperty;
+    rdfs:range crmsci:S4_Observation;
+    rdfs:domain crmsci:S15_Observable_Entity;
+    owl:inverseOf crmsci:O8_observed;
+    rdfs:label "was observed by"@en;
+    rdfs:subPropertyOf crm:P140i_was_attributed_by .
+  
+  crmsci:S19_Encounter_Event a owl:Class;
+    rdfs:comment "This class comprises activities of S4 Observation (substance) where an E39 Actor encounters an instance of E18 Physical Thing of a kind relevant for the mission of the observation or regarded as potentially relevant for some community (identity). This observation produces knowledge about the existence of the respective thing at a particular place in or on surrounding matter. This knowledge may be new to the group of people the actor belongs to. In that case we would talk about a discovery. The observer may recognize or assign an individual identity of the thing encountered or regard only the type as noteworthy in the associated documentation or report. In archaeology there is a particular interest if an object is found “in situ”, i.e. if its embedding in the surrounding matter supports the assumption that the object was not moved since the archaeologically relevant deposition event. The surrounding matter with the relative position of the object in it as well as the absolute position and time of the observation may be recorded in order to enable inferences about the history of the object. In Biology, additional parameters may be recorded like the kind of ecosystem, if the biological individual survives the observation, what detection or catching devices have been used or if the encounter event supported the detection of a new biological kind (“taxon”)."@en;
+    rdfs:subClassOf crmsci:S4_Observation;
+    rdfs:label "Encounter Event"@en .
   
   crmsci:S22_Segment_of_Matter a owl:Class;
-    rdfs:comment """This class comprises physical material in a relative stability of form (substance) within a specific spacetime volume (unity, extend). The spatial extend of a S22 Segment of Matter is defined by humans usually because the constellation is subject to a specific interest for and investigations of the geometric arrangement of physical features or parts of them on or within the specified S22 Segment of Matter. It comes into existence as being an object of discourse through S4 Observation or declaration and is restricted to the time span starting after the last change through an S18 Alteration before the S4 Observation or declaration and ending with the next S18 Alteration Event (identity). A S22 Segment of Matter exists as long as there is no modification of the geometric arrangement of its particles. Therefore the temporal boundaries of the defining Spacetime Volume are given by two S18 Alteration events.
-            The history of a S22 Segment of Matter started with the first S17 Physical Genesis event that deposited still existing matter within the defined spatial extend. The collection of all S18 Alteration events represent its history. Some of the events will not leave any physical material within the S22 Segment of Matter.
-            (to be elaborated further)"""@en;
-    rdfs:subClassOf crmsci:S20_Physical_Feature;
-    rdfs:label "Segment of Matter"@en .
-  
-  crm:E12_Production a owl:Class;
-    rdfs:subClassOf crmsci:S17_Physical_Genesis .
+    rdfs:comment "This class comprises physical features with relative stability of form and structure within a declared spatial volume of interest. The spatial extent of an instance of S22 Segment of Matter may be declared or defined by a researcher or observer usually because the arrangement and composition of substance is characteristic for the surrounding matter or can be interpreted as traces of its genesis and subsequent internal and external processes it was exposed to. The defining spatial extent is typically declared on a continuous matter by means of geometric determination without observable boundaries on all sides or any side. It may however be extracted at some point in time along the declared boundaries. An instance of S22 Segment of Matter is regarded to be existing from the time on it completely solidified with a structure that is still preserved in a recognizable way at the time of its spatial definition. Its existence is regarded to end when its respective integrity is partially or completely corrupted. Uncorrupted subsections of an instance of S22 Segment of Matter may continue to exist as segments of matter in their own right beyond the existence of the containing instance, and may have solidified before it. Typical examples are segments of archaeological or geological layers. They are regarded as uncorrupted even if they have undergone conformal deformations, such as compressions or shifts, as long as the effects of these deformations do not destroy the relevant structures of interest. This means that the defining spatial volume may be only geometrically valid for an instant of time for which it was declared, and undergo before and after deformations. In some cases, it may be possible to calculate the initial volume at the time of solidification, for instance for petrified bones compressed in Jurassic layers."@en;
+    rdfs:label "Segment of Matter"@en;
+    rdfs:subClassOf crmsci:S20_Rigid_Physical_Feature .
 }

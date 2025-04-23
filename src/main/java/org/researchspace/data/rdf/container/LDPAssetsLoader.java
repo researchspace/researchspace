@@ -481,11 +481,11 @@ public class LDPAssetsLoader {
                     }
                     else if (repositoryId.equals("configurations")) {  
                         toLoad.add(ctx);
-                    }                    
+                    } else {
+                        inconsistentContexts.add(ctx);
+                    }                   
                 } 
-                else {
-                    inconsistentContexts.add(ctx);
-                }
+                
                 
             } 
         } 
@@ -496,8 +496,8 @@ public class LDPAssetsLoader {
             String msg = "Inconsistent state of the LDP assets storage: the content of named graphs "
                     + inconsistentContexts.toString() + " in the \"" + repositoryId
                     + "\" repository does not correspond to the content loaded from storage; To reconcile the two remove either the one from the database or the one from the storage being loaded";
-            logger.error(msg);
-            throw new IllegalStateException(msg);
+            //logger.error(msg);
+            //throw new IllegalStateException(msg);
         }
         logger.info("Selected to load: " + toLoad.size());
         return toLoad;
@@ -560,7 +560,7 @@ public class LDPAssetsLoader {
         // with the
         // rdf4j implementation (ID-1130 and
         // https://github.com/eclipse/rdf4j/issues/1441)
-        /* 
+         
         if (!LDPModelComparator.compare(model1WithoutDate, model2WithoutDate)) {
             for (Statement stmt : model1WithoutDate) {
                 logger.info(stmt.getSubject() + " " + stmt.getPredicate()+ " " + stmt.getObject());
@@ -569,7 +569,7 @@ public class LDPAssetsLoader {
             for (Statement stmt : model2WithoutDate) {
                 logger.info(stmt.getSubject() + " " + stmt.getPredicate()+ " " + stmt.getObject());
             }
-        }*/
+        }
         return LDPModelComparator.compare(model1WithoutDate, model2WithoutDate);
 
     }

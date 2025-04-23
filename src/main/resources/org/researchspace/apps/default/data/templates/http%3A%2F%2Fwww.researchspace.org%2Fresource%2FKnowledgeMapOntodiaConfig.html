@@ -30,7 +30,7 @@ uses client-side templates:
   iri='{{#if iri}}{{iri}}{{/if}}'
   iris='{{#if iris}}{{iris}}{{/if}}'
 
-  hide-halo=false
+  hide-halo='{{#if hideHalo}}true{{else}}false{{/if}}'
 
   left-panel-initially-open=false
   default-node-template="{{> default}}"
@@ -295,44 +295,71 @@ uses client-side templates:
   </template>
 
   <template id="default">
-    [[!-- Don't add any other explicit style here, only width and height, style is overriden by the resizable component in the KM --]]
-    {{#if isExpanded }}
-      <div style="width: 270px; height:73px;">
-        <div class="resource-card__kmTopButtons">
-          <button name="edit" type="button" class="btn btn-default resource-card__button" title="Edit">
-            <rs-icon icon-type="rounded" icon-name="edit" symbol="true"></rs-icon>
-          </button>
-          <button name="delete" type="button" class="btn btn-default resource-card__button" title="Edit">
-            <rs-icon icon-type="rounded" icon-name="delete" symbol="true"></rs-icon>
-          </button>
+    {{#if readonly}}
+      {{#if isExpanded }}
+        <div style="width: 270px; height:73px;">
+          {{> rsp:ResourceCard  iri=iri
+                                viewId='knowledge-map-preview'
+                                knowledgeMapPreviewCard=true
+                                hideMediaSection=true
+                                hidePreview=true
+                                height=73
+                                width=270
+                                props=props
+                                data=data
+          }}
         </div>
-        {{> rsp:ResourceCard  iri=iri
-                              viewId=ontodiaVariable
-                              knowledgeMapCard=true
-                              hideMediaSection=true
-                              height=73
-                              width=270
-                              props=props
-                              data=data
-        }}
-      </div>
+      {{else}}
+        <div style="width: 150px; height:190px">
+          {{> rsp:ResourceCard  iri=iri
+                                viewId='knowledge-map-preview'
+                                knowledgeMapPreviewCard=true
+                                hidePreview=true
+                                props=props
+                                data=data
+          }}
+        </div>
+      {{/if}}
     {{else}}
-      <div style="width: 150px; height:190px">
-        <div class="resource-card__kmTopButtons">
-          <button name="edit" type="button" class="btn btn-default resource-card__button" title="Edit">
-            <rs-icon icon-type="rounded" icon-name="edit" symbol="true"></rs-icon>
-          </button>
-          <button name="delete" type="button" class="btn btn-default resource-card__button" title="Edit">
-            <rs-icon icon-type="rounded" icon-name="delete" symbol="true"></rs-icon>
-          </button>
+      [[!-- Don't add any other explicit style here, only width and height, style is overriden by the resizable component in the KM --]]
+      {{#if isExpanded }}
+        <div style="width: 270px; height:73px;">
+          <div class="resource-card__kmTopButtons">
+            <button name="edit" type="button" class="btn btn-default resource-card__button" title="Edit">
+              <rs-icon icon-type="rounded" icon-name="edit" symbol="true"></rs-icon>
+            </button>
+            <button name="delete" type="button" class="btn btn-default resource-card__button" title="Edit">
+              <rs-icon icon-type="rounded" icon-name="delete" symbol="true"></rs-icon>
+            </button>
+          </div>
+          {{> rsp:ResourceCard  iri=iri
+                                viewId=ontodiaVariable
+                                knowledgeMapCard=true
+                                hideMediaSection=true
+                                height=73
+                                width=270
+                                props=props
+                                data=data
+          }}
         </div>
-        {{> rsp:ResourceCard  iri=iri
-                              viewId=ontodiaVariable
-                              knowledgeMapCard=true
-                              props=props
-                              data=data
-        }}
-      </div>
+      {{else}}
+        <div style="width: 150px; height:190px">
+          <div class="resource-card__kmTopButtons">
+            <button name="edit" type="button" class="btn btn-default resource-card__button" title="Edit">
+              <rs-icon icon-type="rounded" icon-name="edit" symbol="true"></rs-icon>
+            </button>
+            <button name="delete" type="button" class="btn btn-default resource-card__button" title="Edit">
+              <rs-icon icon-type="rounded" icon-name="delete" symbol="true"></rs-icon>
+            </button>
+          </div>
+          {{> rsp:ResourceCard  iri=iri
+                                viewId=ontodiaVariable
+                                knowledgeMapCard=true
+                                props=props
+                                data=data
+          }}
+        </div>
+      {{/if}}
     {{/if}}
   </template>
 

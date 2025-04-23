@@ -481,9 +481,9 @@ public class LDPAssetsLoader {
                     }
                     else if (repositoryId.equals("configurations")) {  
                         toLoad.add(ctx);
-                    } else {
-                        inconsistentContexts.add(ctx);
-                    }                   
+                    } 
+                    inconsistentContexts.add(ctx);
+                                        
                 } 
                 
                 
@@ -496,8 +496,8 @@ public class LDPAssetsLoader {
             String msg = "Inconsistent state of the LDP assets storage: the content of named graphs "
                     + inconsistentContexts.toString() + " in the \"" + repositoryId
                     + "\" repository does not correspond to the content loaded from storage; To reconcile the two remove either the one from the database or the one from the storage being loaded";
-            //logger.error(msg);
-            //throw new IllegalStateException(msg);
+            logger.error(msg);
+            throw new IllegalStateException(msg);
         }
         logger.info("Selected to load: " + toLoad.size());
         return toLoad;

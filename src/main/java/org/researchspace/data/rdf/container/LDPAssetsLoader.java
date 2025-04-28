@@ -331,7 +331,7 @@ public class LDPAssetsLoader {
                     Model model = Rio.parse(in, "", format);             
                     loadedAssetsModel.addAll(model);                   
                 } catch (IOException | RDFParseException e) {
-                    logger.error("Failed to parse LDP asset: " + record.getLocation() + ". Details: " + e.getMessage());
+                    logger.error("Failed to parse LDP asset: " + record.getPath() + ". Details: " + e.getMessage());
                     throw e; // just propagate
                 }
             }
@@ -514,7 +514,7 @@ public class LDPAssetsLoader {
 
             for (PlatformStorage.FindResult override : overrides) {
                 ObjectRecord record = override.getRecord();
-                logger.info("Location"+record.getPath()+override.getAppId().toString());                    
+                logger.info("Location: "+record.getPath()+" from "+override.getAppId().toString());                    
             }
         } catch(StorageException e) {
             return null;
@@ -560,7 +560,7 @@ public class LDPAssetsLoader {
         // with the
         // rdf4j implementation (ID-1130 and
         // https://github.com/eclipse/rdf4j/issues/1441)
-         
+        /* 
         if (!LDPModelComparator.compare(model1WithoutDate, model2WithoutDate)) {
             for (Statement stmt : model1WithoutDate) {
                 logger.info(stmt.getSubject() + " " + stmt.getPredicate()+ " " + stmt.getObject());
@@ -569,7 +569,7 @@ public class LDPAssetsLoader {
             for (Statement stmt : model2WithoutDate) {
                 logger.info(stmt.getSubject() + " " + stmt.getPredicate()+ " " + stmt.getObject());
             }
-        }
+        }*/
         return LDPModelComparator.compare(model1WithoutDate, model2WithoutDate);
 
     }

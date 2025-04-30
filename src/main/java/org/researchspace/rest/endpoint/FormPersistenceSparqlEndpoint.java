@@ -130,7 +130,7 @@ public class FormPersistenceSparqlEndpoint {
                                 .resolveUser(nsRegistry.getUserIRI()).build(con);
                         update.execute();
                     }
-                    logger.info("updating"+repositoryID);
+                    logger.info("Updating repository: "+repositoryID);
                     /* Special rule for the FieldCategories authority */
                     if (graph.equals("http://www.researchspace.org/resource/system/FieldCategories"))
                         /* specify a different repositoryId for saving the serialised data i.e. the ldp/authorities were all other authorities are */

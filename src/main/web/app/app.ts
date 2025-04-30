@@ -42,7 +42,7 @@ import {
 import { renderOverlaySystem, registerOverlaySystem, getOverlaySystem } from 'platform/components/ui/overlay';
 import { listen, init as initNavigation, getCurrentUrl, getCurrentResource } from 'platform/api/navigation';
 import { ConfigHolder } from 'platform/api/services/config-holder';
-import { initEntityConfig } from 'platform/api/services/EntityViewConfig';
+import { initResourceConfig} from 'platform/api/services/resource-config';
 import { getRegisteredPrefixes } from 'platform/api/services/namespace';
 import * as TemplateService from 'platform/api/services/template';
 import * as SecurityService from 'platform/api/services/security';
@@ -369,7 +369,7 @@ window.addEventListener('DOMContentLoaded', function () {
       return Kefir.constant(url);
     })
     .flatMap(() => {
-      return initEntityConfig();
+      return initResourceConfig();
     })
     .onValue(() => {
       render(createElement(MainAppComponent), document.getElementById('application'));

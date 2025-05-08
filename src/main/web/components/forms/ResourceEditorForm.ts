@@ -60,6 +60,7 @@ import { string } from 'prop-types';
 import { LdpService } from 'platform/api/services/ldp';
 import { RDFGraphStoreService } from 'platform/api/services/rdf-graph-store';
 import * as GraphActionEvents from 'platform/components/admin/rdf-upload/GraphActionEvents';
+import { initResourceConfig } from 'platform/api/services/resource-config';
 
 interface State {
   readonly model?: CompositeValue;
@@ -427,6 +428,12 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
             // only ignore setState() and always reset localStorage and perform post-action
             // event if the form is already unmounted
             this.resetStorage();
+            /* only for resource configurations changes */
+            if (this.props.persistence["repository"] === "configurations") {                
+                localStorage.removeItem("resourceConfigurations");
+                localStorage.setItem("resourceConfigurations","Resource Configuration Updated");
+                initResourceConfig();               
+            }
             if (!this.unmounted) {
               this.setState({ model: finalModel, submitting: false });
             }

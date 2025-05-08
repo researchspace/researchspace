@@ -23,8 +23,6 @@ import { Rdf } from 'platform/api/rdf';
 
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 
-
-
 export interface ResourceConfig {
   label: string;
   rdfType?: string;
@@ -97,12 +95,7 @@ CONSTRUCT {
   const FormConfigType = Rdf.iri('http://www.researchspace.org/resource/system/resource_configuration');
   return SparqlClient.construct(query).onValue(
     res => {
-      //const relatedByKp = Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/is_related_by_kp');
-      //const allRelatedKps = _.uniqBy(res.filter(t => t.p.equals(relatedByKp)).map(t => t.o as Rdf.Iri), node => node.value);
-      //FieldService.getGeneratedFieldDefinitions(allRelatedKps).onValue(
-        //allKps => {
-          //const kps = _.fromPairs(allKps.map(kp => [kp.iri, kp]));
-
+     
           const configGraph = Rdf.graph(res);
           const allConfigIris = res.filter(t => t.o.equals(FormConfigType)).map(t => t.s);
           const allConfigs = allConfigIris.map(configIri => {
@@ -148,13 +141,11 @@ CONSTRUCT {
           resourceConfigs = _.fromPairs(allConfigs);
           console.log("initialising configurations");
           console.dir(resourceConfigs,{"depth":null});
+          
         });
-  //  }
-  //);
-
+ 
 }
 
 export function getResourceConfiguration(iri: string, key: string) : string {  
-  console.log("iri is "+iri+" key: "+ key + " " + resourceConfigs[iri][key]);
   return resourceConfigs[iri][key];
 }

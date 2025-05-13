@@ -74,9 +74,8 @@ public class IIIFMetadataExtractor implements MetadataExtractor {
 
         Model model = new LinkedHashModel(Lists.newArrayList(
                 vf.createStatement(newId, DCTERMS.DESCRIPTION,
-                        vf.createLiteral("Uploaded width: " + width + ", height: " + height)),
-                vf.createStatement(newId, CRMdig.L56_HAS_PIXEL_WIDTH, vf.createLiteral(width)),
-                vf.createStatement(newId, CRMdig.L57_HAS_PIXEL_HEIGHT, vf.createLiteral(height))));
+                        vf.createLiteral("Uploaded width: " + width + ", height: " + height))
+            ));
         return model;
     }
 

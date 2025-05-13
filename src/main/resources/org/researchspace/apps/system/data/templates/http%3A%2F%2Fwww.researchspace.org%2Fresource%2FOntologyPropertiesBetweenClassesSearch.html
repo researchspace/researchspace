@@ -41,7 +41,7 @@
                               open-dropdown-on-focus='true'
                               multiple-selection='true'
                               open-resource-on-click='false'
-                              initial-selection='["http://www.cidoc-crm.org/cidoc-crm/CRMsci/","http://www.ics.forth.gr/isl/CRMdig/","http://www.ics.forth.gr/isl/CRMinf/","http://www.cidoc-crm.org/cidoc-crm/","http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/","http://www.ics.forth.gr/isl/CRMgeo/","http://www.cidoc-crm.org/cidoc-crm/CRMba/","http://iflastandards.info/ns/lrm/lrmoo/"]'
+                              initial-selection='["http://www.cidoc-crm.org/extensions/crmsci/","http://www.cidoc-crm.org/extensions/crmdig/","http://www.cidoc-crm.org/extensions/crminf/","http://www.cidoc-crm.org/cidoc-crm/","http://www.cidoc-crm.org/extensions/crmarchaeo/","http://www.cidoc-crm.org/extensions/crmgeo/","http://www.cidoc-crm.org/extensions/crmba/","http://iflastandards.info/ns/lrm/lrmoo/"]'
                               [[!-- initial-selection='["http://www.cidoc-crm.org/cidoc-crm/"]'--]]
                               placeholder="Select ontology"
 
@@ -115,7 +115,7 @@
                                                                             "type": "simple",
                                                                             "schemePattern":  "?ontologyclass a ?class . VALUES ?class {owl:Class rdfs:Class} ",
                                                                             "relationPattern": "?item rdfs:subClassOf ?parent",
-                                                                            "labelPattern": "?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label .
+                                                                            "labelPattern": "?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label) ?label .
                                                                                             FILTER (lang(?label) = \"en\")"
                                                                           }
                                                         },
@@ -129,7 +129,7 @@
                                                                             "type": "simple",
                                                                             "schemePattern":  "?ontologyclassrange a ?class . VALUES ?class {owl:Class rdfs:Class} ",
                                                                             "relationPattern": "?item rdfs:subClassOf ?parent",
-                                                                            "labelPattern": "?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label .
+                                                                            "labelPattern": "?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label) ?label .
                                                                                             FILTER (lang(?label) = \"en\")"
                                                                           }
                                                         }
@@ -161,7 +161,7 @@
                                                                                         BIND(URI(?parentOntologyString) as ?parentOntology)
                                                                                         FILTER(?parentOntology IN ({{selectedOntology}}))
                                                                                       })
-                                                                                      ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.
+                                                                                      ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label) ?label.
                                                                                       FILTER((LANG(?label)) = \"en\")
                                                                                       OPTIONAL {
                                                                                         ?child rdfs:subClassOf ?item.
@@ -182,7 +182,7 @@
                                                                                         BIND(URI(?ontologyString) as ?ontology)
                                                                                         FILTER(?ontology IN (<http://www.cidoc-crm.org/cidoc-crm/>, <http://www.cidoc-crm.org/cidoc-crm/CRMsci>, {{selectedOntology}}))
                                                                                                                                 
-                                                                                        ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.
+                                                                                        ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label) ?label.
                                                                                         FILTER((LANG(?label)) = \"en\")
                                                                                         OPTIONAL { ?child rdfs:subClassOf ?item. 
                                                                                             
@@ -199,7 +199,7 @@
                                                                                         BIND(URI(?ontologyString) as ?ontology)
                                                                                         FILTER(?ontology IN ( {{selectedOntology}}))
 
-                                                                                        ?parent ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?parentLabel.
+                                                                                        ?parent ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label) ?parentLabel.
                                                                                         FILTER((LANG(?parentLabel)) = \"en\")
                                                                                       }",
 
@@ -210,7 +210,7 @@
                                                                                       BIND(IF(CONTAINS(STR(?item), \"skos\"), CONCAT(?prefix, \"/core\"), CONCAT(STR(?prefix), \"/\")) AS ?ontologyString)
                                                                                       BIND(URI(?ontologyString) as ?ontology)
                                                                                       FILTER(?ontology IN ({{selectedOntology}}))                                        
-                                                                                      ?item ((crm:P1_is_identified_by/rdfs:label)|rso:displayLabel|rdfs:label|skos:prefLabel) ?label.
+                                                                                      ?item ((crm:P1_is_identified_by/rdfs:label)|rso:displayLabel|rdfs:label) ?label.
                                                                                       FILTER((LANG(?label)) = \"en\")
                                                                                       ?label bds:search ?__token__;
                                                                                         bds:minRelevance \"0.3\";
@@ -231,7 +231,7 @@
                                                                                     }'
 
                                                                     query-item-label='SELECT ?label WHERE {
-                                                                                        ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.
+                                                                                        ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label) ?label.
                                                                                         FILTER (lang(?label) = "en")
                                                                                       }'>
                                   </semantic-form-tree-picker-input>
@@ -258,7 +258,7 @@
                                                                                       BIND(URI(?parentOntologyString) as ?parentOntology)
                                                                                       FILTER(?parentOntology IN ({{selectedOntology}}))
                                                                                     })
-                                                                                    ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.
+                                                                                    ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label) ?label.
                                                                                     FILTER((LANG(?label)) = \"en\")
                                                                                     OPTIONAL {
                                                                                       ?child rdfs:subClassOf ?item.
@@ -279,7 +279,7 @@
                                                                                       BIND(URI(?ontologyString) as ?ontology)
                                                                                       FILTER(?ontology IN (<http://www.cidoc-crm.org/cidoc-crm/>, <http://www.cidoc-crm.org/cidoc-crm/CRMsci>, {{selectedOntology}}))
                                                                                                                               
-                                                                                      ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.
+                                                                                      ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label) ?label.
                                                                                       FILTER((LANG(?label)) = \"en\")
                                                                                       OPTIONAL { ?child rdfs:subClassOf ?item. 
                                                                                           
@@ -296,7 +296,7 @@
                                                                                       BIND(URI(?ontologyString) as ?ontology)
                                                                                       FILTER(?ontology IN ( {{selectedOntology}}))
 
-                                                                                      ?parent ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?parentLabel.
+                                                                                      ?parent ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label) ?parentLabel.
                                                                                       FILTER((LANG(?parentLabel)) = \"en\")
                                                                                     }",
 
@@ -307,7 +307,7 @@
                                                                                     BIND(IF(CONTAINS(STR(?item), \"skos\"), CONCAT(?prefix, \"/core\"), CONCAT(STR(?prefix), \"/\")) AS ?ontologyString)
                                                                                     BIND(URI(?ontologyString) as ?ontology)
                                                                                     FILTER(?ontology IN ({{selectedOntology}}))                                        
-                                                                                    ?item ((crm:P1_is_identified_by/rdfs:label)|rso:displayLabel|rdfs:label|skos:prefLabel) ?label.
+                                                                                    ?item ((crm:P1_is_identified_by/rdfs:label)|rso:displayLabel|rdfs:label) ?label.
                                                                                     FILTER((LANG(?label)) = \"en\")
                                                                                     ?label bds:search ?__token__;
                                                                                       bds:minRelevance \"0.3\";
@@ -328,7 +328,7 @@
                                                                                   }'
 
                                                                   query-item-label='SELECT ?label WHERE {
-                                                                                      ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.
+                                                                                      ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label) ?label.
                                                                                       FILTER (lang(?label) = "en")
                                                                                     }'>
                                   </semantic-form-tree-picker-input>
@@ -371,13 +371,13 @@
    																									BIND (
                                                       COALESCE(
                                                         IF(CONTAINS(STR(?propertyOntology), 'http://iflastandards.info/ns/lrm/lrmoo/'), REPLACE(STR(?propertydomain), 'http://iflastandards.info/ns/lrm/lrmoo/', 'lrmoo:'), 1/0),
-                                                        IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/'), REPLACE(STR(?propertydomain), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/', 'crmarchaeo:'), 1/0),
-                                                        IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/'), REPLACE(STR(?propertydomain), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/', 'crmba:'), 1/0),
-                                                        IF(CONTAINS(STR(?propertyOntology), 'http://www.ics.forth.gr/isl/CRMdig/'), REPLACE(STR(?propertydomain), 'http://www.ics.forth.gr/isl/CRMdig/', 'crmdig:'), 1/0),
-                                                        IF(CONTAINS(STR(?propertyOntology), 'http://www.ics.forth.gr/isl/CRMgeo/'), REPLACE(STR(?propertydomain), 'http://www.ics.forth.gr/isl/CRMgeo/', 'crmgeo:'), 1/0),
-                                                        IF(CONTAINS(STR(?propertyOntology), 'http://www.ics.forth.gr/isl/CRMinf/'), REPLACE(STR(?propertydomain), 'http://www.ics.forth.gr/isl/CRMinf/', 'crminf:'), 1/0),
-                                                        IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/influence/'), REPLACE(STR(?propertydomain), 'http://www.cidoc-crm.org/cidoc-crm/influence/', 'crminfluence:'), 1/0),                                                
-                                                        IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/CRMsci/'), REPLACE(STR(?propertydomain), 'http://www.cidoc-crm.org/cidoc-crm/CRMsci/', 'crmsci:'), 1/0),
+                                                        IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/extensions/crmarchaeo/'), REPLACE(STR(?propertydomain), 'http://www.cidoc-crm.org/extensions/crmarchaeo/', 'crmarchaeo:'), 1/0),
+                                                        IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/extensions/crmba/'), REPLACE(STR(?propertydomain), 'http://www.cidoc-crm.org/extensions/crmba/', 'crmba:'), 1/0),
+                                                        IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/extensions/crmdig/'), REPLACE(STR(?propertydomain), 'http://www.cidoc-crm.org/extensions/crmdig/', 'crmdig:'), 1/0),
+                                                        IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/extensions/crmgeo/'), REPLACE(STR(?propertydomain), 'http://www.cidoc-crm.org/extensions/crmgeo/', 'crmgeo:'), 1/0),
+                                                        IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/extensions/crminf/'), REPLACE(STR(?propertydomain), 'http://www.cidoc-crm.org/extensions/crminf/', 'crminf:'), 1/0),
+                                                        IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/extensions/influence/'), REPLACE(STR(?propertydomain), 'http://www.cidoc-crm.org/extensions/influence/', 'crminfluence:'), 1/0),                                                
+                                                        IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/extensions/crmsci/'), REPLACE(STR(?propertydomain), 'http://www.cidoc-crm.org/extensions/crmsci/', 'crmsci:'), 1/0),
                                                         IF(CONTAINS(STR(?propertyOntology), 'http://www.researchspace.org/ontology/'), REPLACE(STR(?propertydomain), 'http://www.researchspace.org/ontology/', 'rso:'), 1/0),
                                                         IF(CONTAINS(STR(?propertyOntology), 'http://www.w3.org/2004/02/skos/core#'), REPLACE(STR(?propertydomain), 'http://www.w3.org/2004/02/skos/core#', 'skos:'), 1/0),
                                                         IF((CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/')), REPLACE(STR(?propertydomain), 'http://www.cidoc-crm.org/cidoc-crm/', 'crm:'), 1/0),
@@ -462,13 +462,13 @@
                                                			BIND (
                                                       COALESCE(
                                                         IF(CONTAINS(STR(?higherPropertyOntology), 'http://iflastandards.info/ns/lrm/lrmoo/'), REPLACE(STR(?higherproperty), 'http://iflastandards.info/ns/lrm/lrmoo/', 'lrmoo:'), 1/0),
-                                                        IF(CONTAINS(STR(?higherPropertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/'), REPLACE(STR(?higherproperty), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/', 'crmarchaeo:'), 1/0),
-                                                        IF(CONTAINS(STR(?higherPropertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/'), REPLACE(STR(?higherproperty), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/', 'crmba:'), 1/0),
-                                                        IF(CONTAINS(STR(?higherPropertyOntology), 'http://www.ics.forth.gr/isl/CRMdig/'), REPLACE(STR(?higherproperty), 'http://www.ics.forth.gr/isl/CRMdig/', 'crmdig:'), 1/0),
-                                                        IF(CONTAINS(STR(?higherPropertyOntology), 'http://www.ics.forth.gr/isl/CRMgeo/'), REPLACE(STR(?higherproperty), 'http://www.ics.forth.gr/isl/CRMgeo/', 'crmgeo:'), 1/0),
-                                                        IF(CONTAINS(STR(?higherPropertyOntology), 'http://www.ics.forth.gr/isl/CRMinf/'), REPLACE(STR(?higherproperty), 'http://www.ics.forth.gr/isl/CRMinf/', 'crminf:'), 1/0),
-                                                        IF(CONTAINS(STR(?higherPropertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/influence/'), REPLACE(STR(?higherproperty), 'http://www.cidoc-crm.org/cidoc-crm/influence/', 'crminfluence:'), 1/0),                                                
-                                                        IF(CONTAINS(STR(?higherPropertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/CRMsci/'), REPLACE(STR(?higherproperty), 'http://www.cidoc-crm.org/cidoc-crm/CRMsci/', 'crmsci:'), 1/0),
+                                                        IF(CONTAINS(STR(?higherPropertyOntology), 'http://www.cidoc-crm.org/extensions/crmarchaeo/'), REPLACE(STR(?higherproperty), 'http://www.cidoc-crm.org/extensions/crmarchaeo/', 'crmarchaeo:'), 1/0),
+                                                        IF(CONTAINS(STR(?higherPropertyOntology), 'http://www.cidoc-crm.org/extensions/crmba/'), REPLACE(STR(?higherproperty), 'http://www.cidoc-crm.org/extensions/crmba/', 'crmba:'), 1/0),
+                                                        IF(CONTAINS(STR(?higherPropertyOntology), 'http://www.cidoc-crm.org/extensions/crmdig/'), REPLACE(STR(?higherproperty), 'http://www.cidoc-crm.org/extensions/crmdig/', 'crmdig:'), 1/0),
+                                                        IF(CONTAINS(STR(?higherPropertyOntology), 'http://www.cidoc-crm.org/extensions/crmgeo/'), REPLACE(STR(?higherproperty), 'http://www.cidoc-crm.org/extensions/crmgeo/', 'crmgeo:'), 1/0),
+                                                        IF(CONTAINS(STR(?higherPropertyOntology), 'http://www.cidoc-crm.org/extensions/crminf/'), REPLACE(STR(?higherproperty), 'http://www.cidoc-crm.org/extensions/crminf/', 'crminf:'), 1/0),
+                                                        IF(CONTAINS(STR(?higherPropertyOntology), 'http://www.cidoc-crm.org/extensions/influence/'), REPLACE(STR(?higherproperty), 'http://www.cidoc-crm.org/extensions/influence/', 'crminfluence:'), 1/0),                                                
+                                                        IF(CONTAINS(STR(?higherPropertyOntology), 'http://www.cidoc-crm.org/extensions/crmsci/'), REPLACE(STR(?higherproperty), 'http://www.cidoc-crm.org/extensions/crmsci/', 'crmsci:'), 1/0),
                                                         IF(CONTAINS(STR(?higherPropertyOntology), 'http://www.researchspace.org/ontology/'), REPLACE(STR(?higherproperty), 'http://www.researchspace.org/ontology/', 'rso:'), 1/0),
                                                         IF(CONTAINS(STR(?higherPropertyOntology), 'http://www.w3.org/2004/02/skos/core#'), REPLACE(STR(?higherproperty), 'http://www.w3.org/2004/02/skos/core#', 'skos:'), 1/0),
                                                         IF((CONTAINS(STR(?higherPropertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/')), REPLACE(STR(?higherproperty), 'http://www.cidoc-crm.org/cidoc-crm/', 'crm:'), 1/0),

@@ -74,7 +74,7 @@ export function loadArgumentsForAssertion(assertionIri: Rdf.Iri): Kefir.Property
 const FIND_ARGUMENTS_QUERY = SparqlUtil.Sparql`
   SELECT DISTINCT ?argument WHERE {
     ?__assertion__ <http://www.researchspace.org/ontology/PX_asserts> ?belief .
-    ?argument <http://www.ics.forth.gr/isl/CRMinf/J2_concluded_that> ?belief .
+    ?argument <http://www.cidoc-crm.org/extensions/crminf/J2_concluded_that> ?belief .
   }
 `;
 function findArgumentsForAssertion(assertionIri: Rdf.Iri): Kefir.Property<Array<Rdf.Iri>> {
@@ -137,6 +137,7 @@ function deserializeBeliefAdoption(pg: Rdf.PointedGraph): Kefir.Property<BeliefA
       },
     } as BeliefAdoption);
   } else {
+    
     const adoptedFieldBeliefsIri = _.head(Rdf.getValuesFromPropertyPath<Rdf.Iri>([crminf.J6_adopted], pg));
     const belief = deserializeBelief(Rdf.pg(adoptedFieldBeliefsIri, pg.graph));
     return belief.map(
@@ -169,7 +170,7 @@ function deserializeInference(pg: Rdf.PointedGraph): Kefir.Property<Inference> {
         note: Rdf.getValueFromPropertyPath([crm.P3_has_note], pg)
           .map((v) => v.value)
           .getOrElse(''),
-        logicType: Rdf.getValueFromPropertyPath<Rdf.Iri>([crminf.J3_applies], pg).getOrElse(undefined),
+        logicType: Rdf.getValueFromPropertyPath<Rdf.Iri>([crminf.J3_applied], pg).getOrElse(undefined),
         premises: premises,
       };
       return inference;
@@ -293,7 +294,7 @@ export function serializeObservation(observation: Observation): Rdf.Graph {
   const observationTimePg = createObservationTimeSpan(observation);
   return Rdf.graph([
     Rdf.triple(Rdf.BASE_IRI, vocabularies.rdf.type, crmsci.S19_Encounter_Event),
-    Rdf.triple(Rdf.BASE_IRI, vocabularies.rdf.type, crmsci.S4_Observation),
+    Rdf.triple(Rdf.BASE_IRI, vocabularies.rdf.type, crmsci.S4_Single_Observation),
     Rdf.triple(Rdf.BASE_IRI, crmsci.O21_encountered_at, observation.place),
     Rdf.triple(Rdf.BASE_IRI, crm.P4_has_time_span, observationTimePg.pointer),
     ...observationTimePg.graph.triples.toJS(),
@@ -319,7 +320,7 @@ export function serializeInference(inference: Inference, beliefs: Array<Rdf.Poin
   const premises = beliefs.map((beliefPg) => Rdf.triple(Rdf.BASE_IRI, crminf.J1_used_as_premise, beliefPg.pointer));
   return Rdf.graph([
     Rdf.triple(Rdf.BASE_IRI, vocabularies.rdf.type, crminf.I5_Inference_Making),
-    Rdf.triple(Rdf.BASE_IRI, crminf.J3_applies, inference.logicType),
+    Rdf.triple(Rdf.BASE_IRI, crminf.J3_applied, inference.logicType),
     ...premises,
     ..._.flatMap(beliefs, (b) => b.graph.triples.toArray()),
   ]);

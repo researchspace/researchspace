@@ -1,0 +1,468 @@
+@prefix rs: <http://www.researchspace.org/ontology/> .
+@prefix User: <http://www.researchspace.org/resource/user/> .
+@prefix Help: <http://help.researchspace.org/resource/> .
+@prefix Platform: <http://www.researchspace.org/resource/system/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix crmdig: <http://www.cidoc-crm.org/extensions/crmdig/> .
+@prefix rshelp: <http://researchspace.org/help/> .
+@prefix crmsci: <http://www.cidoc-crm.org/extensions/crmsci/> .
+@prefix assets: <http://www.researchspace.org/resource/assets/> .
+@prefix crmgeo: <http://www.cidoc-crm.org/extensions/crmgeo/> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix crminfluence: <http://www.cidoc-crm.org/extensions/influence/> .
+@prefix crm: <http://www.cidoc-crm.org/cidoc-crm/> .
+@prefix crminf: <http://www.cidoc-crm.org/extensions/crminf/> .
+@prefix Admin: <http://www.researchspace.org/resource/admin/> .
+@prefix bds: <http://www.bigdata.com/rdf/search#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix crmba: <http://www.cidoc-crm.org/extensions/crmba/> .
+@prefix fedsail: <http://www.openrdf.org/config/sail/federation#> .
+@prefix ontodia: <http://ontodia.org/schema/v1#> .
+@prefix crmarchaeo: <http://www.cidoc-crm.org/extensions/crmarchaeo/> .
+@prefix forms: <http://www.researchspace.org/resource/system/forms/> .
+@prefix lrmoo: <http://iflastandards.info/ns/lrm/lrmoo/> .
+
+crminfluence:context {
+
+   <http://www.cidoc-crm.org/extensions/influence/> a owl:Ontology;
+    rdfs:label "CRMinfluence 2.1a"@en ;
+    owl:versionInfo "2.1a"@en ;
+    rdfs:comment "The Influence Ontology supports multiple causal relationships providing the ability to identify a wider range of influences, small or large, that have a bearing on, reveal, and challenge established history. These can be transparently synthesised, discussed and their relative importance considered from different methodologies and perspectives, offering more branches of investigation within a collaborative knowledge base."@en  .
+
+  ###############################Classes############################################
+
+  crminfluence:IN30_Influence a owl:Class;
+    skos:prefLabel "IN30 Influence"@en ;
+    skos:notation "IN30" ;
+    rdfs:label "Influence"@en ;
+    rdfs:subClassOf crminfluence:MO1_Mental_Attitude;
+    rdfs:comment """This class comprises mental attitudes of an Actor guiding their opinions and activities in reaction to and taking 
+    up characteristic properties of things, ideas, situations or phenomena encountered either positively for using or following 
+    them, or negatively for avoiding them. In case of ideas, they may even be product of one’s own reasoning processes or 
+    imagination, even dreams. Things may be information, ideas, or material items. Phenomena include interactions and 
+    communications with people, but also physical experiences. The Actor may be an individual person or a Group acting 
+    collectively under the impression of shared experiences and/or after forming shared opinions. It may not be a set of people 
+    distinguished within a society by common characteristics, such as “politicians” “working class” etc. Concepts of influence on 
+    the latter should rather be regarded as statistical correlations."""@en.
+
+  crminfluence:IN31_Individual_Influence a owl:Class;
+    skos:prefLabel "IN31 Individual Influence"@en ;
+    skos:notation "IN31" ;
+    rdfs:label "Individual Influence"@en;
+    rdfs:subClassOf crminfluence:IN30_Influence;
+    rdfs:comment """This class comprises influence on an Actor guiding their opinions and activities in reaction 
+    to and typically taking up characteristic properties of an individual, identifiable physical 
+    thing, information or event encountered, or avoiding characteristic thingsThe influence should either be 
+    evident by a justifiable similarity with the encountered phenomena or be explicit witnessed by the influenced Actor themselves."""@en .
+  
+  crminfluence:IN32_Communicative_Influence a owl:Class;
+    skos:prefLabel "IN32 Communicative Influence"@en ;
+    skos:notation "IN32" ;
+    rdfs:label "Communicative Influence"@en;
+    rdfs:subClassOf crminfluence:IN30_Influence;
+    rdfs:comment """This class comprises influence on an Actor guiding their opinions and activities in reaction to and 
+    taking up ideas and lived practice and behavior from a person or group in the context of close extended communication 
+    and/or living together for some time. The influence should either be evident by a justifiable similarity with the behavior 
+    of the influencing Actor or be explicitly witnessed by the influenced Actor themselves."""@en .
+  
+  crminfluence:IN33_Societal_Influence a owl:Class;
+    skos:prefLabel "IN33 Societal Influence"@en ;
+    skos:notation "IN33" ;
+    rdfs:label "Societal Influence"@en ;
+    rdfs:subClassOf crminfluence:IN30_Influence;
+    rdfs:comment """This class comprises influence on an Actor guiding their opinions and activities in reaction to and taking up general 
+    ideas, lived practices and behavior from a social context the influenced Actor is part of or has lived in for some time. 
+    The influential ideas may come from any sources extent in this environment, be it being discussed publicly by any social 
+    group or class or expressed and published by multiple individuals. Influential ideas may be explicitly formulated in the 
+    respective society or be a more abstract tendency, philosophical background or common pattern. The influence should either 
+    be evident by a justifiable similarity with the ideas and behavior of the influencing society or be explicitly witnessed by 
+    the influenced Actor themselves. Instances of Societal Influence are used to document an overall effect, and should be 
+    documented separately from multiple identifiable individual encounters of an Actor contributing to it."""@en.
+  
+  crminfluence:IN34_Inner_Influence a owl:Class;
+    skos:prefLabel "IN34 Inner Influence"@en ;
+    skos:notation "IN34" ;
+    rdfs:label "Inner Influence"@en;
+    rdfs:subClassOf crminfluence:IN30_Influence;
+    rdfs:comment """This class comprises influence on an Actor guiding their opinions and activities in reaction to 
+    the result of a distinct intellectual reasoning process of their own or an emotional or spiritual experience 
+    that cannot be identified with a transfer of knowledge or a material event external to the Actor. The influence 
+    should explicitly be witnessed by the influenced Actor themselves."""@en .
+  
+  crminfluence:IN35_Environmental_Influence a owl:Class;
+    skos:prefLabel "IN35 Environmental Influence"@en ;
+    skos:notation "IN35" ;
+    rdfs:label "Environmental Influence"@en;
+    rdfs:subClassOf crminfluence:IN30_Influence;
+    rdfs:comment """This class comprises influence on an Actor guiding their opinions and activities in reaction to 
+    material environmental conditions and their understanding of their dynamics and methods of control, modification 
+    or protection from it.  The influence should either be evident by the interaction of the Actor with their environment 
+    or be explicitly witnessed by the influenced Actor themselves. Instances of Environmental Influence are used 
+    to document an overall effect, and should be documented separately from multiple identifiable individual encounters of an Actor contributing to it."""@en .
+  
+  crminfluence:MO1_Mental_Attitude a owl:Class;
+    skos:prefLabel "MO1 Mental Attitude"@en ;
+    skos:notation "MO1" ;
+    rdfs:label "Mental Attitude"@en;
+    rdfs:subClassOf crm:E2_Temporal_Entity;
+    rdfs:comment """This class comprises the conscious maintenance of an intellectual attitude towards matters of knowing, 
+    believing or guiding actions and reactions to social and other environmental situations, such as, besides others, 
+    beliefs about laws governing nature or intentions to carry out actions. An instance of Mental Attitude is individual 
+    to a human being and specific to a particular, explicit matter. Individuals in a sustained mutual relationship may temporarily 
+    share a mental attitude about a particular matter sufficiently similar to be regarded having an identical common core."""@en.
+
+  crminfluence:EO1_Situation_Type a owl:Class;
+    skos:prefLabel "EO1 Situation Type"@en ;
+    skos:notation "EO1" ;
+    rdfs:label "Situation Type"@en;
+    rdfs:subClassOf crm:E55_Type;
+    rdfs:comment """This class associates an instance of Influence with kinds of situations the subject is avoiding under this influence."""@en.
+
+  crminfluence:EC74_Communicative_Group a owl:Class;
+    skos:prefLabel "EC74 Communicative Group"@en ;
+    skos:notation "EC74" ;
+    rdfs:label "Communicative Group"@en;
+    rdfs:subClassOf crm:E74_Group;
+    rdfs:comment """A Communicative Group is one made up of two or more individuals who act collectively and have underlying and discernable lines 
+    of communication around a specific subject(s). Individual members of the group have mental attitudes which are similar, 
+    overlap or can be synthesised such that they underpin common activities and objectives. These lines of communication 
+    may be formal or informal but are based on a common interest. For example, a board of directors is a communicative group 
+    but the company as a whole does not have sufficient coherency of communication and interest (directors, managers, shareholders, 
+    employees etc) to qualify as a communicative group and would be generalised to Group. An informal example would include a group 
+    formed around a particular issue,  for example, a political demonstration, will have sufficient lines of communication around 
+    the issue at hand to be acting as a communicative group and which causes them to demonstrate, despite differences in the specifics of their mental attitudes."""@en.
+
+
+#####################################Properties############################
+  
+  crminfluence:IP50_has_influenced a owl:ObjectProperty;
+    skos:prefLabel "IP50 has influenced"@en ;
+    skos:notation "IP50" ;
+    rdfs:label "has influenced"@en;
+    rdfs:domain crminfluence:IN30_Influence;
+    rdfs:range crm:E21_Person;
+    rdfs:range crm:E76_Communicative_Group;
+    rdfs:comment ""@en.
+  
+ crminfluence:IP50i_was_influenced_by a owl:ObjectProperty;
+    skos:prefLabel "IP50i was influenced by"@en ;
+    skos:notation "IP50i" ;
+    rdfs:label "was influenced by"@en;
+    rdfs:domain crm:E21_Person;
+    rdfs:domain crm:E76_Communicative_Group;
+    rdfs:range crminfluence:IN30_Influence;
+    rdfs:comment ""@en.
+
+crminfluence:IP51_was_manifest_in a owl:ObjectProperty;
+    skos:prefLabel "IP51 was manifest in"@en ;
+    skos:notation "IP51" ;
+    rdfs:label "was manifest in"@en;
+    rdfs:domain crminfluence:IN30_Influence;
+    rdfs:range crm:E7_Activity;
+    rdfs:comment ""@en.
+
+  crminfluence:IP51i_incorporated a owl:ObjectProperty;
+    skos:prefLabel "IP51i incorporated"@en ;
+    skos:notation "IP51i" ;
+    rdfs:label "incorporated"@en;
+    rdfs:domain crm:E7_Activity;
+    rdfs:range crminfluence:IN30_Influence;
+    rdfs:comment ""@en.
+
+  crminfluence:IP52_led_to_avoiding a owl:ObjectProperty;
+    skos:prefLabel "IP52 led to avoiding"@en ;
+    skos:notation "IP52" ;
+    rdfs:label "led to avoiding"@en;
+    rdfs:domain crminfluence:IN30_Influence;
+    rdfs:range crminfluence:EO1_Situation_Type;
+    rdfs:comment ""@en .
+  
+  crminfluence:IP52i_was_avoided_through a owl:ObjectProperty;
+    skos:prefLabel "IP52i was avoided through"@en ;
+    skos:notation "IP52i" ;
+    rdfs:label "was avoided through"@en;
+    rdfs:domain crminfluence:EO1_Situation_Type;
+    rdfs:range crminfluence:IN30_Influence;
+    rdfs:comment ""@en .
+  
+  crminfluence:IP53_was_apparent_during a owl:ObjectProperty;
+    skos:prefLabel "IP53 was apparent during"@en ;
+    skos:notation "IP53" ;
+    rdfs:label "was apparent during"@en;
+    rdfs:domain crminfluence:IN30_Influence;
+    rdfs:range crm:E52_Time-Span ;
+    rdfs:comment ""@en.
+    
+  crminfluence:IP53i_was_associated_with a owl:ObjectProperty;
+    skos:prefLabel "IP53i was associated with"@en ;
+    skos:notation "IP53i" ;
+    rdfs:label "was associated with"@en;
+    rdfs:domain crm:E52_Time-Span;
+    rdfs:range  crminfluence:IN30_Influence;
+    rdfs:comment ""@en.
+
+  crminfluence:IP54_was_specifically_induced_by a owl:ObjectProperty;
+    skos:prefLabel "IP54 was specifically induced by"@en ;
+    skos:notation "IP54" ;
+    rdfs:label "was specifically induced by"@en;
+    rdfs:domain crminfluence:IN31_Individual_Influence;
+    rdfs:range crm:E5_Event;
+    rdfs:comment ""@en .
+
+  crminfluence:IP54i_specifically_induced a owl:ObjectProperty;
+    skos:prefLabel "IP54i specifically induced"@en ;
+    skos:notation "IP54i" ;
+    rdfs:label "specifically induced"@en;
+    rdfs:domain crm:E5_Event;
+    rdfs:range crminfluence:IN31_Individual_Influence;
+    rdfs:comment ""@en .
+
+  crminfluence:IP55_induced_by_encounter_with a owl:ObjectProperty;
+    skos:prefLabel "IP55 induced by encounter with"@en ;
+    skos:notation "IP55" ;
+    rdfs:label "induced by encounter with"@en;
+    rdfs:domain crminfluence:IN31_Individual_Influence;  
+    rdfs:range crm:E70_Thing;
+    rdfs:comment ""@en.
+
+  crminfluence:IP55i_encounter_with_motivated a owl:ObjectProperty;
+    skos:prefLabel "IP55i encounter with motivated"@en ;
+    skos:notation "IP55i" ;
+    rdfs:label "encounter with motivated"@en;
+    rdfs:domain crm:E70_Thing;  
+    rdfs:range crminfluence:IN31_Individual_Influence;
+    rdfs:comment ""@en.
+
+crminfluence:IP56_was_exerted_by a owl:ObjectProperty;
+    skos:prefLabel "IP56 was exerted by"@en ;
+    skos:notation "IP56" ;
+    rdfs:label "was exerted by"@en;
+    rdfs:domain crminfluence:IN32_Communicative_Influence ;
+    rdfs:range crm:E21_Person;
+    rdfs:range crm:EC74_Communicative_Group;
+    rdfs:comment ""@en.
+
+  crminfluence:IP56i_exerted a owl:ObjectProperty;
+    skos:prefLabel "IP56i exerted"@en ;
+    skos:notation "IP56i" ;
+    rdfs:label "exerted"@en;
+    rdfs:domain crm:E21_Person;
+    rdfs:domain crm:EC74_Communicative_Group;
+    rdfs:range crminfluence:IN32_Communicative_Influence;
+    rdfs:comment ""@en.
+
+  crminfluence:IP57_was_exerted_during a owl:ObjectProperty;
+    skos:prefLabel "IP57 was exerted during"@en ;
+    skos:notation "IP57" ;
+    rdfs:label "was exerted during"@en;
+    rdfs:domain crminfluence:IN32_Communicative_Influence;
+    rdfs:range crm:E52_Time-Span;
+    rdfs:comment ""@en .
+  
+    crminfluence:IP57i_was_time-span_of a owl:ObjectProperty;
+    skos:prefLabel "IP57i was time-span of"@en ;
+    skos:notation "IP57i" ;
+    rdfs:label "was time-span of"@en;
+    rdfs:domain crm:E52_Time-Span;
+    rdfs:range crminfluence:IN32_Communicative_Influence;
+    rdfs:comment ""@en .
+  
+  crminfluence:IP58_was_exerted_by a owl:ObjectProperty;
+    skos:prefLabel "IP58 was exerted by"@en ;
+    skos:notation "IP58" ;
+    rdfs:label "was exerted by"@en;
+    rdfs:domain crminfluence:IN33_Societal_Influence; 
+    rdfs:range crm:E4_Period;
+    rdfs:comment ""@en.
+
+  crminfluence:IP58i_was_period_of a owl:ObjectProperty;
+    skos:prefLabel "IP58i was period of"@en ;
+    skos:notation "IP58i" ;
+    rdfs:label "was period of"@en;
+    rdfs:domain crm:E4_Period;
+    rdfs:range crminfluence:IN33_Societal_Influence;
+    rdfs:comment ""@en.
+  
+  crminfluence:IP59_was_exerted_during a owl:ObjectProperty;
+    skos:prefLabel "IP59 was exerted during"@en ;
+    skos:notation "IP59" ;
+    rdfs:label "was exerted during"@en;
+    rdfs:domain crminfluence:IN33_Societal_Influence;
+    rdfs:range crm:E52_Time-Span;
+    rdfs:comment ""@en.
+
+  crminfluence:IP59i_was_time-span_of a owl:ObjectProperty;
+    skos:prefLabel "IP59i was time-span of"@en ;
+    skos:notation "IP59i" ;
+    rdfs:label "was time-span of"@en;
+    rdfs:domain crm:E52_Time-Span;
+    rdfs:range crminfluence:IN33_Societal_Influence;
+    rdfs:comment ""@en.
+  
+  crminfluence:IP60_by_the_idea a owl:ObjectProperty;
+    skos:prefLabel "IP60 by the idea"@en ;
+    skos:notation "IP60" ;
+    rdfs:label "by the idea"@en;
+    rdfs:domain crminfluence:IN33_Societal_Influence;
+    rdfs:range crm:E28_Conceptual_Object;
+    rdfs:comment ""@en.
+   
+  crminfluence:IP60i_was_idea_that_generated a owl:ObjectProperty;
+    skos:prefLabel "IP60i was idea that generated"@en ;
+    skos:notation "IP60i" ;
+    rdfs:label "was idea that generated"@en;
+    rdfs:domain crm:E28_Conceptual_Object;
+    rdfs:range crminfluence:IN33_Societal_Influence;
+    rdfs:comment ""@en.
+
+  crminfluence:IP61_had_contribution a owl:ObjectProperty;
+    skos:prefLabel "IP61 had contribution"@en ;
+    skos:notation "IP61" ;
+    rdfs:label "had contribution"@en;
+    rdfs:domain crminfluence:IN33_Societal_Influence;
+    rdfs:range crm:E5_Event;
+    rdfs:comment ""@en .
+
+   crminfluence:IP61i_contributed_to a owl:ObjectProperty;
+    skos:prefLabel "IP61i contributed to"@en ;
+    skos:notation "IP61i" ;
+    rdfs:label "contributed to"@en;
+    rdfs:domain crm:E5_Event;
+    rdfs:range crminfluence:IN33_Societal_Influence;
+    rdfs:comment ""@en .
+
+  crminfluence:IP62_was_exerted_by a owl:ObjectProperty;
+    skos:prefLabel "IP62 was exerted by"@en ;
+    skos:notation "IP62" ;
+    rdfs:label "was exerted by"@en;
+    rdfs:domain crminfluence:IN34_Inner_Influence ;
+    rdfs:range crm:E73_Information_Object;
+    rdfs:comment ""@en.
+    
+  crminfluence:IP62i_produced a owl:ObjectProperty;
+    skos:prefLabel "IP62i produced"@en ;
+    skos:notation "IP62i" ;
+    rdfs:label "produced"@en;
+    rdfs:domain crm:E73_Information_Object;
+    rdfs:range crminfluence:IN34_Inner_Influence;
+    rdfs:comment ""@en.
+
+  crminfluence:IP63_was_exerted_during a owl:ObjectProperty;
+    skos:prefLabel "IP63 was exerted during"@en ;
+    skos:notation "IP63" ;
+    rdfs:label "was exerted during"@en;
+    rdfs:domain crminfluence:IN34_Inner_Influence;
+    rdfs:range crm:E52_Time-Span;
+    rdfs:comment ""@en .
+
+   crminfluence:IP63i_was_time-span_of a owl:ObjectProperty;
+    skos:prefLabel "IP63i was time-span of"@en ;
+    skos:notation "IP63i" ;
+    rdfs:label "was time-span of"@en;
+    rdfs:domain crm:E52_Time-Span;
+    rdfs:range crminfluence:IN34_Inner_Influence;
+    rdfs:comment ""@en .
+
+  crminfluence:IP64_was_exerted_by a owl:ObjectProperty;
+    skos:prefLabel "IP64 was exerted by"@en ;
+    skos:notation "IP64" ;
+    rdfs:label "was exerted by"@en;
+    rdfs:domain crminfluence:IN35_Environmental_Influence;
+    rdfs:range crmsci:S28_Observable_Situation;
+    rdfs:comment ""@en.
+    
+  crminfluence:IP64i_generated a owl:ObjectProperty;
+    skos:prefLabel "IP64i generated"@en ;
+    skos:notation "IP64i" ;
+    rdfs:label "generated"@en;
+    rdfs:domain crmsci:S28_Observable_Situation;
+    rdfs:range crminfluence:IN35_Environmental_Influence;
+    rdfs:comment ""@en.
+
+ crminfluence:IP65_was_experienced_at a owl:ObjectProperty;
+    skos:prefLabel "IP65 was experienced at"@en ;
+    skos:notation "IP65" ;
+    rdfs:label "was experienced at"@en;
+    rdfs:domain crminfluence:IN35_Environmental_Influence;
+    rdfs:range crm:E53_Place;
+    rdfs:comment ""@en.
+    
+  crminfluence:IP65i_was_location_of a owl:ObjectProperty;
+    skos:prefLabel "IP65i was location of"@en ;
+    skos:notation "IP65i" ;
+    rdfs:label "was location of"@en;
+    rdfs:domain crm:E53_Place;
+    rdfs:range crminfluence:IN35_Environmental_Influence;
+    rdfs:comment ""@en.
+
+  crminfluence:IP66_was_experienced_during a owl:ObjectProperty;
+    skos:prefLabel "IP66 was experienced during"@en ;
+    skos:notation "IP66" ;
+    rdfs:label "was experienced during"@en;
+    rdfs:domain crminfluence:IN35_Environmental_Influence;
+    rdfs:range crm:E4_Period;
+    rdfs:comment ""@en.
+  
+  crminfluence:IP66i_was_period_of a owl:ObjectProperty;
+    skos:prefLabel "IP66i was period of"@en ;
+    skos:notation "IP66i" ;
+    rdfs:label "was period of"@en;
+    rdfs:domain crm:E4_Period;
+    rdfs:range crminfluence:IN35_Environmental_Influence;
+    rdfs:comment ""@en.
+
+crminfluence:IP67_was_contributed_to_by a owl:ObjectProperty;
+    skos:prefLabel "IP67 was contributed to by"@en ;
+    skos:notation "IP67" ;
+    rdfs:label "was contributed to by"@en;
+    rdfs:domain crminfluence:IN35_Environmental_Influence;
+    rdfs:range crm:E5_Event;
+    rdfs:comment ""@en.
+  
+  crminfluence:IP67i_contributed_to a owl:ObjectProperty;
+    skos:prefLabel "IP67i contributed to"@en ;
+    skos:notation "IP67i" ;
+    rdfs:label "contributed to"@en;
+    rdfs:domain crm:E5_Event;
+    rdfs:range crminfluence:IN35_Environmental_Influence;
+    rdfs:comment ""@en.
+
+  crminfluence:IP70_is_represented_by a owl:ObjectProperty;
+    skos:prefLabel "IP70 is represented by"@en ;
+    skos:notation "IP70" ;
+    rdfs:label "is represented by"@en;
+    rdfs:domain crminfluence:IN30_Influence;
+    rdfs:range crm:E70_Thing;
+    rdfs:comment ""@en .
+
+  crminfluence:IP70i_is_representational_of a owl:ObjectProperty;
+    skos:prefLabel "IP70i is representational of"@en ;
+    skos:notation "IP70i" ;
+    rdfs:label "is representational of"@en;
+    rdfs:domain crm:E70_Thing;
+    rdfs:range crminfluence:IN30_Influence;
+    rdfs:comment ""@en .
+
+  crminfluence:IP71_was_contradicted_by a owl:ObjectProperty;
+    skos:prefLabel "IP71 was contradicted by"@en ;
+    skos:notation "IP71" ;
+    rdfs:label "was contradicted by"@en;
+    rdfs:domain crminfluence:IN33_Societal_Influence;
+    rdfs:range crm:E7_Activity;
+    rdfs:comment ""@en .
+
+  crminfluence:IP71i_contradicted a owl:ObjectProperty;
+    skos:prefLabel "IP71i contradicted"@en ;
+    skos:notation "IP71i" ;
+    rdfs:label "contradicted"@en;
+    rdfs:domain crm:E7_Activity;
+    rdfs:range crminfluence:IN33_Societal_Influence;
+    rdfs:comment ""@en .
+
+}
+
+

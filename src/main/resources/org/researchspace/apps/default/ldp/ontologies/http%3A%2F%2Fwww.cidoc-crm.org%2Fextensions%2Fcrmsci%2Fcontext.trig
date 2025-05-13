@@ -1,0 +1,1782 @@
+@prefix rs: <http://www.researchspace.org/ontology/> .
+@prefix User: <http://www.researchspace.org/resource/user/> .
+@prefix Help: <http://help.researchspace.org/resource/> .
+@prefix Platform: <http://www.researchspace.org/resource/system/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix crmdig: <http://www.cidoc-crm.org/extensions/crmdig/> .
+@prefix rshelp: <http://researchspace.org/help/> .
+@prefix crmsci: <http://www.cidoc-crm.org/extensions/crmsci/> .
+@prefix assets: <http://www.researchspace.org/resource/assets/> .
+@prefix crmgeo: <http://www.cidoc-crm.org/extensions/crmgeo/> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix crminfluence: <http://www.cidoc-crm.org/extensions/influence/> .
+@prefix crm: <http://www.cidoc-crm.org/cidoc-crm/> .
+@prefix crminf: <http://www.cidoc-crm.org/extensions/crminf/> .
+@prefix Admin: <http://www.researchspace.org/resource/admin/> .
+@prefix bds: <http://www.bigdata.com/rdf/search#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix crmba: <http://www.cidoc-crm.org/extensions/crmba/> .
+@prefix fedsail: <http://www.openrdf.org/config/sail/federation#> .
+@prefix ontodia: <http://ontodia.org/schema/v1#> .
+@prefix crmarchaeo: <http://www.cidoc-crm.org/extensions/crmarchaeo/> .
+@prefix forms: <http://www.researchspace.org/resource/system/forms/> .
+@prefix lrmoo: <http://iflastandards.info/ns/lrm/lrmoo/> .
+
+crmsci:context {
+
+  <http://www.cidoc-crm.org/extensions/crmsci/> a owl:Ontology;
+    owl:versionInfo "3.0"@en;
+    rdfs:label "CRMsci v3.0"@en;
+    rdfs:comment "The Scientific Observation Model (CRMsci) is a formal ontology intended to be used as a global schema for integrating metadata about scientific observation, measurements and processed data in descriptive and empirical sciences such as biodiversity, geology, geography, archaeology, cultural heritage conservation and others in research IT environments and research data libraries. Its primary purpose is facilitating the management, integration, mediation, interchange and access to research data by description of semantic relationships, in particular causal ones. It is not primarily a model to process the data themselves in order to produce new research results, even though its representations offer themselves to be used for some kind of processing."@en .
+
+  crmsci:S1_Matter_Removal
+    a owl:Class ;
+    skos:prefLabel "S1 Matter Removal"@en ;
+    skos:notation "S1" ;
+    rdfs:label "Matter Removal"@en ;
+    rdfs:subClassOf crm:E7_Activity ;
+    rdfs:comment """This class comprises the activities that result in an instance of Material Substantial being decreased by the removal of an amount of matter.
+    Typical scenarios include the removal of a component or piece of a physical object, removal of an archaeological or geological layer, taking a 
+    tissue sample from a body or a sample of fluid from a body of water. The removed matter may acquire a persistent identity of 
+    different nature beyond the act of its removal, such as becoming a physical object in the narrower sense. Such cases should 
+    be modelled by using multiple instantiation with adequate concepts of creating the respective items.
+    """@en ;
+    skos:example """- the removal of the layer of black overpainting that covered the background of ‘La Gioconda of the Prado’ between 2011 and 2012 by the Prado Museum in Madrid (Museo del Prado, 2012)"""@en.
+
+  crmsci:S2_Sample_Taking
+    a owl:Class ;
+    skos:prefLabel "S2 Sample Taking"@en ;
+    skos:notation "S2" ;
+    rdfs:label "Sample Taking"@en ;
+    rdfs:subClassOf crmsci:S1_Matter_Removal ;
+    rdfs:comment """This class comprises the activity that results in taking an amount of matter as sample for further analysis 
+    from a material substantial such as a body of water, a geological formation, or an archaeological object. The removed 
+    matter may acquire a persistent identity of different nature beyond the act of its removal, such as becoming a physical 
+    object in the narrower sense. The sample is typically removed from a physical feature which is used as a frame of reference, 
+    the place of sampling. In case of a non-rigid Material Substantial, the source of sampling need not be modified by the activity of sample taking. 
+    """@en ;
+    skos:example """- the water sampling carried out by IGME, sampled from borehole 10/G5 at 419058.03, 4506565, 95.7 Mygdonia basin on 28/6/2005 (Lucchese et al., 2013; Kritikos et al., 2013; InGeoCloudS, 2012; InGeoCloudS, 2013) \n
+    - the collection of specimen ‘FHO – Benth. - 1055’ from a plant of the species ‘spiciformis’ in Zambia by Bullock, A.A. in 1939) \n
+    - the collection of micro-sample 7, from the paint layer on the area of the apple shown on the painting ‘Cupid complaining to Venus’ (Cranach) by Joyce Plesters in June 1963 (The National Gallery, London, 1963)"""@en.
+
+  crmsci:S3_Measurement_by_Sampling
+    a owl:Class ;
+    skos:prefLabel "S3 Measurement by Sampling"@en ;
+    skos:notation "S3" ;
+    rdfs:label "Measurement by Sampling"@en ;
+    rdfs:subClassOf crmsci:S21_Scientific_Measurement, crmsci:S2_Sample_Taking ;
+    rdfs:comment """This class comprises activities of taking a sample and measuring or analyzing it as one unit of 
+    activity, in which the sample is typically not identified and preserved beyond the context of this activity. 
+    Instances of this class describe the taking of one or more samples regardless whether they are explicitly identified 
+    in documentation or preserved beyond this activity. The dimensions observed by the respective measurement of this particular 
+    sample are regarded as dimensions of the instance of Material Substantial at the place from which the samples were taken. 
+    Therefore, the class Measurement by Sampling inherits the properties of Sample Taking O3 sampled from (was sample by): 
+    Material Substantial and O4 sampled at (was sampling location of): Place, and the properties of Scientific Measurement O24 
+    measured (was measured by): Observable Entity.
+    It needs not instantiate the properties O5 removed (was removed by): Sample and O24 measured (was measured by): 
+    Observable Entity, if the sample is not documented beyond the context of the activity.
+    """@en ;
+    skos:example """- the chemical analysis 1 on 20/4/2004 which sampled from layer 50501 and observed 70 mg of Ca (Lucchese et al., 2013; Kritikos et al., 2013; InGeoCloudS, 2012; InGeoCloudS, 2013) \n
+    - the Sphaerosyllislevantina specimen length measurement on 12/3/1999 (Bekiari et al., 2014) \n
+    - the measurement of retention times during Gas Chromatography analysis of a paint sample ‘mid-blue paint for the sky’ which identified Linseed oil as the paint medium (Foister, 2015)"""@en.
+
+  crmsci:S4_Single_Observation
+    a owl:Class ;
+    skos:prefLabel "S4 Single Observation"@en ;
+    skos:notation "S4" ;
+    rdfs:label "Single Observation"@en ;
+    rdfs:subClassOf crm:E13_Attribute_Assignment, crmsci:S27_Observation ;
+    rdfs:comment """This class comprises the activity of gaining scientific knowledge about particular 
+    states of physical reality through empirical evidence, experiments, or measurements, for cases in 
+    which the observed knowledge can be described by a single binary proposition relating one instance 
+    of Observable Entity to some instance of Entity.
+    """@en ;
+    skos:example """- the observation of the density of the X-Ray image of cupid's head from the painting ‘Cupid complaining to Venus’ as ‘high density’, on the 19th of March 1963 (The National Gallery, London, 1963) \n
+    - the observation of visible light absorption of the painting ‘Cupid complaining to Venus’ as ‘having red pigment’ in 2015 (Foister, 2015)"""@en.
+
+  crmsci:S5_Inference_Making
+    a owl:Class ;
+    skos:prefLabel "S5 Inference Making"@en ;
+    skos:notation "S5" ;
+    rdfs:label "Inference Making"@en ;
+    rdfs:subClassOf crminf:I1_Argumentation ;
+    rdfs:comment """This class comprises the action of making propositions and statements about particular 
+    states of affairs, in reality or in possible realities, or categorical descriptions of reality by 
+    using inferences from other statements based on hypotheses and any form of formal or informal logic. 
+    It includes evaluations, calculations, and interpretations based on mathematical formulations and propositions.
+    """@en ;
+    skos:example """- the inference made by Sakellarakis in 1980 about the sacrifice of a young man in the Minoan temple of Anemospilia based on the skeleton found (and 2 more) in the west room of the temple and the ritual bronze knife on it and the hypothesis that he died from loss of blood [the evidence was that his bones remained white in contrast to the others] (Sakellarakis and Sapouna-Sakellaraki, 1981) \n
+    - the inference that the underdrawing of the painting ‘Cupid complaining to Venus’ was done with red pigment, based on the observation that red pigment lines appear under the top paint layers (Foister, 2015)
+    """@en.
+
+  crmsci:S6_Data_Evaluation
+    a owl:Class ;
+    skos:prefLabel "S6 Data Evaluation"@en ;
+    skos:notation "S6" ;
+    rdfs:label "Data Evaluation"@en ;
+    rdfs:subClassOf crmsci:S5_Inference_Making ;
+    rdfs:comment """This class comprises the action of concluding propositions on a respective reality from 
+    observational data by making evaluations based on mathematical inference rules and calculations using 
+    established hypotheses, such as the calculation of an earthquake epicenter. Data Evaluation is not 
+    defined as Scientific Measurement; Secondary derivations of dimensions of an object from data measured 
+    by different processes are regarded as Data Evaluation and not determining instances of Measurement 
+    in its own right. For instance, the volume of a statue concluded from a 3D model is an instance of 
+    Data Evaluation and not of Measurement.
+    """@en ;
+    skos:example """- the calculation of the earthquake epicenter of Lokris area in 1989 by IGME (Ganas et al., 2006) \n
+    - the calculation of the intensity distance and assignment of PGA_N using the gcf2sac software from the EPPO shock wave recording of 2/2/1990 in Athens (Lucchese et al., 2013; Kritikos et al., 2013; InGeoCloudS, 2012; InGeoCloudS, 2013) \n
+    - the calculation of the overall height of the statue of Hercules in the Temple of Hercules in Amman from the measurement of the size of the fragment of the fingers (‘Temple of Hercules (Amman)’, 2025)
+    """@en.
+
+  crmsci:S7_Simulation_or_Prediction
+    a owl:Class ;
+    skos:prefLabel "S7 Simulation or Prediction"@en ;
+    skos:notation "S7" ;
+    rdfs:label "Simulation or Prediction"@en ;
+    rdfs:subClassOf crmsci:S5_Inference_Making ;
+    rdfs:comment """This class comprises activities of executing algorithms or software for simulating 
+    the behaviour and the properties of a system of interacting components that form part of reality or 
+    not by using a mathematical model of the respective interactions. In particular, it implies making 
+    predictions about the future behaviours of a system of interacting components of reality by starting 
+    simulation from an actually observed state, such as weather forecasts. Simulations may also be used 
+    to understand the effects of a theory, to compare theoretical predictions with reality, or to show 
+    differences with another theory.
+    """@en ;
+    skos:example """- the forecasting of the imminent flooding of Venice in November 2012 by the Hellenic Centre for Marine Research using the Poseidon Sea Level Forecast System, 72 hours before its actual occurrence (slide 18 in Kores et al., 2013) \n
+    - predicting the required temperature to maintain a target RH (%) of 50, based on monthrly average temperature and RH in Birmingham, UK [using the ‘Calculator for conservation heating’] (Padfield)"""@en.
+
+  crmsci:S8_Categorical_Hypothesis_Building
+    a owl:Class ;
+    skos:prefLabel "S8 Categorical Hypothesis Building"@en ;
+    skos:notation "S8" ;
+    rdfs:label "Categorical Hypothesis Building"@en ;
+    rdfs:subClassOf crmsci:S5_Inference_Making ;
+    rdfs:comment """This class comprises the action of making categorical hypotheses based on inference 
+    rules and theories; By categorical hypotheses we mean assumptions about the kinds of interactions 
+    and related kinds of structures of a domain that have the character of “laws” of nature or human 
+    behaviour, be it necessary or probabilistic. Categorical hypotheses are developed by “induction” 
+    from finite numbers of observations and the absence of observations of some particular kind. As 
+    such, categorical hypotheses are always subject to falsification by new evidence. Instances of 
+    Categorical Hypothesis Building include making and questioning categorical hypotheses.
+    """@en ;
+    skos:example """- hypothesising that “no binding before the 9(th) century is made with spine supports” by Szirmai [documented in section 7.1 and 7.2 of “The Archaeology of Medieval bookbinding”] (Szirmai, 1999)"""@en.
+
+  crmsci:S9_Property_Type
+    a owl:Class ;
+    skos:prefLabel "S9 Property Type"@en ;
+    skos:notation "S9" ;
+    rdfs:label "Property Type"@en ;
+    rdfs:subClassOf crm:E55_Type ;
+    rdfs:comment """This class comprises properties. Typically, instances of Property Type would be taken 
+    from an ontology or terminological system. In particular, instances of this class can be used to 
+    describe in a parametric way what kind of properties the values in scientific data sets are about. 
+    By virtue of such descriptions, numeric data can be interpreted as sets of propositions in terms of 
+    a formal ontology, such as “concentration of nitrate”, observed in the ground water from a certain borehole.
+    """@en ;
+    skos:example """- the velocity (of a station that is observed, meaning a share-wave velocity over the first 30 m). (Lucchese et al., 2013; Kritikos et al., 2013; InGeoCloudS, 2012; InGeoCloudS, 2013) \n
+    - the retention time [in gas chromatography, meaning the time it takes for a component to pass through the chromatographer's column] (‘Gas chromatography’, 2025)"""@en.
+
+  crmsci:S10_Material_Substantial
+    a owl:Class ;
+    skos:prefLabel "S10 Material Substantial"@en ;
+    skos:notation "S10" ;
+    rdfs:label "Material Substantial"@en ;
+    rdfs:subClassOf crm:E70_Thing, crmsci:S15_Observable_Entity ;
+    rdfs:comment """This class comprises constellations of matter with a relative stability of 
+    any form sufficient to associate them with a persistent identity, such as being confined to 
+    certain extent, having a relative stability of form or structure, or containing a fixed amount 
+    of matter. In particular, it comprises physical things in the narrower sense and fluid bodies. 
+    It is an abstraction of physical substance for solid and non-solid things of matter.
+    """@en ;
+    skos:example """- the groundwater of the 5-22 basin of Central Macedonia (Lucchese et al., 2013; Kritikos et al., 2013; InGeoCloudS, 2012; InGeoCloudS, 2013) \n
+    - the Mesozoic carbonate sequence with flysch extracted from the area of Nafplion that was mapped and studied by Tattaris in 1970 (Photiades, 2010) \n
+    - Parnassos, the limestone mountain (Strid, 1986)"""@en.
+
+  crmsci:S11_Amount_of_Matter
+    a owl:Class ;
+    skos:prefLabel "S11 Amount of Matter"@en ;
+    skos:notation "S11" ;
+    rdfs:label "Amount of Matter"@en ;
+    rdfs:subClassOf crmsci:S10_Material_Substantial ;
+    rdfs:comment """This class comprises fixed amounts of matter specified as some air, some water, 
+    some soil, etc., defined by the total and integrity of their material content. In order to be 
+    able to identify and recognize in practice one instance of Amount of Matter, some sort of confinement 
+    is needed that serves as a constraint for the enclosed matter and the integrity of the content, 
+    such as a bottle. In contrast to instances of Physical Thing, no stability of form is required. 
+    The content may be put into another bottle without losing its identity. Subclasses may define 
+    very different identity conditions for the integrity of the content, such as chemical composition, 
+    or the sequence of layers of a bore core. Whereas an instance of Physical Thing may gradually change 
+    form and chemical composition while preserving its identity, such as living beings, an instance of 
+    Amount of Matter may lose its identifying features by such processes. What matters for the identity 
+    of an instance of S1 Amount of Matter is the preservation of a relevant composition from the initial 
+    state of definition onwards.
+    """@en ;
+    skos:example """- the mass of soil that was removed from sections 1, 2, 3 and 4 of the central building of Zominthos in order to be sieved, during the excavation in 2006 (Archaeological Institute of America, 2006) \n
+    - the amount of natural cement that was added in a proportion of 5% in 2016 for the development of the sample of mortar in the laboratory of Ceramic, in Boumerdes University (Kelouaz et al., 2016)"""@en.
+
+  crmsci:S12_Amount_of_Fluid
+    a owl:Class ;
+    skos:prefLabel "S12 Amount of Fluid"@en ;
+    skos:notation "S12" ;
+    rdfs:label "Amount of Fluid"@en ;
+    rdfs:subClassOf crmsci:S11_Amount_of_Matter, crmsci:S14_Fluid_Body ;
+    rdfs:comment """This class comprises fixed amounts of fluid (be they gas or liquid) defined by the 
+    total of its material content, typically molecules. They frequently acquire identity in laboratory 
+    practice by the fact of being kept or handled together within some adequate containers.
+    """@en ;
+    skos:example """- J.K.’s blood sample 0019FCF5 for the measurement of the cholesterol blood level (fictitious) \n
+    - the ground water sample with ID 105293 that was extracted from the top level of the intake No32 under terrain (S12, S13) (Lucchese et al., 2013; Kritikos et al., 2013; InGeoCloudS, 2012; InGeoCloudS, 2013)"""@en.
+
+  crmsci:S13_Sample
+    a owl:Class ;
+    skos:prefLabel "S13 Sample"@en ;
+    skos:notation "S13" ;
+    rdfs:label "Sample"@en ;
+    rdfs:subClassOf crmsci:S11_Amount_of_Matter ;
+    rdfs:comment """This class comprises instances of Amount of Matter taken from some instance of Material 
+    Substantial with the intention to be representative for some material qualities of the instance of 
+    Material Substantial or part of it was taken for further analysis. We typically regard a sample as 
+    ceasing to exist when the respective representative qualities become corrupted, such as the purity 
+    of a water sample or the layering of a bore core.
+    """@en ;
+    skos:example """- the ground water sample with ID 105293 that was extracted from the top level of the intake No32 under terrain (S13, S12) (Lucchese et al., 2013; Kritikos et al., 2013; InGeoCloudS, 2012; InGeoCloudS, 2013) \n
+    - the micro-sample 7, taken from the painting ‘Cupid complaining to Venus’ (Cranach) by Joyce Plesters in June, 1963 (The National Gallery, London, 1963)"""@en.
+
+  crmsci:S14_Fluid_Body
+    a owl:Class ;
+    skos:prefLabel "S14 Fluid Body"@en ;
+    skos:notation "S14" ;
+    rdfs:label "Fluid Body"@en ;
+    rdfs:subClassOf crmsci:S10_Material_Substantial ;
+    rdfs:comment """This class comprises a mass of matter in fluid form environmentally constraint in 
+    some persistent form allowing for identifying it for the management or research of material phenomena, 
+    such as a part of the sea, a river, the atmosphere or the milk in a bottle. Fluids are generally 
+    defined by the continuity criterion which is characteristic of their substance: their amorphous matter 
+    is continuous and tends to flow. Therefore, contiguous amounts of matter within a fluid body may stay 
+    contiguous or at least be locally spatially confined for a sufficiently long time in order to be temporarily 
+    identified and traced. This is a much weaker concept of stability of form than the one we would apply to what 
+    one would call a physical object. In general, an instance of Fluid Body may gain or lose matter over time 
+    through so-called sources or sinks in its surface, in contrast to physical things, which may lose or gain 
+    matter by exchange of pieces such as spare parts or corrosion.
+    """@en ;
+    skos:example """- the Rhine River"""@en.
+
+  crmsci:S15_Observable_Entity
+    a owl:Class ;
+    skos:prefLabel "S15 Observable Entity"@en ;
+    skos:notation "S15" ;
+    rdfs:label "Observable Entity"@en ;
+    rdfs:subClassOf crm:E1_CRM_Entity ;
+    rdfs:comment """This class comprises instances of Event or Material Substantial (i.e. items or phenomena, 
+    such as physical things, their behaviour, states and interactions or events), that can be observed by 
+    measurement or detection devices or by human sensory impression including when enhanced by tools.
+    In order to be observable, instances of Event must consist of some interaction or action of material 
+    substance. In some cases, the spatiotemporal confinement of the event itself, such as a flash, a car 
+    stopping etc. marks the limits of a documented observation of an event. In other cases, such as the 
+    situation of a car passing by a certain object, the spatiotemporal limits of the event of observing 
+    itself, as well as the direction of attention or the orientation of used instruments, may constrain 
+    the observed detail of a larger process, e.g., noticing the sight of a car passing by; a light emission, etc.
+    Conceptual objects manifest through their carriers such as books, digital media, or even human memory. 
+    Attributes of conceptual objects, such as number of words, can be observed on their carriers. If the 
+    respective properties between carriers differ, either they carry different instances of conceptual 
+    objects or the difference can be attributed to accidental deficiencies in one of the carriers. 
+    In that sense, even immaterial objects are observable. By this model we address the fact that frequently, 
+    the actually observed carriers of conceptual objects are not explicitly identified in documentation, i.e., 
+    they are assumed to have existed but they are unknown as individuals.
+    """@en ;
+    skos:example """- the domestic goose from Guangdong/1/1996 (H5N1) that was identified in 1996 in farmed geese in southern China as circulating highly pathogenic H5N1 (E20) (Wan, 2012) \n
+    - the flight of a male Bearded Vulture observed near Loukia, Heraklion, Crete in the morning of the 24th of October 2020 (E5) [The Bearded Vulture (Gypaetus Barbatus) is a threatened species in Crete] (Claes, 2020) \n
+    - the eruption of Krakatoa volcano at Indonesia in 1883 (E5) (Symons et al., 1888) \n
+    - the cupid head area in the X-Ray of the painting ‘Cupid complaining to Venus’ (E25) (The National Gallery, London, 1963)"""@en.
+
+  crmsci:S17_Physical_Genesis
+    a owl:Class ;
+    skos:prefLabel "S17 Physical Genesis"@en ;
+    skos:notation "S17" ;
+    rdfs:label "Physical Genesis"@en ;
+    rdfs:subClassOf crm:E63_Beginning_of_Existence, crmsci:S18_Alteration ;
+    rdfs:comment """This class comprises events or processes that result in (generate) physical things, 
+    man-made or natural, coming into being in the form by which they are later identified. The creation 
+    of a new physical item, at the same time, can be a result of an alteration (modification) – 
+    it can become a new thing due to an alteration activity.
+    """@en ;
+    skos:example """- the desertification process affecting my copper samples in the artificial aging salt-spray apparatus after 10 cycles which produced layers of cuprite and malachite (E12) \n
+    - the corrosion process affecting my copper samples in the artificial aging salt-spray apparatus after 10 cycles which produced layers of cuprite and malachite (E12) """@en.
+
+  crmsci:S18_Alteration
+    a owl:Class ;
+    skos:prefLabel "S18 Alteration"@en ;
+    skos:notation "S18" ;
+    rdfs:label "Alteration"@en ;
+    rdfs:subClassOf crm:E5_Event ;
+    rdfs:comment """This class comprises natural events or man-made processes that create, alter or 
+    change physical things, by affecting permanently their form or consistency without changing their 
+    identity. Examples include alterations on depositional features-layers by natural factors or 
+    disturbance by roots or insects, organic alterations, petrification, etc.
+    """@en ;
+    skos:example """- the petrification process of the Lesvos forest related to the intense volcanic activity in Lesvos island during late Oligocene \n
+    - middle Miocene period (Marinos, 1997) \n
+    - the flattening of the Lanhydrock Pedigree parchment after humidification (E11) (Pickwoad, 2016)"""@en.
+
+  crmsci:S19_Encounter_Event
+    a owl:Class ;
+    skos:prefLabel "S19 Encounter Event"@en ;
+    skos:notation "S19" ;
+    rdfs:label "Encounter Event"@en ;
+    rdfs:subClassOf crmsci:S27_Observation ;
+    rdfs:comment """This class comprises activities of Observation (substance) where an Actor 
+     encounters an instance of Physical Thing, of a kind relevant for the mission of the observation 
+     or regarded as potentially relevant for some community (identity). This observation produces 
+     knowledge about the existence of the respective thing at particular place in, or on, surrounding matter. 
+     This knowledge may be new to the group of people the actor belongs to. In that case, we would talk about 
+     discovery. The observer may recognize or assign an individual identity of the thing encountered, 
+     or regard only the type as noteworthy in the associated documentation or report.
+    In Archaeology, there is a particular interest if an object is found “in situ”, i.e., if its 
+    embedding in the surrounding matter supports the assumption that the object was not moved since 
+    the archaeologically relevant deposition event. The surrounding matter with the relative position 
+    of the object in it, as well as the absolute position and time of the observation may be recorded 
+    to enable inferences about the history of the object.
+    In Biology, additional parameters may be recorded – like the kind of ecosystem, if the biological 
+    individual survives the observation, what detection or catching devices have been used, 
+    or if the encounter event supported the detection of a new biological kind (“taxon”).
+    """@en ;
+    skos:example """- the finding, by Prof. Stampolidis, of a complete skeleton, in situ, at the site of Eleutherna during the archaeological excavation carried out by the University of Crete in 2007 (Bonn-Muller, 2010) \n
+    - the detection of lagocephalos_Sceleratus was carried out with the trawler 419 in the Mediteranean sea, during the first week of August 2014 (S19) (Bekiari et al., 2014) \n
+    - the encounter of the marble floor of the Villa of the Papyri in Herculaneum during the digging of a well in 1750 (Sider, 1990) \n
+    - the encounter of oak planks from a ship during a dig in a mound at the farm Lille Oseberg in Norway in 1908 (Ferguson, 2009, 2012)"""@en.
+
+  crmsci:S20_Rigid_Physical_Feature
+    a owl:Class ;
+    skos:prefLabel "S20 Rigid Physical Feature"@en ;
+    skos:notation "S20" ;
+    rdfs:label "Rigid Physical Feature"@en ;
+    rdfs:subClassOf crm:E26_Physical_Feature, crm:E53_Place ;
+    rdfs:comment """Any instance of this class is a physical feature with sufficient stability of form, 
+    in itself and with respect to the physical object bearing it, in order to associate a permanent 
+    reference space within which its form is invariant and at rest. The maximum volume in space that 
+    an instance of Rigid Physical Feature occupies defines uniquely a place for the feature with 
+    respect to its surrounding matter.
+    Therefore, we model Rigid Physical Feature as a subclass of Physical Feature and of Place. The 
+    latter is intended as a phenomenal place as defined in CRMgeo (Doerr and Hiebel 2013). By virtue 
+    of this multiple inheritance, we can discuss positions relative to the extent of an instance of 
+    Rigid Physical Feature without representing each instance of it together with an instance of its 
+    associated place. However, since the identity and existence of this place depends uniquely on the 
+    identity of the instance of Rigid Physical Feature as matter, this multiple inheritance is 
+    unambiguous and effective and furthermore corresponds to the intuitions of natural language. 
+    It shortcuts an implicit self-referential path from Physical Feature through P156 occupies (is occupied by), 
+    Place, P157 is at rest relative to (provides reference space for), to Physical Feature.
+    In cases of instances of Rigid Physical Feature on or in the surface of earth, the default 
+    reference is typically fixed to the closer environment of the tectonic plate or sea floor. 
+    In cases of features on mobile objects, the reference space is typically fixed to 
+    the geometry of the bearing object. Note that the reference space associated with the instance of 
+    Rigid Physical Feature may quite well be deformed over time, as long the continuity of its topology 
+    does not become unclear, such as the compression of dinosaur bones in geological layers, or the 
+    distortions of the hull of a ship by the waves of the sea. Defined in this way, the reference 
+    space can be used as a means to infer from current topological relationships past topological 
+    relationships of interest.
+    """@en ;
+    skos:example """- the temple in Abu Simbel before its removal, which was carved out of solid rock (‘Abu Simbel’, 2025) \n
+    - Albrecht Duerer’s signature on his painting of Charles the Great (Germanisches Nationalmuseum, 2022) \n
+    - the damaged form of the nose of the Great Sphinx in Giza (‘Great Sphinx of Giza’, 2025) \n
+    - the ‘Central Orygma’ (pit-house) which dominates the central part of the excavated area of the settlement of Mavropigi, representing phases I-III (Karamitrou-Mentessidi et al., 2015) \n
+    - the top surface of the clay floor A11 [Heterogeneous, yellow to grey silty clay; clear, wavy lower boundary](illu p. 1601, Croix et al, 2019)"""@en.
+
+  crmsci:S21_Scientific_Measurement
+    a owl:Class ;
+    skos:prefLabel "S21 Scientific Measurement"@en ;
+    skos:notation "S21" ;
+    rdfs:label "Scientific Measurement"@en ;
+    rdfs:subClassOf crmsci:S27_Observation ;
+    rdfs:comment """This class comprises actions measuring instances of Observable Entity, properties of physical things, or phenomena, states and interactions or events, 
+    that can be determined by a systematic procedure. Primary data from measurement devices are regarded to be results of an observation process.
+    """@en ;
+    skos:example """- the magnitude measurement of the earthquake of Mexico City in 2017. [It had the magnitude 6.2 Richter] (Mindock, 2017) \n
+    - the sensor measurement by IGME in 1999 which measured the landslide displacement in the area of Parnitha, Greece. (Lucchese et al., 2013; Kritikos et al., 2013; InGeoCloudS, 2012; InGeoCloudS, 2013)"""@en.
+
+  crmsci:S22_Segment_of_Matter
+    a owl:Class ;
+    skos:prefLabel "S22 Segment of Matter"@en ;
+    skos:notation "S22" ;
+    rdfs:label "Segment of Matter"@en ;
+    rdfs:subClassOf crmsci:S20_Rigid_Physical_Feature ;
+    rdfs:comment """This class comprises physical features with relative stability of form and structure 
+    within a declared spatial volume of interest. The spatial extent of an instance of Segment of Matter 
+    may be declared or defined by a researcher or observer usually because the arrangement and composition 
+    of substance is characteristic for the surrounding matter or can be interpreted as traces of its genesis 
+    and subsequent internal and external processes it was exposed to. The defining spatial extent is typically 
+    declared on a continuous matter by means of geometric determination without observable boundaries on all 
+    sides or any side. It may however be extracted at some point in time along the declared boundaries.
+    An instance of Segment of Matter is regarded to be existing from the time on it completely solidified with 
+    a structure that is still preserved in a recognizable way at the time of its spatial definition. 
+    Its existence is regarded to end when its respective integrity is partially or completely corrupted. 
+    Uncorrupted subsections of an instance of Segment of Matter may continue to exist as segments of matter 
+    in their own right beyond the existence of the containing instance, and may have solidified before it.
+    Typical examples are segments of archaeological or geological layers. They are regarded as uncorrupted even 
+    if they have undergone conformal deformations, such as compressions or shifts, as long as the effects of these 
+    deformations do not destroy the relevant structures of interest. This means that the defining spatial volume 
+    may be only geometrically valid for an instant of time for which it was declared, and undergo before and 
+    after deformations. In some cases, it may be possible to calculate the initial volume at the time of solidification, 
+    for instance for petrified bones compressed in Jurassic layers.
+    """@en ;
+    skos:example """- the clay floor A11 [Heterogeneous, yellow to grey silty clay; clear, wavy lower boundary] (illu p. 1601, Croix et al, 2019)"""@en.
+
+  crmsci:S23_Position_Determination
+    a owl:Class ;
+    skos:prefLabel "S23 Position Determination"@en ;
+    skos:notation "S23" ;
+    rdfs:label "Position Determination"@en ;
+    rdfs:subClassOf crmsci:S27_Observation ;
+    rdfs:comment """This class comprises activities of determining positions in space and time. 
+    The determined position is intended to approximate a part of or all the extent of the presence (instance of Presence) 
+    of an instance of Physical Thing or Period of interest, such as the outer walls of an excavated settlement,
+    the position of a ship sailing or the start and end of athlete's run in a competition. Characteristically,
+    a theodolite or GPS device may be positioned on some persistent feature. Determining the position of the
+    device will yield an approximation of the position of the feature of interest. Alternatively, 
+    some material item may be observed moving through a determined position at a given time.
+    This class does not inherit properties from class Scientific Measurement. A position determination 
+    is an evaluation of a combination of measurement of multiple associated distances and/or angles (instances of Dimension) 
+    from a particular spot to certain reference points of previously known position in the same reference space. 
+    A particular role is played by the Earth's magnetic field and rotational axis as reference for an angle or 
+    direction. Often, the observed constituting dimensions are not documented, or hidden in an electronic device software. 
+    The determined position is given as an E94 Space Primitive corresponding to a declarative place. Together with the 
+    measured time-span covering the time-critical observations it forms a spacetime volume, which should normally 
+    overlap with the spatiotemporal extent of the thing or phenomenon of interest.
+    """@en ;
+    skos:example """- the determination of the position of the Titanic for the initial distress call after hitting an iceberg [The iceberg was hit on 14 April 1912 at 23:40 ship’s time. The subsequent position determination was likely done by Capt. Edward Smith and was transmitted 15 April 1912 at 00:27.] (Halpern, 2011) \n
+    - the determination of the position of the Titanic by officer Joseph G. Boxhall after the initial distress signal was sent [done between 00:27 and 00:35, when Boxhall showed the coordinates to Smith] (Halpern, 2011) \n
+    - the determination of the position of the Titanic by Robert Ballard's team after the Titanic ship-wreck was found (Ballard et al., 1987) \n
+    - Samuel Halpern’s 2007 determination of the position of the Titanic at the time of the collision (S23) [based on the position of the ship-wreck] (Halpern, 2007)"""@en.
+
+  crmsci:S24_Sample_Splitting
+    a owl:Class ;
+    skos:prefLabel "S24 Sample Splitting"@en ;
+    skos:notation "S24" ;
+    rdfs:label "Sample Splitting"@en ;
+    rdfs:subClassOf crmsci:S2_Sample_Taking ;
+    rdfs:comment """This class comprises the activity of dividing an instance of Sample into new instances of Sample.
+    This activity describes cases of sub-sampling where the resulting instance maintains the characteristic 
+    qualities of the original instance. Any observations of these qualities made on the new instance also 
+    apply to the original one. This class should be used to model cases of splitting a homogenous sample into multiple ones.
+    """@en ;
+    skos:example """- the activity of removing a part from the sample, which was originally taken from the tusk fragment GT993 by Godfrey et al. in 2000, in order to analyse it through ICP-AES analysis to reveal the composition of the original sample [A sample from a section of the tusk fragment GT993 which was originally found in the ship-wreck of Vergulde Draeck in Western Australia was taken. This sample was homogenous (ground to fine powder). Part of the sample was then removed for elemental analysis using inductively coupled plasma atomic emission spectrometry (ICP-AES). Another part was removed for carbon/nitrogen analysis using a LECO analyser.] (Godfrey et al., 2002)"""@en.
+
+  crmsci:S25_Relative_Dimension
+    a owl:Class ;
+    skos:prefLabel "S25 Relative Dimension"@en ;
+    skos:notation "S25" ;
+    rdfs:label "Relative Dimension"@en ;
+    rdfs:subClassOf crm:E54_Dimension ;
+    rdfs:comment """This class comprises quantifiable properties that can be measured by some calibrated means 
+    and were holding between two or more distinct instances of Observable Entity for some time.
+    Typical examples include relative distances between physical things or temporal distances between events 
+    such as athletes arriving at a goal or the time elapsed from production in thermoluninescence dating.
+    Generally, all kinds of quantifiable properties holding for a single item in isolation can be compared 
+    relative to the same of another item. Depending on the methods, such relative dimensions often constitute 
+    important primary observational data for calculating absolute values rather than being computational 
+    results from absolute values, an example being relative barometric measurements of altitude during expeditions.
+    """@en ;
+    skos:example """- the distance of the Moon from Earth (P2 has type: ‘spatial distances’) [The distance to the Moon can be measured with millimeter precision.] (‘Lunar Laser Ranging experiments’, 2024) \n
+    - the distance of the epicenter of the 2017 Puebla earthquake, also known as 19S at 13:14 CDT (18:14 UTC) on 19 September 2017 from the city of Puebla, Mexico (P2 has type: ‘spatial distances’) [The 2017 Puebla earthquake, also known as 19S, struck at 13:14 CDT (18:14 UTC) on 19 September 2017 with an estimated magnitude of 7.1 Mw and strong shaking for about 20 seconds. 
+    Its epicenter was about 55 km (34 mi) south of the city of Puebla, Mexico. The earthquake caused damage in the Mexican states of Puebla and Morelos and in the Greater Mexico City area, including the collapse of more than 40 buildings.[5][6][7] 370 people were killed by the earthquake and related building collapses, including 228 in Mexico City,[8][9] and more than 6,000 were injured.[10] (‘2017 Puebla earthquake’, 2025)"""@en.
+
+  crmsci:S26_Angle
+    a owl:Class ;
+    skos:prefLabel "S26 Angle"@en ;
+    skos:notation "S26" ;
+    rdfs:label "Angle"@en ;
+    rdfs:subClassOf crmsci:S25_Relative_Dimension ;
+    rdfs:comment """This class comprises quantifiable angles that can be measured by some calibrated 
+    means and held between a spot on some instance of Observable Entity forming the geometric vertex 
+    and two directions to the position of some other instances of Observable Entity.
+    Typical examples include results of measurements with theodolites, sextants or compasses.
+    """@en .
+
+  crmsci:S27_Observation
+    a owl:Class ;
+    skos:prefLabel "S27 Observation"@en ;
+    skos:notation "S27" ;
+    rdfs:label "Observation"@en ;
+    rdfs:subClassOf crminf:I1_Argumentation ;
+    rdfs:comment """This class comprises activity of gaining scientific knowledge about particular 
+    states of physical reality through empirical evidence, experiments and measurements.
+    We define observation in the sense of natural sciences, as a kind of human activity: at some place 
+    and within some time-span, certain physical things and their behavior and interactions are observed 
+    by human sensory impression, and often enhanced by tools and measurement devices.
+    Observed situations or dimensions may pertain to properties confined to a single instance of Observable 
+    Entity or pertain to constellations of multiple instances and relations between them, in particular distances between them.
+    The output of the internal processes of measurement devices that do not require additional human interaction 
+    are in general regarded as part of the observation and not as additional inference. Primary data from
+    measurement devices are regarded in this model to be results of observation and can be interpreted as 
+    propositions believed to be true within the (known) tolerances and degree of reliability of the device.
+    Measurements and witnessing of events are special cases of observations. Observations result in a 
+    belief that certain propositions held at a time within the time-span of the observation. In this model, 
+    the degree of confidence in the observed properties is regarded to be “true” by default, but could 
+    be described differently by adding a property P3 has note to an instance of Observation.
+    """@en ;
+    skos:example """- the excavation of unit XI by the Archaeological Institute of Crete in 2004 \n
+    - the excavation in the NE section of the central court of the Knossos palace by the Ephorate of Antiquities of Heraklion in 1997 (Επιστημονική Επιτροπή Κνωσού, 2008) \n
+    - the observation of the density of the X-Ray image of cupid's head from the painting ‘Cupid complaining to Venus’ as ‘high density’, on the 19th of March 1963 (S27) (The National Gallery, London, 1963) \n
+    - the observation of visible light absorption of the painting ‘Cupid complaining to Venus’ as ‘having red pigment’, in 2015 (S27) \n
+    - the inspection of the interior of La Tomba dell'Aryballos sospeso, at Doganaccia di Tarquinia, in Tuscany, Italy, by Prof. Alessandro Mandolesi on the 21(st) of September 2013 (Mandolesi 2013) \n"""@en.
+
+  crmsci:S28_Observable_Situation
+    a owl:Class ;
+    skos:prefLabel "S28 Observable Situation"@en ;
+    skos:notation "S28" ;
+    rdfs:label "Observable Situation"@en ;
+    rdfs:subClassOf crminf:I11_Situation ;
+    rdfs:comment """An instance of Observable Situation can be perceived as a set of formal propositions deriving from an 
+    observation event on a constellation, an interaction or a dynamic behaviour of instances of Observable Entity, or 
+    sections of these instances within a particular time-span and spatial extent that lie in the past. The observation 
+    event in question either relies on human senses, or it has been enhanced or mediated by technical instruments.
+    The observer may be directly involved themselves, or they may be receiving signals from each observation. 
+    The focus of the observer determines the model they overlay on the observed reality, in order to describe it 
+    in terms of distinct properties and value ranges of parameters. The latter selection and projection from reality 
+    constitutes the content of a particular instance of Observable Situation. Multiple observers may select different 
+    models, details and value systems to the same spatiotemporal area (i.e., views they pay attention to). Consequently, 
+    the observed situations may differ, but should, in principle, be comparable to a common reality in their overlaps.
+    """@en ;
+    skos:example """- the proposition set with content: {The burial arrangement in La Tomba dell’Aryballos sospeso on the left bench (E22 Human-Made Object) is composed of the spear found in La Tomba dell’ Aryballos sospeso (E22 Human-Made Object) The skeleton in La Tomba dell’Aryballos sospeso on the left bench (E20 Biological Object) forms part of the burial arrangement on La Tomba dell’Aryballos sospeso on the left bench (E22 Human-Made Object).} (Mandolesi, 2013) \n
+    - the proposition set with content: 
+    {
+    - The content of the La Tomba dell'Aryballos sospeso at the time of its opening (E24 Physical Human-Made Thing) is composed of the burial arrangement in La Tomba dell'Aryballos sospeso on the left bench (E22 Human-Made Object).
+    - The burial arrangement in La Tomba dell'Aryballos sospeso on the left bench (E22 Human-Made Object) is composed of the spear found in La Tomba dell'Aryballos sospeso (E22 Human-Made Object).
+    - The skeleton in La Tomba dell'Aryballos sospeso on the left bench (E20 Biological Object) forms part of the burial arrangement in La Tomba dell'Aryballos sospeso on the left bench (E22 Human-Made Object).
+    - The skeleton in La Tomba dell'Aryballos sospeso on the right bench (E20 Biological Object) forms part of the content of the La Tomba dell'Aryballos sospeso at the time of its opening (E24 Physical Human-Made Thing).
+    - The content of the La Tomba dell'Aryballos sospeso at the time of its opening (E24 Physical Human-Made Thing) has condition the condition of the content of the La Tomba dell'Aryballos sospeso from its sealing to its opening (E3 Condition State).
+    - The condition of the content of the La Tomba dell'Aryballos sospeso from its sealing to its opening (E3 Condition State) has type ‘intact’ (E55 Type).
+    } (Mandolesi 2013)  \n
+    - The above mentioned examples form part of a scientific knowledge revision, where the original belief was formed based on a simple inference, and following a thorough scientific analysis, underwent revision.
+     The skeleton found on the left bench of La Tomba dell’Aryballos sospeso, at Doganaccia di Tarquinia, in Tuscany, Italy, by Prof. Alessandro Mandolesi on the 21st September 2013, was initially estimated to be the remains of a male person, due to a spear found lying next to it. In fact, the initial press release mentioned there being a skeleton of a male person in the tomb. Soon after, osteological analysis carried out by Mandolesi’s team, revealed that the skeleton had belonged to a female person, a piece of information included in all scientific publications that followed the osteological analysis.
+     We refer to this skeleton in the examples found throughout the text as “The skeleton on the left bench in La Tomba dell’Aryballos sospeso”, and to the burial arrangement as “The burial arrangement on the left bench in La Tomba dell’Aryballos sospeso”, respectively.] \n
+    - a triple-braided clasp strap being detached at the survey of Sinai MS GREEK 418 (Honey and Pickwad, 2010)."""@en.
+
+  crmsci:S29_Observable_Proposition
+    a owl:Class ;
+    skos:prefLabel "S29 Observable Proposition"@en ;
+    skos:notation "S29" ;
+    rdfs:label "Observable Proposition"@en ;
+    rdfs:subClassOf crminf:I17_One-Proposition_Set, crmsci:S28_Observable_Situation ;
+    rdfs:comment """This class comprises proposition sets containing exactly one binary proposition which is, or could, 
+    in principle be, encoded in a knowledge representation language, and which characterizes an observable phenomenon, 
+    regardless of whether it has happened or not. The identity of an instance of Observable Proposition is given by the 
+    total of its content, regardless of equivalent encodings.
+    The class Observable Proposition plays the role of an important logical interface between observing single 
+    propositions or more generally observable situations. It is particularly relevant for implementing effective queries. 
+    For documentation, the use of the simpler shortcut properties of Single Observation, i.e. O35 observed entity (was observed by), 
+    O9 observed property type (property type was observed by), and O16 observed value (value was observed by) will, typically, be the preferred approach.
+    """@en ;
+    skos:example """- the proposition set with content: {The burial arrangement (E22 Human-Made Object) in La Tomba dell’Aryballos sospeso on the left bench is composed of the spear (E22 Human-Made Object) found in La Tomba dell’Aryballos sospeso.} (Mandolesi, 2013) \n
+    - the proposition set with content: {The skeleton (E20 Biological Object) in La Tomba dell'Aryballos sospeso on the right bench forms part of the burial arrangement (E22 Human-Made Object) in La Tomba dell’Aryballos sospeso on the left bench.} (Mandolesi, 2013) \n
+    - the proposition set with content: {The skeleton (E20 Biological Object) in La Tomba dell’Aryballos sospeso on the left bench P2 has type ‘female’ (E55 Type).} (Mandolesi, 2013) \n
+    - [The abovementioned examples form part of a scientific knowledge revision, where the original belief was formed based on a simple inference, and following a thorough scientific analysis, underwent revision. \n
+    - The skeleton found on the left bench of La Tomba dell’Aryballos sospeso, at Doganaccia di Tarquinia, in Tuscany, Italy, by Prof. Alessandro Mandolesi on the 21(st) September 2013, was initially estimated to be the remains of a male person, due to a spear found lying next to it. In fact, the initial press release mentioned there being a skeleton of a male person in the tomb. Soon after, osteological analysis carried out by Mandolesi’s team, revealed that the skeleton had belonged to a female person, a piece of information included in all scientific publications that followed the osteological analysis. \n
+    - We refer to this skeleton in the examples found throughout the text as “The skeleton on the left bench in La Tomba dell’Aryballos sospeso”, and to the burial arrangement as “The burial arrangement on the left bench in La Tomba dell’Aryballos sospeso”, respectively.]"""@en.
+
+  crm:E80_Part_Removal rdfs:subClassOf crmsci:S1_Matter_Removal .
+  crm:E16_Measurement rdfs:subClassOf crmsci:S21_Scientific_Measurement, crmsci:S4_Single_Observation .
+  crm:E5_Event rdfs:subClassOf crmsci:S15_Observable_Entity .
+  crm:E18_Physical_Thing rdfs:subClassOf crmsci:S10_Material_Substantial .
+  crm:E11_Modification rdfs:subClassOf crmsci:S18_Alteration .
+  crm:E27_Site rdfs:subClassOf crmsci:S20_Rigid_Physical_Feature .
+  crm:E12_Production rdfs:subClassOf crmsci:S17_Physical_Genesis .
+
+  crmsci:O1_diminished
+    a owl:ObjectProperty ;
+    skos:prefLabel "O1 diminished"@en ;
+    skos:notation "O1" ;
+    rdfs:label "diminished"@en ;
+    rdfs:domain crmsci:S1_Matter_Removal ;
+    rdfs:range crmsci:S10_Material_Substantial ;
+    owl:inverseOf crmsci:O1i_was_diminished_by ;
+    rdfs:comment """This property associates an instance of Matter Removal with the instance of Material Substantial that this activity diminished.
+    Although an instance of Matter Removal activity normally concerns only one item of Material Substantial, it is possible to imagine circumstances under which more than one item might be diminished by a single Matter Removal activity.
+    An instance Matter Removal activity requires to diminish at least one item of Material Substantial. This may be realized by any of the subproperties of O1 diminished (was diminished by). Therefore, the instantiation of a particular subproperty of O1 diminished (was diminished by) is not necessary.
+
+    Examples:
+    - The removal of the fill from the interior of the ‘tomb of Lagadas’ at Derveni Thessaloniki by the excavators in 1995 (S1) diminished the width of the cross-section of the burial chamber and the fill of the façade (S10). (Papasotiriou et al., 2010)
+    """@en .
+
+  crmsci:O1i_was_diminished_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "O1i was diminished by"@en ;
+    skos:notation "O1i" ;
+    rdfs:label "was diminished by"@en ;
+    rdfs:domain crmsci:S10_Material_Substantial ;
+    rdfs:range crmsci:S1_Matter_Removal ;
+    owl:inverseOf crmsci:O1_diminished ;
+    rdfs:comment """This property associates an instance of Matter Removal with the instance of Material Substantial that this activity diminished.
+    Although an instance of Matter Removal activity normally concerns only one item of Material Substantial, it is possible to imagine circumstances under which more than one item might be diminished by a single Matter Removal activity.
+    An instance Matter Removal activity requires to diminish at least one item of Material Substantial. This may be realized by any of the subproperties of O1 diminished (was diminished by). Therefore, the instantiation of a particular subproperty of O1 diminished (was diminished by) is not necessary.
+
+    Examples:
+    - The removal of the fill from the interior of the ‘tomb of Lagadas’ at Derveni Thessaloniki by the excavators in 1995 (S1) diminished the width of the cross-section of the burial chamber and the fill of the façade (S10). (Papasotiriou et al., 2010)
+    """@en .
+
+  crmsci:O2_removed
+    a owl:ObjectProperty ;
+    skos:prefLabel "O2 removed"@en ;
+    skos:notation "O2" ;
+    rdfs:label "removed"@en ;
+    rdfs:domain crmsci:S1_Matter_Removal ;
+    rdfs:range crmsci:S11_Amount_of_Matter ;
+    owl:inverseOf crmsci:O2i_was_removed_by ;
+    rdfs:comment """This property associates an instance of Matter Removal with the instance of Amount of Matter that it has removed.
+
+    Examples:
+    - The ‘La Gioconda of the Prado’ layer removal by the conservators of Prado Museum in Madrid (S1) removed the layer of black overpainting (S11) that covered the background of it (Museo del Prado, 2012)
+    """@en .
+
+  crmsci:O2i_was_removed_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "O2i was removed by"@en ;
+    skos:notation "O2i" ;
+    rdfs:label "was removed by"@en ;
+    rdfs:domain crmsci:S11_Amount_of_Matter ;
+    rdfs:range crmsci:S1_Matter_Removal ;
+    owl:inverseOf crmsci:O2_removed ;
+    rdfs:comment """This property associates an instance of Matter Removal with the instance of Amount of Matter that it has removed.
+
+    Examples:
+    - The ‘La Gioconda of the Prado’ layer removal by the conservators of Prado Museum in Madrid (S1) removed the layer of black overpainting (S11) that covered the background of it (Museo del Prado, 2012)
+    """@en .
+
+  crmsci:O3_sampled_from
+    a owl:ObjectProperty ;
+    skos:prefLabel "O3 sampled from"@en ;
+    skos:notation "O3" ;
+    rdfs:label "sampled from"@en ;
+    rdfs:domain crmsci:S2_Sample_Taking ;
+    rdfs:range crmsci:S10_Material_Substantial ;
+    owl:inverseOf crmsci:O3i_was_sample_by ;
+    rdfs:comment """This property associates an instance of Sample Taking with the instance Material Substantial from which a sample was taken. In particular, it may be a feature or a fluid body from which a sample was removed.
+
+    Examples:
+    - Water Sample Taking 74001 (S2) sampled from the aquifer (S10) that overlaps with borehole 10/G5. (Lucchese et al., 2013; Kritikos et al., 2013; InGeoCloudS, 2012; InGeoCloudS, 2013)
+    - Collecting micro-sample 7 (S2) sampled from the painting ‘Cupid complaining to Venus’ (Cranach) (S10) by Joyce Plesters, in June 1963. (The National Gallery, London, 1963)
+    """@en .
+
+  crmsci:O3i_was_sample_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "O3i was sample by"@en ;
+    skos:notation "O3i" ;
+    rdfs:label "was sample by"@en ;
+    rdfs:domain crmsci:S10_Material_Substantial ;
+    rdfs:range crmsci:S2_Sample_Taking ;
+    owl:inverseOf crmsci:O3_sampled_from ;
+    rdfs:comment """This property associates an instance of Sample Taking with the instance Material Substantial from which a sample was taken. In particular, it may be a feature or a fluid body from which a sample was removed.
+
+    Examples:
+    - Water Sample Taking 74001 (S2) sampled from the aquifer (S10) that overlaps with borehole 10/G5. (Lucchese et al., 2013; Kritikos et al., 2013; InGeoCloudS, 2012; InGeoCloudS, 2013)
+    - Collecting micro-sample 7 (S2) sampled from the painting ‘Cupid complaining to Venus’ (Cranach) (S10) by Joyce Plesters, in June 1963. (The National Gallery, London, 1963)
+    """@en .
+
+  crmsci:O4_sampled_at
+    a owl:ObjectProperty ;
+    skos:prefLabel "O4 sampled at"@en ;
+    skos:notation "O4" ;
+    rdfs:label "sampled at"@en ;
+    rdfs:domain crmsci:S2_Sample_Taking ;
+    rdfs:range crm:E53_Place ;
+    owl:inverseOf crmsci:O4i_was_sampling_location_of ;
+    rdfs:comment """This property associates an instance of Sample Taking with the instance of Place ("spot") at which this activity sampled. It identifies the narrowest relevant area on the material substantial from which the sample was taken. This may be known or given in absolute terms or relative to an instance of the material substantial from which it was taken. If samples are taken from more than one spot, the sample taking activity must be documented by separate instances for each spot.
+    The property P7 took place at (witnessed), inherited from E4 Period, describes the position of the area in which the sampling activity occurred; this latter comprises the space within which operators and instruments were contained during the activity, and the sample taking spot.
+
+    Examples:
+    - Water Sample Taking 74001 (S2) sampled at borehole 10/G5 at depth 0, which falls within the water district 10/G5 in Central Macedonia (E53). (Lucchese et al., 2013; Kritikos et al., 2013; InGeoCloudS, 2012; InGeoCloudS, 2013)
+    - Collecting micro-sample 7 (S2) sampled at the area of the apple (E53), shown on the painting ‘Cupid complaining to Venus’ (Cranach) (The National Gallery, London, 1963)
+    """@en .
+
+  crmsci:O4i_was_sampling_location_of
+    a owl:ObjectProperty ;
+    skos:prefLabel "O4i was sampling location of"@en ;
+    skos:notation "O4i" ;
+    rdfs:label "was sampling location of"@en ;
+    rdfs:domain crm:E53_Place ;
+    rdfs:range crmsci:S2_Sample_Taking ;
+    owl:inverseOf crmsci:O4_sampled_at ;
+    rdfs:comment """This property associates an instance of Sample Taking with the instance of Place ("spot") at which this activity sampled. It identifies the narrowest relevant area on the material substantial from which the sample was taken. This may be known or given in absolute terms or relative to an instance of the material substantial from which it was taken. If samples are taken from more than one spot, the sample taking activity must be documented by separate instances for each spot.
+    The property P7 took place at (witnessed), inherited from E4 Period, describes the position of the area in which the sampling activity occurred; this latter comprises the space within which operators and instruments were contained during the activity, and the sample taking spot.
+
+    Examples:
+    - Water Sample Taking 74001 (S2) sampled at borehole 10/G5 at depth 0, which falls within the water district 10/G5 in Central Macedonia (E53). (Lucchese et al., 2013; Kritikos et al., 2013; InGeoCloudS, 2012; InGeoCloudS, 2013)
+    - Collecting micro-sample 7 (S2) sampled at the area of the apple (E53), shown on the painting ‘Cupid complaining to Venus’ (Cranach) (The National Gallery, London, 1963)
+    """@en .
+
+  crmsci:O5_removed
+    a owl:ObjectProperty ;
+    skos:prefLabel "O5 removed"@en ;
+    skos:notation "O5" ;
+    rdfs:label "removed"@en ;
+    rdfs:domain crmsci:S2_Sample_Taking ;
+    rdfs:range crmsci:S13_Sample ;
+    owl:inverseOf crmsci:O5i_was_removed_by ;
+    rdfs:subPropertyOf crmsci:O2_removed ;
+    rdfs:comment """This property associates an instance of Sample Taking with the instance of Sample that was taken during the activity.
+
+    Examples:
+    - Lithology Sample Taking 201 (S2) removed sample 2B (S113). (Lucchese et al, 2013; Kritikos et al., 2013; InGeoCloudS, 2012; InGeoCloudS, 2013)
+    - The sampling (S2) undertaken by Joyce Plesters in June 1963, while she was working on the painting ‘Cupid complaining to Venus’ (Cranach), removed micro-sample 7 (S13). (The National Gallery, London, 1963)
+    """@en .
+
+  crmsci:O5i_was_removed_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "O5i was removed by"@en ;
+    skos:notation "O5i" ;
+    rdfs:label "was removed by"@en ;
+    rdfs:domain crmsci:S13_Sample ;
+    rdfs:range crmsci:S2_Sample_Taking ;
+    owl:inverseOf crmsci:O5_removed ;
+    rdfs:subPropertyOf crmsci:O2i_was_removed_by ;
+    rdfs:comment """This property associates an instance of Sample Taking with the instance of Sample that was taken during the activity.
+
+    Examples:
+    - Lithology Sample Taking 201 (S2) removed sample 2B (S113). (Lucchese et al, 2013; Kritikos et al., 2013; InGeoCloudS, 2012; InGeoCloudS, 2013)
+    - The sampling (S2) undertaken by Joyce Plesters in June 1963, while she was working on the painting ‘Cupid complaining to Venus’ (Cranach), removed micro-sample 7 (S13). (The National Gallery, London, 1963)
+    """@en .
+
+  crmsci:O6_is_former_or_current_part_of
+    a owl:ObjectProperty ;
+    skos:prefLabel "O6 is former or current part of"@en ;
+    skos:notation "O6" ;
+    rdfs:label "is former or current part of"@en ;
+    rdfs:domain crmsci:S12_Amount_of_Fluid ;
+    rdfs:range crmsci:S14_Fluid_Body ;
+    owl:inverseOf crmsci:O6i_has_former_or_current_part ;
+    rdfs:subPropertyOf crmsci:O25_contains ;
+    rdfs:comment """This property associates an instance of Amount of Fluid with an instance of Fluid Body which formed or forms part of it. It allows instances of Fluid Body to be analyzed into elements of Amount of Fluid.
+
+    Examples:
+    - J.K.’s blood sample 0019FCF5 (S12) is former or current part of J.K.’s blood (S14). (fictitious)
+    """@en .
+
+  crmsci:O6i_has_former_or_current_part
+    a owl:ObjectProperty ;
+    skos:prefLabel "O6i has former or current part"@en ;
+    skos:notation "O6i" ;
+    rdfs:label "has former or current part"@en ;
+    rdfs:domain crmsci:S14_Fluid_Body ;
+    rdfs:range crmsci:S12_Amount_of_Fluid ;
+    owl:inverseOf crmsci:O6_is_former_or_current_part_of ;
+    rdfs:subPropertyOf crmsci:O25i_is_contained_in ;
+    rdfs:comment """This property associates an instance of Amount of Fluid with an instance of Fluid Body which formed or forms part of it. It allows instances of Fluid Body to be analyzed into elements of Amount of Fluid.
+
+    Examples:
+    - J.K.’s blood sample 0019FCF5 (S12) is former or current part of J.K.’s blood (S14). (fictitious)
+    """@en .
+
+  crmsci:O7_confines
+    a owl:ObjectProperty ;
+    skos:prefLabel "O7 confines"@en ;
+    skos:notation "O7" ;
+    rdfs:label "confines"@en ;
+    rdfs:domain crmsci:S20_Rigid_Physical_Feature ;
+    rdfs:range crmsci:S10_Material_Substantial ;
+    owl:inverseOf crmsci:O7i_is_confined_by ;
+    rdfs:comment """This property associates an instance of Rigid Physical Feature with an instance of Material Substantial that it partially or completely confines. It describes cases in which rigid features such as stratigraphic layers, walls, dams, riverbeds, etc. form the boundaries of some item such as another stratigraphic layer or the waters of a river.
+
+    Examples:
+    - The Stavros – Farsala artesian aquifer (S20) confines the overexploited groundwater of the area (S10). (Rozos et al., 2017)
+    - The posthole (S20) confines the organic material (S10) identified in the 1997 analysis of the post holes of the structure 2 in the Tutu archaeological village site. (Righter, 2002)
+    - Borehole No1234 confines intake No5 (S10). (Lucchese et al., 2013; Kritikos et al., 2013; InGeoCloudS, 2012; InGeoCloudS, 2013)
+    """@en .
+
+  crmsci:O7i_is_confined_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "O7i is confined by"@en ;
+    skos:notation "O7i" ;
+    rdfs:label "is confined by"@en ;
+    rdfs:domain crmsci:S10_Material_Substantial ;
+    rdfs:range crmsci:S20_Rigid_Physical_Feature ;
+    owl:inverseOf crmsci:O7_confines ;
+    rdfs:comment """This property associates an instance of Rigid Physical Feature with an instance of Material Substantial that it partially or completely confines. It describes cases in which rigid features such as stratigraphic layers, walls, dams, riverbeds, etc. form the boundaries of some item such as another stratigraphic layer or the waters of a river.
+
+    Examples:
+    - The Stavros – Farsala artesian aquifer (S20) confines the overexploited groundwater of the area (S10). (Rozos et al., 2017)
+    - The posthole (S20) confines the organic material (S10) identified in the 1997 analysis of the post holes of the structure 2 in the Tutu archaeological village site. (Righter, 2002)
+    - Borehole No1234 confines intake No5 (S10). (Lucchese et al., 2013; Kritikos et al., 2013; InGeoCloudS, 2012; InGeoCloudS, 2013)
+    """@en .
+
+  crmsci:O8_observed
+    a owl:ObjectProperty ;
+    skos:prefLabel "O8 observed"@en ;
+    skos:notation "O8" ;
+    rdfs:label "observed"@en ;
+    rdfs:domain crmsci:S4_Single_Observation ;
+    rdfs:range crmsci:S15_Observable_Entity ;
+    owl:inverseOf crmsci:O8i_was_observed_by ;
+    rdfs:subPropertyOf crm:P140_assigned_attribute_to, crmsci:O35_observed_entity ;
+    rdfs:comment """Shortcut Of: Single Observation. O37 expressed the observed as observable proposition (was observable proposition characterized by): Observable Proposition. O38 has domain (is domain of): Observable Entity
+    This property associates an instance of Single Observation with one instance of Observable Entity that was observed. Specifically, it describes that a thing, a feature, a phenomenon or some process is observed by an activity of Observation.
+    This property is a strong shortcut of the fully developed path from Single Observation through O37 expressed the observed as observable proposition (was observable proposition characterized by), Observable Proposition, O38 has domain (is domain of), to Observable Entity.
+
+    Examples:
+    - The engineers’ observation (S4) on the slope of Panagopoula coastal site, near Patras, on the 3rd May 1971 observed the rotational landslide at the same site (E4). (Tavoularis et al., 2017)
+    - The survey (S4) of Sinai MS GREEK 418 observed a detached triple-braided clasp strap (S15). (Honey and Pickwoad, 2010)
+    """@en .
+
+  crmsci:O8i_was_observed_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "O8i was observed by"@en ;
+    skos:notation "O8i" ;
+    rdfs:label "was observed by"@en ;
+    rdfs:domain crmsci:S15_Observable_Entity ;
+    rdfs:range crmsci:S4_Single_Observation ;
+    owl:inverseOf crmsci:O8_observed ;
+    rdfs:subPropertyOf crm:P140i_was_attributed_by, crmsci:O35i_was_observed_by ;
+    rdfs:comment """Shortcut Of of the inverse property: Single Observation. O37 expressed the observed as observable proposition (was observable proposition characterized by): Observable Proposition. O38 has domain (is domain of): Observable Entity
+    This property associates an instance of Single Observation with one instance of Observable Entity that was observed. Specifically, it describes that a thing, a feature, a phenomenon or some process is observed by an activity of Observation.
+    This property is a strong shortcut of the fully developed path from Single Observation through O37 expressed the observed as observable proposition (was observable proposition characterized by), Observable Proposition, O38 has domain (is domain of), to Observable Entity.
+
+    Examples:
+    - The engineers’ observation (S4) on the slope of Panagopoula coastal site, near Patras, on the 3rd May 1971 observed the rotational landslide at the same site (E4). (Tavoularis et al., 2017)
+    - The survey (S4) of Sinai MS GREEK 418 observed a detached triple-braided clasp strap (S15). (Honey and Pickwoad, 2010)
+    """@en .
+
+  crmsci:O9_observed_property_type
+    a owl:ObjectProperty ;
+    skos:prefLabel "O9 observed property type"@en ;
+    skos:notation "O9" ;
+    rdfs:label "observed property type"@en ;
+    rdfs:domain crmsci:S4_Single_Observation ;
+    rdfs:range crmsci:S9_Property_Type ;
+    owl:inverseOf crmsci:O9i_property_type_was_observed_by ;
+    rdfs:subPropertyOf crm:P177_assigned_property_of_type ;
+    rdfs:comment """Shortcut Of: Single Observation. O37 expressed the observed as observable proposition (was observable proposition characterized by): Observable Proposition. J32 has property type (is property type of): Property Type
+    This property associates an instance of Matter Removal with the instance of Material Substantial that this activity diminished.
+    Although an instance of Single Observation with the instance of Property Type for which the observation provides a value or evidence, such as ‘concentration of nitrate’ observed in the water from a particular borehole. Encoding the observed property by type, observed entity and value (namely, properties O9, O37, and O16, respectively), is a method to circumscribe the reification of the observed property by the respective instance of Single Observation.
+    In an RDFS encoding, this circumscription can be transformed into an explicit representation of the observed property in terms of a formal ontology, either by the use of a reification construct or a Named Graph containing the observed property. The latter representation allows for more formal reasoning with the model, the former is more flexible about the kinds of observations.
+    This property is a strong shortcut of the fully developed path from Single Observation through O37 expressed the observed as observable proposition (was observable proposition characterized by), Observable Proposition, J32 has property type (is property type of), to Property Type.
+
+    Examples:
+    - The seismic hazard analysis and recording by EPPO in 1990 (S4), in the area of Attica observed property type share wave velocity (S9) and recorded it. (Lucchese et al., 2013; Kritikos et al., 2013; InGeoCloudS, 2012; InGeoCloudS, 2013)
+    - The Gas Chromatography analysis (S4) of the sample ‘mid-blue paint from the sky’ observed property type retention time (S9). (Foister, 2015)
+    """@en .
+
+  crmsci:O9i_property_type_was_observed_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "O9i property type was observed by"@en ;
+    skos:notation "O9i" ;
+    rdfs:label "property type was observed by"@en ;
+    rdfs:domain crmsci:S9_Property_Type ;
+    rdfs:range crmsci:S4_Single_Observation ;
+    owl:inverseOf crmsci:O9_observed_property_type ;
+    rdfs:subPropertyOf crm:P177i_is_type_of_property_assigned ;
+    rdfs:comment """Shortcut Of of the inverse property: Single Observation. O37 expressed the observed as observable proposition (was observable proposition characterized by): Observable Proposition. J32 has property type (is property type of): Property Type
+    This property associates an instance of Matter Removal with the instance of Material Substantial that this activity diminished.
+    Although an instance of Single Observation with the instance of Property Type for which the observation provides a value or evidence, such as ‘concentration of nitrate’ observed in the water from a particular borehole. Encoding the observed property by type, observed entity and value (namely, properties O9, O37, and O16, respectively), is a method to circumscribe the reification of the observed property by the respective instance of Single Observation.
+    In an RDFS encoding, this circumscription can be transformed into an explicit representation of the observed property in terms of a formal ontology, either by the use of a reification construct or a Named Graph containing the observed property. The latter representation allows for more formal reasoning with the model, the former is more flexible about the kinds of observations.
+    This property is a strong shortcut of the fully developed path from Single Observation through O37 expressed the observed as observable proposition (was observable proposition characterized by), Observable Proposition, J32 has property type (is property type of), to Property Type.
+
+    Examples:
+    - The seismic hazard analysis and recording by EPPO in 1990 (S4), in the area of Attica observed property type share wave velocity (S9) and recorded it. (Lucchese et al., 2013; Kritikos et al., 2013; InGeoCloudS, 2012; InGeoCloudS, 2013)
+    - The Gas Chromatography analysis (S4) of the sample ‘mid-blue paint from the sky’ observed property type retention time (S9). (Foister, 2015)
+    """@en .
+
+  crmsci:O10_assigned_dimension
+    a owl:ObjectProperty ;
+    skos:prefLabel "O10 assigned dimension"@en ;
+    skos:notation "O10" ;
+    rdfs:label "assigned dimension"@en ;
+    rdfs:domain crmsci:S6_Data_Evaluation ;
+    rdfs:range crm:E54_Dimension ;
+    owl:inverseOf crmsci:O10i_dimension_was_assigned_by ;
+    rdfs:comment """This property associates an instance of Data Evaluation with an instance of E54 Dimension that a data evaluation activity has assigned. In that case, dimensions may be determined by making evaluations on observational data based on mathematical inference rules and calculations.
+
+    Examples:
+    - The shock wave recording (S6) carried out by EPPO in 1999 assigned dimension PSA_10 (E54). [The dimension had value 0.0008.] (Lucchese et al., 2013; Kritikos et al., 2013; InGeoCloudS, 2012; InGeoCloudS, 2013)
+    """@en .
+
+  crmsci:O10i_dimension_was_assigned_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "O10i dimension was assigned by"@en ;
+    skos:notation "O10i" ;
+    rdfs:label "dimension was assigned by"@en ;
+    rdfs:domain crm:E54_Dimension ;
+    rdfs:range crmsci:S6_Data_Evaluation ;
+    owl:inverseOf crmsci:O10_assigned_dimension ;
+    rdfs:comment """This property associates an instance of Data Evaluation with an instance of E54 Dimension that a data evaluation activity has assigned. In that case, dimensions may be determined by making evaluations on observational data based on mathematical inference rules and calculations.
+
+    Examples:
+    - The shock wave recording (S6) carried out by EPPO in 1999 assigned dimension PSA_10 (E54). [The dimension had value 0.0008.] (Lucchese et al., 2013; Kritikos et al., 2013; InGeoCloudS, 2012; InGeoCloudS, 2013)
+    """@en .
+
+  crmsci:O11_described
+    a owl:ObjectProperty ;
+    skos:prefLabel "O11 described"@en ;
+    skos:notation "O11" ;
+    rdfs:label "described"@en ;
+    rdfs:domain crmsci:S6_Data_Evaluation ;
+    rdfs:range crmsci:S15_Observable_Entity ;
+    owl:inverseOf crmsci:O11i_was_described_by ;
+    rdfs:comment """This property associates an instance of Data Evaluation with an instance of Observable Entity for which a data evaluation activity provides a description. This description of any Observable Entity is based on data evaluations.
+
+    Examples:
+    - The quantitative analysis of Munsell colour data (S6), carried out by C.T. Brown in 1999 in Yucatán, Mexico, described the slipped sherds of Mayapán period ceramics (S15). (Ruck and Brown, 2015)
+    - The linear extrapolation of overall figure height from the size of the fingers (S6) described the statue of Hercules (S15). [The statue is located in Amman.] (‘Temple of Hercules (Amman)’, 2025)
+    """@en .
+
+  crmsci:O11i_was_described_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "O11i was described by"@en ;
+    skos:notation "O11i" ;
+    rdfs:label "was described by"@en ;
+    rdfs:domain crmsci:S15_Observable_Entity ;
+    rdfs:range crmsci:S6_Data_Evaluation ;
+    owl:inverseOf crmsci:O11_described ;
+    rdfs:comment """This property associates an instance of Data Evaluation with an instance of Observable Entity for which a data evaluation activity provides a description. This description of any Observable Entity is based on data evaluations.
+
+    Examples:
+    - The quantitative analysis of Munsell colour data (S6), carried out by C.T. Brown in 1999 in Yucatán, Mexico, described the slipped sherds of Mayapán period ceramics (S15). (Ruck and Brown, 2015)
+    - The linear extrapolation of overall figure height from the size of the fingers (S6) described the statue of Hercules (S15). [The statue is located in Amman.] (‘Temple of Hercules (Amman)’, 2025)
+    """@en .
+
+  crmsci:O12_has_dimension
+    a owl:ObjectProperty ;
+    skos:prefLabel "O12 has dimension"@en ;
+    skos:notation "O12" ;
+    rdfs:label "has dimension"@en ;
+    rdfs:domain crmsci:S15_Observable_Entity ;
+    rdfs:range crm:E54_Dimension ;
+    owl:inverseOf crmsci:O12i_is_dimension_of ;
+    rdfs:comment """Shortcut Of: Observable Entity. O24i was measured by (measured): Scientific Measurement: O39 observed dimension (was observed in): E54 Dimension
+    This property associates an instance of Observable Entity with an instance of E54 Dimension that the observable entity has. It offers no information about how and when an E54 Dimension was established.
+    Most instances of E54 Dimension pertain to one item only. An instance of E54 Dimension referred to by more than one item via this property or a specialization of it is more specifically an instance of Relative Dimension, such as a distance between two physical objects.
+    Referring to an instance of E54 Dimension by this property is mutually exclusive to using either property P191 had duration (was duration of) or P179 had sales price (was sales price).
+    In case the instance of Observable Entity is more specifically an instance of Physical Thing, using the property P43 has dimension (is dimension of) implies the property O12 has dimension (is dimension of).
+    This property is a shortcut of the fully developed path from Observable Entity through O24i was measured by (measured), Scientific Measurement, O39 observed dimension (was observed in), to E54 Dimension.
+
+    Examples:
+    - The earthquake of Mexico City in 2017 (E5) has dimension Mexico City 2017 earthquake magnitude (E54) [which has unit Richter (E58) and has value 6.2 (E60)]. (Mindock, 2017)
+    - The landslide that was activated in Parnitha in 1999 after the earthquake (E26), has dimension Parnitha 1999 landslide crest length [which has type crestlength (E57), has unit length (E58) and has value (70, ∞) (E60)]. (Lucchese et al., 2013; Kritikos et al., 2013; InGeoCloudS, 2012; InGeoCloudS, 2013)
+    """@en .
+
+  crmsci:O12i_is_dimension_of
+    a owl:ObjectProperty ;
+    skos:prefLabel "O12i is dimension of"@en ;
+    skos:notation "O12i" ;
+    rdfs:label "is dimension of"@en ;
+    rdfs:domain crm:E54_Dimension ;
+    rdfs:range crmsci:S15_Observable_Entity ;
+    owl:inverseOf crmsci:O12_has_dimension ;
+    rdfs:comment """Shortcut Of of the inverse property: Observable Entity. O24i was measured by (measured): Scientific Measurement: O39 observed dimension (was observed in): E54 Dimension
+    This property associates an instance of Observable Entity with an instance of E54 Dimension that the observable entity has. It offers no information about how and when an E54 Dimension was established.
+    Most instances of E54 Dimension pertain to one item only. An instance of E54 Dimension referred to by more than one item via this property or a specialization of it is more specifically an instance of Relative Dimension, such as a distance between two physical objects.
+    Referring to an instance of E54 Dimension by this property is mutually exclusive to using either property P191 had duration (was duration of) or P179 had sales price (was sales price).
+    In case the instance of Observable Entity is more specifically an instance of Physical Thing, using the property P43 has dimension (is dimension of) implies the property O12 has dimension (is dimension of).
+    This property is a shortcut of the fully developed path from Observable Entity through O24i was measured by (measured), Scientific Measurement, O39 observed dimension (was observed in), to E54 Dimension.
+
+    Examples:
+    - The earthquake of Mexico City in 2017 (E5) has dimension Mexico City 2017 earthquake magnitude (E54) [which has unit Richter (E58) and has value 6.2 (E60)]. (Mindock, 2017)
+    - The landslide that was activated in Parnitha in 1999 after the earthquake (E26), has dimension Parnitha 1999 landslide crest length [which has type crestlength (E57), has unit length (E58) and has value (70, ∞) (E60)]. (Lucchese et al., 2013; Kritikos et al., 2013; InGeoCloudS, 2012; InGeoCloudS, 2013)
+    """@en .
+
+  crmsci:O13_triggered
+    a owl:ObjectProperty ;
+    skos:prefLabel "O13 triggered"@en ;
+    skos:notation "O13" ;
+    rdfs:label "triggered"@en ;
+    rdfs:domain crm:E5_Event ;
+    rdfs:range crm:E5_Event ;
+    owl:inverseOf crmsci:O13i_was_triggered_by ;
+    rdfs:comment """This property associates an instance of E5 Event that triggered another instance of E5 Event with the latter. It identifies the interaction between events: an event can activate (trigger) other events in a target system that is in a situation of sustained tension, such as a trap or an unstable mountain slope giving way to a land slide after a rain or earthquake
+    The distinction of a triggering event A from the triggered event B lies in their difference of nature. The starting of B is the result of an interaction of material constituents of A with material constituents of B. However, B does not necessarily continue the kinds of processes of A. Therefore, the triggering event A must spatiotemporally overlap with the initial time and area of the triggered event B. Any subsequent phenomena must initiate from this area and time and not from multiple independent areas.
+
+    Examples:
+    - The earthquake of Parnitha in 1999 (E5) triggered the rotational landslide that was observed along the road on the same day (E5). (fictitious)
+    - The explosion at the Montserrat massif in 2007 (E5) (near Barcelona, Spain) triggered the rock fall event (E5) which happened on 2007-02-14. (Vilajosana et al., 2008)
+    - The 1966 flood in Florence (E5) triggered mould growth on books (E5) stored in flooded library rooms. (Rubinstein, 1966)
+    """@en .
+
+  crmsci:O13i_was_triggered_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "O13i was triggered by"@en ;
+    skos:notation "O13i" ;
+    rdfs:label "was triggered by"@en ;
+    rdfs:domain crm:E5_Event ;
+    rdfs:range crm:E5_Event ;
+    owl:inverseOf crmsci:O13_triggered ;
+    rdfs:comment """This property associates an instance of E5 Event that triggered another instance of E5 Event with the latter. It identifies the interaction between events: an event can activate (trigger) other events in a target system that is in a situation of sustained tension, such as a trap or an unstable mountain slope giving way to a land slide after a rain or earthquake
+    The distinction of a triggering event A from the triggered event B lies in their difference of nature. The starting of B is the result of an interaction of material constituents of A with material constituents of B. However, B does not necessarily continue the kinds of processes of A. Therefore, the triggering event A must spatiotemporally overlap with the initial time and area of the triggered event B. Any subsequent phenomena must initiate from this area and time and not from multiple independent areas.
+
+    Examples:
+    - The earthquake of Parnitha in 1999 (E5) triggered the rotational landslide that was observed along the road on the same day (E5). (fictitious)
+    - The explosion at the Montserrat massif in 2007 (E5) (near Barcelona, Spain) triggered the rock fall event (E5) which happened on 2007-02-14. (Vilajosana et al., 2008)
+    - The 1966 flood in Florence (E5) triggered mould growth on books (E5) stored in flooded library rooms. (Rubinstein, 1966)
+    """@en .
+
+  crmsci:O15_occupied
+    a owl:ObjectProperty ;
+    skos:prefLabel "O15 occupied"@en ;
+    skos:notation "O15" ;
+    rdfs:label "occupied"@en ;
+    rdfs:domain crmsci:S10_Material_Substantial ;
+    rdfs:range crm:E53_Place ;
+    owl:inverseOf crmsci:O15i_was_occupied_by ;
+    rdfs:comment """Shortcut Of: E1 CRM Entity. P140i was attributed by: E15 Identifier Assignment. P37 assigned: E42 Identifier
+    This property associates an instance of Material Substantial with the instance of Place that this substance occupied. It describes the space filled (occupied) by a physical matter. This property is the development of the shortcut expressed in the proposition of classification: “S20 Physical Feature” isA “Place”. This property is equivalent to P156 occupies (is occupied by) with domain Physical Thing and range Place.
+
+    Examples:
+    - The layer of pink plaster that occupied the block 30 floor of the area X. on 2009-02-03. [The plaster covered the floor.] (fictitious)
+    """@en .
+
+  crmsci:O15i_was_occupied_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "O15i was occupied by"@en ;
+    skos:notation "O15i" ;
+    rdfs:label "was occupied by"@en ;
+    rdfs:domain crm:E53_Place ;
+    rdfs:range crmsci:S10_Material_Substantial ;
+    owl:inverseOf crmsci:O15_occupied ;
+    rdfs:comment """Shortcut Of of the inverse property: E1 CRM Entity. P140i was attributed by: E15 Identifier Assignment. P37 assigned: E42 Identifier
+    This property associates an instance of Material Substantial with the instance of Place that this substance occupied. It describes the space filled (occupied) by a physical matter. This property is the development of the shortcut expressed in the proposition of classification: “S20 Physical Feature” isA “Place”. This property is equivalent to P156 occupies (is occupied by) with domain Physical Thing and range Place.
+
+    Examples:
+    - The layer of pink plaster that occupied the block 30 floor of the area X. on 2009-02-03. [The plaster covered the floor.] (fictitious)
+    """@en .
+
+  crmsci:O16_observed_value
+    a owl:ObjectProperty ;
+    skos:prefLabel "O16 observed value"@en ;
+    skos:notation "O16" ;
+    rdfs:label "observed value"@en ;
+    rdfs:domain crmsci:S4_Single_Observation ;
+    rdfs:range crm:E1_CRM_Entity ;
+    owl:inverseOf crmsci:O16i_value_was_observed_by ;
+    rdfs:subPropertyOf crm:P141_assigned ;
+    rdfs:comment """Shortcut Of: Single Observation. O37 expressed the observed as observable proposition (was observable proposition characterized by): Observable Proposition. J31 has range (is range of): E1 CRM Entity
+    This property associates a value assigned to an entity observed by Single Observation.
+    This property is a strong shortcut of the fully developed path from Single Observation through O37 expressed the observed as observable proposition (was observable proposition characterized by), Observable Proposition, J31 has range (is range of), to E1 CRM Entity.
+
+    Examples:
+    - The surface survey at the bronze age site of Mitrou in East Lokris (S4), carried out by Cornell University in 1989, observed value 600 (of sherds) (E1). (Kramer-Hajos and O’Neill, 2008)
+    """@en .
+
+  crmsci:O16i_value_was_observed_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "O16i value was observed by"@en ;
+    skos:notation "O16i" ;
+    rdfs:label "value was observed by"@en ;
+    rdfs:domain crm:E1_CRM_Entity ;
+    rdfs:range crmsci:S4_Single_Observation ;
+    owl:inverseOf crmsci:O16_observed_value ;
+    rdfs:subPropertyOf crm:P141i_was_assigned_by ;
+    rdfs:comment """Shortcut Of of the inverse property: Single Observation. O37 expressed the observed as observable proposition (was observable proposition characterized by): Observable Proposition. J31 has range (is range of): E1 CRM Entity
+    This property associates a value assigned to an entity observed by Single Observation.
+    This property is a strong shortcut of the fully developed path from Single Observation through O37 expressed the observed as observable proposition (was observable proposition characterized by), Observable Proposition, J31 has range (is range of), to E1 CRM Entity.
+
+    Examples:
+    - The surface survey at the bronze age site of Mitrou in East Lokris (S4), carried out by Cornell University in 1989, observed value 600 (of sherds) (E1). (Kramer-Hajos and O’Neill, 2008)
+    """@en .
+
+  crmsci:O17_generated
+    a owl:ObjectProperty ;
+    skos:prefLabel "O17 generated"@en ;
+    skos:notation "O17" ;
+    rdfs:label "generated"@en ;
+    rdfs:domain crmsci:S17_Physical_Genesis ;
+    rdfs:range crm:E18_Physical_Thing ;
+    owl:inverseOf crmsci:O17i_was_generated_by ;
+    rdfs:subPropertyOf crmsci:O18_altered ;
+    rdfs:comment """This property associates an instance of Physical Genesis event with an instance of Physical Thing that the event generated.
+
+    Examples:
+    - The landslide of Parnitha in 1999 (S17) generated the head of the landslide feature (E18). (fictitious)
+    - The mud flow in the western region of Thessaly million years ago (S17) generated the deposits of solidified mud with irregular surface in the area (E18). (fictitious)
+    - The introduction of my copper samples in the salt-spray apparatus (S17) generated new corrosion layers of cuprite and malachite (E18). (Velios, 1998)
+    """@en .
+
+  crmsci:O17i_was_generated_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "O17i was generated by"@en ;
+    skos:notation "O17i" ;
+    rdfs:label "was generated by"@en ;
+    rdfs:domain crm:E18_Physical_Thing ;
+    rdfs:range crmsci:S17_Physical_Genesis ;
+    owl:inverseOf crmsci:O17_generated ;
+    rdfs:subPropertyOf crmsci:O18i_was_altered_by ;
+    rdfs:comment """This property associates an instance of Physical Genesis event with an instance of Physical Thing that the event generated.
+
+    Examples:
+    - The landslide of Parnitha in 1999 (S17) generated the head of the landslide feature (E18). (fictitious)
+    - The mud flow in the western region of Thessaly million years ago (S17) generated the deposits of solidified mud with irregular surface in the area (E18). (fictitious)
+    - The introduction of my copper samples in the salt-spray apparatus (S17) generated new corrosion layers of cuprite and malachite (E18). (Velios, 1998)
+    """@en .
+
+  crmsci:O18_altered
+    a owl:ObjectProperty ;
+    skos:prefLabel "O18 altered"@en ;
+    skos:notation "O18" ;
+    rdfs:label "altered"@en ;
+    rdfs:domain crmsci:S18_Alteration ;
+    rdfs:range crm:E18_Physical_Thing ;
+    owl:inverseOf crmsci:O18i_was_altered_by ;
+    rdfs:comment """This property associates an instance of Alteration process with an instance of Physical Thing which was altered by this activity.
+
+    Examples:
+    - The death of the trees (S18), caused by beetle infestation in 1995, altered the Brazilian forest (E18). (Paine, 2008)
+    - The application of tension (S18) altered the humidified parchment of the Lanhydrock Pedigree (E18) (Pickwoad, 2010)
+    """@en .
+
+  crmsci:O18i_was_altered_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "O18i was altered by"@en ;
+    skos:notation "O18i" ;
+    rdfs:label "was altered by"@en ;
+    rdfs:domain crm:E18_Physical_Thing ;
+    rdfs:range crmsci:S18_Alteration ;
+    owl:inverseOf crmsci:O18_altered ;
+    rdfs:comment """This property associates an instance of Alteration process with an instance of Physical Thing which was altered by this activity.
+
+    Examples:
+    - The death of the trees (S18), caused by beetle infestation in 1995, altered the Brazilian forest (E18). (Paine, 2008)
+    - The application of tension (S18) altered the humidified parchment of the Lanhydrock Pedigree (E18) (Pickwoad, 2010)
+    """@en .
+
+  crmsci:O19_encountered_object
+    a owl:ObjectProperty ;
+    skos:prefLabel "O19 encountered object"@en ;
+    skos:notation "O19" ;
+    rdfs:label "encountered object"@en ;
+    rdfs:domain crmsci:S19_Encounter_Event ;
+    rdfs:range crm:E18_Physical_Thing ;
+    owl:inverseOf crmsci:O19i_was_object_encountered_through ;
+    rdfs:comment """This property associates an instance of Encounter Event with an instance of Physical Thing that was encountered or observed as present during the event.
+
+    Examples:
+    - The encounter of a marble floor during the digging of a well in 1750 (S19) encountered object the Villa of the Papyri in Herculaneum (E18). (Sider, 1990, p. 536)
+    - The encounter of oak planks from a ship during a dig in a mound at the farm Lille Oseberg in Norway, in 1904 (S19) encountered object the Oseberg Ship (E18). (Ferguson, 2009, p.10-11)
+    """@en .
+
+  crmsci:O19i_was_object_encountered_through
+    a owl:ObjectProperty ;
+    skos:prefLabel "O19i was object encountered through"@en ;
+    skos:notation "O19i" ;
+    rdfs:label "was object encountered through"@en ;
+    rdfs:domain crm:E18_Physical_Thing ;
+    rdfs:range crmsci:S19_Encounter_Event ;
+    owl:inverseOf crmsci:O19_encountered_object ;
+    rdfs:comment """This property associates an instance of Encounter Event with an instance of Physical Thing that was encountered or observed as present during the event.
+
+    Examples:
+    - The encounter of a marble floor during the digging of a well in 1750 (S19) encountered object the Villa of the Papyri in Herculaneum (E18). (Sider, 1990, p. 536)
+    - The encounter of oak planks from a ship during a dig in a mound at the farm Lille Oseberg in Norway, in 1904 (S19) encountered object the Oseberg Ship (E18). (Ferguson, 2009, p.10-11)
+    """@en .
+
+  crmsci:O20_sampled_from_type_of_part
+    a owl:ObjectProperty ;
+    skos:prefLabel "O20 sampled from type of part"@en ;
+    skos:notation "O20" ;
+    rdfs:label "sampled from type of part"@en ;
+    rdfs:domain crmsci:S2_Sample_Taking ;
+    rdfs:range crm:E55_Type ;
+    owl:inverseOf crmsci:O20i_type_of_part_was_sampled_by ;
+    rdfs:comment """Shortcut Of: Sample Taking. O4 sampled at (was sampling location of): Place. P2 has type (is type of): E55 Type
+    This property associates the activity of a Sample Taking with the type of the location part from which a sample was taken. It is a shortcut of the property O4 sampled at (was sampling location of), and it is used as an alternative property, identifying features and material substantial as types of parts of sampling positions.
+
+    Examples:
+    - The sampling (S2) of tissue for DNA analysis of human remains in an archaeological site, sampled from type of part molar tooth (E55). (fictitious)
+    - The sampling (S2) undertaken by Joyce Plesters in June 1963 while she was working on the painting ‘Cupid complaining to Venus’ (Cranach), sampled from type of part paint (E55). (The National Gallery, London, 1963)
+    """@en .
+
+  crmsci:O20i_type_of_part_was_sampled_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "O20i type of part was sampled by"@en ;
+    skos:notation "O20i" ;
+    rdfs:label "type of part was sampled by"@en ;
+    rdfs:domain crm:E55_Type ;
+    rdfs:range crmsci:S2_Sample_Taking ;
+    owl:inverseOf crmsci:O20_sampled_from_type_of_part ;
+    rdfs:comment """Shortcut Of of the inverse property: Sample Taking. O4 sampled at (was sampling location of): Place. P2 has type (is type of): E55 Type
+    This property associates the activity of a Sample Taking with the type of the location part from which a sample was taken. It is a shortcut of the property O4 sampled at (was sampling location of), and it is used as an alternative property, identifying features and material substantial as types of parts of sampling positions.
+
+    Examples:
+    - The sampling (S2) of tissue for DNA analysis of human remains in an archaeological site, sampled from type of part molar tooth (E55). (fictitious)
+    - The sampling (S2) undertaken by Joyce Plesters in June 1963 while she was working on the painting ‘Cupid complaining to Venus’ (Cranach), sampled from type of part paint (E55). (The National Gallery, London, 1963)
+    """@en .
+
+  crmsci:O21_encountered_at
+    a owl:ObjectProperty ;
+    skos:prefLabel "O21 encountered at"@en ;
+    skos:notation "O21" ;
+    rdfs:label "encountered at"@en ;
+    rdfs:domain crmsci:S19_Encounter_Event ;
+    rdfs:range crm:E53_Place ;
+    owl:inverseOf crmsci:O21i_witnessed_encounter ;
+    rdfs:comment """This property associates an instance of Encounter Event with an instance of Place at which the things, which were encountered, were observed to be present. This may be given in absolute terms or in terms relative to the observed thing. The associated place must be within the boundaries of the Place at which the Encounter Event took place, if that has been given.
+    Note, that the encountered object may be larger and extend beyond the place of encounter, such as a corner of a building being excavated.
+
+    Examples:
+    - The encounter of the Oseberg Ship in 1904 (S19) encountered at the farm Lille Oseberg in Norway (E53). (Ferguson, 2009, p.10-11)
+    """@en .
+
+  crmsci:O21i_witnessed_encounter
+    a owl:ObjectProperty ;
+    skos:prefLabel "O21i witnessed encounter"@en ;
+    skos:notation "O21i" ;
+    rdfs:label "witnessed encounter"@en ;
+    rdfs:domain crm:E53_Place ;
+    rdfs:range crmsci:S19_Encounter_Event ;
+    owl:inverseOf crmsci:O21_encountered_at ;
+    rdfs:comment """This property associates an instance of Encounter Event with an instance of Place at which the things, which were encountered, were observed to be present. This may be given in absolute terms or in terms relative to the observed thing. The associated place must be within the boundaries of the Place at which the Encounter Event took place, if that has been given.
+    Note, that the encountered object may be larger and extend beyond the place of encounter, such as a corner of a building being excavated.
+
+    Examples:
+    - The encounter of the Oseberg Ship in 1904 (S19) encountered at the farm Lille Oseberg in Norway (E53). (Ferguson, 2009, p.10-11)
+    """@en .
+
+  crmsci:O23_is_defined_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "O23 is defined by"@en ;
+    skos:notation "O23" ;
+    rdfs:label "is defined by"@en ;
+    rdfs:domain crmsci:S22_Segment_of_Matter ;
+    rdfs:range crm:E92_Spacetime_Volume ;
+    owl:inverseOf crmsci:O23i_defines ;
+    rdfs:comment """Shortcut Of: E1 CRM Entity. P140i was attributed by: E15 Identifier Assignment. P37 assigned: E42 Identifier
+    This property identifies the E92 Spacetime Volume that defines a Segment of Matter. The spatial boundaries of the E92 Spacetime Volume are defined through Single Observation or declaration while the temporal boundaries are confined by Alteration events.
+
+    Examples:
+    - The accumulation zone (S22) of the landslide is defined by the evolution of the landslide of Santomerion village in 2008 (E92) (Litoseliti et al., 2014)
+    """@en .
+
+  crmsci:O23i_defines
+    a owl:ObjectProperty ;
+    skos:prefLabel "O23i defines"@en ;
+    skos:notation "O23i" ;
+    rdfs:label "defines"@en ;
+    rdfs:domain crm:E92_Spacetime_Volume ;
+    rdfs:range crmsci:S22_Segment_of_Matter ;
+    owl:inverseOf crmsci:O23_is_defined_by ;
+    rdfs:comment """Shortcut Of of the inverse property: E1 CRM Entity. P140i was attributed by: E15 Identifier Assignment. P37 assigned: E42 Identifier
+    This property identifies the E92 Spacetime Volume that defines a Segment of Matter. The spatial boundaries of the E92 Spacetime Volume are defined through Single Observation or declaration while the temporal boundaries are confined by Alteration events.
+
+    Examples:
+    - The accumulation zone (S22) of the landslide is defined by the evolution of the landslide of Santomerion village in 2008 (E92) (Litoseliti et al., 2014)
+    """@en .
+
+  crmsci:O24_measured
+    a owl:ObjectProperty ;
+    skos:prefLabel "O24 measured"@en ;
+    skos:notation "O24" ;
+    rdfs:label "measured"@en ;
+    rdfs:domain crmsci:S21_Scientific_Measurement ;
+    rdfs:range crmsci:S15_Observable_Entity ;
+    owl:inverseOf crmsci:O24i_was_measured_by ;
+    rdfs:subPropertyOf crmsci:O35_observed_entity ;
+    rdfs:comment """This property associates an instance of Scientific Measurement with an instance of Observable Entity to which it applied. An instance of Observable Entity may be measured more than once. Material things and processes may be measured, e.g. the number of words in a copy of a text, or the duration of an event. An instance of Scientific Measurement may measure a specific constellation of distinct instances of Observable Entity at some time, to determine a dimension holding between the latter, i.e. an instance of Relative Dimension.
+    This property is part of the fully developed path from Observable Entity through O24i was measured by (measured), Scientific Measurement, O39 observed dimension (was observed in), to E54 Dimension, which is shortcut by O12 has dimension (is dimension of).
+
+    Examples:
+    - The sensor measurement by IGME in 1999 (S21) measured the landslide displacement (S15) in the area of Parnitha (Lucchese et al., 2013; Kritikos et al., 2013; InGeoCloudS, 2012; InGeoCloudS, 2013)
+    """@en .
+
+  crmsci:O24i_was_measured_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "O24i was measured by"@en ;
+    skos:notation "O24i" ;
+    rdfs:label "was measured by"@en ;
+    rdfs:domain crmsci:S15_Observable_Entity ;
+    rdfs:range crmsci:S21_Scientific_Measurement ;
+    owl:inverseOf crmsci:O24_measured ;
+    rdfs:subPropertyOf crmsci:O35i_was_observed_by ;
+    rdfs:comment """This property associates an instance of Scientific Measurement with an instance of Observable Entity to which it applied. An instance of Observable Entity may be measured more than once. Material things and processes may be measured, e.g. the number of words in a copy of a text, or the duration of an event. An instance of Scientific Measurement may measure a specific constellation of distinct instances of Observable Entity at some time, to determine a dimension holding between the latter, i.e. an instance of Relative Dimension.
+    This property is part of the fully developed path from Observable Entity through O24i was measured by (measured), Scientific Measurement, O39 observed dimension (was observed in), to E54 Dimension, which is shortcut by O12 has dimension (is dimension of).
+
+    Examples:
+    - The sensor measurement by IGME in 1999 (S21) measured the landslide displacement (S15) in the area of Parnitha (Lucchese et al., 2013; Kritikos et al., 2013; InGeoCloudS, 2012; InGeoCloudS, 2013)
+    """@en .
+
+  crmsci:O25_contains
+    a owl:ObjectProperty ;
+    skos:prefLabel "O25 contains"@en ;
+    skos:notation "O25" ;
+    rdfs:label "contains"@en ;
+    rdfs:domain crmsci:S10_Material_Substantial ;
+    rdfs:range crmsci:S10_Material_Substantial ;
+    owl:inverseOf crmsci:O25i_is_contained_in ;
+    rdfs:comment """This property describes that an instance of Material Substantial was or is contained in another instance of Material Substantial regardless of whether the identity of the involved instances is based on the persistence of the form of material or on material substance that may change form.
+
+    Examples:
+    - The opal specimen from Jalisco in Mexico (E18) contains the fluid inclusion of the specimen (S14). (Rentro, 2019)
+    """@en .
+
+  crmsci:O25i_is_contained_in
+    a owl:ObjectProperty ;
+    skos:prefLabel "O25i is contained in"@en ;
+    skos:notation "O25i" ;
+    rdfs:label "is contained in"@en ;
+    rdfs:domain crmsci:S10_Material_Substantial ;
+    rdfs:range crmsci:S10_Material_Substantial ;
+    owl:inverseOf crmsci:O25_contains ;
+    rdfs:comment """This property describes that an instance of Material Substantial was or is contained in another instance of Material Substantial regardless of whether the identity of the involved instances is based on the persistence of the form of material or on material substance that may change form.
+
+    Examples:
+    - The opal specimen from Jalisco in Mexico (E18) contains the fluid inclusion of the specimen (S14). (Rentro, 2019)
+    """@en .
+
+  crmsci:O27_split
+    a owl:ObjectProperty ;
+    skos:prefLabel "O27 split"@en ;
+    skos:notation "O27" ;
+    rdfs:label "split"@en ;
+    rdfs:domain crmsci:S24_Sample_Splitting ;
+    rdfs:range crmsci:S13_Sample ;
+    owl:inverseOf crmsci:O27i_was_source_for ;
+    rdfs:subPropertyOf crmsci:O3_sampled_from ;
+    rdfs:comment """This property associates an instance of Sample Splitting with the instance of Sample which is the original sample being split.
+
+    Examples:
+    - The subsampling activity by Godfrey et al. in 2000 (S24) split the homogenous Sample (S13). [Part of the finely ground sample from fragment GT993 was taken to be used in ICP-AES analysis.] (Godfrey et al., 2002)
+    """@en .
+
+  crmsci:O27i_was_source_for
+    a owl:ObjectProperty ;
+    skos:prefLabel "O27i was source for"@en ;
+    skos:notation "O27i" ;
+    rdfs:label "was source for"@en ;
+    rdfs:domain crmsci:S13_Sample ;
+    rdfs:range crmsci:S24_Sample_Splitting ;
+    owl:inverseOf crmsci:O27_split ;
+    rdfs:subPropertyOf crmsci:O3i_was_sample_by ;
+    rdfs:comment """This property associates an instance of Sample Splitting with the instance of Sample which is the original sample being split.
+
+    Examples:
+    - The subsampling activity by Godfrey et al. in 2000 (S24) split the homogenous Sample (S13). [Part of the finely ground sample from fragment GT993 was taken to be used in ICP-AES analysis.] (Godfrey et al., 2002)
+    """@en .
+
+  crmsci:O28_is_conceptually_greater_than
+    a owl:ObjectProperty ;
+    skos:prefLabel "O28 is conceptually greater than"@en ;
+    skos:notation "O28" ;
+    rdfs:label "is conceptually greater than"@en ;
+    rdfs:domain crm:E55_Type ;
+    rdfs:range crm:E55_Type ;
+    owl:inverseOf crmsci:O28i_is_conceptually_less_than ;
+    rdfs:comment """This property associates an instance of E55 Type from a particular concept scheme or vocabulary to be declared as having an order relative to other instances of E55 Type in the same or other concept schemes, without necessarily having a specific value associated with either instance. This allows, for example, for an E55 Type instance representing the concept of "good" in a conservation report vocabulary to be greater than the E55 Type instance representing the concept of "average" in the same vocabulary. This property is transitive, and thus if "average" is greater than "poor", then "good" is also greater than "poor". In the domain of statistics, types that participate in this kind of relationship are called "Ordinal Variables"; as opposed to those without order which are called "Nominal Variables". This property allows for queries that select based on the relative position of participating E55 Types.
+
+    Examples:
+    - In the condition survey of the manuscripts of the library of the Saint Catherine Monastery, the option ‘supple’ (E55) is conceptually greater than the option ‘stiff’ (E55). [These options are used for assessing parchment on page 2, section 2 of the survey form and within the context of the dry conditions of the Sinai desert where the Monastery is, ‘supple’ is considered better because it is less brittle] (Pickwoad, 2004)
+    """@en .
+
+  crmsci:O28i_is_conceptually_less_than
+    a owl:ObjectProperty ;
+    skos:prefLabel "O28i is conceptually less than"@en ;
+    skos:notation "O28i" ;
+    rdfs:label "is conceptually less than"@en ;
+    rdfs:domain crm:E55_Type ;
+    rdfs:range crm:E55_Type ;
+    owl:inverseOf crmsci:O28_is_conceptually_greater_than ;
+    rdfs:comment """This property associates an instance of E55 Type from a particular concept scheme or vocabulary to be declared as having an order relative to other instances of E55 Type in the same or other concept schemes, without necessarily having a specific value associated with either instance. This allows, for example, for an E55 Type instance representing the concept of "good" in a conservation report vocabulary to be greater than the E55 Type instance representing the concept of "average" in the same vocabulary. This property is transitive, and thus if "average" is greater than "poor", then "good" is also greater than "poor". In the domain of statistics, types that participate in this kind of relationship are called "Ordinal Variables"; as opposed to those without order which are called "Nominal Variables". This property allows for queries that select based on the relative position of participating E55 Types.
+
+    Examples:
+    - In the condition survey of the manuscripts of the library of the Saint Catherine Monastery, the option ‘supple’ (E55) is conceptually greater than the option ‘stiff’ (E55). [These options are used for assessing parchment on page 2, section 2 of the survey form and within the context of the dry conditions of the Sinai desert where the Monastery is, ‘supple’ is considered better because it is less brittle] (Pickwoad, 2004)
+    """@en .
+
+  crmsci:O29_removed_sub-sample
+    a owl:ObjectProperty ;
+    skos:prefLabel "O29 removed sub-sample"@en ;
+    skos:notation "O29" ;
+    rdfs:label "removed sub-sample"@en ;
+    rdfs:domain crmsci:S24_Sample_Splitting ;
+    rdfs:range crmsci:S13_Sample ;
+    owl:inverseOf crmsci:O29i_was_sub-sample_removed_by ;
+    rdfs:subPropertyOf crmsci:O5_removed ;
+    rdfs:comment """This property associates an instance of Sample Splitting with the resulting instance of Sample that has been removed from the original sample. The new sample (i.e. the sub-sample) maintains the characteristic qualities of the original.
+
+    Examples:
+    - The subsampling activity by Godfrey et al. in 2000 (S24) removed sub-sample the ICP-AES subsample (S13). [This sub-sample was used for elemental analysis using inductively coupled plasma atomic emission spectrometry (ICP-AES) to reveal the composition of the original sample.] (Godfrey et al., 2002)
+    """@en .
+
+  crmsci:O29i_was_sub-sample_removed_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "O29i was sub-sample removed by"@en ;
+    skos:notation "O29i" ;
+    rdfs:label "was sub-sample removed by"@en ;
+    rdfs:domain crmsci:S13_Sample ;
+    rdfs:range crmsci:S24_Sample_Splitting ;
+    owl:inverseOf crmsci:O29_removed_sub-sample ;
+    rdfs:subPropertyOf crmsci:O5i_was_removed_by ;
+    rdfs:comment """This property associates an instance of Sample Splitting with the resulting instance of Sample that has been removed from the original sample. The new sample (i.e. the sub-sample) maintains the characteristic qualities of the original.
+
+    Examples:
+    - The subsampling activity by Godfrey et al. in 2000 (S24) removed sub-sample the ICP-AES subsample (S13). [This sub-sample was used for elemental analysis using inductively coupled plasma atomic emission spectrometry (ICP-AES) to reveal the composition of the original sample.] (Godfrey et al., 2002)
+    """@en .
+
+  crmsci:O30_determined_position
+    a owl:DatatypeProperty ;
+    skos:prefLabel "O30 determined position"@en ;
+    skos:notation "O30" ;
+    rdfs:label "determined position"@en ;
+    rdfs:domain crmsci:S23_Position_Determination ;
+    rdfs:range xsd:string;
+    rdfs:comment """This property associates an instance of Position Determination with the instance of E94 Space Primitive which is the result of that determination. The instance of E94 Space Primitive approximates the place occupied by the entity whose position is being determined.
+
+    Examples:
+    - The determination of the position of the Titanic for the initial distress call after hitting an iceberg (S23) determined position 41°44′N 50°24′W (E94). [This was quickly determined via ‘dead reckoning’, i.e. based on the distance travelled since the previous known location, extrapolating a previous dead reckoning for 14 April 1912 20:00] (Halpern, 2011; Boxhall, 1962)
+    - The determination of the position of the Titanic by officer Joseph G. Boxhall after the initial distress signal was sent (S23) determined position 41°46′N 50°14′W (E94). [This was again determined via dead reckoning but extrapolating Boxhall's own determination shortly after 20:00, and revised the original position.] (Halpern, 2011; Boxhall, 1962)
+    - The calculation of the position of the Titanic by Robert Ballard's team after the Titanic ship-wreck was found (S23) determined position 41°43′32′′N 49°56′49′′W (E94). [This was the position of the centre of the ‘boiler field’, part of the Titanic debris] (Ballard et al., 1987)
+    - The determination of the position of the Titanic at the time of the collision (S23), by Samuel Halpern in 2007, determined position 41°45.5′N 49°55′W (E94). [This was based on the position of the boiler field and the ocean drift at the time.] (Halpern, 2007)
+    """@en .
+
+  crmsci:O31_has_validity_time-span
+    a owl:ObjectProperty ;
+    skos:prefLabel "O31 has validity time-span"@en ;
+    skos:notation "O31" ;
+    rdfs:label "has validity time-span"@en ;
+    rdfs:domain crmsci:S23_Position_Determination ;
+    rdfs:range crm:E52_Time-Span ;
+    owl:inverseOf crmsci:O31i_is_time-span_validity_for ;
+    rdfs:subPropertyOf crm:P4_has_time-span ;
+    rdfs:comment """Shortcut Of: E1 CRM Entity. P140i was attributed by (assigned attribute to): E15 Identifier Assignment. P37 assigned (was assigned by): E42 Identifier
+    This property associates an instance of Position Determination with the instance of E52 Time-Span for which the determination is valid according to the observer at the time of the observation. No inferences can be made in relation to the validity of the determination outside this time-span, despite the fact that some entities are relatively stable, and their positions may remain the same after the determination. The time-span of validity should fall within the overall time-span of the process of determination.
+
+    Examples:
+    - The determination of the position of the Titanic for the initial distress call after hitting an iceberg (S23) has validity time-span the time of the collision (E52). [This is a plausible guess based on Boxhall’s account; the collision was on 14 April 1912 23:40 ship’s time.] (Halpern, 2011; Boxhall, 1962)
+    - The determination of the position of the Titanic by officer Joseph G. Boxhall after the initial distress signal was sent (S23) has validity time-span the time of the collision (E52). [Boxhall was convinced of the correctness of his position determination until his death.] (Halpern, 2011; Boxhall, 1962)
+    - The determination of the position of the Titanic by Robert Ballard's team after the Titanic ship-wreck was found (S23) has validity time-span the time of the position determination (E52). [This period falls within the 1st of September 1985 00:48, i.e. the first encounter of a piece of Titanic debris and 1987] (Ballard et al., 1987)
+    """@en .
+
+  crmsci:O31i_is_time-span_validity_for
+    a owl:ObjectProperty ;
+    skos:prefLabel "O31i is time-span validity for"@en ;
+    skos:notation "O31i" ;
+    rdfs:label "is time-span validity for"@en ;
+    rdfs:domain crm:E52_Time-Span ;
+    rdfs:range crmsci:S23_Position_Determination ;
+    owl:inverseOf crmsci:O31_has_validity_time-span ;
+    rdfs:subPropertyOf crm:P4i_is_time-span_of ;
+    rdfs:comment """Shortcut Of of the inverse property: E1 CRM Entity. P140i was attributed by (assigned attribute to): E15 Identifier Assignment. P37 assigned (was assigned by): E42 Identifier
+    This property associates an instance of Position Determination with the instance of E52 Time-Span for which the determination is valid according to the observer at the time of the observation. No inferences can be made in relation to the validity of the determination outside this time-span, despite the fact that some entities are relatively stable, and their positions may remain the same after the determination. The time-span of validity should fall within the overall time-span of the process of determination.
+
+    Examples:
+    - The determination of the position of the Titanic for the initial distress call after hitting an iceberg (S23) has validity time-span the time of the collision (E52). [This is a plausible guess based on Boxhall’s account; the collision was on 14 April 1912 23:40 ship’s time.] (Halpern, 2011; Boxhall, 1962)
+    - The determination of the position of the Titanic by officer Joseph G. Boxhall after the initial distress signal was sent (S23) has validity time-span the time of the collision (E52). [Boxhall was convinced of the correctness of his position determination until his death.] (Halpern, 2011; Boxhall, 1962)
+    - The determination of the position of the Titanic by Robert Ballard's team after the Titanic ship-wreck was found (S23) has validity time-span the time of the position determination (E52). [This period falls within the 1st of September 1985 00:48, i.e. the first encounter of a piece of Titanic debris and 1987] (Ballard et al., 1987)
+    """@en .
+
+  crmsci:O32_determined_position_of
+    a owl:ObjectProperty ;
+    skos:prefLabel "O32 determined position of"@en ;
+    skos:notation "O32" ;
+    rdfs:label "determined position of"@en ;
+    rdfs:domain crmsci:S23_Position_Determination ;
+    rdfs:range crmsci:S15_Observable_Entity ;
+    owl:inverseOf crmsci:O32i_was_located_by ;
+    rdfs:subPropertyOf crmsci:O35_observed_entity ;
+    rdfs:comment """This property associates an instance of Position Determination with the instance of Observable Entity whose position is being determined.
+
+    Examples:
+    - The determination of the position of the Titanic for the initial distress call after hitting an iceberg (S23) determined position of the Titanic (E22). (Halpern, 2011)
+    - The determination of the position of the Titanic by officer Joseph G. Boxhall after the initial distress signal was sent (S23) determined position of the Titanic (E22) (Halpern, 2011)
+    - The determination of the position of the Titanic by Robert Ballard's team after the Titanic ship-wreck was found (S23) determined position of the Titanic. [More precisely it determined the position of the centre of the ‘boiler field’ of Titanic’s debris] (E22) (Ballard et al., 1987)
+    - The determination of the position of the Titanic at the time of the collision (S23) by Samuel Halpern in 2007, determined position of the Titanic (E22)
+    """@en .
+
+  crmsci:O32i_was_located_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "O32i was located by"@en ;
+    skos:notation "O32i" ;
+    rdfs:label "was located by"@en ;
+    rdfs:domain crmsci:S15_Observable_Entity ;
+    rdfs:range crmsci:S23_Position_Determination ;
+    owl:inverseOf crmsci:O32_determined_position_of ;
+    rdfs:subPropertyOf crmsci:O35i_was_observed_by ;
+    rdfs:comment """This property associates an instance of Position Determination with the instance of Observable Entity whose position is being determined.
+
+    Examples:
+    - The determination of the position of the Titanic for the initial distress call after hitting an iceberg (S23) determined position of the Titanic (E22). (Halpern, 2011)
+    - The determination of the position of the Titanic by officer Joseph G. Boxhall after the initial distress signal was sent (S23) determined position of the Titanic (E22) (Halpern, 2011)
+    - The determination of the position of the Titanic by Robert Ballard's team after the Titanic ship-wreck was found (S23) determined position of the Titanic. [More precisely it determined the position of the centre of the ‘boiler field’ of Titanic’s debris] (E22) (Ballard et al., 1987)
+    - The determination of the position of the Titanic at the time of the collision (S23) by Samuel Halpern in 2007, determined position of the Titanic (E22)
+    """@en .
+
+  crmsci:O33_is_relative_to
+    a owl:ObjectProperty ;
+    skos:prefLabel "O33 is relative to"@en ;
+    skos:notation "O33" ;
+    rdfs:label "is relative to"@en ;
+    rdfs:domain crmsci:S25_Relative_Dimension ;
+    rdfs:range crmsci:S15_Observable_Entity ;
+    owl:inverseOf crmsci:O33i_has_relative_dimension ;
+    rdfs:subPropertyOf crmsci:O12i_is_dimension_of ;
+    rdfs:comment """This property associates an instance of S25 with one of the instances of Observable Entity between which it was holding.
+
+    Examples:
+    - The Moon has relative dimension the distance between the Moon and the Earth [The distance to the Moon can be measured with millimeter precision.] (‘Lunar Laser Ranging experiments’, 2024)
+    - The Earth has relative dimension the distance between the Moon and the Earth. (S10) (‘Lunar Laser Ranging experiments’, 2024)
+    """@en .
+
+  crmsci:O33i_has_relative_dimension
+    a owl:ObjectProperty ;
+    skos:prefLabel "O33i has relative dimension"@en ;
+    skos:notation "O33i" ;
+    rdfs:label "has relative dimension"@en ;
+    rdfs:domain crmsci:S15_Observable_Entity ;
+    rdfs:range crmsci:S25_Relative_Dimension ;
+    owl:inverseOf crmsci:O33_is_relative_to ;
+    rdfs:subPropertyOf crmsci:O12_has_dimension ;
+    rdfs:comment """This property associates an instance of S25 with one of the instances of Observable Entity between which it was holding.
+
+    Examples:
+    - The Moon has relative dimension the distance between the Moon and the Earth [The distance to the Moon can be measured with millimeter precision.] (‘Lunar Laser Ranging experiments’, 2024)
+    - The Earth has relative dimension the distance between the Moon and the Earth. (S10) (‘Lunar Laser Ranging experiments’, 2024)
+    """@en .
+
+  crmsci:O34_has_vertex
+    a owl:ObjectProperty ;
+    skos:prefLabel "O34 has vertex"@en ;
+    skos:notation "O34" ;
+    rdfs:label "has vertex"@en ;
+    rdfs:domain crmsci:S26_Angle ;
+    rdfs:range crmsci:S15_Observable_Entity ;
+    owl:inverseOf crmsci:O34i_is_vertex_of ;
+    rdfs:subPropertyOf crmsci:O33_is_relative_to ;
+    rdfs:comment """This property associates an instance of Angle with the instance of Observable Entity that includes in its extent the vertex of the former.
+    Typical examples are respective marked spots on Earth or a ship where a theodolite (‘Theodolite’, 2025), a sextant (‘Sextant’, 2025), or a compass is positioned during a position measurement.
+    """@en .
+
+  crmsci:O34i_is_vertex_of
+    a owl:ObjectProperty ;
+    skos:prefLabel "O34i is vertex of"@en ;
+    skos:notation "O34i" ;
+    rdfs:label "is vertex of"@en ;
+    rdfs:domain crmsci:S15_Observable_Entity ;
+    rdfs:range crmsci:S26_Angle ;
+    owl:inverseOf crmsci:O34_has_vertex ;
+    rdfs:subPropertyOf crmsci:O33i_has_relative_dimension ;
+    rdfs:comment """This property associates an instance of Angle with the instance of Observable Entity that includes in its extent the vertex of the former.
+    Typical examples are respective marked spots on Earth or a ship where a theodolite (‘Theodolite’, 2025), a sextant (‘Sextant’, 2025), or a compass is positioned during a position measurement.
+    """@en .
+
+  crmsci:O35_observed_entity
+    a owl:ObjectProperty ;
+    skos:prefLabel "O35 observed entity"@en ;
+    skos:notation "O35" ;
+    rdfs:label "observed entity"@en ;
+    rdfs:domain crmsci:S27_Observation ;
+    rdfs:range crmsci:S15_Observable_Entity ;
+    owl:inverseOf crmsci:O35i_was_observed_by ;
+    rdfs:comment """Shortcut Of: Observation. O36 expressed the observed as (was the expression of): Observable Situation. O40 refers to observable entity (is referred to in): Observable Entity
+    This property associates an instance of Observation with one of the instances of Observable Entity that were observed. Specifically, it describes that a thing, a feature, a phenomenon, or some process, is observed by an activity of Observation.
+    This property is a strong shortcut for the detailed path from Observation through O36 expressed the observed as (was the expression of), Observable Situation, O40 refers to observable entity (is referred to in), to Observable Entity.
+
+    Examples:
+    - The engineers’ observation on the slope of Panagopoula coastal site, near Patras, on the 25th–26th April 1971 and the 3rd May 1971 (S27) observed entity the rotational landslide at the same site (E4). (Tavoularis et al., 2017)
+    """@en .
+
+  crmsci:O35i_was_observed_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "O35i was observed by"@en ;
+    skos:notation "O35i" ;
+    rdfs:label "was observed by"@en ;
+    rdfs:domain crmsci:S15_Observable_Entity ;
+    rdfs:range crmsci:S27_Observation ;
+    owl:inverseOf crmsci:O35_observed_entity ;
+    rdfs:comment """Shortcut Of of the inverse property: Observation. O36 expressed the observed as (was the expression of): Observable Situation. O40 refers to observable entity (is referred to in): Observable Entity
+    This property associates an instance of Observation with one of the instances of Observable Entity that were observed. Specifically, it describes that a thing, a feature, a phenomenon, or some process, is observed by an activity of Observation.
+    This property is a strong shortcut for the detailed path from Observation through O36 expressed the observed as (was the expression of), Observable Situation, O40 refers to observable entity (is referred to in), to Observable Entity.
+
+    Examples:
+    - The engineers’ observation on the slope of Panagopoula coastal site, near Patras, on the 25th–26th April 1971 and the 3rd May 1971 (S27) observed entity the rotational landslide at the same site (E4). (Tavoularis et al., 2017)
+    """@en .
+
+  crmsci:O36_expressed_the_observed_as
+    a owl:ObjectProperty ;
+    skos:prefLabel "O36 expressed the observed as"@en ;
+    skos:notation "O36" ;
+    rdfs:label "expressed the observed as"@en ;
+    rdfs:domain crmsci:S27_Observation ;
+    rdfs:range crmsci:S28_Observable_Situation ;
+    owl:inverseOf crmsci:O36i_was_the_expression_of ;
+    rdfs:comment """Shortcut Of: Observation. J2 concluded that (was concluded by): I2 Belief. J4 that (is subject of): Observable Situation. J5 holds to be: I6 Belief Value (= “True”)
+    This property associates an instance of Observation with an instance of Observable Situation that the actors carrying out the observation used to express the observed phenomena of their interests. The alleged time-span of the observed situation must be equal to or within the overall time-span of the domain instance used for this property. A narrower time-span of validity for the observed situation can be documented via the property Observable Situation. J24 held at least for (is at least validity of): E52 Time-Span.
+    This property is a strong shortcut for the path from Observation through J2 concluded that (was concluded by), I2 Belief, J4 that (is subject of), Observable Situation, J5 holds to be, to I6 Belief Value (= “True”).
+
+    Examples:
+    - The observation between April, 25 and May, 3 1971 at the slope of the coastal region of Panagopoula (S27), expressed the observed as the rotational landslide on the same site (S15). (Tavoularis et al., 2017)
+    - The survey of Sinai MS GREEK 418 (S27) expressed the observed as a detached triple-braided clasp strap (S15). (Honey and Pickwoad, 2010)
+    """@en .
+
+  crmsci:O36i_was_the_expression_of
+    a owl:ObjectProperty ;
+    skos:prefLabel "O36i was the expression of"@en ;
+    skos:notation "O36i" ;
+    rdfs:label "was the expression of"@en ;
+    rdfs:domain crmsci:S28_Observable_Situation ;
+    rdfs:range crmsci:S27_Observation ;
+    owl:inverseOf crmsci:O36_expressed_the_observed_as ;
+    rdfs:comment """Shortcut Of of the inverse property: Observation. J2 concluded that (was concluded by): I2 Belief. J4 that (is subject of): Observable Situation. J5 holds to be: I6 Belief Value (= “True”)
+    This property associates an instance of Observation with an instance of Observable Situation that the actors carrying out the observation used to express the observed phenomena of their interests. The alleged time-span of the observed situation must be equal to or within the overall time-span of the domain instance used for this property. A narrower time-span of validity for the observed situation can be documented via the property Observable Situation. J24 held at least for (is at least validity of): E52 Time-Span.
+    This property is a strong shortcut for the path from Observation through J2 concluded that (was concluded by), I2 Belief, J4 that (is subject of), Observable Situation, J5 holds to be, to I6 Belief Value (= “True”).
+
+    Examples:
+    - The observation between April, 25 and May, 3 1971 at the slope of the coastal region of Panagopoula (S27), expressed the observed as the rotational landslide on the same site (S15). (Tavoularis et al., 2017)
+    - The survey of Sinai MS GREEK 418 (S27) expressed the observed as a detached triple-braided clasp strap (S15). (Honey and Pickwoad, 2010)
+    """@en .
+
+  crmsci:O37_expressed_the_observed_as_observable_proposition
+    a owl:ObjectProperty ;
+    skos:prefLabel "O37 expressed the observed as observable proposition"@en ;
+    skos:notation "O37" ;
+    rdfs:label "expressed the observed as observable proposition"@en ;
+    rdfs:domain crmsci:S4_Single_Observation ;
+    rdfs:range crmsci:S29_Observable_Proposition ;
+    owl:inverseOf crmsci:O37i_was_observable_proposition_characterized_by ;
+    rdfs:subPropertyOf crminf:J33_assigned_propositions, crmsci:O36_expressed_the_observed_as ;
+    rdfs:comment """This property associates an instance of Single Observation with the instance of Observable Proposition that the actors carrying out the observation used to express the observed phenomenon of interest. This property forms a logical interface between observing single propositions or more generally observable situations. It is particularly relevant for implementing effective queries. For documentation, the use of the simpler shortcut properties, i.e., O8 observed (was observed by), O9 observed property type (property type was observed by), and O16 observed value (value was observed by) will typically be the preferred approach.
+    The property is part of the fully developed path from Single Observation through O37 expressed the observed as observable proposition (was observable proposition characterized by), Observable Proposition, O38 has domain (is domain of), Observable Entity, which is shortcut by O8 observed (was observed by).
+    The property is part of the fully developed path from Single Observation through O37 expressed the observed as observable proposition (was observable proposition characterized by), Observable Proposition, J31 has range (is range of), E1 CRM Entity, which is shortcut by O16 observed value (value was observed by).
+    The property is part of the fully developed path from Single Observation through O37 expressed the observed as observable proposition (was observable proposition characterized by), Observable Proposition, J32 has property type (is property type of), E55 Type, which is shortcut by O9 observed property type (property type was observed by).
+
+    Examples:
+    - The inspection of the the burial arrangement in La Tomba dell'Aryballos sospeso on the left bench by Prof. Alessandro Mandolesi on the 21st of September 2013 (S4) expressed the observed as observable proposition the proposition set with content {The burial arrangement in La Tomba dell’Aryballos sospeso on the left bench (E22 Human-Made Object} (S29). (Mandolesi, 2013)
+    """@en .
+
+  crmsci:O37i_was_observable_proposition_characterized_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "O37i was observable proposition characterized by"@en ;
+    skos:notation "O37i" ;
+    rdfs:label "was observable proposition characterized by"@en ;
+    rdfs:domain crmsci:S29_Observable_Proposition ;
+    rdfs:range crmsci:S4_Single_Observation ;
+    owl:inverseOf crmsci:O37_expressed_the_observed_as_observable_proposition ;
+    rdfs:subPropertyOf crminf:J33i_is_assigned_by, crmsci:O36i_was_the_expression_of ;
+    rdfs:comment """This property associates an instance of Single Observation with the instance of Observable Proposition that the actors carrying out the observation used to express the observed phenomenon of interest. This property forms a logical interface between observing single propositions or more generally observable situations. It is particularly relevant for implementing effective queries. For documentation, the use of the simpler shortcut properties, i.e., O8 observed (was observed by), O9 observed property type (property type was observed by), and O16 observed value (value was observed by) will typically be the preferred approach.
+    The property is part of the fully developed path from Single Observation through O37 expressed the observed as observable proposition (was observable proposition characterized by), Observable Proposition, O38 has domain (is domain of), Observable Entity, which is shortcut by O8 observed (was observed by).
+    The property is part of the fully developed path from Single Observation through O37 expressed the observed as observable proposition (was observable proposition characterized by), Observable Proposition, J31 has range (is range of), E1 CRM Entity, which is shortcut by O16 observed value (value was observed by).
+    The property is part of the fully developed path from Single Observation through O37 expressed the observed as observable proposition (was observable proposition characterized by), Observable Proposition, J32 has property type (is property type of), E55 Type, which is shortcut by O9 observed property type (property type was observed by).
+
+    Examples:
+    - The inspection of the the burial arrangement in La Tomba dell'Aryballos sospeso on the left bench by Prof. Alessandro Mandolesi on the 21st of September 2013 (S4) expressed the observed as observable proposition the proposition set with content {The burial arrangement in La Tomba dell’Aryballos sospeso on the left bench (E22 Human-Made Object} (S29). (Mandolesi, 2013)
+    """@en .
+
+  crmsci:O38_has_domain
+    a owl:ObjectProperty ;
+    skos:prefLabel "O38 has domain"@en ;
+    skos:notation "O38" ;
+    rdfs:label "has domain"@en ;
+    rdfs:domain crmsci:S29_Observable_Proposition ;
+    rdfs:range crmsci:S15_Observable_Entity ;
+    owl:inverseOf crmsci:O38i_is_domain_of ;
+    rdfs:subPropertyOf crminf:J30_has_domain, crmsci:O40_refers_to_observable_entity ;
+    rdfs:comment """This property associates an instance of Observable Proposition with an instance of Observable Entity that must appear as the only domain instance of the proposition in the content of the former.
+    This property is part of the fully developed path from S4 Single Observation through O37 expressed the observed as observable proposition (was observable proposition characterized by), Observable Proposition, O38 has domain (is domain of), SO15 Observable Entity, which is shortcut by O8 observed (was observed by).
+
+    Examples:
+    - The proposition set with content: {The burial arrangement on the left bench in La Tomba dell’Aryballos sospeso (E22 Human-Made Object)} (S29) has domain the burial arrangement in La Tomba dell’Aryballos sospeso on the left bench (E22 Human-Made Object). (Mandolesi, 2013)
+    - The proposition set with content: {The skeleton on the left bench in La Tomba dell’Aryballos sospeso (E20 Biological Object) forms part of the burial arrangement on the left bench in La Tomba dell Aryballos sospeso} (S29) has domain the skeleton on the left bench in La Tomba dell’Aryballos sospeso (E20). (Mandolesi, 2013)
+    """@en .
+
+  crmsci:O38i_is_domain_of
+    a owl:ObjectProperty ;
+    skos:prefLabel "O38i is domain of"@en ;
+    skos:notation "O38i" ;
+    rdfs:label "is domain of"@en ;
+    rdfs:domain crmsci:S15_Observable_Entity ;
+    rdfs:range crmsci:S29_Observable_Proposition ;
+    owl:inverseOf crmsci:O38_has_domain ;
+    rdfs:subPropertyOf crminf:J30i_is_domain_of, crmsci:O40i_is_referred_to_in ;
+    rdfs:comment """This property associates an instance of Observable Proposition with an instance of Observable Entity that must appear as the only domain instance of the proposition in the content of the former.
+    This property is part of the fully developed path from S4 Single Observation through O37 expressed the observed as observable proposition (was observable proposition characterized by), Observable Proposition, O38 has domain (is domain of), SO15 Observable Entity, which is shortcut by O8 observed (was observed by).
+
+    Examples:
+    - The proposition set with content: {The burial arrangement on the left bench in La Tomba dell’Aryballos sospeso (E22 Human-Made Object)} (S29) has domain the burial arrangement in La Tomba dell’Aryballos sospeso on the left bench (E22 Human-Made Object). (Mandolesi, 2013)
+    - The proposition set with content: {The skeleton on the left bench in La Tomba dell’Aryballos sospeso (E20 Biological Object) forms part of the burial arrangement on the left bench in La Tomba dell Aryballos sospeso} (S29) has domain the skeleton on the left bench in La Tomba dell’Aryballos sospeso (E20). (Mandolesi, 2013)
+    """@en .
+
+  crmsci:O39_observed_dimension
+    a owl:ObjectProperty ;
+    skos:prefLabel "O39 observed dimension"@en ;
+    skos:notation "O39" ;
+    rdfs:label "observed dimension"@en ;
+    rdfs:domain crmsci:S21_Scientific_Measurement ;
+    rdfs:range crm:E54_Dimension ;
+    owl:inverseOf crmsci:O39i_was_observed_in ;
+    rdfs:comment """This property records the dimension of an instance of Observable Entity or a specific constellation of such instances that was observed in an instance of Scientific Measurement. The observed items should be documented using the property O24 measured (was measured by).
+    One measurement activity may determine only one dimension of an instance of Observable Entity or a specific constellation of such instances. Such a dimension may be any observable and quantifiable aspect of the latter. Weight, length, spatial or temporal distances are characteristic kinds of dimensions in this sense.
+    A dimension of one or more instances of Observable Entity may be determined either by direct observation or using recorded evidence. However, determination by measuring requires the presence of the measured items. Other methods may constitute other kinds of instances of I1 Argumentation.
+    Even though knowledge of the value of a dimension requires measurement, the dimension may be an object of discourse prior to, or even without, any measurement being made.
+    This property is a part of the fully developed path from Observable Entity through O24i was measured by (measured), Scientific Measurement, O39 observed dimension (was observed in) to E54 Dimension.
+    Referring to an instance of E54 Dimension by this property is mutually exclusive to using either property P191 had duration (was duration of) or P179 had sales price (was sales price). This follows from the same rule as for O12 has dimension (is dimension of).
+    """@en .
+
+  crmsci:O39i_was_observed_in
+    a owl:ObjectProperty ;
+    skos:prefLabel "O39i was observed in"@en ;
+    skos:notation "O39i" ;
+    rdfs:label "was observed in"@en ;
+    rdfs:domain crm:E54_Dimension ;
+    rdfs:range crmsci:S21_Scientific_Measurement ;
+    owl:inverseOf crmsci:O39_observed_dimension ;
+    rdfs:comment """This property records the dimension of an instance of Observable Entity or a specific constellation of such instances that was observed in an instance of Scientific Measurement. The observed items should be documented using the property O24 measured (was measured by).
+    One measurement activity may determine only one dimension of an instance of Observable Entity or a specific constellation of such instances. Such a dimension may be any observable and quantifiable aspect of the latter. Weight, length, spatial or temporal distances are characteristic kinds of dimensions in this sense.
+    A dimension of one or more instances of Observable Entity may be determined either by direct observation or using recorded evidence. However, determination by measuring requires the presence of the measured items. Other methods may constitute other kinds of instances of I1 Argumentation.
+    Even though knowledge of the value of a dimension requires measurement, the dimension may be an object of discourse prior to, or even without, any measurement being made.
+    This property is a part of the fully developed path from Observable Entity through O24i was measured by (measured), Scientific Measurement, O39 observed dimension (was observed in) to E54 Dimension.
+    Referring to an instance of E54 Dimension by this property is mutually exclusive to using either property P191 had duration (was duration of) or P179 had sales price (was sales price). This follows from the same rule as for O12 has dimension (is dimension of).
+    """@en .
+
+  crmsci:O40_refers_to_observable_entity
+    a owl:ObjectProperty ;
+    skos:prefLabel "O40 refers to observable entity"@en ;
+    skos:notation "O40" ;
+    rdfs:label "refers to observable entity"@en ;
+    rdfs:domain crmsci:S28_Observable_Situation ;
+    rdfs:range crmsci:S15_Observable_Entity ;
+    owl:inverseOf crmsci:O40i_is_referred_to_in ;
+    rdfs:subPropertyOf crminf:J28_contains_entity_reference ;
+    rdfs:comment """This property associates an instance of Observable Situation with an instance of Observable Entity that appears as an element of one or more propositions in the content of the former.
+    This property serves on one side to relate an instance of Observable Situation to other contexts of interest, in particular when its content is or cannot be represented as a Named Graph in the same knowledge base. On the other hand, it plays a structural role in this model for expressing a minimal formal constraint for the observability of what is referred by an instance of Observable Situation.
+    This property is part of the fully developed path from S4 Single Observation through O37 expressed the observed as observable proposition (was observable proposition characterized by), Observable Proposition, O38 has domain (is domain of), to Observable Entity, which is strongly shortcut by O8 observed (was observed by).
+
+    Examples:
+    - The proposition set with content: 
+    - {Nero on July 19, 64 AD (E93 Presence)
+    - P164 is temporally specified by: July 19, 64 AD (E52 Timespan)
+    - P195 was a presence of: Nero Claudius Caesar Drusus Germanicus (E21 Person)
+    - P167 was within the settlement of Antium (E27 Site) in 64AD
+    - }
+    - refers to the observable entity Nero Claudius Caesar Drusus Germanicus (E21, S15).
+    """@en .
+
+  crmsci:O40i_is_referred_to_in
+    a owl:ObjectProperty ;
+    skos:prefLabel "O40i is referred to in"@en ;
+    skos:notation "O40i" ;
+    rdfs:label "is referred to in"@en ;
+    rdfs:domain crmsci:S15_Observable_Entity ;
+    rdfs:range crmsci:S28_Observable_Situation ;
+    owl:inverseOf crmsci:O40_refers_to_observable_entity ;
+    rdfs:subPropertyOf crminf:J28i_is_referred_to_in ;
+    rdfs:comment """This property associates an instance of Observable Situation with an instance of Observable Entity that appears as an element of one or more propositions in the content of the former.
+    This property serves on one side to relate an instance of Observable Situation to other contexts of interest, in particular when its content is or cannot be represented as a Named Graph in the same knowledge base. On the other hand, it plays a structural role in this model for expressing a minimal formal constraint for the observability of what is referred by an instance of Observable Situation.
+    This property is part of the fully developed path from S4 Single Observation through O37 expressed the observed as observable proposition (was observable proposition characterized by), Observable Proposition, O38 has domain (is domain of), to Observable Entity, which is strongly shortcut by O8 observed (was observed by).
+
+    Examples:
+    - The proposition set with content: 
+    - {Nero on July 19, 64 AD (E93 Presence)
+    - P164 is temporally specified by: July 19, 64 AD (E52 Timespan)
+    - P195 was a presence of: Nero Claudius Caesar Drusus Germanicus (E21 Person)
+    - P167 was within the settlement of Antium (E27 Site) in 64AD
+    - }
+    - refers to the observable entity Nero Claudius Caesar Drusus Germanicus (E21, S15).
+    """@en .
+
+  crm:P46_is_composed_of rdfs:subPropertyOf crmsci:O25_contains .
+  crm:P46i_forms_part_of rdfs:subPropertyOf crmsci:O25i_is_contained_in .
+  crm:P31_has_modified rdfs:subPropertyOf crmsci:O18_altered .
+  crm:P31i_was_modified_by rdfs:subPropertyOf crmsci:O18i_was_altered_by .
+  crm:P39_measured rdfs:subPropertyOf crmsci:O24_measured, crmsci:O8_observed .
+  crm:P39i_was_measured_by rdfs:subPropertyOf crmsci:O24i_was_measured_by, crmsci:O8i_was_observed_by .
+  crm:P40_observed_dimension rdfs:subPropertyOf crmsci:O16_observed_value, crmsci:O39_observed_dimension .
+  crm:P40i_was_observed_in rdfs:subPropertyOf crmsci:O16i_value_was_observed_by, crmsci:O39i_was_observed_in .
+  crm:P108_has_produced rdfs:subPropertyOf crmsci:O17_generated .
+  crm:P108i_was_produced_by rdfs:subPropertyOf crmsci:O17i_was_generated_by .
+  crm:P112_diminished rdfs:subPropertyOf crmsci:O1_diminished .
+  crm:P112i_was_diminished_by rdfs:subPropertyOf crmsci:O1i_was_diminished_by .
+}

@@ -701,7 +701,7 @@
       <div class="new-resource-card">
         <mp-event-trigger id='\{{resourceName.value}}-info-button-trigger' 
                           type='Component.TemplateUpdate'
-                          data='{"info": "\{{resourceName.value}}",
+                          data='{"resourceName": "\{{resourceName.value}}",
                                   "resourceOntologyClass": "\{{resourceOntologyClass.value}}",
                                   "resourceDescription": "\{{resourceDescription.value}}"
                                 }' 
@@ -722,10 +722,10 @@
 {{#*inline "resourceInfoArea"}}
   <mp-event-target-template-render id='resource-info-area' template='\{{> template}}'>
     <template id='template'>
-      \{{#if info}}
+      \{{#if resourceName}}
         <div class="resource-info-area-container">
           <div class="resource-info-area-header">
-            <b class="text-truncate-line1">\{{info}}</b>
+            <b class="text-truncate-line1">\{{resourceName}}</b>
             <mp-event-trigger id='close-info-section'
                               type='Component.TemplateUpdate'
                               data='{ "hideSection": "true" }'
@@ -737,24 +737,42 @@
           </div>
           <div class="resource-info-area-content color-secondary">
             \{{#if resourceDescription}}
-              \{{resourceDescription}}
+              <div class="resource-info-area-section-title">\{{resourceName}} definition:</div>
+              <div class="text-section">\{{resourceDescription}}</div>  
             \{{else}}
-              <semantic-query query='SELECT DISTINCT ?ontologyDescription WHERE {
+              <semantic-query query='SELECT DISTINCT ?ontologyDescription ?ontologyExamples WHERE {
                                         <\{{resourceOntologyClass}}> rdfs:comment ?ontologyDescription .
+                                        OPTIONAL {
+                                          <\{{resourceOntologyClass}}> skos:example ?ontologyExamples .
+                                        }
                                       }'
                               template='\{{> template}}'
                               no-result-template='\{{> noResults}}'>
 
                 <template id='template'>
                   <div>
-                    \{{#each bindings}}
-                      <p>\{{ontologyDescription.value}}</p>
-                    \{{/each}}
+                    \{{#if bindings.0.ontologyDescription.value}}
+                      <div class="resource-info-area-section-title">\{{resourceName}} definition:</div>
+                      <div class="text-section">
+                        \{{#each bindings}}
+                          <p>\{{ontologyDescription.value}}</p>
+                        \{{/each}}
+                      </div>
+                    \{{/if}}
+                    
+                    \{{#if bindings.0.ontologyExamples.value}}
+                      <div class="resource-info-area-section-title">Examples:</div>
+                      <div class="text-section example-section">
+                        \{{#each bindings}}
+                         <p>\{{ontologyExamples.value}}</p>
+                        \{{/each}}
+                      </div>
+                    \{{/if}}
                   </div>
                 </template>
                                   
                 <template id="noResults">
-                  <div>No deefinition available</div>
+                  <div>No definition available</div>
                 </template>
 
               </semantic-query>

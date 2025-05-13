@@ -7,153 +7,160 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix crmdig: <http://www.ics.forth.gr/isl/CRMdig/> .
+@prefix crmdig: <http://www.cidoc-crm.org/extensions/crmdig/> .
 @prefix rshelp: <http://researchspace.org/help/> .
-@prefix crmsci: <http://www.cidoc-crm.org/cidoc-crm/CRMsci/> .
-@prefix crmgeo: <http://www.ics.forth.gr/isl/CRMgeo/> .
+@prefix crmsci: <http://www.cidoc-crm.org/extensions/crmsci/> .
+@prefix crmgeo: <http://www.cidoc-crm.org/extensions/crmgeo/> .
 @prefix sp: <http://spinrdf.org/sp#> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
-@prefix crminfluence: <http://www.cidoc-crm.org/cidoc-crm/influence/> .
+@prefix crminfluence: <http://www.cidoc-crm.org/extensions/influence/> .
 @prefix crm: <http://www.cidoc-crm.org/cidoc-crm/> .
-@prefix crminf: <http://www.ics.forth.gr/isl/CRMinf/> .
+@prefix crminf: <http://www.cidoc-crm.org/extensions/crminf/> .
 @prefix Admin: <http://www.researchspace.org/resource/admin/> .
 @prefix bds: <http://www.bigdata.com/rdf/search#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix crmba: <http://www.cidoc-crm.org/cidoc-crm/CRMba/> .
+@prefix crmba: <http://www.cidoc-crm.org/extensions/crmba/> .
 @prefix ontodia: <http://ontodia.org/schema/v1#> .
-@prefix crmarchaeo: <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/> .
+@prefix crmarchaeo: <http://www.cidoc-crm.org/extensions/crmarchaeo/> .
 @prefix forms: <http://www.researchspace.org/resource/system/forms/> .
 @prefix lrmoo: <http://iflastandards.info/ns/lrm/lrmoo/> .
 
 <http://www.cidoc-crm.org/cidoc-crm/context> {
       
-    <http://www.cidoc-crm.org/cidoc-crm/> a owl:Ontology;
+  <http://www.cidoc-crm.org/cidoc-crm/> a owl:Ontology;
     rdfs:comment "The formal definition of the CIDOC Conceptual Reference Model (\"CRM\"), a formal ontology intended to facilitate the integration, mediation and interchange of heterogeneous cultural heritage information."@en;
     rdfs:label "CIDOC CRM v7.1.3"@en ;
     owl:versionInfo "7.1.3"@en  .
-	
-    crm:E10_Transfer_of_Custody a owl:Class;
-                                                                 rdfs:comment """This class comprises transfers of the physical custody or the legal responsibility for the physical custody of objects. The recording of the donor or recipient is optional. It is possible that in an instance of E10 Transfer of Custody there is either no donor or no recipient.
-Depending on the circumstances, it may describe:
-1. the beginning of custody (there is no previous custodian)
-2. the end of custody (there is no subsequent custodian)
-3. the transfer of custody (transfer from one custodian to the next)
-4. the receipt of custody from an unknown source (the previous custodian is unknown)
-5. the declared loss of an object (the current or subsequent custodian is unknown)
-In the event that only a single kind of transfer of custody occurs, either the legal responsibility for the custody or the actual physical possession of the object but not both, this difference should be expressed using the property P2 has type (is type of).
-The sense of physical possession requires that the object of custody be in the hands of the keeper at least with a part representative for the whole. The way, in which a representative part is defined, should ensure that it is unambiguous who keeps a part and who the whole and should be consistent with the identity criteria of the kept instance of E18 Physical Thing.
-The interpretation of the museum notion of \"accession\" differs between institutions. The CIDOC CRM therefore models legal ownership and physical custody separately. Institutions will then model their specific notions of accession and deaccession as combinations of these.
-Theft is a specific case of illegal transfer of custody."""@en;
-                                                                 rdfs:label "Transfer of Custody"@en,
-                                                                            "Transfert de la garde"@fr,
-                                                                            "Transferência de Custódia"@pt,
-                                                                            "Übertragung des Gewahrsams"@de,
-                                                                            "Μεταβίβαση Κατοχής"@el,
-                                                                            "Пeрeдача Хранeния"@ru,
-                                                                            "转移监护权"@zh;
-                                                                 rdfs:subClassOf crm:E7_Activity.
-    crm:E11_Modification a owl:Class;
-                                                          rdfs:comment """This class comprises instances of E7 Activity that are undertaken to create, alter or change instances of E24 Physical Human-Made Thing.
-This class includes the production of an item from raw materials and other so far undocumented objects. It also includes the conservation treatment of an object.
-Since the distinction between modification and production is not always clear, modification is regarded as the more generally applicable concept. This implies that some items may be consumed or destroyed in an instance of E11 Modification, and that others may be produced as a result of it. An event should also be documented using an instance of E81 Transformation if it results in the destruction of one or more objects and the simultaneous production of others using parts or material from the originals. In this case, the new items have separate identities.
-An activity undertaken on an object which was designed to alter it, but which, in fact, it did not in any seemingly significant way (such as the application of a solvent during conservation which failed to dissolve any part of the object), is still considered as an instance of E11 Modification. Typically, any such activity will leave at least forensic traces of evidence on the object.
-If the instance of E29 Design or Procedure utilized for the modification prescribes the use of specific materials, they should be documented using property P68 foresees use of (use foreseen by): E57 Material of E29 Design or Procedure, rather than via P126 employed (was employed in): E57 Material."""@en;
-                                                          rdfs:label "Bearbeitung"@de,
-                                                                     "Modification"@en,
-                                                                     "Modification"@fr,
-                                                                     "Modificação"@pt,
-                                                                     "Τροποποίηση"@el,
-                                                                     "Измeнeниe"@ru,
-                                                                     "修改"@zh;
-                                                          rdfs:subClassOf crm:E7_Activity.
-    crm:E12_Production a owl:Class;
-                                                        rdfs:comment """This class comprises activities that are designed to, and succeed in, creating one or more new items.
-It specializes the notion of modification into production. The decision as to whether or not an object is regarded as new is context sensitive. Normally, items are considered “new” if there is no obvious overall similarity between them and the consumed items and material used in their production. In other cases, an item is considered “new” because it becomes relevant to documentation by a modification. For example, the scribbling of a name on a potsherd may make it a voting token. The original potsherd may not be worth documenting, in contrast to the inscribed one.
-This entity can be collective: the printing of a thousand books, for example, would normally be considered a single event.
-An event should also be documented using an instance of E81 Transformation if it results in the destruction of one or more objects and the simultaneous production of others using parts or material from the originals. In this case, the new items have separate identities and matter is preserved, but identity is not."""@en;
-                                                        rdfs:label "Herstellung"@de,
-                                                                   "Production"@en,
-                                                                   "Production"@fr,
-                                                                   "Produção"@pt,
-                                                                   "Παραγωγή"@el,
-                                                                   "Изготовлeниe"@ru,
-                                                                   "生产"@zh;
-                                                        rdfs:subClassOf crm:E11_Modification,
-                                                                        crm:E63_Beginning_of_Existence.
+
+  crm:E10_Transfer_of_Custody a owl:Class;
+    rdfs:comment """This class comprises transfers of the physical custody or the legal responsibility for the physical custody of objects. The recording of the donor or recipient is optional. It is possible that in an instance of E10 Transfer of Custody there is either no donor or no recipient.
+                    Depending on the circumstances, it may describe:
+                    1. the beginning of custody (there is no previous custodian)
+                    2. the end of custody (there is no subsequent custodian)
+                    3. the transfer of custody (transfer from one custodian to the next)
+                    4. the receipt of custody from an unknown source (the previous custodian is unknown)
+                    5. the declared loss of an object (the current or subsequent custodian is unknown)
+                    In the event that only a single kind of transfer of custody occurs, either the legal responsibility for the custody or the actual physical possession of the object but not both, this difference should be expressed using the property P2 has type (is type of).
+                    The sense of physical possession requires that the object of custody be in the hands of the keeper at least with a part representative for the whole. The way, in which a representative part is defined, should ensure that it is unambiguous who keeps a part and who the whole and should be consistent with the identity criteria of the kept instance of E18 Physical Thing.
+                    The interpretation of the museum notion of \"accession\" differs between institutions. The CIDOC CRM therefore models legal ownership and physical custody separately. Institutions will then model their specific notions of accession and deaccession as combinations of these.
+                    Theft is a specific case of illegal transfer of custody."""@en;
+    rdfs:label "Transfer of Custody"@en,
+              "Transfert de la garde"@fr,
+              "Transferência de Custódia"@pt,
+              "Übertragung des Gewahrsams"@de,
+              "Μεταβίβαση Κατοχής"@el,
+              "Пeрeдача Хранeния"@ru,
+              "转移监护权"@zh;
+    rdfs:subClassOf crm:E7_Activity.
+
+  crm:E11_Modification a owl:Class;
+    rdfs:comment """This class comprises instances of E7 Activity that are undertaken to create, alter or change instances of E24 Physical Human-Made Thing.
+                    This class includes the production of an item from raw materials and other so far undocumented objects. It also includes the conservation treatment of an object.
+                    Since the distinction between modification and production is not always clear, modification is regarded as the more generally applicable concept. This implies that some items may be consumed or destroyed in an instance of E11 Modification, and that others may be produced as a result of it. An event should also be documented using an instance of E81 Transformation if it results in the destruction of one or more objects and the simultaneous production of others using parts or material from the originals. In this case, the new items have separate identities.
+                    An activity undertaken on an object which was designed to alter it, but which, in fact, it did not in any seemingly significant way (such as the application of a solvent during conservation which failed to dissolve any part of the object), is still considered as an instance of E11 Modification. Typically, any such activity will leave at least forensic traces of evidence on the object.
+                    If the instance of E29 Design or Procedure utilized for the modification prescribes the use of specific materials, they should be documented using property P68 foresees use of (use foreseen by): E57 Material of E29 Design or Procedure, rather than via P126 employed (was employed in): E57 Material."""@en;
+    rdfs:label "Bearbeitung"@de,
+                "Modification"@en,
+                "Modification"@fr,
+                "Modificação"@pt,
+                "Τροποποίηση"@el,
+                "Измeнeниe"@ru,
+                "修改"@zh;
+    rdfs:subClassOf crm:E7_Activity.
+
+  crm:E12_Production a owl:Class;
+    rdfs:comment """This class comprises activities that are designed to, and succeed in, creating one or more new items.
+                    It specializes the notion of modification into production. The decision as to whether or not an object is regarded as new is context sensitive. Normally, items are considered “new” if there is no obvious overall similarity between them and the consumed items and material used in their production. In other cases, an item is considered “new” because it becomes relevant to documentation by a modification. For example, the scribbling of a name on a potsherd may make it a voting token. The original potsherd may not be worth documenting, in contrast to the inscribed one.
+                    This entity can be collective: the printing of a thousand books, for example, would normally be considered a single event.
+                    An event should also be documented using an instance of E81 Transformation if it results in the destruction of one or more objects and the simultaneous production of others using parts or material from the originals. In this case, the new items have separate identities and matter is preserved, but identity is not."""@en;
+    rdfs:label "Herstellung"@de,
+                "Production"@en,
+                "Production"@fr,
+                "Produção"@pt,
+                "Παραγωγή"@el,
+                "Изготовлeниe"@ru,
+                "生产"@zh;
+    rdfs:subClassOf crm:E11_Modification,
+                    crm:E63_Beginning_of_Existence.
 
     
-    crm:E13_Attribute_Assignment a owl:Class;
-                                                                  rdfs:comment """This class comprises the actions of making assertions about one property of an object or any single relation between two items or concepts. The type of the property asserted to hold between two items or concepts can be described by the property P177 assigned property of type (is type of property assigned): E55 Type.
-For example, the class describes the actions of people making propositions and statements during certain scientific/scholarly procedures, e.g. the person and date when a condition statement was made, an identifier was assigned, the museum object was measured, etc. Which kinds of such assignments and statements need to be documented explicitly in structures of a schema rather than free text, depends on whether this information should be accessible by structured queries.
-This class allows for the documentation of how the respective assignment came about, and whose opinion it was. Note that all instances of properties described in a knowledge base are the opinion of someone. Per default, they are the opinion of the team maintaining the knowledge base. This fact must not individually be registered for all instances of properties provided by the maintaining team, because it would result in an endless recursion of whose opinion was the description of an opinion. Therefore, the use of instances of E13 Attribute Assignment marks the fact that the maintaining team is in general neutral to the validity of the respective assertion, but registers someone else’s opinion and how it came about.
-All properties assigned in such an action can also be seen as directly relating the respective pair of items or concepts. Multiple use of instances of E13 Attribute Assignment may possibly lead to a collection of contradictory values."""@en;
-                                                                  rdfs:label "Assignation d’attribut"@fr,
-                                                                             "Atribuição de Característica"@pt,
-                                                                             "Attribute Assignment"@en,
-                                                                             "Merkmalszuweisung"@de,
-                                                                             "Απόδοση Ιδιοτήτων"@el,
-                                                                             "Назначeниe Атрибута"@ru,
-                                                                             "属性赋值"@zh;
-                                                                  rdfs:subClassOf crm:E7_Activity.
-    crm:E14_Condition_Assessment a owl:Class;
-                                                                  rdfs:comment """This class describes the act of assessing the state of preservation of an object during a particular period.
-The condition assessment may be carried out by inspection, measurement, or through historical research. This class is used to document circumstances of the respective assessment that is relevant to interpret its quality at a later stage, or to continue research on related documents."""@en;
-                                                                  rdfs:label "Avaliação do Estado Material"@pt,
-                                                                             "Condition Assessment"@en,
-                                                                             "Zustandsfeststellung"@de,
-                                                                             "Évaluation d’état matériel"@fr,
-                                                                             "Εκτίμηση Κατάστασης"@el,
-                                                                             "Оцeнка Состояния"@ru,
-                                                                             "状态评估"@zh;
-                                                                  rdfs:subClassOf crm:E13_Attribute_Assignment.
-    crm:E15_Identifier_Assignment a owl:Class;
-                                                                   rdfs:comment """This class comprises activities that result in the allocation of an identifier to an instance of E1 CRM Entity. An instance of E15 Identifier Assignment may include the creation of the identifier from multiple constituents, which themselves may be instances of E41 Appellation. The syntax and kinds of constituents to be used may be declared in a rule constituting an instance of E29 Design or Procedure.
-Examples of such identifiers include Find Numbers, Inventory Numbers, uniform titles in the sense of librarianship and Digital Object Identifiers (DOI). Documenting the act of identifier assignment and deassignment is especially useful when objects change custody or the identification system of an organization is changed. In order to keep track of the identity of things in such cases, it is important to document by whom, when, and for what purpose an identifier is assigned to an item.
-The fact that an identifier is a preferred one for an organisation can be expressed by using the property E1 CRM Entity. P48 has preferred identifier (is preferred identifier of): E42 Identifier. It can better be expressed in a context independent form by assigning a suitable E55 Type, such as “preferred identifier assignment”, to the respective instance of E15 Identifier Assignment through the P2 has type (is type of) property."""@en;
-                                                                   rdfs:label "Assignation d’identifiant"@fr,
-                                                                              "Atribuição de Identificador"@pt,
-                                                                              "Identifier Assignment"@en,
-                                                                              "Kennzeichenzuweisung"@de,
-                                                                              "Απόδοση Αναγνωριστικού"@el,
-                                                                              "Назначeниe Идeнтификатора"@ru,
-                                                                              "标识符赋值"@zh;
-                                                                   rdfs:subClassOf crm:E13_Attribute_Assignment.
-    crm:E16_Measurement a owl:Class;
-                                                         rdfs:comment """This class comprises actions measuring physical properties and other values that can be determined by a systematic, objective procedure of direct observation of particular states of physical reality.
-An instance of E16 Measurement may use simple counting or tools, such as yardsticks or radiation detection devices. The interest is in the method and care applied, so that the reliability of the result may be judged at a later stage, or research continued on the associated documents. The date of the event is important for dimensions, which may change value over time, such as the length of an object subject to shrinkage. Methods and devices employed should be associated with instances of E16 Measurement by properties such as P33 used specific technique: E29 Design or Procedure, P125 used object of type: E55 Type, P16 used specific object (was used for): E70 Thing, whereas basic techniques such as \"carbon-14 dating\" should be encoded using P2 has type (is type of): E55 Type. Details of methods and devices reused or reusable in other instances of E16 Measurement should be documented for these entities rather than the measurements themselves, whereas details of particular execution may be documented by free text or by instantiating adequate sub-activities, if the detail may be of interest for an overarching query.
-Regardless whether a measurement is made by an instrument or by human senses, it represents the initial transition from physical reality to information without any other documented information object in between within the reasoning chain that would represent the result of the interaction of the observer or device with reality. Therefore, determining properties of an instance of E90 Symbolic Object is regarded as an instance of E13 Attribute Assignment, which may be inferred from observing and measuring representative carriers. In the case that the carrier can be named, the property P16 used specific object (was used for) should be used to indicate the instance(s) of E18 Physical Thing that was used as the empirical basis for the attribute assignment. For instance, inferring properties of depicted items using image material, such as satellite images, is not regarded as an instance of E16 Measurement, but as a subsequent instance of E13 Attribute Assignment. Rather, only the production of the images, understood as arrays of radiation intensities, is regarded as an instance of E16 Measurement. The same reasoning holds for other sensor data."""@en;
-                                                         rdfs:label "Measurement"@en,
-                                                                    "Medição"@pt,
-                                                                    "Messung"@de,
-                                                                    "Mesurage"@fr,
-                                                                    "Μέτρηση"@el,
-                                                                    "Измeрeниe"@ru,
-                                                                    "测量"@zh;
-                                                         rdfs:subClassOf crm:E13_Attribute_Assignment.
-    crm:E17_Type_Assignment a owl:Class;
-                                                             rdfs:comment """This class comprises the actions of classifying items of whatever kind. Such items include objects, specimens, people, actions, and concepts.
-This class allows for the documentation of the context of classification acts in cases where the value of the classification depends on the personal opinion of the classifier, and the date that the classification was made. This class also encompasses the notion of “determination,” i.e. the systematic and molecular identification of a specimen in biology."""@en;
-                                                             rdfs:label "Assignation de type"@fr,
-                                                                        "Atribuição de Tipo"@pt,
-                                                                        "Type Assignment"@en,
-                                                                        "Typuszuweisung"@de,
-                                                                        "Απόδοση Τύπου"@el,
-                                                                        "Назначeниe Типа"@ru,
-                                                                        "类型赋值"@zh;
-                                                             rdfs:subClassOf crm:E13_Attribute_Assignment.
-    crm:E18_Physical_Thing a owl:Class;
-                                                            rdfs:comment """This class comprises all persistent physical items with a relatively stable form, human-made or natural.
-Depending on the existence of natural boundaries of such things, the CIDOC CRM distinguishes the instances of E19 Physical Object from instances of E26 Physical Feature, such as holes, rivers, pieces of land, etc. Most instances of E19 Physical Object can be moved (if not too heavy), whereas features are integral to the surrounding matter.
-An instance of E18 Physical Thing occupies not only a particular geometric space at any instant of its existence, but in the course of its existence it also forms a trajectory through spacetime, which occupies a real, that is phenomenal, volume in spacetime. We include in the occupied space the space filled by the matter of the physical thing and all its inner spaces, such as the interior of a box. For the purpose of more detailed descriptions of the presence of an instance of E18 Physical Thing in space and time it can be associated with its specific instance of E92 Spacetime Volume by the property P196 defines (is defined by).
-The CIDOC CRM is generally not concerned with amounts of matter in fluid or gaseous states, as long as they are not confined in an identifiable way for an identifiable minimal time-span."""@en;
-                                                            rdfs:label "Chose matérielle"@fr,
-                                                                       "Coisa Material"@pt,
-                                                                       "Materielles"@de,
-                                                                       "Physical Thing"@en,
-                                                                       "Υλικό Πράγμα"@el,
-                                                                       "Матeриальный Прeдмeт"@ru,
-                                                                       "实物"@zh;
-                                                            rdfs:subClassOf crm:E72_Legal_Object.
+  crm:E13_Attribute_Assignment a owl:Class;
+    rdfs:comment """This class comprises the actions of making assertions about one property of an object or any single relation between two items or concepts. The type of the property asserted to hold between two items or concepts can be described by the property P177 assigned property of type (is type of property assigned): E55 Type.
+                    For example, the class describes the actions of people making propositions and statements during certain scientific/scholarly procedures, e.g. the person and date when a condition statement was made, an identifier was assigned, the museum object was measured, etc. Which kinds of such assignments and statements need to be documented explicitly in structures of a schema rather than free text, depends on whether this information should be accessible by structured queries.
+                    This class allows for the documentation of how the respective assignment came about, and whose opinion it was. Note that all instances of properties described in a knowledge base are the opinion of someone. Per default, they are the opinion of the team maintaining the knowledge base. This fact must not individually be registered for all instances of properties provided by the maintaining team, because it would result in an endless recursion of whose opinion was the description of an opinion. Therefore, the use of instances of E13 Attribute Assignment marks the fact that the maintaining team is in general neutral to the validity of the respective assertion, but registers someone else’s opinion and how it came about.
+                    All properties assigned in such an action can also be seen as directly relating the respective pair of items or concepts. Multiple use of instances of E13 Attribute Assignment may possibly lead to a collection of contradictory values."""@en;
+    rdfs:label "Assignation d’attribut"@fr,
+                "Atribuição de Característica"@pt,
+                "Attribute Assignment"@en,
+                "Merkmalszuweisung"@de,
+                "Απόδοση Ιδιοτήτων"@el,
+                "Назначeниe Атрибута"@ru,
+                "属性赋值"@zh;
+    rdfs:subClassOf crm:E7_Activity.
+
+  crm:E14_Condition_Assessment a owl:Class;
+    rdfs:comment """This class describes the act of assessing the state of preservation of an object during a particular period.
+                    The condition assessment may be carried out by inspection, measurement, or through historical research. This class is used to document circumstances of the respective assessment that is relevant to interpret its quality at a later stage, or to continue research on related documents."""@en;
+    rdfs:label "Avaliação do Estado Material"@pt,
+                "Condition Assessment"@en,
+                "Zustandsfeststellung"@de,
+                "Évaluation d’état matériel"@fr,
+                "Εκτίμηση Κατάστασης"@el,
+                "Оцeнка Состояния"@ru,
+                "状态评估"@zh;
+    rdfs:subClassOf crm:E13_Attribute_Assignment.
+
+  crm:E15_Identifier_Assignment a owl:Class;
+    rdfs:comment """This class comprises activities that result in the allocation of an identifier to an instance of E1 CRM Entity. An instance of E15 Identifier Assignment may include the creation of the identifier from multiple constituents, which themselves may be instances of E41 Appellation. The syntax and kinds of constituents to be used may be declared in a rule constituting an instance of E29 Design or Procedure.
+                    Examples of such identifiers include Find Numbers, Inventory Numbers, uniform titles in the sense of librarianship and Digital Object Identifiers (DOI). Documenting the act of identifier assignment and deassignment is especially useful when objects change custody or the identification system of an organization is changed. In order to keep track of the identity of things in such cases, it is important to document by whom, when, and for what purpose an identifier is assigned to an item.
+                    The fact that an identifier is a preferred one for an organisation can be expressed by using the property E1 CRM Entity. P48 has preferred identifier (is preferred identifier of): E42 Identifier. It can better be expressed in a context independent form by assigning a suitable E55 Type, such as “preferred identifier assignment”, to the respective instance of E15 Identifier Assignment through the P2 has type (is type of) property."""@en;
+    rdfs:label "Assignation d’identifiant"@fr,
+              "Atribuição de Identificador"@pt,
+              "Identifier Assignment"@en,
+              "Kennzeichenzuweisung"@de,
+              "Απόδοση Αναγνωριστικού"@el,
+              "Назначeниe Идeнтификатора"@ru,
+              "标识符赋值"@zh;
+    rdfs:subClassOf crm:E13_Attribute_Assignment.
+
+  crm:E16_Measurement a owl:Class;
+    rdfs:comment """This class comprises actions measuring physical properties and other values that can be determined by a systematic, objective procedure of direct observation of particular states of physical reality.
+                    An instance of E16 Measurement may use simple counting or tools, such as yardsticks or radiation detection devices. The interest is in the method and care applied, so that the reliability of the result may be judged at a later stage, or research continued on the associated documents. The date of the event is important for dimensions, which may change value over time, such as the length of an object subject to shrinkage. Methods and devices employed should be associated with instances of E16 Measurement by properties such as P33 used specific technique: E29 Design or Procedure, P125 used object of type: E55 Type, P16 used specific object (was used for): E70 Thing, whereas basic techniques such as \"carbon-14 dating\" should be encoded using P2 has type (is type of): E55 Type. Details of methods and devices reused or reusable in other instances of E16 Measurement should be documented for these entities rather than the measurements themselves, whereas details of particular execution may be documented by free text or by instantiating adequate sub-activities, if the detail may be of interest for an overarching query.
+                    Regardless whether a measurement is made by an instrument or by human senses, it represents the initial transition from physical reality to information without any other documented information object in between within the reasoning chain that would represent the result of the interaction of the observer or device with reality. Therefore, determining properties of an instance of E90 Symbolic Object is regarded as an instance of E13 Attribute Assignment, which may be inferred from observing and measuring representative carriers. In the case that the carrier can be named, the property P16 used specific object (was used for) should be used to indicate the instance(s) of E18 Physical Thing that was used as the empirical basis for the attribute assignment. For instance, inferring properties of depicted items using image material, such as satellite images, is not regarded as an instance of E16 Measurement, but as a subsequent instance of E13 Attribute Assignment. Rather, only the production of the images, understood as arrays of radiation intensities, is regarded as an instance of E16 Measurement. The same reasoning holds for other sensor data."""@en;
+    rdfs:label "Measurement"@en,
+              "Medição"@pt,
+              "Messung"@de,
+              "Mesurage"@fr,
+              "Μέτρηση"@el,
+              "Измeрeниe"@ru,
+              "测量"@zh;
+    rdfs:subClassOf crm:E13_Attribute_Assignment.
+
+  crm:E17_Type_Assignment a owl:Class;
+    rdfs:comment """This class comprises the actions of classifying items of whatever kind. Such items include objects, specimens, people, actions, and concepts.
+                    This class allows for the documentation of the context of classification acts in cases where the value of the classification depends on the personal opinion of the classifier, and the date that the classification was made. This class also encompasses the notion of “determination,” i.e. the systematic and molecular identification of a specimen in biology."""@en;
+    rdfs:label "Assignation de type"@fr,
+              "Atribuição de Tipo"@pt,
+              "Type Assignment"@en,
+              "Typuszuweisung"@de,
+              "Απόδοση Τύπου"@el,
+              "Назначeниe Типа"@ru,
+              "类型赋值"@zh;
+    rdfs:subClassOf crm:E13_Attribute_Assignment.
+
+  crm:E18_Physical_Thing a owl:Class;
+    rdfs:comment """This class comprises all persistent physical items with a relatively stable form, human-made or natural.
+                    Depending on the existence of natural boundaries of such things, the CIDOC CRM distinguishes the instances of E19 Physical Object from instances of E26 Physical Feature, such as holes, rivers, pieces of land, etc. Most instances of E19 Physical Object can be moved (if not too heavy), whereas features are integral to the surrounding matter.
+                    An instance of E18 Physical Thing occupies not only a particular geometric space at any instant of its existence, but in the course of its existence it also forms a trajectory through spacetime, which occupies a real, that is phenomenal, volume in spacetime. We include in the occupied space the space filled by the matter of the physical thing and all its inner spaces, such as the interior of a box. For the purpose of more detailed descriptions of the presence of an instance of E18 Physical Thing in space and time it can be associated with its specific instance of E92 Spacetime Volume by the property P196 defines (is defined by).
+                    The CIDOC CRM is generally not concerned with amounts of matter in fluid or gaseous states, as long as they are not confined in an identifiable way for an identifiable minimal time-span."""@en;
+    rdfs:label "Chose matérielle"@fr,
+                "Coisa Material"@pt,
+                "Materielles"@de,
+                "Physical Thing"@en,
+                "Υλικό Πράγμα"@el,
+                "Матeриальный Прeдмeт"@ru,
+                "实物"@zh;
+    rdfs:subClassOf crm:E72_Legal_Object.
     crm:E19_Physical_Object a owl:Class;
                                                              rdfs:comment """This class comprises items of a material nature that are units for documentation and have physical boundaries that separate them completely in an objective way from other objects.
 The class also includes all aggregates of objects made for functional purposes of whatever kind, independent of physical coherence, such as a set of chessmen. Typically, instances of E19 Physical Object can be moved (if not too heavy).
@@ -852,19 +859,19 @@ In some cases, the content of an instance of E90 Symbolic Object may completely 
                                                              rdfs:subClassOf crm:E28_Conceptual_Object,
                                                                              crm:E72_Legal_Object.
     crm:E92_Spacetime_Volume a owl:Class;
-                                                              rdfs:comment "This class comprises 4-dimensional point sets (volumes) in physical spacetime (in contrast to mathematical models of it) regardless of their true geometric forms. They may derive their identity from being the extent of a material phenomenon or from being the interpretation of an expression defining an extent in spacetime. Intersections of instances of E92 Spacetime Volume, E53 Place, and E52 Time-Span are also regarded as instances of E92 Spacetime Volume. An instance of E92 Spacetime Volume is either contiguous or composed of a finite number of contiguous subsets. Its boundaries may be fuzzy due to the properties of the phenomena it derives from or due to the limited precision up to which defining expression can be identified with a real extent in spacetime. The duration of existence of an instance of E92 Spacetime Volume is its projection on time.";
-                                                              rdfs:label "Spacetime Volume"@en,
-                                                                         "Volume spatio-temporel"@fr,
-                                                                         "Область Пространства-Врeмeни"@ru;
-                                                              rdfs:subClassOf crm:E1_CRM_Entity.
-    crm:E93_Presence a owl:Class;
-                                                      rdfs:comment """This class comprises instances of E92 Spacetime Volume, whose temporal extent has been chosen in order to determine the spatial extent of a phenomenon over the chosen time-span. Respective phenomena may, for instance, be historical events or periods, but can also be the diachronic extent and existence of physical things. In other words, instances of this class fix a slice of another instance of E92 Spacetime Volume in time.
-The temporal extent of an instance of E93 Presence typically is predetermined by the researcher so as to focus the investigation particularly on finding the spatial extent of the phenomenon by testing for its characteristic features. There are at least two basic directions such investigations might take. The investigation may wish to determine where something was during some time or it may wish to reconstruct the total passage of a phenomenon’s spacetime volume through an examination of discrete presences. Observation and measurement of features indicating the presence or absence of a phenomenon in some space allows for the progressive approximation of spatial extents through argumentation typically based on inclusion, exclusion and various overlaps."""@en;
-                                                      rdfs:label "Presence"@en,
-                                                                 "Présence"@fr,
-                                                                 "Присутствиe"@ru;
-                                                      rdfs:subClassOf crm:E92_Spacetime_Volume.
+      rdfs:comment "This class comprises 4-dimensional point sets (volumes) in physical spacetime (in contrast to mathematical models of it) regardless of their true geometric forms. They may derive their identity from being the extent of a material phenomenon or from being the interpretation of an expression defining an extent in spacetime. Intersections of instances of E92 Spacetime Volume, E53 Place, and E52 Time-Span are also regarded as instances of E92 Spacetime Volume. An instance of E92 Spacetime Volume is either contiguous or composed of a finite number of contiguous subsets. Its boundaries may be fuzzy due to the properties of the phenomena it derives from or due to the limited precision up to which defining expression can be identified with a real extent in spacetime. The duration of existence of an instance of E92 Spacetime Volume is its projection on time.";
+      rdfs:label "Spacetime Volume"@en,
+                  "Volume spatio-temporel"@fr,
+                  "Область Пространства-Врeмeни"@ru;
+      rdfs:subClassOf crm:E1_CRM_Entity.
 
+    crm:E93_Presence a owl:Class;
+      rdfs:comment """This class comprises instances of E92 Spacetime Volume, whose temporal extent has been chosen in order to determine the spatial extent of a phenomenon over the chosen time-span. Respective phenomena may, for instance, be historical events or periods, but can also be the diachronic extent and existence of physical things. In other words, instances of this class fix a slice of another instance of E92 Spacetime Volume in time.
+                      The temporal extent of an instance of E93 Presence typically is predetermined by the researcher so as to focus the investigation particularly on finding the spatial extent of the phenomenon by testing for its characteristic features. There are at least two basic directions such investigations might take. The investigation may wish to determine where something was during some time or it may wish to reconstruct the total passage of a phenomenon’s spacetime volume through an examination of discrete presences. Observation and measurement of features indicating the presence or absence of a phenomenon in some space allows for the progressive approximation of spatial extents through argumentation typically based on inclusion, exclusion and various overlaps."""@en;
+      rdfs:label "Presence"@en,
+                  "Présence"@fr,
+                  "Присутствиe"@ru;
+      rdfs:subClassOf crm:E92_Spacetime_Volume.
 
    crm:E94_Space_Primitive a owl:Class;
         rdfs:label "Space Primitive";
@@ -872,68 +879,75 @@ The temporal extent of an instance of E93 Presence typically is predetermined by
         rdfs:subClassOf crm:E59_Primitive_Value .
    
     crm:E96_Purchase a owl:Class;
-                                                      rdfs:comment """This class comprises transfers of legal ownership from one or more instances of E39 Actor to one or more different instances of E39 Actor, where the transferring party is completely compensated by the payment of a monetary amount. In more detail, a purchase agreement establishes a fixed monetary obligation at its initialization on the receiving party, to the giving party. An instance of E96 Purchase begins with the contract or equivalent agreement and ends with the fulfilment of all contractual obligations. In the case that the activity is abandoned before both parties have fulfilled these obligations, the activity is not regarded as an instance of E96 Purchase.
-This class is a very specific case of the much more complex social business practices of exchange of goods and the creation and satisfaction of related social obligations. Purchase activities which define individual sales prices per object can be modelled by instantiating E96 Purchase for each object individually and as part of an overall instance of E96 Purchase transaction."""@en;
-                                                      rdfs:label "Achat"@fr,
-                                                                 "Purchase"@en,
-                                                                 "Покупка"@ru;
-                                                      rdfs:subClassOf crm:E8_Acquisition.
+      rdfs:comment """This class comprises transfers of legal ownership from one or more instances of E39 Actor to one or more different instances of E39 Actor, where the transferring party is completely compensated by the payment of a monetary amount. In more detail, a purchase agreement establishes a fixed monetary obligation at its initialization on the receiving party, to the giving party. An instance of E96 Purchase begins with the contract or equivalent agreement and ends with the fulfilment of all contractual obligations. In the case that the activity is abandoned before both parties have fulfilled these obligations, the activity is not regarded as an instance of E96 Purchase.
+                      This class is a very specific case of the much more complex social business practices of exchange of goods and the creation and satisfaction of related social obligations. Purchase activities which define individual sales prices per object can be modelled by instantiating E96 Purchase for each object individually and as part of an overall instance of E96 Purchase transaction."""@en;
+      rdfs:label "Achat"@fr,
+                  "Purchase"@en,
+                  "Покупка"@ru;
+      rdfs:subClassOf crm:E8_Acquisition.
+
     crm:E97_Monetary_Amount a owl:Class;
-                                                             rdfs:comment "This class comprises quantities of monetary possessions or obligations in terms of their nominal value with respect to a particular currency. These quantities may be abstract accounting units, the nominal value of a heap of coins or bank notes at the time of validity of the respective currency, the nominal value of a bill of exchange or other documents expressing monetary claims or obligations. It specifically excludes amounts expressed in terms of weights of valuable items, like gold and diamonds, and quantities of other non-currency items, like goats or stocks and bonds.";
-                                                             rdfs:label "Monetary Amount"@en,
-                                                                        "Valeur monétaire"@fr,
-                                                                        "Дeнeжный Эквивалeнт"@ru;
-                                                             rdfs:subClassOf crm:E54_Dimension.
+    rdfs:comment "This class comprises quantities of monetary possessions or obligations in terms of their nominal value with respect to a particular currency. These quantities may be abstract accounting units, the nominal value of a heap of coins or bank notes at the time of validity of the respective currency, the nominal value of a bill of exchange or other documents expressing monetary claims or obligations. It specifically excludes amounts expressed in terms of weights of valuable items, like gold and diamonds, and quantities of other non-currency items, like goats or stocks and bonds.";
+    rdfs:label "Monetary Amount"@en,
+              "Valeur monétaire"@fr,
+              "Дeнeжный Эквивалeнт"@ru;
+    rdfs:subClassOf crm:E54_Dimension.
+
     crm:E98_Currency a owl:Class;
-                                                      rdfs:comment "This class comprises the units in which a monetary system, supported by an administrative authority or other community, quantifies and arithmetically compares all monetary amounts declared in the unit. The unit of a monetary system must describe a nominal value which is kept constant by its administrative authority and an associated banking system if it exists, and not by market value. For instance, one may pay with grams of gold, but the respective monetary amount would have been agreed as the gold price in US dollars on the day of the payment. Under this definition, British Pounds, U.S. Dollars, and European Euros are examples of currency, but “grams of gold” is not. One monetary system has one and only one currency. Instances of this class must not be confused with coin denominations, such as “Dime” or “Sestertius”. Non-monetary exchange of value in terms of quantities of a particular type of goods, such as cows, do not constitute a currency.";
-                                                      rdfs:label "Currency"@en,
-                                                                 "Unité monétaire"@fr,
-                                                                 "Валюта"@ru;
-                                                      rdfs:subClassOf crm:E58_Measurement_Unit.
+      rdfs:comment "This class comprises the units in which a monetary system, supported by an administrative authority or other community, quantifies and arithmetically compares all monetary amounts declared in the unit. The unit of a monetary system must describe a nominal value which is kept constant by its administrative authority and an associated banking system if it exists, and not by market value. For instance, one may pay with grams of gold, but the respective monetary amount would have been agreed as the gold price in US dollars on the day of the payment. Under this definition, British Pounds, U.S. Dollars, and European Euros are examples of currency, but “grams of gold” is not. One monetary system has one and only one currency. Instances of this class must not be confused with coin denominations, such as “Dime” or “Sestertius”. Non-monetary exchange of value in terms of quantities of a particular type of goods, such as cows, do not constitute a currency.";
+      rdfs:label "Currency"@en,
+                  "Unité monétaire"@fr,
+                  "Валюта"@ru;
+      rdfs:subClassOf crm:E58_Measurement_Unit.
+
     crm:E99_Product_Type a owl:Class;
-                                                          rdfs:comment "This class comprises types that stand as the models for instances of E22 Human-Made Object that are produced as the result of production activities using plans exact enough to result in one or more series of uniform, functionally and aesthetically identical and interchangeable items. The product type is the intended ideal form of the manufacture process. It is typical of instances of E22 Human-Made Object that conform to an instance of E99 Product Type that its component parts are interchangeable with component parts of other instances of E22 Human-Made Object made after the model of the same instance of E99 Product Type. Frequently, the uniform production according to a given instance of E99 Product Type is achieved by creating individual tools, such as moulds or print plates that are themselves carriers of the design of the product type. Modern tools may use the flexibility of electronically controlled devices to achieve such uniformity. The product type itself, i.e. the potentially unlimited series of aesthetically equivalent items, may be the target of artistic design, rather than the individual object. In extreme cases, only one instance of a product type may have been produced, such as in a “print on demand” process which was only triggered once. However, this should not be confused with industrial prototypes, such as car prototypes, which are produced prior to the production line being set up, or test the production line itself.";
-                                                          rdfs:label "Modèle de produit"@fr,
-                                                                     "Product Type"@en,
-                                                                     "Тип Продукта"@ru;
-                                                          rdfs:subClassOf crm:E55_Type.
+      rdfs:comment "This class comprises types that stand as the models for instances of E22 Human-Made Object that are produced as the result of production activities using plans exact enough to result in one or more series of uniform, functionally and aesthetically identical and interchangeable items. The product type is the intended ideal form of the manufacture process. It is typical of instances of E22 Human-Made Object that conform to an instance of E99 Product Type that its component parts are interchangeable with component parts of other instances of E22 Human-Made Object made after the model of the same instance of E99 Product Type. Frequently, the uniform production according to a given instance of E99 Product Type is achieved by creating individual tools, such as moulds or print plates that are themselves carriers of the design of the product type. Modern tools may use the flexibility of electronically controlled devices to achieve such uniformity. The product type itself, i.e. the potentially unlimited series of aesthetically equivalent items, may be the target of artistic design, rather than the individual object. In extreme cases, only one instance of a product type may have been produced, such as in a “print on demand” process which was only triggered once. However, this should not be confused with industrial prototypes, such as car prototypes, which are produced prior to the production line being set up, or test the production line itself.";
+      rdfs:label "Modèle de produit"@fr,
+                  "Product Type"@en,
+                  "Тип Продукта"@ru;
+      rdfs:subClassOf crm:E55_Type.
+
     crm:E9_Move a owl:Class;
-                                                 rdfs:comment """This class comprises changes of the physical location of the instances of E19 Physical Object.
-Note, that the class E9 Move inherits the property P7 took place at (witnessed): E53 Place. This property should be used to describe the trajectory or a larger area within which a move takes place, whereas the properties P26 moved to (was destination of), P27 moved from (was origin of) describe the start and end points only. Moves may also be documented to consist of other moves (via P9 consists of (forms part of)), in order to describe intermediate stages on a trajectory. In that case, start and end points of the partial moves should match appropriately between each other and with the overall event."""@en;
-                                                 rdfs:label "Déplacement"@fr,
-                                                            "Locomoção"@pt,
-                                                            "Move"@en,
-                                                            "Objektbewegung"@de,
-                                                            "Μετακίνηση"@el,
-                                                            "Пeрeмeщeниe"@ru,
-                                                            "移动"@zh;
-                                                 rdfs:subClassOf crm:E7_Activity.
+      rdfs:comment """This class comprises changes of the physical location of the instances of E19 Physical Object.
+                      Note, that the class E9 Move inherits the property P7 took place at (witnessed): E53 Place. This property should be used to describe the trajectory or a larger area within which a move takes place, whereas the properties P26 moved to (was destination of), P27 moved from (was origin of) describe the start and end points only. Moves may also be documented to consist of other moves (via P9 consists of (forms part of)), in order to describe intermediate stages on a trajectory. In that case, start and end points of the partial moves should match appropriately between each other and with the overall event."""@en;
+      rdfs:label "Déplacement"@fr,
+                "Locomoção"@pt,
+                "Move"@en,
+                "Objektbewegung"@de,
+                "Μετακίνηση"@el,
+                "Пeрeмeщeниe"@ru,
+                "移动"@zh;
+      rdfs:subClassOf crm:E7_Activity.
+
     crm:P100_was_death_of a owl:ObjectProperty;
-                                                           rdfs:comment """This property links an instance of E69 Death to the instance of E21 Person that died.
-An instance of E69 Death may involve multiple people, for example in the case of a battle or disaster.
-This is not intended for use with general natural history material, only people."""@en;
-                                                           rdfs:domain crm:E69_Death;
-                                                           rdfs:label "Tod von"@de,
-                                                                      "a été la mort de"@fr,
-                                                                      "foi a morte para"@pt,
-                                                                      "was death of"@en,
-                                                                      "ήταν θάνατος του/της"@el,
-                                                                      "привёл к смeрти"@ru,
-                                                                      "死亡的是"@zh;
-                                                           rdfs:range crm:E21_Person;
-                                                           rdfs:subPropertyOf crm:P93_took_out_of_existence;
-                                                           owl:inverseOf crm:P100i_died_in.
+      rdfs:comment """This property links an instance of E69 Death to the instance of E21 Person that died.
+                      An instance of E69 Death may involve multiple people, for example in the case of a battle or disaster.
+                      This is not intended for use with general natural history material, only people."""@en;
+      rdfs:domain crm:E69_Death;
+      rdfs:label "Tod von"@de,
+                "a été la mort de"@fr,
+                "foi a morte para"@pt,
+                "was death of"@en,
+                "ήταν θάνατος του/της"@el,
+                "привёл к смeрти"@ru,
+                "死亡的是"@zh;
+      rdfs:range crm:E21_Person;
+      rdfs:subPropertyOf crm:P93_took_out_of_existence;
+      owl:inverseOf crm:P100i_died_in.
+
     crm:P100i_died_in a owl:ObjectProperty;
-                                                       rdfs:domain crm:E21_Person;
-                                                       rdfs:label "died in"@en,
-                                                                  "est mort par"@fr,
-                                                                  "morreu em"@pt,
-                                                                  "starb in"@de,
-                                                                  "πέθανε σε"@el,
-                                                                  "умeр"@ru,
-                                                                  "死于"@zh;
-                                                       rdfs:range crm:E69_Death;
-                                                       rdfs:subPropertyOf crm:P93i_was_taken_out_of_existence_by;
-                                                       owl:inverseOf crm:P100_was_death_of.
+      rdfs:domain crm:E21_Person;
+      rdfs:label "died in"@en,
+                "est mort par"@fr,
+                "morreu em"@pt,
+                "starb in"@de,
+                "πέθανε σε"@el,
+                "умeр"@ru,
+                "死于"@zh;
+      rdfs:range crm:E69_Death;
+      rdfs:subPropertyOf crm:P93i_was_taken_out_of_existence_by;
+      owl:inverseOf crm:P100_was_death_of.
+
     crm:P101_had_as_general_use a owl:ObjectProperty;
                                                                  rdfs:comment """This property associates an instance of E70 Thing with an instance of E55 Type that describes the type of use that it was actually employed for.
 It allows the relationship between particular things, both physical and immaterial, and the general methods and techniques of real use to be documented. This may well be different from the intended functional purpose of the instance of E70 Thing (which can be documented with P103 was intended for (was intention of)). For example, it could be recorded that a particular wooden crate had a general use as a shelf support on a market stall even though it had been originally intended for carrying vegetables.
@@ -2283,11 +2297,7 @@ This property is a shortcut of the fully developed path from E53 Place, P89i con
 In other words, if A = [A-start, A-end] and B = [B-start, B-end], it means A-start ≤ B-end is true.
 This property is part of the set of temporal primitives P173 – P176, P182 – P185.
 This property corresponds to the disjunction (logical OR) of the following Allen temporal relations (Allen, 1983): {before, meets, met-by, overlaps, starts, started-by, contains, finishes, finished-by, equals, during, overlapped by}.
-This property is not transitive.
-
-Figure 8: Temporal entity A starts before or with the end of temporal entity B. Here A is longer than B
-
-Figure 9: Temporal entity A starts before or with the end of temporal entity B. Here A is shorter than B"""@en;
+This property is not transitive."""@en;
                                                                                rdfs:domain crm:E2_Temporal_Entity;
                                                                                rdfs:label "commence avant ou au moment de la fin de"@fr,
                                                                                           "starts before or with the end of"@en,
@@ -2306,11 +2316,7 @@ Figure 9: Temporal entity A starts before or with the end of temporal entity B. 
 In other words, if A = [A-start, A-end] and B = [B-start, B-end], it means A-start &lt; B-end is true.
 This property is part of the set of temporal primitives P173 – P176, P182 – P185.
 This property corresponds to a disjunction (logical OR) of the following Allen temporal relations (Allen, 1983): {before, meets, overlaps, starts, started-by, contains, finishes, finished-by, equals, during, overlapped by}
-Typically, this property is a consequence of a known influence of some event on another event or activity, such as a novel written by someone being continued by someone else, or the knowledge of a defeat on a distant battlefield causing people to end their ongoing activities. This property is not transitive. This property is irreflexive.
-
-Figure 10: Temporal entity A starts before the end of temporal entity B. Here A is longer than B
-
-Figure 11: Temporal entity A starts before the end of temporal entity B. Here A is shorter than B"""@en;
+Typically, this property is a consequence of a known influence of some event on another event or activity, such as a novel written by someone being continued by someone else, or the knowledge of a defeat on a distant battlefield causing people to end their ongoing activities. This property is not transitive. This property is irreflexive."""@en;
                                                                        rdfs:domain crm:E2_Temporal_Entity;
                                                                        rdfs:label "commence avant la fin de"@fr,
                                                                                   "starts before the end of"@en,
@@ -2332,11 +2338,7 @@ In other words, if A = [A-start, A-end] and B = [B-start, B-end], it means A-sta
 This property is part of the set of temporal primitives P173 – P176, P182 – P185.
 This property corresponds to a disjunction (logical OR) of the following Allen temporal relations (Allen, 1983): {before, meets, overlaps, starts, started-by, contains, finished-by, equals}
 In a model with fuzzy borders, this property will not be transitive.
-This property is irreflexive.
-
-Figure 12: Temporal entity A starts before or with the start of temporal entity B. Here A is longer than B
-
-Figure 13: Temporal entity A starts before or with the start of temporal entity B. Here A is shorter than B"""@en;
+This property is irreflexive."""@en;
                                                                                  rdfs:domain crm:E2_Temporal_Entity;
                                                                                  rdfs:label "commence avant ou au moment du début de"@fr,
                                                                                             "starts before or with the start of"@en,
@@ -2356,11 +2358,7 @@ Figure 13: Temporal entity A starts before or with the start of temporal entity 
                                                                          rdfs:comment """This property specifies that the temporal extent of the domain instance A of E2 Temporal Entity starts definitely before the start of the temporal extent of the range instance B of E2 Temporal Entity.
 In other words, if A = [A-start, A-end] and B = [B-start, B-end], it means A-start &lt; B-start is true.
 This property is part of the set of temporal primitives P173 – P176, P182 – P185.
-This property corresponds to a disjunction (logical OR) of the following Allen temporal relations (Allen, 1983): {before, meets, overlaps, contains, finished-by}. This property is transitive. This property is asymmetric.
-
-Figure 14: Temporal entity A starts before the start of temporal entity B. Here A is longer than B
-
-Figure 15: Temporal entity A starts before the start of temporal entity B. Here A is shorter than B"""@en;
+This property corresponds to a disjunction (logical OR) of the following Allen temporal relations (Allen, 1983): {before, meets, overlaps, contains, finished-by}. This property is transitive. This property is asymmetric."""@en;
                                                                          rdfs:domain crm:E2_Temporal_Entity;
                                                                          rdfs:label "commence avant le début de"@fr,
                                                                                     "starts before the start of"@en,
@@ -2457,11 +2455,7 @@ For example, the discovery of a large hoard of treasure may call for a celebrati
 In other words, if A = [A-start, A-end] and B = [B-start, B-end], it means A-end ≤ B-start is true.
 This property is part of the set of temporal primitives P173 – P176, P182 – P185.
 This property corresponds to a disjunction (logical OR) of the following Allen temporal relations (Allen, 1983): {before, meets}.
-This property is transitive. This property is asymmetric.
-
-Figure 16: Temporal entity A ends before or with the start of temporal entity B. Here A is longer than B
-
-Figure 17: Temporal entity A ends before or with the start of temporal entity B. Here A is shorter than B"""@en;
+This property is transitive. This property is asymmetric."""@en;
                                                                                rdfs:domain crm:E2_Temporal_Entity;
                                                                                rdfs:label "ends before or with the start of"@en,
                                                                                           "se termine avant ou au moment du début de"@fr,
@@ -2484,11 +2478,7 @@ Figure 17: Temporal entity A ends before or with the start of temporal entity B.
 In other words, if A = [A-start, A-end] and B = [B-start, B-end], it means A-end &lt; B-start is true.
 This property is part of the set of temporal primitives P173 – P176, P182 – P185.
 This property corresponds to the following Allen temporal relation (Allen, 1983) : {before}.
-This property is transitive. This property is asymmetric.
-
-Figure 18: Temporal entity A ends before the start of temporal entity B. Here A is longer than B
-
-Figure 19: Temporal entity A ends before the start of temporal entity B. Here A is shorter than B"""@en;
+This property is transitive. This property is asymmetric."""@en;
                                                                        rdfs:domain crm:E2_Temporal_Entity;
                                                                        rdfs:label "ends before the start of"@en,
                                                                                   "se termine avant le début de"@fr,
@@ -2509,11 +2499,7 @@ Figure 19: Temporal entity A ends before the start of temporal entity B. Here A 
 In other words, if A = [A-start, A-end] and B = [B-start, B-end], it means A-end ≤ B-end is true.
 This property is part of the set of temporal primitives P173 – P176, P182 – P185.
 This property corresponds to a disjunction (logical OR) of the following Allen temporal relations (Allen, 1983): {before, meets, overlaps, finished by, start, equals, during, finishes}.
-This property is irreflexive
-
-Figure 20: Temporal entity A ends before or with the end of temporal entity B. Here A is longer than B
-
-Figure 21: Temporal entity A ends before or with the end of temporal entity B. Here A is shorter than B"""@en;
+This property is irreflexive."""@en;
                                                                              rdfs:domain crm:E2_Temporal_Entity;
                                                                              rdfs:label "ends before or with the end of"@en,
                                                                                         "se termine avant ou au moment de la fin de"@fr,
@@ -2534,11 +2520,7 @@ Figure 21: Temporal entity A ends before or with the end of temporal entity B. H
 In other words, if A = [A-start, A-end] and B = [B-start, B-end], it means A-end &lt; B-end is true.
 This property is part of the set of temporal primitives P173 – P176, P182 – P185.
 This property corresponds to a disjunction (logical OR) of the following Allen temporal relations (Allen, 1983): {before, meets, overlaps, starts, during}.
-This property is transitive. This property is asymmetric.
-
-Figure 22: Temporal entity A ends before the end of temporal entity B. Here A is longer than B
-
-Figure 23: Temporal entity A ends before the end of temporal entity B. Here A is shorter than B"""@en;
+This property is transitive. This property is asymmetric."""@en;
                                                                      rdfs:domain crm:E2_Temporal_Entity;
                                                                      rdfs:label "ends before the end of"@en,
                                                                                 "se termine avant la fin de"@fr,

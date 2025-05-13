@@ -146,7 +146,7 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
     resourceQuery: `
       PREFIX mp: <http://www.researchspace.org/resource/system/>
       PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-      PREFIX crmdig: <http://www.ics.forth.gr/isl/CRMdig/>
+      PREFIX crmdig: <http://www.cidoc-crm.org/extensions/crmdig/>
       PREFIX rs: <http://www.researchspace.org/ontology/>
       PREFIX lrmoo: <http://iflastandards.info/ns/lrm/lrmoo/>
 

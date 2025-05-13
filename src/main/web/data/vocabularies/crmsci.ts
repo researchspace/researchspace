@@ -19,10 +19,10 @@
 import { Rdf } from 'platform/api/rdf';
 
 module crmsci {
-  const NAMESPACE = 'http://www.cidoc-crm.org/cidoc-crm/CRMsci/';
+  const NAMESPACE = 'http://www.cidoc-crm.org/extensions/crmsci/';
   const iri = (s: string) => Rdf.iri(NAMESPACE + s);
 
-  export const S4_Observation = iri('S4_Observation');
+  export const S4_Single_Observation = iri('S4_Single_Observation');
   export const S19_Encounter_Event = iri('S19_Encounter_Event');
 
   export const O8_observed = iri('O8_observed');

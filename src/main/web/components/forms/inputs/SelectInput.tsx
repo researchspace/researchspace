@@ -426,7 +426,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
 
   private createDefaultPlaceholder(definition: FieldDefinition): string {
     const fieldName = (getPreferredLabel(definition.label) || 'entity').toLocaleLowerCase();
-    return `Select ${fieldName} here...`;
+    return `Select ${fieldName}`;
   }
 
   static makeHandler = AtomicValueInput.makeAtomicHandler;

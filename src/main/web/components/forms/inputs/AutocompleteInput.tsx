@@ -327,7 +327,7 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
 
   private createDefaultPlaceholder(definition: FieldDefinition): string {
     const fieldName = (getPreferredLabel(definition.label) || 'entity').toLocaleLowerCase();
-    return `Search and select ${fieldName} here...`;
+    return `Search and select ${fieldName}`;
   }
 
   static makeHandler = AtomicValueInput.makeAtomicHandler;

@@ -155,8 +155,7 @@ public class FormPersistenceSparqlEndpoint {
                              
                             ByteArrayInputStream content = new ByteArrayInputStream(bytes);
                             platformStorage.getStorage(PlatformStorage.DEVELOPMENT_RUNTIME_STORAGE_KEY).appendObject(objectId,
-                            new ObjectMetadata(nsRegistry.getUserIRI().stringValue(),Instant.now()), content, bytes.length);  
-                            logger.info("I should be saving here"+repositoryID);
+                            new ObjectMetadata(nsRegistry.getUserIRI().stringValue(),Instant.now()), content, bytes.length);                             
                         } else {
                             try {
                                 platformStorage.getStorage(PlatformStorage.DEVELOPMENT_RUNTIME_STORAGE_KEY).deleteObject(objectId,

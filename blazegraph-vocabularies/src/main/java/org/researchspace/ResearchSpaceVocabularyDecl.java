@@ -95,6 +95,8 @@ public class ResearchSpaceVocabularyDecl extends BaseVocabularyDecl {
 				"http://www.cidoc-crm.org/cidoc-crm/E90_Symbolic_Object",
 				"http://www.cidoc-crm.org/cidoc-crm/E92_Spacetime_Volume",
 				"http://www.cidoc-crm.org/cidoc-crm/E93_Presence",
+				"http://www.cidoc-crm.org/cidoc-crm/E94_Space_Primitive",
+				"http://www.cidoc-crm.org/cidoc-crm/E95_Spacetime_Primitive",
 				"http://www.cidoc-crm.org/cidoc-crm/E96_Purchase",
 				"http://www.cidoc-crm.org/cidoc-crm/E97_Monetary_Amount",
 				"http://www.cidoc-crm.org/cidoc-crm/E98_Currency",

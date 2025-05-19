@@ -187,7 +187,7 @@ function localMomentAsIfItWasUtc(localMoment: Moment) {
 function defaultPlaceholder(definition: FieldDefinition, mode: DatePickerMode) {
   const valueType = mode === 'time' ? 'time' : 'date';
   const fieldName = (getPreferredLabel(definition.label) || valueType).toLocaleLowerCase();
-  return `Select or enter ${fieldName} here...`;
+  return `Select or enter ${fieldName}`;
 }
 
 SingleValueInput.assertStatic(DatePickerInput);

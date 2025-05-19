@@ -19,30 +19,33 @@
           <div class="page__content-container resource-editView-form-container">
             <mp-event-target-template-render id='{{viewId}}-deleted-collection' template='{{> template}}'>
               <template id='template'>
-                <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%;">
-                  <div class="success-documentation-section-icon-container">
-                    <rs-icon icon-type="rounded" icon-name="done" symbol="true"></rs-icon>
-                  </div>
-
-                  <div style="flex: 1;"> 
-                    <div class="success-documentation-section-title">Success!</div>
-                    <div class="success-documentation-section-content">
-                      <span>
-                        {{#if label}}{{label}}{{else}}<mp-label iri='{{iri}}'></mp-label>{{/if}} has been deleted.
-                      </span>
+                {{#if hideMessage}}
+                {{else}}
+                  <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%;">
+                    <div class="success-documentation-section-icon-container">
+                      <rs-icon icon-type="rounded" icon-name="done" symbol="true"></rs-icon>
                     </div>
+
+                    <div style="flex: 1;"> 
+                      <div class="success-documentation-section-title">Success!</div>
+                      <div class="success-documentation-section-content">
+                        <span>
+                          {{#if label}}{{label}}{{else}}<mp-label iri='{{iri}}'></mp-label>{{/if}} has been deleted.
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <mp-event-trigger id='{{viewId}}-cancel-deleted-state-message-{{iri}}'
+                                      type='Component.TemplateUpdate'
+                                      data='{ "hideMessage": "true" }'
+                                      targets='["{{viewId}}-deleted-collection"]'
+                    >
+                      <button class="btn btn-documentation">
+                        <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
+                      </button>
+                    </mp-event-trigger>
                   </div>
-                  
-                  <mp-event-trigger id='{{viewId}}-cancel-deleted-state-message-{{iri}}'
-                                    type='Component.TemplateUpdate'
-                                    data='{ "hideMessage": "true" }'
-                                    targets='["{{viewId}}-deleted-collection"]'
-                  >
-                    <button class="btn btn-documentation">
-                      <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
-                    </button>
-                  </mp-event-trigger>
-                </div>
+                {{/if}}
               </template>
             </mp-event-target-template-render>
           </div>
@@ -271,7 +274,7 @@
                       {{#if editable}}
                         <mp-event-trigger id='{{viewId}}-form-new-trigger' 
                                           type='Component.TemplateUpdate' 
-                                          data='{"mode": "new" }' 
+                                          data='{"mode": "new", "currentView": "{{viewId}}" }' 
                                           targets='["{{collection}}-mytree", "{{viewId}}-term-forms"]'>
                           <button class="btn btn-action btn-textAndIcon" style="margin-bottom: 10px; justify-content: center;">
                             <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
@@ -292,7 +295,7 @@
                                               info-template='{{> template}}' 
                                               input-placeholder='Select {{resourceName}}' 
                                               type='simple'  
-                                              focused='{{#if (not (eq mode "deleted"))}}{{iri}}{{/if}}' 
+                                              focused='{{#if currentView}}{{#if (eq viewId currentView)}}{{iri}}{{else}}{{/if}}{{else}}{{#if (not (eq mode "deleted"))}}{{iri}}{{/if}}{{/if}}' 
                                               page-size='10000'
                                               config='{"scheme": "{{collection}}", 
                                                       {{#if resourceLabelPattern}}
@@ -330,7 +333,8 @@
                                                   on-event-source='{{viewId}}-form-edit-trigger--{{iri}}' 
                                                   proxy-event-type='LazyTree.Focus' 
                                                   proxy-targets='["{{viewId}}-scheme-tree"]' 
-                                                  data='{"iri":"{{iri}}"}'>
+                                                  data='{"iri":"{{iri}}",
+                                                          "currentView": "{{viewId}}"}'>
                                   </mp-event-proxy>
                                   {{#if resourceBroaderProperty}}
                                     <mp-event-trigger id='{{viewId}}-form-newNarrower-trigger--{{iri}}' 
@@ -569,34 +573,73 @@
                         {{/case}}
                       
                         {{#case "deleted" break=true}}
-                          <mp-event-target-template-render id='{{viewId}}-deleted-state' template='{{> template}}'>
-                            <template id='template'>
-                              <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%;">
-                                <div class="success-documentation-section-icon-container">
-                                  <rs-icon icon-type="rounded" icon-name="done" symbol="true"></rs-icon>
-                                </div>
+                          {{#if collection}}
+                            {{#if (eq viewId currentView)}}
+                              <mp-event-target-template-render id='{{viewId}}-deleted-state' template='{{> template}}'>
+                                <template id='template'>
+                                  {{#if hideMessage}}
+                                  {{else}}
+                                    <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%;">
+                                      <div class="success-documentation-section-icon-container">
+                                        <rs-icon icon-type="rounded" icon-name="done" symbol="true"></rs-icon>
+                                      </div>
 
-                                <div style="flex: 1;"> 
-                                  <div class="success-documentation-section-title">Success!</div>
-                                  <div class="success-documentation-section-content">
-                                    <span>
-                                      {{#if label}}{{label}}{{else}}<mp-label iri='{{iri}}'></mp-label>{{/if}} has been deleted.
-                                    </span>
+                                      <div style="flex: 1;"> 
+                                        <div class="success-documentation-section-title">Success!</div>
+                                        <div class="success-documentation-section-content">
+                                          <span>
+                                            {{#if label}}{{label}}{{else}}<mp-label iri='{{iri}}'></mp-label>{{/if}} has been deleted.
+                                          </span>
+                                        </div>
+                                      </div>
+                                      
+                                      <mp-event-trigger id='{{viewId}}-cancel-deleted-state-message-{{iri}}'
+                                                        type='Component.TemplateUpdate'
+                                                        data='{ "hideMessage": "true" }'
+                                                        targets='["{{viewId}}-deleted-state"]'
+                                      >
+                                        <button class="btn btn-documentation">
+                                          <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
+                                        </button>
+                                      </mp-event-trigger>
+                                    </div>
+                                  {{/if}}
+                                </template>
+                              </mp-event-target-template-render>
+                            {{/if}}
+                          {{else}}
+                            <mp-event-target-template-render id='{{viewId}}-deleted-state' template='{{> template}}'>
+                              <template id='template'>
+                                {{#if hideMessage}}
+                                {{else}}
+                                  <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%;">
+                                    <div class="success-documentation-section-icon-container">
+                                      <rs-icon icon-type="rounded" icon-name="done" symbol="true"></rs-icon>
+                                    </div>
+
+                                    <div style="flex: 1;"> 
+                                      <div class="success-documentation-section-title">Success!</div>
+                                      <div class="success-documentation-section-content">
+                                        <span>
+                                          {{#if label}}{{label}}{{else}}<mp-label iri='{{iri}}'></mp-label>{{/if}} has been deleted.
+                                        </span>
+                                      </div>
+                                    </div>
+                                    
+                                    <mp-event-trigger id='{{viewId}}-cancel-deleted-state-message-{{iri}}'
+                                                      type='Component.TemplateUpdate'
+                                                      data='{ "hideMessage": "true" }'
+                                                      targets='["{{viewId}}-deleted-state"]'
+                                    >
+                                      <button class="btn btn-documentation">
+                                        <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
+                                      </button>
+                                    </mp-event-trigger>
                                   </div>
-                                </div>
-                                
-                                <mp-event-trigger id='{{viewId}}-cancel-deleted-state-message-{{iri}}'
-                                                  type='Component.TemplateUpdate'
-                                                  data='{ "hideMessage": "true" }'
-                                                  targets='["{{viewId}}-deleted-state"]'
-                                >
-                                  <button class="btn btn-documentation">
-                                    <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
-                                  </button>
-                                </mp-event-trigger>
-                              </div>
-                            </template>
-                          </mp-event-target-template-render>
+                                {{/if}}
+                              </template>
+                            </mp-event-target-template-render>
+                          {{/if}}
                         {{/case}}
                       {{/switch}}
                     </div>
@@ -691,7 +734,8 @@
                                     on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
                                     proxy-event-type='Component.TemplateUpdate' 
                                     proxy-targets='[{{#if collection}}"{{collection}}-mytree",{{/if}} "{{viewId}}-term-forms"]'
-                                    additional-data='{"mode": "edit"}'
+                                    additional-data='{"mode": "edit",
+                                                      "currentView": "{{viewId}}"}'
                     ></mp-event-proxy>
 
                     {{#if iri}}
@@ -722,7 +766,8 @@
                                             proxy-targets='[{{#if collection}}"{{collection}}-mytree",{{/if}} "{{viewId}}-term-forms"]'
                                             additional-data='{"mode": "deleted", 
                                                               "iri": "{{iri}}",
-                                                              "label": "{{bindings.0.label.value}}" }'
+                                                              "label": "{{bindings.0.label.value}}",
+                                                              "currentView": "{{viewId}}" }'
                             ></mp-event-proxy>
                           </div>
                         </template>
@@ -747,7 +792,8 @@
                                             proxy-event-type='Component.TemplateUpdate' 
                                             proxy-targets='[{{#if collection}}"{{collection}}-mytree",{{/if}} "{{viewId}}-term-forms"]'
                                             additional-data='{"mode": "deleted",
-                                                            "label": "{{label}}" }'
+                                                            "label": "{{label}}",
+                                                            "currentView": "{{viewId}}" }'
                             ></mp-event-proxy>
                           </div>
                           

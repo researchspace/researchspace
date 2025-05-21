@@ -184,9 +184,9 @@
       "dropAreaDescription": "Drag and drop here any entity of type PLACE (with associated geographic coordinates) to explore related geographic information",
       "iconName": "place",
       "checkQuery": "ASK { 
-        ?value a crm:E53_Place . 
-        ?value <http://www.cidoc-crm.org/cidoc-crm/P168_place_is_defined_by> ?coordinates .
-        ?coordinates <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> . }",
+        ?value a ?ontologyClass .
+        ?ontologyClass rdfs:subClassOf* crm:E53_Place .
+        ?value <http://www.cidoc-crm.org/cidoc-crm/P168_place_is_defined_by> ?coordinates . }",
       "template": "{{> mapTemplate}}",
       "type": "view"
     },
@@ -533,22 +533,16 @@
         <semantic-map tuple-template='{{> popover}}'
                       query='SELECT DISTINCT ?wkt ?place ?color WHERE {
                               {
-                              <{{iri}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                                ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
-                                ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
+                              <{{iri}}> crm:P168_place_is_defined_by ?wkt .
                                 BIND(<{{iri}}> AS ?place) .
                                 BIND(0 as ?order)
                               } UNION {
                                 ?place crm:P89_falls_within* <{{iri}}> .
-                                ?place crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                                ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
-                                ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
+                                ?place crm:P168_place_is_defined_by ?wkt .
                                 BIND(1 as ?order)
                               } UNION {
                                 <{{iri}}> crm:P161i_is_spatial_projection_of/crm:P10i_contains/crm:P53i_is_former_or_current_location_of ?place .
-                                ?place crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                                ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
-                                ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
+                                ?place crm:P168_place_is_defined_by ?wkt .
                                 BIND(true AS ?isBuilding)
                                 BIND(2 as ?order)
                               }

@@ -1,0 +1,1636 @@
+@prefix rs: <http://www.researchspace.org/ontology/> .
+@prefix User: <http://www.researchspace.org/resource/user/> .
+@prefix Help: <http://help.researchspace.org/resource/> .
+@prefix Platform: <http://www.researchspace.org/resource/system/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix crmdig: <http://www.cidoc-crm.org/extensions/crmdig/> .
+@prefix rsp: <http://www.researchspace.org/resource/> .
+@prefix rshelp: <http://researchspace.org/help/> .
+@prefix crmsci: <http://www.cidoc-crm.org/extensions/crmsci/> .
+@prefix crmgeo: <http://www.cidoc-crm.org/extensions/crmgeo/> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix crminfluence: <http://www.cidoc-crm.org/extensions/influence/> .
+@prefix crm: <http://www.cidoc-crm.org/cidoc-crm/> .
+@prefix crminf: <http://www.cidoc-crm.org/extensions/crminf/> .
+@prefix Admin: <http://www.researchspace.org/resource/admin/> .
+@prefix bds: <http://www.bigdata.com/rdf/search#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix crmba: <http://www.cidoc-crm.org/extensions/crmba/> .
+@prefix ontodia: <http://ontodia.org/schema/v1#> .
+@prefix crmarchaeo: <http://www.cidoc-crm.org/extensions/crmarchaeo/> .
+@prefix forms: <http://www.researchspace.org/resource/system/forms/> .
+@prefix lrmoo: <http://iflastandards.info/ns/lrm/lrmoo/> .
+@prefix crmtex: <http://www.cidoc-crm.org/extensions/crmtex/> .
+
+crminf:context {
+
+  <http://www.cidoc-crm.org/extensions/crminf/> a owl:Ontology;
+  rdfs:label "CRMinf v1.2"@en;
+  owl:versionInfo "1.2"@en;
+  rdfs:comment "CRMinf is an ontology intended to be used as a global schema for integrating metadata about argumentation and inference making in descriptive and empirical sciences such as biodiversity, geology, geography, archaeology, cultural heritage, conservation, research IT environments and research data libraries."@en.
+    
+  crminf:I1_Argumentation
+    a owl:Class ;
+    skos:prefLabel "I1 Argumentation"@en ;
+    skos:notation "I1" ;
+    rdfs:label "Argumentation"@en ;
+    rdfs:subClassOf crm:E7_Activity ;
+    rdfs:comment """This class comprises the activity of making honest inferences or observations. An honest inference or observation is one, 
+    in which the Actor carrying out the Argumentation justifies and believes that the Belief Value associated 
+    with the resulting Belief about the Proposition Set is the correct value at the time that the activity was undertaken and 
+    that any Inference Logic or methodology was correctly applied.
+    An instance of Actor may carry out an instance of Argumentation, though the Actor may, of course, be an instance of Group.
+    """@en ;
+    skos:example """- My classification and dating of this bowl (I5) (fictitious) \n
+    - My adoption of the belief that Dragendorff type 29 bowls are from the 1(st) Century AD (I7) (fictitious) \n
+    - The gender classification of the skeleton on the left bench in La Tomba dell’Aryballos sospeso provided to the press by Prof. Alessandro Mandolesi on the 21(st) September 2013 (E17, I5) (Squires, 2013) \n
+    - Francesca Bologna’s adoption of Tacitus’ belief concerning Emperor Nero’s whereabouts at the beginning of the Great Fire of Rome (I7) (Bologna, 2021) [Francesca Bologna adopted the belief of Tacitus, on the grounds that he was the only historian alive at the time of the Great Fire of Rome, although he was only 8 years old at the time). According to Tacitus: “Nero at this time was at Antium and did not return to Rome until the fire approached his house.” In Tacitus, Publius Cornelius. The Annals. Book 15 [15.16].]"""@en.
+
+  crminf:I2_Belief
+    a owl:Class ;
+    skos:prefLabel "I2 Belief"@en ;
+    skos:notation "I2" ;
+    rdfs:label "Belief"@en ;
+    rdfs:subClassOf crm:E2_Temporal_Entity ;
+    rdfs:comment """This class comprises the notion that the associated Proposition Set is to have a particular 
+    Belief Value by a particular Actor. This can be understood as the period of time that 
+    an individual group holds a particular set of propositions to be true, false, or somewhere in between.
+    """@en ;
+    skos:example """- Ian Hodder’s belief from 1996 on, that Floor B was earlier than wall C of building 1 in the north area of Catalhöyük (Hodder, 1999) \n
+    - One spear being at the burial arrangement on the left bench in La Tomba dell’Aryballos sospeso following Alessandro Mandolesi’s observation (I2) (Squires, 2013) (Mandolesi, 2013) [An observed fact, be it by many people, still constitutes a belief in the most general sense.] \n
+    - The belief of Alessandro Mandolesi in the gender of the skeleton on the left bench in La Tomba dell’Aryballos sospeso, as provided to the press on the 21(st) September 2013 (I2) (Squires, 2013)"""@en.
+
+  crminf:I3_Inference_Logic
+    a owl:Class ;
+    skos:prefLabel "I3 Inference Logic"@en ;
+    skos:notation "I3" ;
+    rdfs:label "Inference Logic"@en ;
+    rdfs:subClassOf crm:E89_Propositional_Object ;
+    rdfs:comment """This class comprises the rules used as inputs to Inference Making.
+    In this context, the term “logic” is used in the most general sense of the Greek term, and not in the mathematical sense only. 
+    Examples are the direct application of formal logic, mathematical theories, and calculus, formal or informal default 
+    reasoning based on default values associated with categories, probabilistic reasoning-based mathematical models and 
+    assumed or observed frequencies for certain categories, application of theoretical social models and comparisons with 
+    “cultural parallels”, etc. An instance of Inference Logic could also be a reference to the exact software release of a 
+    Bayesian reasoner, a rule such as “later layers are on top of earlier layers”, or even a term like “social intuition”, 
+    if this is scholarly acceptable (after Doerr, Kritsotaki and Boutsika, 2011).
+    Indeed, anything that is scientifically or academically acceptable as a method for drawing conclusions may be included, 
+    for instance, human pattern recognition.
+    A particular instance of Inference Logic would be the algorithm implemented in a particular revision of a software package.
+    Instances of Inference Logic not only comprise the method of reasoning, but also the set of categorical laws or axioms used 
+    in the argumentation. Often, both are inextricably interwoven, for instance in a software implementation.
+    """@en ;
+    skos:example """- the statement “People buried with arms or weapons are mostly male” [that was used by Mandolesi for a first estimation of the gender of the skeleton found at the left bench in La Tomba dell’Aryballos sospeso (I2), which was subsequently provided to the press on 21(st) September 2013. (Squires, 2013)] \n
+    - the statement “A person cannot be at two distant places at the same time” [that was implicitly applied by Bologna, in adopting the belief that Nero was at Antium, and could not have simultaneously been in Rome, at the time that the Great Fire broke. (Bologna, 2021)] \n
+    - using the skeletal phenotype characteristics, such as the expression of the Proturberantia occipitalis externa of a skull, for making a gender estimation (Nagare et al., 2018)"""@en.
+
+  crminf:I4_Proposition_Set
+    a owl:Class ;
+    skos:prefLabel "I4 Proposition Set"@en ;
+    skos:notation "I4" ;
+    rdfs:label "Proposition Set"@en ;
+    rdfs:subClassOf crm:E89_Propositional_Object ;
+    rdfs:comment """This class comprises sets of unambiguous propositions that are, or could, in principle, be, encoded in a knowledge 
+    representation language. These propositions should be factual, i.e., each proposition should pertain to at least one particular item, 
+    in contrast to universals, such as instances of E55 Type. The identity of an instance of Proposition Set is given by the total of its 
+    content, regardless of equivalent encodings.
+    An instance of Proposition Set should be regarded per se to be neutral to its relationship to reality. The relationship to reality is 
+    determined by the link using the proposition set:
+    If an instance of Belief refers to an instance of Proposition Set, the belief value “TRUE” means that the proposition sets are believed 
+    to correspond to reality, assuming that the propositions can be related to reality –i.e., are about real-world items, in contrast to 
+    mathematical statements, for example. A belief value “FALSE” means that at least one of the propositions in the set is regarded as not 
+    corresponding to reality. Belief values expressing possibility or probability will mean “possibly real”, given that the propositions can be related to reality.
+    Some properties associating an activity with an instance of Proposition Set may imply the belief of the Actor carrying out the activity 
+    that the propositions are true. This should be expressed in the respective scope notes.
+    In a Knowledge Base implementation, an instance of Proposition Set may be represented by the URI of a Named Graph, but only if the propositions 
+    are encoded in the data model of the Knowledge Base and held to be true by the maintainers of the Knowledge Base, because they become part of 
+    the stated knowledge. In this case, the platform-internal relation between the URI and its content, is regarded as equivalent to the property J25 is encoded by.
+    Proposition Sets held to be possibly true by the maintainers of a Knowledge Base may also be introduced as Named Graphs, if the operation of 
+    the Knowledge Base foresees filtering by provenance and likelihood. In this case, Named Graphs are particularly effective.
+    """@en ;
+    skos:example """- the proposition set with content: \n
+    {Nero in July 19, 64 AD (E93 Presence) 
+      - P164 is temporally specified by: July 19, 64 AD (E52 Timespan) 
+      - P195 was a presence of: Nero Claudius Caesar Drusus Germanicus (E21 Person) 
+      - P167 was within Antium in 64AD, Italy (E53 Place) 
+      - P133 is spatiotemporally separated from: The Great Fire of Rome (E5 Event) 
+      - P1 is identified by: incendium magnum Romae (E41 Appellation)
+      - P4 has timespan: July 19-27, 64 AD (E52 Timespan) 
+      - P7 took place at: Rome in 64AD, Italy (E53 Place) 
+    } (Bologna 2021) \n
+    - [The Proposition Set above represents Francesca Bologna’s adopted belief, according to which Publius Cornelius Tacitus meant that “Nero was at Antium when the Great Fire broke out and did not return to Rome until the fire approached his house”] \n
+    - the proposition set with content: \n
+    {Nero July 19, 64 AD (E93 Presence) 
+      - P164 is temporally specified by: July 19, 64 AD (E52 Timespan)
+      - P195 was a presence of: Nero Claudius Caesar Drusus Germanicus (E21 Person)
+      - P167 was within Rome in 64AD, Italy (E53 Place)
+      - P10 falls within (contains): Nero Singing (E7 Activity)
+      - P2 has type: Singing (E55 Type)
+      - P14 carried out by: Nero Claudius Caesar Drusus Germanicus (E21)
+      - P4 has timespan: July 19, 64 AD (E52 Timespan)
+      - P7 took place at: Rome in 64AD, Italy (E53 Place)
+      - P132 spatiotemporally overlaps with: The Great Fire of Rome (E5 Event)
+      - P1 is identified by: incendium magnum Romae (E41 Appellation)
+      - P4 has timespan: July 19-27, 64 AD (E52 Timespan)
+      - P7 took place at: Rome in 64AD, Italy (E53 Place)
+    } (Bologna 2021) \n
+    - [The Proposition Set above represents Francesca Bologna’s intended meaning belief, according to which Gaius Suetonius Tranquillus assumed that Nero was singing in Rome while it was burning from July 19 in 64 AD.]"""@en.
+
+  crminf:I5_Inference_Making
+    a owl:Class ;
+    skos:prefLabel "I5 Inference Making"@en ;
+    skos:notation "I5" ;
+    rdfs:label "Inference Making"@en ;
+    rdfs:subClassOf crminf:I1_Argumentation ;
+    rdfs:comment """This class comprises the action of making honest propositions and statements about particular states of affairs 
+    in reality or possible realities, or categorical descriptions of reality by using inferences from other statements based on 
+    hypotheses and any form of formal or informal logic. It includes evaluations, calculations, and interpretations, based on mathematical formulations and propositions.
+    It is characterized by the use of an existing Belief as the premise that, taken together with a set of Inference Logic, draws a further Belief as a conclusion.
+    Documenting instances of Inference Making primarily enables tracing the dependency of knowledge from conclusion to premise 
+    through subsequent inferences possibly back to primary evidence, so that the range of influence of knowledge revision at any 
+    intermediate stage of complex inference chains on current convictions can be narrowed down by query. The explicit reference 
+    to the applied inference logic further allows scholars and scientists to assess if they can or would follow the documented argument. 
+    The class is not intended to promote the use of computationally decidable systems of logic as replacements of scholarly justifications 
+    of arguments, even though it allows for documenting the use of decidable logic, if that was deemed adequate for the problem at hand. 
+    Principles of scholarly justifications of arguments are also regarded as kinds of inference logic.
+    """@en ;
+    skos:example """- the gender classification of the skeleton on the left bench in La Tomba dell’Aryballos sospeso (E17, I5), provided to the press by Alessandro Mandolesi on the 21st September 2013 (Squires, 2013) \n
+    - Francesca Bologna concluding that the story, according to which, Nero took in the view of the burning city of Rome from the imperial residence while playing the lyre and singing about the fall of Troy, forms a tale devised by Suetonius and Cassius Dio (Bologna, 2021)."""@en.
+
+  #crminf:I6_Belief_Value a owl:Class;
+  #skos:prefLabel "Belief Value"@en;
+  #rdfs:subClassOf crm:E59_Primitive_Value  .
+
+  crminf:I7_Belief_Adoption
+    a owl:Class ;
+    skos:prefLabel "I7 Belief Adoption"@en ;
+    skos:notation "I7" ;
+    rdfs:label "Belief Adoption"@en ;
+    rdfs:subClassOf crminf:I1_Argumentation ;
+    rdfs:comment """The action of an Actor adopting propositions taken from an interpretation of the intended meaning of an instance of 
+    Information Object as being true, or in some way likely to be true. The adopted propositions constitute the conclusion of the 
+    action in the form of a new instance of Adopted Belief of the actor adopting it.
+    The basis of Belief Adoption is the justification of trust in the source of the adopted propositions, rather than the application 
+    of rules for inferring the respective propositions from logical premises.
+    Typical examples are the citation of academic papers or the reuse of datasets.
+    Where an instance of Belief Adoption is based on personal communication (marked as pers.comm. in the studied text), this should be 
+    represented by using P2 has type: “Pers.Comm”, directly from the instance of Belief Adoption.
+    """@en ;
+    skos:example """- Francesca Bologna adopting the belief of Tacitus concerning Emperor Nero’s whereabouts at the beginning of the Great Fire of Rome (I7) (Bologna, 2021). [Francesca Bologna adopted the belief f Tacitus, on the grounds that he was the only historian alive at the time of the Great Fire of Rome, although only 8 years old at the time. According to Tacitus: “Nero at this time was at Antium and did not return to Rome until the fire approached his house.” In Tacitus, Publius Cornelius. The Annals. Book 15 [15.16]."""@en.
+
+  crminf:I10_Provenance_Statement
+    a owl:Class ;
+    skos:prefLabel "I10 Provenance Statement"@en ;
+    skos:notation "I10" ;
+    rdfs:label "Provenance Statement"@en ;
+    rdfs:subClassOf crminf:I4_Proposition_Set ;
+    rdfs:comment """This class comprises statements about the provenance of instances of Thing existing at the time of making the 
+    provenance statements. An instance of Provenance Statement must contain propositions about the presence of the respective 
+    instances of Thing in an event or spatiotemporal context of reference. Characteristically, it may pertain to the writing 
+    by a known author at ta known or unknown date or place, or to the existence of the text known to some public, regardless 
+    of the truth of authorship.
+    In case that only information objects exist describing the proper thing of interest, such as a photo of a lost archaeological 
+    object, or a photo of a photo thereof, an instance of Provenance Statement should contain the relevant chain of intermediate 
+    events transferring the information from the proper thing of interest up to the extant information objects taken into account, 
+    or they, at least, should refer to said chain of intermediate events.
+    The property J20 is about the provenance of (has provenance claim) can be used to link the instance of Provenance Statement 
+    as a whole, with the proper thing of interest. It constitutes a constraint to the provenance statement that it must contain 
+    the description of the relevant context of reference, and, if applicable, to the relevant chain of intermediate events transferring the information.
+    """@en ;
+    skos:example """- the statement: “The copy of Tacitus, Publius Cornelius. The Annals. Book 15 [15.16] that Francesca Bologna obtained from the British Museum in 2021, represents a text written by the ancient Roman historian, Publius Cornelius Tacitus.” [This statement can be represented by a set of propositions]  \n
+    - the statement: “The Latin content of the extant book De Vitae Caesarum, attributed to Gaius Suetonius Tranquillus, was published in Rome 121 AD and its propositionsl content has not been alienated in its current known form through transcription errors.” [This statement can be represented by a set of propositions]  \n
+    - the statement: “The exemplar of The Merchant of Venice, Quarto 1 (1600), owned by the British Library, shelf number ‘BL C.34.k.22’, was published in 1600 AD by Thomas Hayes.” [This statement can be represented by a set of propositions] \n
+    - the statement: “The Nebra Sky Disc dates to the Early Bronze Age.” (Pernicka et al., 2020)"""@en.
+
+  crminf:I11_Situation
+    a owl:Class ;
+    skos:prefLabel "I11 Situation"@en ;
+    skos:notation "I11" ;
+    rdfs:label "Situation"@en ;
+    rdfs:subClassOf crminf:I4_Proposition_Set ;
+    rdfs:comment """This class comprises sets of formal propositions characterizing a particular state of 
+    affairs as having certain relations between particular items or within certain ranges or kinds of 
+    related entities, over or within a timespan. The respective characterization is in general not 
+    regarded as being complete, but as constituting an aspect of interest of an actor. It may capture 
+    an observed aspect of a real situation, such as some known “persons A and B have met”, or be used 
+    for a question, such as whether “persons A and B have ever met”, or even for negation, such as 
+    “persons A and B have met is FALSE”.
+    Since many kinds of properties in the knowledge representation framework, that the CRM is based on, 
+    do not specify times of validity, a particular timespan, further constraining the concerned validity 
+    of all referred properties, can optionally be specified using the property J24 held at least for 
+    (is at least validity of). The identity of an instance of Situation is given its total content 
+    of propositions, regardless of encoding, or the value for the property J24 held at least for 
+    (is at least validity of), if used. If an instance of Situation is used to characterize an 
+    observation, its temporal validity is necessarily constrained at least to the period of observation.
+    """@en ;
+    skos:example """- the persistence of the value of the pH for sample XIV during the period of the pH measurement, which took place one month after the application of Ca(OH)2 dispersion to the sample (Giorgi et al., 2002) \n
+    - The situation reported by Shaykh Abu Abdallah (Ibn Battuta) about his visit to Cairo, Egypt, in 1326AD: “As for the Maristan [hospital], which lies "between the two castles" near the mausoleum of Sultan Qala'un, no description is adequate to its beauties. It contains an innumerable quantity of appliances and medicaments, and its daily revenue is put as high as a thousand dinars.” \n
+    - [After the translation by H.A.R Gibb 1926 of the travel report by Ibn Battuta, from Tanger, Marocco. The Maristan exists still today, but this is the original report about its operation by an eye witness in the year 1326. The reported revenue came from donations. The treatment was free.] (Gibb 1926, pp. 50-51) \n
+    - The situation reported by Shaykh Abu Abdallah (Ibn Battuta) about his visit to China, in 1345-1346 AD: “In every Chinese city there is a quarter for Muslims in which they live by themselves, and in which they have mosques both for the Friday services and for other religious purposes. The Muslims arc honoured and respected.” \n
+    - [After the translation by H.A.R Gibb 1926 of the travel report by Ibn Battuta, from Tanger, Marocco. Ibn Battuta visited China, at least the cities of Quanzhou and Hangzhou, in the year 1345-1346] (Gibb 1926, pp. 283) \n
+    - The situation reported by Seydi Ali Reis arriving with the remainder of his fleet in Surat, Gujarat, India in 1554AD: Sultan Ahmad Shah III, the 12-year-old new ruler of Gujarat, being at war with the usurper Nasir-ul-Mulk Khan at Burudj. Nasir-ul-Mulk Khan having allied with Portuguese colonies Goa. Melek Essed being commander of Daman, Gujarat, India and Hamza Agha commander of Surat under Sultan Ahmad. The Portuguese being at war with the Ottoman Empire over the control of the Indian Ocean. Sultan Ahmad seeking support by Seydi Ali Reis’ soldiers. \n
+    - [Seydi Ali Reis (or Katib-I Rumi) (1498-1563), admiral of Egypt of the Ottoman Empire under Suleiman I was ordered to transfer a fleet of 15 galleys from Basra, Irak, to Egypt, and driven by heavy storms to the coast of Gujarat. In his book “The Mirror of Countries”, 1557, he reported this expedition and his return home by land through Central Asia. This is a short summary from the German translation pp. 173-176 (Diez 1815)] \n
+    - The situation reported by Antonio Pigafetta from Magellan’s voyage at 21st of October 1520, about at S 52°24’ W 69°30’: “This strait was a round place surrounded by mountains, as I have said, and the greater number of the sailors thought that there was no place by which to go out thence to enter into the peaceful sea. But the captain-general said that there was another strait for going out, and said that he knew it well, because he had seen it by a marine chart of the King of Portugal, which map had been made by a great pilot and mariner named Martin of Bohemia”. (Pigafetta and Stanley, 1874: 58) \n
+    - [Antonio Pigafetta was the chronicler of the voyage, one of the survivors. During the expedition, he served as Magellan's assistant until Magellan's death in the Philippine Islands, and kept an accurate journal (‘Antonio Pigafetta’, 2024).] \n
+    - The proposition set with content:
+    {
+      The content of the La Tomba dell'Aryballos sospeso at the time of its opening (E24 Physical Human-Made Thing) is 
+      composed of The burial arrangement in La Tomba dell'Aryballos sospeso on the left bench (E22 Human-Made Object).
+      - The burial arrangement in La Tomba dell'Aryballos sospeso on the left bench (E22 Human-Made Object) is composed of 
+      The spear found in La Tomba dell'Aryballos sospeso (E22 Human-Made Object).
+      - The skeleton in La Tomba dell'Aryballos sospeso on the left bench (E20 Biological Object) forms part of The burial 
+      arrangement in La Tomba dell'Aryballos sospeso on the left bench (E22 Human-Made Object).
+      - The skeleton in La Tomba dell'Aryballos sospeso on the right bench (E20 Biological Object) forms part of The content 
+      of the La Tomba dell'Aryballos sospeso at the time of its opening (E24 Physical Human-Made Thing).
+      - The content of the La Tomba dell'Aryballos sospeso at the time of its opening (E24 Physical Human-Made Thing) has 
+      condition The condition of the content of the La Tomba dell'Aryballos sospeso from its sealing to its opening (E3 Condition State).
+      - The condition of the content of the La Tomba dell'Aryballos sospeso from its sealing to its opening (E3 Condition State) has type ‘intact’ (E55 Type).
+      - The condition of the content of the La Tomba dell'Aryballos sospeso from its sealing to its opening (E3 Condition State) 
+      has time-span The time-span of La Tomba dell'Aryballos sospeso from its sealing to its opening (Time-Span).
+      - The time-span of La Tomba dell'Aryballos sospeso from its sealing to its opening (Time-Span) ongoing throughout 570 BCE – 09-21-2013 CE (E61 Time Primitive).
+    } (I11) (Mandolesi 2013) \n
+    - [This Situation is the strict result of an observation, except for the duration of the condition of “being intact”.]"""@en.
+
+  crminf:I12_Adopted_Belief
+    a owl:Class ;
+    skos:prefLabel "I12 Adopted Belief"@en ;
+    skos:notation "I12" ;
+    rdfs:label "Adopted Belief"@en ;
+    rdfs:subClassOf crminf:I2_Belief ;
+    rdfs:comment """This class comprises the notion that an instance of Actor adopted the meaning of an associated instance 
+    of Proposition Set by arguments of trust from a source created by another instance of Actor, and holds it as being 
+    true or in some way likely to be true. This source can be documented via the property J14 adopted interpretation of 
+    (has adopted interpretation). The used interpretation of the meaning of the source may be a belief of the adopting 
+    Actor or another one and can be documented as an instance of Intended Meaning Belief, if this detail is relevant.
+    """@en ;
+    skos:example """- Francesca Bologna’s belief that Nero was at Antium, when the Great Fire broke out and did not return to Rome until the fire approached his house (Bologna, 2021)"""@en.
+
+  crminf:I13_Intended_Meaning_Belief
+    a owl:Class ;
+    skos:prefLabel "I13 Intended Meaning Belief"@en ;
+    skos:notation "I13" ;
+    rdfs:label "Intended Meaning Belief"@en ;
+    rdfs:subClassOf crminf:I2_Belief ;
+    rdfs:comment """This class comprises beliefs on the part of an instance of Actor that a particular Proposition Set 
+    formally represents (in part or in its entirety) the intended meaning that was created by another instance of 
+    Actor, without considering an opinion yet about its truth or trustworthiness.
+    The belief constitutes an interpretation of the source. The respective proposition set can be documented using the 
+    property J16 assumed meaning (is supposed meaning in), whereas the respective source can be documented via the 
+    property J17 about (has interpretation) and holds as being true or in some way likely to be true.
+    """@en ;
+    skos:example """- Francesca Bologna’s belief that Publius Cornelius Tacitus meant that “Nero was at Antium when the Great Fire broke out and did not return to Rome until the fire approached his house.” (Bologna, 2021) \n
+    - Francesca Bologna’s belief that Gaius Suetonius Tranquillus meant that “Nero was singing in Rome while it burned from July 19 in 64 AD.” (Bologna, 2021)"""@en.
+
+  crminf:I14_Provenance_Belief
+    a owl:Class ;
+    skos:prefLabel "I14 Provenance Belief"@en ;
+    skos:notation "I14" ;
+    rdfs:label "Provenance Belief"@en ;
+    rdfs:subClassOf crminf:I2_Belief ;
+    rdfs:comment """This class comprises beliefs of an Actor that a particular instance of Thing, 
+    in general available to this Actor, is identical to one present in a relevant event or context 
+    of reference in the past, such as a text in a book being sufficiently identical to the one in 
+    the claimed author’s original manuscript or edition, to be used by the Actor for citation. Other 
+    examples are the provenance of archaeological objects in collections, which may pertain to the 
+    claimed excavation spot or to the inferred context of their creation.
+    The term “in general available” means that the thing is either physically in the hands of the actor 
+    or that the actor or an actor of their trust has, in principle, the ability to get access to the thing. 
+    In case that only information objects exist describing the proper thing of interest, such as a photo of 
+    a lost archaeological object, an instance of Provenance Belief should be based on arguments including 
+    references to provenance beliefs about descriptions, representations and the described things.
+    A formal description about the assumed provenance can be documented via the property J19 that (is subject of). 
+    Note that, depending on the intended argumentation about the respective instance of Thing, different aspects 
+    of provenance may be described about the same instance of Thing.
+    """@en ;
+    skos:example """- Francesca Bologna’s belief about the authenticity of Tacitus, Publius Cornelius. The Annals. Book 15"""@en.
+
+  crminf:I15_Provenance_Assessment
+    a owl:Class ;
+    skos:prefLabel "I15 Provenance Assessment"@en ;
+    skos:notation "I15" ;
+    rdfs:label "Provenance Assessment"@en ;
+    rdfs:subClassOf crminf:I1_Argumentation ;
+    rdfs:comment """This class comprises activities of making arguments and concluding about the likely 
+    provenance of instances of Thing existing at the time of this assessment. These activities may 
+    further be about the provenance of things referred to or represented by existing information objects, and subsequent references.
+    """@en ;
+    skos:example """- the assessment by Ernst Pernicka et al. about the provenance of the Nebra Sky Disc (Pernicka et al., 2020)"""@en.
+
+  crminf:I16_Meaning_Comprehension
+    a owl:Class ;
+    skos:prefLabel "I16 Meaning Comprehension"@en ;
+    skos:notation "I16" ;
+    rdfs:label "Meaning Comprehension"@en ;
+    rdfs:subClassOf crminf:I1_Argumentation ;
+    rdfs:comment """This class comprises processes of interpreting the intended meaning of parts 
+    or the whole of the content of an instance of Information Object as propositions. Such interpretations 
+    may include the disambiguation of the meaning of words and expressions, expanding abbreviations, 
+    resolving named entities, references and co-references, and completing missing text parts, without 
+    however arguing about the actual truth of the information.
+    In principle, any use of an information object pertaining to its meaning implies an instance of Meaning 
+    Comprehension. However, in practical applications, texts in natural language are often clear enough, so 
+    that no explicit explanation of the interpretation is needed for the user. In such cases, there is no 
+    need to create explicit instances of Meaning Comprehension, but the adopted belief may directly be linked 
+    via J26 adopted interpretation (has adopted interpretation), or the instance of Meaning Comprehension may 
+    be made implicit to an instance of Belief Adoption by multiple instantiation.
+    Explicitly documenting instances of Meaning Comprehension can be very useful, especially when the 
+    interpretations are not obvious or if there exist competing arguments about them.
+    """@en ;
+    skos:example """- My understanding of the statements found in the book De Vita Caesarum, by Gaius Suetonius Tranquillus, concerning Emperor Nero’s whereabouts in Rome during the Great Fire of Rome, from 19(th) July 64 AD and on (‘The Twelve Ceasars’, 2024)"""@en.
+
+  crminf:I17_One-Proposition_Set
+    a owl:Class ;
+    skos:prefLabel "I17 One-Proposition Set"@en ;
+    skos:notation "I17" ;
+    rdfs:label "One-Proposition Set"@en ;
+    rdfs:subClassOf crminf:I4_Proposition_Set ;
+    rdfs:comment """This class comprises proposition sets containing exactly one proposition representing a binary relationship, which is, 
+    or could, in principle, be, encoded in a knowledge representation language. The identity of an instance 
+    of One-Proposition Set is given by its entire content, regardless of equivalent encodings.
+    An instance of One-Proposition Set in a Knowledge Base may, alternatively, be implemented by a ‘reification’ 
+    construct, and is regarded as logically equivalent in this model. Similarly, all triples of properties declared 
+    for one class that denote the domain, type, and range of another property, such as the properties of 
+    Attribute Assignment and its subclasses, can be interpreted as shortcuts to an instance of One-Proposition Set, 
+    and its properties, J30 has domain (is domain of), J31 has range (is range of), J32 has property type (is property type of). 
+    Such property triples can also be interpreted as a ‘reification’ which is implicit in the declaring class.
+    As such, the class One-Proposition Set plays the role of a logical interface between different ways to document a discourse 
+    about propositions within a Knowledge Base. It is particularly relevant for implementing effective queries. For documentation, 
+    the use of simpler shortcut properties will, typically, be the preferred approach.
+    """@en ;
+    skos:example """- the proposition set with content: {The skeleton in La Tomba dell’Aryballos sospeso on the left Bench (E20 Biological Object) P2 has type ‘male’ (E55 Type)} (I17) (Squires, 2013) \n
+    - the proposition set with content: {The skeleton in La Tomba dell’Aryballos sospeso on the left Bench (E20 Biological Object) P2 has type ‘female’ (E55 Type} (I17) (Mandolesi, 2013) \n
+    - the proposition set with content: {The burial arrangement in La Tomba dell'Aryballos sospeso on the left bench (E22 Human-Made Object) is composed of the spear found in La Tomba dell'Aryballos sospeso (E22 Human-Made Object)} (I17) (Mandolesi, 2013) \n
+    - the proposition set with content: {The skeleton in La Tomba dell'Aryballos sospeso on the left bench (E20 Biological Object) forms part of the burial arrangement in La Tomba dell'Aryballos sospeso on the left bench (E22 Human-Made Object)} (I17) (Mandolesi, 2013) \n
+    - the proposition set with content: {The book MS Sinai Greek 418 (E22 Human-Made Object) has binding structure ‘unsupported’ (E55 Type)} (I17) (Honey & Pickwoad, 2010) [‘has binding structure’ refers to a property, external to the CIDOC CRM, which connects a book (E22 Human-Made Object) to the type of its binding structure (E55 Type)]"""@en.
+
+  crm:E13_Attribute_Assignment rdfs:subClassOf crminf:I1_Argumentation .
+  crmsci:S27_Observation rdfs:subClassOf crminf:I1_Argumentation .
+  crmsci:S28_Observable_Situation rdfs:subClassOf crminf:I11_Situation .
+  
+  crminf:J1_used_as_premise
+    a owl:ObjectProperty ;
+    skos:prefLabel "J1 used as premise"@en ;
+    skos:notation "J1" ;
+    rdfs:label "used as premise"@en ;
+    rdfs:domain crminf:I5_Inference_Making ;
+    rdfs:range crminf:I2_Belief ;
+    owl:inverseOf crminf:J1i_was_premise_for ;
+    rdfs:subPropertyOf crm:P17_was_motivated_by ;
+    rdfs:comment """This property associates an instance of Belief with the instance of Inference Making that used it as a premise.
+
+    Examples:
+    - the gender classification of the skeleton on the left bench in La Tomba dell’Aryballos sospeso (E17, I5), provided to the press by Alessandro Mandolesi on the 21st September 2013, used as premise the spear observed by Mandolesi at the burial arrangement on the left bench in La Tomba dell’Aryballos sospeso (I2). (Squires, 2013) (Mandolesi, 2013)
+    """@en .
+
+  crminf:J1i_was_premise_for
+    a owl:ObjectProperty ;
+    skos:prefLabel "J1i was premise for"@en ;
+    skos:notation "J1i" ;
+    rdfs:label "was premise for"@en ;
+    rdfs:domain crminf:I2_Belief ;
+    rdfs:range crminf:I5_Inference_Making ;
+    owl:inverseOf crminf:J1_used_as_premise ;
+    rdfs:subPropertyOf crm:P17i_motivated ;
+    rdfs:comment """This property associates an instance of Belief with the instance of Inference Making that used it as a premise.
+
+    Examples:
+    - the gender classification of the skeleton on the left bench in La Tomba dell’Aryballos sospeso (E17, I5), provided to the press by Alessandro Mandolesi on the 21st September 2013, used as premise the spear observed by Mandolesi at the burial arrangement on the left bench in La Tomba dell’Aryballos sospeso (I2). (Squires, 2013) (Mandolesi, 2013)
+    """@en .
+
+  crminf:J2_concluded_that
+    a owl:ObjectProperty ;
+    skos:prefLabel "J2 concluded that"@en ;
+    skos:notation "J2" ;
+    rdfs:label "concluded that"@en ;
+    rdfs:domain crminf:I1_Argumentation ;
+    rdfs:range crminf:I2_Belief ;
+    owl:inverseOf crminf:J2i_was_concluded_by ;
+    rdfs:subPropertyOf crm:P175_starts_before_or_with_the_start_of, crm:P175i_starts_after_or_with_the_start_of, crm:P185_ends_before_the_end_of ;
+    rdfs:comment """This property associates an instance of Belief with the instance of Argumentation that concluded it.
+
+    Examples:
+    - Ian Hodder’s re-examination, in 1996, of the physical relation of wall C and floor B of building 1 in the north area of Catalhöyük (I1) concluded that Ian Hodder believed from 1996 on, that Floor B was earlier than wall C of building 1 in the north area of Catalhöyük. (Hodder, 1999) 
+    - The gender classification of the skeleton on the left bench in La Tomba dell’Aryballos sospeso (E17, I5), provided to the press by Alessandro Mandolesi on the 21st September 2013, concluded that the gender of the skeleton was ‘male’, according to Mandolesi (I2). (Squires, 2013)
+    """@en .
+
+  crminf:J2i_was_concluded_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "J2i was concluded by"@en ;
+    skos:notation "J2i" ;
+    rdfs:label "was concluded by"@en ;
+    rdfs:domain crminf:I2_Belief ;
+    rdfs:range crminf:I1_Argumentation ;
+    owl:inverseOf crminf:J2_concluded_that ;
+    rdfs:subPropertyOf crm:P175_starts_before_or_with_the_start_of, crm:P175i_starts_after_or_with_the_start_of, crm:P185i_ends_after_the_end_of ;
+    rdfs:comment """This property associates an instance of Belief with the instance of Argumentation that concluded it.
+
+    Examples:
+    - Ian Hodder’s re-examination, in 1996, of the physical relation of wall C and floor B of building 1 in the north area of Catalhöyük (I1) concluded that Ian Hodder believed from 1996 on, that Floor B was earlier than wall C of building 1 in the north area of Catalhöyük. (Hodder, 1999) 
+    - The gender classification of the skeleton on the left bench in La Tomba dell’Aryballos sospeso (E17, I5), provided to the press by Alessandro Mandolesi on the 21st September 2013, concluded that the gender of the skeleton was ‘male’, according to Mandolesi (I2). (Squires, 2013)
+    """@en .
+
+  crminf:J3_applied
+    a owl:ObjectProperty ;
+    skos:prefLabel "J3 applied"@en ;
+    skos:notation "J3" ;
+    rdfs:label "applied"@en ;
+    rdfs:domain crminf:I5_Inference_Making ;
+    rdfs:range crminf:I3_Inference_Logic ;
+    owl:inverseOf crminf:J3i_was_applied_by ;
+    rdfs:subPropertyOf crm:P16_used_specific_object ;
+    rdfs:comment """This property associates an instance of Inference Logic with the instance of Inference Making that used it to draw its conclusion.
+
+    Examples:
+    - the gender classification of the skeleton on the left bench in La Tomba dell’Aryballos sospeso (E17, I5), provided to the press by Alessandro Mandolesi on the 21st September 2013, applied the statement “People buried with arms or weapons are mostly male” (I3). (Squires, 2013)
+    """@en .
+
+  crminf:J3i_was_applied_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "J3i was applied by"@en ;
+    skos:notation "J3i" ;
+    rdfs:label "was applied by"@en ;
+    rdfs:domain crminf:I3_Inference_Logic ;
+    rdfs:range crminf:I5_Inference_Making ;
+    owl:inverseOf crminf:J3_applied ;
+    rdfs:subPropertyOf crm:P16i_was_used_for ;
+    rdfs:comment """This property associates an instance of Inference Logic with the instance of Inference Making that used it to draw its conclusion.
+
+    Examples:
+    - the gender classification of the skeleton on the left bench in La Tomba dell’Aryballos sospeso (E17, I5), provided to the press by Alessandro Mandolesi on the 21st September 2013, applied the statement “People buried with arms or weapons are mostly male” (I3). (Squires, 2013)
+    """@en .
+
+  crminf:J4_that
+    a owl:ObjectProperty ;
+    skos:prefLabel "J4 that"@en ;
+    skos:notation "J4" ;
+    rdfs:label "that"@en ;
+    rdfs:domain crminf:I2_Belief ;
+    rdfs:range crminf:I4_Proposition_Set ;
+    owl:inverseOf crminf:J4i_is_subject_of ;
+    rdfs:comment """This property associates an instance of Proposition Set with the instance of Belief that holds an opinion about it.
+    This property is part of the fully developed path from Attribute Assignment through J2 concluded that 
+    (was concluded by), Belief, J4 that (is subject of), to One-Proposition Set, which is shortcut by J33 
+    assigned proposition (is assigned by).
+    This property is also part of the fully developed path from Belief, J4 that (is subject of), Proposition Set, 
+    J26 has unambiguous description (describes the formal meaning of), to Information Object, which is strongly shortcut by J27 that the formal meaning of (has a meaning belief).
+
+    Examples:
+    - Dragendorff’s belief [of type 29 Bowls being from the 1st century AD] that type 29 Bowls are from the 1st century AD (I4)
+    - Francesca Bologna’s belief that Publius Cornelius Tacitus meant that “Nero was at Antium when the Great Fire broke out and did not return to Rome until the fire approached his house” (I12) that {Nero in July 19, 64 AD (E93 Presence)
+    - P164 is temporally specified by: July 19, 64 AD (E52 Timespan)
+    - P195 was a presence of: Nero Claudius Caesar Drusus Germanicus (E21 Person)
+    - P167 was within Antium in 64AD, Italy (E53 Place)
+    - P133 is spatiotemporally separated from: The Great Fire of Rome (E5 Event)
+    - P1 is identified by: incendium magnum Romae (E41 Appellation)
+    - P4 has timespan: July 19-27, 64 AD (E52 Timespan)
+    - P7 took place at: Rome in 64AD, Italy (E53 Place)
+    - }. (I4) (Bologna, 2021)
+    - The belief of Alessandro Mandolesi in the gender of the skeleton on the left bench in La Tomba dell’Aryballos sospeso (I2), as provided to the press on 21(st) September 2013, that {The skeleton in La Tomba dell’Aryballos sospeso on the left bench (E20 Biological Object) P2 has type ‘male’ (E55 Type).} (I17). (Squires, 2013) \n
+    - The belief of Alessandro Mandolesi in observing a spear in the burial arrangement on the left bench in La Tomba dell'Aryballos sospeso (I2) that {The burial arrangement in La Tomba dell'Aryballos sospeso on the left Bench (E22 Human-Made Object) is composed of the spear found in La Tomba dell'Aryballos sospeso (E22 Human-Made Object)} (I17). (Squires, 2013) (Mandolesi, 2013)
+    """@en .
+
+  crminf:J4i_is_subject_of
+    a owl:ObjectProperty ;
+    skos:prefLabel "J4i is subject of"@en ;
+    skos:notation "J4i" ;
+    rdfs:label "is subject of"@en ;
+    rdfs:domain crminf:I4_Proposition_Set ;
+    rdfs:range crminf:I2_Belief ;
+    owl:inverseOf crminf:J4_that ;
+    rdfs:comment """This property associates an instance of Proposition Set with the instance of Belief that holds an opinion about it.
+    This property is part of the fully developed path from Attribute Assignment through J2 concluded that (was concluded by), 
+    Belief, J4 that (is subject of), to One-Proposition Set, which is shortcut by J33 assigned proposition (is assigned by).
+    This property is also part of the fully developed path from Belief, J4 that (is subject of), Proposition Set, 
+    J26 has unambiguous description (describes the formal meaning of), to Information Object, which is strongly 
+    shortcut by J27 that the formal meaning of (has a meaning belief).
+
+    Examples:
+    - Dragendorff’s belief [of type 29 Bowls being from the 1st century AD] that type 29 Bowls are from the 1st century AD (I4).
+    - Francesca Bologna’s belief that Publius Cornelius Tacitus meant that “Nero was at Antium when the Great 
+    Fire broke out and did not return to Rome until the fire approached his house” (I12) that {Nero in July 19, 64 AD (E93 Presence)
+    - P164 is temporally specified by: July 19, 64 AD (E52 Timespan)
+    - P195 was a presence of: Nero Claudius Caesar Drusus Germanicus (E21 Person)
+    - P167 was within Antium in 64AD, Italy (E53 Place)
+    - P133 is spatiotemporally separated from: The Great Fire of Rome (E5 Event)
+    - P1 is identified by: incendium magnum Romae (E41 Appellation)
+    - P4 has timespan: July 19-27, 64 AD (E52 Timespan)
+    - P7 took place at: Rome in 64AD, Italy (E53 Place)
+    - }. (I4) (Bologna, 2021)
+    - The belief of Alessandro Mandolesi in the gender of the skeleton on the left bench in La Tomba 
+    dell’Aryballos sospeso (I2), as provided to the press on 21(st) September 2013, that {The skeleton 
+    in La Tomba dell’Aryballos sospeso on the left bench (E20 Biological Object) P2 has type ‘male’ (E55 Type).} (I17). (Squires, 2013)
+    - The belief of Alessandro Mandolesi in observing a spear in the burial arrangement on the left 
+    bench in La Tomba dell'Aryballos sospeso (I2) that {The burial arrangement in La Tomba dell'Aryballos sospeso on the left Bench 
+    (E22 Human-Made Object) is composed of the spear found in La Tomba dell'Aryballos sospeso (E22 Human-Made Object)} (I17). (Squires, 2013) (Mandolesi, 2013)
+    """@en .
+
+  crminf:J5_holds_to_be
+    a owl:DatatypeProperty ;
+    skos:prefLabel "J5 holds to be"@en ;
+    skos:notation "J5" ;
+    rdfs:label "holds to be"@en ;
+    rdfs:domain crminf:I2_Belief ;
+    rdfs:range xsd:string;
+   # rdfs:range crminf:I6_Belief_Value;
+    rdfs:comment """This property associates an instance of Belief with the Belief Value that reflects the opinion of the instance of Belief about the Proposition Set associated with it.
+
+    Examples:
+    - Dragendorff’s belief that type 29 bowls are from the 1(st) century AD (I2) holds to be True (I6)
+    - One spear being in the burial arrangement on the left bench in La Tomba dell’Aryballos sospeso following Alessandro Mandolesi’s observation (I2) holds to be True (I6). (Squires, 2013) 
+    - The belief of Alessandro Mandolesi that the skeleton on the left bench in La Tomba dell’Aryballos sospeso belonged to a male person (I2), as announced to the press on 21(st) September 2013, holds to be False (I6) (Squires, 2013)
+    - The belief of Alessandro Mandolesi that the skeleton on the left bench in La Tomba dell’Aryballos sospeso belonged to a female person (I2), as announced to the press on November 2013, holds to be True (I6) (Squires, 2013)
+    """@en .
+
+  crminf:J7_is_based_on_evidence_from
+    a owl:ObjectProperty ;
+    skos:prefLabel "J7 is based on evidence from"@en ;
+    skos:notation "J7" ;
+    rdfs:label "is based on evidence from"@en ;
+    rdfs:domain crminf:I7_Belief_Adoption ;
+    rdfs:range crm:E73_Information_Object ;
+    owl:inverseOf crminf:J7i_is_evidence_for ;
+    rdfs:subPropertyOf crm:P16_used_specific_object ;
+    rdfs:comment """This property associates an instance of Belief Adoption with the instance of Information Object that is a source of evidence for the Proposition Set that was adopted.
+
+    Examples:
+    - The adoption on behalf of Francesca Bologna of the belief by Tacitus concerning Emperor Nero’s whereabouts at the beginning of the Great Fire of Rome (I7) is based on evidence from Tacitus, Publius Cornelius. The Annals. Book 15 [15.16]. (Bologna, 2021)
+    """@en .
+
+  crminf:J7i_is_evidence_for
+    a owl:ObjectProperty ;
+    skos:prefLabel "J7i is evidence for"@en ;
+    skos:notation "J7i" ;
+    rdfs:label "is evidence for"@en ;
+    rdfs:domain crm:E73_Information_Object ;
+    rdfs:range crminf:I7_Belief_Adoption ;
+    owl:inverseOf crminf:J7_is_based_on_evidence_from ;
+    rdfs:subPropertyOf crm:P16i_was_used_for ;
+    rdfs:comment """This property associates an instance of Belief Adoption with the instance of Information Object that is a source of evidence for the Proposition Set that was adopted.
+
+    Examples:
+    - The adoption on behalf of Francesca Bologna of the belief by Tacitus concerning Emperor Nero’s whereabouts at the beginning of the Great Fire of Rome (I7) is based on evidence from Tacitus, Publius Cornelius. The Annals. Book 15 [15.16]. (Bologna, 2021)
+    """@en .
+
+  crminf:J13_adopted_interpretation
+    a owl:ObjectProperty ;
+    skos:prefLabel "J13 adopted interpretation"@en ;
+    skos:notation "J13" ;
+    rdfs:label "adopted interpretation"@en ;
+    rdfs:domain crminf:I7_Belief_Adoption ;
+    rdfs:range crminf:I12_Adopted_Belief ;
+    owl:inverseOf crminf:J13i_was_concluded_by ;
+    rdfs:subPropertyOf crminf:J2_concluded_that ;
+    rdfs:comment """This property associates an instance of Belief Adoption with the instance of Adopted Belief that was 
+    established and possibly selected from the interpretation of the source or sources referred to by the 
+    property J14 adopted interpretation of (has adopted interpretation). This property implies a relation 
+    of trust in the reliability of the sources. The actual believed content, i.e., propositions about some 
+    past reality that have been adopted from the source, should be documented using the property J4 that (is subject of).
+
+    Examples:
+    - the gender classification of the skeleton on the left bench in La Tomba dell’Aryballos sospeso 
+    (E17, I5), provided to the press by Alessandro Mandolesi on the 21st September 2013, used as premise 
+    the lance observed by Mandolesi at the burial arrangement on the left bench in La Tomba dell’Aryballos sospeso (I2). (Squires, 2013) (Mandolesi, 2013)
+    """@en .
+
+  crminf:J13i_was_concluded_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "J13i was concluded by"@en ;
+    skos:notation "J13i" ;
+    rdfs:label "was concluded by"@en ;
+    rdfs:domain crminf:I12_Adopted_Belief ;
+    rdfs:range crminf:I7_Belief_Adoption ;
+    owl:inverseOf crminf:J13_adopted_interpretation ;
+    rdfs:subPropertyOf crminf:J2i_was_concluded_by ;
+    rdfs:comment """This property associates an instance of Belief Adoption with the instance of Adopted Belief that was 
+    established and possibly selected from the interpretation of the source or sources referred 
+    to by the property J14 adopted interpretation of (has adopted interpretation). This property implies 
+    a relation of trust in the reliability of the sources. The actual believed content, i.e., propositions 
+    about some past reality that have been adopted from the source, should be documented using the property J4 that (is subject of).
+
+    Examples:
+    - the gender classification of the skeleton on the left bench in La Tomba dell’Aryballos sospeso 
+    (E17, I5), provided to the press by Alessandro Mandolesi on the 21st September 2013, used as 
+    premise the lance observed by Mandolesi at the burial arrangement on the left bench in La Tomba dell’Aryballos sospeso (I2). (Squires, 2013) (Mandolesi, 2013)
+    """@en .
+
+  crminf:J14_adopted_interpretation_of
+    a owl:ObjectProperty ;
+    skos:prefLabel "J14 adopted interpretation of"@en ;
+    skos:notation "J14" ;
+    rdfs:label "adopted interpretation of"@en ;
+    rdfs:domain crminf:I12_Adopted_Belief ;
+    rdfs:range crm:E73_Information_Object ;
+    owl:inverseOf crminf:J14i_has_adopted_interpretation ;
+    rdfs:comment """This property associates an instance of Adopted Belief with a source or sources of interpretation 
+    from which the belief was established and possibly selected. In some cases of scholarly arguments, 
+    multiple sources referring to a common topic may have been interpreted to form a particular belief about the topic referred to.
+
+    Examples:
+    - Francesca Bologna’s belief that “Nero was at Antium when the Great Fire broke out and did 
+    not return to Rome until the fire approached his house” (I12) adopted interpretation of Tacitus, Publius Cornelius. The Annals. Book 15 [15.6] (E73). (Bologna, 2021)
+    """@en .
+
+  crminf:J14i_has_adopted_interpretation
+    a owl:ObjectProperty ;
+    skos:prefLabel "J14i has adopted interpretation"@en ;
+    skos:notation "J14i" ;
+    rdfs:label "has adopted interpretation"@en ;
+    rdfs:domain crm:E73_Information_Object ;
+    rdfs:range crminf:I12_Adopted_Belief ;
+    owl:inverseOf crminf:J14_adopted_interpretation_of ;
+    rdfs:comment """This property associates an instance of Adopted Belief with a source or sources of interpretation from which 
+    the belief was established and possibly selected. In some cases of scholarly arguments, multiple sources 
+    referring to a common topic may have been interpreted to form a particular belief about the topic referred to.
+
+    Examples:
+    - Francesca Bologna’s belief that “Nero was at Antium when the Great Fire broke out and did not return to 
+    Rome until the fire approached his house” (I12) adopted interpretation of Tacitus, Publius Cornelius. The Annals. Book 15 [15.6] (E73). (Bologna, 2021)
+    """@en .
+
+  crminf:J15_assumed_meaning
+    a owl:ObjectProperty ;
+    skos:prefLabel "J15 assumed meaning"@en ;
+    skos:notation "J15" ;
+    rdfs:label "assumed meaning"@en ;
+    rdfs:domain crminf:I7_Belief_Adoption ;
+    rdfs:range crminf:I13_Intended_Meaning_Belief ;
+    owl:inverseOf crminf:J15i_was_assumed_by ;
+    rdfs:comment """This property associates an instance of Belief Adoption with an instance of Intended 
+    Meaning Belief about a meaning believed to be expressed in the source or sources referred to by the 
+    property J14 adopted interpretation of (has adopted interpretation).
+
+    Examples:
+    - The adoption on behalf of Francesca Bologna of the belief by Tacitus, concerning Emperor Nero’s 
+    whereabouts when the Great Fire of Rome broke out assumed meaning the belief of Francesca Bologna 
+    that what Publius Cornelius Tacitus meant was “Nero was at Antium when the Great Fire of Rome 
+    broke out, and that he only returned to Rome when the fire approached his house.” (I13). (Bologna, 2021)
+    """@en .
+
+  crminf:J15i_was_assumed_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "J15i was assumed by"@en ;
+    skos:notation "J15i" ;
+    rdfs:label "was assumed by"@en ;
+    rdfs:domain crminf:I13_Intended_Meaning_Belief ;
+    rdfs:range crminf:I7_Belief_Adoption ;
+    owl:inverseOf crminf:J15_assumed_meaning ;
+    rdfs:comment """This property associates an instance of Belief Adoption with an instance of Intended Meaning Belief about a 
+    meaning believed to be expressed in the source or sources referred to by the property J14 adopted interpretation 
+    of (has adopted interpretation).
+
+    Examples:
+    - The adoption on behalf of Francesca Bologna of the belief by Tacitus, concerning Emperor Nero’s whereabouts when 
+    the Great Fire of Rome broke out assumed meaning the belief of Francesca Bologna that what Publius Cornelius Tacitus 
+    meant was “Nero was at Antium when the Great Fire of Rome broke out, and that he only returned to Rome when the fire approached his house.” (I13). (Bologna, 2021)
+    """@en .
+
+  crminf:J16_used_as_premise
+    a owl:ObjectProperty ;
+    skos:prefLabel "J16 used as premise"@en ;
+    skos:notation "J16" ;
+    rdfs:label "used as premise"@en ;
+    rdfs:domain crminf:I13_Intended_Meaning_Belief ;
+    rdfs:range crminf:I4_Proposition_Set ;
+    owl:inverseOf crminf:J16i_was_premise_for ;
+    rdfs:comment """This property associates an instance of Intended Meaning Belief with the instance of 
+    Proposition Set that represents the meaning assumed by the holder of the belief to have 
+    been intended by the respective source. The latter source can be documented with the property J17 about (has interpretation).
+
+    Examples:
+    - Francesca Bologna’s belief that Publius Cornelius Tacitus meant that “Nero was at Antium when the 
+    Great Fire broke out and did not return to Rome until the fire approached his house” (I13) assumed meaning {Nero in July 19, 64 AD (E93 Presence)
+    - P164 is temporally specified by: July 19, 64 AD (Time-Span)
+    - P195 was a presence of: Nero Claudius Caesar Drusus Germanicus (E21 Person)
+    - P167 was within Antium in 64 AD, Italy (E53 Place)
+    - P133 is spatiotemporally separated from: The Great Fire of Rome (E5 Event)
+    - P1 is identified by: incendium magnum Romae (E41 Appellation)
+    - P4 has timespan: July 19-27, AD (Time-Span)
+    - P7 took place at: Rome, in 64AD, Italy (E53 Place)
+    - } (I4). (Bologna, 2021)
+    """@en .
+
+  crminf:J16i_was_premise_for
+    a owl:ObjectProperty ;
+    skos:prefLabel "J16i was premise for"@en ;
+    skos:notation "J16i" ;
+    rdfs:label "was premise for"@en ;
+    rdfs:domain crminf:I4_Proposition_Set ;
+    rdfs:range crminf:I13_Intended_Meaning_Belief ;
+    owl:inverseOf crminf:J16_used_as_premise ;
+    rdfs:comment """This property associates an instance of Intended Meaning Belief with the instance of Proposition Set that 
+    represents the meaning assumed by the holder of the belief to have been intended by the respective source. 
+    The latter source can be documented with the property J17 about (has interpretation).
+
+    Examples:
+    - Francesca Bologna’s belief that Publius Cornelius Tacitus meant that “Nero was at Antium when the Great 
+    Fire broke out and did not return to Rome until the fire approached his house” (I13) assumed meaning {Nero in July 19, 64 AD (E93 Presence)
+    - P164 is temporally specified by: July 19, 64 AD (Time-Span)
+    - P195 was a presence of: Nero Claudius Caesar Drusus Germanicus (E21 Person)
+    - P167 was within Antium in 64 AD, Italy (E53 Place)
+    - P133 is spatiotemporally separated from: The Great Fire of Rome (E5 Event)
+    - P1 is identified by: incendium magnum Romae (E41 Appellation)
+    - P4 has timespan: July 19-27, AD (Time-Span)
+    - P7 took place at: Rome, in 64AD, Italy (E53 Place)
+    - } (I4). (Bologna, 2021)
+    """@en .
+
+  crminf:J17_about
+    a owl:ObjectProperty ;
+    skos:prefLabel "J17 about"@en ;
+    skos:notation "J17" ;
+    rdfs:label "about"@en ;
+    rdfs:domain crminf:I13_Intended_Meaning_Belief ;
+    rdfs:range crm:E73_Information_Object ;
+    owl:inverseOf crminf:J17i_has_interpretation ;
+    rdfs:comment """This property associates an instance of Intended Meaning Belief with the instance of Information Object 
+    that was a source of or evidence for the interpretation of its intended meaning. If sources are 
+    fragmentary about or complementary to a specific topic, more than one source may have been used.
+
+    Examples:
+    - Francesca Bologna’s belief that Gaius Suetonius Tranquillus meant that Nero was singing in Rome while 
+    it was burning from July 19 64AD about the extant book De Vita Caesarum, attributed to Gaius Suetonius Tranquillus.
+    """@en .
+
+  crminf:J17i_has_interpretation
+    a owl:ObjectProperty ;
+    skos:prefLabel "J17i has interpretation"@en ;
+    skos:notation "J17i" ;
+    rdfs:label "has interpretation"@en ;
+    rdfs:domain crm:E73_Information_Object ;
+    rdfs:range crminf:I13_Intended_Meaning_Belief ;
+    owl:inverseOf crminf:J17_about ;
+    rdfs:comment """This property associates an instance of Intended Meaning Belief with the instance 
+    of Information Object that was a source of or evidence for the interpretation of its intended meaning. 
+    If sources are fragmentary about or complementary to a specific topic, more than one source may have been used.
+
+    Examples:
+    - Francesca Bologna’s belief that Gaius Suetonius Tranquillus meant that Nero was singing in Rome 
+    while it was burning from July 19 64AD about the extant book De Vita Caesarum, attributed to Gaius Suetonius Tranquillus.
+    """@en .
+
+  crminf:J18_assumed_provenance
+    a owl:ObjectProperty ;
+    skos:prefLabel "J18 assumed provenance"@en ;
+    skos:notation "J18" ;
+    rdfs:label "assumed provenance"@en ;
+    rdfs:domain crminf:I7_Belief_Adoption ;
+    rdfs:range crminf:I14_Provenance_Belief ;
+    owl:inverseOf crminf:J18i_was_assumed_by ;
+    rdfs:subPropertyOf crminf:J1_used_as_premise ;
+    rdfs:comment """This property associates an instance of Belief Adoption with an instance of Provenance Belief about 
+    the source or sources referred to by the property J14 adopted interpretation of (has adopted interpretation), 
+    which justifies the conviction that the trusted and adopted content of the source, or its copy at hand, is 
+    actually identical, or sufficiently close to the assumed original and its context of creation.
+
+    Examples:
+    - The adoption on behalf of Francesca Bologna of the belief by Tacitus concerning the whereabouts of 
+    Emperor Nero at the time the Great Fire of Rome started (I7) assumed provenance her belief about the 
+    authenticity of Tacitus, Publius Cornelius. The Annals. Book 15 [15.16] (I14).
+    """@en .
+
+  crminf:J18i_was_assumed_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "J18i was assumed by"@en ;
+    skos:notation "J18i" ;
+    rdfs:label "was assumed by"@en ;
+    rdfs:domain crminf:I14_Provenance_Belief ;
+    rdfs:range crminf:I7_Belief_Adoption ;
+    owl:inverseOf crminf:J18_assumed_provenance ;
+    rdfs:subPropertyOf crminf:J1i_was_premise_for ;
+    rdfs:comment """This property associates an instance of Belief Adoption with an instance 
+    of Provenance Belief about the source or sources referred to by the property J14 adopted 
+    interpretation of (has adopted interpretation), which justifies the conviction that the 
+    trusted and adopted content of the source, or its copy at hand, is actually identical, 
+    or sufficiently close to the assumed original and its context of creation.
+
+    Examples:
+    - The adoption on behalf of Francesca Bologna of the belief by Tacitus concerning the whereabouts 
+    of Emperor Nero at the time the Great Fire of Rome started (I7) assumed provenance her belief 
+    about the authenticity of Tacitus, Publius Cornelius. The Annals. Book 15 [15.16] (I14).
+    """@en .
+
+  crminf:J19_that
+    a owl:ObjectProperty ;
+    skos:prefLabel "J19 that"@en ;
+    skos:notation "J19" ;
+    rdfs:label "that"@en ;
+    rdfs:domain crminf:I14_Provenance_Belief ;
+    rdfs:range crminf:I10_Provenance_Statement ;
+    owl:inverseOf crminf:J19i_is_subject_of ;
+    rdfs:subPropertyOf crminf:J4_that ;
+    rdfs:comment """This property associates an instance of Provenance Belief with the instance of Provenance Statement that holds an opinion about it.
+
+    Examples:
+    - Francesca Bologna’s belief about the authenticity of Tacitus, Publius Cornelius. The Annals. Book 15 that 
+    the copy of Tacitus, Publius Cornelius. The Annals. Book 15 [15.16] which she obtained from the British Museum 
+    in 2021 represents a text written by the ancient Roman historian, Publius Cornelius Tacitus (I10). 
+    - Francesca Bologna’s belief about the authenticity of Tacitus, Publius Cornelius. The Annals. Book 15 that 
+    the copy of Tacitus, Publius Cornelius. The Annals. Book 15 [15.16], which she had access to in 2021 and 
+    originated from the British Museum, represents a text written by the ancient Roman historian, Publius Cornelius Tacitus (I10).
+    """@en .
+
+  crminf:J19i_is_subject_of
+    a owl:ObjectProperty ;
+    skos:prefLabel "J19i is subject of"@en ;
+    skos:notation "J19i" ;
+    rdfs:label "is subject of"@en ;
+    rdfs:domain crminf:I10_Provenance_Statement ;
+    rdfs:range crminf:I14_Provenance_Belief ;
+    owl:inverseOf crminf:J19_that ;
+    rdfs:subPropertyOf crminf:J4i_is_subject_of ;
+    rdfs:comment """This property associates an instance of Provenance Belief with the instance of Provenance Statement that holds an opinion about it.
+
+    Examples:
+    - Francesca Bologna’s belief about the authenticity of Tacitus, Publius Cornelius. The Annals. Book 15 
+    that the copy of Tacitus, Publius Cornelius. The Annals. Book 15 [15.16] 
+    which she obtained from the British Museum in 2021 represents a text written by the ancient Roman historian, Publius Cornelius Tacitus (I10). 
+    - Francesca Bologna’s belief about the authenticity of Tacitus, Publius Cornelius. The Annals. Book 15 that 
+    the copy of Tacitus, Publius Cornelius. The Annals. Book 15 [15.16], which she had access to in 2021 and 
+    originated from the British Museum, represents a text written by the ancient Roman historian, Publius Cornelius Tacitus (I10).
+    """@en .
+
+  crminf:J20_is_about_the_provenance_of
+    a owl:ObjectProperty ;
+    skos:prefLabel "J20 is about the provenance of"@en ;
+    skos:notation "J20" ;
+    rdfs:label "is about the provenance of"@en ;
+    rdfs:domain crminf:I10_Provenance_Statement ;
+    rdfs:range crm:E70_Thing ;
+    owl:inverseOf crminf:J20i_has_provenance_claim ;
+    rdfs:subPropertyOf crm:P129_is_about, crminf:J28_contains_entity_reference ;
+    rdfs:comment """This property associates an instance of Provenance Statement with an instance of Thing, the provenance of which the statement describes.
+
+    Examples:
+    - The statement: “The exemplar of The Merchant of Venice, Quarto 1 (1600) owned by The British Library, 
+    shelf number BL C.34.k.22 was published in 1600 AD by Thomas Heyes” (I10) is about the provenance of 
+    the exemplar of The Merchant of Venice, Quarto 1 (1600), owned by the British Library, shelf number BL C.34.k.22 (E70)
+    """@en .
+
+  crminf:J20i_has_provenance_claim
+    a owl:ObjectProperty ;
+    skos:prefLabel "J20i has provenance claim"@en ;
+    skos:notation "J20i" ;
+    rdfs:label "has provenance claim"@en ;
+    rdfs:domain crm:E70_Thing ;
+    rdfs:range crminf:I10_Provenance_Statement ;
+    owl:inverseOf crminf:J20_is_about_the_provenance_of ;
+    rdfs:subPropertyOf crm:P129i_is_subject_of, crminf:J28i_is_referred_to_in ;
+    rdfs:comment """This property associates an instance of Provenance Statement with an instance of Thing, the provenance of which the statement describes.
+
+    Examples:
+    - The statement: “The exemplar of The Merchant of Venice, Quarto 1 (1600) owned by The British Library, 
+    shelf number BL C.34.k.22 was published in 1600 AD by Thomas Heyes” (I10) 
+    is about the provenance of the exemplar of The Merchant of Venice, Quarto 1 (1600), owned by the British Library, shelf number BL C.34.k.22 (E70)
+    """@en .
+
+  crminf:J21_concluded_provenance
+    a owl:ObjectProperty ;
+    skos:prefLabel "J21 concluded provenance"@en ;
+    skos:notation "J21" ;
+    rdfs:label "concluded provenance"@en ;
+    rdfs:domain crminf:I15_Provenance_Assessment ;
+    rdfs:range crminf:I14_Provenance_Belief ;
+    owl:inverseOf crminf:J21i_was_assessed_by ;
+    rdfs:subPropertyOf crminf:J2_concluded_that ;
+    rdfs:comment """This property associates an instance of Provenance Assessment with an instance of Provenance 
+    Belief that constitutes the conclusion of the assessment. An instance of Provenance Assessment 
+    may conclude more than one instances of Provenance Belief, typically about different objects considered in the same assessment.
+
+    Examples:
+    - The assessment by Ernst Pernicka et al. concerning the provenance of the Nebra Sky Disk (I15) 
+    concluded provenance of their belief that the Nebra Sky Disk dates to the Early Bronze Age (I14). (Pernicka et al., 2020)
+    """@en .
+
+  crminf:J21i_was_assessed_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "J21i was assessed by"@en ;
+    skos:notation "J21i" ;
+    rdfs:label "was assessed by"@en ;
+    rdfs:domain crminf:I14_Provenance_Belief ;
+    rdfs:range crminf:I15_Provenance_Assessment ;
+    owl:inverseOf crminf:J21_concluded_provenance ;
+    rdfs:subPropertyOf crminf:J2i_was_concluded_by ;
+    rdfs:comment """This property associates an instance of Provenance Assessment with an instance of 
+    Provenance Belief that constitutes the conclusion of the assessment. An instance of Provenance 
+    Assessment may conclude more than one instances of Provenance Belief, typically about different 
+    objects considered in the same assessment.
+
+    Examples:
+    - The assessment by Ernst Pernicka et al. concerning the provenance of the Nebra Sky Disk (I15) 
+    concluded provenance of their belief that the Nebra Sky Disk dates to the Early Bronze Age (I14). (Pernicka et al., 2020)
+    """@en .
+
+  crminf:J22_interpreted_meaning_of
+    a owl:ObjectProperty ;
+    skos:prefLabel "J22 interpreted meaning of"@en ;
+    skos:notation "J22" ;
+    rdfs:label "interpreted meaning of"@en ;
+    rdfs:domain crminf:I16_Meaning_Comprehension ;
+    rdfs:range crm:E73_Information_Object ;
+    owl:inverseOf crminf:J22i_was_interpreted_by ;
+    rdfs:subPropertyOf crm:P16_used_specific_object ;
+    rdfs:comment """This property associates an instance of Meaning Comprehension with the instance 
+    of Information Object that was the source of or evidence for the interpretation of its 
+    intended meaning. If sources are fragmentary about or complementary to a specific topic, 
+    more than one source may have been used.
+
+    Examples:
+    - My understanding of the statements about Emperor Nero’s whereabouts in Rome while it was 
+    burning from 19(th) July 64 AD (I16) interpreted meaning of the extant book De Vita Caesarum (E73) by Gaius Suetonius Tranquillus.
+    """@en .
+
+  crminf:J22i_was_interpreted_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "J22i was interpreted by"@en ;
+    skos:notation "J22i" ;
+    rdfs:label "was interpreted by"@en ;
+    rdfs:domain crm:E73_Information_Object ;
+    rdfs:range crminf:I16_Meaning_Comprehension ;
+    owl:inverseOf crminf:J22_interpreted_meaning_of ;
+    rdfs:subPropertyOf crm:P16i_was_used_for ;
+    rdfs:comment """This property associates an instance of Meaning Comprehension with the instance 
+    of Information Object that was the source of or evidence for the interpretation of its intended 
+    meaning. If sources are fragmentary about or complementary to a specific topic, more than one source may have been used.
+
+    Examples:
+    - My understanding of the statements about Emperor Nero’s whereabouts in Rome while it was burning 
+    from 19(th) July 64 AD (I16) interpreted meaning of the extant book De Vita Caesarum (E73) by Gaius Suetonius Tranquillus.
+    """@en .
+
+  crminf:J23_interpreted_meaning_as
+    a owl:ObjectProperty ;
+    skos:prefLabel "J23 interpreted meaning as"@en ;
+    skos:notation "J23" ;
+    rdfs:label "interpreted meaning as"@en ;
+    rdfs:domain crminf:I16_Meaning_Comprehension ;
+    rdfs:range crminf:I13_Intended_Meaning_Belief ;
+    owl:inverseOf crminf:J23i_was_interpretation_by ;
+    rdfs:subPropertyOf crminf:J2_concluded_that ;
+    rdfs:comment """This property associates an instance of Meaning Comprehension with 
+    the instance of Intended Meaning Belief that was the result of the interpretation of the intended meaning of the analysed source(s).
+
+    Examples:
+    - My understanding of the statements about Emperor Nero’s whereabouts in Rome 
+    while it was burning from 19(th) July 64 AD (I16) interpreted meaning as believing 
+    that it meant Nero was singing in Rome while it was burning from 19(th) July in 64 AD (I13).
+    """@en .
+
+  crminf:J23i_was_interpretation_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "J23i was interpretation by"@en ;
+    skos:notation "J23i" ;
+    rdfs:label "was interpretation by"@en ;
+    rdfs:domain crminf:I13_Intended_Meaning_Belief ;
+    rdfs:range crminf:I16_Meaning_Comprehension ;
+    owl:inverseOf crminf:J23_interpreted_meaning_as ;
+    rdfs:subPropertyOf crminf:J2i_was_concluded_by ;
+    rdfs:comment """This property associates an instance of Meaning Comprehension with the instance 
+    of Intended Meaning Belief that was the result of the interpretation of the intended meaning of the analysed source(s).
+
+    Examples:
+    - My understanding of the statements about Emperor Nero’s whereabouts in Rome while it was 
+    burning from 19(th) July 64 AD (I16) interpreted meaning as believing that it meant Nero 
+    was singing in Rome while it was burning from 19(th) July in 64 AD (I13).
+    """@en .
+
+  crminf:J24_held_at_least_for
+    a owl:ObjectProperty ;
+    skos:prefLabel "J24 held at least for"@en ;
+    skos:notation "J24" ;
+    rdfs:label "held at least for"@en ;
+    rdfs:domain crminf:I11_Situation ;
+    rdfs:range crm:E52_Time-Span ;
+    owl:inverseOf crminf:J24i_is_at_least_validity_of ;
+    rdfs:comment """This property associates an instance of Situation with the instance of Time-Span 
+    that defines the minimal time of asserted validity of the property instances constituting this situation. 
+    The associated time-span constitutes a necessary part of the identity of this situation. Any different 
+    association of a time-span even to the same constituting propositions of this situation will identify another instance of Situation.
+    Note that the respective situation may have had shorter duration than the one given by the property 
+    P82 at some time within to the associated time-span, but the same propositions may quite well have prevailed 
+    for longer and other times. In order to make a statement about how long at least the propositions of that 
+    situation uninterruptedly prevailed, the property P81 ongoing throughout should be used for the associated time-span.
+    There is no means to declare that the propositions of that situation did not occur outside the given time-span.
+    There are two typical cases for the determination of the related instance of Time-Span. In the first, 
+    it is the temporal extent of some instance of Temporal Entity, such as an observation activity, 
+    and documented with P4 has timespan (is timespan of): this then documents the validity of the asserted 
+    instance of Situation for the complete instance of Temporal Entity, even if the actual time-span 
+    is not known, and can be regarded as a phenomenal timespan. In the second, the instance of Time-Span 
+    is a date range declared in or derived from historical sources or provided by dating methods: then it is a declarative timespan.
+
+    Examples:
+    - The situation reported by Shaykh Abu Abdallah (Ibn Battuta) about the Maristan in Cairo, Egypt (I11) 
+    held at least for the time-span of Ibn Battuta’s visit in 1326AD (E52) (Gibb 1926, pp. 50-51)
+    - The situation reported by Shaykh Abu Abdallah (Ibn Battuta) about the Muslim quarters in Chinese cities
+    (I11) held at least for the time-span of Ibn Battuta’s visit in 1354AD (E52) (Gibb 1926, pp. 283)
+    - The situation reported by Antonio Pigafetta from Magellan’s voyage at 21st of October 1520 about
+    the existence of a strait to the Pacific held at least for 21st and 22nd of October 1520 (E52) (Pigafetta and Stanley, 1874: 58)
+    """@en .
+
+  crminf:J24i_is_at_least_validity_of
+    a owl:ObjectProperty ;
+    skos:prefLabel "J24i is at least validity of"@en ;
+    skos:notation "J24i" ;
+    rdfs:label "is at least validity of"@en ;
+    rdfs:domain crm:E52_Time-Span ;
+    rdfs:range crminf:I11_Situation ;
+    owl:inverseOf crminf:J24_held_at_least_for ;
+    rdfs:comment """This property associates an instance of Situation with the instance of Time-Span 
+    that defines the minimal time of asserted validity of the property instances constituting this 
+    situation. The associated time-span constitutes a necessary part of the identity of this situation. 
+    Any different association of a time-span even to the same constituting propositions of this situation 
+    will identify another instance of Situation.
+    Note that the respective situation may have had shorter duration than the one given by the property 
+    P82 at some time within to the associated time-span, but the same propositions may quite well have 
+    prevailed for longer and other times. In order to make a statement about how long at least the 
+    propositions of that situation uninterruptedly prevailed, the property P81 ongoing throughout 
+    should be used for the associated time-span.
+    There is no means to declare that the propositions of that situation did not occur outside the given time-span.
+    There are two typical cases for the determination of the related instance of Time-Span. 
+    In the first, it is the temporal extent of some instance of Temporal Entity, such as an 
+    observation activity, and documented with P4 has timespan (is timespan of): this then documents 
+    the validity of the asserted instance of Situation for the complete instance of Temporal Entity, 
+    even if the actual time-span is not known, and can be regarded as a phenomenal timespan. In the second, 
+    the instance of Time-Span is a date range declared in or derived from historical sources or provided by 
+    dating methods: then it is a declarative timespan.
+
+    Examples:
+    - The situation reported by Shaykh Abu Abdallah (Ibn Battuta) about the Maristan in Cairo, Egypt (I11) 
+    held at least for the time-span of Ibn Battuta’s visit in 1326AD (E52) (Gibb 1926, pp. 50-51)
+    - The situation reported by Shaykh Abu Abdallah (Ibn Battuta) about the Muslim quarters in Chinese cities 
+    (I11) held at least for the time-span of Ibn Battuta’s visit in 1354AD (E52) (Gibb 1926, pp. 283)
+    - The situation reported by Antonio Pigafetta from Magellan’s voyage at 21st of October 1520 about the 
+    existence of a strait to the Pacific held at least for 21st and 22nd of October 1520 (E52) (Pigafetta and Stanley, 1874: 58)
+    """@en .
+
+  crminf:J25_is_encoded_by
+    a owl:DatatypeProperty ;
+    skos:prefLabel "J25 is encoded by"@en ;
+    skos:notation "J25" ;
+    rdfs:label "is encoded by"@en ;
+    rdfs:domain crminf:I4_Proposition_Set ;
+    rdfs:range xsd:string;
+    rdfs:comment """This property associates an instance of Proposition Set with a “serialization” 
+    of its content in the format of a knowledge representation language. There may be more than one 
+    ontologically equivalent formal encodings of the same propositions.
+    In a Knowledge Base implementation, the content of an instance of Proposition Set may be represented 
+    by the content of a Named Graph, but only if the propositions are encoded in the data model of the 
+    Knowledge Base and held to be true by the maintainers of a Knowledge Base because they become part 
+    of the stated knowledge. In this case, the platform-internal relation between the URI of the Named 
+    Graph and its content are regarded as equivalent to J25 is encoded by, and the property should formally not be instantiated.
+
+    Examples:
+    - {The skeleton on the left bench in La Tomba dell'Aryballos sospeso (E20 Biological Object) P2 has type ‘male’ (E55 Type)} (I17) 
+    - is encoded by
+    - “<crm:E20_Biological_Object rdf:about=" https://cidoc-crm.org/crminf/examples/ Aryballos_Skeleton">
+    - <skos:prefLabel xml:lang="en"> The skeleton on the left bench in La Tomba dell'Aryballos sospeso </skos:prefLabel>
+    - <crm:P2_has_type>
+    - <crm:E55_Type rdf:about="http://vocab.getty.edu/aat/300025928">
+    - <skos:prefLabel xml:lang="en">men (male humans)</skos:prefLabel>
+    - </crm:E55_Type>
+    - </crm:P2_has_type>
+    - </crm: E20_Biological_Object>” (E62). (Squires, 2013)
+    """@en .
+
+  crminf:J26_has_unambiguous_description
+    a owl:ObjectProperty ;
+    skos:prefLabel "J26 has unambiguous description"@en ;
+    skos:notation "J26" ;
+    rdfs:label "has unambiguous description"@en ;
+    rdfs:domain crminf:I4_Proposition_Set ;
+    rdfs:range crm:E73_Information_Object ;
+    owl:inverseOf crminf:J26i_describes_the_formal_meaning_of ;
+    rdfs:subPropertyOf crm:P129i_is_subject_of ;
+    rdfs:comment """This property associates an instance of Proposition Set with an instance of Information 
+    Object that expresses in a natural language the content of the former as propositions that are or could, 
+    in principle be, encoded in a knowledge representation language.
+    The formulation of these propositions should be unambiguous at least within the context of provenance of 
+    the information object and the context of documenting them as the content of the instance of Proposition Set. 
+    For a textual representation, rules of a normal scholarly consensus that it is unambiguous should be applied.
+    This property is part of the fully developed path from Belief, J4 that (is subject of), Proposition Set, 
+    J26 has unambiguous description (describes the formal meaning of), to Information Object, which is strongly 
+    shortcut by the property J27 that the formal meaning of (has a meaning belief).
+
+    Examples:
+    - The proposition set with content:
+    - {The skeleton on the left bench in La Tomba dell'Aryballos sospeso (E20 Biological Object) P2 has type ‘male’ (E55 Type)} (I17)
+    - has unambiguous description
+    - “The skeleton found on the left bench of La Tomba dell'Aryballos sospeso, Doganaccia di Tarquinia, Tuscany, Italy, by Prof. 
+    Alessandro Mandolesi on the 21(th) of September 2013 belongs to the remains of a male person” (E73). (Squires, 2013)
+    - The proposition set with content: {Nero July 19, 64 AD (E93 Presence)
+    - P164 is temporally specified by: July 19, 64 AD (E52 Timespan)
+    - P195 was a presence of: Nero Claudius Caesar Drusus Germanicus (E21 Person)
+    - P167 was within Rome in 64AD, Italy (E53 Place)
+    - P10 falls within (contains): Nero Singing (E7 Activity)
+    - P2 has type: Singing (E55 Type)
+    - P14 carried out by: Nero Claudius Caesar Drusus Germanicus (E21)
+    - P4 has timespan: July 19, 64 AD (E52 Timespan)
+    - P7 took place at: Rome in 64AD, Italy (E53 Place)
+    - P132 spatiotemporally overlaps with: The Great Fire of Rome (E5 Event)
+    - P1 is identified by: incendium magnum Romae (E41 Appellation)
+    - P4 has timespan: July 19-27, 64 AD (E52 Timespan)
+    - P7 took place at: Rome in 64AD, Italy (E53 Place)
+    - }
+    - has unambiguous description “Nero Claudius Caesar Drusus Germanicus was singing in Rome while it was burning from July 19 in 64 AD” (E73). (Bologna, 2021)
+    """@en .
+
+  crminf:J26i_describes_the_formal_meaning_of
+    a owl:ObjectProperty ;
+    skos:prefLabel "J26i describes the formal meaning of"@en ;
+    skos:notation "J26i" ;
+    rdfs:label "describes the formal meaning of"@en ;
+    rdfs:domain crm:E73_Information_Object ;
+    rdfs:range crminf:I4_Proposition_Set ;
+    owl:inverseOf crminf:J26_has_unambiguous_description ;
+    rdfs:subPropertyOf crm:P129_is_about ;
+    rdfs:comment """This property associates an instance of Proposition Set with an instance of Information Object that 
+    expresses in a natural language the content of the former as propositions that are or could, in principle be, encoded 
+    in a knowledge representation language.
+    The formulation of these propositions should be unambiguous at least within the context of provenance of the information 
+    object and the context of documenting them as the content of the instance of Proposition Set. For a textual representation, 
+    rules of a normal scholarly consensus that it is unambiguous should be applied.
+    This property is part of the fully developed path from Belief, J4 that (is subject of), Proposition Set, J26 has unambiguous 
+    description (describes the formal meaning of), to Information Object, which is strongly shortcut by the property J27 that 
+    the formal meaning of (has a meaning belief).
+
+    Examples:
+    - The proposition set with content:
+    - {The skeleton on the left bench in La Tomba dell'Aryballos sospeso (E20 Biological Object) P2 has type ‘male’ (E55 Type)} (I17)
+    - has unambiguous description
+    - “The skeleton found on the left bench of La Tomba dell'Aryballos sospeso, Doganaccia di Tarquinia, Tuscany, Italy, by 
+    Prof. Alessandro Mandolesi on the 21(th) of September 2013 belongs to the remains of a male person” (E73). (Squires, 2013)
+    - The proposition set with content: {Nero July 19, 64 AD (E93 Presence)
+    - P164 is temporally specified by: July 19, 64 AD (E52 Timespan)
+    - P195 was a presence of: Nero Claudius Caesar Drusus Germanicus (E21 Person)
+    - P167 was within Rome in 64AD, Italy (E53 Place)
+    - P10 falls within (contains): Nero Singing (E7 Activity)
+    - P2 has type: Singing (E55 Type)
+    - P14 carried out by: Nero Claudius Caesar Drusus Germanicus (E21)
+    - P4 has timespan: July 19, 64 AD (E52 Timespan)
+    - P7 took place at: Rome in 64AD, Italy (E53 Place)
+    - P132 spatiotemporally overlaps with: The Great Fire of Rome (E5 Event)
+    - P1 is identified by: incendium magnum Romae (E41 Appellation)
+    - P4 has timespan: July 19-27, 64 AD (E52 Timespan)
+    - P7 took place at: Rome in 64AD, Italy (E53 Place)
+    - }
+    - has unambiguous description “Nero Claudius Caesar Drusus Germanicus was singing in Rome while it was burning from July 19 in 64 AD” (E73). (Bologna, 2021)
+    """@en .
+
+  crminf:J27_that_the_formal_meaning_of
+    a owl:ObjectProperty ;
+    skos:prefLabel "J27 that the formal meaning of"@en ;
+    skos:notation "J27" ;
+    rdfs:label "that the formal meaning of"@en ;
+    rdfs:domain crminf:I2_Belief ;
+    rdfs:range crm:E73_Information_Object ;
+    owl:inverseOf crminf:J27i_has_a_meaning_belief ;
+    rdfs:comment """Shortcut Of: Belief. J4 that (is subject of): Proposition Set. J26 has 
+    unambiguous description (describes the formal meaning of): Information Object
+    This property associates an instance of Belief with an instance of Information Object that 
+    expresses the believed propositions in a sufficiently unambiguous way and in a form that 
+    they are or could, in principle be, encoded in a knowledge representation language.
+    This property is a strong shortcut of the fully developed path from Belief, J4 that (is subject of), 
+    Proposition Set, J26 has unambiguous description (describes the formal meaning of), to Information Object. 
+    It is introduced into this model for the convenience of the user, when the implied instance of Proposition 
+    Set appears not to be a separate object of discourse within this documentation context.
+
+    Examples:
+    - The belief of Prof. Alessandro Mandolesi in the gender of the skeleton on the left bench in La Tomba 
+    dell'Aryballos sospeso as provided to the press on the 21(th) of September 2013 (I2) that the formal meaning of 
+    - “The skeleton found on the left bench of La Tomba dell'Aryballos sospeso, Doganaccia di Tarquinia, 
+    Tuscany, Italy, by Prof. Alessandro Mandolesi on the 21(th) of September 2013 belongs to the remains 
+    of a male person” (E73) [“holds to be True (I6)”, see examples for J5]. (Squires, 2013)
+    """@en .
+
+  crminf:J27i_has_a_meaning_belief
+    a owl:ObjectProperty ;
+    skos:prefLabel "J27i has a meaning belief"@en ;
+    skos:notation "J27i" ;
+    rdfs:label "has a meaning belief"@en ;
+    rdfs:domain crm:E73_Information_Object ;
+    rdfs:range crminf:I2_Belief ;
+    owl:inverseOf crminf:J27_that_the_formal_meaning_of ;
+    rdfs:comment """Shortcut Of of the inverse property: Belief. J4 that (is subject of): Proposition Set. J26 has unambiguous description (describes the formal meaning of): Information Object
+    This property associates an instance of Belief with an instance of Information Object that expresses the 
+    believed propositions in a sufficiently unambiguous way and in a form that they are or could, in principle 
+    be, encoded in a knowledge representation language.
+    This property is a strong shortcut of the fully developed path from Belief, J4 that (is subject of), 
+    Proposition Set, J26 has unambiguous description (describes the formal meaning of), to Information Object. 
+    It is introduced into this model for the convenience of the user, when the implied instance of Proposition 
+    Set appears not to be a separate object of discourse within this documentation context.
+
+    Examples:
+    - The belief of Prof. Alessandro Mandolesi in the gender of the skeleton on the left bench in La Tomba 
+    dell'Aryballos sospeso as provided to the press on the 21(th) of September 2013 (I2) that the formal meaning of 
+    - “The skeleton found on the left bench of La Tomba dell'Aryballos sospeso, Doganaccia di Tarquinia, 
+    Tuscany, Italy, by Prof. Alessandro Mandolesi on the 21(th) of September 2013 belongs to the remains 
+    of a male person” (E73) [“holds to be True (I6)”, see examples for J5]. (Squires, 2013)
+    """@en .
+
+  crminf:J28_contains_entity_reference
+    a owl:ObjectProperty ;
+    skos:prefLabel "J28 contains entity reference"@en ;
+    skos:notation "J28" ;
+    rdfs:label "contains entity reference"@en ;
+    rdfs:domain crminf:I4_Proposition_Set ;
+    rdfs:range crm:E1_CRM_Entity ;
+    owl:inverseOf crminf:J28i_is_referred_to_in ;
+    rdfs:subPropertyOf crm:P67_refers_to ;
+    rdfs:comment """This property associates an instance of Proposition Set with an instance 
+    of E1 CRM Entity that appears as an element of one or more propositions in the content of the former.
+    This property serves on one side to relate an instance of Proposition Set to other contexts of 
+    interest, in particular when its content is or cannot be represented as a Named Graph in the 
+    same knowledge base. On the other hand, it plays an important structural role in this model 
+    for expressing constraints to the content of an instance of Proposition Set or one of its subclasses.
+
+    Examples:
+    - The proposition set with content: {Nero in July 19, 64 AD (E93 Presence)
+    - P164 is temporally specified by: July 19, 64 AD (E52 Timespan)
+    - P195 was a presence of: Nero Claudius Caesar Drusus Germanicus (E21 Person)
+    - P167 was within Antium in 64AD, Italy (E53 Place)
+    - P133 is spatiotemporally separated from: The Great Fire of Rome (E5 Event)
+    - P1 is identified by: incendium magnum Romae (E41 Appellation)
+    - P4 has timespan: July 19-27, 64 AD (E52 Timespan)
+    - P7 took place at: Rome in 64AD, Italy (E53 Place) }
+    - contains entity reference Antium in 64AD, Italy (E53 Place) (Bologna 2021)
+    """@en .
+
+  crminf:J28i_is_referred_to_in
+    a owl:ObjectProperty ;
+    skos:prefLabel "J28i is referred to in"@en ;
+    skos:notation "J28i" ;
+    rdfs:label "is referred to in"@en ;
+    rdfs:domain crm:E1_CRM_Entity ;
+    rdfs:range crminf:I4_Proposition_Set ;
+    owl:inverseOf crminf:J28_contains_entity_reference ;
+    rdfs:subPropertyOf crm:P67i_is_referred_to_by ;
+    rdfs:comment """This property associates an instance of Proposition Set with an instance of 
+    E1 CRM Entity that appears as an element of one or more propositions in the content of the former.
+    This property serves on one side to relate an instance of Proposition Set to other contexts of interest, 
+    in particular when its content is or cannot be represented as a Named Graph in the same knowledge base.
+    On the other hand, it plays an important structural role in this model for expressing constraints to 
+    the content of an instance of Proposition Set or one of its subclasses.
+
+    Examples:
+    - The proposition set with content: {Nero in July 19, 64 AD (E93 Presence)
+    - P164 is temporally specified by: July 19, 64 AD (E52 Timespan)
+    - P195 was a presence of: Nero Claudius Caesar Drusus Germanicus (E21 Person)
+    - P167 was within Antium in 64AD, Italy (E53 Place)
+    - P133 is spatiotemporally separated from: The Great Fire of Rome (E5 Event)
+    - P1 is identified by: incendium magnum Romae (E41 Appellation)
+    - P4 has timespan: July 19-27, 64 AD (E52 Timespan)
+    - P7 took place at: Rome in 64AD, Italy (E53 Place) }
+    - contains entity reference Antium in 64AD, Italy (E53 Place) (Bologna 2021)
+    """@en .
+
+  crminf:J29_contains_property_type
+    a owl:ObjectProperty ;
+    skos:prefLabel "J29 contains property type"@en ;
+    skos:notation "J29" ;
+    rdfs:label "contains property type"@en ;
+    rdfs:domain crminf:I4_Proposition_Set ;
+    rdfs:range crm:E55_Type ;
+    owl:inverseOf crminf:J29i_is_property_type_in ;
+    rdfs:subPropertyOf crm:P67_refers_to ;
+    rdfs:comment """This property associates an instance of Proposition Set with an instance of 
+    E55 Type that appears as property type in one or more propositions in the content of the former.
+    This property plays an important structural role in this model for expressing constraints to 
+    the content of an instance of Proposition Set or one of its subclasses.
+
+    Examples:
+    - The proposition set with content: {Nero in July 19, 64 AD (E93 Presence)
+    - P164 is temporally specified by: July 19, 64 AD (E52 Timespan)
+    - P195 was a presence of: Nero Claudius Caesar Drusus Germanicus (E21 Person)
+    - P167 was within Antium in 64AD, Italy (E53 Place)
+    - P133 is spatiotemporally separated from: The Great Fire of Rome (E5 Event)
+    - P1 is identified by: incendium magnum Romae (E41 Appellation)
+    - P4 has timespan: July 19-27, 64 AD (E52 Timespan)
+    - P7 took place at: Rome in 64AD, Italy (E53 Place) } contains property type P195 was a presence of (E55 Type) (Bologna, 2021)
+    """@en .
+
+  crminf:J29i_is_property_type_in
+    a owl:ObjectProperty ;
+    skos:prefLabel "J29i is property type in"@en ;
+    skos:notation "J29i" ;
+    rdfs:label "is property type in"@en ;
+    rdfs:domain crm:E55_Type ;
+    rdfs:range crminf:I4_Proposition_Set ;
+    owl:inverseOf crminf:J29_contains_property_type ;
+    rdfs:subPropertyOf crm:P67i_is_referred_to_by ;
+    rdfs:comment """This property associates an instance of Proposition Set with 
+    an instance of E55 Type that appears as property type in one or more propositions in the content of the former.
+    This property plays an important structural role in this model for expressing 
+    constraints to the content of an instance of Proposition Set or one of its subclasses.
+
+    Examples:
+    - The proposition set with content: {Nero in July 19, 64 AD (E93 Presence)
+    - P164 is temporally specified by: July 19, 64 AD (E52 Timespan)
+    - P195 was a presence of: Nero Claudius Caesar Drusus Germanicus (E21 Person)
+    - P167 was within Antium in 64AD, Italy (E53 Place)
+    - P133 is spatiotemporally separated from: The Great Fire of Rome (E5 Event)
+    - P1 is identified by: incendium magnum Romae (E41 Appellation)
+    - P4 has timespan: July 19-27, 64 AD (E52 Timespan)
+    - P7 took place at: Rome in 64AD, Italy (E53 Place) } contains property type P195 was a presence of (E55 Type) (Bologna, 2021
+    """@en .
+
+  crminf:J30_has_domain
+    a owl:ObjectProperty ;
+    skos:prefLabel "J30 has domain"@en ;
+    skos:notation "J30" ;
+    rdfs:label "has domain"@en ;
+    rdfs:domain crminf:I17_One-Proposition_Set ;
+    rdfs:range crm:E1_CRM_Entity ;
+    owl:inverseOf crminf:J30i_is_domain_of ;
+    rdfs:subPropertyOf crminf:J28_contains_entity_reference ;
+    rdfs:comment """This property associates an instance of One-Proposition Set with an 
+    instance of E1 CRM Entity that must appear as the only domain instance of the proposition 
+    in the content of the former.
+    This property is part of the fully developed path from Attribute Assignment through 
+    J33 assigned proposition (is assigned by), One-Proposition Set, J30 has domain (is domain of), 
+    to E1 CRM Entity, which is shortcut by P140 assigned attribute to (was attributed by).
+
+    Examples:
+    - The proposition set with content:
+    - {The skeleton on the left bench in La Tomba dell'Aryballos sospeso (E20 Biological Object) P2 has type 
+    ‘male’ (E55 Type)} (I17) has domain the skeleton in La Tomba dell'Aryballos sospeso on the left bench (E20) (Squires 2013)
+    - The proposition set with content:
+    - {The skeleton on the left bench in La Tomba dell'Aryballos sospeso (E20 Biological Object) P2 has type 
+    ‘female’ (E55 Type)} (I17) has domain the skeleton in La Tomba dell'Aryballos sospeso on the left bench (E20) (Mandolesi 2013)
+    - The proposition set with content:
+    - {The burial arrangement on the left bench in La Tomba dell'Aryballos sospeso (E22 Human-Made Object) 
+    is composed of the spear found in La Tomba dell'Aryballos sospeso (E22 Human-Made Object)} (I17) has 
+    domain the burial arrangement in La Tomba dell'Aryballos sospeso on the left bench (E22) (Mandolesi 2013)
+    - The proposition set with content:
+    - {The skeleton on the left bench in La Tomba dell'Aryballos sospeso (E20 Biological Object) forms 
+    part of the burial arrangement on the left bench in La Tomba dell'Aryballos sospeso (E22 Human-Made Object)}
+    (I17) has domain the skeleton on the left bench in La Tomba dell'Aryballos sospeso (E20) (Mandolesi 2013)
+    - The proposition set with content:
+    - {The book MS Sinai Greek 418 (E22 Human-Made Object) has binding structure ‘unsupported’ (E55 Type)}
+    (I17) has domain the book MS Sinai Greek 418 (E22) (Honey & Pickwoad, 2010)
+    - [See comments for examples of One-Proposition Set]
+    """@en .
+
+  crminf:J30i_is_domain_of
+    a owl:ObjectProperty ;
+    skos:prefLabel "J30i is domain of"@en ;
+    skos:notation "J30i" ;
+    rdfs:label "is domain of"@en ;
+    rdfs:domain crm:E1_CRM_Entity ;
+    rdfs:range crminf:I17_One-Proposition_Set ;
+    owl:inverseOf crminf:J30_has_domain ;
+    rdfs:subPropertyOf crminf:J28i_is_referred_to_in ;
+    rdfs:comment """This property associates an instance of One-Proposition Set with an instance 
+    of E1 CRM Entity that must appear as the only domain instance of the proposition in the content 
+    of the former.
+    This property is part of the fully developed path from Attribute Assignment through J33 assigned 
+    proposition (is assigned by), One-Proposition Set, J30 has domain (is domain of), to E1 CRM Entity, 
+    which is shortcut by P140 assigned attribute to (was attributed by).
+
+    Examples:
+    - The proposition set with content:
+    - {The skeleton on the left bench in La Tomba dell'Aryballos sospeso (E20 Biological Object) P2 has type ‘male’ 
+    (E55 Type)} (I17) has domain the skeleton in La Tomba dell'Aryballos sospeso on the left bench (E20) (Squires 2013)
+    - The proposition set with content:
+    - {The skeleton on the left bench in La Tomba dell'Aryballos sospeso (E20 Biological Object) P2 has type ‘female’ 
+    (E55 Type)} (I17) has domain the skeleton in La Tomba dell'Aryballos sospeso on the left bench (E20) (Mandolesi 2013)
+    - The proposition set with content:
+    - {The burial arrangement on the left bench in La Tomba dell'Aryballos sospeso (E22 Human-Made Object) is composed 
+    of the spear found in La Tomba dell'Aryballos sospeso (E22 Human-Made Object)} (I17) has domain the burial arrangement 
+    in La Tomba dell'Aryballos sospeso on the left bench (E22) (Mandolesi 2013)
+    - The proposition set with content:
+    - {The skeleton on the left bench in La Tomba dell'Aryballos sospeso (E20 Biological Object) forms part of the burial 
+    arrangement on the left bench in La Tomba dell'Aryballos sospeso (E22 Human-Made Object)} (I17) has domain the skeleton 
+    on the left bench in La Tomba dell'Aryballos sospeso (E20) (Mandolesi 2013)
+    - The proposition set with content:
+    - {The book MS Sinai Greek 418 (E22 Human-Made Object) has binding structure ‘unsupported’ (E55 Type)} (I17) has 
+    domain the book MS Sinai Greek 418 (E22) (Honey & Pickwoad, 2010)
+    - [See comments for examples of One-Proposition Set]
+    """@en .
+
+  crminf:J31_has_range
+    a owl:ObjectProperty ;
+    skos:prefLabel "J31 has range"@en ;
+    skos:notation "J31" ;
+    rdfs:label "has range"@en ;
+    rdfs:domain crminf:I17_One-Proposition_Set ;
+    rdfs:range crm:E1_CRM_Entity ;
+    owl:inverseOf crminf:J31i_is_range_of ;
+    rdfs:subPropertyOf crminf:J28_contains_entity_reference ;
+    rdfs:comment """This property associates an instance of One-Proposition Set with an instance of E1 CRM Entity that 
+    must appear as the range of the proposition in the content of the former.
+    This property is part of the fully developed path from Attribute Assignment through J33 assigned proposition 
+    (is assigned by), One-Proposition Set, J31 has range (is range of), to E1 CRM Entity, which is shortcut by 
+    P141 assigned (was assigned by).
+
+    Examples:
+    - The proposition set with content:
+    - {The skeleton on the left bench in La Tomba dell'Aryballos sospeso (E20 Biological Object) P2 has type 
+    ‘male’ (E55 Type)} (I17) has range ‘male’ (E55) (Squires 2013)
+    - The proposition set with content:
+    - {The burial arrangement on the left bench in La Tomba dell'Aryballos sospeso (E22 Human-Made Object) 
+    is composed of the spear found in La Tomba dell'Aryballos sospeso (E22 Human-Made Object)} (I17) has 
+    range the spear found in La Tomba dell'Aryballos sospeso (E22) (Mandolesi 2013)
+    - The proposition set with content:
+    - {The skeleton on the left bench in La Tomba dell'Aryballos sospeso (E20 Biological Object) forms 
+    part of the burial arrangement on the left bench in La Tomba dell'Aryballos sospeso (E22 Human-Made Object)} 
+    (I17) has range the burial arrangement on the left bench in La Tomba dell'Aryballos sospeso (E22) (Mandolesi 2013)
+    - The proposition set with content:
+    - {The book MS Sinai Greek 418 (E22 Human-Made Object) has binding structure ‘unsupported’ 
+    (E55 Type)} (I17) has range ‘unsupported’ (E55 Type) (Honey & Pickwoad, 2010)
+    """@en .
+
+  crminf:J31i_is_range_of
+    a owl:ObjectProperty ;
+    skos:prefLabel "J31i is range of"@en ;
+    skos:notation "J31i" ;
+    rdfs:label "is range of"@en ;
+    rdfs:domain crm:E1_CRM_Entity ;
+    rdfs:range crminf:I17_One-Proposition_Set ;
+    owl:inverseOf crminf:J31_has_range ;
+    rdfs:subPropertyOf crminf:J28i_is_referred_to_in ;
+    rdfs:comment """This property associates an instance of One-Proposition Set with an instance 
+    of E1 CRM Entity that must appear as the range of the proposition in the content of the former.
+    This property is part of the fully developed path from Attribute Assignment through J33 assigned 
+    proposition (is assigned by), One-Proposition Set, J31 has range (is range of), to E1 CRM Entity, 
+    which is shortcut by P141 assigned (was assigned by).
+
+    Examples:
+    - The proposition set with content:
+    - {The skeleton on the left bench in La Tomba dell'Aryballos sospeso (E20 Biological Object) 
+    P2 has type ‘male’ (E55 Type)} (I17) has range ‘male’ (E55) (Squires 2013)
+    - The proposition set with content:
+    - {The burial arrangement on the left bench in La Tomba dell'Aryballos sospeso (E22 Human-Made Object) 
+    is composed of the spear found in La Tomba dell'Aryballos sospeso (E22 Human-Made Object)} (I17) has 
+    range the spear found in La Tomba dell'Aryballos sospeso (E22) (Mandolesi 2013)
+    - The proposition set with content:
+    - {The skeleton on the left bench in La Tomba dell'Aryballos sospeso (E20 Biological Object) forms 
+    part of the burial arrangement on the left bench in La Tomba dell'Aryballos sospeso (E22 Human-Made Object)} 
+    (I17) has range the burial arrangement on the left bench in La Tomba dell'Aryballos sospeso (E22) (Mandolesi 2013)
+    - The proposition set with content:
+    - {The book MS Sinai Greek 418 (E22 Human-Made Object) has binding structure ‘unsupported’ (E55 Type)} 
+    (I17) has range ‘unsupported’ (E55 Type) (Honey & Pickwoad, 2010)
+    """@en .
+
+  crminf:J32_has_property_type
+    a owl:ObjectProperty ;
+    skos:prefLabel "J32 has property type"@en ;
+    skos:notation "J32" ;
+    rdfs:label "has property type"@en ;
+    rdfs:domain crminf:I17_One-Proposition_Set ;
+    rdfs:range crm:E55_Type ;
+    owl:inverseOf crminf:J32i_is_property_type_of ;
+    rdfs:subPropertyOf crminf:J29_contains_property_type ;
+    rdfs:comment """This property associates an instance of One-Proposition Set 
+    with an instance of E55 Type that must appear as the only property type of 
+    the proposition in the content of the former.
+    This property is part of the fully developed path from Attribute Assignment 
+    through J33 assigned proposition (is assigned by), One-Proposition Set, J32 
+    has property type (is property type of), to E1 CRM Entity, which is shortcut 
+    by P177 assigned property of type (is type of property assigned).
+
+    Examples:
+    - The proposition set with content:
+    - {The skeleton on the left bench in La Tomba dell'Aryballos sospeso (E20 Biological Object) 
+    P2 has type ‘male’ (E55 Type)} (I17) has property type ‘P2 has type’ (E55). (Squires 2013)
+    - The proposition set with content:
+    - {The skeleton on the left bench in La Tomba dell'Aryballos sospeso (E20 Biological Object) 
+    P2 has type ‘female’ (E55 Type)} (I17) has property type ‘P2 has type’ (E55). (Mandolesi 2013)
+    - The proposition set with content:
+    - {The burial arrangement on the left bench in La Tomba dell'Aryballos sospeso (E22 Human-Made Object) 
+    is composed of the spear found in La Tomba dell'Aryballos sospeso (E22 Human-Made Object)} (I17) has property type ‘P46 is composed of’ (E55). (Mandolesi 2013)
+    - The proposition set with content:
+    - {The skeleton on the left bench in La Tomba dell'Aryballos sospeso (E20 Biological Object) 
+    forms part of the burial arrangement on the left bench in La Tomba dell'Aryballos sospeso 
+    (E22 Human-Made Object)} (I17) has property type ‘P46i forms part of’ (E55). (Mandolesi 2013)
+    - The proposition set with content:
+    - {The book MS Sinai Greek 418 (E22 Human-Made Object) has binding structure ‘unsupported’ 
+    (E55 Type)} (I17) has property type ‘has binding structure’ (E55). (Honey & Pickwoad, 2010)
+    """@en .
+
+  crminf:J32i_is_property_type_of
+    a owl:ObjectProperty ;
+    skos:prefLabel "J32i is property type of"@en ;
+    skos:notation "J32i" ;
+    rdfs:label "is property type of"@en ;
+    rdfs:domain crm:E55_Type ;
+    rdfs:range crminf:I17_One-Proposition_Set ;
+    owl:inverseOf crminf:J32_has_property_type ;
+    rdfs:subPropertyOf crminf:J29i_is_property_type_in ;
+    rdfs:comment """This property associates an instance of One-Proposition Set with an 
+    instance of E55 Type that must appear as the only property type of the proposition 
+    in the content of the former.
+    This property is part of the fully developed path from Attribute Assignment through 
+    J33 assigned proposition (is assigned by), One-Proposition Set, J32 has property type 
+    (is property type of), to E1 CRM Entity, which is shortcut by P177 assigned property of 
+    type (is type of property assigned).
+
+    Examples:
+    - The proposition set with content:
+    - {The skeleton on the left bench in La Tomba dell'Aryballos sospeso (E20 Biological Object) 
+    P2 has type ‘male’ (E55 Type)} (I17) has property type ‘P2 has type’ (E55). (Squires 2013)
+    - The proposition set with content:
+    - {The skeleton on the left bench in La Tomba dell'Aryballos sospeso (E20 Biological Object) 
+    P2 has type ‘female’ (E55 Type)} (I17) has property type ‘P2 has type’ (E55). (Mandolesi 2013)
+    - The proposition set with content:
+    - {The burial arrangement on the left bench in La Tomba dell'Aryballos sospeso (E22 Human-Made Object) 
+    is composed of the spear found in La Tomba dell'Aryballos sospeso (E22 Human-Made Object)} (I17) has property type ‘P46 is composed of’ (E55). (Mandolesi 2013)
+    - The proposition set with content:
+    - {The skeleton on the left bench in La Tomba dell'Aryballos sospeso (E20 Biological Object) 
+    forms part of the burial arrangement on the left bench in La Tomba dell'Aryballos sospeso 
+    (E22 Human-Made Object)} (I17) has property type ‘P46i forms part of’ (E55). (Mandolesi 2013)
+    - The proposition set with content:
+    - {The book MS Sinai Greek 418 (E22 Human-Made Object) has binding structure ‘unsupported’ 
+    (E55 Type)} (I17) has property type ‘has binding structure’ (E55). (Honey & Pickwoad, 2010)
+    """@en .
+
+  crminf:J33_assigned_propositions
+    a owl:ObjectProperty ;
+    skos:prefLabel "J33 assigned propositions"@en ;
+    skos:notation "J33" ;
+    rdfs:label "assigned propositions"@en ;
+    rdfs:domain crm:E13_Attribute_Assignment ;
+    rdfs:range crminf:I17_One-Proposition_Set ;
+    owl:inverseOf crminf:J33i_is_assigned_by ;
+    rdfs:comment """Shortcut Of: Attribute Assignment. J2 concluded that (was concluded by): Belief. 
+    J4 that (is subject of): Proposition Set. J5 holds to be: Belief Value (= “True”)
+    This property associates an instance of Attribute Assignment with an instance of One-Proposition 
+    Set that describes the proposition made and believed to be true.
+    This property constitutes a formal logical alternative to specifying the proposition made by an 
+    instance of Attribute Assignment via P140 assigned attribute to (was attributed by), P141 assigned 
+    (was assigned by) and P177 assigned property of type (is type of property assigned). As such, it 
+    is of importance for querying knowledge bases compatible with either model.
+    This property forms part of the following three (3) fully developed paths from Attribute Assignment through:
+    - J33 assigned proposition (is assigned by), One-Proposition Set, J30 has domain (is domain of) to 
+    E1 CRM Entity, which is shortcut by P140 assigned attribute to (was attributed by).  
+    - J33 assigned proposition (is assigned by), One-Proposition Set, J31 has range (is range of) to 
+    E1 CRM Entity, which is shortcut by P141 assigned (was assigned by), 
+    - J33 assigned proposition (is assigned by), One-Proposition Set, J32 has property type (is property type of) 
+    to E1 CRM Entity, which is shortcut by P177 assigned property of type (is type of property assigned).
+    This property is a shortcut for the path from Attribute Assignment through J2 concluded that (was concluded by), 
+    Belief, J4 that (is subject of), Proposition Set, J5 holds to be to Belief Value (= “True”).
+
+    Examples:
+    - The gender classification of the skeleton on the left bench in La Tomba dell'Aryballos sospeso provided 
+    to the press by Prof. Alessandro Mandolesi on the 21(th) of September 2013 (E17, I5) assigned proposition 
+    - The proposition set with content:
+    - {The skeleton on the left bench in La Tomba dell'Aryballos sospeso (E20 Biological Object) P2 has 
+    type ‘male’ (E55 Type)} (I17) (Squires 2013)
+    - The gender analysis of the skeleton on the left bench in La Tomba dell'Aryballos sospeso provided to 
+    the press by Prof. Alessandro Mandolesi on the 18(th) of October and academically published in 2013 
+    (E17, S4) assigned proposition 
+    - The proposition set with content:
+    - {The skeleton on the left bench in La Tomba dell'Aryballos sospeso (E20 Biological Object) P2 has 
+    type ‘female’ (E55 Type)} (I17) (Mandolesi 2013)
+    - The examination of MS Sinai Greek 418 by Nicholas Pickwoad in November 2003 (E13) assigned proposition 
+    - The proposition set with content:
+    - {The book MS Sinai Greek 418 (E22 Human-Made Object) has binding structure ‘unsupported’ (E55 Type)} (I17) (Honey & Pickwoad, 2010)
+    """@en .
+
+  crminf:J33i_is_assigned_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "J33i is assigned by"@en ;
+    skos:notation "J33i" ;
+    rdfs:label "is assigned by"@en ;
+    rdfs:domain crminf:I17_One-Proposition_Set ;
+    rdfs:range crm:E13_Attribute_Assignment ;
+    owl:inverseOf crminf:J33_assigned_propositions ;
+    rdfs:comment """Shortcut Of of the inverse property: Attribute Assignment. 
+    J2 concluded that (was concluded by): Belief. J4 that (is subject of): Proposition Set. 
+    J5 holds to be: Belief Value (= “True”)
+    This property associates an instance of Attribute Assignment with an instance of 
+    One-Proposition Set that describes the proposition made and believed to be true.
+    This property constitutes a formal logical alternative to specifying the proposition 
+    made by an instance of Attribute Assignment via P140 assigned attribute to (was attributed by), 
+    P141 assigned (was assigned by) and P177 assigned property of type (is type of property assigned). 
+    As such, it is of importance for querying knowledge bases compatible with either model.
+    This property forms part of the following three (3) fully developed paths from Attribute Assignment through:
+    - J33 assigned proposition (is assigned by), One-Proposition Set, J30 has domain (is domain of) to 
+    E1 CRM Entity, which is shortcut by P140 assigned attribute to (was attributed by).  
+    - J33 assigned proposition (is assigned by), One-Proposition Set, J31 has range (is range of) to 
+    E1 CRM Entity, which is shortcut by P141 assigned (was assigned by), 
+    - J33 assigned proposition (is assigned by), One-Proposition Set, J32 has property type (is property type of) 
+    to E1 CRM Entity, which is shortcut by P177 assigned property of type (is type of property assigned).
+    This property is a shortcut for the path from Attribute Assignment through J2 concluded that (was concluded by), 
+    Belief, J4 that (is subject of), Proposition Set, J5 holds to be to Belief Value (= “True”).
+
+    Examples:
+    - The gender classification of the skeleton on the left bench in La Tomba dell'Aryballos sospeso provided 
+    to the press by Prof. Alessandro Mandolesi on the 21(th) of September 2013 (E17, I5) assigned proposition 
+    - The proposition set with content:
+    - {The skeleton on the left bench in La Tomba dell'Aryballos sospeso (E20 Biological Object) P2 has type 
+    ‘male’ (E55 Type)} (I17) (Squires 2013)
+    - The gender analysis of the skeleton on the left bench in La Tomba dell'Aryballos sospeso provided to 
+    the press by Prof. Alessandro Mandolesi on the 18(th) of October and academically published in 2013 (E17, S4) assigned proposition 
+    - The proposition set with content:
+    - {The skeleton on the left bench in La Tomba dell'Aryballos sospeso (E20 Biological Object) P2 has type 
+    ‘female’ (E55 Type)} (I17) (Mandolesi 2013)
+    - The examination of MS Sinai Greek 418 by Nicholas Pickwoad in November 2003 (E13) assigned proposition 
+    - The proposition set with content:
+    - {The book MS Sinai Greek 418 (E22 Human-Made Object) has binding structure ‘unsupported’ 
+    (E55 Type)} (I17) (Honey & Pickwoad, 2010)
+    """@en .
+
+}

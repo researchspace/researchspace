@@ -6,23 +6,31 @@
                                  ?managedByResourceConfig
                             
                         WHERE {
-
+                            {{#if useCollection}}
+                              OPTIONAL {
+                                <{{useCollection}}> crm:P67_refers_to ?refersToResourceConfig .
+                                BIND(<{{useCollection}}> AS ?collection) .
+                              }
+                            {{else}}
+                              OPTIONAL {
+                                <{{useConfig}}> crm:P67_refers_to ?refersToResourceConfig .
+                                BIND(<{{useConfig}}> AS ?collection) .
+                              }
+                            {{/if}}
+                          
                             OPTIONAL {
-                              <{{configOrScheme}}> crm:P67_refers_to ?refersToResourceConfig .
-                              BIND(<{{configOrScheme}}> AS ?collection) .
+                              <{{useConfig}}> a <http://www.researchspace.org/resource/system/resource_configuration> .
+                              BIND(<{{useConfig}}> as ?refersToResourceConfig) .
                             }
-
-                            OPTIONAL {
-                              <{{configOrScheme}}> a <http://www.researchspace.org/resource/system/resource_configuration> .
-                              BIND(<{{configOrScheme}}> as ?refersToResourceConfig) .
-                            }
-
+                          
                             BIND(COALESCE(?refersToResourceConfig [[#if defaultConfig]], <[[defaultConfig]]>[[/if]]) AS ?resourceConfiguration ) .
                             BIND(BOUND(?refersToResourceConfig) as ?managedByResourceConfig) .
                             
                             ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceName ;
-                              <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass ;
-                              <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
+                              <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass .
+
+                            
+                            ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
                             
                             OPTIONAL {
                               ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .
@@ -88,5 +96,84 @@
       {{/ifCond}}
     </template>
     <template id='noResultTemplate'>
+      
+          <semantic-query query='SELECT * WHERE {
+
+                                  OPTIONAL {
+                                    <{{useConfig}}> crm:P67_refers_to ?refersToResourceConfig .
+                                    BIND(<{{useConfig}}> AS ?collection) .
+                                  }
+      
+                                  OPTIONAL {
+                                    <{{useConfig}}> a <http://www.researchspace.org/resource/system/resource_configuration> .
+                                    BIND(<{{useConfig}}> as ?refersToResourceConfig) .
+                                  }
+
+                                  BIND(COALESCE(?refersToResourceConfig [[#if defaultConfig]], <[[defaultConfig]]>[[/if]]) AS ?resourceConfiguration ) .
+
+                                  OPTIONAL {
+                                    ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceConfigName .
+                                  }
+                                  
+                                  OPTIONAL {
+                                    ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
+                                  }
+
+                                  OPTIONAL {
+                                    ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?membershipProperty .
+                                  }
+                                } LIMIT 1'
+                          template='{{> template}}'>
+                                      
+            <template id='template'>
+              {{#if bindings.0.collection.value}}
+                <div class="page__grid-container">
+                  <div class="page__content-container">
+                    <div class="warning-documentation-section warning-documentation-section-withIcon" style="margin-top: 15px;">
+                      <div class="warning-documentation-section-icon-container">
+                        <rs-icon icon-type="rounded" icon-name="priority_high" symbol="true"></rs-icon>
+                      </div>
+                      <div>
+                          <div class="warning-documentation-section-title" style="margin-bottom: 5px;">Missing Resource Configuration 
+                            applicable to create resources in the authority!</div>
+                          <div class="warning-documentation-section-content">
+                            <div>
+                              The authority document <mp-label iri='{{bindings.0.collection.value}}'></mp-label> 
+                              has Resource Type {{bindings.0.resourceConfiguration.value}}.
+                            </div>
+                            {{#if (not bindings.0.resourceConfigName.value)}}
+                            <div>
+                              Create a new <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames" 
+                              urlqueryparam-view="resource-configuration" title="Resource Configuration">Resource Configuration</semantic-link> of IRI
+                              {{bindings.0.resourceConfiguration.value}} to create and edit resources in the authority.
+                            </div>
+                            {{else}}
+                              Go to the 
+                              <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames" 
+                              urlqueryparam-view="resource-configuration" title="Resource Configuration">Resource Configuration {{bindings.0.resourceConfigName.value}}</semantic-link>
+                              and check that:
+                              <ul>
+                                {{#if (not bindings.0.resourceFormIRI.value)}}
+                                  <li>There is a resource form in the section Resource edit/visualisation.</li>
+                                {{/if}}
+                                {{#if (not bindings.0.membershipProperty.value)}}
+                                  <li>There is a membership value in the section Resource in authority document.</li>
+                                {{/if}}
+                              </ul>
+                            {{/if}}
+                          </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              {{else}}
+                {{#if (not bindings.0.resourceFormIRI.value)}}
+                  {{> rsp:SimpleCollectionBrowser resourceConfigurationError=true missingForm=true resourceName=bindings.0.resourceConfigName.value }}
+                {{/if}}    
+              {{/if}}
+            </template>
+          </semantic-query>
+        
     </template>
 </semantic-query>
+

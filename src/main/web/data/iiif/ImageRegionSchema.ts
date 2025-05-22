@@ -79,10 +79,10 @@ export const ImageRegionIsPrimaryAreaOf = Forms.normalizeFieldDefinition({
   id: 'isPrimaryAreaOf',
   xsdDatatype: vocabularies.xsd.anyURI,
   insertPattern: `INSERT {
-    $subject <http://www.ics.forth.gr/isl/CRMdig/L49_is_primary_area_of> $value .
+    $subject <http://www.cidoc-crm.org/extensions/crmdig/L49_is_primary_area_of> $value .
   } WHERE {}`,
   selectPattern: `SELECT ?value WHERE {
-    $subject <http://www.ics.forth.gr/isl/CRMdig/L49_is_primary_area_of> ?value .
+    $subject <http://www.cidoc-crm.org/extensions/crmdig/L49_is_primary_area_of> ?value .
   }`,
 });
 

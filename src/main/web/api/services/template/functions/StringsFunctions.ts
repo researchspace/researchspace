@@ -18,6 +18,13 @@
  */
 
 export const StringsFunctions = {
+  extractFilename: function(url) {
+    if (typeof url === 'string') {
+      // Using a regular expression to remove everything up to and including the last '/'
+      return url.replace(/.*\//, '');
+    }
+    return '';
+  },
   split: function(text: string, separator?: string) {
     if (typeof text !== 'string') {
       return [];

@@ -201,19 +201,19 @@
             </div>
         </bs-tab-container>
     [[else]]
-        <bs-tab-container id="{{viewId}}-formResourceAsset-tabs" default-active-key="[[#if map]]{{viewId}}-resourceForm-map[[else]]{{viewId}}-resourceForm-images[[/if]]">
+        <bs-tab-container id="{{viewId}}-formResourceAsset-tabs" default-active-key="[[#if map-default-tab]]{{viewId}}-resourceForm-map[[else]]{{viewId}}-resourceForm-images[[/if]]">
             <div class="formResourceAsset-tabs">
                 <bs-nav class="btn btn-secondary" style="width: 100%;">
                     <bs-nav-dropdown event-key="{{viewId}}-resources" title="Media type">
-                        <bs-menu-item event-key="{{viewId}}-resourceForm-audio">Audio</bs-menu-item>
-                        <bs-menu-item event-key="{{viewId}}-resourceForm-docs">Document</bs-menu-item>
-                        <bs-menu-item event-key="{{viewId}}-resourceForm-images">Image</bs-menu-item>
-                        [[#if map]]<bs-menu-item event-key="{{viewId}}-resourceForm-map">Map</bs-menu-item>[[/if]]
-                        <bs-menu-item event-key="{{viewId}}-resourceForm-3d">Models 3D</bs-menu-item>
-                        [[#if signature]]<bs-menu-item event-key="{{viewId}}-resourceForm-signature">Signature</bs-menu-item>[[/if]]
-                        <bs-menu-item event-key="{{viewId}}-resourceForm-videos">Video</bs-menu-item>
-                        <bs-menu-item event-key="{{viewId}}-resourceForm-representations">Visual representation</bs-menu-item>
-                        <bs-menu-item event-key="{{viewId}}-resourceForm-URLlink">Web URL link</bs-menu-item>
+                        <bs-menu-item event-key="{{viewId}}-resourceForm-audio" draggable="false">Audio</bs-menu-item>
+                        <bs-menu-item event-key="{{viewId}}-resourceForm-docs" draggable="false">Document</bs-menu-item>
+                        <bs-menu-item event-key="{{viewId}}-resourceForm-images" draggable="false">Image</bs-menu-item>
+                        [[#if map]]<bs-menu-item event-key="{{viewId}}-resourceForm-map" draggable="false">Map</bs-menu-item>[[/if]]
+                        <bs-menu-item event-key="{{viewId}}-resourceForm-3d" draggable="false">Models 3D</bs-menu-item>
+                        [[#if signature]]<bs-menu-item event-key="{{viewId}}-resourceForm-signature" draggable="false">Signature</bs-menu-item>[[/if]]
+                        <bs-menu-item event-key="{{viewId}}-resourceForm-videos" draggable="false">Video</bs-menu-item>
+                        <bs-menu-item event-key="{{viewId}}-resourceForm-representations" draggable="false">Visual representation</bs-menu-item>
+                        <bs-menu-item event-key="{{viewId}}-resourceForm-URLlink" draggable="false">Web URL link</bs-menu-item>
                     </bs-nav-dropdown>
                 </bs-nav>
                     
@@ -576,9 +576,7 @@
                                 <semantic-query query='SELECT DISTINCT ?place ?placeName ?osmURI WHERE {
                                                         BIND(<{{node}}> AS ?place)
 
-                                                        ?place crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                                                        ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
-                                                        ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
+                                                        ?place crm:P168_place_is_defined_by ?wkt .
                 
                                                         OPTIONAL {
                                                             ?place crm:P129i_is_subject_of ?entityFormRecord .
@@ -637,9 +635,7 @@
                                             </div>
                                             <div style='height: 350px; width: 100%; margin: 10px 0 0;'>
                                                 <semantic-map   query='SELECT ?wkt WHERE { 
-                                                                        <{{bindings.0.place.value}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                                                                        ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
-                                                                        ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
+                                                                        <{{bindings.0.place.value}}> crm:P168_place_is_defined_by ?wkt .
                                                                     }'
                                                                 tuple-template='<div style="display:flex; flex-direction:column; gap:5px;">
                                                                                     <b style="color:#525156;">{{bindings.0.placeName.value}}</b>
@@ -944,7 +940,7 @@
                                     <div style="display: flex;align-items: center;gap: 20px;">
                                         {{#if node}}
                                             <semantic-if    query='ASK { <{{node}}> crm:P129i_is_subject_of ?video . 
-                                                                        ?video a frbroo:F26_Recording .
+                                                                        ?video a lrmoo:F2_Expression .
                                                                         ?video crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_video> .
                                                                         ?video crm:P1_is_identified_by ?appellation .
                                                                         ?appellation a crm:E41_Appellation .

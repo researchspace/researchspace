@@ -9,7 +9,7 @@
                         class="modal-xlSize preview_modal"
                         title="Preview">
       <mp-overlay-dialog-trigger>
-        <bs-menu-item>
+        <bs-menu-item draggable="false">
           <rs-icon icon-type="rounded" icon-name="fullscreen" class="icon-left" symbol="true"></rs-icon>
           <span>Preview</span>
         </bs-menu-item>
@@ -37,7 +37,7 @@
                         data='{"viewId":"semantic-narrative", 
                                 "resourceIri": "{{iri}}"}' 
                         targets='["thinking-frames"]'>
-        <bs-menu-item>
+        <bs-menu-item draggable="false">
           <rs-icon icon-type="rounded" icon-name="description" class="icon-left" symbol="true"></rs-icon>
           <span>Open narrative</span>
         </bs-menu-item>
@@ -50,7 +50,7 @@
                                 "openAsDragAndDrop":true
                               }' 
                         targets='["thinking-frames"]'>
-        <bs-menu-item>
+        <bs-menu-item draggable="false">
           <rs-icon icon-type="rounded" icon-name="tab_move" class="icon-left" symbol="true"></rs-icon>
           <span>Open narrative in draggable tab</span>
         </bs-menu-item>
@@ -64,7 +64,7 @@
                         data='{"viewId":"knowledge-map", 
                                 "resourceIri": "{{iri}}"}' 
                         targets='["thinking-frames"]'>
-        <bs-menu-item>
+        <bs-menu-item draggable="false">
           <rs-icon icon-type="rounded" icon-name="account_tree" class="icon-left" symbol="true"></rs-icon>
           <span>Open knowledge map</span>
         </bs-menu-item>
@@ -77,7 +77,7 @@
                                 "openAsDragAndDrop":true
                               }' 
                         targets='["thinking-frames"]'>
-        <bs-menu-item>
+        <bs-menu-item draggable="false">
           <rs-icon icon-type="rounded" icon-name="tab_move" class="icon-left" symbol="true"></rs-icon>
           <span>Open knowledge map in draggable tab</span>
         </bs-menu-item>
@@ -86,7 +86,7 @@
 
       {{#if clipboardKm}}
         <mp-set-management-action-remove-set-item item='{{itemHolder.value}}'>
-          <bs-menu-item event-key=remove>
+          <bs-menu-item event-key=remove draggable="false">
             <rs-icon icon-type="rounded" icon-name="disabled_by_default" class="icon-left" symbol="true"></rs-icon>
             <span id="all">Remove from clipboard</span>
           </bs-menu-item>
@@ -102,7 +102,7 @@
                           data='{"viewId":"chart", 
                                   "resourceIri": "{{iri}}"}' 
                           targets='["thinking-frames"]'>
-          <bs-menu-item>
+          <bs-menu-item draggable="false">
             <rs-icon icon-type="rounded" icon-name="finance" class="icon-left" symbol="true"></rs-icon>
             <span>Open chart</span>
           </bs-menu-item>
@@ -115,7 +115,7 @@
                                   "openAsDragAndDrop":true
                                 }' 
                           targets='["thinking-frames"]'>
-          <bs-menu-item>
+          <bs-menu-item draggable="false">
             <rs-icon icon-type="rounded" icon-name="tab_move" class="icon-left" symbol="true"></rs-icon>
             <span>Open chart in draggable tab</span>
           </bs-menu-item>
@@ -131,7 +131,7 @@
                           data='{"viewId":"timeline", 
                                   "resourceIri": "{{iri}}"}' 
                           targets='["thinking-frames"]'>
-          <bs-menu-item>
+          <bs-menu-item draggable="false">
             <rs-icon icon-type="rounded" icon-name="timeline" class="icon-left" symbol="true"></rs-icon>
             <span>Open timeline</span>
           </bs-menu-item>
@@ -144,9 +144,67 @@
                                   "openAsDragAndDrop":true
                                 }' 
                           targets='["thinking-frames"]'>
-          <bs-menu-item>
+          <bs-menu-item draggable="false">
             <rs-icon icon-type="rounded" icon-name="tab_move" class="icon-left" symbol="true"></rs-icon>
             <span>Open timeline in draggable tab</span>
+          </bs-menu-item>
+        </mp-event-trigger>
+        <hr>
+      {{/if}}
+    {{/case}}
+
+    {{#case "http://www.researchspace.org/resource/system/resource_configurations_container/data/Audio" break=true}}
+      {{#if (not ResourceFileVisualisationPage)}}
+        <mp-event-trigger id='{{viewId}}-open-audio-file-visualisation-trigger' 
+                          type='Dashboard.AddFrame'
+                          data='{"viewId":"resource-file-visualisation", 
+                                  "resourceIri": "{{iri}}"}' 
+                          targets='["thinking-frames"]'>
+          <bs-menu-item draggable="false">
+            <rs-icon icon-type="rounded" icon-name="slideshow" class="icon-left" symbol="true"></rs-icon>
+            <span>Open audio</span>
+          </bs-menu-item>
+        </mp-event-trigger>
+
+        <mp-event-trigger id='{{viewId}}-open-audio-file-visualisation-newTab-trigger' 
+                          type='Dashboard.AddFrame'
+                          data='{ "viewId":"resource-file-visualisation", 
+                                  "resourceIri": "{{iri}}",
+                                  "openAsDragAndDrop":true
+                                }' 
+                          targets='["thinking-frames"]'>
+          <bs-menu-item draggable="false">
+            <rs-icon icon-type="rounded" icon-name="tab_move" class="icon-left" symbol="true"></rs-icon>
+            <span>Open audio in draggable tab</span>
+          </bs-menu-item>
+        </mp-event-trigger>
+        <hr>
+      {{/if}}
+    {{/case}}
+
+    {{#case "http://www.researchspace.org/resource/system/resource_configurations_container/data/Video" break=true}}
+      {{#if (not ResourceFileVisualisationPage)}}
+        <mp-event-trigger id='{{viewId}}-open-video-file-visualisation-trigger' 
+                          type='Dashboard.AddFrame'
+                          data='{"viewId":"resource-file-visualisation", 
+                                  "resourceIri": "{{iri}}"}' 
+                          targets='["thinking-frames"]'>
+          <bs-menu-item draggable="false">
+            <rs-icon icon-type="rounded" icon-name="slideshow" class="icon-left" symbol="true"></rs-icon>
+            <span>Open video</span>
+          </bs-menu-item>
+        </mp-event-trigger>
+
+        <mp-event-trigger id='{{viewId}}-open-video-file-visualisation-newTab-trigger' 
+                          type='Dashboard.AddFrame'
+                          data='{ "viewId":"resource-file-visualisation", 
+                                  "resourceIri": "{{iri}}",
+                                  "openAsDragAndDrop":true
+                                }' 
+                          targets='["thinking-frames"]'>
+          <bs-menu-item draggable="false">
+            <rs-icon icon-type="rounded" icon-name="tab_move" class="icon-left" symbol="true"></rs-icon>
+            <span>Open video in draggable tab</span>
           </bs-menu-item>
         </mp-event-trigger>
         <hr>
@@ -158,7 +216,7 @@
 
         {{#if (or clipboardSet setPage)}}
           <mp-set-management-action-rename-set>
-            <bs-menu-item event-key='rename'>
+            <bs-menu-item event-key='rename' draggable="false">
               <rs-icon icon-type="rounded" icon-name="drive_file_rename_outline" class="icon-left" symbol="true"></rs-icon>
                 Rename set
               </bs-menu-item>
@@ -173,7 +231,7 @@
                             data='{"viewId":"single-set-management", 
                                     "resourceIri": "{{iri}}"}' 
                             targets='["thinking-frames"]'>
-            <bs-menu-item>
+            <bs-menu-item draggable="false">
               <rs-icon icon-type="rounded" icon-name="topic" class="icon-left" symbol="true"></rs-icon>
               <span>Open set</span>
             </bs-menu-item>
@@ -186,7 +244,7 @@
                                     "openAsDragAndDrop":true
                                   }' 
                             targets='["thinking-frames"]'>
-            <bs-menu-item>
+            <bs-menu-item draggable="false">
               <rs-icon icon-type="rounded" icon-name="topic" class="icon-left" symbol="true"></rs-icon>
               <span>Open set in draggable tab</span>
             </bs-menu-item>
@@ -196,7 +254,7 @@
         
         {{#if clipboardSet}}
           <mp-set-management-action-remove-set show-confirmation="false" remove-from-view="true">
-            <bs-menu-item event-key='remove'>
+            <bs-menu-item event-key='remove' draggable="false">
               <rs-icon icon-type="rounded" icon-name="disabled_by_default" class="icon-left" symbol="true"></rs-icon>
               <span id="all">Remove from clipboard</span>
             </bs-menu-item>
@@ -220,7 +278,7 @@
       <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
                                 urlqueryparam-view='authority-list' 
                                 urlqueryparam-resource='{{iri}}'>
-        <bs-menu-item>
+        <bs-menu-item draggable="false">
           <rs-icon icon-type="rounded" icon-name="list" class="icon-left" symbol="true"></rs-icon>
           <span>List of resources</span>
         </bs-menu-item>
@@ -235,7 +293,7 @@
                         data='{"viewId":"semantic-narrative-resources", 
                                 "resourceIri": "{{iri}}"}' 
                         targets='["thinking-frames"]'>
-      <bs-menu-item>
+      <bs-menu-item draggable="false">
         <rs-icon icon-type="rounded" icon-name="gallery_thumbnail" class="icon-left" symbol="true"></rs-icon>
         <span>View resources in narrative</span>
       </bs-menu-item>
@@ -245,23 +303,19 @@
 
   {{#if (or (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Place") 
             (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Organisation") )}}
-    <semantic-if query='ASK { <{{iri}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                              ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
-                              ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt . }'>
+    <semantic-if query='ASK { <{{iri}}> crm:P168_place_is_defined_by ?wkt . }'>
       <template id='then'>
         <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
                                   urlqueryparam-view='map' 
                                   urlqueryparam-resource='{{iri}}'>
-          <bs-menu-item>
+          <bs-menu-item draggable="false">
             <rs-icon icon-type="rounded" icon-name="place" class="icon-left" symbol="true"></rs-icon>
             <span>Open map</span>
           </bs-menu-item>
         </semantic-link-container>
       </template>
     </semantic-if>
-    <semantic-if query='ASK { <{{iri}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                              ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
-                              ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt . }'>
+    <semantic-if query='ASK { <{{iri}}> crm:P168_place_is_defined_by ?wkt . }'>
       <template id='then'>
         <hr>
       </template>
@@ -282,14 +336,41 @@
                   template='{{> template}}'
       >
         <template id='template'>
-          {{#ifCond bindings.0.fileMediaType.value "==" "application/pdf"}}
-            <bs-menu-item href="/file?fileName={{bindings.0.fileName.value}}&storage=images&mode=open&mediaType=application%2Fpdf" target="_blank">
-              <rs-icon icon-type="rounded" icon-name="open_in_new" class="icon-left" symbol="true"></rs-icon>
-              <span>Open PDF document</span>
-            </bs-menu-item>
-          {{/ifCond}}
+          {{#if (or (eq bindings.0.fileMediaType.value "application/pdf") 
+                              (eq bindings.0.fileMediaType.value "application/json") 
+                              (eq bindings.0.fileMediaType.value "text/plain")
+                              (eq bindings.0.fileMediaType.value "text/html")
+                              (eq bindings.0.fileMediaType.value "text/xml")
+                    )}}
+
+            <mp-event-trigger id='{{viewId}}-open-document-file-visualisation-trigger' 
+                              type='Dashboard.AddFrame'
+                              data='{"viewId":"resource-file-visualisation", 
+                                      "resourceIri": "{{iri}}"}' 
+                              targets='["thinking-frames"]'>
+              <bs-menu-item draggable="false">
+                <rs-icon icon-type="rounded" icon-name="slideshow" class="icon-left" symbol="true"></rs-icon>
+                <span>Open document</span>
+              </bs-menu-item>
+            </mp-event-trigger>
+
+            <mp-event-trigger id='{{viewId}}-open-document-file-visualisation-newTab-trigger' 
+                              type='Dashboard.AddFrame'
+                              data='{ "viewId":"resource-file-visualisation", 
+                                      "resourceIri": "{{iri}}",
+                                      "openAsDragAndDrop":true
+                                    }' 
+                              targets='["thinking-frames"]'>
+              <bs-menu-item draggable="false">
+                <rs-icon icon-type="rounded" icon-name="tab_move" class="icon-left" symbol="true"></rs-icon>
+                <span>Open document in draggable tab</span>
+              </bs-menu-item>
+            </mp-event-trigger>
+
+            <hr>
+          {{/if}}
             <mp-file-download post-action="" download-url="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}">
-              <bs-menu-item>
+              <bs-menu-item draggable="false">
                 <rs-icon icon-type="rounded" icon-name="download" class="icon-left" symbol="true"></rs-icon>
                 <span>Download file</span>
               </bs-menu-item>
@@ -300,7 +381,7 @@
   {{/if}}
 
   {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
-    <bs-menu-item>
+    <bs-menu-item draggable="false">
       <mp-graph-store-action title="Download" action="GET" graphuri="{{iri}}" file-ending="trig">
         <rs-icon icon-type="rounded" icon-name="download" class="icon-left" symbol="true"></rs-icon>
         <span>Download file</span>
@@ -326,7 +407,7 @@
       >
         <template id='template'>
           <mp-file-download post-action="" download-url="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}">
-            <bs-menu-item>
+            <bs-menu-item draggable="false">
               <rs-icon icon-type="rounded" icon-name="download" class="icon-left" symbol="true"></rs-icon>
               <span>Download file</span>
             </bs-menu-item>
@@ -345,7 +426,7 @@
       >
         <template id='template'>
           <mp-file-download post-action="" download-url="/file?storage=images&fileName={{encodeUriComponent bindings.0.svg.value}}">
-            <bs-menu-item>
+            <bs-menu-item draggable="false">
               <rs-icon icon-type="rounded" icon-name="download" class="icon-left" symbol="true"></rs-icon>
               <span>Download file</span>
             </bs-menu-item>
@@ -365,19 +446,19 @@
         <template id='template'>
           {{#ifCond bindings.0.systemUser.value "===" iri}}
               <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                      urlqueryparam-view="resource-editor"
+                                      urlqueryparam-view="resource-editor"                                      
                                       urlqueryparam-resource-iri='{{iri}}'>
-              <bs-menu-item>
+              <bs-menu-item draggable="false">
                 <rs-icon icon-type="rounded" icon-name="edit_note" class="icon-left" symbol="true"></rs-icon>
                 <span>Edit</span>
               </bs-menu-item>
             </semantic-link-container>
 
             <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                      urlqueryparam-view="resource-editor"
+                                      urlqueryparam-view="resource-editor"                                      
                                       urlqueryparam-resource-iri='{{iri}}'
                                       urlqueryparam-open-as-drag-and-drop='true'>
-              <bs-menu-item>
+              <bs-menu-item draggable="false">
                 <rs-icon icon-type='rounded' icon-name='read_more' symbol='true' class="icon-left"></rs-icon>
                 <span>Edit in draggable tab</span>
               </bs-menu-item>
@@ -386,7 +467,7 @@
             <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
                                       urlqueryparam-view="resource-editor"
                                       urlqueryparam-resource-iri='{{iri}}'>
-              <bs-menu-item>
+              <bs-menu-item draggable="false">
                 <rs-icon icon-type="rounded" icon-name="edit_note" class="icon-left" symbol="true"></rs-icon>
                 <span>View</span>
               </bs-menu-item>
@@ -396,7 +477,7 @@
                                       urlqueryparam-view="resource-editor"
                                       urlqueryparam-resource-iri='{{iri}}'
                                       urlqueryparam-open-as-drag-and-drop='true'>
-              <bs-menu-item>
+              <bs-menu-item draggable="false">
                 <rs-icon icon-type='rounded' icon-name='read_more' symbol='true' class="icon-left"></rs-icon>
                 <span>View in draggable tab</span>
               </bs-menu-item>
@@ -409,8 +490,9 @@
     {{else}}
       <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
                                 urlqueryparam-view="resource-editor"
+                                urlqueryparam-custom-label="{{resourceName}}"                               
                                 urlqueryparam-resource-iri='{{iri}}'>
-        <bs-menu-item>
+        <bs-menu-item draggable="false">
           <rs-icon icon-type="rounded" icon-name="edit_note" class="icon-left" symbol="true"></rs-icon>
           <span>Edit</span>
         </bs-menu-item>
@@ -420,7 +502,7 @@
                                 urlqueryparam-view="resource-editor"
                                 urlqueryparam-resource-iri='{{iri}}'
                                 urlqueryparam-open-as-drag-and-drop='true'>
-        <bs-menu-item>
+        <bs-menu-item draggable="false">
           <rs-icon icon-type='rounded' icon-name='read_more' symbol='true' class="icon-left"></rs-icon>
           <span>Edit in draggable tab</span>
         </bs-menu-item>
@@ -459,7 +541,7 @@
                                     "viewId": "image-annotation", 
                                     "frameId": "{{viewId}}"}' 
                             targets='["thinking-frames"]'>
-              <bs-menu-item>
+              <bs-menu-item draggable="false">
                 <rs-icon icon-type="rounded" icon-name="photo_size_select_large" class="icon-left" symbol="true"></rs-icon>
                 {{#if (or (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map") 
                           (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") )}}
@@ -494,7 +576,7 @@
           <semantic-link-container  uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
                                     urlqueryparam-view='image-graph-authoring' 
                                     urlqueryparam-resource='{{iri}}'>
-            <bs-menu-item>
+            <bs-menu-item draggable="false">
               <rs-icon icon-type="rounded" icon-name="wallpaper" class="icon-left" symbol="true"></rs-icon>
               <span>Image graph authoring</span>
             </bs-menu-item>
@@ -519,7 +601,7 @@
                                       "viewId": "image-annotation", 
                                       "frameId": "{{viewId}}"}' 
                               targets='["thinking-frames"]'>
-                <bs-menu-item>
+                <bs-menu-item draggable="false">
                   <rs-icon icon-type="rounded" icon-name="photo_size_select_large" class="icon-left" symbol="true"></rs-icon>
                     <span>Open in image view / annotations</span>
                 </bs-menu-item>
@@ -534,7 +616,7 @@
     <semantic-link-container  uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
                               urlqueryparam-view='knowledge-map' 
                               urlqueryparam-resource='{{iri}}'>
-        <bs-menu-item>
+        <bs-menu-item draggable="false">
           <rs-icon icon-type="rounded" icon-name="hub" class="icon-left" symbol="true"></rs-icon>
           <span>Open in Knowledge map</span>
         </bs-menu-item>
@@ -545,7 +627,7 @@
   {{#if (or clipboardCard clipboardList clipboardSet clipboardKm)}}
   {{else}}
     <mp-copy-to-default-set id="{{viewId}}-copy-to-clipboard" resource="{{iri}}">
-      <bs-menu-item>
+      <bs-menu-item draggable="false">
         <rs-icon icon-type="rounded" icon-name="inventory" class="icon-left" symbol="true"></rs-icon>
         <span>Copy to clipboard</span>
       </bs-menu-item>
@@ -553,7 +635,7 @@
   {{/if}}
 
   <mp-copy-to-clipboard text='{{iri}}' message='IRI has been copied'>
-    <bs-menu-item>
+    <bs-menu-item draggable="false">
       <rs-icon icon-type="rounded" icon-name="content_copy" class="icon-left" symbol="true"></rs-icon>
       <span>Copy IRI</span>
     </bs-menu-item>
@@ -566,7 +648,7 @@
                   urlqueryparam-view="resource-editor" 
                   urlqueryparam-custom-label="{{resourceLabel}} link" 
                   message='Share link has been copied'>
-      <bs-menu-item>
+      <bs-menu-item draggable="false">
         <rs-icon icon-type="rounded" icon-name="share_windows" class="icon-left" symbol="true"></rs-icon>
         <span>Share edit</span>
       </bs-menu-item>
@@ -580,7 +662,7 @@
                       urlqueryparam-view="authority-list" 
                       urlqueryparam-custom-label="{{resourceLabel}} link" 
                       message='Share link has been copied'>
-        <bs-menu-item>
+        <bs-menu-item draggable="false">
           <rs-icon icon-type="rounded" icon-name="share_windows" class="icon-left" symbol="true"></rs-icon>
           <span>Share list of resources</span>
         </bs-menu-item>
@@ -592,23 +674,21 @@
                       urlqueryparam-view="knowledge-map" 
                       urlqueryparam-custom-label="{{resourceLabel}} link" 
                       message='Share link has been copied'>
-        <bs-menu-item>
+        <bs-menu-item draggable="false">
           <rs-icon icon-type="rounded" icon-name="share_windows" class="icon-left" symbol="true"></rs-icon>
           <span>Share knowledge map</span>
         </bs-menu-item>
       </rs-share-link>
     {{/case}}
     {{#case "http://www.researchspace.org/resource/system/resource_configurations_container/data/Organisation" break=true}}
-      <semantic-if query='ASK { <{{iri}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                              ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
-                              ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt . }'>
+      <semantic-if query='ASK { <{{iri}}> crm:P168_place_is_defined_by ?wkt . }'>
         <template id='then'>
           <rs-share-link relative-path='/resource/rsp:ThinkingFrames' 
                           urlqueryparam-resource="{{iri}}" 
                           urlqueryparam-view="map" 
                           urlqueryparam-custom-label="{{resourceLabel}} link" 
                           message='Share link has been copied'>
-            <bs-menu-item>
+            <bs-menu-item draggable="false">
               <rs-icon icon-type="rounded" icon-name="share_windows" class="icon-left" symbol="true"></rs-icon>
               <span>Share map</span>
             </bs-menu-item>
@@ -617,16 +697,14 @@
       </semantic-if>
     {{/case}}
     {{#case "http://www.researchspace.org/resource/system/resource_configurations_container/data/Place" break=true}}
-      <semantic-if query='ASK { <{{iri}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                              ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
-                              ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt . }'>
+      <semantic-if query='ASK { <{{iri}}> crm:P168_place_is_defined_by ?wkt . }'>
         <template id='then'>
           <rs-share-link relative-path='/resource/rsp:ThinkingFrames' 
                           urlqueryparam-resource="{{iri}}" 
                           urlqueryparam-view="map" 
                           urlqueryparam-custom-label="{{resourceLabel}} link" 
                           message='Share link has been copied'>
-            <bs-menu-item>
+            <bs-menu-item draggable="false">
               <rs-icon icon-type="rounded" icon-name="share_windows" class="icon-left" symbol="true"></rs-icon>
               <span>Share map</span>
             </bs-menu-item>
@@ -640,7 +718,7 @@
                       urlqueryparam-view="chart" 
                       urlqueryparam-custom-label="{{resourceLabel}} link" 
                       message='Share link has been copied'>
-        <bs-menu-item>
+        <bs-menu-item draggable="false">
           <rs-icon icon-type="rounded" icon-name="share_windows" class="icon-left" symbol="true"></rs-icon>
           <span>Share chart</span>
         </bs-menu-item>
@@ -652,7 +730,7 @@
                       urlqueryparam-view="semantic-narrative" 
                       urlqueryparam-custom-label="{{resourceLabel}} link" 
                       message='Share link has been copied'>
-        <bs-menu-item>
+        <bs-menu-item draggable="false">
           <rs-icon icon-type="rounded" icon-name="share_windows" class="icon-left" symbol="true"></rs-icon>
           <span>Share semantic narrative</span>
         </bs-menu-item>
@@ -662,7 +740,7 @@
                       urlqueryparam-view="semantic-narrative-resources" 
                       urlqueryparam-custom-label="{{resourceLabel}} link" 
                       message='Share link has been copied'>
-        <bs-menu-item>
+        <bs-menu-item draggable="false">
           <rs-icon icon-type="rounded" icon-name="share_windows" class="icon-left" symbol="true"></rs-icon>
           <span>Share resources in narrative</span>
         </bs-menu-item>
@@ -674,7 +752,7 @@
                       urlqueryparam-view="timeline" 
                       urlqueryparam-custom-label="{{resourceLabel}} link" 
                       message='Share link has been copied'>
-        <bs-menu-item>
+        <bs-menu-item draggable="false">
           <rs-icon icon-type="rounded" icon-name="share_windows" class="icon-left" symbol="true"></rs-icon>
           <span>Share timeline</span>
         </bs-menu-item>
@@ -686,9 +764,33 @@
                       urlqueryparam-view="single-set-management" 
                       urlqueryparam-custom-label="{{resourceLabel}} link" 
                       message='Share link has been copied'>
-        <bs-menu-item>
+        <bs-menu-item draggable="false">
           <rs-icon icon-type="rounded" icon-name="share_windows" class="icon-left" symbol="true"></rs-icon>
           <span>Share set</span>
+        </bs-menu-item>
+      </rs-share-link>
+    {{/case}}
+    {{#case "http://www.researchspace.org/resource/system/resource_configurations_container/data/Audio" break=true}}
+      <rs-share-link relative-path='/resource/rsp:ThinkingFrames' 
+                      urlqueryparam-resource="{{iri}}" 
+                      urlqueryparam-view="resource-file-visualisation" 
+                      urlqueryparam-custom-label="{{resourceLabel}} link" 
+                      message='Share link has been copied'>
+        <bs-menu-item draggable="false">
+          <rs-icon icon-type="rounded" icon-name="share_windows" class="icon-left" symbol="true"></rs-icon>
+          <span>Share audio</span>
+        </bs-menu-item>
+      </rs-share-link>
+    {{/case}}
+    {{#case "http://www.researchspace.org/resource/system/resource_configurations_container/data/Video" break=true}}
+      <rs-share-link relative-path='/resource/rsp:ThinkingFrames' 
+                      urlqueryparam-resource="{{iri}}" 
+                      urlqueryparam-view="resource-file-visualisation" 
+                      urlqueryparam-custom-label="{{resourceLabel}} link" 
+                      message='Share link has been copied'>
+        <bs-menu-item draggable="false">
+          <rs-icon icon-type="rounded" icon-name="share_windows" class="icon-left" symbol="true"></rs-icon>
+          <span>Share video</span>
         </bs-menu-item>
       </rs-share-link>
     {{/case}}
@@ -726,7 +828,7 @@
                       id='{{viewId}}-delete-resource-dialog' 
                       title="Delete {{resourceName}}" type="modal" bs-size="large">
     <mp-overlay-dialog-trigger>
-      <bs-menu-item>
+      <bs-menu-item draggable="false">
         <rs-icon icon-type="rounded" icon-name="delete" class="icon-left" symbol="true"></rs-icon>
         <span>Delete</span>
       </bs-menu-item>
@@ -746,10 +848,7 @@
                                       ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                       ?appellation crm:P190_has_symbolic_content ?label .
                                     } UNION {
-                                      ?resource crm:P170i_time_is_defined_by ?timePrimitive .
-                                      ?timePrimitive a crm:E61_Time_Primitive .
-                                      ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
-                                      ?timePrimitive crm:P190_has_symbolic_content ?label .
+                                      ?resource crm:P170i_time_is_defined_by ?label .
                                     } UNION {
                                       ?resource skos:prefLabel ?label .
                                     } UNION {
@@ -768,11 +867,11 @@
                       {{else}}
                         <li>
                           <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames" 
-                                          draggable="false"
                                           title="{{label.value}}"
                                           urlqueryparam-view="resource-editor"
-                                          urlqueryparam-resource-iri="{{resource.value}}">
-                            <div class="text-link-action">{{label.value}}</div>
+                                          urlqueryparam-resource-iri="{{resource.value}}"
+                                          class="text-link-action">
+                            {{label.value}}
                           </semantic-link>
                         </li>
                       {{/if}}
@@ -781,10 +880,10 @@
                     {{#each bindings}}
                       <li>
                         <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames" 
-                                        draggable="false"
                                         urlqueryparam-view="resource-editor"
-                                        urlqueryparam-resource-iri="{{resource.value}}">
-                          <div class="text-link-action">{{label.value}}</div>
+                                        urlqueryparam-resource-iri="{{resource.value}}"
+                                        class="text-link-action">
+                          {{label.value}}
                         </semantic-link>
                       </li>
                     {{/each}}

@@ -2,7 +2,6 @@
                         BIND(<{{resourceOntologyClass}}> as ?ontologyClass)
                         FILTER EXISTS{?ontologyClass rdfs:subClassOf+ crm:E18_Physical_Thing }
                         FILTER(?ontologyClass != crm:E21_Person )
-                        FILTER(?ontologyClass != frbroo:F10_Person )
                     } LIMIT 1'
                     
                     template='{{> importExternalThing}}'
@@ -25,20 +24,14 @@
                             <bs-nav bs-style="tabs">
                                 <bs-nav-item event-key="1">Wikipedia</bs-nav-item>
                                 <bs-nav-dropdown event-key="2" title="Museum collections">
-                                    <bs-menu-item event-key="2.1">MET collection</bs-menu-item>
-                                    <bs-menu-item event-key="2.2">V&A collection</bs-menu-item>
+                                    <bs-menu-item event-key="2.1" draggable="false">MET collection</bs-menu-item>
+                                    <bs-menu-item event-key="2.2" draggable="false">V&A collection</bs-menu-item>
                                 </bs-nav-dropdown>
 
                                 <bs-nav-dropdown event-key="3" title="Archives">
-                                    <bs-menu-item event-key="3.1">The National archives</bs-menu-item>
+                                    <bs-menu-item event-key="3.1" draggable="false">The National archives</bs-menu-item>
                                 </bs-nav-dropdown>
 
-                            [[!--    
-                                <bs-nav-dropdown event-key="4" title="ResearchSpace projects">
-                                    <bs-menu-item event-key="4.1">Late Hokusai</bs-menu-item>
-                                    <bs-menu-item event-key="4.2">Amara West</bs-menu-item>
-                                </bs-nav-dropdown>
-                            --]]
                             </bs-nav>
 
                             <bs-tab-content animation style="padding-top: 10px;">
@@ -90,19 +83,8 @@
                                                         }'>
                                     </inline-template>
                                 </bs-tab-pane>
-                            [[!--    <bs-tab-pane event-key="4.1">
-                                    <h6>Search in Late Hokusai</h6>
-                                    <inline-template template-iri='[[resolvePrefix "rsp:ImportFromLateHokusai"]]' 
-                                                        options='{
-                                                            "scheme": "{{collection}}", 
-                                                            "viewId": "{{viewId}}",
-                                                            "domain": "{{resourceOntologyClass}}",
-                                                            "domainConfig": "{{resourceConfiguration}}",
-                                                            "label": "{{resourceName}}"
-                                                        }'>
-                                    </inline-template>
-                                </bs-tab-pane>
-                                <bs-tab-pane event-key="4.2">
+                            [[!--    
+                                <bs-tab-pane event-key="4.1">
                                     <h6>Search in Amara West</h6>
                                     <inline-template template-iri='[[resolvePrefix "rsp:ImportFromAmaraWest"]]' 
                                                         options='{
@@ -241,8 +223,7 @@
         </semantic-switch>
     </template>
 
-</semantic-query
->  
+</semantic-query>  
 
 
 

@@ -1095,6 +1095,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
     editor.cancelSelection();
     model.history.reset();
 
+    this.workspace.zoomToFit();
     trigger({
       source: this.props.id,
       eventType: OntodiaEvents.DiagramDataPersisted,
@@ -1294,7 +1295,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
   };
 
   private renderPropertyEditor = (options: PropertyEditorOptions) => {
-    const { fieldConfiguration } = this.state;
+    const { fieldConfiguration } = this.state; 
     const metadata = getEntityMetadata(options.elementData, fieldConfiguration.metadata);
     const authoringState = this.workspace.getEditor().authoringState;
 
@@ -1325,7 +1326,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
           options.onSubmit(editedModel);
         },
         onCancel: () => options.onCancel && options.onCancel(),
-      };
+      }; 
       const formBody =
         metadata.formChildren ||
         Forms.generateFormFromFields({

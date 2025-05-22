@@ -121,6 +121,14 @@
     },
 
     {
+    	"id": "ontology-page-view",
+      "label": "Ontology page view",
+      "iconName": "settings",
+      "template": "{{> ontologyPageView}}",
+      "type": "view"
+    },
+
+    {
     	"id": "resource-persisted",
       "label": "Resource persisted",
       "template": "{{> resourcePersisted}}",
@@ -151,6 +159,14 @@
     },
 
     {
+    	"id": "resource-file-visualisation",
+      "label": "Resource file visualisation",
+      "template": "{{> resourceFileVisualisation}}",
+      "iconName": "slideshow",
+      "type": "view"
+    },
+
+    {
     	"id": "iiif",
       "label": "Image viewer",
       "description": "Drag and drop an entity here to view and compare related high-resolution images",
@@ -168,14 +184,14 @@
       "dropAreaDescription": "Drag and drop here any entity of type PLACE (with associated geographic coordinates) to explore related geographic information",
       "iconName": "place",
       "checkQuery": "ASK { 
-        ?value a crm:E53_Place . 
-        ?value <http://www.cidoc-crm.org/cidoc-crm/P168_place_is_defined_by> ?coordinates .
-        ?coordinates <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> . }",
+        ?value a ?ontologyClass .
+        ?ontologyClass rdfs:subClassOf* crm:E53_Place .
+        ?value <http://www.cidoc-crm.org/cidoc-crm/P168_place_is_defined_by> ?coordinates . }",
       "template": "{{> mapTemplate}}",
       "type": "view"
     },
 
-    {
+[[!--    {
     	"id": "authority",
       "label": "Authority document",
       "iconName": "dictionary",
@@ -184,7 +200,7 @@
       "resourceNotRequired": true,
       "type": "hidden"
     }, 
-
+--]]
     {
     	"id": "system-authority",
       "label": "System authority document",
@@ -436,10 +452,19 @@
     	</div>
     </template>
 
+    <template id='ontologyPageView'>
+      <mp-page-loader urlqueryparam-frame=true iri='{{iri}}' context='{{iri}}'>
+      </mp-page-loader>
+    </template>
+
     <template id='resourcePersisted'>
       [[> rsp:ResourcePersistedView]]
     </template>
 
+    <template id='resourceFileVisualisation'>
+      [[> rsp:ResourceFileVisualisation]]
+    </template>
+    
     <template id='resourceConfiguration'>
       [[> rsp:ResourceConfiguration]]
     </template>
@@ -448,10 +473,10 @@
       [[> rsp:ResourceEditor iri=iri]]
     </template>
 
-    <template id='authority'>
+[[!--   <template id='authority'>
       [[> rsp:AuthorityDocumentView]]
     </template>
-
+--]]
     <template id='systemAuthority'>
       [[> rsp:AuthorityDocumentSystem]]
     </template>
@@ -508,22 +533,16 @@
         <semantic-map tuple-template='{{> popover}}'
                       query='SELECT DISTINCT ?wkt ?place ?color WHERE {
                               {
-                              <{{iri}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                                ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
-                                ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
+                              <{{iri}}> crm:P168_place_is_defined_by ?wkt .
                                 BIND(<{{iri}}> AS ?place) .
                                 BIND(0 as ?order)
                               } UNION {
                                 ?place crm:P89_falls_within* <{{iri}}> .
-                                ?place crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                                ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
-                                ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
+                                ?place crm:P168_place_is_defined_by ?wkt .
                                 BIND(1 as ?order)
                               } UNION {
                                 <{{iri}}> crm:P161i_is_spatial_projection_of/crm:P10i_contains/crm:P53i_is_former_or_current_location_of ?place .
-                                ?place crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                                ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
-                                ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
+                                ?place crm:P168_place_is_defined_by ?wkt .
                                 BIND(true AS ?isBuilding)
                                 BIND(2 as ?order)
                               }
@@ -544,11 +563,13 @@
               <div style="min-width:250px; font-size: 13.5px; overflow: hidden;">
                 <div class="place-row">
                   <div>Place:</div>
-                  <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                            urlqueryparam-view="resource-editor"
-                                            urlqueryparam-resource='{{place.value}}'>
-                    <div><mp-label iri='{{place.value}}' style="text-decoration: underline; cursor: pointer; color:#396EFE; font-weight: 600;"></mp-label></div>
-                  </semantic-link-container>
+                  <mp-draggable iri="{{place.value}}">
+                    <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                              urlqueryparam-view="resource-editor"
+                                              urlqueryparam-resource-iri='{{place.value}}'>
+                      <div><mp-label iri='{{place.value}}' style="text-decoration: underline; cursor: pointer; color:#396EFE; font-weight: 600;"></mp-label></div>
+                    </semantic-link-container>
+                  </mp-draggable>
                 </div>
               </div>
             </template>

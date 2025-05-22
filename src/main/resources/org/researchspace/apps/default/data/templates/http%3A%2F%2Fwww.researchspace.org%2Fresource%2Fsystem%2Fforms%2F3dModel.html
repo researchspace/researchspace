@@ -8,8 +8,8 @@
                             entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
 
                             entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
-                            entity_file_identifier="http://www.researchspace.org/pattern/system/entity/file_identifierMin0"
-                            entity_file_URLidentifier="http://www.researchspace.org/pattern/system/entity/web_URL_embed_Max1"
+                            recording_file_identifier="http://www.researchspace.org/pattern/system/recording/file_identifier"
+                            recording_file_URLidentifier="http://www.researchspace.org/pattern/system/recording/file_url"
                             
                             human-made_thing_title="http://www.researchspace.org/pattern/system/human-made_thing/PC102_has_title"
                             propositional_object_is_about="http://www.researchspace.org/pattern/system/propositional_object/is_about"
@@ -57,7 +57,7 @@
               >
               
     <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
-        <semantic-form-hidden-input for='classtype' default-value='http://iflastandards.info/ns/fr/frbr/frbroo/F26_Recording'> </semantic-form-hidden-input>
+        <semantic-form-hidden-input for='classtype' default-value='http://iflastandards.info/ns/lrm/lrmoo/F2_Expression'> </semantic-form-hidden-input>
         <semantic-form-hidden-input for="entity_resource_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/recording_3D_model'> </semantic-form-hidden-input>
         
         {{#if scheme}}
@@ -75,7 +75,7 @@
 
                 <div style="{{#if node}}display: flex; gap: 3px;{{/if}}">
                     <div class="FileUploader-container" style="flex: 1;">
-                        <semantic-form-file-input   for='entity_file_identifier' 
+                        <semantic-form-file-input   for='recording_file_identifier' 
                                                     label='3D model file'
                                                     accept-pattern='application/*,image/*' 
                                                     storage='images'
@@ -97,7 +97,9 @@
                             <div className='placeholder-item'>
                                 <rs-icon icon-type='rounded' icon-name='upload' class='upload_icon' symbol='true'></rs-icon>
                                 <p>Drag file <span>or </span><span class='text-link'>click to upload</span></p>
-                                <div>Supported format: .pdf .doc .xml .ppt .pptx .json .rdf .zip .jpeg .jpg .tiff .bmp .png .svg+xml</div>
+                                <div>Supported document/image format: 
+                                    .pdf .zip .doc .xlsx .ppt .pptx .txt .csv .html .json .ics .rdf .rtf .xml
+                                     .jpeg .jpg .tiff .png</div>
                             </div>
                         </semantic-form-file-input>
                     </div>
@@ -121,21 +123,29 @@
                                             <rs-icon icon-type="rounded" icon-name="download" title="Download document" symbol="true"></rs-icon>
                                         </button>
                                     </mp-file-download>
-                                    {{#ifCond bindings.0.fileMediaType.value "==" "application/pdf"}}
-                                        <button class="btn btn-default btn-textAndIcon" style="height: 40px;">
-                                            <a href="/file?fileName={{bindings.0.fileName.value}}&storage=images&mode=open&mediaType=application%2Fpdf" target="_blank" title='Open PDF document' class="btn-textAndIcon">
-                                                <rs-icon icon-type="rounded" icon-name="open_in_new" symbol="true"></rs-icon>
-                                                <span>Open</span>
-                                            </a>
-                                        </button>
-                                    {{/ifCond}}
+                                    {{#if (or (eq bindings.0.fileMediaType.value "application/pdf") 
+                                                (eq bindings.0.fileMediaType.value "application/json") 
+                                                (eq bindings.0.fileMediaType.value "text/plain")
+                                                (eq bindings.0.fileMediaType.value "text/html")
+                                                (eq bindings.0.fileMediaType.value "text/xml")
+                                    )}}
+                                        <mp-event-trigger   id='{{viewId}}-open-document-file-visualisation-trigger' 
+                                                            type='Dashboard.AddFrame'
+                                                            data='{"viewId":"resource-file-visualisation", 
+                                                                    "resourceIri": "{{node}}"}' 
+                                                            targets='["thinking-frames"]'>
+                                            <button class="btn btn-default" style="height: 40px;">
+                                                <span>Open document</span>
+                                            </button>
+                                        </mp-event-trigger>
+                                    {{/if}}
                                 </template>
                             </semantic-query>
                         </div>
                     {{/if}}
                 </div>
 
-                <semantic-form-text-input for="entity_file_URLidentifier" label="3D model URL" placeholder="Enter 3D model URL"></semantic-form-text-input>
+                <semantic-form-text-input for="recording_file_URLidentifier" label="3D model URL" placeholder="Enter 3D model URL"></semantic-form-text-input>
 
                 {{#if node}}
                     <semantic-query query='SELECT ?modelURL WHERE {
@@ -429,12 +439,13 @@
                                                                     {{#ifCond bindings.0.node.value "===" propositionalObject}}
                                                                         <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
                                                                     {{else}}
-                                                                        <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                                        urlqueryparam-view='resource-editor' 
-                                                                                        urlqueryparam-resource-iri='{{node.value}}'
-                                                                                        >
-                                                                            <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                                        </semantic-link>
+                                                                        <mp-draggable iri="{{node.value}}">
+                                                                            <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                                      urlqueryparam-view='resource-editor' 
+                                                                                                      urlqueryparam-resource-iri='{{node.value}}'>
+                                                                                <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                                            </semantic-link-container>
+                                                                        </mp-draggable>
                                                                     {{/ifCond}}
                                                                 </div>
                                                             </template>
@@ -582,12 +593,13 @@
                                                                 {{#ifCond bindings.0.node.value "===" informationObject}}
                                                                     <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
                                                                 {{else}}
-                                                                    <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                                    urlqueryparam-view='resource-editor' 
-                                                                                    urlqueryparam-resource-iri='{{node.value}}'
-                                                                                    >
-                                                                        <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                                    </semantic-link>
+                                                                    <mp-draggable iri="{{node.value}}">
+                                                                        <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                                urlqueryparam-view='resource-editor' 
+                                                                                                urlqueryparam-resource-iri='{{node.value}}'>
+                                                                            <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                                        </semantic-link-container>
+                                                                    </mp-draggable>
                                                                 {{/ifCond}}
                                                             </div>
                                                         </template>
@@ -816,27 +828,13 @@
                 <semantic-form-autocomplete-input   for='entity_attributed_by_attribute_assignment' 
                                                     label="Attributed by"
                                                     placeholder="Select what assigned attribute to the 3D model" 
-                                                    nested-form-templates='[ 
-                                                        {
-                                                            "label": "Attribute assignment",
-                                                            "nestedForm": "{{{{raw}}}}
-                                                                            {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                        {{{{/raw}}}}"
-                                                        }
-                                                    ]'>  
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
                 </semantic-form-autocomplete-input>
         
                 <semantic-form-autocomplete-input   for='entity_assigned_by_attribute_assignment' 
                                                     label="Assigned by"
                                                     placeholder="Select what assigned the 3D model" 
-                                                    nested-form-templates='[ 
-                                                        {
-                                                            "label": "Attribute assignment",
-                                                            "nestedForm": "{{{{raw}}}}
-                                                                            {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                        {{{{/raw}}}}"
-                                                        }
-                                                    ]'>  
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
                 </semantic-form-autocomplete-input>
         
                 <semantic-form-autocomplete-input   for='entity_measurement' 

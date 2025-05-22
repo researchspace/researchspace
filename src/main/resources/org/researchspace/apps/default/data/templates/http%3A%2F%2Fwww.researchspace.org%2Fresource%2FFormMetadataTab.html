@@ -45,13 +45,15 @@
                                     <td class="table-description">
                                         {{dateTimeFormat bindings.0.creationDateValue.value "DD/MM/YYYY, h:mm a"}} by
                                         {{#if bindings.0.actorFullName.value}}
-                                            <semantic-link-container    uri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                        urlqueryparam-view='resource-editor' 
-                                                                        urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
-                                                                        urlqueryparam-resource-iri="{{bindings.0.actor.value}}"
-                                                                        urlqueryparam-mode='edit'>
-                                                <div style="text-decoration: underline; cursor: pointer;">{{bindings.0.actorFullName.value}}</div>
-                                            </semantic-link-container>
+                                            <mp-draggable iri='{{bindings.0.actor.value}}'>
+                                                <semantic-link-container    uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                            urlqueryparam-view='resource-editor' 
+                                                                            urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                                                            urlqueryparam-resource-iri="{{bindings.0.actor.value}}"
+                                                                            urlqueryparam-mode='edit'>
+                                                    <div style="text-decoration: underline; cursor: pointer;">{{bindings.0.actorFullName.value}}</div>
+                                                </semantic-link-container>
+                                            </mp-draggable>
                                         {{else}}
                                             <mp-label iri='{{bindings.0.actor.value}}'></mp-label>
                                         {{/if}}
@@ -105,13 +107,15 @@
                                             <td class="table-description">
                                                 {{dateTimeFormat lastModificationDate.value "DD/MM/YYYY, h:mm a"}} by
                                                 {{#if actorFullName}}
-                                                    <semantic-link-container    uri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                                urlqueryparam-view='resource-editor' 
-                                                                                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
-                                                                                urlqueryparam-resource-iri="{{actor.value}}"
-                                                                                urlqueryparam-mode='edit'>
-                                                        <div style="text-decoration: underline; cursor: pointer;">{{actorFullName.value}}</div>
-                                                    </semantic-link-container>
+                                                    <mp-draggable iri='{{actor.value}}'>
+                                                        <semantic-link-container    uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                    urlqueryparam-view='resource-editor' 
+                                                                                    urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                                                                    urlqueryparam-resource-iri="{{actor.value}}"
+                                                                                    urlqueryparam-mode='edit'>
+                                                            <div style="text-decoration: underline; cursor: pointer;">{{actorFullName.value}}</div>
+                                                        </semantic-link-container>
+                                                    </mp-draggable>
                                                 {{else}}
                                                     <mp-label iri='{{actor.value}}'></mp-label>
                                                 {{/if}}
@@ -161,13 +165,15 @@
                                                     <td class="table-description">
                                                         {{dateTimeFormat bindings.0.modifiedAtTime.value "DD/MM/YYYY, h:mm a"}} by
                                                         {{#if bindings.0.modifiedByUserFullName.value}}
-                                                            <semantic-link-container    uri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                                        urlqueryparam-view='resource-editor' 
-                                                                                        urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
-                                                                                        urlqueryparam-resource-iri="{{bindings.0.modifiedByUser.value}}"
-                                                                                        urlqueryparam-mode='edit'>
-                                                                <div style="text-decoration: underline; cursor: pointer;">{{bindings.0.modifiedByUserFullName.value}}</div>
-                                                            </semantic-link-container>
+                                                            <mp-draggable iri='{{bindings.0.modifiedByUser.value}}'>
+                                                                <semantic-link-container    uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                            urlqueryparam-view='resource-editor' 
+                                                                                            urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                                                                            urlqueryparam-resource-iri="{{bindings.0.modifiedByUser.value}}"
+                                                                                            urlqueryparam-mode='edit'>
+                                                                    <div style="text-decoration: underline; cursor: pointer;">{{bindings.0.modifiedByUserFullName.value}}</div>
+                                                                </semantic-link-container>
+                                                            </mp-draggable>
                                                         {{else}}
                                                             <mp-label iri='{{bindings.0.modifiedByUser.value}}'></mp-label>
                                                         {{/if}}
@@ -206,7 +212,7 @@
                                             <div>
                                                 <semantic-table id='{{viewId}}-modification-table'
                                                                 class-name="table-fixed-header table-expanded"
-                                                                query='SELECT ?actor ?actorFullName ?modificationDateValue WHERE {
+                                                                query='SELECT DISTINCT ?actor ?actorFullName ?modificationDateValue WHERE {
                                                                     BIND(<{{node}}> AS ?entity)
                                 
                                                                     ?entity crm:P129i_is_subject_of ?entityFormRecord .
@@ -245,13 +251,15 @@
                                                             <div style="display: flex; gap: 5px; align-items: center;">
                                                                 <rs-icon icon-type="rounded" icon-name="portrait" symbol="true"></rs-icon>
                                                                 {{#if actorFullName.value}}
-                                                                    <semantic-link-container    uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                                                                urlqueryparam-view='resource-editor' 
-                                                                                                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
-                                                                                                urlqueryparam-resource-iri="{{actor.value}}"
-                                                                                                urlqueryparam-mode='edit'>
-                                                                        <div class="text-link">{{actorFullName.value}}</div>
-                                                                    </semantic-link-container>
+                                                                    <mp-draggable iri='{{actor.value}}'>
+                                                                        <semantic-link-container    uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                                                    urlqueryparam-view='resource-editor' 
+                                                                                                    urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                                                                                    urlqueryparam-resource-iri="{{actor.value}}"
+                                                                                                    urlqueryparam-mode='edit'>
+                                                                            <div class="text-link">{{actorFullName.value}}</div>
+                                                                        </semantic-link-container>
+                                                                    </mp-draggable>
                                                                 {{else}}
                                                                     <mp-label iri='{{actor.value}}'></mp-label>
                                                                 {{/if}}
@@ -312,13 +320,15 @@
                                                 <div>
                                                     {{#each bindings}}
                                                         {{#if actorFullName.value}}
-                                                            <semantic-link-container    uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                                                        urlqueryparam-view='resource-editor' 
-                                                                                        urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
-                                                                                        urlqueryparam-resource-iri="{{actor.value}}"
-                                                                                        urlqueryparam-mode='edit'>
-                                                                <div class="text-link">{{actorFullName.value}}</div>
-                                                            </semantic-link-container>
+                                                            <mp-draggable iri='{{actor.value}}'>
+                                                                <semantic-link-container    uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                                            urlqueryparam-view='resource-editor' 
+                                                                                            urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                                                                            urlqueryparam-resource-iri="{{actor.value}}"
+                                                                                            urlqueryparam-mode='edit'>
+                                                                    <div class="text-link">{{actorFullName.value}}</div>
+                                                                </semantic-link-container>
+                                                            </mp-draggable>
                                                         {{else}}
                                                             <mp-label iri='{{actor.value}}'></mp-label>
                                                         {{/if}}

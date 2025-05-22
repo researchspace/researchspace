@@ -27,7 +27,7 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
  */
 public class CRMdig {
 
-    public static String NAMESPACE = "http://www.ics.forth.gr/isl/CRMdig/";
+    public static String NAMESPACE = "http://www.cidoc-crm.org/extensions/crmdig/";
 
     /* Classes */
     public static final IRI D1_DIGITAL_OBJECT_CLASS;
@@ -47,8 +47,7 @@ public class CRMdig {
     public static final IRI L1_DIGITIZED_PROPERTY;
     public static final IRI L43_ANNOTATES_PROPERTY;
     public static final IRI L48_CREATED_ANNOTATION_PROPERTY;
-    public static final IRI L57_HAS_PIXEL_HEIGHT;
-    public static final IRI L56_HAS_PIXEL_WIDTH;
+
     public static final IRI L21_USED_AS_DERIVATION_SOURCE;
     public static final IRI L22_CREATED_DERIVATIVE;
     public static final IRI L13_USED_PARAMETERS_PROPERTY;
@@ -74,7 +73,5 @@ public class CRMdig {
         L1_DIGITIZED_PROPERTY = f.createIRI(NAMESPACE, "L1_digitized");
         L43_ANNOTATES_PROPERTY = f.createIRI(NAMESPACE, "L43_annotates");
         L48_CREATED_ANNOTATION_PROPERTY = f.createIRI(NAMESPACE, "L48_created_annotation");
-        L57_HAS_PIXEL_HEIGHT = f.createIRI(NAMESPACE, "L57_has_pixel_height");
-        L56_HAS_PIXEL_WIDTH = f.createIRI(NAMESPACE, "L56_has_pixel_width");
     }
 }

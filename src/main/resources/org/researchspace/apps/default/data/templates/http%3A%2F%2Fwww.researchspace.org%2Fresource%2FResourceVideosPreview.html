@@ -1,40 +1,83 @@
-<semantic-query query='SELECT DISTINCT ?video WHERE { 
+<semantic-query query='SELECT DISTINCT ?video ?videoURI ?videoName ?fileName ?fileMediaType WHERE { 
                         <{{resource}}> crm:P129i_is_subject_of ?videoURI . 
-                        ?videoURI a frbroo:F26_Recording .
+                        ?videoURI a lrmoo:F2_Expression .
                         ?videoURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_video> .
-                        ?videoURI crm:P129i_is_subject_of ?digital_object .
-                        ?digital_object a crmdig:D1_Digital_Object .
-                        ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
-                        ?digital_object crm:P190_has_symbolic_content ?video .
+                        {
+                            ?videoURI crm:P129i_is_subject_of ?digital_object .
+                            ?digital_object a crmdig:D1_Digital_Object .
+                            ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                            ?digital_object crm:P190_has_symbolic_content ?video .
+                        } UNION {
+                            ?videoURI crmdig:L60i_is_documented_by ?digitizationProcess .
+                            ?digitizationProcess a crmdig:D2_Digitization_Process .    
+                            ?digitizationProcess crmdig:L11_had_output ?file .
+                            ?file crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/video> .
+                            ?file rs:PX_has_file_name ?fileName .
+                            ?file rs:PX_has_media_type ?fileMediaType .
+                        }
+
+                        ?videoURI crm:P1_is_identified_by ?appellation . 
+                        ?appellation a crm:E41_Appellation . 
+                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                        ?appellation crm:P190_has_symbolic_content ?videoName .
                       }'
                         
             template='{{> template}}'>
 
     <template id='template'>
-        {{#if bindings.1.video.value}}
-            <div class="modal-video-container w100">
+        {{#ifCond bindings.length ">" "1"}}
+            <div class="modal-recording-container w100">
                 <div class="modal-videos">
                     {{#each bindings}}
-                        <div>
-                            <iframe src='{{video.value}}' 
-                                    frameborder="0" 
-                                    allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
-                                    width="358" height="230"
-                                    allowfullscreen>
-                            </iframe>
+                        <div class="video-card">
+                            <div class="video-card-header">
+                            <div class="video-card-header-title text-truncate-line1">{{videoName.value}}</div>
+                            <rs-resource-dropdown id="{{videoURI.value}}-video-actions-dropdown" class-name="dropdown-no-caret" toggle-class-name="border-none">
+                                {{> rsp:ResourceDropdownActions viewId=viewId
+                                                                iri=videoURI.value
+                                                                resourceConfig="http://www.researchspace.org/resource/system/resource_configurations_container/data/Video"
+                                                                resourceFormIRI="http://www.researchspace.org/resource/system/forms/Video"
+                                                                resourceLabel="Video"
+                                                                hidePreview=true
+                                }}
+                            </rs-resource-dropdown>
+                            </div>
+                            
+                            <div class="video-card-content"> 
+                                {{#if video}}
+                                    <iframe src='{{video.value}}' 
+                                            frameborder="0" 
+                                            allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
+                                            width="358" height="230"
+                                            allowfullscreen>
+                                    </iframe>
+                                {{else if fileName}}
+                                    <video controls preload="metadata" width="358" height="230" style="object-fit: cover;">
+                                        <source src="/file?storage=images&fileName={{encodeUriComponent fileName.value}}" type="{{fileMediaType.value}}" />
+                                        <div class="color-secondary" style="margin-bottom: 10px;">Your browser doesn't support the visualisation of this video.</div>
+                                    </video>
+                                {{/if}}
+                            </div>
                         </div>
                     {{/each}}
                 </div>
             </div>
         {{else}}
             <div class="h100 w100">
-                <iframe src='{{bindings.0.video.value}}' 
-                        frameborder="0" 
-                        allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
-                        width="100%" height="100%"
-                        allowfullscreen>
-                </iframe>
+                {{#if bindings.0.video.value}}
+                    <iframe src='{{bindings.0.video.value}}' 
+                            frameborder="0" 
+                            allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
+                            width="100%" height="100%"
+                            allowfullscreen>
+                    </iframe>
+                {{else if bindings.0.fileName.value}}
+                    <video controls preload="metadata" width="100%" height="100%" style="object-fit: cover;">
+                        <source src="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}" type="{{bindings.0.fileMediaType.value}}" />
+                        <div class="color-secondary" style="margin-bottom: 10px;">Your browser doesn't support the visualisation of this video.</div>
+                    </video>
+                {{/if}}
             </div>
-        {{/if}}
+        {{/ifCond}}
     </template>
 </semantic-query>

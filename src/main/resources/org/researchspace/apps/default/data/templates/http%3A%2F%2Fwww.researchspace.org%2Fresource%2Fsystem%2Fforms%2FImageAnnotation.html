@@ -388,27 +388,13 @@
         <semantic-form-autocomplete-input   for='entity_attributed_by_attribute_assignment' 
                                             label="Attributed by"
                                             placeholder="Select what assigned attribute to the image annotation" 
-                                            nested-form-templates='[ 
-                                                {
-                                                    "label": "Attribute assignment",
-                                                    "nestedForm": "{{{{raw}}}}
-                                                                    {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                {{{{/raw}}}}"
-                                                }
-                                            ]'>  
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_assigned_by_attribute_assignment' 
                                             label="Assigned by"
                                             placeholder="Select what assigned the image annotation" 
-                                            nested-form-templates='[ 
-                                                {
-                                                    "label": "Attribute assignment",
-                                                    "nestedForm": "{{{{raw}}}}
-                                                                    {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                {{{{/raw}}}}"
-                                                }
-                                            ]'>  
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_measurement' 
@@ -826,13 +812,16 @@
                   </div>
 
                   <div style="font-size: 13.5px; font-weight: 600; margin-top: 10px; margin-bottom: 8px;">
-                    <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                  urlqueryparam-view='resource-editor' 
-                                  urlqueryparam-resource-iri='{{bindings.0.image.value}}'
-                                  >
-                      <span>Image: </span><span class="text-link">{{bindings.0.imageLabel.value}}</span>
-                    </semantic-link>
-                  </div>
+                    <span>Image: </span>
+                    <mp-draggable iri="{{bindings.0.image.value}}">
+                      <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                urlqueryparam-view='resource-editor' 
+                                                urlqueryparam-resource-iri='{{bindings.0.image.value}}'
+                                                >
+                        <span class="text-link">{{bindings.0.imageLabel.value}}</span>
+                      </semantic-link-container>
+                    </mp-draggable>
+                </div>
                 </div>
               </template>
           </semantic-query>
@@ -858,7 +847,8 @@
                 {{#if node}}
                   <div>       
                     <div class="image-container" style="cursor: pointer;">
-                      <rs-iiif-image-thumbnail  height='180' width='auto' style='max-height: 180px; height: 180px; width: 100%; border-radius: 1.5px; object-fit: contain;'
+                      <rs-iiif-image-thumbnail  height='180' width='auto' style='max-height: 180px; height: 180px; 
+                                                                          width: 100%; border-radius: 1.5px; object-fit: contain;'
                                                 image-or-region='{{bindings.0.image.value}}'      
                                                 [[> rsp:IIIFConfig]]>
                       </rs-iiif-image-thumbnail>

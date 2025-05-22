@@ -122,38 +122,7 @@
                                     </template>
                                 </semantic-query>
                             {{/if}}
-                        {{/if}}
-
-                        {{#if node}}
-                            <semantic-query query='SELECT ?authorityDocument ?authorityDocumentName WHERE {
-                                                    <{{node}}> crm:P71i_is_listed_in ?authorityDocument .
-                                                    ?authorityDocument a crm:E32_Authority_Document .
-                                                    ?authorityDocument crm:P1_is_identified_by ?appellation . 
-                                                    ?appellation a crm:E41_Appellation . 
-                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                    ?appellation crm:P190_has_symbolic_content ?authorityDocumentName .
-                                                } LIMIT 1'
-                                            template='{{> template}}'>
-                                            
-                                <template id='template'>
-                                    <div>
-                                        <div style="margin-top: 20px;">
-                                            Listed in authority document:
-                                            {{#if scheme}}
-                                                {{bindings.0.authorityDocumentName.value}} 
-                                            {{else}}
-                                                <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                urlqueryparam-view='authority-list' 
-                                                                urlqueryparam-resource-iri='{{bindings.0.authorityDocument.value}}'
-                                                                class="text-link">
-                                                {{bindings.0.authorityDocumentName.value}}
-                                                </semantic-link>
-                                            {{/if}}
-                                        </div>
-                                    </div>  
-                                </template>
-                            </semantic-query>
-                        {{/if}}
+                        {{/if}}                      
                         
                         {{#if apiResourceDescription}}
                             <div class="focused-input-container">
@@ -403,12 +372,13 @@
                                                                     {{#ifCond bindings.0.node.value "===" physicalThing}}
                                                                         <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
                                                                     {{else}}
-                                                                        <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                                        urlqueryparam-view='resource-editor' 
-                                                                                        urlqueryparam-resource-iri='{{node.value}}'
-                                                                                        >
-                                                                            <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                                        </semantic-link>
+                                                                        <mp-draggable iri="{{node.value}}">
+                                                                            <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                                    urlqueryparam-view='resource-editor' 
+                                                                                                    urlqueryparam-resource-iri='{{node.value}}'>
+                                                                                <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                                            </semantic-link-container>
+                                                                        </mp-draggable>
                                                                     {{/ifCond}}
                                                                 </div>
                                                             </template>
@@ -729,27 +699,13 @@
                 <semantic-form-autocomplete-input   for='entity_attributed_by_attribute_assignment' 
                                                     label="Attributed by"
                                                     placeholder="Select what assigned attribute to the biological object" 
-                                                    nested-form-templates='[ 
-                                                        {
-                                                            "label": "Attribute assignment",
-                                                            "nestedForm": "{{{{raw}}}}
-                                                                            {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                        {{{{/raw}}}}"
-                                                        }
-                                                    ]'>  
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
                 </semantic-form-autocomplete-input>
 
                 <semantic-form-autocomplete-input   for='entity_assigned_by_attribute_assignment' 
                                                     label="Assigned by"
                                                     placeholder="Select what assigned the biological object" 
-                                                    nested-form-templates='[ 
-                                                        {
-                                                            "label": "Attribute assignment",
-                                                            "nestedForm": "{{{{raw}}}}
-                                                                            {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                        {{{{/raw}}}}"
-                                                        }
-                                                    ]'>  
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
                 </semantic-form-autocomplete-input>
 
                 <semantic-form-autocomplete-input   for='entity_measurement' 

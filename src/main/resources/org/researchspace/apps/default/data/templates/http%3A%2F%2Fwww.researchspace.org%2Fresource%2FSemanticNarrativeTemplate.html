@@ -133,7 +133,7 @@
                                                 "template": "{{> itemCard}}",
                                                 "resizable": true,
                                                 "defaults": {
-                                                  "height": "200px",
+                                                  "height": "190px",
                                                   "width": "155px"
                                                 }
                                               },
@@ -175,13 +175,13 @@
                                   <div class="all-annotations" id="annotation-viewer-{{windowId}}">{{#each annotations}}<div class="annotation-display annotation-tooltip" data-anno-id="{{id}}"><div class="button-container">
                                     {{#if id}}
                                       <mp-template-item>
-                                        <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames" 
-                                                        draggable="false"
-                                                        urlqueryparam-view="resource-editor"
-                                                        urlqueryparam-resource-iri="{{id}}"
-                                                          >
+                                        <mp-draggable iri="{{id}}">
+                                          <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                                                    urlqueryparam-view="resource-editor"
+                                                                    urlqueryparam-resource-iri="{{id}}">
                                             <div style="width: 100%;text-decoration: underline;font-weight: 600;cursor: pointer;color: #525156;">{{{annoText}}}</div>
-                                          </semantic-link>
+                                          </semantic-link-container>
+                                        </mp-draggable>
                                       </mp-template-item>
                                     {{/if}}</div></div>{{/each}}</div>
                                 {{{{/raw}}}}
@@ -216,11 +216,13 @@
 
           <template id='setGrid'>
             <div>
-              <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                        urlqueryparam-view="resource-editor"
-                                        urlqueryparam-resource-iri='{{iri.value}}'>
-                <div style="margin-bottom: 10px;">Set: <mp-label iri='{{iri.value}}' class="text-link-action"></mp-label></div>
-              </semantic-link-container>
+              <mp-draggable iri='{{iri.value}}'>
+                <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                          urlqueryparam-view="resource-editor"
+                                          urlqueryparam-resource-iri='{{iri.value}}'>
+                  <div style="margin-bottom: 10px;">Set: <mp-label iri='{{iri.value}}' class="text-link-action"></mp-label></div>
+                </semantic-link-container>
+              </mp-draggable>
 
               <semantic-table number-of-displayed-rows=1000
                               query='SELECT ?iri WHERE {
@@ -247,11 +249,13 @@
 
           <template id='setList'>
             <div>
-              <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                        urlqueryparam-view="resource-editor"
-                                        urlqueryparam-resource-iri='{{iri.value}}'>
-                <div style="margin-bottom: 10px;">Set: <mp-label iri='{{iri.value}}' class="text-link-action"></mp-label></div>
-              </semantic-link-container>
+              <mp-draggable iri='{{iri.value}}'>
+                <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                          urlqueryparam-view="resource-editor"
+                                          urlqueryparam-resource-iri='{{iri.value}}'>
+                  <div style="margin-bottom: 10px;">Set: <mp-label iri='{{iri.value}}' class="text-link-action"></mp-label></div>
+                </semantic-link-container>
+              </mp-draggable>
 
               <semantic-table class-name="narrative-set-list-table"
                               number-of-displayed-rows=1000
@@ -283,22 +287,16 @@
             <semantic-map tuple-template='{{> popover}}'
                           query='SELECT DISTINCT ?wkt ?place ?color WHERE {
                                   {
-                                  <{{iri.value}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                                    ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
-                                    ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
+                                  <{{iri.value}}> crm:P168_place_is_defined_by ?wkt .
                                     BIND(<{{iri.value}}> AS ?place) .
                                     BIND(0 as ?order)
                                   } UNION {
                                     ?place crm:P89_falls_within* <{{iri.value}}> .
-                                    ?place crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                                    ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
-                                    ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
+                                    ?place crm:P168_place_is_defined_by ?wkt .
                                     BIND(1 as ?order)
                                   } UNION {
                                     <{{iri.value}}> crm:P161i_is_spatial_projection_of/crm:P10i_contains/crm:P53i_is_former_or_current_location_of ?place .
-                                    ?place crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                                    ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
-                                    ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
+                                    ?place crm:P168_place_is_defined_by ?wkt .
                                     BIND(true AS ?isBuilding)
                                     BIND(2 as ?order)
                                   }
@@ -320,11 +318,13 @@
                   <div style="min-width:250px; font-size: 13.5px; overflow: hidden;">
                     <div class="place-row">
                       <div>Place:</div>
-                      <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                urlqueryparam-view="resource-editor"
-                                                urlqueryparam-resource='{{place.value}}'>
-                        <div><mp-label iri='{{place.value}}' style="text-decoration: underline; cursor: pointer; color:#396EFE; font-weight: 600;"></mp-label></div>
-                      </semantic-link-container>
+                      <mp-draggable iri='{{place.value}}'>
+                        <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                  urlqueryparam-view="resource-editor"
+                                                  urlqueryparam-resource-iri='{{place.value}}'>
+                          <div><mp-label iri='{{place.value}}' style="text-decoration: underline; cursor: pointer; color:#396EFE; font-weight: 600;"></mp-label></div>
+                        </semantic-link-container>
+                      </mp-draggable>
                     </div>
                   </div>
                 </template>

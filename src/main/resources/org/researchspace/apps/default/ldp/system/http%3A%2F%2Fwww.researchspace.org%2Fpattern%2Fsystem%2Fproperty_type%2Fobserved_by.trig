@@ -1,0 +1,82 @@
+<http://www.researchspace.org/pattern/system/property_type/observed_by/context> {
+  <http://www.researchspace.org/pattern/system/property_type/observed_by> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-492ac4f35523438597a4f5ec569cec69-dwpi6i;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/extensions/crmsci/S4_Single_Observation>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-492ac4f35523438597a4f5ec569cec69-yz1i0i;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-492ac4f35523438597a4f5ec569cec69-ki9ur8;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Observed by";
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/extensions/crmsci/S9_Property_Type>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/property_type>;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-492ac4f35523438597a4f5ec569cec69-kbxzpdp;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-492ac4f35523438597a4f5ec569cec69-2a4p7n;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2025-04-14T13:57:11.644+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-492ac4f35523438597a4f5ec569cec69-2a4p7n a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  	$subject crmsci:O9i_property_type_was_observed_by $value . 
+      
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crmsci:S4_Single_Observation .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+     
+    ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-492ac4f35523438597a4f5ec569cec69-kbxzpdp a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crmsci:S4_Single_Observation .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+     
+    ?appellation crm:P190_has_symbolic_content ?label .
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-492ac4f35523438597a4f5ec569cec69-ki9ur8 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+    $subject crmsci:O9i_property_type_was_observed_by $value . 
+    $value crmsci:O9_observed_property_type $subject .
+} WHERE {
+    $subject crmsci:O9i_property_type_was_observed_by $value . 
+    $value crmsci:O9_observed_property_type $subject .
+      
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crmsci:S4_Single_Observation .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+     
+    ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-492ac4f35523438597a4f5ec569cec69-dwpi6i a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crmsci:S4_Single_Observation .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+     
+    ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-492ac4f35523438597a4f5ec569cec69-yz1i0i a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+    $subject crmsci:O9i_property_type_was_observed_by $value . 
+    $value crmsci:O9_observed_property_type $subject .
+} WHERE {}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/property_type/observed_by> .
+}

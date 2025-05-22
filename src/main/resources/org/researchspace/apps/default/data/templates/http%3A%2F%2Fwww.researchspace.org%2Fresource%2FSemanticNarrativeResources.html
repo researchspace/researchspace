@@ -82,10 +82,7 @@
                                                                                 ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                                                                 ?appellation crm:P190_has_symbolic_content ?label .
                                                                             } UNION {
-                                                                                ?subject crm:P170i_time_is_defined_by ?timePrimitive .
-                                                                                ?timePrimitive a crm:E61_Time_Primitive .
-                                                                                ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
-                                                                                ?timePrimitive crm:P190_has_symbolic_content ?label .
+                                                                                ?subject crm:P170i_time_is_defined_by ?label .
                                                                             } UNION {
                                                                                 ?subject skos:prefLabel ?label .
                                                                             } UNION {
@@ -199,10 +196,7 @@
                                                                                 ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                                                                 ?appellation crm:P190_has_symbolic_content ?resourceName .
                                                                             } UNION {
-                                                                                ?subject crm:P170i_time_is_defined_by ?timePrimitive .
-                                                                                ?timePrimitive a crm:E61_Time_Primitive .
-                                                                                ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
-                                                                                ?timePrimitive crm:P190_has_symbolic_content ?resourceName .
+                                                                                ?subject crm:P170i_time_is_defined_by ?resourceName .
                                                                             } UNION {
                                                                                 ?subject skos:prefLabel ?resourceName .
                                                                             } UNION {
@@ -237,10 +231,7 @@
                                                                             ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                                                             ?appellation crm:P190_has_symbolic_content ?resourceName .
                                                                         } UNION {
-                                                                            ?subject crm:P170i_time_is_defined_by ?timePrimitive .
-                                                                            ?timePrimitive a crm:E61_Time_Primitive .
-                                                                            ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
-                                                                            ?timePrimitive crm:P190_has_symbolic_content ?resourceName .
+                                                                            ?subject crm:P170i_time_is_defined_by ?resourceName .
                                                                         } UNION {
                                                                             ?subject skos:prefLabel ?resourceName .
                                                                         } UNION {
@@ -323,7 +314,8 @@
                                                                     query='SELECT DISTINCT ?subject ?iri ?resourceConfig ?resourceLabel ?resourceFormIRI ?resourceIcon ?description WHERE {
                                                                                 BIND(?subject AS ?iri)
                                                                                 ?iri rdf:type ?resourceOntologyClass.
-                                                                                ?resourceOntologyClass rdf:type owl:Class.
+                                                                                ?resourceOntologyClass a ?resourceOntologyClassType .
+                                                                                FILTER(?resourceOntologyClassType in (rdfs:Class, owl:Class))
                                                                                 OPTIONAL {
                                                                                     ?iri crm:P2_has_type ?resourceType .
                                                                                     OPTIONAL {

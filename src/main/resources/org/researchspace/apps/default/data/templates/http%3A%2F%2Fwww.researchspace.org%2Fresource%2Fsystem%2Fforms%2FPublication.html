@@ -3,6 +3,7 @@
                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/publication/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
                fields='[[fieldDefinitions
                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                        entity_resource_type="http://www.researchspace.org/pattern/system/entity/resource_type"
                         inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
                         entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
                         
@@ -65,7 +66,8 @@
 >
 
   <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
-    <semantic-form-hidden-input for="classtype" default-value='http://iflastandards.info/ns/fr/frbr/frbroo/F22_Self-Contained_Expression'></semantic-form-hidden-input>
+    <semantic-form-hidden-input for="classtype" default-value='http://iflastandards.info/ns/lrm/lrmoo/F3_Manifestation'></semantic-form-hidden-input>
+    <semantic-form-hidden-input for="entity_resource_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/publication'> </semantic-form-hidden-input>
 
     {{#if scheme}}
       <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
@@ -156,8 +158,6 @@
                                                                 }'
                                           
             ></semantic-form-tree-picker-input>
-
-            [[> rsp:FormSubjectListedinAuthority membershipProperty='crm:P71i_is_listed_in']]
 
             <semantic-form-text-input for="symbolic_object_content" multiline=true label="Content/value" placeholder="Enter the complete, identifying representation of its content"></semantic-form-text-input>
             
@@ -730,27 +730,13 @@
         <semantic-form-autocomplete-input   for='entity_attributed_by_attribute_assignment' 
                                             label="Attributed by"
                                             placeholder="Select what assigned attribute to the publication" 
-                                            nested-form-templates='[ 
-                                                {
-                                                    "label": "Attribute assignment",
-                                                    "nestedForm": "{{{{raw}}}}
-                                                                    {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                {{{{/raw}}}}"
-                                                }
-                                            ]'>  
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_assigned_by_attribute_assignment' 
                                             label="Assigned by"
                                             placeholder="Select what assigned the publication" 
-                                            nested-form-templates='[ 
-                                                {
-                                                    "label": "Attribute assignment",
-                                                    "nestedForm": "{{{{raw}}}}
-                                                                    {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                {{{{/raw}}}}"
-                                                }
-                                            ]'>  
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_measurement' 

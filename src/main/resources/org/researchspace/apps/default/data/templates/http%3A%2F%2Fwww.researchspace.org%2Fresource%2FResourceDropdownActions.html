@@ -303,9 +303,7 @@
 
   {{#if (or (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Place") 
             (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Organisation") )}}
-    <semantic-if query='ASK { <{{iri}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                              ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
-                              ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt . }'>
+    <semantic-if query='ASK { <{{iri}}> crm:P168_place_is_defined_by ?wkt . }'>
       <template id='then'>
         <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
                                   urlqueryparam-view='map' 
@@ -317,9 +315,7 @@
         </semantic-link-container>
       </template>
     </semantic-if>
-    <semantic-if query='ASK { <{{iri}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                              ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
-                              ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt . }'>
+    <semantic-if query='ASK { <{{iri}}> crm:P168_place_is_defined_by ?wkt . }'>
       <template id='then'>
         <hr>
       </template>
@@ -450,7 +446,7 @@
         <template id='template'>
           {{#ifCond bindings.0.systemUser.value "===" iri}}
               <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                      urlqueryparam-view="resource-editor"
+                                      urlqueryparam-view="resource-editor"                                      
                                       urlqueryparam-resource-iri='{{iri}}'>
               <bs-menu-item draggable="false">
                 <rs-icon icon-type="rounded" icon-name="edit_note" class="icon-left" symbol="true"></rs-icon>
@@ -459,7 +455,7 @@
             </semantic-link-container>
 
             <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                      urlqueryparam-view="resource-editor"
+                                      urlqueryparam-view="resource-editor"                                      
                                       urlqueryparam-resource-iri='{{iri}}'
                                       urlqueryparam-open-as-drag-and-drop='true'>
               <bs-menu-item draggable="false">
@@ -494,6 +490,7 @@
     {{else}}
       <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
                                 urlqueryparam-view="resource-editor"
+                                urlqueryparam-custom-label="{{resourceName}}"                               
                                 urlqueryparam-resource-iri='{{iri}}'>
         <bs-menu-item draggable="false">
           <rs-icon icon-type="rounded" icon-name="edit_note" class="icon-left" symbol="true"></rs-icon>
@@ -696,9 +693,7 @@
       </rs-share-link>
     {{/case}}
     {{#case "http://www.researchspace.org/resource/system/resource_configurations_container/data/Organisation" break=true}}
-      <semantic-if query='ASK { <{{iri}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                              ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
-                              ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt . }'>
+      <semantic-if query='ASK { <{{iri}}> crm:P168_place_is_defined_by ?wkt . }'>
         <template id='then'>
           <rs-share-link relative-path='/resource/rsp:ThinkingFrames' 
                           urlqueryparam-resource="{{iri}}" 
@@ -714,9 +709,7 @@
       </semantic-if>
     {{/case}}
     {{#case "http://www.researchspace.org/resource/system/resource_configurations_container/data/Place" break=true}}
-      <semantic-if query='ASK { <{{iri}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                              ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
-                              ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt . }'>
+      <semantic-if query='ASK { <{{iri}}> crm:P168_place_is_defined_by ?wkt . }'>
         <template id='then'>
           <rs-share-link relative-path='/resource/rsp:ThinkingFrames' 
                           urlqueryparam-resource="{{iri}}" 
@@ -867,10 +860,7 @@
                                       ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                       ?appellation crm:P190_has_symbolic_content ?label .
                                     } UNION {
-                                      ?resource crm:P170i_time_is_defined_by ?timePrimitive .
-                                      ?timePrimitive a crm:E61_Time_Primitive .
-                                      ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
-                                      ?timePrimitive crm:P190_has_symbolic_content ?label .
+                                      ?resource crm:P170i_time_is_defined_by ?label .
                                     } UNION {
                                       ?resource skos:prefLabel ?label .
                                     } UNION {

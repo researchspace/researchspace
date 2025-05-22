@@ -88,8 +88,6 @@
               {{/if}}
             {{/if}}
 
-            [[> rsp:FormSubjectListedinAuthority membershipProperty='crm:P71i_is_listed_in']]
-          
             {{#if apiResourceDescription}}
               <div class="focused-input-container">
                 <semantic-form-text-input for="entity_description" default-value="{{apiResourceDescription}}" multiline="true" label="Description" placeholder="Enter description/comment"></semantic-form-text-input>
@@ -141,44 +139,25 @@
             <semantic-form-autocomplete-input for="place_overlaps_with_place" 
                                               label="Overlap with place" 
                                               placeholder="Enter place name"
-                                              nested-form-templates='[ 
-                                                {
-                                                    "label": "Place",
-                                                    "nestedForm": "{{{{raw}}}}
-                                                                    {{> \"http://www.researchspace.org/resource/system/forms/Place\" nested=true editable=true mode=\"new\"
-                                                                    apiResourceURI=false apiResourceName=false apiResourceLabel=false apiResourceDescription=false apiResourceosmGeoCoordinates=false}}
-                                                                {{{{/raw}}}}",
-                                                    "modalId":"{{viewId}}--nested-modal"
-                                                }
-                                              ]'>
+                                              nested-form-templates='[[> Platform:NestedFormTemplates_places]]'>
             </semantic-form-autocomplete-input>
 
             <semantic-form-autocomplete-input for="place_borders_with_place" 
                                               label="Borders with place" 
                                               placeholder="Enter place name"
-                                              nested-form-templates='[ 
-                                                {
-                                                    "label": "Place",
-                                                    "nestedForm": "{{{{raw}}}}
-                                                                    {{> \"http://www.researchspace.org/resource/system/forms/Place\" nested=true editable=true mode=\"new\"
-                                                                    apiResourceURI=false apiResourceName=false apiResourceLabel=false apiResourceDescription=false apiResourceosmGeoCoordinates=false}}
-                                                                {{{{/raw}}}}"
-                                                }
-                                              ]'>
+                                              nested-form-templates='[[> Platform:NestedFormTemplates_places]]'>
             </semantic-form-autocomplete-input>
 
             <semantic-form-autocomplete-input for="place_approximates_place" 
                                               label="Approximates place" 
                                               placeholder="Enter place name"
-                                              nested-form-templates='[ 
-                                                {
-                                                    "label": "Place",
-                                                    "nestedForm": "{{{{raw}}}}
-                                                                    {{> \"http://www.researchspace.org/resource/system/forms/Place\" nested=true editable=true mode=\"new\"
-                                                                    apiResourceURI=false apiResourceName=false apiResourceLabel=false apiResourceDescription=false apiResourceosmGeoCoordinates=false}}
-                                                                {{{{/raw}}}}"
-                                                }
-                                              ]'>
+                                              nested-form-templates='[[> Platform:NestedFormTemplates_places]]'>
+            </semantic-form-autocomplete-input>
+
+            <semantic-form-autocomplete-input for="place_approximated_by_place" 
+                                              label="Is approximates by place" 
+                                              placeholder="Enter place name"
+                                              nested-form-templates='[[> Platform:NestedFormTemplates_places]]'>
             </semantic-form-autocomplete-input>
 
             <semantic-form-autocomplete-input   for="entity_preferred_id" 
@@ -198,16 +177,8 @@
                                                 placeholder="Select other identifier" 
                                                 nested-form-templates='[[> Platform:NestedFormTemplates_appellations]]'>
             </semantic-form-autocomplete-input>
-
-            {{#if apiResourceosmGeoCoordinates}}
-              <div class="focused-input-container">
-                <semantic-form-text-input for="place_geo_coordinates" default-value='{{apiResourceosmGeoCoordinates}}' label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true></semantic-form-text-input>
-              </div>
-            {{else}}
-              <semantic-form-text-input for="place_geo_coordinates" label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input>
-            {{/if}}
           </div>
-          [[> rsp:FormAssetSidebar map=true]]
+          [[> rsp:FormAssetSidebar map=true map-default-tab=true]]
         </div>
       </rs-tab>
 
@@ -279,54 +250,17 @@
         {{else}}
           <div class="hierarchyView-form-container">
             <div class="page__section-container formHierarchyInputs-container">
+              <semantic-form-autocomplete-input   for="place_falls_within_place" 
+                                                  label="Falls within place" 
+                                                  placeholder="Select location that fully contains the place"
+                                                  nested-form-templates='[[> Platform:NestedFormTemplates_places]]'>
+              </semantic-form-autocomplete-input>
 
-              <semantic-form-tree-picker-input  for="place_falls_within_place" 
-                                                label="Falls within place" 
-                                                placeholder="Select location that fully contains the place" 
-                                                close-dropdown-on-selection='true'
-                                                tree-patterns='{"scheme": "crm:E53_Place",
-                                                                "schemePattern": "?item a crm:E53_Place",
-                                                                "relationPattern": "?item crm:P89_falls_within ?parent",
-                                                                "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
-                                                                                ?appellation a crm:E41_Appellation . 
-                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                                ?appellation crm:P190_has_symbolic_content ?label ." }'
-
-                                                nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" apiResourceURI=false 
-                                                                                      apiResourceName=false apiResourceLabel=false apiResourceDescription=false apiResourceosmGeoCoordinates=false}}{{{{/raw}}}}'
-
-                                                query-item-label='SELECT ?label WHERE {
-                                                                    ?item crm:P1_is_identified_by ?appellation . 
-                                                                    ?appellation a crm:E41_Appellation . 
-                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                    ?appellation crm:P190_has_symbolic_content ?label .
-                                                                  }'
-                                                >
-              </semantic-form-tree-picker-input>
-
-              <semantic-form-tree-picker-input  for="place_contains_place" 
-                                                label="Contains place" 
-                                                placeholder="Select location that falls wholly within the place"
-                                                close-dropdown-on-selection='true'
-                                                tree-patterns='{"scheme": "crm:E53_Place",
-                                                                "schemePattern": "?item a crm:E53_Place",
-                                                                "relationPattern": "?item crm:P89_falls_within ?parent",
-                                                                "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
-                                                                                ?appellation a crm:E41_Appellation . 
-                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                                ?appellation crm:P190_has_symbolic_content ?label ." }'
-
-                                                nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" apiResourceURI=false 
-                                                                          apiResourceName=false apiResourceLabel=false apiResourceDescription=false apiResourceosmGeoCoordinates=false}}{{{{/raw}}}}'
-            
-                                                query-item-label='SELECT ?label WHERE {
-                                                                    ?item crm:P1_is_identified_by ?appellation . 
-                                                                    ?appellation a crm:E41_Appellation . 
-                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                    ?appellation crm:P190_has_symbolic_content ?label .
-                                                                  }'
-                                                >
-              </semantic-form-tree-picker-input>
+              <semantic-form-autocomplete-input   for="place_contains_place" 
+                                                  label="Contains place" 
+                                                  placeholder="Select location that falls wholly within the place"
+                                                  nested-form-templates='[[> Platform:NestedFormTemplates_places]]'>
+              </semantic-form-autocomplete-input>
             </div>
             <mp-event-target-template-render id='{{viewId}}-place-componentsView' template='{{> placeComponents}}'>
               <template id='placeComponents'>
@@ -460,27 +394,13 @@
         <semantic-form-autocomplete-input for='entity_attributed_by_attribute_assignment' 
                                           label="Attributed by"
                                           placeholder="Select what assigned attribute to the place" 
-                                          nested-form-templates='[ 
-                                              {
-                                                  "label": "Attribute assignment",
-                                                  "nestedForm": "{{{{raw}}}}
-                                                                  {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                              {{{{/raw}}}}"
-                                              }
-                                          ]'>  
+                                          nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input for='entity_assigned_by_attribute_assignment' 
                                           label="Assigned by"
                                           placeholder="Select what assigned the place" 
-                                          nested-form-templates='[ 
-                                              {
-                                                  "label": "Attribute assignment",
-                                                  "nestedForm": "{{{{raw}}}}
-                                                                  {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                              {{{{/raw}}}}"
-                                              }
-                                          ]'>  
+                                          nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input for='entity_measurement' 

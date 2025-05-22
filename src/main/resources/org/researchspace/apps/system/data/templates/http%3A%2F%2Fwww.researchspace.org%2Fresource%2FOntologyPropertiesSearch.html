@@ -54,7 +54,7 @@
                           open-dropdown-on-focus='true'
                           multiple-selection='true'
                           open-resource-on-click='false'
-                          [[!--   initial-selection='["http://www.cidoc-crm.org/cidoc-crm/CRMsci/","http://www.ics.forth.gr/isl/CRMdig/","http://www.ics.forth.gr/isl/CRMinf/","http://www.cidoc-crm.org/cidoc-crm/","http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/","http://www.ics.forth.gr/isl/CRMgeo/","http://www.cidoc-crm.org/cidoc-crm/CRMba/","http://iflastandards.info/ns/fr/frbr/frbroo/"]' --]]
+                          [[!--   initial-selection='["http://www.cidoc-crm.org/extensions/crmsci/","http://www.cidoc-crm.org/extensions/crmdig/","http://www.cidoc-crm.org/extensions/crminf/","http://www.cidoc-crm.org/cidoc-crm/","http://www.cidoc-crm.org/extensions/crmarchaeo/","http://www.cidoc-crm.org/extensions/crmgeo/","http://www.cidoc-crm.org/extensions/crmba/","http://iflastandards.info/ns/lrm/lrmoo/", "http://www.cidoc-crm.org/extensions/crmtex/"]' --]]
                           initial-selection='["http://www.cidoc-crm.org/cidoc-crm/"]'
                           placeholder="Select ontology"
 
@@ -128,7 +128,7 @@
                                                                       "type": "simple",
                                                                       "schemePattern":  "?ontologyclass a ?class . VALUES ?class {owl:Class rdfs:Class} ",
                                                                       "relationPattern": "?item rdfs:subClassOf ?parent",
-                                                                      "labelPattern": "?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label .
+                                                                      "labelPattern": "?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label) ?label .
                                                                                       FILTER (lang(?label) = \"en\")"
                                                                     }
                                                   }]'
@@ -158,7 +158,7 @@
                                                                                   BIND(URI(?parentOntologyString) as ?parentOntology)
                                                                                   FILTER(?parentOntology IN ({{selectedOntology}}))
                                                                                 })
-                                                                                ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.
+                                                                                ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label) ?label.
                                                                                 FILTER((LANG(?label)) = \"en\")
                                                                                 OPTIONAL {
                                                                                   ?child rdfs:subClassOf ?item.
@@ -179,7 +179,7 @@
                                                                                   BIND(URI(?ontologyString) as ?ontology)
                                                                                   FILTER(?ontology IN (<http://www.cidoc-crm.org/cidoc-crm/>, <http://www.cidoc-crm.org/cidoc-crm/CRMsci>, {{selectedOntology}}))
                                                                                                                           
-                                                                                  ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.
+                                                                                  ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label) ?label.
                                                                                   FILTER((LANG(?label)) = \"en\")
                                                                                   OPTIONAL { ?child rdfs:subClassOf ?item. 
                                                                                       
@@ -196,7 +196,7 @@
                                                                                   BIND(URI(?ontologyString) as ?ontology)
                                                                                   FILTER(?ontology IN ( {{selectedOntology}}))
 
-                                                                                  ?parent ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?parentLabel.
+                                                                                  ?parent ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label) ?parentLabel.
                                                                                   FILTER((LANG(?parentLabel)) = \"en\")
                                                                                 }",
 
@@ -207,7 +207,7 @@
                                                                                 BIND(IF(CONTAINS(STR(?item), \"skos\"), CONCAT(?prefix, \"/core\"), CONCAT(STR(?prefix), \"/\")) AS ?ontologyString)
                                                                                 BIND(URI(?ontologyString) as ?ontology)
                                                                                 FILTER(?ontology IN ({{selectedOntology}}))                                        
-                                                                                ?item ((crm:P1_is_identified_by/rdfs:label)|rso:displayLabel|rdfs:label|skos:prefLabel) ?label.
+                                                                                ?item ((crm:P1_is_identified_by/rdfs:label)|rso:displayLabel|rdfs:label) ?label.
                                                                                 FILTER((LANG(?label)) = \"en\")
                                                                                 ?label bds:search ?__token__;
                                                                                   bds:minRelevance \"0.3\";
@@ -228,7 +228,7 @@
                                                                               }'
 
                                                               query-item-label='SELECT ?label WHERE {
-                                                                                  ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.
+                                                                                  ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label) ?label.
                                                                                   FILTER (lang(?label) = "en")
                                                                                 }'>
                             </semantic-form-tree-picker-input>
@@ -260,14 +260,15 @@
     
                                                         BIND (
                                                           COALESCE(
-                                                            IF(CONTAINS(STR(?propertyOntology), 'http://iflastandards.info/ns/fr/frbr/frbroo/'), REPLACE(STR(?property), 'http://iflastandards.info/ns/fr/frbr/frbroo/', 'frbroo:'), 1/0),
-                                                            IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/'), REPLACE(STR(?property), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/', 'crmarchaeo:'), 1/0),
-                                                            IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/'), REPLACE(STR(?property), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/', 'crmba:'), 1/0),
-                                                            IF(CONTAINS(STR(?propertyOntology), 'http://www.ics.forth.gr/isl/CRMdig/'), REPLACE(STR(?property), 'http://www.ics.forth.gr/isl/CRMdig/', 'crmdig:'), 1/0),
-                                                            IF(CONTAINS(STR(?propertyOntology), 'http://www.ics.forth.gr/isl/CRMgeo/'), REPLACE(STR(?property), 'http://www.ics.forth.gr/isl/CRMgeo/', 'crmgeo:'), 1/0),
-                                                            IF(CONTAINS(STR(?propertyOntology), 'http://www.ics.forth.gr/isl/CRMinf/'), REPLACE(STR(?property), 'http://www.ics.forth.gr/isl/CRMinf/', 'crminf:'), 1/0),
-                                                            IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/influence/'), REPLACE(STR(?property), 'http://www.cidoc-crm.org/cidoc-crm/influence/', 'crminfluence:'), 1/0),                                                
-                                                            IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/CRMsci/'), REPLACE(STR(?property), 'http://www.cidoc-crm.org/cidoc-crm/CRMsci/', 'crmsci:'), 1/0),
+                                                            IF(CONTAINS(STR(?propertyOntology), 'http://iflastandards.info/ns/lrm/lrmoo/'), REPLACE(STR(?property), 'http://iflastandards.info/ns/lrm/lrmoo/', 'lrmoo:'), 1/0),
+                                                            IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/extensions/crmarchaeo/'), REPLACE(STR(?property), 'http://www.cidoc-crm.org/extensions/crmarchaeo/', 'crmarchaeo:'), 1/0),
+                                                            IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/extensions/crmba/'), REPLACE(STR(?property), 'http://www.cidoc-crm.org/extensions/crmba/', 'crmba:'), 1/0),
+                                                            IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/extensions/crmdig/'), REPLACE(STR(?property), 'http://www.cidoc-crm.org/extensions/crmdig/', 'crmdig:'), 1/0),
+                                                            IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/extensions/crmgeo/'), REPLACE(STR(?property), 'http://www.cidoc-crm.org/extensions/crmgeo/', 'crmgeo:'), 1/0),
+                                                            IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/extensions/crmtex/'), REPLACE(STR(?property), 'http://www.cidoc-crm.org/extensions/crmtex/', 'crmtex:'), 1/0),
+                                                            IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/extensions/crminf/'), REPLACE(STR(?property), 'http://www.cidoc-crm.org/extensions/crminf/', 'crminf:'), 1/0),
+                                                            IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/extensions/influence/'), REPLACE(STR(?property), 'http://www.cidoc-crm.org/extensions/influence/', 'crminfluence:'), 1/0),                                                
+                                                            IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/extensions/crmsci/'), REPLACE(STR(?property), 'http://www.cidoc-crm.org/extensions/crmsci/', 'crmsci:'), 1/0),
                                                             IF(CONTAINS(STR(?propertyOntology), 'http://www.researchspace.org/ontology/'), REPLACE(STR(?property), 'http://www.researchspace.org/ontology/', 'rso:'), 1/0),
                                                             IF(CONTAINS(STR(?propertyOntology), 'http://www.w3.org/2004/02/skos/core#'), REPLACE(STR(?property), 'http://www.w3.org/2004/02/skos/core#', 'skos:'), 1/0),
                                                             IF((CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/')), REPLACE(STR(?property), 'http://www.cidoc-crm.org/cidoc-crm/', 'crm:'), 1/0),
@@ -280,14 +281,15 @@
                                                             
                                                             IF(CONTAINS(STR(?range), 'http://www.opengis.net/ont/geosparql#'), REPLACE(STR(?range), 'http://www.opengis.net/ont/geosparql#', ''), 1/0),
                                                             IF(CONTAINS(STR(?range), 'http://www.w3.org/2001/XMLSchema#'), REPLACE(STR(?range), 'http://www.w3.org/2001/XMLSchema#', ''), 1/0),
-                                                            IF(CONTAINS(STR(?range), 'http://iflastandards.info/ns/fr/frbr/frbroo/'), REPLACE(STR(?range), 'http://iflastandards.info/ns/fr/frbr/frbroo/', 'frbroo:'), 1/0),
-                                                            IF(CONTAINS(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/'), REPLACE(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/', 'crmarchaeo:'), 1/0),
-                                                            IF(CONTAINS(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/'), REPLACE(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/', 'crmba:'), 1/0),
-                                                            IF(CONTAINS(STR(?range), 'http://www.ics.forth.gr/isl/CRMdig/'), REPLACE(STR(?range), 'http://www.ics.forth.gr/isl/CRMdig/', 'crmdig:'), 1/0),
-                                                            IF(CONTAINS(STR(?range), 'http://www.ics.forth.gr/isl/CRMgeo/'), REPLACE(STR(?range), 'http://www.ics.forth.gr/isl/CRMgeo/', 'crmgeo:'), 1/0),
-                                                            IF(CONTAINS(STR(?range), 'http://www.ics.forth.gr/isl/CRMinf/'), REPLACE(STR(?range), 'http://www.ics.forth.gr/isl/CRMinf/', 'crminf:'), 1/0),
-                                                            IF(CONTAINS(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/influence/'), REPLACE(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/influence/', 'crminfluence:'), 1/0),                                                
-                                                            IF(CONTAINS(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/CRMsci/'), REPLACE(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/CRMsci/', 'crmsci:'), 1/0),
+                                                            IF(CONTAINS(STR(?range), 'http://iflastandards.info/ns/lrm/lrmoo/'), REPLACE(STR(?range), 'http://iflastandards.info/ns/lrm/lrmoo/', 'lrmoo:'), 1/0),
+                                                            IF(CONTAINS(STR(?range), 'http://www.cidoc-crm.org/extensions/crmarchaeo/'), REPLACE(STR(?range), 'http://www.cidoc-crm.org/extensions/crmarchaeo/', 'crmarchaeo:'), 1/0),
+                                                            IF(CONTAINS(STR(?range), 'http://www.cidoc-crm.org/extensions/crmba/'), REPLACE(STR(?range), 'http://www.cidoc-crm.org/extensions/crmba/', 'crmba:'), 1/0),
+                                                            IF(CONTAINS(STR(?range), 'http://www.cidoc-crm.org/extensions/crmdig/'), REPLACE(STR(?range), 'http://www.cidoc-crm.org/extensions/crmdig/', 'crmdig:'), 1/0),
+                                                            IF(CONTAINS(STR(?range), 'http://www.cidoc-crm.org/extensions/crmgeo/'), REPLACE(STR(?range), 'http://www.cidoc-crm.org/extensions/crmgeo/', 'crmgeo:'), 1/0),
+                                                            IF(CONTAINS(STR(?range), 'http://www.cidoc-crm.org/extensions/crmtex/'), REPLACE(STR(?range), 'http://www.cidoc-crm.org/extensions/crmtex/', 'crmtex:'), 1/0),
+                                                            IF(CONTAINS(STR(?range), 'http://www.cidoc-crm.org/extensions/crminf/'), REPLACE(STR(?range), 'http://www.cidoc-crm.org/extensions/crminf/', 'crminf:'), 1/0),
+                                                            IF(CONTAINS(STR(?range), 'http://www.cidoc-crm.org/extensions/influence/'), REPLACE(STR(?range), 'http://www.cidoc-crm.org/extensions/influence/', 'crminfluence:'), 1/0),                                                
+                                                            IF(CONTAINS(STR(?range), 'http://www.cidoc-crm.org/extensions/crmsci/'), REPLACE(STR(?range), 'http://www.cidoc-crm.org/extensions/crmsci/', 'crmsci:'), 1/0),
                                                             IF(CONTAINS(STR(?range), 'http://www.researchspace.org/ontology/'), REPLACE(STR(?range), 'http://www.researchspace.org/ontology/', 'rso:'), 1/0),
                                                             IF(CONTAINS(STR(?range), 'http://www.w3.org/2004/02/skos/core#'), REPLACE(STR(?range), 'http://www.w3.org/2004/02/skos/core#', 'skos:'), 1/0),
                                                             IF((CONTAINS(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/')), REPLACE(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/', 'crm:'), 1/0),
@@ -297,17 +299,18 @@
 
                                                         BIND (
                                                           COALESCE(
-                                                            IF(CONTAINS(STR(?superclass), 'http://iflastandards.info/ns/fr/frbr/frbroo/'), REPLACE(STR(?superclass), 'http://iflastandards.info/ns/fr/frbr/frbroo/', 'frbroo:'), 1/0),
-                                                            IF(CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/'), REPLACE(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/', 'crmarchaeo:'), 1/0),
-                                                            IF(CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/'), REPLACE(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/', 'crmba:'), 1/0),
-                                                            IF(CONTAINS(STR(?superclass), 'http://www.ics.forth.gr/isl/CRMdig/'), REPLACE(STR(?superclass), 'http://www.ics.forth.gr/isl/CRMdig/', 'crmdig:'), 1/0),
-                                                            IF(CONTAINS(STR(?superclass), 'http://www.ics.forth.gr/isl/CRMgeo/'), REPLACE(STR(?superclass), 'http://www.ics.forth.gr/isl/CRMgeo/', 'crmgeo:'), 1/0),
-                                                            IF(CONTAINS(STR(?superclass), 'http://www.ics.forth.gr/isl/CRMinf/'), REPLACE(STR(?superclass), 'http://www.ics.forth.gr/isl/CRMinf/', 'crminf:'), 1/0),
-                                                            IF(CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/influence/'), REPLACE(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/influence/', 'crminfluence:'), 1/0),                                                
-                                                            IF(CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/CRMsci/'), REPLACE(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/CRMsci/', 'crmsci:'), 1/0),
+                                                            IF(CONTAINS(STR(?superclass), 'http://iflastandards.info/ns/lrm/lrmoo/'), REPLACE(STR(?superclass), 'http://iflastandards.info/ns/lrm/lrmoo/', 'lrmoo:'), 1/0),
+                                                            IF(CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/extensions/crmarchaeo/'), REPLACE(STR(?superclass), 'http://www.cidoc-crm.org/extensions/crmarchaeo/', 'crmarchaeo:'), 1/0),
+                                                            IF(CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/extensions/crmba/'), REPLACE(STR(?superclass), 'http://www.cidoc-crm.org/extensions/crmba/', 'crmba:'), 1/0),
+                                                            IF(CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/extensions/crmdig/'), REPLACE(STR(?superclass), 'http://www.cidoc-crm.org/extensions/crmdig/', 'crmdig:'), 1/0),
+                                                            IF(CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/extensions/crmgeo/'), REPLACE(STR(?superclass), 'http://www.cidoc-crm.org/extensions/crmgeo/', 'crmgeo:'), 1/0),
+                                                            IF(CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/extensions/crmtex/'), REPLACE(STR(?superclass), 'http://www.cidoc-crm.org/extensions/crmtex/', 'crmtex:'), 1/0),
+                                                            IF(CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/extensions/crminf/'), REPLACE(STR(?superclass), 'http://www.cidoc-crm.org/extensions/crminf/', 'crminf:'), 1/0),
+                                                            IF(CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/extensions/influence/'), REPLACE(STR(?superclass), 'http://www.cidoc-crm.org/extensions/influence/', 'crminfluence:'), 1/0),                                                
+                                                            IF(CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/extensions/crmsci/'), REPLACE(STR(?superclass), 'http://www.cidoc-crm.org/extensions/crmsci/', 'crmsci:'), 1/0),
                                                             IF(CONTAINS(STR(?superclass), 'http://www.researchspace.org/ontology/'), REPLACE(STR(?superclass), 'http://www.researchspace.org/ontology/', 'rso:'), 1/0),
                                                             IF(CONTAINS(STR(?superclass), 'http://www.w3.org/2004/02/skos/core#'), REPLACE(STR(?superclass), 'http://www.w3.org/2004/02/skos/core#', 'skos:'), 1/0),
-                                                            IF((CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/') && !CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/CRMsci/')), REPLACE(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/', 'crm:'), 1/0),
+                                                            IF((CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/') && !CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/extensions/crmsci/')), REPLACE(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/', 'crm:'), 1/0),
                                                             ?superclass
                                                           ) AS ?propertyFromClass
                                                         )

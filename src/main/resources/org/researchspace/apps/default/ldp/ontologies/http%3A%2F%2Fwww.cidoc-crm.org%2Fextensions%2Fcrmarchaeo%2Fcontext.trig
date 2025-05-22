@@ -1,0 +1,1241 @@
+@prefix rs: <http://www.researchspace.org/ontology/> .
+@prefix User: <http://www.researchspace.org/resource/user/> .
+@prefix Help: <http://help.researchspace.org/resource/> .
+@prefix Platform: <http://www.researchspace.org/resource/system/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix crmdig: <http://www.cidoc-crm.org/extensions/crmdig/> .
+@prefix rshelp: <http://researchspace.org/help/> .
+@prefix crmsci: <http://www.cidoc-crm.org/extensions/crmsci/> .
+@prefix assets: <http://www.researchspace.org/resource/assets/> .
+@prefix crmgeo: <http://www.cidoc-crm.org/extensions/crmgeo/> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix crminfluence: <http://www.cidoc-crm.org/extensions/influence/> .
+@prefix crm: <http://www.cidoc-crm.org/cidoc-crm/> .
+@prefix crminf: <http://www.cidoc-crm.org/extensions/crminf/> .
+@prefix Admin: <http://www.researchspace.org/resource/admin/> .
+@prefix bds: <http://www.bigdata.com/rdf/search#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix crmba: <http://www.cidoc-crm.org/extensions/crmba/> .
+@prefix fedsail: <http://www.openrdf.org/config/sail/federation#> .
+@prefix ontodia: <http://ontodia.org/schema/v1#> .
+@prefix crmarchaeo: <http://www.cidoc-crm.org/extensions/crmarchaeo/> .
+@prefix forms: <http://www.researchspace.org/resource/system/forms/> .
+@prefix lrmoo: <http://iflastandards.info/ns/lrm/lrmoo/> .
+@prefix crmtex: <http://www.cidoc-crm.org/extensions/crmtex/> .
+
+crmarchaeo:context {
+
+  <http://www.cidoc-crm.org/extensions/crmarchaeo/> a owl:Ontology;
+  rdfs:label "CRMarchaeo v2.1.1"@en;
+  owl:versionInfo "2.1.1"@en;
+  rdfs:comment "CRMarchaeo is an ontology created to support the archaeological excavation process and all the various entities and activities related to it. The model has been created starting from standards and models already in use by national and international cultural heritage institutions, and has evolved through deep analysis of existing metadata from real archaeological documentation. It has been enriched by continuous collaboration with various communities of archaeologists from different countries and schools. Furthermore, it takes advantage of the concepts provided by CRMsci, from which it inherits most of the geological and stratigraphic principles that govern archaeological stratigraphy, extending these principles."@en .
+
+  crmarchaeo:A1_Excavation_Processing_Unit
+    a owl:Class ;
+    skos:prefLabel "A1 Excavation Processing Unit"@en ;
+    skos:notation "A1" ;
+    rdfs:label "Excavation Processing Unit"@en ;
+    rdfs:subClassOf crm:E12_Production , 
+    crm:E64_End_of_Existence , 
+    crmsci:S1_Matter_Removal , 
+    crmsci:S27_Observation ;
+    rdfs:comment """This class comprises activities of excavating in the sense of archaeology, which are documented as a coherent set of actions of progressively 
+    recording and removing matter from a pre-specified location under specific rules. Typically, an instance of Excavation Processing Unit would be 
+    terminated if significant discontinuities of substance or finds come to light, or if the activity is interrupted due to external factors, 
+    such as end of a working day. In other cases, the termination would be based on predefined physical specifications, such as the boundaries 
+    of a maximal volume of matter to be excavated in one unit of excavation.
+    Depending on the methodology, an instance of Excavation Processing Unit may intend to remove matter only within the boundaries of a particular 
+    stratigraphic unit, or it may follow a pre-declared spatial extent such as a trench. It may only uncover, clean or expose a structure or parts of it.
+    The process of excavation results in the production of a set of recorded (documentation) data that should be sufficient to provide researchers 
+    enough information regarding the consistency and spatial distribution of the excavated Segment of Matter and things and features embedded in it. 
+    Some parts or all of the removed physical material (instances of Amount of Matter) may be dispersed, whereas others may be kept in custody 
+    in the form of finds or samples, while others (such as parts of walls) may be left at the place of their discovery. The data produced by an instance of 
+    Excavation Processing Unit should pertain to the material state of matter at excavation time only and should be clearly distinguished from subsequent 
+    interpretation about the causes for this state of matter.
+    The current class Excavation Processing Unit is somewhat overloaded and may be split into two subclasses, one for the intellectual process and one for 
+    the physical process. This is left for a future refinement of the model.
+    """@en ;
+    skos:example """- The activity taking place on 21.9.2007 between 12:00 and 13:00 that excavated the Stratigraphic Volume Unit “(2)” and created the surface “S1” \n
+    - The activity that excavated the first 20 cm of a spit excavation on 21.7.2007 created the surface “S2”."""@en.
+
+  crmarchaeo:A2_Stratigraphic_Volume_Unit
+    a owl:Class ;
+    skos:prefLabel "A2 Stratigraphic Volume Unit"@en ;
+    skos:notation "A2" ;
+    rdfs:label "Stratigraphic Volume Unit"@en ;
+    rdfs:subClassOf crmarchaeo:A8_Stratigraphic_Unit ;
+    rdfs:comment """This class comprises instances of Stratigraphic Unit which are connected portions of terrain or other 
+    solid structures on, in, or under the surface of earth or seafloor exhibiting some homogeneity of structure or substance 
+    and which are completely bounded by surfaces or discontinuities in substance or structure with respect to other portions of 
+    the terrain or surfaces of objects or finds.
+    Normally at least one of the surfaces, i.e. instances of Stratigraphic Interface (such as the lower one), from the genesis 
+    event of the Stratigraphic Volume Unit will remain during its existence.
+    An instance of Stratigraphic Volume Unit may contain physical objects.
+    """@en ;
+    skos:example """- the stratigraphic deposit unit number “(2)” representing the filling of post hole “[3]” \n
+    - thick layer “A”, consisting of grey soil and small tuff stones [One of the principal successive layers making up a collapsed part of the roof of the West House, which was found in a horizontal position on the first floor during the excavation of Room 3] (Michailidou, 2021) \n
+    - thinner layer “B”, consisting of brownish red soil and marine pebbles [One of the principal successive layers making up a collapsed part of the roof of the West House, which was found in a horizontal position on the first floor during the excavation of Room 3] (Michailidou, 2021) \n"""@en.
+
+  crmarchaeo:A3_Stratigraphic_Interface
+    a owl:Class ;
+    skos:prefLabel "A3 Stratigraphic Interface"@en ;
+    skos:notation "A3" ;
+    rdfs:label "Stratigraphic Interface"@en ;
+    rdfs:subClassOf crmarchaeo:A8_Stratigraphic_Unit ;
+    rdfs:comment """This class comprises instances of Stratigraphic Unit, which are coherent parts of a boundary surface that appear as the 
+    result of a stratigraphic genesis event or process. The interface marks the limit of the geometric extent of the effect 
+    of a genesis or modification event, and indicates in particular where the effect of this event ended. 
+    Each event of creation or destruction of a deposition layer implies the creation of new interfaces. 
+    Thus, there are two main types of interfaces: those that are surfaces of strata (that can be directly related to the 
+    corresponding stratum via the 'confines' property), and those that are only surfaces, formed by the removal or destruction of existing stratifications.
+    """@en ;
+    skos:example """- the stratigraphic interface separating layers “A” and “B” (Michailidou, 2021)"""@en.
+
+  crmarchaeo:A4_Stratigraphic_Genesis
+    a owl:Class ;
+    skos:prefLabel "A4 Stratigraphic Genesis"@en ;
+    skos:notation "A4" ;
+    rdfs:label "Stratigraphic Genesis"@en ;
+    rdfs:subClassOf crmarchaeo:A5_Stratigraphic_Modification, crmsci:S17_Physical_Genesis ;
+    rdfs:comment """This class comprises activities or processes that have produced homogeneous, distinguishable units of stratification 
+    that are in a relatively stable form from the time of their genesis until they are observed. Such processes may be the aggregation 
+    of cycles of erosion/destruction, deposit/accumulation, or transformation/modification occurring on a particular site throughout 
+    a particular period of time. These processes are usually not only due to natural forces (i.e., climate, the impact of flora and fauna, 
+    other natural events), but also to human activities, in particular excavation and construction. An event of stratification genesis 
+    typically produces two main forms of stratification units, both a deposit and an interface.
+    """@en ;
+    skos:example """- the production of the stratigraphic interface by the cut in the pre-existing strata of the posthole \n
+    - the production of the stratigraphic unit volume via the filling of the posthole with detritus or some other matter \n
+    - the creation of the one-meter-thick level of pumice caused by the Minoan eruption of Thera and consisting of five distinct layers, which covers the ruins at the excavation Akrotiri, Ther (Doumas et al., 2015) \n
+    - the creation of the 8-10-metre-thick level of successive layers volcanic ash deposed on top of the one-meter-thick level of pumice, which covers the ruins at the excavation Akrotiri, Thera—see (Doumas et al., 2015) \n
+    - the production of the deposits L14-L18 and L22-L24 by at least seven distinct fill episodes of a neolithic ditch, observed at the northern section of Trenches 6 and 21, at the site Paliambela, Kolindros"""@en.
+
+  crmarchaeo:A5_Stratigraphic_Modification
+    a owl:Class ;
+    skos:prefLabel "A5 Stratigraphic Modification"@en ;
+    skos:notation "A5" ;
+    rdfs:label "Stratigraphic Modification"@en ;
+    rdfs:subClassOf crmsci:S18_Alteration ;
+    rdfs:comment """This class comprises activities or processes resulting in the modification of Stratigraphic Units after their genesis through instances of Stratigraphic Genesis Event.
+    """@en ;
+    skos:example """- the event that eroded the number “(1)” Stratigraphic Volume Unit and diminished it to its actual size \n
+    - the creation of many burrows, of about 7 cm in diameter on average, due to rodents, lizards and insects disturbing otherwise intact layers, that were uncovered during the excavation at Eagle Cave, Texas (Larsen, 2015) \n
+    - the deformation of the saturated soil at the Dutton Paleo-Indian site, Colorado [The deformation was caused by involutions (flame-structures) due to aquaturbations] (Wood and Johnson, 1978)"""@en.
+
+  crmarchaeo:A6_Group_Declaration_Event
+    a owl:Class ;
+    skos:prefLabel "A6 Group Declaration Event"@en ;
+    skos:notation "A6" ;
+    rdfs:label "Group Declaration Event"@en ;
+    rdfs:subClassOf crm:E13_Attribute_Assignment ;
+    rdfs:comment """This class comprises interpretive activities that lead to the recognition two or more instances of Stratigraphic Units or other Physical Thing
+    that simultaneously exist at the time of this activity or at the time of an archaeological observation this activity 
+    refers to as source and that are attributed to be the remains of one complete instance of Physical Thing that had existed at a time of 
+    reference in the past. Instances of this class could be, for example: two stratigraphic units (with no evident contact) 
+    cut through by a ditch having been segments of the same original stratigraphic unit, two or more surviving parts of a 
+    structure having been segments of the same wall, a number of postholes being the indication of a past wooden house 
+    or a number of potsherds being segments of the same original artefact.
+    """@en ;
+    skos:example """- grouping individual deposits forming the fill of the neolithic ditch (L14-18 and L22-24) in Trenches 6 and 21 at the archaeological site of Paliambela, Kolindros into larger stratigraphic entities or fill episodes"""@en.
+
+  crmarchaeo:A7_Embedding
+    a owl:Class ;
+    skos:prefLabel "A7 Embedding"@en ;
+    skos:notation "A7" ;
+    rdfs:label "Embedding"@en ;
+    rdfs:subClassOf crmarchaeo:A8_Stratigraphic_Unit ;
+    rdfs:comment """This class comprises instances of Stratigraphic Unit partially or completely embedding one or more instances of Physical Thing 
+    and at a particular position with relative stability in one or more instances of Stratigraphic Volume Units. 
+    Normally, an embedding is expected to have been stable from the time of generation of the first instance of 
+    Stratigraphic Volume Unit that surrounds it. However, it may also be due to later intrusion. As an empirical fact, 
+    the expert may only be able to decide that a particular embedding is not recent, i.e. has been persisting for longer 
+    than the activity that encountered it. This class can be used to document the fact of embedding generally with respect 
+    to the surrounding matter or, more specifically, with respect to a more precise position within this matter.
+    """@en ;
+    skos:example """- the pottery vessels embedded within the deposit on the ground floor of the West House at Akrotiri, Thera [The pottery vessels were discovered during the excavation process of Room 6 of the West House at Akrotiri] (Michailidou, 2001)  \n
+    - San Galgano’s sword embedded at the Hermitage of Monte Siepi [He retired around 1170 to live as a hermit. As a symbol of peace, he embedded his sword in a stone, which can still be seen today] (Wikipedia, 2023) <https://en.wikipedia.org/wiki/Galgano_Guidotti>"""@en.
+
+  crmarchaeo:A8_Stratigraphic_Unit
+    a owl:Class ;
+    skos:prefLabel "A8 Stratigraphic Unit"@en ;
+    skos:notation "A8" ;
+    rdfs:label "Stratigraphic Unit"@en ;
+    rdfs:subClassOf crmsci:S20_Rigid_Physical_Feature ;
+    rdfs:comment """This class comprises instances of Rigid Physical Features which appear as the result of a stratigraphic genesis event or process. 
+    The form of an instance of Stratigraphic Unit should be of a kind that can be attributed to a single genesis event or process 
+    and has the potential to be observed. One genesis event may have created more than one SU. An instance of Stratigraphic Unit is 
+    regarded to exist as long as a part of its matter is still in place with respect to a surrounding reference space, such that 
+    its spatial features can be associated with effects of the genesis process of interest.
+    This also implies that a certain degree of coherent (“conformal”) deformation is tolerable within its time-span of existence. 
+    Therefore, the place an instance of Stratigraphic Unit occupies can be uniquely identified with respect to the surrounding reference space of archaeological interest
+    """@en ;
+    skos:example """- the one-meter-thick level of pumice caused by the Minoan eruption of Thera, which consists of five distinct layers and covers the ruins at the excavation Akrotiri, Thera (Doumas et al., 2015)"""@en.
+
+  crmarchaeo:A9_Archaeological_Excavation
+    a owl:Class ;
+    skos:prefLabel "A9 Archaeological Excavation"@en ;
+    skos:notation "A9" ;
+    rdfs:label "Archaeological Excavation"@en ;
+    rdfs:subClassOf crmsci:S27_Observation ;
+    rdfs:comment """This class describes the general concept of archaeological excavation intended as a coordinated set of activities performed on an area 
+    considered as part of a broader topographical, rural, urban, or monumental context. An archaeological excavation is usually under the 
+    responsibility of a coordinator, officially designated, which is legally and scientifically responsible for all the activities carried 
+    out within each instance of Excavation Processing Unit and is also responsible for the documentation of the whole process.
+    """@en ;
+    skos:example """- excavating the West House found at the archaeological site of Akrotiri, Thera, between 1967 and 1973, led by the archaeologist Sp. Marinatos (Michailidou, 2001)"""@en.
+
+  crmarchaeo:A10_Excavation_Interface
+    a owl:Class ;
+    skos:prefLabel "A10 Excavation Interface"@en ;
+    skos:notation "A10" ;
+    rdfs:label "Excavation Interface"@en ;
+    rdfs:subClassOf crm:E25_Human-Made_Feature, crmsci:S20_Rigid_Physical_Feature ;
+    rdfs:comment """This class comprises instances of Rigid Physical Feature that constitutes a surface produced through one or 
+    several instances of Excavation Processing Unit. Instances are often documented through drawing and/or measured 
+    by technical means such as photography, tachymetry or laser scanning. Using a planar excavation methodology 
+    this is typically the surface of a planum or the surface of a profile. Using a stratigraphic excavation methodology, 
+    the instance of Excavation Interface would have the intention to approximate an instance of Stratigraphic Interface. 
+    The drawing and measurement of profiles is also common practice when a stratigraphic excavation methodology is used.
+    """@en ;
+    skos:example """- the Excavation Interface Planum 6 of square I22 in Area F-I, documented in the field drawing “Planum 6 F-I i22”, created in Fall 1982 (Bietak, 1996) \n
+    - the Excavation Interface Eastern profile of square I22 in Area F-I, documented in field drawing “Ostprofil F-I i22”, confining the excavation square I22 to the East (Hiebel, Aspöck and Kucera, 2017)"""@en.
+
+  crmarchaeo:AP1_produced
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP1 produced"@en ;
+    skos:notation "AP1" ;
+    rdfs:label "produced"@en ;
+    rdfs:domain crmarchaeo:A1_Excavation_Processing_Unit ;
+    rdfs:range crmsci:S11_Amount_of_Matter ;
+    owl:inverseOf crmarchaeo:AP1i_was_produced_by ;
+    rdfs:subPropertyOf crmsci:O2_removed ;
+    rdfs:comment """This property identifies the Amount of Matter, e.g. a basket, that is preserved (part or total of) from an instance of Excavation Processing Unit for further examination or evidence keeping.
+
+    Examples:
+    - The excavation of the posthole (A1) produced an amount of black turf with wood inclusions (S11).
+    """@en .
+
+  crmarchaeo:AP1i_was_produced_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP1i was produced by"@en ;
+    skos:notation "AP1i" ;
+    rdfs:label "was produced by"@en ;
+    rdfs:domain crmsci:S11_Amount_of_Matter ;
+    rdfs:range crmarchaeo:A1_Excavation_Processing_Unit ;
+    owl:inverseOf crmarchaeo:AP1_produced ;
+    rdfs:subPropertyOf crmsci:O2i_was_removed_by ;
+    rdfs:comment """This property identifies the Amount of Matter, e.g. a basket, that is preserved (part or total of) from an instance of Excavation 
+    Processing Unit for further examination or evidence keeping.
+
+    Examples:
+    - The excavation of the posthole (A1) produced an amount of black turf with wood inclusions (S11).
+    """@en .
+
+  crmarchaeo:AP2_discarded
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP2 discarded"@en ;
+    skos:notation "AP2" ;
+    rdfs:label "discarded"@en ;
+    rdfs:domain crmarchaeo:A1_Excavation_Processing_Unit ;
+    rdfs:range crmsci:S11_Amount_of_Matter ;
+    owl:inverseOf crmarchaeo:AP2i_was_discarded_by ;
+    rdfs:subPropertyOf crmsci:O2_removed ;
+    rdfs:comment """This property identifies an instance of Amount of Matter discarded (e.g. onto a heap) by an instance of Excavation Processing Unit.
+
+    Examples:
+    - The stratum of ash, pumice and other volcanic material removed (S11) was discarded by the excavation of Villa of the Mysteries in Pompeii, Italy (A1). (Maiuri, 1931)
+    """@en .
+
+  crmarchaeo:AP2i_was_discarded_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP2i was discarded by"@en ;
+    skos:notation "AP2i" ;
+    rdfs:label "was discarded by"@en ;
+    rdfs:domain crmsci:S11_Amount_of_Matter ;
+    rdfs:range crmarchaeo:A1_Excavation_Processing_Unit ;
+    owl:inverseOf crmarchaeo:AP2_discarded ;
+    rdfs:subPropertyOf crmsci:O2i_was_removed_by ;
+    rdfs:comment """This property identifies an instance of Amount of Matter discarded (e.g. onto a heap) by an instance of Excavation Processing Unit.
+
+    Examples:
+    - The stratum of ash, pumice and other volcanic material removed (S11) was discarded by the excavation of Villa of the Mysteries in Pompeii, Italy (A1). (Maiuri, 1931)
+    """@en .
+
+  crmarchaeo:AP3_investigated
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP3 investigated"@en ;
+    skos:notation "AP3" ;
+    rdfs:label "investigated"@en ;
+    rdfs:domain crmarchaeo:A9_Archaeological_Excavation ;
+    rdfs:range crm:E27_Site ;
+    owl:inverseOf crmarchaeo:AP3i_was_investigated_by ;
+    rdfs:subPropertyOf crmsci:O8_observed ;
+    rdfs:comment """This property identifies the 3D excavated volume instance of Site, i.e., a three- dimensional volume, that was actually investigated during an A9 Archaeological Excavation.
+
+    Examples:
+    - The 1938 archaeological excavation, carried out by Pietro Romanelli (A9), investigated the archaeological site of the ancient Etruscan city of Tarquinia (E27). (Romanelli, 1940)
+    """@en .
+
+  crmarchaeo:AP3i_was_investigated_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP3i was investigated by"@en ;
+    skos:notation "AP3i" ;
+    rdfs:label "was investigated by"@en ;
+    rdfs:domain crm:E27_Site ;
+    rdfs:range crmarchaeo:A9_Archaeological_Excavation ;
+    owl:inverseOf crmarchaeo:AP3_investigated ;
+    rdfs:subPropertyOf crmsci:O8i_was_observed_by ;
+    rdfs:comment """This property identifies the 3D excavated volume instance of Site, i.e., a three- dimensional volume, that was actually investigated during an A9 Archaeological Excavation.
+
+    Examples:
+    - The 1938 archaeological excavation, carried out by Pietro Romanelli (A9), investigated the archaeological site of the ancient Etruscan city of Tarquinia (E27). (Romanelli, 1940)
+    """@en .
+
+  crmarchaeo:AP4_produced_surface
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP4 produced surface"@en ;
+    skos:notation "AP4" ;
+    rdfs:label "produced surface"@en ;
+    rdfs:domain crmarchaeo:A1_Excavation_Processing_Unit ;
+    rdfs:range crmarchaeo:A10_Excavation_Interface ;
+    owl:inverseOf crmarchaeo:AP4i_was_surface_produced_by ;
+    rdfs:subPropertyOf crm:P108_has_produced ;
+    rdfs:comment """This property identifies the instance of Excavation Interface that constitutes the new surface produced during an instance of Excavation Processing 
+    Unit in the excavated area. Frequently this surface or parts of it are documented through drawing and/or measured by technical means such as photography, tachymetry or laser scanning.
+
+    Examples:
+    - The excavation of the south trench in 1949 (A1) produced surface the confinement of the south part of the archaeological site of Sybaris, Italy (A10). (Guzzo, 2014)
+    """@en .
+
+  crmarchaeo:AP4i_was_surface_produced_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP4i was surface produced by"@en ;
+    skos:notation "AP4i" ;
+    rdfs:label "was surface produced by"@en ;
+    rdfs:domain crmarchaeo:A10_Excavation_Interface ;
+    rdfs:range crmarchaeo:A1_Excavation_Processing_Unit ;
+    owl:inverseOf crmarchaeo:AP4_produced_surface ;
+    rdfs:subPropertyOf crm:P108i_was_produced_by ;
+    rdfs:comment """This property identifies the instance of Excavation Interface that constitutes the new surface produced during an 
+    instance of Excavation Processing Unit in the excavated area. Frequently this surface or parts of it are documented through drawing and/or 
+    measured by technical means such as photography, tachymetry or laser scanning.
+
+    Examples:
+    - The excavation of the south trench in 1949 (A1) produced surface the confinement of the south part of the archaeological site of Sybaris, Italy (A10). (Guzzo, 2014)
+    """@en .
+
+  crmarchaeo:AP5_removed_part_or_all_of
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP5 removed part or all of"@en ;
+    skos:notation "AP5" ;
+    rdfs:label "removed part or all of"@en ;
+    rdfs:domain crmarchaeo:A1_Excavation_Processing_Unit ;
+    rdfs:range crmarchaeo:A8_Stratigraphic_Unit ;
+    owl:inverseOf crmarchaeo:AP5i_was_partially_or_totally_removed_by ;
+    rdfs:subPropertyOf crmsci:O1_diminished ;
+    rdfs:comment """This property identifies the instance of Stratigraphic Unit that was cut during an Excavation Processing Unit.
+
+    Examples:
+    - The spit excavation producing the surface “S2” (A1) removed part or all of the structures and infill marked “2”, “3”, “4”, “18”, and “19”, (A8).
+    """@en .
+
+  crmarchaeo:AP5i_was_partially_or_totally_removed_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP5i was partially or totally removed by"@en ;
+    skos:notation "AP5i" ;
+    rdfs:label "was partially or totally removed by"@en ;
+    rdfs:domain crmarchaeo:A8_Stratigraphic_Unit ;
+    rdfs:range crmarchaeo:A1_Excavation_Processing_Unit ;
+    owl:inverseOf crmarchaeo:AP5_removed_part_or_all_of ;
+    rdfs:subPropertyOf crmsci:O1i_was_diminished_by ;
+    rdfs:comment """This property identifies the instance of Stratigraphic Unit that was cut during an Excavation Processing Unit.
+
+    Examples:
+    - The spit excavation producing the surface “S2” (A1) removed part or all of the structures and infill marked “2”, “3”, “4”, “18”, and “19”, (A8).
+    """@en .
+
+  crmarchaeo:AP6_intended_to_approximate
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP6 intended to approximate"@en ;
+    skos:notation "AP6" ;
+    rdfs:label "intended to approximate"@en ;
+    rdfs:domain crmarchaeo:A1_Excavation_Processing_Unit ;
+    rdfs:range crmarchaeo:A3_Stratigraphic_Interface ;
+    owl:inverseOf crmarchaeo:AP6i_was_approximated_by ;
+    rdfs:subPropertyOf crmsci:O8_observed ;
+    rdfs:comment """This property identifies the Stratigraphic Interface that was intended to approximate during an Excavation Processing Unit. 
+    This property should be assigned when a stratigraphic excavation methodology is used. It enables the linkage of the surface produced by an Excavation Processing Unit and an Stratigraphic Interface.
+
+    Examples:
+    - The excavation at ancient Akrotiri (A1) intended to approximate the various interfaces witnessing the sequences of the Minoan eruption of Thera (A3). \n
+    - The excavation (A1) of the neolithic ditch at Trenches 6 and 21 at Paliambela, Kolindros, intended to approximate the various interfaces witnessing the sequence of the ditch's fill episodes (A3).
+    """@en .
+
+  crmarchaeo:AP6i_was_approximated_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP6i was approximated by"@en ;
+    skos:notation "AP6i" ;
+    rdfs:label "was approximated by"@en ;
+    rdfs:domain crmarchaeo:A3_Stratigraphic_Interface ;
+    rdfs:range crmarchaeo:A1_Excavation_Processing_Unit ;
+    owl:inverseOf crmarchaeo:AP6_intended_to_approximate ;
+    rdfs:subPropertyOf crmsci:O8i_was_observed_by ;
+    rdfs:comment """This property identifies the Stratigraphic Interface that was intended to approximate during an Excavation Processing Unit.
+    This property should be assigned when a stratigraphic excavation methodology is used. It enables the linkage of the surface produced by an Excavation Processing Unit and an Stratigraphic Interface.
+
+    Examples:
+    - The excavation at ancient Akrotiri (A1) intended to approximate the various interfaces witnessing the sequences of the Minoan eruption of Thera (A3). \n
+    - The excavation (A1) of the neolithic ditch at Trenches 6 and 21 at Paliambela, Kolindros, intended to approximate the various interfaces witnessing the sequence of the ditch's fill episodes (A3).
+    """@en .
+
+  crmarchaeo:AP7_produced
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP7 produced"@en ;
+    skos:notation "AP7" ;
+    rdfs:label "produced"@en ;
+    rdfs:domain crmarchaeo:A4_Stratigraphic_Genesis ;
+    rdfs:range crmarchaeo:A8_Stratigraphic_Unit ;
+    owl:inverseOf crmarchaeo:AP7i_was_produced_by ;
+    rdfs:subPropertyOf crmsci:O17_generated ;
+    rdfs:comment """This property identifies the instance of Stratigraphic Unit that was produced during an instance of Stratigraphic Genesis Event.
+
+    Examples:
+    - The one-meter-thick level of pumice covering the ruins at Akrotiri, Thera, (A8) was produced by the Minoan eruption of Thera. (Doumas et al., 2015)  \n
+    - The 8-10-metre-thick level of successive layers volcanic ash deposed on top of the one-meter-thick level of pumice covering the ruins at Akrotiri, Thera, was produced by the Minoan eruption of Thera. (Doumas et al., 2015)
+    """@en .
+
+  crmarchaeo:AP7i_was_produced_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP7i was produced by"@en ;
+    skos:notation "AP7i" ;
+    rdfs:label "was produced by"@en ;
+    rdfs:domain crmarchaeo:A8_Stratigraphic_Unit ;
+    rdfs:range crmarchaeo:A4_Stratigraphic_Genesis ;
+    owl:inverseOf crmarchaeo:AP7_produced ;
+    rdfs:subPropertyOf crmsci:O17i_was_generated_by ;
+    rdfs:comment """This property identifies the instance of Stratigraphic Unit that was produced during an instance of Stratigraphic Genesis Event.
+
+    Examples:
+    - The one-meter-thick level of pumice covering the ruins at Akrotiri, Thera, (A8) was produced by the Minoan eruption of Thera. (Doumas et al., 2015) \n
+    - The 8-10-metre-thick level of successive layers volcanic ash deposed on top of the one-meter-thick level of pumice covering the ruins at Akrotiri, Thera, was produced by the Minoan eruption of Thera. (Doumas et al., 2015)
+    """@en .
+
+  crmarchaeo:AP8_disturbed
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP8 disturbed"@en ;
+    skos:notation "AP8" ;
+    rdfs:label "disturbed"@en ;
+    rdfs:domain crmarchaeo:A5_Stratigraphic_Modification ;
+    rdfs:range crmarchaeo:A8_Stratigraphic_Unit ;
+    owl:inverseOf crmarchaeo:AP8i_was_disturbed_by ;
+    rdfs:subPropertyOf crmsci:O18_altered ;
+    rdfs:comment """This property identifies an Stratigraphic Unit that was disturbed through an Stratigraphic Modification. One Stratigraphic Modification may disturb several Stratigraphic Units.
+
+    Examples:
+    - Rodents, lizards, and insects burrowing into the ground led to the creation of burrows (A5) discovered during the excavation at Eagle Cave, Texas, which disturbed the otherwise intact stratigraphic layers of the archaeological site (A8). (Larsen, 2015)
+    """@en .
+
+  crmarchaeo:AP8i_was_disturbed_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP8i was disturbed by"@en ;
+    skos:notation "AP8i" ;
+    rdfs:label "was disturbed by"@en ;
+    rdfs:domain crmarchaeo:A8_Stratigraphic_Unit ;
+    rdfs:range crmarchaeo:A5_Stratigraphic_Modification ;
+    owl:inverseOf crmarchaeo:AP8_disturbed ;
+    rdfs:subPropertyOf crmsci:O18i_was_altered_by ;
+    rdfs:comment """This property identifies an Stratigraphic Unit that was disturbed through an Stratigraphic Modification. One Stratigraphic Modification may disturb several Stratigraphic Units.
+
+    Examples:
+    - Rodents, lizards, and insects burrowing into the ground led to the creation of burrows (A5) discovered during the excavation at Eagle Cave, Texas, which disturbed the otherwise intact stratigraphic layers of the archaeological site (A8). (Larsen, 2015)
+    """@en .
+
+  crmarchaeo:AP9_took_matter_from
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP9 took matter from"@en ;
+    skos:notation "AP9" ;
+    rdfs:label "took matter from"@en ;
+    rdfs:domain crmarchaeo:A4_Stratigraphic_Genesis ;
+    rdfs:range crmsci:S10_Material_Substantial ;
+    owl:inverseOf crmarchaeo:AP9i_provided_matter_to ;
+    rdfs:subPropertyOf crmsci:O18_altered ;
+    rdfs:comment """This property associates an instance of Stratigraphic Genesis with an instance of Material Substantial, from which matter was incorporated 
+    in the instance of Stratigraphic Unit produced by this genesis.
+    The instance of Stratigraphic Unit produced by an instance of Stratigraphic Genesis can be documented by using the property 
+    AP7 produced (was produced by) and should be distinct from the instance of Material Substantial from which matter was taken. 
+    The latter instance will be modified or cease to exist due to this genesis process.
+
+    Examples:
+    - The formation of two slab deposit layers on the ground floor of Room 5 of the West House in ancient Akrotiri (A4) took matter from the slabs of the collapsed upper storey’s paved floor. (Michailidou, 2001)
+    """@en .
+
+  crmarchaeo:AP9i_provided_matter_to
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP9i provided matter to"@en ;
+    skos:notation "AP9i" ;
+    rdfs:label "provided matter to"@en ;
+    rdfs:domain crmsci:S10_Material_Substantial ;
+    rdfs:range crmarchaeo:A4_Stratigraphic_Genesis ;
+    owl:inverseOf crmarchaeo:AP9_took_matter_from ;
+    rdfs:subPropertyOf crmsci:O18i_was_altered_by ;
+    rdfs:comment """This property associates an instance of Stratigraphic Genesis with an instance of Material Substantial, 
+    from which matter was incorporated in the instance of Stratigraphic Unit produced by this genesis.
+    The instance of Stratigraphic Unit produced by an instance of Stratigraphic Genesis can be documented by 
+    using the property AP7 produced (was produced by) and should be distinct from the instance of Material Substantial 
+    from which matter was taken. The latter instance will be modified or cease to exist due to this genesis process.
+
+    Examples:
+    - The formation of two slab deposit layers on the ground floor of Room 5 of the West House in ancient Akrotiri (A4) took matter from the slabs of the collapsed upper storey’s paved floor. (Michailidou, 2001)
+    """@en .
+
+  crmarchaeo:AP10_destroyed
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP10 destroyed"@en ;
+    skos:notation "AP10" ;
+    rdfs:label "destroyed"@en ;
+    rdfs:domain crmarchaeo:A1_Excavation_Processing_Unit ;
+    rdfs:range crmsci:S22_Segment_of_Matter ;
+    owl:inverseOf crmarchaeo:AP10i_was_destroyed_by ;
+    rdfs:subPropertyOf crm:P93_took_out_of_existence ;
+    rdfs:comment """This property identifies the Segment of Matter that was destroyed through an Excavation Processing Unit. 
+    The spatial extent of the instance of Segment of Matter is defined by the extent of the spatial 3-dimensional projection of the 
+    Excavation Processing Unit. Depending on the granularity of the documented instance of Excavation Processing Unit, different instances of Segment of Matter may be identified by the A10 property.
+
+    Examples:
+    - The complete excavation of Villa of the Mysteries in Pompeii, Italy (A1) destroyed the stratum of ash, pumice, and other volcanic material (S22). (Maiuri, 1931)
+    """@en .
+
+  crmarchaeo:AP10i_was_destroyed_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP10i was destroyed by"@en ;
+    skos:notation "AP10i" ;
+    rdfs:label "was destroyed by"@en ;
+    rdfs:domain crmsci:S22_Segment_of_Matter ;
+    rdfs:range crmarchaeo:A1_Excavation_Processing_Unit ;
+    owl:inverseOf crmarchaeo:AP10_destroyed ;
+    rdfs:subPropertyOf crm:P93i_was_taken_out_of_existence_by ;
+    rdfs:comment """This property identifies the Segment of Matter that was destroyed through an Excavation Processing Unit. 
+    The spatial extent of the instance of Segment of Matter is defined by the extent of the spatial 3-dimensional projection of the Excavation Processing Unit. 
+    Depending on the granularity of the documented instance of Excavation Processing Unit, different instances of Segment of Matter may be identified by the A10 property.
+
+    Examples:
+    - The complete excavation of Villa of the Mysteries in Pompeii, Italy (A1) destroyed the stratum of ash, pumice, and other volcanic material (S22). (Maiuri, 1931)
+    """@en .
+
+  crmarchaeo:AP11_has_physical_relation_to
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP11 has physical relation to"@en ;
+    skos:notation "AP11" ;
+    rdfs:label "has physical relation to"@en ;
+    rdfs:domain crmarchaeo:A8_Stratigraphic_Unit ;
+    rdfs:range crmarchaeo:A8_Stratigraphic_Unit ;
+    owl:inverseOf crmarchaeo:AP11i_is_physical_relation_from ;
+    rdfs:comment """This property identifies the physical relationship between two Stratigraphic Units. The described relationship may be 
+    between two adjacent instances of Stratigraphic Volume Unit sharing a common interface (instance of Stratigraphic Interface), 
+    between an instance of Stratigraphic Volume Unit and one of its adjacent interfaces, such as human-made cuts or 
+    earthquake induced faults, or even between two intersecting interfaces.
+    The type of physical relationships found between stratigraphic units in archaeological or geological documentation is 
+    documented through the property AP11.1 has type. The type applies to the direction from the domain to the range of the 
+    property AP11 has physical relation to (is physically related from). The type of physical relationship typically 
+    constitutes strong evidence for the sequence of genesis of the related stratigraphic units, which can be documented by 
+    the property AP13 has stratigraphic relation to (is stratigraphically related by). The type may either pertain to a relative 
+    topology, such as the one being “under” the other, or to the fine-structure of the interface between them, such as a layer of 
+    concrete having filled out earlier micro-cavities in various directions in the interface before solidifying.
+
+    Examples:
+    - The layer of burned remains of the log building in Søndre gate, Trondheim, Norway, (A8) has physical relation to under the foundation of the church of St. Clements (A8). (Norwegian Institute for Cultural Heritage Research, 2018) \n
+    - The floors at B of the building 1 in Çatalhöyük, Turkey (A8) has physical relation to wall C (A8) has type runs up to (E55) [as observed initially] (Hodder, 1999) \n
+    - The wall C of the building 1 in Çatalhöyük, Turkey (A8) has physical relation to the floors at B (A8) has type inserted by cut (E55) [as observed finally] (Hodder, 1999) \n
+    - The wall C of the building 1 in Çatalhöyük, Turkey (A8) has physical relation to wall D (A8) has type abuts on (E55). (Hodder, 1999) \n
+    - The wall D of the building 1 in Çatalhöyük, Turkey (A8) has physical relation to the floors at B (A8) has type on top of (E55). (Hodder, 1999)
+    """@en .
+
+  crmarchaeo:AP11i_is_physical_relation_from
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP11i is physical relation from"@en ;
+    skos:notation "AP11i" ;
+    rdfs:label "is physical relation from"@en ;
+    rdfs:domain crmarchaeo:A8_Stratigraphic_Unit ;
+    rdfs:range crmarchaeo:A8_Stratigraphic_Unit ;
+    owl:inverseOf crmarchaeo:AP11_has_physical_relation_to ;
+    rdfs:comment """This property identifies the physical relationship between two Stratigraphic Units. The described relationship may be 
+    between two adjacent instances of Stratigraphic Volume Unit sharing a common interface (instance of Stratigraphic Interface), 
+    between an instance of Stratigraphic Volume Unit and one of its adjacent interfaces, such as human-made cuts or earthquake 
+    induced faults, or even between two intersecting interfaces.
+    The type of physical relationships found between stratigraphic units in archaeological or geological documentation is documented 
+    through the property AP11.1 has type. The type applies to the direction from the domain to the range of the property AP11 has physical 
+    relation to (is physically related from). The type of physical relationship typically constitutes strong evidence for the sequence of 
+    genesis of the related stratigraphic units, which can be documented by the property AP13 has stratigraphic relation to (is stratigraphically related by). 
+    The type may either pertain to a relative topology, such as the one being “under” the other, or to the fine-structure of the interface between them, 
+    such as a layer of concrete having filled out earlier micro-cavities in various directions in the interface before solidifying.
+
+    Examples:
+    - The layer of burned remains of the log building in Søndre gate, Trondheim, Norway, (A8) has physical relation to under the foundation of the church of St. Clements (A8). (Norwegian Institute for Cultural Heritage Research, 2018) \n
+    - The floors at B of the building 1 in Çatalhöyük, Turkey (A8) has physical relation to wall C (A8) has type runs up to (E55) [as observed initially] (Hodder, 1999) \n
+    - The wall C of the building 1 in Çatalhöyük, Turkey (A8) has physical relation to the floors at B (A8) has type inserted by cut (E55) [as observed finally] (Hodder, 1999) \n
+    - The wall C of the building 1 in Çatalhöyük, Turkey (A8) has physical relation to wall D (A8) has type abuts on (E55). (Hodder, 1999) \n
+    - The wall D of the building 1 in Çatalhöyük, Turkey (A8) has physical relation to the floors at B (A8) has type on top of (E55). (Hodder, 1999)
+    """@en .
+
+  crmarchaeo:AP12_confines
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP12 confines"@en ;
+    skos:notation "AP12" ;
+    rdfs:label "confines"@en ;
+    rdfs:domain crmarchaeo:A3_Stratigraphic_Interface ;
+    rdfs:range crmarchaeo:A2_Stratigraphic_Volume_Unit ;
+    owl:inverseOf crmarchaeo:AP12i_is_confined_by ;
+    rdfs:comment """This property identifies partly or completely the surface (Stratigraphic Interface) of an Stratigraphic Volume Unit. One 
+    Stratigraphic Interface may confine two or more Stratigraphic Volume Units.
+
+    Examples:
+    - The Stratigraphic Interface “[19]” (A3) confines the Stratigraphic Volume Unit “(2)” (A2).
+    """@en .
+
+  crmarchaeo:AP12i_is_confined_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP12i is confined by"@en ;
+    skos:notation "AP12i" ;
+    rdfs:label "is confined by"@en ;
+    rdfs:domain crmarchaeo:A2_Stratigraphic_Volume_Unit ;
+    rdfs:range crmarchaeo:A3_Stratigraphic_Interface ;
+    owl:inverseOf crmarchaeo:AP12_confines ;
+    rdfs:comment """This property identifies partly or completely the surface (Stratigraphic Interface) of an Stratigraphic Volume Unit. 
+    One Stratigraphic Interface may confine two or more Stratigraphic Volume Units.
+
+    Examples:
+    - The Stratigraphic Interface “[19]” (A3) confines the Stratigraphic Volume Unit “(2)” (A2).
+    """@en .
+
+  crmarchaeo:AP13_has_stratigraphic_relation_to
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP13 has stratigraphic relation to"@en ;
+    skos:notation "AP13" ;
+    rdfs:label "has stratigraphic relation to"@en ;
+    rdfs:domain crmarchaeo:A5_Stratigraphic_Modification ;
+    rdfs:range crmarchaeo:A5_Stratigraphic_Modification ;
+    owl:inverseOf crmarchaeo:AP13i_is_stratigraphic_relation_of ;
+    rdfs:comment """This property identifies the stratigraphic relation between two Stratigraphic Modification events. 
+    This relation may be inferred from the kind of physical relation that exists between the two Stratigraphic Units 
+    that have been created or modified during the corresponding Stratigraphic Modification events. The type of stratigraphic 
+    relationships in archaeological documentation assigned to two Stratigraphic Modification events is documented through the property AP 13.1 has type.
+
+    Examples:
+    - The burning of the log building in Søndre gate, Trondheim, Norway, (A5) has stratigraphic relation to the laying of the foundation for the church of St. Clements (A5) has type earlier (E55). (Norwegian Institute for Cultural Heritage Research, 2018) \n
+    - The production of the floors at B of the building 1 in Çatalhöyük, Turkey (E12) has stratigraphic relation to the production of wall C (E12) has type after (E55). [as observed initially, see AP11] (Hodder, 1999) \n
+    - The production of wall C of the building 1 in Çatalhöyük, Turkey (A5) has stratigraphic relation to the production of the floors at B (A5) has type after (E55). [as observed finally, see AP11] (Hodder,, 1999) \n
+    - The production of the wall C of the building 1 in Çatalhöyük, Turkey (A5) has stratigraphic relation to the production of wall D (A5) has type after (E55). [See AP11] (Hodder, 1999) \n
+    - The production of the wall D of the building 1 in Çatalhöyük, Turkey (A5) has stratigraphic relation to the production of the floors B’ (A5) has type after (E55). [See AP11] (Hodder, 1999)
+    """@en .
+
+  crmarchaeo:AP13i_is_stratigraphic_relation_of
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP13i is stratigraphic relation of"@en ;
+    skos:notation "AP13i" ;
+    rdfs:label "is stratigraphic relation of"@en ;
+    rdfs:domain crmarchaeo:A5_Stratigraphic_Modification ;
+    rdfs:range crmarchaeo:A5_Stratigraphic_Modification ;
+    owl:inverseOf crmarchaeo:AP13_has_stratigraphic_relation_to ;
+    rdfs:comment """This property identifies the stratigraphic relation between two Stratigraphic Modification events. 
+    This relation may be inferred from the kind of physical relation that exists between the two Stratigraphic Units 
+    that have been created or modified during the corresponding Stratigraphic Modification events. The type of stratigraphic 
+    relationships in archaeological documentation assigned to two Stratigraphic Modification events is documented through the property AP 13.1 has type.
+
+    Examples:
+    - The burning of the log building in Søndre gate, Trondheim, Norway, (A5) has stratigraphic relation to the laying of the foundation for the church of St. Clements (A5) has type earlier (E55). (Norwegian Institute for Cultural Heritage Research, 2018) \n
+    - The production of the floors at B of the building 1 in Çatalhöyük, Turkey (E12) has stratigraphic relation to the production of wall C (E12) has type after (E55). [as observed initially, see AP11] (Hodder, 1999) \n
+    - The production of wall C of the building 1 in Çatalhöyük, Turkey (A5) has stratigraphic relation to the production of the floors at B (A5) has type after (E55). [as observed finally, see AP11] (Hodder,, 1999) \n
+    - The production of the wall C of the building 1 in Çatalhöyük, Turkey (A5) has stratigraphic relation to the production of wall D (A5) has type after (E55). [See AP11] (Hodder, 1999) \n
+    - The production of the wall D of the building 1 in Çatalhöyük, Turkey (A5) has stratigraphic relation to the production of the floors B’ (A5) has type after (E55). [See AP11] (Hodder, 1999)
+    """@en .
+
+  crmarchaeo:AP15_is_or_contains_remains_of
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP15 is or contains remains of"@en ;
+    skos:notation "AP15" ;
+    rdfs:label "is or contains remains of"@en ;
+    rdfs:domain crmarchaeo:A2_Stratigraphic_Volume_Unit ;
+    rdfs:range crmsci:S10_Material_Substantial ;
+    owl:inverseOf crmarchaeo:AP15i_is_or_has_remains_contained_in ;
+    rdfs:comment """This property indicates that an instance of Stratigraphic Volume Unit can be the remains of or contain the remains of an instance of Material Substantial.
+
+    Examples:
+    - The posthole “Dilling 2AS34019” (A2) is or contains remains of the rotten bottom part of a pole (S10).
+    """@en .
+
+  crmarchaeo:AP15i_is_or_has_remains_contained_in
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP15i is or has remains contained in"@en ;
+    skos:notation "AP15i" ;
+    rdfs:label "is or has remains contained in"@en ;
+    rdfs:domain crmsci:S10_Material_Substantial ;
+    rdfs:range crmarchaeo:A2_Stratigraphic_Volume_Unit ;
+    owl:inverseOf crmarchaeo:AP15_is_or_contains_remains_of ;
+    rdfs:comment """This property indicates that an instance of Stratigraphic Volume Unit can be the remains of or contain the remains of an instance of Material Substantial.
+
+    Examples:
+    - The posthole “Dilling 2AS34019” (A2) is or contains remains of the rotten bottom part of a pole (S10).
+    """@en .
+
+  crmarchaeo:AP16_assigned_attribute_to
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP16 assigned attribute to"@en ;
+    skos:notation "AP16" ;
+    rdfs:label "assigned attribute to"@en ;
+    rdfs:domain crmarchaeo:A6_Group_Declaration_Event ;
+    rdfs:range crm:E18_Physical_Thing ;
+    owl:inverseOf crmarchaeo:AP16i_was_attributed_by ;
+    rdfs:subPropertyOf crm:P140_assigned_attribute_to ;
+    rdfs:comment """This property indicates an instance of Physical Thing that was assigned by an instance of Group Declaration Event as 
+    remains of the target of this instance of Group Declaration Event."""@en .
+
+  crmarchaeo:AP16i_was_attributed_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP16i was attributed by"@en ;
+    skos:notation "AP16i" ;
+    rdfs:label "was attributed by"@en ;
+    rdfs:domain crm:E18_Physical_Thing ;
+    rdfs:range crmarchaeo:A6_Group_Declaration_Event ;
+    owl:inverseOf crmarchaeo:AP16_assigned_attribute_to ;
+    rdfs:subPropertyOf crm:P140i_was_attributed_by ;
+    rdfs:comment """This property indicates an instance of Physical Thing that was assigned by an instance of Group Declaration Event as 
+    remains of the target of this instance of Group Declaration Event."""@en .
+
+  crmarchaeo:AP17_is_found_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP17 is found by"@en ;
+    skos:notation "AP17" ;
+    rdfs:label "is found by"@en ;
+    rdfs:domain crmarchaeo:A7_Embedding ;
+    rdfs:range crmsci:S19_Encounter_Event ;
+    owl:inverseOf crmarchaeo:AP17i_found ;
+    rdfs:subPropertyOf crmsci:O8_observed ;
+    rdfs:comment """This property associates an instance of S19 Encounter Event with an instance of Embedding that has been found during this event.
+
+    Examples:
+    - The small whetstone with an erratic runic inscription that was embedded in a medieval rubbish dump (A7) is found by the discovery of the whetstone in the early morning in November 2017 in Oslo, Norway (S19). (Norwegian Institute for Cultural Heritage Research, 2017)
+    """@en .
+
+  crmarchaeo:AP17i_found
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP17i found"@en ;
+    skos:notation "AP17i" ;
+    rdfs:label "found"@en ;
+    rdfs:domain crmsci:S19_Encounter_Event ;
+    rdfs:range crmarchaeo:A7_Embedding ;
+    owl:inverseOf crmarchaeo:AP17_is_found_by ;
+    rdfs:subPropertyOf crmsci:O8i_was_observed_by ;
+    rdfs:comment """This property associates an instance of S19 Encounter Event with an instance of Embedding that has been found during this event.
+
+  Examples:
+  - The small whetstone with an erratic runic inscription that was embedded in a medieval rubbish dump (A7) is found by the discovery of the whetstone in the early morning in November 2017 in Oslo, Norway (S19). (Norwegian Institute for Cultural Heritage Research, 2017)
+  """@en .
+
+  crmarchaeo:AP18_is_embedding_of
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP18 is embedding of"@en ;
+    skos:notation "AP18" ;
+    rdfs:label "is embedding of"@en ;
+    rdfs:domain crmarchaeo:A7_Embedding ;
+    rdfs:range crm:E18_Physical_Thing ;
+    owl:inverseOf crmarchaeo:AP18i_is_embedded ;
+    rdfs:subPropertyOf crm:P46_is_composed_of ;
+    rdfs:comment """This property identifies the Physical Thing that is contained in an Embedding.
+
+    Examples:
+    - The embedding of the small whetstone with an erratic runic inscription in a medieval rubbish dump (A7) is embedding of this whetstone, discovered in the early morning in November 2017 in Oslo, Norway (E18). (Norwegian Institute for Cultural Heritage Research, 2017)
+    """@en .
+
+  crmarchaeo:AP18i_is_embedded
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP18i is embedded"@en ;
+    skos:notation "AP18i" ;
+    rdfs:label "is embedded"@en ;
+    rdfs:domain crm:E18_Physical_Thing ;
+    rdfs:range crmarchaeo:A7_Embedding ;
+    owl:inverseOf crmarchaeo:AP18_is_embedding_of ;
+    rdfs:subPropertyOf crm:P46i_forms_part_of ;
+    rdfs:comment """This property identifies the Physical Thing that is contained in an Embedding.
+
+    Examples:
+    - The embedding of the small whetstone with an erratic runic inscription in a medieval rubbish dump (A7) is embedding of this whetstone, discovered in the early morning in November 2017 in Oslo, Norway (E18). (Norwegian Institute for Cultural Heritage Research, 2017)
+    """@en .
+
+  crmarchaeo:AP19_is_embedding_in
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP19 is embedding in"@en ;
+    skos:notation "AP19" ;
+    rdfs:label "is embedding in"@en ;
+    rdfs:domain crmarchaeo:A7_Embedding ;
+    rdfs:range crmarchaeo:A2_Stratigraphic_Volume_Unit ;
+    owl:inverseOf crmarchaeo:AP19i_contains_embedding ;
+    rdfs:comment """This property identifies the instance of Stratigraphic Volume Unit that contains the Embedding. An Embedding may not extend 
+    over more than one instance of Stratigraphic Volume Unit.
+
+    Examples:
+    - The embedding of the small whetstone with an erratic runic inscription, discovered in the early morning in November 2017 in Oslo, Norway, in a medieval rubbish dump (A7) is embedding in the medieval rubbish dump “Follo234532” (A2). (Norwegian Institute for Cultural Heritage Research, 2017)
+    """@en .
+
+  crmarchaeo:AP19i_contains_embedding
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP19i contains embedding"@en ;
+    skos:notation "AP19i" ;
+    rdfs:label "contains embedding"@en ;
+    rdfs:domain crmarchaeo:A2_Stratigraphic_Volume_Unit ;
+    rdfs:range crmarchaeo:A7_Embedding ;
+    owl:inverseOf crmarchaeo:AP19_is_embedding_in ;
+    rdfs:comment """This property identifies the instance of Stratigraphic Volume Unit that contains the Embedding. An Embedding may not extend over more than one instance of Stratigraphic Volume Unit.
+
+    Examples:
+    - The embedding of the small whetstone with an erratic runic inscription, discovered in the early morning in November 2017 in Oslo, Norway, in a medieval rubbish dump (A7) is embedding in the medieval rubbish dump “Follo234532” (A2). (Norwegian Institute for Cultural Heritage Research, 2017)
+    """@en .
+
+  crmarchaeo:AP21_contains
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP21 contains"@en ;
+    skos:notation "AP21" ;
+    rdfs:label "contains"@en ;
+    rdfs:domain crmarchaeo:A2_Stratigraphic_Volume_Unit ;
+    rdfs:range crm:E18_Physical_Thing ;
+    owl:inverseOf crmarchaeo:AP21i_is_contained_in ;
+    rdfs:comment """This property associates an Physical Thing that is found within an Stratigraphic Volume Unit with the 
+    stratigraphic volume unit. AP21 contains (is contained in) is a shortcut for the more detailed path from 
+    Physical Thing through AP18i is embedded, Embedding, AP19 is embedding in, Stratigraphic Volume Unit.
+
+    Examples:
+    - A mediaeval rubbish dump in Oslo, Norway, (A2) contains a whetstone, discovered in the early morning in November 2017 in Oslo, Norway (E18). (Norwegian Institute for Cultural Heritage Research, 2017)
+    """@en .
+
+  crmarchaeo:AP21i_is_contained_in
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP21i is contained in"@en ;
+    skos:notation "AP21i" ;
+    rdfs:label "is contained in"@en ;
+    rdfs:domain crm:E18_Physical_Thing ;
+    rdfs:range crmarchaeo:A2_Stratigraphic_Volume_Unit ;
+    owl:inverseOf crmarchaeo:AP21_contains ;
+    rdfs:comment """This property associates an Physical Thing that is found within an Stratigraphic Volume Unit with the stratigraphic volume unit. 
+    AP21 contains (is contained in) is a shortcut for the more detailed path from Physical Thing through AP18i is embedded, Embedding, AP19 is embedding in, Stratigraphic Volume Unit.
+
+    Examples:
+    - A mediaeval rubbish dump in Oslo, Norway, (A2) contains a whetstone, discovered in the early morning in November 2017 in Oslo, Norway (E18). (Norwegian Institute for Cultural Heritage Research, 2017)
+    """@en .
+
+  crmarchaeo:AP22_is_equal_in_time_to
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP22 is equal in time to"@en ;
+    skos:notation "AP22" ;
+    rdfs:label "is equal in time to"@en ;
+    rdfs:domain crm:E2_Temporal_Entity ;
+    rdfs:range crm:E2_Temporal_Entity ;
+    rdfs:subPropertyOf crm:P175_starts_before_or_with_the_start_of, crm:P175i_starts_after_or_with_the_start_of, crm:P184_ends_before_or_with_the_end_of, crm:P184i_ends_with_or_after_the_end_of ;
+    rdfs:comment """This property symmetrically identifies a situation in which the starting point and the ending point for an instance of 
+    Temporal Entity is equal to the starting point and the ending point of another instance of Temporal Entity, respectively.
+    This property is only necessary if the time span is unknown (otherwise the equivalence can be calculated).
+    This property is the same as the "equal" relationship of Allen’s temporal logic (Allen, 1983, pp. 832-843).
+    This property is transitive.
+
+    Examples:
+    - The burning of the Temple of Artemis at Ephesus (E6) is equal in time to the birth of Alexander the Great E69 [on July 6, 356 BC as reported by Plutarch in Vitae Parallelae, III, 3]. (Plutarch, 1919)
+    """@en .
+
+  crmarchaeo:AP23_finishes
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP23 finishes"@en ;
+    skos:notation "AP23" ;
+    rdfs:label "finishes"@en ;
+    rdfs:domain crm:E2_Temporal_Entity ;
+    rdfs:range crm:E2_Temporal_Entity ;
+    owl:inverseOf crmarchaeo:AP23i_is_finished_by ;
+    rdfs:subPropertyOf crm:P176i_starts_after_the_start_of, crm:P184_ends_before_or_with_the_end_of, crm:P184i_ends_with_or_after_the_end_of ;
+    rdfs:comment """This property identifies a situation in which the ending point of an instance of Temporal Entity is equal to 
+    the ending point of another temporal entity of longer duration. There is no causal relationship implied by this property.
+    This property is only necessary if the time span is unknown (otherwise the relationship can be calculated). 
+    This property is the same as the "finishes / finished-by" relationships of Allen’s temporal logic (Allen, 1983, pp. 832-843).
+    This property is transitive.
+
+    Examples:
+    - Late Bronze Age (E4) finishes Bronze Age (E4).
+    """@en .
+
+  crmarchaeo:AP23i_is_finished_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP23i is finished by"@en ;
+    skos:notation "AP23i" ;
+    rdfs:label "is finished by"@en ;
+    rdfs:domain crm:E2_Temporal_Entity ;
+    rdfs:range crm:E2_Temporal_Entity ;
+    owl:inverseOf crmarchaeo:AP23_finishes ;
+    rdfs:subPropertyOf crm:P176_starts_before_the_start_of, crm:P184_ends_before_or_with_the_end_of, crm:P184i_ends_with_or_after_the_end_of ;
+    rdfs:comment """This property identifies a situation in which the ending point of an instance of Temporal Entity is equal to the 
+    ending point of another temporal entity of longer duration. There is no causal relationship implied by this property.
+    This property is only necessary if the time span is unknown (otherwise the relationship can be calculated). 
+    This property is the same as the "finishes / finished-by" relationships of Allen’s temporal logic (Allen, 1983, pp. 832-843).
+    This property is transitive.
+
+    Examples:
+    - Late Bronze Age (E4) finishes Bronze Age (E4).
+    """@en .
+
+  crmarchaeo:AP24_starts
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP24 starts"@en ;
+    skos:notation "AP24" ;
+    rdfs:label "starts"@en ;
+    rdfs:domain crm:E2_Temporal_Entity ;
+    rdfs:range crm:E2_Temporal_Entity ;
+    owl:inverseOf crmarchaeo:AP24i_is_started_by ;
+    rdfs:subPropertyOf crm:P175_starts_before_or_with_the_start_of, crm:P175i_starts_after_or_with_the_start_of, crm:P185_ends_before_the_end_of ;
+    rdfs:comment """This property identifies a situation in which the starting point for an instance of Temporal Entity 
+    is equal to the starting point of another instance of Temporal Entity of longer duration.
+    This property is only necessary if the time span is unknown (otherwise the relationship can be calculated). 
+    This property is the same as the "starts / started-by" relationships of Allen’s temporal logic (Allen, 1983, pp. 832-843).
+    This property is transitive.
+
+    Examples:
+    - Early Bronze Age (E4) starts Bronze Age (E4).
+    """@en .
+
+  crmarchaeo:AP24i_is_started_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP24i is started by"@en ;
+    skos:notation "AP24i" ;
+    rdfs:label "is started by"@en ;
+    rdfs:domain crm:E2_Temporal_Entity ;
+    rdfs:range crm:E2_Temporal_Entity ;
+    owl:inverseOf crmarchaeo:AP24_starts ;
+    rdfs:subPropertyOf crm:P175_starts_before_or_with_the_start_of, crm:P175i_starts_after_or_with_the_start_of, crm:P185i_ends_after_the_end_of ;
+    rdfs:comment """This property identifies a situation in which the starting point for an instance of Temporal Entity 
+    is equal to the starting point of another instance of Temporal Entity of longer duration.
+    This property is only necessary if the time span is unknown (otherwise the relationship can be calculated). 
+    This property is the same as the "starts / started-by" relationships of Allen’s temporal logic (Allen, 1983, pp. 832-843).
+    This property is transitive.
+
+    Examples:
+    - Early Bronze Age (E4) starts Bronze Age (E4).
+    """@en .
+
+  crmarchaeo:AP25_occurs_during
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP25 occurs during"@en ;
+    skos:notation "AP25" ;
+    rdfs:label "occurs during"@en ;
+    rdfs:domain crm:E2_Temporal_Entity ;
+    rdfs:range crm:E2_Temporal_Entity ;
+    owl:inverseOf crmarchaeo:AP25i_includes ;
+    rdfs:subPropertyOf crm:P176i_starts_after_the_start_of, crm:P185_ends_before_the_end_of ;
+    rdfs:comment """This property identifies the situation in which the entire temporal extent of an instance of Temporal Entity is 
+    within the temporal extent of another instance of Temporal Entity that starts before and ends after the included temporal entity.
+    This property is only necessary if the time span is unknown (otherwise the relationship can be calculated). 
+    This property is the same as the "during / includes" relationships of Allen’s temporal logic (Allen, 1983, pp. 832-843).
+    This property is transitive.
+
+    Examples:
+    - Middle Saxon period (E4) occurs during Saxon period (E4).
+    """@en .
+
+  crmarchaeo:AP25i_includes
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP25i includes"@en ;
+    skos:notation "AP25i" ;
+    rdfs:label "includes"@en ;
+    rdfs:domain crm:E2_Temporal_Entity ;
+    rdfs:range crm:E2_Temporal_Entity ;
+    owl:inverseOf crmarchaeo:AP25_occurs_during ;
+    rdfs:subPropertyOf crm:P176_starts_before_the_start_of, crm:P185i_ends_after_the_end_of ;
+    rdfs:comment """This property identifies the situation in which the entire temporal extent of an instance of Temporal Entity is within the 
+    temporal extent of another instance of Temporal Entity that starts before and ends after the included temporal entity.
+    This property is only necessary if the time span is unknown (otherwise the relationship can be calculated). 
+    This property is the same as the "during / includes" relationships of Allen’s temporal logic (Allen, 1983, pp. 832-843).
+    This property is transitive.
+
+    Examples:
+    - Middle Saxon period (E4) occurs during Saxon period (E4).
+    """@en .
+
+  crmarchaeo:AP26_overlaps_in_time_with
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP26 overlaps in time with"@en ;
+    skos:notation "AP26" ;
+    rdfs:label "overlaps in time with"@en ;
+    rdfs:domain crm:E2_Temporal_Entity ;
+    rdfs:range crm:E2_Temporal_Entity ;
+    owl:inverseOf crmarchaeo:AP26i_is_overlapped_in_time_by ;
+    rdfs:subPropertyOf crm:P174i_ends_after_the_start_of, crm:P176_starts_before_the_start_of, crm:P185_ends_before_the_end_of ;
+    rdfs:comment """This property identifies a situation in which there is an overlap between the temporal extents of two instances of Temporal Entity.
+    It implies a temporal order between the two entities: if A overlaps in time B, then A must start before B, 
+    and B must end after A. This property is only necessary if the relevant time spans are unknown (otherwise the relationship can be calculated).
+    This property is the same as the "overlaps / overlapped-by" relationships of Allen’s temporal logic (Allen, 1983, pp. 832-843).
+
+    Examples:
+    - The Iron Age (E4) overlaps in time with the Roman period (E4).
+    """@en .
+
+  crmarchaeo:AP26i_is_overlapped_in_time_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP26i is overlapped in time by"@en ;
+    skos:notation "AP26i" ;
+    rdfs:label "is overlapped in time by"@en ;
+    rdfs:domain crm:E2_Temporal_Entity ;
+    rdfs:range crm:E2_Temporal_Entity ;
+    owl:inverseOf crmarchaeo:AP26_overlaps_in_time_with ;
+    rdfs:subPropertyOf crm:P174_starts_before_the_end_of, crm:P176i_starts_after_the_start_of, crm:P185i_ends_after_the_end_of ;
+    rdfs:comment """This property identifies a situation in which there is an overlap between the temporal extents of two instances of Temporal Entity.
+    It implies a temporal order between the two entities: if A overlaps in time B, then A must start before B, and B must end after A. 
+    This property is only necessary if the relevant time spans are unknown (otherwise the relationship can be calculated).
+    This property is the same as the "overlaps / overlapped-by" relationships of Allen’s temporal logic (Allen, 1983, pp. 832-843).
+
+    Examples:
+    - The Iron Age (E4) overlaps in time with the Roman period (E4).
+    """@en .
+
+  crmarchaeo:AP27_meets_in_time_with
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP27 meets in time with"@en ;
+    skos:notation "AP27" ;
+    rdfs:label "meets in time with"@en ;
+    rdfs:domain crm:E2_Temporal_Entity ;
+    rdfs:range crm:E2_Temporal_Entity ;
+    owl:inverseOf crmarchaeo:AP27i_is_met_in_time_by ;
+    rdfs:subPropertyOf crm:P173i_ends_after_or_with_the_start_of, crm:P182_ends_before_or_with_the_start_of ;
+    rdfs:comment """This property identifies a situation in which one instance of Temporal Entity immediately follows another instance of Temporal Entity.
+    It implies a particular order between the two entities: if A meets in time with B, then A must precede B. This property is only necessary 
+    if the relevant time spans are unknown (otherwise the relationship can be calculated).
+    This property is the same as the "meets / met-by" relationships of Allen’s temporal logic (Allen, 1983, pp. 832-843).
+
+    Examples:
+    - Early Saxon Period (E4) meets in time with Middle Saxon Period (E4).
+    """@en .
+
+  crmarchaeo:AP27i_is_met_in_time_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP27i is met in time by"@en ;
+    skos:notation "AP27i" ;
+    rdfs:label "is met in time by"@en ;
+    rdfs:domain crm:E2_Temporal_Entity ;
+    rdfs:range crm:E2_Temporal_Entity ;
+    owl:inverseOf crmarchaeo:AP27_meets_in_time_with ;
+    rdfs:subPropertyOf crm:P173_starts_before_or_with_the_end_of, crm:P182i_starts_after_or_with_the_end_of ;
+    rdfs:comment """This property identifies a situation in which one instance of Temporal Entity immediately follows another instance of Temporal Entity.
+    It implies a particular order between the two entities: if A meets in time with B, then A must precede B. This property is 
+    only necessary if the relevant time spans are unknown (otherwise the relationship can be calculated).
+    This property is the same as the "meets / met-by" relationships of Allen’s temporal logic (Allen, 1983, pp. 832-843).
+
+    Examples:
+    - Early Saxon Period (E4) meets in time with Middle Saxon Period (E4).
+    """@en .
+
+  crmarchaeo:AP28_occurs_before
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP28 occurs before"@en ;
+    skos:notation "AP28" ;
+    rdfs:label "occurs before"@en ;
+    rdfs:domain crm:E2_Temporal_Entity ;
+    rdfs:range crm:E2_Temporal_Entity ;
+    owl:inverseOf crmarchaeo:AP28i_occurs_after ;
+    rdfs:subPropertyOf crm:P183_ends_before_the_start_of ;
+    rdfs:comment """This property identifies the relative chronological sequence of two temporal entities.
+    It implies that a temporal gap exists between the end of A and the start of B. This property is only necessary if the 
+    relevant time spans are unknown (otherwise the relationship can be calculated).
+    This property is the same as the "before / after" relationships of Allen’s temporal logic(Allen, 1983).
+    This property is transitive.
+
+    Examples:
+    - Early Bronze Age (E4) occurs before Late Bronze age (E4).
+    """@en .
+
+  crmarchaeo:AP28i_occurs_after
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP28i occurs after"@en ;
+    skos:notation "AP28i" ;
+    rdfs:label "occurs after"@en ;
+    rdfs:domain crm:E2_Temporal_Entity ;
+    rdfs:range crm:E2_Temporal_Entity ;
+    owl:inverseOf crmarchaeo:AP28_occurs_before ;
+    rdfs:subPropertyOf crm:P183i_starts_after_the_end_of ;
+    rdfs:comment """This property identifies the relative chronological sequence of two temporal entities.
+    It implies that a temporal gap exists between the end of A and the start of B. This property is only necessary if the relevant time spans are unknown (otherwise the relationship can be calculated).
+    This property is the same as the "before / after" relationships of Allen’s temporal logic(Allen, 1983).
+    This property is transitive.
+
+    Examples:
+    - Early Bronze Age (E4) occurs before Late Bronze age (E4).
+    """@en .
+
+  crmarchaeo:AP29_appears_in
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP29 appears in"@en ;
+    skos:notation "AP29" ;
+    rdfs:label "appears in"@en ;
+    rdfs:domain crm:E55_Type ;
+    rdfs:range crm:E4_Period ;
+    owl:inverseOf crmarchaeo:AP29i_has_appearing_type ;
+    rdfs:comment """This property associates a kind of object (documented as an instance of Type) with an instance of Period 
+    indicating that objects of this kind have been brought into existence during this period. The genesis of such 
+    objects may be the result of human, biological, geological or other processes. This property makes a weak 
+    statement about the distribution of the associated object kind in the archaeological record: that is, if the 
+    genesis of an object of the type can plausibly be assumed to fall within the genesis of the context within 
+    which it was found, then this property supports reasoning, ceteris paribus, that the genesis period of the 
+    context forms part of, or overlaps with, one of the instances of Period in which the respective object type 
+    has appeared. Such weak statements may also be useful in the context of geological or paleontological observations. 
+    Stronger claims can be made using the properties AP30 restricted to and AP31 typical for.
+
+    Examples:
+    - The “Cycladic” figurine type (E55) appears in the Early Cycladic period (E4). (Sotirakopoulou, 2005)
+    """@en .
+
+  crmarchaeo:AP29i_has_appearing_type
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP29i has appearing type"@en ;
+    skos:notation "AP29i" ;
+    rdfs:label "has appearing type"@en ;
+    rdfs:domain crm:E4_Period ;
+    rdfs:range crm:E55_Type ;
+    owl:inverseOf crmarchaeo:AP29_appears_in ;
+    rdfs:comment """This property associates a kind of object (documented as an instance of Type) with an instance of Period indicating that 
+    objects of this kind have been brought into existence during this period. The genesis of such objects may be the result 
+    of human, biological, geological or other processes. This property makes a weak statement about the distribution of the 
+    associated object kind in the archaeological record: that is, if the genesis of an object of the type can plausibly be 
+    assumed to fall within the genesis of the context within which it was found, then this property supports reasoning, 
+    ceteris paribus, that the genesis period of the context forms part of, or overlaps with, one of the instances of Period 
+    in which the respective object type has appeared. Such weak statements may also be useful in the context of geological or 
+    paleontological observations. Stronger claims can be made using the properties AP30 restricted to and AP31 typical for.
+
+    Examples:
+    - The “Cycladic” figurine type (E55) appears in the Early Cycladic period (E4). (Sotirakopoulou, 2005)
+    """@en .
+
+  crmarchaeo:AP30_restricted_to
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP30 restricted to"@en ;
+    skos:notation "AP30" ;
+    rdfs:label "restricted to"@en ;
+    rdfs:domain crm:E55_Type ;
+    rdfs:range crm:E4_Period ;
+    owl:inverseOf crmarchaeo:AP30i_restricts_appearance_of ;
+    rdfs:subPropertyOf crmarchaeo:AP29_appears_in ;
+    rdfs:comment """This property associates a kind of object (documented as an instance of Type) with an instance of Period indicating 
+    that objects of this kind have been generated exclusively in this period. This property makes a strong statement 
+    concerning the distribution of the associated object kind in the observed record: If the genesis of an object of 
+    this type can plausibly be assumed to fall within the genesis of the context in which it was found, then the statement 
+    made with this property would support reasoning, ceteris paribus, that the genesis period of the find context 
+    actually forms part of the related instance of Period, or at least overlaps with it. In contrast, objects from 
+    previous periods may appear in a context because they are still in use, and objects from later periods may have 
+    been displaced into an older context. Weaker claims can be made using the properties AP29 appears in (gas appearing type) and AP31 typical for (has typical type).
+
+    Examples:
+    - The “Phylakopi I” and “Ayia Irini” (E55) types of Cycladic figurines are restricted to the Early Cycladic III period (E4). (Sotirakopoulou, 2005)
+    """@en .
+
+  crmarchaeo:AP30i_restricts_appearance_of
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP30i restricts appearance of"@en ;
+    skos:notation "AP30i" ;
+    rdfs:label "restricts appearance of"@en ;
+    rdfs:domain crm:E4_Period ;
+    rdfs:range crm:E55_Type ;
+    owl:inverseOf crmarchaeo:AP30_restricted_to ;
+    rdfs:subPropertyOf crmarchaeo:AP29i_has_appearing_type ;
+    rdfs:comment """This property associates a kind of object (documented as an instance of Type) with an instance of Period indicating that 
+    objects of this kind have been generated exclusively in this period. This property makes a strong statement concerning the 
+    distribution of the associated object kind in the observed record: If the genesis of an object of this type can plausibly be 
+    assumed to fall within the genesis of the context in which it was found, then the statement made with this property would support 
+    reasoning, ceteris paribus, that the genesis period of the find context actually forms part of the related instance of Period, 
+    or at least overlaps with it. In contrast, objects from previous periods may appear in a context because they are still in use, 
+    and objects from later periods may have been displaced into an older context. Weaker claims can be made using the properties 
+    AP29 appears in (gas appearing type) and AP31 typical for (has typical type).
+
+    Examples:
+    - The “Phylakopi I” and “Ayia Irini” (E55) types of Cycladic figurines are restricted to the Early Cycladic III period (E4). (Sotirakopoulou, 2005)
+    """@en .
+
+  crmarchaeo:AP31_typical_for
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP31 typical for"@en ;
+    skos:notation "AP31" ;
+    rdfs:label "typical for"@en ;
+    rdfs:domain crm:E55_Type ;
+    rdfs:range crm:E4_Period ;
+    owl:inverseOf crmarchaeo:AP31i_has_typical_type ;
+    rdfs:subPropertyOf crmarchaeo:AP29_appears_in ;
+    rdfs:comment """This property associates a kind of object (documented as an instance of Type) with an instance of Period indicating 
+    that objects of this kind have been generated in this period in significantly greater numbers and in wider 
+    distributions, than in other periods. This property makes a moderate statement concerning the distribution 
+    of the associated object kind in the observed record: If a "sufficient number" of objects of this type are f
+    ound in a context, and their genesis can plausibly be assumed to fall within the genesis of the find context, 
+    then the statement made with this property would support reasoning, ceteris paribus, that the genesis period 
+    of the find context is likely to form part of the related instance of Period, or at least overlap with it. 
+    “Sufficient number” means that the density of objects of this kind in the find context is compatible with 
+    the general density that this kind of object had during the associated period in contexts of a comparable 
+    nature and deposition history. A stronger claim can be made using AP30 restricted to (restricts appearance of) 
+    while a weaker claim would use AP29 appears in (has appearing type).
+
+    Examples:
+    - The “violin-shaped” type of Cycladic figurines is typical for the Early Cycladic I period (E4). (Sotirakopoulou, 2005)
+    """@en .
+
+  crmarchaeo:AP31i_has_typical_type
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP31i has typical type"@en ;
+    skos:notation "AP31i" ;
+    rdfs:label "has typical type"@en ;
+    rdfs:domain crm:E4_Period ;
+    rdfs:range crm:E55_Type ;
+    owl:inverseOf crmarchaeo:AP31_typical_for ;
+    rdfs:subPropertyOf crmarchaeo:AP29i_has_appearing_type ;
+    rdfs:comment """This property associates a kind of object (documented as an instance of Type) with an instance 
+    of Period indicating that objects of this kind have been generated in this period in significantly 
+    greater numbers and in wider distributions, than in other periods. This property makes a moderate 
+    statement concerning the distribution of the associated object kind in the observed record: If a 
+    "sufficient number" of objects of this type are found in a context, and their genesis can plausibly 
+    be assumed to fall within the genesis of the find context, then the statement made with this property 
+    would support reasoning, ceteris paribus, that the genesis period of the find context is likely to form 
+    part of the related instance of Period, or at least overlap with it. “Sufficient number” means that the 
+    density of objects of this kind in the find context is compatible with the general density that this 
+    kind of object had during the associated period in contexts of a comparable nature and deposition 
+    history. A stronger claim can be made using AP30 restricted to (restricts appearance of) while a 
+    weaker claim would use AP29 appears in (has appearing type).
+
+    Examples:
+    - The “violin-shaped” (E55) type of Cycladic figurines is typical for the Early Cycladic I period (E4). (Sotirakopoulou, 2005)
+    """@en .
+
+  crmarchaeo:AP32_discarded_into
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP32 discarded into"@en ;
+    skos:notation "AP32" ;
+    rdfs:label "discarded into"@en ;
+    rdfs:domain crmarchaeo:A1_Excavation_Processing_Unit ;
+    rdfs:range crmsci:S11_Amount_of_Matter ;
+    owl:inverseOf crmarchaeo:AP32i_was_discarded_by ;
+    rdfs:comment """This property identifies the Amount of Matter (e.g. a heap) into which material from an Excavation Processing Unit is discarded.
+    The same instance of Excavation Processing Unit may discard matter into multiple heaps, 
+    but also simply throw away the excavated matter without any order or exported to be deposited elsewhere, thereby breaking any close correspondence between the excavation and the deposit.
+
+    Examples:
+    - The Excavation Processing Unit that excavated the Stratigraphic Volume Unit “(2)” (A1) discarded into the waste heap of the excavation (S11).
+    """@en .
+
+  crmarchaeo:AP32i_was_discarded_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "AP32i was discarded by"@en ;
+    skos:notation "AP32i" ;
+    rdfs:label "was discarded by"@en ;
+    rdfs:domain crmsci:S11_Amount_of_Matter ;
+    rdfs:range crmarchaeo:A1_Excavation_Processing_Unit ;
+    owl:inverseOf crmarchaeo:AP32_discarded_into ;
+    rdfs:comment """This property identifies the Amount of Matter (e.g. a heap) into which material from an Excavation Processing Unit is discarded.
+    The same instance of Excavation Processing Unit may discard matter into multiple heaps, but also simply throw away 
+    the excavated matter without any order or exported to be deposited elsewhere, thereby breaking any close correspondence between the excavation and the deposit.
+
+    Examples:
+    - The Excavation Processing Unit that excavated the Stratigraphic Volume Unit “(2)” (A1) discarded into the waste heap of the excavation (S11).
+    """@en .
+
+  crmsci:O7_confines rdfs:subPropertyOf crmarchaeo:AP12_confines .
+  crmsci:O7i_is_confined_by rdfs:subPropertyOf crmarchaeo:AP12i_is_confined_by .
+}

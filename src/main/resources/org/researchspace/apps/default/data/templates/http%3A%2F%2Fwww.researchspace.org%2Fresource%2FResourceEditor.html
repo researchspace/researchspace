@@ -136,7 +136,11 @@
                         >
                           <template id='nested'>
                             {{#ifCond bindings.length "==" "1"}}
-                              {{> rsp:CollectionBrowserContent viewId=viewId configOrScheme=bindings.0.config.value iri=iri mode="edit"}}
+                              {{#if bindings.0.collection.value}}
+                                  {{> rsp:CollectionBrowserContent viewId=viewId useConfig=bindings.0.config.value useCollection=bindings.0.collection.value iri=iri mode="edit"}}
+                              {{else}} 
+                                  {{> rsp:CollectionBrowserContent viewId=viewId useConfig=bindings.0.config.value iri=iri mode="edit"}}
+                              {{/if}}
                             {{/ifCond}}
 
                             {{#ifCond bindings.length ">" "1"}} 
@@ -153,12 +157,12 @@
         {{#if data.entityTypeConfig}}
           {{#if data.mode}}
               {{#if data.additional_data}}
-                {{> rsp:CollectionBrowserContent viewId=viewId  configOrScheme=data.entityTypeConfig mode=data.mode}}
+                {{> rsp:CollectionBrowserContent viewId=viewId  useConfig=data.entityTypeConfig mode=data.mode}}
               {{else}}
-                {{> rsp:CollectionBrowserContent viewId=viewId  configOrScheme=data.entityTypeConfig mode=data.mode}}
+                {{> rsp:CollectionBrowserContent viewId=viewId  useConfig=data.entityTypeConfig mode=data.mode}}
               {{/if}}
           {{else}}
-              {{> rsp:CollectionBrowserContent viewId=viewId  configOrScheme=data.entityTypeConfig }}
+              {{> rsp:CollectionBrowserContent viewId=viewId  useConfig=data.entityTypeConfig }}
           {{/if}}
         {{else}}
           {{> rsp:ResourceContent}}

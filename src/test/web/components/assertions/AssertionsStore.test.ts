@@ -268,14 +268,14 @@
 
 //     const expected =`
 //       <http://hdl.handle.net/10934/RM0001.COLLECT.11/belief/2> {
-//         <http://hdl.handle.net/10934/RM0001.COLLECT.11/belief/2> a <http://www.ics.forth.gr/isl/CRMinf/I2_Belief>;
-//         <http://www.ics.forth.gr/isl/CRMinf/J4_that> <http://hdl.handle.net/10934/RM0001.COLLECT.11/proposition/1>;
-//         <http://www.ics.forth.gr/isl/CRMinf/J5_holds_to_be> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
+//         <http://hdl.handle.net/10934/RM0001.COLLECT.11/belief/2> a <http://www.cidoc-crm.org/extensions/crminf/I2_Belief>;
+//         <http://www.cidoc-crm.org/extensions/crminf/J4_that> <http://hdl.handle.net/10934/RM0001.COLLECT.11/proposition/1>;
+//         <http://www.cidoc-crm.org/extensions/crminf/J5_holds_to_be> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
 //         <http://www.w3.org/2000/01/rdf-schema#label> "Agree with proposition  \\"'Esperanto Badge' > consists of > 'plastic' and 'metal'\\""^^<http://www.w3.org/2001/XMLSchema#string>
 //       }
 //       <http://hdl.handle.net/10934/RM0001.COLLECT.11/proposition/1> {
 //        <http://hdl.handle.net/10934/RM0001.COLLECT.11> <http://www.cidoc-crm.org/cidoc-crm/P45_consists_of> <http://hdl.handle.net/10934/plastic>, <http://hdl.handle.net/10934/metaal> .
-//        <http://hdl.handle.net/10934/RM0001.COLLECT.11/proposition/1> a <http://www.ics.forth.gr/isl/CRMinf/I4_Proposition_Set> ;
+//        <http://hdl.handle.net/10934/RM0001.COLLECT.11/proposition/1> a <http://www.cidoc-crm.org/extensions/crminf/I4_Proposition_Set> ;
 //        <http://www.w3.org/2000/01/rdf-schema#label> "'Esperanto Badge' > consists of > 'plastic' and 'metal'"^^<http://www.w3.org/2001/XMLSchema#string>
 //      }
 //    `

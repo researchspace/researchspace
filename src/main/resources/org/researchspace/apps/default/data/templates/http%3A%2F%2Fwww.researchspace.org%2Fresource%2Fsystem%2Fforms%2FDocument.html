@@ -152,37 +152,6 @@
             </div>
           {{/if}}
         </div>
-
-        {{#if node}}
-          <semantic-query query='SELECT ?authorityDocument ?authorityDocumentName WHERE {
-                                  <{{node}}> crm:P71i_is_listed_in ?authorityDocument .
-                                  ?authorityDocument a crm:E32_Authority_Document .
-                                  ?authorityDocument crm:P1_is_identified_by ?appellation . 
-                                  ?appellation a crm:E41_Appellation . 
-                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                  ?appellation crm:P190_has_symbolic_content ?authorityDocumentName .
-                              } LIMIT 1'
-                          template='{{> template}}'>
-                          
-              <template id='template'>
-                  <div>
-                      <div style="margin-top: 20px;">
-                          Listed in authority document:
-                          {{#if scheme}}
-                            {{bindings.0.authorityDocumentName.value}} 
-                          {{else}}
-                            <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                            urlqueryparam-view='authority-list' 
-                                            urlqueryparam-resource-iri='{{bindings.0.authorityDocument.value}}'
-                                            class="text-link">
-                              {{bindings.0.authorityDocumentName.value}}
-                            </semantic-link>
-                          {{/if}}
-                      </div>
-                  </div>  
-              </template>
-          </semantic-query>
-        {{/if}}
       
         <div class="inline-composite-container">
           <semantic-form-composite-input  for="human-made_thing_title" 
@@ -858,27 +827,13 @@
         <semantic-form-autocomplete-input   for='entity_attributed_by_attribute_assignment' 
                                             label="Attributed by"
                                             placeholder="Select what assigned attribute to the document" 
-                                            nested-form-templates='[ 
-                                                {
-                                                    "label": "Attribute assignment",
-                                                    "nestedForm": "{{{{raw}}}}
-                                                                    {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                {{{{/raw}}}}"
-                                                }
-                                            ]'>  
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_assigned_by_attribute_assignment' 
                                             label="Assigned by"
                                             placeholder="Select what assigned the document" 
-                                            nested-form-templates='[ 
-                                                {
-                                                    "label": "Attribute assignment",
-                                                    "nestedForm": "{{{{raw}}}}
-                                                                    {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                {{{{/raw}}}}"
-                                                }
-                                            ]'>  
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_measurement' 

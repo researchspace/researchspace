@@ -184,9 +184,16 @@
       "dropAreaDescription": "Drag and drop here any entity of type PLACE (with associated geographic coordinates) to explore related geographic information",
       "iconName": "place",
       "checkQuery": "ASK { 
-        ?value a ?ontologyClass .
-        ?ontologyClass rdfs:subClassOf* crm:E53_Place .
-        ?value <http://www.cidoc-crm.org/cidoc-crm/P168_place_is_defined_by> ?coordinates . }",
+        {
+          ?value a ?ontologyClass .
+          ?ontologyClass rdfs:subClassOf* crm:E53_Place .
+          ?value <http://www.cidoc-crm.org/cidoc-crm/P168_place_is_defined_by> ?coordinates . 
+        } UNION {
+          ?value rdf:type Platform:Set;
+          <http://www.w3.org/ns/ldp#contains>/<http://www.researchspace.org/resource/system/setItem> ?item.
+          ?item <http://www.cidoc-crm.org/cidoc-crm/P168_place_is_defined_by> ?coordinates .
+        } 
+      }",
       "template": "{{> mapTemplate}}",
       "type": "view"
     },
@@ -533,6 +540,11 @@
         <semantic-map tuple-template='{{> popover}}'
                       query='SELECT DISTINCT ?wkt ?place ?color WHERE {
                               {
+                                <{{iri}}> rdf:type Platform:Set;
+                                <http://www.w3.org/ns/ldp#contains>/Platform:setItem ?place.
+                                ?place crm:P168_place_is_defined_by ?wkt .
+                                BIND(0 as ?order)
+                              } UNION {                              
                               <{{iri}}> crm:P168_place_is_defined_by ?wkt .
                                 BIND(<{{iri}}> AS ?place) .
                                 BIND(0 as ?order)
@@ -560,7 +572,7 @@
                 }
               </style>
 
-              <div style="min-width:250px; font-size: 13.5px; overflow: hidden;">
+              <div style="min-width:200px; font-size: 14.5px; overflow: hidden;">
                 <div class="place-row">
                   <div>Place:</div>
                   <mp-draggable iri="{{place.value}}">

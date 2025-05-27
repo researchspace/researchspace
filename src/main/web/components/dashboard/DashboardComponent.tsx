@@ -860,11 +860,17 @@ export class DashboardComponent extends Component<Props, State> {
 
   private onLayoutAction = (action: Action) => {
     /* Identify DashboardItems that contain an image viewer based on viewId */
-    const images = this.state.items.filter((i) => i.viewId === "image-annotation");
+    const images = this.state.items.filter((i) => i.viewId === "image-annotation");   
     const iiifViewerDashboardItems = []; 
-
+    
     images.forEach(image => iiifViewerDashboardItems.push(image.id+"-image-annotation"));
-  //  console.log(action.type);
+
+    const maps = this.state.items.filter((i) => i.viewId === "map");
+    const mapsDashboardItems = [];
+    maps.forEach(map => mapsDashboardItems.push(map.id+"-map"));
+
+    console.log("maps"+mapsDashboardItems);
+    console.log(action.type);
     const actions = [Actions.ADJUST_BORDER_SPLIT, Actions.ADJUST_SPLIT, Actions.MOVE_NODE, Actions.ADD_NODE, Actions.SELECT_TAB, Actions.DELETE_TAB, Actions.MAXIMIZE_TOGGLE]
     if (actions.includes(action.type))
       trigger({
@@ -873,6 +879,12 @@ export class DashboardComponent extends Component<Props, State> {
         targets: iiifViewerDashboardItems,
       });
     
+      trigger({
+        eventType: LayoutChanged,
+        source: 'dashboard',
+        targets: mapsDashboardItems,
+      });
+
     if (action.type === Actions.DELETE_TAB) {
       const tab = this.state.layout.getNodeById(action.data.node) as TabNode;
       return this.onRemoveItem(action, tab.getConfig().itemId);

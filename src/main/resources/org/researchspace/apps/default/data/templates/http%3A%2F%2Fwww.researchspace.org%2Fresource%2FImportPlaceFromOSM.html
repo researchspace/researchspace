@@ -82,9 +82,18 @@
 
               <template id='placeMap'>
                 <div style='height: 210px; width: 20vw;'>
-                  <semantic-context repository='default'>
-                    <semantic-map query='SELECT ?wkt WHERE { BIND("{{geoText.value}}" AS ?wkt) }'
-                                  tuple-template='<div style="display:flex; flex-direction:column; gap:5px;">
+                  {{#if wikidataId.value}}
+                  <semantic-context repository='ephedra'>
+                  <semantic-map query='PREFIX osm: <http://www.researchspace.org/resource/system/services/osm/> 
+                                       SELECT ?wkt WHERE {
+                                          service osm:NominatimSearchService {
+                                          ?subject <http://www.researchspace.org/resource/system/services/osm/q> "{{placeName.value}}";
+                                            <http://www.researchspace.org/resource/system/services/osm/geotext> ?wkt;
+                                            <http://www.researchspace.org/resource/system/services/osm/wikidata> ?wikidataId .
+                                           
+                                          } FILTER (?wikidataId="{{wikidataId.value}}")
+                                      }'
+                                      tuple-template='<div style="display:flex; flex-direction:column; gap:5px;">
                                                     <b style="color:#525156;">{{placeName.value}}</b>
                                                     {{#if wikidataId.value}}
                                                       <div>
@@ -96,9 +105,10 @@
                                                         </a>
                                                       </div>
                                                     {{/if}}
-                                                  </div>'>
-                    </semantic-map>
+                                                  </div>'> 
+                    </semantic-map> 
                   </semantic-context>
+                  {{/if}}
                 </div>
               </template>
 
@@ -157,9 +167,10 @@
                                               PREFIX wd: <http://www.wikidata.org/entity/>
                                               PREFIX schema: <http://schema.org/>
 
-                                              SELECT ?osmPlaceURI ?placeLabel ?placeDescription 
+                                              SELECT ?osmPlaceURI ?placeLabel ?placeDescription ?wikidata2Id
                                               # (SAMPLE(?_image) AS ?placeImage) 
                                               WHERE { 
+                                                BIND("{{wikidataId.value}}" as ?wikidata2Id)
                                                 SERVICE <https://query.wikidata.org/sparql> {  
                                                   BIND(IRI(CONCAT(STR(wd:), "{{wikidataId.value}}")) AS ?osmPlaceURI) .
                                                  
@@ -170,17 +181,18 @@
                                                     ?osmPlaceURI schema:description ?placeDescription .
                                                   }
                                                 }
-
+                                                
                                               }'
                                             >
 
                         <template id='template'>
                           <div>
-                            <semantic-query query='SELECT DISTINCT ?osmPlaceURI ?osmPlaceName ?placeLabel ?placeDescription ?osmGeoCoordinates ?existingRecord WHERE {
+                            
+                            <semantic-query query='SELECT DISTINCT ?osmPlaceURI ?osmPlaceName ?placeLabel ?placeDescription ?osmWikidataId ?existingRecord WHERE {
                                                     BIND(<{{bindings.0.osmPlaceURI.value}}> as ?osmPlaceURI)
 
                                                     BIND("{{placeName.value}}" as ?osmPlaceName)
-                                                    BIND("{{geoText.value}}" as ?osmGeoCoordinates)
+                                                    BIND("{{bindings.0.wikidata2Id.value}}" as ?osmWikidataId)
                                                     BIND("{{bindings.0.placeLabel.value}}" as ?placeLabel)
                                                     BIND("{{bindings.0.placeDescription.value}}" as ?placeDescription)
 
@@ -221,7 +233,7 @@
                                                                       "apiResourceName": "{{bindings.0.osmPlaceName.value}}", 
                                                                       "apiResourceLabel": "{{bindings.0.placeLabel.value}}",
                                                                       "apiResourceDescription": "{{bindings.0.placeDescription.value}}",
-                                                                      "apiResourceosmGeoCoordinates": "{{bindings.0.osmGeoCoordinates.value}}"
+                                                                      "apiResourceWikidataId": "{{bindings.0.osmWikidataId.value}}"                                                                    
                                                                     }' 
                                                         >
                                                         <button class="btn btn-action" title="Import place">Import place</button>
@@ -230,17 +242,18 @@
                                         </div>
                                       </template>
                             </semantic-query>
+                            
                           </div> 
                         </template>
                       </semantic-query>
-                    </semantic-context>
+                   
           
                   {{else}}
                     <mp-event-trigger id='{{viewId}}-select-api-resource-trigger' 
                                       type='apiResourceSelect' 
                                       data='{"apiResourceName": "{{placeName.value}}", 
                                             "apiResourceLabel": "{{placeName.value}}",
-                                            "apiResourceosmGeoCoordinates": "{{geoText.value}}",
+                                            "apiResourceWikidataId": "",
                                             {{#if scheme}}"scheme": "{{scheme}}",{{/if}}
                                             "viewId": "{{viewId}}"
                                             }' >

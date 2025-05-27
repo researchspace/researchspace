@@ -184,26 +184,21 @@
       </rs-tab>
 
       <rs-tab event-key="geoCoordinates" title="Geographic coordinates">
-      <div class="select-input-disabled-container">
         {{#if apiResourceWikidataId}} 
-            {{#if apiResourceLabel}}
+          {{#if apiResourceLabel}}
+            <div class="customFormHeader">Geographic coordinates (OpenStreetMap)</div>
             <div class="focused-input-container">
-              <div style="padding-top: 20px;">              
-                <b>OSM Geographic Coordinates will automatically be imported when creating the new place.</b>
-              </div>
-              <semantic-form-hidden-input readonly="true" for="place_wikidata_geo_coordinates" default-value='{{apiResourceLabel}};;;{{apiResourceWikidataId}}' label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true></semantic-form-hidden-input>
+              <div class="focused-input-message" style="opacity: 0.55; cursor: not-allowed;">Geographic Coordinates automatically imported from OpenStreetMap</div>
+              <semantic-form-hidden-input for="place_wikidata_geo_coordinates" default-value='{{apiResourceLabel}};;;{{apiResourceWikidataId}}' label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true></semantic-form-hidden-input>
             </div>
-            {{else}}
-              <semantic-form-text-input readonly="true" for="place_geo_coordinates" label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input>
-            {{/if}}
+          {{/if}}
         {{else}}
-            <semantic-form-text-input readonly="true" for="place_geo_coordinates" label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input>
+          <div class="text-input-limit-height"><semantic-form-text-input for="place_geo_coordinates" label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true></semantic-form-text-input></div>
         {{/if}}
 
-        <semantic-form-text-input readonly="true" for="place_within_geo_coordinates" label="Within geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input>
+        <div class="text-input-limit-height"><semantic-form-text-input for="place_within_geo_coordinates" label="Within geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input></div>
 
-        <semantic-form-text-input readonly="true" for="place_contains_geo_coordinates" label="Contains geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input>
-        </div>
+        <div class="text-input-limit-height"><semantic-form-text-input for="place_contains_geo_coordinates" label="Contains geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input></div>
       </rs-tab>
 
       <rs-tab event-key="component" title="Components">
@@ -581,7 +576,7 @@
   <semantic-form-errors></semantic-form-errors>
   [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}place{{/if}}']]
 </semantic-form>
-</semantic-context>
+
 [[!--
 {{#if nested}}
   <mp-event-target-template-render id='{{viewId}}-nested-form' template='{{> template}}'>
@@ -623,5 +618,26 @@
       </mp-overlay-dialog-content>
     </mp-overlay-dialog>
   </mp-event-target-template-render>
+{{/if}}
+--]]
+
+[[!-- 
+{{#if node}}
+  <semantic-query query='SELECT ?place ?outOfLimitGeoCoordinates WHERE {
+                          BIND (<{{node}}> as ?place)
+
+                          OPTIONAL {
+                            ?place crm:P168_place_is_defined_by ?geoCoordinates .
+                            BIND(IF(STRLEN( STR(?geoCoordinates) ) > 100000, true, false) AS ?outOfLimitGeoCoordinates)
+                          }
+                        }
+                        LIMIT 1'>
+    <template id='template'>
+      {{> forms:Place_partial outOfLimitGeoCoordinates=bindings.0.outOfLimitGeoCoordinates.value 
+      }}
+    </template>
+  </semantic-query>
+{{else}}
+  {{> forms:Place_partial}}
 {{/if}}
 --]]

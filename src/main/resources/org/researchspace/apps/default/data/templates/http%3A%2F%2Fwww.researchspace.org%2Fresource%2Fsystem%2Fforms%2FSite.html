@@ -34,6 +34,7 @@
                             place_approximates_place="http://www.researchspace.org/pattern/system/place/approximates_place"
                             place_approximated_by_place="http://www.researchspace.org/pattern/system/place/approximated_by_place"
 
+                            place_wikidata_geo_coordinates="http://www.researchspace.org/pattern/system/place/osm_wikidata_geo_coordinates"
                             place_geo_coordinates="http://www.researchspace.org/pattern/system/place/osm_geo_coordinates"
                             place_within_geo_coordinates="http://www.researchspace.org/pattern/system/place/within_geo_coordinates"
                             place_contains_geo_coordinates="http://www.researchspace.org/pattern/system/place/contains_geo_coordinates"
@@ -318,17 +319,21 @@
             </rs-tab>
 
             <rs-tab event-key="geoCoordinates" title="Location geographic coordinates">
-                {{#if apiResourceosmGeoCoordinates}}
-                    <div class="focused-input-container">
-                        <semantic-form-text-input for="place_geo_coordinates" default-value='{{apiResourceosmGeoCoordinates}}' label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true></semantic-form-text-input>
-                    </div>
+                {{#if apiResourceWikidataId}} 
+                    {{#if apiResourceLabel}}
+                        <div class="customFormHeader">Geographic coordinates (OpenStreetMap)</div>
+                        <div class="focused-input-container">
+                            <div class="focused-input-message" style="opacity: 0.55; cursor: not-allowed;">Geographic Coordinates automatically imported from OpenStreetMap</div>
+                            <semantic-form-hidden-input for="place_wikidata_geo_coordinates" default-value='{{apiResourceLabel}};;;{{apiResourceWikidataId}}' label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true></semantic-form-hidden-input>
+                        </div>
+                    {{/if}}
                 {{else}}
-                    <semantic-form-text-input for="place_geo_coordinates" label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input>
+                    <div class="text-input-limit-height"><semantic-form-text-input for="place_geo_coordinates" label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true></semantic-form-text-input></div>
                 {{/if}}
-
-                <semantic-form-text-input for="place_within_geo_coordinates" label="Within geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input>
-
-                <semantic-form-text-input for="place_contains_geo_coordinates" label="Contains geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input>
+      
+                <div class="text-input-limit-height"><semantic-form-text-input for="place_within_geo_coordinates" label="Within geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input></div>
+      
+                <div class="text-input-limit-height"><semantic-form-text-input for="place_contains_geo_coordinates" label="Contains geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input></div>
             </rs-tab>
 
             <rs-tab event-key="locationComponent" title="Location components">

@@ -21,7 +21,7 @@ import * as Immutable from 'immutable';
 
 import * as Rdf from '../core/Rdf';
 
-module xsd {
+namespace xsd {
   /**
    * For XSD namespace considerations see
    * https://www.w3.org/TR/xmlschema-2/#namespaces

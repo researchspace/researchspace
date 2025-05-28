@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export { EventsApi, Event, EventType } from './EventsApi';
+export type { EventsApi, Event, EventType } from './EventsApi';
 import * as BuiltInEvents from './BuiltInEvents';
 export { BuiltInEvents };
 export * from './EventsStore';

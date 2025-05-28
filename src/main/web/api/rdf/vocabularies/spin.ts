@@ -17,20 +17,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import RDF = require('../core/Rdf');
+import * as Rdf from '../core/Rdf';
 
-module spin {
+namespace spin {
   export var _NAMESPACE = 'http://spinrdf.org/spin#';
 
-  export const Template = RDF.iri(_NAMESPACE + 'Template');
-  export const SelectTemplate = RDF.iri(_NAMESPACE + 'SelectTemplate');
-  export const ConstructTemplate = RDF.iri(_NAMESPACE + 'ConstructTemplate');
-  export const AskTemplate = RDF.iri(_NAMESPACE + 'AskTemplate');
-  export const UpdateTemplate = RDF.iri(_NAMESPACE + 'UpdateTemplate');
-  export const constraintProp = RDF.iri(_NAMESPACE + 'constraint');
-  export const bodyProp = RDF.iri(_NAMESPACE + 'body');
+  export const Template = Rdf.iri(_NAMESPACE + 'Template');
+  export const SelectTemplate = Rdf.iri(_NAMESPACE + 'SelectTemplate');
+  export const ConstructTemplate = Rdf.iri(_NAMESPACE + 'ConstructTemplate');
+  export const AskTemplate = Rdf.iri(_NAMESPACE + 'AskTemplate');
+  export const UpdateTemplate = Rdf.iri(_NAMESPACE + 'UpdateTemplate');
+  export const constraintProp = Rdf.iri(_NAMESPACE + 'constraint');
+  export const bodyProp = Rdf.iri(_NAMESPACE + 'body');
 
-  export var text = RDF.iri(_NAMESPACE + 'text');
+  export var text = Rdf.iri(_NAMESPACE + 'text');
 }
 
 export default spin;

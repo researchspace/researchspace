@@ -1,0 +1,50 @@
+<http://www.researchspace.org/pattern/system/place/osm_wikidata_geo_coordinates/context> {
+  <http://www.researchspace.org/pattern/system/place/osm_wikidata_geo_coordinates> a
+      <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
+      <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-eb4d870efe764084a38e5c4320822de2-dnxvy;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-eb4d870efe764084a38e5c4320822de2-6dw67b;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E53_Place>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-eb4d870efe764084a38e5c4320822de2-cnswe;
+    <http://www.w3.org/2000/01/rdf-schema#label> "osm wikidata geo coordinates";
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/place>;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#string>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2025-05-27T13:18:30.165+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-eb4d870efe764084a38e5c4320822de2-cnswe a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+  $subject crm:P168_place_is_defined_by $value .
+} WHERE { 
+  $subject crm:P168_place_is_defined_by $value .
+}""" .
+  
+  _:genid-eb4d870efe764084a38e5c4320822de2-dnxvy a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT (IF(
+      STRLEN( STR(?geotext) ) > 100000,
+      \"Geographic coordinates cannot be viewed/edited as geo text is larger than 100000 characters\",
+      STR(?geotext)
+    ) AS ?value ) WHERE {
+   $subject crm:P168_place_is_defined_by ?geotext .
+}""" .
+  
+  _:genid-eb4d870efe764084a38e5c4320822de2-6dw67b a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P168_place_is_defined_by ?wikidataGeo .    
+} WHERE {
+    BIND(STRBEFORE(?value, \";;;\") AS ?value_of_place_name)
+  	BIND(STRAFTER (?value, \";;;\") AS ?value_of_wikidata_id)
+      
+    service <http://www.researchspace.org/resource/system/services/osm/NominatimSearchService> {
+      ?subject <http://www.researchspace.org/resource/system/services/osm/q> ?value_of_place_name;
+      <http://www.researchspace.org/resource/system/services/osm/wikidata> ?wikidataId;
+        <http://www.researchspace.org/resource/system/services/osm/geotext> ?wikidataGeo.
+	}
+    FILTER (?wikidataId=?value_of_wikidata_id)    
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/place/osm_wikidata_geo_coordinates> .
+}

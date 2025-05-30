@@ -671,11 +671,22 @@
                             {{else}}
                                 <div class="form-tabs-subtabs-content--title">
                                     <h4>Map</h4>
-                                </div>
-                                {{#if apiResourceosmGeoCoordinates}}
-                                    <div style='height: 350px; width: 100%; margin: 10px 0 0;'>
-                                        <semantic-map query='SELECT ?wkt WHERE { BIND("{{apiResourceosmGeoCoordinates}}" AS ?wkt) }'
-                                                        tuple-template='<div style="display:flex; flex-direction:column; gap:5px;">
+                                </div>                                    
+                                  {{#if apiResourceWikidataId}}
+                                    <div style='height: 350px; width: 100%; margin: 10px 0 0;'>                                    
+                                        <semantic-context repository='ephedra'>
+                                            <semantic-map query='PREFIX osm: <http://www.researchspace.org/resource/system/services/osm/> 
+                                                                SELECT ?wkt WHERE {
+                                                                    service osm:NominatimSearchService {
+                                                                    ?subject <http://www.researchspace.org/resource/system/services/osm/q> "{{apiResourceName}}";
+                                                                        <http://www.researchspace.org/resource/system/services/osm/geotext> ?wkt;                                                                      
+                                                                        <http://www.researchspace.org/resource/system/services/osm/display_name> "{{apiResourceName}}";
+                                                                            <http://www.researchspace.org/resource/system/services/osm/wikidata> ?wikidataId .
+ 
+                                                                    }
+                                                                    FILTER (?wikidataId="{{apiResourceWikidataId}}")
+                                                                }'
+                                                            tuple-template='<div style="display:flex; flex-direction:column; gap:5px;">
                                                                             {{#if apiResourceName}}<b style="color:#525156;">{{apiResourceName}}</b>{{/if}}
                                                                             {{#if apiResourceURI}}
                                                                                 <div>
@@ -688,7 +699,9 @@
                                                                                 </div>
                                                                             {{/if}}
                                                                         </div>'>
-                                        </semantic-map>
+                                            </semantic-map> 
+                                        </semantic-context>
+
                                     </div>
                                 {{else}}
                                     <div class="page__section-container-whiteBg" style="margin-top: 10px; font-size: 12.5px;">Enter the geographic coordinates (OpenStreetMap) in location details to display the place map.</div>

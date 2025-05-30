@@ -55,6 +55,7 @@ import AnimatedCluster from 'ol-ext/layer/AnimatedCluster';
 import { BuiltInEvents, trigger } from 'platform/api/events';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 import { Component, ComponentContext } from 'platform/api/components';
+import { LayoutChanged } from 'platform/components/dashboard/DashboardEvents';
 
 import { ErrorNotification } from 'platform/components/ui/notification';
 import { Spinner } from 'platform/components/ui/spinner';
@@ -328,6 +329,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       window.addEventListener('resize', () => {
         map.updateSize();
       });
+      window.addEventListener(LayoutChanged,() => {console.log("do something"); map.updateSize()});
     }, 1000);
   }
 

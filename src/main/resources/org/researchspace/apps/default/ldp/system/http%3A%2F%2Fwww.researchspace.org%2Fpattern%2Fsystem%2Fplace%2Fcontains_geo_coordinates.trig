@@ -15,8 +15,13 @@
     <http://www.w3.org/ns/prov#generatedAtTime> "2024-10-15T15:47:18.833+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
   
   _:genid-da731475531147f5879835461a29652d-0plvvwc a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
-   $subject crm:P172_contains $value .
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT 
+    (IF(
+      STRLEN( STR(?geotext) ) > 100000,
+      "Geographic coordinates cannot be viewed/edited as geo text is larger than 100000 characters",
+      STR(?geotext)
+    ) AS ?value ) WHERE {
+   $subject crm:P172_contains ?geotext .
 }""" .
   
   _:genid-da731475531147f5879835461a29652d-nuf0ef a <http://spinrdf.org/sp#Query>;

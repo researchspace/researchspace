@@ -302,8 +302,12 @@
   {{/if}}
 
   {{#if (or (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Place") 
-            (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Organisation") )}}
-    <semantic-if query='ASK { <{{iri}}> crm:P168_place_is_defined_by ?wkt . }'>
+            (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Organisation") 
+            (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set"))}}
+    <semantic-if query='ASK { {<{{iri}}> crm:P168_place_is_defined_by ?wkt . } UNION {<{{iri}}> rdf:type Platform:Set;
+          <http://www.w3.org/ns/ldp#contains>/<http://www.researchspace.org/resource/system/setItem> ?item.
+          ?item <http://www.cidoc-crm.org/cidoc-crm/P168_place_is_defined_by> ?wkt .
+       } }'>
       <template id='then'>
         <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
                                   urlqueryparam-view='map' 

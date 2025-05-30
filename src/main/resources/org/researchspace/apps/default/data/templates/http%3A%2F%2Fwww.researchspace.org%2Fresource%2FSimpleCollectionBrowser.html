@@ -648,7 +648,7 @@
                       <div class="btn-inline-container">
 
                         {{#if (eq mode "new")}}
-                          [[> rsp:ImportFromExternalSource]] 
+                          [[> rsp:ImportFromExternalSourceModal]] 
                         {{/if}} 
 
                         {{#if (not (or (eq mode "new") (eq mode "deleted")))}}
@@ -826,7 +826,6 @@
                                                   {{#if apiResourceArtistName}}"apiResourceArtistName": "{{apiResourceArtistName}}",{{/if}}
                                                   {{#if apiResourceArtistRole}}"apiResourceArtistRole": "{{apiResourceArtistRole}}",{{/if}}
 
-                                                  {{#if apiResourceosmGeoCoordinates}}"apiResourceosmGeoCoordinates": "{{apiResourceosmGeoCoordinates}}",{{/if}}
                                                    {{#if apiResourceWikidataId}}"apiResourceWikidataId": "{{apiResourceWikidataId}}",{{/if}}
                                                 {{/if}}
                                                 "resourceBroaderProperty": {{#if resourceBroaderProperty}}"{{resourceBroaderProperty}}"{{else}}null{{/if}}
@@ -853,7 +852,7 @@
               
               <mp-event-proxy id='{{viewId}}-closeModal-onSelect-APIResource-proxy'
                               on-event-source='{{viewId}}-select-api-resource-trigger' 
-                              on-event-type='apiResourceSelect'
+                              on-event-type='apiResourceImportInModal'
                               proxy-event-type='OverlayDialog.Close' 
                               proxy-targets='["{{viewId}}-importResourceFromAPI-dialog"]'
               ></mp-event-proxy>
@@ -867,7 +866,7 @@
 
               <mp-event-proxy id='{{viewId}}-refreshForm-onSelect-apiResource-proxy'
                               on-event-source='{{viewId}}-select-api-resource-trigger' 
-                              on-event-type='apiResourceSelect'
+                              on-event-type='apiResourceImportInModal'
                               proxy-event-type='Component.TemplateUpdate' 
                               proxy-targets='["{{viewId}}-term-forms"]'
                               additional-data='{"mode": "new", "selectedApiResource": "true"}'

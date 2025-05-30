@@ -1,41 +1,47 @@
-<semantic-query query='SELECT ?ontologyClass WHERE {
-                        BIND(<{{resourceOntologyClass}}> as ?ontologyClass)
-                        FILTER EXISTS{?ontologyClass rdfs:subClassOf+ crm:E18_Physical_Thing }
-                        FILTER(?ontologyClass != crm:E21_Person )
-                    } LIMIT 1'
-                    
-                    template='{{> importExternalThing}}'
-				    no-result-template='{{> else}}'>
-
-    <template id='importExternalThing'>
-        <mp-overlay-dialog  id='{{viewId}}-importResourceFromAPI-dialog' 
-                            title="Import from external source" 
-                            type="lightbox">
-            <mp-overlay-dialog-trigger>
-                <button class="btn btn-action btn-textAndIcon">
-                    <rs-icon icon-type='rounded' icon-name='upload' symbol='true'></rs-icon>
-                    <span>Import from external source</span>
-                </button>
-            </mp-overlay-dialog-trigger>
-            <mp-overlay-dialog-content>
-                <div class="page__section-container" style="padding-top: 0px;">
-                    <bs-tab-container id="{{viewId}}-import-thing-tabs-container" default-active-key="1">
+{{#bind viewId=dashboardId}}
+    <mp-event-target-template-render id='{{viewId}}-import-from-external-source' template='{{> template}}'>
+        <template id='template'>
+            <div class="page__grid-container">
+                <div class="page__content-container">
+                    <bs-tab-container id="{{viewId}}-import-from-external-thing-tabs-container" default-active-key="1">
                         <div>
-                            <bs-nav bs-style="tabs">
-                                <bs-nav-item event-key="1">Wikipedia</bs-nav-item>
-                                <bs-nav-dropdown event-key="2" title="Museum collections">
-                                    <bs-menu-item event-key="2.1" draggable="false">MET collection</bs-menu-item>
-                                    <bs-menu-item event-key="2.2" draggable="false">V&A collection</bs-menu-item>
+                            <bs-nav bs-style="tabs" style="margin-top: 0;">
+                                <bs-nav-item event-key="1">OpenStreetMap</bs-nav-item>
+
+                           [[!--     <bs-nav-item event-key="2">Wikipedia</bs-nav-item>
+
+                                <bs-nav-dropdown event-key="3" title="Museum collections">
+                                    <bs-menu-item event-key="3.1" draggable="false">MET collection</bs-menu-item>
+                                    <bs-menu-item event-key="3.2" draggable="false">V&A collection</bs-menu-item>
                                 </bs-nav-dropdown>
 
-                                <bs-nav-dropdown event-key="3" title="Archives">
-                                    <bs-menu-item event-key="3.1" draggable="false">The National archives</bs-menu-item>
-                                </bs-nav-dropdown>
+                                <bs-nav-dropdown event-key="4" title="Archives">
+                                    <bs-menu-item event-key="4.1" draggable="false">The National archives</bs-menu-item>
+                                </bs-nav-dropdown>   
+                            --]]    
+                                <mp-event-trigger   id="{{viewId}}-import-from-external-source-refresh-trigger" 
+                                                    type='Component.TemplateUpdate' 
+                                                    targets='["{{viewId}}-import-from-external-source"]'
+                                >
+                                    <button class="btn btn-secondary btn-textAndIcon" style="float: inline-end;" title="Refresh search">
+                                        <rs-icon icon-type="rounded" icon-name="refresh"  symbol="true"></rs-icon>
+                                    </button>
+                                </mp-event-trigger>
 
                             </bs-nav>
 
-                            <bs-tab-content animation style="padding-top: 10px;">
+                            <bs-tab-content animation>
+
                                 <bs-tab-pane event-key="1">
+                                    <h6>Search on OpenStreetMap</h6>
+                                    <inline-template    template-iri='[[resolvePrefix "rsp:ImportFromOSM"]]' 
+                                                        options='{
+                                                                "viewId": "{{viewId}}"
+                                                        }'>
+                                    </inline-template>
+                                </bs-tab-pane>
+
+                    [[!--       <bs-tab-pane event-key="2">
                                     <h6>Search in Wikidata</h6>
                                     <inline-template template-iri='[[resolvePrefix "rsp:ImportFromWikidata"]]' 
                                                         options='{
@@ -47,7 +53,8 @@
                                                         }'>
                                     </inline-template>
                                 </bs-tab-pane>
-                                <bs-tab-pane event-key="2.1">
+
+                                <bs-tab-pane event-key="3.1">
                                     <h6>Search in MET collection</h6>
                                     <inline-template template-iri='[[resolvePrefix "rsp:ImportFromMET"]]' 
                                                         options='{
@@ -59,7 +66,8 @@
                                                         }'>
                                     </inline-template>
                                 </bs-tab-pane>
-                                <bs-tab-pane event-key="2.2">
+
+                                <bs-tab-pane event-key="3.2">
                                     <h6>Search in Victoria and Albert Museum collection</h6>
                                     <inline-template template-iri='[[resolvePrefix "rsp:ImportFromVAM"]]' 
                                                         options='{
@@ -71,7 +79,8 @@
                                                         }'>
                                     </inline-template>
                                 </bs-tab-pane>
-                                <bs-tab-pane event-key="3.1">
+
+                                <bs-tab-pane event-key="4.1">
                                     <h6>Search in The National Archives catalogue</h6>
                                     <inline-template template-iri='[[resolvePrefix "rsp:ImportFromTNA"]]' 
                                                         options='{
@@ -83,147 +92,12 @@
                                                         }'>
                                     </inline-template>
                                 </bs-tab-pane>
-                            [[!--    
-                                <bs-tab-pane event-key="4.1">
-                                    <h6>Search in Amara West</h6>
-                                    <inline-template template-iri='[[resolvePrefix "rsp:ImportFromAmaraWest"]]' 
-                                                        options='{
-                                                            "scheme": "{{collection}}", 
-                                                            "viewId": "{{viewId}}",
-                                                            "domain": "{{resourceOntologyClass}}",
-                                                            "domainConfig": "{{resourceConfiguration}}",
-                                                            "label": "{{resourceName}}"
-                                                        }'>
-                                    </inline-template>
-                                </bs-tab-pane>
-                            --]]
+                    --]]
                             </bs-tab-content>
                         </div>
                     </bs-tab-container>
                 </div>
-            </mp-overlay-dialog-content>
-        </mp-overlay-dialog>
-    </template>
-
-    <template id='else'>
-        <semantic-switch query='SELECT ?resourceClass {
-                                BIND(<{{resourceOntologyClass}}> as ?resourceClass)
-                            }'>
-
-            <template id='http://www.cidoc-crm.org/cidoc-crm/E53_Place'>
-                <mp-overlay-dialog  id='{{viewId}}-importResourceFromAPI-dialog' 
-                                    title="Import place from OpenStreetMap" 
-                                    type="lightbox">
-                    <mp-overlay-dialog-trigger>
-                        <button class="btn btn-action btn-textAndIcon">
-                            <rs-icon icon-type='rounded' icon-name='upload' symbol='true'></rs-icon>
-                            <span>Import from OpenStreetMap</span>
-                        </button>
-                    </mp-overlay-dialog-trigger>
-                    <mp-overlay-dialog-content>
-                        <div class="page__section-container">
-                            <h6 style="margin: 0px 0 7px;">Search on OpenStreetMap</h6>
-                            <inline-template template-iri='[[resolvePrefix "rsp:ImportPlaceFromOSM"]]' 
-                                                options='{
-                                                        "scheme": "{{collection}}", 
-                                                        "viewId": "{{viewId}}"
-                                                }'>
-                            </inline-template>
-                        </div>
-                    </mp-overlay-dialog-content>
-                </mp-overlay-dialog>
-            </template>
-
-            <template id='http://www.cidoc-crm.org/cidoc-crm/E39_Actor'>
-                {{#if (eq resourceP2Type "http://www.researchspace.org/resource/system/vocab/resource_type/user")}}
-                {{else}}
-                    <mp-overlay-dialog  id='{{viewId}}-importResourceFromAPI-dialog' 
-                                        title="Import from Wikidata" 
-                                        type="lightbox">
-                        <mp-overlay-dialog-trigger>
-                            <button class="btn btn-action btn-textAndIcon">
-                                <rs-icon icon-type='rounded' icon-name='upload' symbol='true'></rs-icon>
-                                <span>Import from Wikidata</span>
-                            </button>
-                        </mp-overlay-dialog-trigger>
-                        <mp-overlay-dialog-content>
-                            <div class="page__section-container">
-                                <h6 style="margin: 0px 0 7px;">Search in Wikidata</h6>
-                                <inline-template template-iri='[[resolvePrefix "rsp:ImportFromWikidata"]]' 
-                                                    options='{
-                                                            "scheme": "{{collection}}", 
-                                                            "viewId": "{{viewId}}",
-                                                            "domain": "http://www.cidoc-crm.org/cidoc-crm/E39_Actor",
-                                                            "domainConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor",
-                                                            "label": "actor"
-                                                    }'>
-                                </inline-template>
-                            </div>
-                        </mp-overlay-dialog-content>
-                    </mp-overlay-dialog> 
-                {{/if}}
-            </template>
-
-            <template id='http://www.cidoc-crm.org/cidoc-crm/E74_Group'>
-                <mp-overlay-dialog  id='{{viewId}}-importResourceFromAPI-dialog' 
-                                    title="Import from Wikidata" 
-                                    type="lightbox">
-                    <mp-overlay-dialog-trigger>
-                        <button class="btn btn-action btn-textAndIcon">
-                            <rs-icon icon-type='rounded' icon-name='upload' symbol='true'></rs-icon>
-                            <span>Import from Wikidata</span>
-                        </button>
-                    </mp-overlay-dialog-trigger>
-                    <mp-overlay-dialog-content>
-                        <div class="page__section-container">
-                            <h6 style="margin: 0px 0 7px;">Search in Wikidata</h6>
-                            <inline-template template-iri='[[resolvePrefix "rsp:ImportFromWikidata"]]' 
-                                                options='{
-                                                        "scheme": "{{collection}}", 
-                                                        "viewId": "{{viewId}}",
-                                                        "domain": "http://www.cidoc-crm.org/cidoc-crm/E74_Group",
-                                                        "domainConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Group",
-                                                        "label": "group"
-                                                }'>
-                            </inline-template>
-                        </div>
-                    </mp-overlay-dialog-content>
-                </mp-overlay-dialog> 
-            </template>
-
-            <template id='http://www.cidoc-crm.org/cidoc-crm/E21_Person'>
-                <mp-overlay-dialog  id='{{viewId}}-importResourceFromAPI-dialog' 
-                                    title="Import from Wikidata" 
-                                    type="lightbox">
-                    <mp-overlay-dialog-trigger>
-                        <button class="btn btn-action btn-textAndIcon">
-                            <rs-icon icon-type='rounded' icon-name='upload' symbol='true'></rs-icon>
-                            <span>Import from Wikidata</span>
-                        </button>
-                    </mp-overlay-dialog-trigger>
-                    <mp-overlay-dialog-content>
-                        <div class="page__section-container">
-                            <h6 style="margin: 0px 0 7px;">Search in Wikidata</h6>
-                            <inline-template template-iri='[[resolvePrefix "rsp:ImportFromWikidata"]]' 
-                                                options='{
-                                                        "scheme": "{{collection}}", 
-                                                        "viewId": "{{viewId}}",
-                                                        "domain": "http://www.cidoc-crm.org/cidoc-crm/E21_Person",
-                                                        "domainConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Person",
-                                                        "label": "person"
-                                                }'>
-                            </inline-template>
-                        </div>
-                    </mp-overlay-dialog-content>
-                </mp-overlay-dialog> 
-            </template>
-
-            <template id='default'><div></div></template>
-
-        </semantic-switch>
-    </template>
-
-</semantic-query>  
-
-
-
+            </div>
+        </template>
+    </mp-event-target-template-render>
+{{/bind}}

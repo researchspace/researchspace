@@ -189,7 +189,7 @@
             <div class="customFormHeader">Geographic coordinates (OpenStreetMap)</div>
             <div class="focused-input-container">
               <div class="focused-input-message" style="opacity: 0.55; cursor: not-allowed;">Geographic Coordinates automatically imported from OpenStreetMap</div>
-              <semantic-form-hidden-input for="place_wikidata_geo_coordinates" default-value='{{apiResourceLabel}};;;{{apiResourceWikidataId}}' label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true></semantic-form-hidden-input>
+              <semantic-form-hidden-input for="place_wikidata_geo_coordinates" default-value='{{apiResourceLabel}};;;{{apiResourceWikidataId}}' label="Geographic coordinates (OpenStreetMap)" force-defaults=true></semantic-form-hidden-input>
             </div>
           {{/if}}
         {{else}}
@@ -218,7 +218,7 @@
                                                                             ?appellation crm:P190_has_symbolic_content ?label ." }'
 
                                             nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" apiResourceURI=false 
-                                                                      apiResourceName=false apiResourceLabel=false apiResourceDescription=false apiResourceosmGeoCoordinates=false}}{{{{/raw}}}}'
+                                                                      apiResourceName=false apiResourceLabel=false apiResourceDescription=false apiResourceWikidataId=false}}{{{{/raw}}}}'
 
                                             query-item-label='SELECT ?label WHERE {
                                                                 ?item crm:P1_is_identified_by ?appellation . 
@@ -242,7 +242,7 @@
                                                                             ?appellation crm:P190_has_symbolic_content ?label ." }'
 
                                             nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" apiResourceURI=false 
-                                                                    apiResourceName=false apiResourceLabel=false apiResourceDescription=false apiResourceosmGeoCoordinates=false}}{{{{/raw}}}}'
+                                                                    apiResourceName=false apiResourceLabel=false apiResourceDescription=false apiResourceWikidataId=false}}{{{{/raw}}}}'
 
                                             query-item-label='SELECT ?label WHERE {
                                                                 ?item crm:P1_is_identified_by ?appellation . 
@@ -577,49 +577,6 @@
   [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}place{{/if}}']]
 </semantic-form>
 
-[[!--
-{{#if nested}}
-  <mp-event-target-template-render id='{{viewId}}-nested-form' template='{{> template}}'>
-    <mp-event-proxy id='{{viewId}}-refreshForm-onSelect-apiResource-proxy'
-                    on-event-source='OSMnested-select-api-resource-trigger' 
-                    on-event-type='apiResourceSelect'
-                    proxy-event-type='Component.TemplateUpdate' 
-                    proxy-targets='["{{viewId}}-nested-form"]'  
-                    additional-data='{"mode": "new", "selectedApiResource": "true"}'
-    ></mp-event-proxy>
-
-    <mp-event-proxy id='{{viewId}}-closeModal-onSelect-APIResource-proxy'
-                    on-event-source='OSMnested-select-api-resource-trigger' 
-                    on-event-type='apiResourceSelect'
-                    proxy-event-type='OverlayDialog.Close' 
-                    proxy-targets='["OSMnested-importResourceFromAPI-dialog"]'
-    ></mp-event-proxy>
-
-    <mp-overlay-dialog  id='OSMnested-importResourceFromAPI-dialog' 
-                        title="Import place from OpenStreetMap" 
-                        type="lightbox">
-
-      <mp-overlay-dialog-trigger>
-          <button class="btn btn-action btn-textAndIcon" style="margin-top: 15px; width: 100%;">
-              <rs-icon icon-type='rounded' icon-name='upload' symbol='true'></rs-icon>
-              <span>Import from OpenStreetMap</span>
-          </button>
-      </mp-overlay-dialog-trigger>
-      <mp-overlay-dialog-content>
-          <div class="page__section-container">
-              <h6 style="margin: 0px 0 7px;">Search on OpenStreetMap</h6>
-              <inline-template template-iri='[[resolvePrefix "rsp:ImportPlaceFromOSM"]]' 
-                                  options='{
-                                          "scheme": "{{collection}}", 
-                                          "viewId": "OSMnested"
-                                  }'>
-              </inline-template>
-          </div>
-      </mp-overlay-dialog-content>
-    </mp-overlay-dialog>
-  </mp-event-target-template-render>
-{{/if}}
---]]
 
 [[!-- 
 {{#if node}}

@@ -75,18 +75,12 @@
       <rs-tab event-key="detail" title="Details">
         <div class="form-details-container">
           <div style="overflow-x: auto;">
-            {{#if apiResourceLabel}}
+            {{#if apiResourceName}}
               <div class="focused-input-container">
-                <semantic-form-text-input for="entity_primary_appellation" label="Place name" placeholder="Enter place name" default-value="{{apiResourceLabel}}" force-defaults=true></semantic-form-text-input>
+                <semantic-form-text-input for="entity_primary_appellation" label="Place name" placeholder="Enter place name" default-value="{{apiResourceName}}" force-defaults=true></semantic-form-text-input>
               </div>
             {{else}}
-              {{#if apiResourceName}}
-                <div class="focused-input-container">
-                  <semantic-form-text-input for="entity_primary_appellation" label="Place name" placeholder="Enter place name" default-value="{{apiResourceName}}" force-defaults=true></semantic-form-text-input>
-                </div>
-              {{else}}
-                <semantic-form-text-input for="entity_primary_appellation" label="Place name" placeholder="Enter place name"></semantic-form-text-input>
-              {{/if}}
+              <semantic-form-text-input for="entity_primary_appellation" label="Place name" placeholder="Enter place name"></semantic-form-text-input>
             {{/if}}
 
             {{#if apiResourceDescription}}
@@ -185,11 +179,11 @@
 
       <rs-tab event-key="geoCoordinates" title="Geographic coordinates">
         {{#if apiResourceWikidataId}} 
-          {{#if apiResourceLabel}}
+          {{#if apiResourceName}}
             <div class="customFormHeader">Geographic coordinates (OpenStreetMap)</div>
             <div class="focused-input-container">
               <div class="focused-input-message" style="opacity: 0.55; cursor: not-allowed;">Geographic Coordinates automatically imported from OpenStreetMap</div>
-              <semantic-form-hidden-input for="place_wikidata_geo_coordinates" default-value='{{apiResourceLabel}};;;{{apiResourceWikidataId}}' label="Geographic coordinates (OpenStreetMap)" force-defaults=true></semantic-form-hidden-input>
+              <semantic-form-hidden-input for="place_wikidata_geo_coordinates" default-value='{{apiResourceName}};;;{{apiResourceWikidataId}}' label="Geographic coordinates (OpenStreetMap)" force-defaults=true></semantic-form-hidden-input>
             </div>
           {{/if}}
         {{else}}
@@ -218,7 +212,7 @@
                                                                             ?appellation crm:P190_has_symbolic_content ?label ." }'
 
                                             nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" apiResourceURI=false 
-                                                                      apiResourceName=false apiResourceLabel=false apiResourceDescription=false apiResourceWikidataId=false}}{{{{/raw}}}}'
+                                                                      apiResourceName=false apiResourceDescription=false apiResourceWikidataId=false}}{{{{/raw}}}}'
 
                                             query-item-label='SELECT ?label WHERE {
                                                                 ?item crm:P1_is_identified_by ?appellation . 
@@ -242,7 +236,7 @@
                                                                             ?appellation crm:P190_has_symbolic_content ?label ." }'
 
                                             nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" apiResourceURI=false 
-                                                                    apiResourceName=false apiResourceLabel=false apiResourceDescription=false apiResourceWikidataId=false}}{{{{/raw}}}}'
+                                                                    apiResourceName=false apiResourceDescription=false apiResourceWikidataId=false}}{{{{/raw}}}}'
 
                                             query-item-label='SELECT ?label WHERE {
                                                                 ?item crm:P1_is_identified_by ?appellation . 

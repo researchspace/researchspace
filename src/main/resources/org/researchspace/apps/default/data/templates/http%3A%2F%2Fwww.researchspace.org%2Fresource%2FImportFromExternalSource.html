@@ -1,103 +1,128 @@
-{{#bind viewId=dashboardId}}
-    <mp-event-target-template-render id='{{viewId}}-import-from-external-source' template='{{> template}}'>
-        <template id='template'>
-            <div class="page__grid-container">
-                <div class="page__content-container">
-                    <bs-tab-container id="{{viewId}}-import-from-external-thing-tabs-container" default-active-key="1">
-                        <div>
-                            <bs-nav bs-style="tabs" style="margin-top: 0;">
-                                <bs-nav-item event-key="1">OpenStreetMap</bs-nav-item>
+<mp-event-target-template-render id='{{viewId}}-import-from-external-source' template='{{> template}}'>
+    <template id='template'>
+        <bs-tab-container id="{{viewId}}-import-from-external-thing-tabs-container" default-active-key="{{#if defaultActiveTab}}{{defaultActiveTab}}{{else}}1{{/if}}">
+            <div>
+                <bs-nav bs-style="tabs" style="margin-top: 0;">
+                    {{#if osmImport}}
+                        <bs-nav-item event-key="1">OpenStreetMap</bs-nav-item>
+                    {{/if}}
 
-                           [[!--     <bs-nav-item event-key="2">Wikipedia</bs-nav-item>
+                    {{#if wikipediaImport}}
+                        <bs-nav-item event-key="2">Wikipedia</bs-nav-item>
+                    {{/if}}
 
-                                <bs-nav-dropdown event-key="3" title="Museum collections">
-                                    <bs-menu-item event-key="3.1" draggable="false">MET collection</bs-menu-item>
-                                    <bs-menu-item event-key="3.2" draggable="false">V&A collection</bs-menu-item>
-                                </bs-nav-dropdown>
+                    {{#if museumCollectionImport}}
+                        <bs-nav-dropdown event-key="3" title="Museum collections">
+                            <bs-menu-item event-key="3.1" draggable="false">MET collection</bs-menu-item>
+                            <bs-menu-item event-key="3.2" draggable="false">V&A collection</bs-menu-item>
+                        </bs-nav-dropdown>
+                    {{/if}}
 
-                                <bs-nav-dropdown event-key="4" title="Archives">
-                                    <bs-menu-item event-key="4.1" draggable="false">The National archives</bs-menu-item>
-                                </bs-nav-dropdown>   
-                            --]]    
-                                <mp-event-trigger   id="{{viewId}}-import-from-external-source-refresh-trigger" 
-                                                    type='Component.TemplateUpdate' 
-                                                    targets='["{{viewId}}-import-from-external-source"]'
-                                >
-                                    <button class="btn btn-secondary btn-textAndIcon" style="float: inline-end;" title="Refresh search">
-                                        <rs-icon icon-type="rounded" icon-name="refresh"  symbol="true"></rs-icon>
-                                    </button>
-                                </mp-event-trigger>
+                    {{#if archiveImport}}
+                        <bs-nav-dropdown event-key="4" title="Archives">
+                            <bs-menu-item event-key="4.1" draggable="false">The National archives</bs-menu-item>
+                        </bs-nav-dropdown>   
+                    {{/if}}
+                        
+                    <mp-event-trigger   id="{{viewId}}-import-from-external-source-refresh-trigger" 
+                                        type='Component.TemplateUpdate' 
+                                        targets='["{{viewId}}-import-from-external-source"]'>
+                        <button class="btn btn-secondary btn-textAndIcon" style="float: inline-end;" title="Refresh search">
+                            <rs-icon icon-type="rounded" icon-name="refresh"  symbol="true"></rs-icon>
+                        </button>
+                    </mp-event-trigger>
 
-                            </bs-nav>
+                </bs-nav>
 
-                            <bs-tab-content animation>
+                {{#if importFromModal}}
+                    <bs-tab-content animation style="padding-top: 10px;">
+                {{else}}
+                    <bs-tab-content animation>
+                {{/if}}
 
-                                <bs-tab-pane event-key="1">
-                                    <h6>Search on OpenStreetMap</h6>
-                                    <inline-template    template-iri='[[resolvePrefix "rsp:ImportFromOSM"]]' 
-                                                        options='{
-                                                                "viewId": "{{viewId}}"
-                                                        }'>
-                                    </inline-template>
-                                </bs-tab-pane>
+                    {{#if osmImport}}
+                        <bs-tab-pane event-key="1">
+                            <h6>Search on OpenStreetMap</h6>
+                            <inline-template    template-iri='[[resolvePrefix "rsp:ImportFromOSM"]]' 
+                                                options='{
+                                                        {{#if importFromModal}}"importFromModal": "true",{{/if}}
+                                                        "viewId": "{{viewId}}"
+                                                }'>
+                            </inline-template>
+                        </bs-tab-pane>
+                    {{/if}}
 
-                    [[!--       <bs-tab-pane event-key="2">
-                                    <h6>Search in Wikidata</h6>
-                                    <inline-template template-iri='[[resolvePrefix "rsp:ImportFromWikidata"]]' 
-                                                        options='{
-                                                                "scheme": "{{collection}}", 
-                                                                "viewId": "{{viewId}}",
-                                                                "domain": "{{resourceOntologyClass}}",
-                                                                "domainConfig": "{{resourceConfiguration}}",
-                                                                "label": "{{resourceName}}"
-                                                        }'>
-                                    </inline-template>
-                                </bs-tab-pane>
+                    {{#if wikipediaImport}}
+                        <bs-tab-pane event-key="2">
+                            <h6>Search in Wikidata</h6>
+                            <inline-template    template-iri='[[resolvePrefix "rsp:ImportFromWikidata"]]' 
+                                                options='{
+                                                        "viewId": "{{viewId}}",
+                                                        "domain": "{{resourceOntologyClass}}",
+                                                        "domainConfig": "{{resourceConfiguration}}",
+                                                        "label": "{{resourceName}}"
+                                                }'>
+                            </inline-template>
+                        </bs-tab-pane>
+                    {{/if}}
 
-                                <bs-tab-pane event-key="3.1">
-                                    <h6>Search in MET collection</h6>
-                                    <inline-template template-iri='[[resolvePrefix "rsp:ImportFromMET"]]' 
-                                                        options='{
-                                                            "scheme": "{{collection}}", 
-                                                            "viewId": "{{viewId}}",
-                                                            "domain": "{{resourceOntologyClass}}",
-                                                            "domainConfig": "{{resourceConfiguration}}",
-                                                            "label": "{{resourceName}}"
-                                                        }'>
-                                    </inline-template>
-                                </bs-tab-pane>
+                    {{#if museumCollectionImport}}
+                        <bs-tab-pane event-key="3.1">
+                            <h6>Search in MET collection</h6>
+                            <inline-template    template-iri='[[resolvePrefix "rsp:ImportFromMET"]]' 
+                                                options='{
+                                                    "viewId": "{{viewId}}",
+                                                    "domain": "{{resourceOntologyClass}}",
+                                                    "domainConfig": "{{resourceConfiguration}}",
+                                                    "label": "{{resourceName}}"
+                                                }'>
+                            </inline-template>
+                        </bs-tab-pane>
 
-                                <bs-tab-pane event-key="3.2">
-                                    <h6>Search in Victoria and Albert Museum collection</h6>
-                                    <inline-template template-iri='[[resolvePrefix "rsp:ImportFromVAM"]]' 
-                                                        options='{
-                                                            "scheme": "{{collection}}", 
-                                                            "viewId": "{{viewId}}",
-                                                            "domain": "{{resourceOntologyClass}}",
-                                                            "domainConfig": "{{resourceConfiguration}}",
-                                                            "label": "{{resourceName}}"
-                                                        }'>
-                                    </inline-template>
-                                </bs-tab-pane>
+                        <bs-tab-pane event-key="3.2">
+                            <h6>Search in Victoria and Albert Museum collection</h6>
+                            <inline-template    template-iri='[[resolvePrefix "rsp:ImportFromVAM"]]' 
+                                                options='{
+                                                    "viewId": "{{viewId}}",
+                                                    "domain": "{{resourceOntologyClass}}",
+                                                    "domainConfig": "{{resourceConfiguration}}",
+                                                    "label": "{{resourceName}}"
+                                                }'>
+                            </inline-template>
+                        </bs-tab-pane>
+                    {{/if}}
 
-                                <bs-tab-pane event-key="4.1">
-                                    <h6>Search in The National Archives catalogue</h6>
-                                    <inline-template template-iri='[[resolvePrefix "rsp:ImportFromTNA"]]' 
-                                                        options='{
-                                                            "scheme": "{{collection}}", 
-                                                            "viewId": "{{viewId}}",
-                                                            "domain": "{{resourceOntologyClass}}",
-                                                            "domainConfig": "{{resourceConfiguration}}",
-                                                            "label": "{{resourceName}}"
-                                                        }'>
-                                    </inline-template>
-                                </bs-tab-pane>
+                    {{#if archiveImport}}
+                        <bs-tab-pane event-key="4.1">
+                            <h6>Search in The National Archives catalogue</h6>
+                            <inline-template template-iri='[[resolvePrefix "rsp:ImportFromTNA"]]' 
+                                                options='{
+                                                    "viewId": "{{viewId}}",
+                                                    "domain": "{{resourceOntologyClass}}",
+                                                    "domainConfig": "{{resourceConfiguration}}",
+                                                    "label": "{{resourceName}}"
+                                                }'>
+                            </inline-template>
+                        </bs-tab-pane>
+                    {{/if}}
+
+                    [[!--    
+                    <bs-tab-pane event-key="4.1">
+                        <h6>Search in Amara West</h6>
+                        <inline-template template-iri='[[resolvePrefix "rsp:ImportFromAmaraWest"]]' 
+                                            options='{
+                                                "viewId": "{{viewId}}",
+                                                "domain": "{{resourceOntologyClass}}",
+                                                "domainConfig": "{{resourceConfiguration}}",
+                                                "label": "{{resourceName}}"
+                                            }'>
+                        </inline-template>
+                    </bs-tab-pane>
                     --]]
-                            </bs-tab-content>
-                        </div>
-                    </bs-tab-container>
-                </div>
+        
+                </bs-tab-content>
             </div>
-        </template>
-    </mp-event-target-template-render>
-{{/bind}}
+        </bs-tab-container>
+        
+    </template>
+</mp-event-target-template-render>

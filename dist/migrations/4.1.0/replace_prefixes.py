@@ -28,6 +28,7 @@ MAPPING = [
     ("http://www.ics.forth.gr/isl/CRMgeo/",             "http://www.cidoc-crm.org/extensions/crmgeo/"),
     ("http://www.cidoc-crm.org/cidoc-crm/influence/",   "http://www.cidoc-crm.org/extensions/influence/"),
     ("http://www.cidoc-crm.org/cidoc-crm/CRMsci/",      "http://www.cidoc-crm.org/extensions/crmsci/"),
+    ("http://www.ics.forth.gr/isl/CRMsci/",             "http://www.cidoc-crm.org/extensions/crmsci/"),
     ("http://www.ics.forth.gr/isl/CRMinf/",             "http://www.cidoc-crm.org/extensions/crminf/"),
     ("http://iflastandards.info/ns/fr/frbr/frbroo/",    "http://iflastandards.info/ns/lrm/lrmoo/"),
 ]

@@ -329,7 +329,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       window.addEventListener('resize', () => {
         map.updateSize();
       });
-      window.addEventListener(LayoutChanged,() => {console.log("do something"); map.updateSize()});
+
+      window.addEventListener(LayoutChanged,() => {map.updateSize()});
     }, 1000);
   }
 

@@ -326,7 +326,7 @@ export class DashboardComponent extends Component<Props, State> {
           },
         });
 
-    if (this.props.initialView) { console.log(this.props.initialView);
+    if (this.props.initialView) { 
       const item = {
         ...this.frameLabel(),
         resourceIri: this.props.initialView.resource,
@@ -867,10 +867,8 @@ export class DashboardComponent extends Component<Props, State> {
 
     const maps = this.state.items.filter((i) => i.viewId === "map");
     const mapsDashboardItems = [];
-    maps.forEach(map => mapsDashboardItems.push(map.id+"-map"));
+    maps.forEach(map => mapsDashboardItems.push(map.id));
 
-    console.log("maps"+mapsDashboardItems);
-    console.log(action.type);
     const actions = [Actions.ADJUST_BORDER_SPLIT, Actions.ADJUST_SPLIT, Actions.MOVE_NODE, Actions.ADD_NODE, Actions.SELECT_TAB, Actions.DELETE_TAB, Actions.MAXIMIZE_TOGGLE]
     if (actions.includes(action.type))
       trigger({

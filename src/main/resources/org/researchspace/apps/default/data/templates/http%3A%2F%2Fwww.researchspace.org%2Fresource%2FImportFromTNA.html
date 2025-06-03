@@ -54,9 +54,10 @@
                 <semantic-context repository='ephedra'>
                     <div class="TNAapiResultsTable">
                         <semantic-table id='semantic-search-result-table'
-                                        query='SELECT DISTINCT ?reference ?description ?catalogueLevel ?id
+                                        query='SELECT DISTINCT ?reference ?cleanedDescription ?catalogueLevel ?id
                                                 WHERE {
                                                     FILTER(?catalogueLevel in (3, 6, 7)) .
+                                                    BIND (REPLACE(STR(?description), "\"", "") as ?cleanedDescription)
                                                 } ORDER BY ?reference'
 
                                         number-of-displayed-rows=20
@@ -81,7 +82,7 @@
 
                             <template id='description'>
                                 <mp-text-truncate lines=3 expand='<div class="text-link">Expand</div>' collapse='<div class="text-link">Collapse</div>'>
-                                    {{description.value}}
+                                    {{cleanedDescription.value}}
                                 </mp-text-truncate>
                             </template>
                             
@@ -119,7 +120,7 @@
                                                                         "apiResourceMuseumId": "{{reference.value}}", 
                                                                         "apiResourceMuseumIdType": "http://www.researchspace.org/resource/system/vocab/identifier/catalogue_reference_number", 
                                                                         "apiResourceSystemId": "{{id.value}}",
-                                                                        "apiResourceDescription": "{{description.value}}"
+                                                                        "apiResourceDescription": "{{cleanedDescription.value}}"
                                                                     }' 
                                                             >
                                                     <button class="btn btn-action" title="Import as {{label}}">Import as {{label}}</button>

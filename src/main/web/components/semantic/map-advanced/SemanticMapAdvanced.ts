@@ -1661,23 +1661,10 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
           // Initial update of visible features
           this.updateVisibleFeatures();
 
-          // Listen for base map loaded event
-          const baseMapLayer = this.state.mapLayers.find((layer) => layer instanceof TileLayer);
-          if (baseMapLayer) {
-            const source = baseMapLayer.getSource();
-            if (source) {
-              // For OSM and XYZ sources
-              source.on('tileloadend', () => {
-                // Set a small timeout to ensure all tiles are loaded
-                setTimeout(() => {
-                  this.setState({ baseMapLoaded: true });
-                }, 500);
-              });
-            }
-          } else {
-            // If no base map layer, consider it loaded
-            this.setState({ baseMapLoaded: true });
-          }
+          // Set baseMapLoaded to true immediately after map initialization
+          // The map is functional once it's created, regardless of tile loading status
+          console.log('[DEBUG] Map initialized, setting baseMapLoaded: true');
+          this.setState({ baseMapLoaded: true });
 
           this.startRegistrationProcess();
 

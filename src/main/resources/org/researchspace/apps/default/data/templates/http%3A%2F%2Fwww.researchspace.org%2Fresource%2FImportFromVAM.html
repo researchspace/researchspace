@@ -37,8 +37,9 @@
                                     BIND(?subject as ?iri) .
                                     service vam:VamObject {
                                         ?subject vam:objectid ?id .
-                                        ?subject vam:summaryDescription ?description .
+                                        ?subject vam:summaryDescription ?rawDescription .                                        
                                     }
+                                    BIND(REPLACE(?rawDescription,"\"","") as ?description)
                                   } ORDER BY ?title ?id'
 
                             options='{"showFilter":false, "resultsPerPage":10}' 

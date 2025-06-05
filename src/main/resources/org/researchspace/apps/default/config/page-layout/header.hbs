@@ -78,6 +78,20 @@
                     </bs-menu-item>
                   </semantic-link-container>
 
+                  <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                            urlqueryparam-view='import-from-external-source'
+                                            urlqueryparam-custom-label='Import from external source'>
+                    <bs-menu-item draggable="false">
+                      <div class="dropdown-item-iconContainer">
+                        <rs-icon icon-type="rounded" icon-name="download" style="color: #5c88fe;" symbol="true"></rs-icon>
+                      </div>
+                      <div>
+                        <div class="dropdown-item-title">Import from external source</div>
+                        <div class="dropdown-item-description">Import new resources from external sources like OpenStreetMap, Wikipedia, etc.</div>
+                      </div>
+                    </bs-menu-item>
+                  </semantic-link-container>
+
                 </div>
               </bs-dropdown-menu>
             </bs-dropdown>
@@ -89,6 +103,7 @@
             <mp-event-proxy id='closeModal-onSelect-newResource-proxy'
                           on-event-source="link"
                           on-event-type='Dashboard.AddFrame'
+                          on-event-data='{"linkType": "open-new-resource-form-from-modal"}'
                           proxy-event-type='OverlayDialog.Close' 
                           proxy-targets='["newResource-form-dialog"]'
             ></mp-event-proxy>
@@ -697,7 +712,8 @@
                     urlqueryparam-view='resource-editor'
                     urlqueryparam-entity-type-config='\{{resourceConfig.value}}'
                     urlqueryparam-mode="new"
-                    urlqueryparam-custom-label='New \{{resourceName.value}}'>
+                    urlqueryparam-custom-label='New \{{resourceName.value}}'
+                    urlqueryparam-link-type="open-new-resource-form-from-modal">
       <div class="new-resource-card">
         <mp-event-trigger id='\{{resourceName.value}}-info-button-trigger' 
                           type='Component.TemplateUpdate'

@@ -1,5 +1,5 @@
 <semantic-form [[> rsp:FormDefaults]] 
-                persistence='{"type": "sparql", "targetInsertGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}", "repository":"{{#if scheme}}authorities{{else}}default{{/if}}"}'
+                persistence='{"type": "sparql", "targetInsertGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}", "repository":"{{#if scheme}}ephedra{{else}}ephedra{{/if}}"}'
                 new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/place/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
                 fields='[[fieldDefinitions
                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
@@ -33,6 +33,7 @@
                         entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
                         entity_id="http://www.researchspace.org/pattern/system/entity/identifier"
                         
+                        place_wikidata_geo_coordinates="http://www.researchspace.org/pattern/system/place/osm_wikidata_geo_coordinates"
                         place_geo_coordinates="http://www.researchspace.org/pattern/system/place/osm_geo_coordinates"
                         place_within_geo_coordinates="http://www.researchspace.org/pattern/system/place/within_geo_coordinates"
                         place_contains_geo_coordinates="http://www.researchspace.org/pattern/system/place/contains_geo_coordinates"
@@ -74,18 +75,12 @@
       <rs-tab event-key="detail" title="Details">
         <div class="form-details-container">
           <div style="overflow-x: auto;">
-            {{#if apiResourceLabel}}
+            {{#if apiResourceName}}
               <div class="focused-input-container">
-                <semantic-form-text-input for="entity_primary_appellation" label="Place name" placeholder="Enter place name" default-value="{{apiResourceLabel}}" force-defaults=true></semantic-form-text-input>
+                <semantic-form-text-input for="entity_primary_appellation" label="Place name" placeholder="Enter place name" default-value="{{apiResourceName}}" force-defaults=true></semantic-form-text-input>
               </div>
             {{else}}
-              {{#if apiResourceName}}
-                <div class="focused-input-container">
-                  <semantic-form-text-input for="entity_primary_appellation" label="Place name" placeholder="Enter place name" default-value="{{apiResourceName}}" force-defaults=true></semantic-form-text-input>
-                </div>
-              {{else}}
-                <semantic-form-text-input for="entity_primary_appellation" label="Place name" placeholder="Enter place name"></semantic-form-text-input>
-              {{/if}}
+              <semantic-form-text-input for="entity_primary_appellation" label="Place name" placeholder="Enter place name"></semantic-form-text-input>
             {{/if}}
 
             {{#if apiResourceDescription}}
@@ -183,17 +178,21 @@
       </rs-tab>
 
       <rs-tab event-key="geoCoordinates" title="Geographic coordinates">
-        {{#if apiResourceosmGeoCoordinates}}
-          <div class="focused-input-container">
-            <semantic-form-text-input for="place_geo_coordinates" default-value='{{apiResourceosmGeoCoordinates}}' label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true></semantic-form-text-input>
-          </div>
+        {{#if apiResourceWikidataId}} 
+          {{#if apiResourceName}}
+            <div class="customFormHeader">Geographic coordinates (OpenStreetMap)</div>
+            <div class="focused-input-container">
+              <div class="focused-input-message" style="opacity: 0.55; cursor: not-allowed;">Geographic Coordinates automatically imported from OpenStreetMap</div>
+              <semantic-form-hidden-input for="place_wikidata_geo_coordinates" default-value='{{apiResourceName}};;;{{apiResourceWikidataId}}' label="Geographic coordinates (OpenStreetMap)" force-defaults=true></semantic-form-hidden-input>
+            </div>
+          {{/if}}
         {{else}}
-          <semantic-form-text-input for="place_geo_coordinates" label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input>
+          <div class="text-input-limit-height"><semantic-form-text-input for="place_geo_coordinates" label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true></semantic-form-text-input></div>
         {{/if}}
 
-        <semantic-form-text-input for="place_within_geo_coordinates" label="Within geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input>
+        <div class="text-input-limit-height"><semantic-form-text-input for="place_within_geo_coordinates" label="Within geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input></div>
 
-        <semantic-form-text-input for="place_contains_geo_coordinates" label="Contains geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input>
+        <div class="text-input-limit-height"><semantic-form-text-input for="place_contains_geo_coordinates" label="Contains geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input></div>
       </rs-tab>
 
       <rs-tab event-key="component" title="Components">
@@ -213,7 +212,7 @@
                                                                             ?appellation crm:P190_has_symbolic_content ?label ." }'
 
                                             nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" apiResourceURI=false 
-                                                                      apiResourceName=false apiResourceLabel=false apiResourceDescription=false apiResourceosmGeoCoordinates=false}}{{{{/raw}}}}'
+                                                                      apiResourceName=false apiResourceDescription=false apiResourceWikidataId=false}}{{{{/raw}}}}'
 
                                             query-item-label='SELECT ?label WHERE {
                                                                 ?item crm:P1_is_identified_by ?appellation . 
@@ -237,7 +236,7 @@
                                                                             ?appellation crm:P190_has_symbolic_content ?label ." }'
 
                                             nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" apiResourceURI=false 
-                                                                    apiResourceName=false apiResourceLabel=false apiResourceDescription=false apiResourceosmGeoCoordinates=false}}{{{{/raw}}}}'
+                                                                    apiResourceName=false apiResourceDescription=false apiResourceWikidataId=false}}{{{{/raw}}}}'
 
                                             query-item-label='SELECT ?label WHERE {
                                                                 ?item crm:P1_is_identified_by ?appellation . 
@@ -572,46 +571,24 @@
   [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}place{{/if}}']]
 </semantic-form>
 
-[[!--
-{{#if nested}}
-  <mp-event-target-template-render id='{{viewId}}-nested-form' template='{{> template}}'>
-    <mp-event-proxy id='{{viewId}}-refreshForm-onSelect-apiResource-proxy'
-                    on-event-source='OSMnested-select-api-resource-trigger' 
-                    on-event-type='apiResourceSelect'
-                    proxy-event-type='Component.TemplateUpdate' 
-                    proxy-targets='["{{viewId}}-nested-form"]'  
-                    additional-data='{"mode": "new", "selectedApiResource": "true"}'
-    ></mp-event-proxy>
 
-    <mp-event-proxy id='{{viewId}}-closeModal-onSelect-APIResource-proxy'
-                    on-event-source='OSMnested-select-api-resource-trigger' 
-                    on-event-type='apiResourceSelect'
-                    proxy-event-type='OverlayDialog.Close' 
-                    proxy-targets='["OSMnested-importResourceFromAPI-dialog"]'
-    ></mp-event-proxy>
+[[!-- 
+{{#if node}}
+  <semantic-query query='SELECT ?place ?outOfLimitGeoCoordinates WHERE {
+                          BIND (<{{node}}> as ?place)
 
-    <mp-overlay-dialog  id='OSMnested-importResourceFromAPI-dialog' 
-                        title="Import place from OpenStreetMap" 
-                        type="lightbox">
-
-      <mp-overlay-dialog-trigger>
-          <button class="btn btn-action btn-textAndIcon" style="margin-top: 15px; width: 100%;">
-              <rs-icon icon-type='rounded' icon-name='upload' symbol='true'></rs-icon>
-              <span>Import from OpenStreetMap</span>
-          </button>
-      </mp-overlay-dialog-trigger>
-      <mp-overlay-dialog-content>
-          <div class="page__section-container">
-              <h6 style="margin: 0px 0 7px;">Search on OpenStreetMap</h6>
-              <inline-template template-iri='[[resolvePrefix "rsp:ImportPlaceFromOSM"]]' 
-                                  options='{
-                                          "scheme": "{{collection}}", 
-                                          "viewId": "OSMnested"
-                                  }'>
-              </inline-template>
-          </div>
-      </mp-overlay-dialog-content>
-    </mp-overlay-dialog>
-  </mp-event-target-template-render>
+                          OPTIONAL {
+                            ?place crm:P168_place_is_defined_by ?geoCoordinates .
+                            BIND(IF(STRLEN( STR(?geoCoordinates) ) > 100000, true, false) AS ?outOfLimitGeoCoordinates)
+                          }
+                        }
+                        LIMIT 1'>
+    <template id='template'>
+      {{> forms:Place_partial outOfLimitGeoCoordinates=bindings.0.outOfLimitGeoCoordinates.value 
+      }}
+    </template>
+  </semantic-query>
+{{else}}
+  {{> forms:Place_partial}}
 {{/if}}
 --]]

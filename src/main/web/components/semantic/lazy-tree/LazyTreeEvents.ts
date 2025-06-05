@@ -19,8 +19,13 @@
 import { EventMaker } from 'platform/api/events';
 
 export interface LazyTreeEventData {
-  'LazyTree.ItemSelected': {
+  'LazyTree.ItemToggleSelected': {
     iri: string
+  }
+
+  'LazyTree.ItemSelected': {
+    iri: string,
+    label: string
   }
 
   'LazyTree.Focus': {
@@ -29,5 +34,6 @@ export interface LazyTreeEventData {
 }
 
 const event: EventMaker<LazyTreeEventData> = EventMaker;
+export const ItemToggleSelected = event('LazyTree.ItemToggleSelected');
 export const ItemSelected = event('LazyTree.ItemSelected');
 export const Focus = event('LazyTree.Focus');

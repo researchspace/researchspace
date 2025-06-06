@@ -289,6 +289,21 @@
                         </mp-event-trigger>
                       {{/if}}
 
+                      <mp-event-proxy id='{{viewId}}-selected-tree-element'
+                                      on-event-source='{{viewId}}-scheme-tree'  
+                                      on-event-type='LazyTree.ItemSelected'
+                                      proxy-event-type='Component.TemplateUpdate' 
+                                      proxy-targets='["{{viewId}}-term-forms"]' 
+                                      additional-data='{"mode": "edit"}'>
+                      </mp-event-proxy>
+                      <mp-event-proxy id='{{viewId}}-focus-selected-tree-element' 
+                                      on-event-source='{{viewId}}-scheme-tree'  
+                                      on-event-type='LazyTree.ItemSelected'
+                                      proxy-event-type='LazyTree.Focus' 
+                                      proxy-targets='["{{viewId}}-scheme-tree"]' 
+                                      additional-data='{"currentView": "{{viewId}}"}'>
+                      </mp-event-proxy>
+
                       <mp-event-target-template-render id='{{collection}}-mytree'  template='{{> treeTemplate}}'>
                         <template id='treeTemplate'>
                           <semantic-lazy-tree id='{{viewId}}-scheme-tree' 
@@ -318,7 +333,7 @@
                             <template id='template'>
                               <span class="tree-item-actions-container">
                                 {{#if editable}}
-                                  <mp-event-trigger id='{{viewId}}-form-edit-trigger--{{iri}}' 
+                                 [[!-- <mp-event-trigger id='{{viewId}}-form-edit-trigger--{{iri}}' 
                                                     type='Component.TemplateUpdate'
                                                     data='{"iri":"{{iri}}", 
                                                           "label": "{{label}}", 
@@ -335,14 +350,14 @@
                                                   proxy-targets='["{{viewId}}-scheme-tree"]' 
                                                   data='{"iri":"{{iri}}",
                                                           "currentView": "{{viewId}}"}'>
-                                  </mp-event-proxy>
+                                  </mp-event-proxy> --]]
                                   {{#if resourceBroaderProperty}}
                                     <mp-event-trigger id='{{viewId}}-form-newNarrower-trigger--{{iri}}' 
                                                       type='Component.TemplateUpdate' 
                                                       data='{"broader": "{{iri}}", "mode": "new" }' 
                                                       targets='["{{viewId}}-term-forms"]'>
                                       <span class='tree-item-action'>
-                                        <rs-icon icon-type="rounded" icon-name="add" title="Add narrower {{resourceName}}" symbol="true"></rs-icon>
+                                        <rs-icon icon-type="rounded" icon-name="add" title="Narrower to {{label}}" symbol="true"></rs-icon>
                                       </span>
                                     </mp-event-trigger>
                                     
@@ -648,7 +663,7 @@
                       <div class="btn-inline-container">
 
                         {{#if (eq mode "new")}}
-                          [[> rsp:ImportFromExternalSource]] 
+                          [[> rsp:ImportFromExternalSourceModal]] 
                         {{/if}} 
 
                         {{#if (not (or (eq mode "new") (eq mode "deleted")))}}
@@ -816,7 +831,6 @@
                                                 {{#if selectedApiResource}}
                                                   {{#if apiResourceURI}}"apiResourceURI": "{{apiResourceURI}}",{{/if}}
                                                   {{#if apiResourceName}}"apiResourceName": "{{apiResourceName}}",{{/if}}
-                                                  {{#if apiResourceLabel}}"apiResourceLabel": "{{apiResourceLabel}}",{{/if}}
                                                   {{#if apiResourceDescription}}"apiResourceDescription": "{{apiResourceDescription}}",{{/if}}
 
                                                   {{#if apiResourceMuseumId}}"apiResourceMuseumId": "{{apiResourceMuseumId}}",{{/if}}
@@ -826,7 +840,7 @@
                                                   {{#if apiResourceArtistName}}"apiResourceArtistName": "{{apiResourceArtistName}}",{{/if}}
                                                   {{#if apiResourceArtistRole}}"apiResourceArtistRole": "{{apiResourceArtistRole}}",{{/if}}
 
-                                                  {{#if apiResourceosmGeoCoordinates}}"apiResourceosmGeoCoordinates": "{{apiResourceosmGeoCoordinates}}",{{/if}}
+                                                   {{#if apiResourceWikidataId}}"apiResourceWikidataId": "{{apiResourceWikidataId}}",{{/if}}
                                                 {{/if}}
                                                 "resourceBroaderProperty": {{#if resourceBroaderProperty}}"{{resourceBroaderProperty}}"{{else}}null{{/if}}
                                         }'>
@@ -852,7 +866,7 @@
               
               <mp-event-proxy id='{{viewId}}-closeModal-onSelect-APIResource-proxy'
                               on-event-source='{{viewId}}-select-api-resource-trigger' 
-                              on-event-type='apiResourceSelect'
+                              on-event-type='apiResourceImportInModal'
                               proxy-event-type='OverlayDialog.Close' 
                               proxy-targets='["{{viewId}}-importResourceFromAPI-dialog"]'
               ></mp-event-proxy>
@@ -864,9 +878,9 @@
                               proxy-targets='["{{viewId}}-importResourceFromAPI-dialog"]'
               ></mp-event-proxy>
 
-              <mp-event-proxy id='{{viewId}}-refreshForm-onSelect-apiResource-proxy'
+              <mp-event-proxy id='{{viewId}}-refreshForm-onSelect-APIResource-proxy'
                               on-event-source='{{viewId}}-select-api-resource-trigger' 
-                              on-event-type='apiResourceSelect'
+                              on-event-type='apiResourceImportInModal'
                               proxy-event-type='Component.TemplateUpdate' 
                               proxy-targets='["{{viewId}}-term-forms"]'
                               additional-data='{"mode": "new", "selectedApiResource": "true"}'

@@ -41,6 +41,20 @@
                     <span>New configuration</span>
                   </button>
                 </mp-event-trigger>
+
+                <mp-event-proxy id='{{viewId}}-resource-config-selected-tree-element'
+                                on-event-source='{{viewId}}-resource-config-scheme-tree'
+                                on-event-type='LazyTree.ItemSelected'
+                                proxy-event-type='Component.TemplateUpdate' 
+                                proxy-targets='["{{viewId}}-resource-config-term-forms"]' 
+                                additional-data='{"mode": "edit"}'>
+                </mp-event-proxy>
+                <mp-event-proxy id='{{viewId}}-resource-config-focus-selected-tree-element' 
+                                on-event-source='{{viewId}}-resource-config-scheme-tree'
+                                on-event-type='LazyTree.ItemSelected'
+                                proxy-event-type='LazyTree.Focus' 
+                                proxy-targets='["{{viewId}}-resource-config-scheme-tree"]'>
+                </mp-event-proxy>
             
                 <mp-event-target-template-render id='{{viewId}}-resource-config-mytree'  template='{{> treeTemplate}}'>
                   <template id='treeTemplate'>
@@ -201,23 +215,23 @@
                                 </template>
                             </semantic-if> 
 
-                            <mp-event-trigger id='{{viewId}}-resource-config-form-edit-trigger--{{iri}}' 
+                        [[!--    <mp-event-trigger id='{{viewId}}-resource-config-form-edit-trigger--{{iri}}' 
                                               type='Component.TemplateUpdate'
                                               data='{"iri":"{{iri}}", "label": "{{label}}", "mode": "edit" }' 
                                               targets='["{{viewId}}-resource-config-term-forms"]'>
                               <span class='tree-item-action'>
                                 <rs-icon icon-type="rounded" icon-name="edit" title="Edit configuration" symbol="true"></rs-icon>
                               </span>
-                            </mp-event-trigger>
+                            </mp-event-trigger> --]]
 
                           </div>
                           
-                          <mp-event-proxy id='{{viewId}}-resource-config-focus-tree-element' 
+                          [[!--  <mp-event-proxy id='{{viewId}}-resource-config-focus-tree-element' 
                                           on-event-source='{{viewId}}-resource-config-form-edit-trigger--{{iri}}' 
                                           proxy-event-type='LazyTree.Focus' 
                                           proxy-targets='["{{viewId}}-resource-config-scheme-tree"]' 
                                           data='{"iri":"{{iri}}"}'>
-                          </mp-event-proxy>
+                          </mp-event-proxy> --]]
                         </span>
                       </template>
                     </semantic-lazy-tree> 

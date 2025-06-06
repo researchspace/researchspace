@@ -1,0 +1,38 @@
+<semantic-form  id='{{formId}}' 
+                post-action="event"
+                persistence='{"type": "sparql", "targetInsertGraphIri": "http://www.researchspace.org/resource/g/data", "repository":"ephedra"}'
+                new-subject-template='/{{resourceName}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
+                fields='[[fieldDefinitions
+                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                        entity_resource_type="http://www.researchspace.org/pattern/system/entity/resource_type"
+                        entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
+
+                        entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
+                        entity_description="http://www.researchspace.org/pattern/system/entity/description"
+                        place_wikidata_geo_coordinates="http://www.researchspace.org/pattern/system/place/osm_wikidata_geo_coordinates"
+              ]]'>
+
+    <semantic-form-hidden-input for="classtype" default-value="{{resourceOntologyClass}}"></semantic-form-hidden-input>
+    
+    {{#if resourceP2Type}}
+      <semantic-form-hidden-input for="entity_resource_type" default-value='{{resourceP2Type}}'> </semantic-form-hidden-input>
+    {{/if}}
+
+    {{#if apiResourceName}}
+      <semantic-form-hidden-input for="entity_primary_appellation" label="Name" default-value="{{apiResourceName}}" force-defaults=true></semantic-form-hidden-input>
+    {{/if}}
+
+    {{#if apiResourceDescription}}
+      <semantic-form-hidden-input for="entity_description" default-value="{{apiResourceDescription}}" label="Description"></semantic-form-hidden-input>
+    {{/if}}
+            
+    {{#if apiResourceWikidataId}} 
+      {{#if apiResourceName}}
+        <semantic-form-hidden-input for="place_wikidata_geo_coordinates" default-value='{{apiResourceName}};;;{{apiResourceWikidataId}}' label="Geographic coordinates (OpenStreetMap)" force-defaults=true></semantic-form-hidden-input>
+      {{/if}}
+    {{/if}}
+
+    [[> rsp:FormMetadataTab]]
+</semantic-form>
+
+

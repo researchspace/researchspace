@@ -202,9 +202,16 @@
       "dropAreaDescription": "Drag and drop here any entity of type PLACE (with associated geographic coordinates) to explore related geographic information",
       "iconName": "place",
       "checkQuery": "ASK { 
-        ?value a ?ontologyClass .
-        ?ontologyClass rdfs:subClassOf* crm:E53_Place .
-        ?value <http://www.cidoc-crm.org/cidoc-crm/P168_place_is_defined_by> ?coordinates . }",
+        {
+          ?value a ?ontologyClass .
+          ?ontologyClass rdfs:subClassOf* crm:E53_Place .
+          ?value <http://www.cidoc-crm.org/cidoc-crm/P168_place_is_defined_by> ?coordinates . 
+        } UNION {
+          ?value rdf:type Platform:Set;
+          <http://www.w3.org/ns/ldp#contains>/<http://www.researchspace.org/resource/system/setItem> ?item.
+          ?item <http://www.cidoc-crm.org/cidoc-crm/P168_place_is_defined_by> ?coordinates .
+        } 
+      }",
       "template": "{{> mapTemplate}}",
       "type": "view"
     },
@@ -318,7 +325,17 @@
       "template": "{{> imageAnnotation}}",
       "unique": false,
       "type": "authoring"
-    } 
+    },
+
+    {
+    	"id": "import-from-external-source",
+      "label": "Import from external source",
+      "iconName": "download",
+      "description": "Import new resources from external sources like OpenStreetMap, Wikipedia, etc.",
+      "template": "{{> importFromExternalSource}}",
+      "resourceNotRequired": true,
+      "type": "view"
+    }
 
 [[!--  {
     	"id": "object-image-observation",
@@ -551,6 +568,11 @@
         <semantic-map tuple-template='{{> popover}}'
                       query='SELECT DISTINCT ?wkt ?place ?color WHERE {
                               {
+                                <{{iri}}> rdf:type Platform:Set;
+                                <http://www.w3.org/ns/ldp#contains>/Platform:setItem ?place.
+                                ?place crm:P168_place_is_defined_by ?wkt .
+                                BIND(0 as ?order)
+                              } UNION {                              
                               <{{iri}}> crm:P168_place_is_defined_by ?wkt .
                                 BIND(<{{iri}}> AS ?place) .
                                 BIND(0 as ?order)
@@ -578,7 +600,7 @@
                 }
               </style>
 
-              <div style="min-width:250px; font-size: 13.5px; overflow: hidden;">
+              <div style="min-width:200px; font-size: 14.5px; overflow: hidden;">
                 <div class="place-row">
                   <div>Place:</div>
                   <mp-draggable iri="{{place.value}}">
@@ -645,6 +667,20 @@
  [[!--   <template id='mapResourceSearch'>
       [[> rsp:MapResourceSearch]]
     </template> --]]
+
+    <template id='importFromExternalSource'>
+      <div class="page__grid-container">
+        <div class="page__content-container">
+          <inline-template  template-iri='[[resolvePrefix "rsp:importFromExternalSource"]]' 
+                            options='{
+                                    "osmImport": "true", 
+                                    "viewId": "{{dashboardId}}",
+                                    "defaultActiveTab": "1"
+                            }'>
+          </inline-template>
+        </div>
+      </div>
+    </template>
     
   </rs-dashboard>
 </div>

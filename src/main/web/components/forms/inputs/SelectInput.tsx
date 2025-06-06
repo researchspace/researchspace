@@ -293,7 +293,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
   private openSelectedNestedForm(formTemplate: string) {
     tryExtractNestedForm(this.props.children, this.context, formTemplate)
       .then(nestedForm => {
-        if (nestedForm != undefined) {console.log(nestedForm);
+        if (nestedForm != undefined) {
          this.setState({nestedForm});
           this.toggleNestedForm()
         }

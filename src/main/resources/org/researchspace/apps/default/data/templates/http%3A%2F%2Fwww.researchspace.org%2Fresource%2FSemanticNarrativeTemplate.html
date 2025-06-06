@@ -67,7 +67,7 @@
                                               {
                                                 "id": "image",
                                                 "type": "http://www.researchspace.org/ontology/EX_Digital_Image",
-                                                "label": "Annotated image",
+                                                "label": "Annotated Image",
                                                 "template": "{{> image}}",
                                                 "resizable": true,
                                                 "defaults": {
@@ -78,7 +78,7 @@
                                               {
                                                 "id": "full-size-image",
                                                 "type": "http://www.researchspace.org/ontology/EX_Digital_Image",
-                                                "label": "Full image",
+                                                "label": "Full Image",
                                                 "template": "{{> fullImage}}",
                                                 "resizable": true,
                                                 "defaults": {
@@ -89,7 +89,7 @@
                                               {
                                                 "id": "knowledge-map",
                                                 "type": "http://ontodia.org/schema/v1#Diagram",
-                                                "label": "Knowledge map",
+                                                "label": "Knowledge Map",
                                                 "template": "{{> knowledgeMap diagram=iri.value}}",
                                                 "resizable": true,
                                                 "defaults": {
@@ -100,7 +100,7 @@
                                               {
                                                 "id": "set-grid",
                                                 "type": "http://www.researchspace.org/resource/system/Set",
-                                                "label": "Set grid",
+                                                "label": "Set Grid View",
                                                 "template": "{{> setGrid}}",
                                                 "resizable": true,
                                                 "defaults": {
@@ -111,8 +111,18 @@
                                               {
                                                 "id": "set-list",
                                                 "type": "http://www.researchspace.org/resource/system/Set",
-                                                "label": "Set list",
+                                                "label": "Set List View",
                                                 "template": "{{> setList}}",
+                                                "resizable": true,
+                                                "defaults": {
+                                                  "height": "300px",
+                                                  "width": "100%"
+                                                }
+                                              }, {
+                                                "id": "set-geo-map",
+                                                "type": "http://www.researchspace.org/resource/system/Set",
+                                                "label": "Set Geo Map View",
+                                                "template": "{{> setGeoMapView}}",
                                                 "resizable": true,
                                                 "defaults": {
                                                   "height": "300px",
@@ -281,6 +291,58 @@
                   </template>
               </semantic-table>
             </div>
+          </template>
+
+          <template id="setGeoMapView">
+            <semantic-map tuple-template='{{> popover}}'
+                      query='SELECT DISTINCT ?wkt ?place ?color WHERE {
+                              {
+                                <{{iri.value}}> rdf:type Platform:Set;
+                                <http://www.w3.org/ns/ldp#contains>/Platform:setItem ?place.
+                                ?place crm:P168_place_is_defined_by ?wkt .
+                                BIND(0 as ?order)
+                              } UNION {                              
+                              <{{iri.value}}> crm:P168_place_is_defined_by ?wkt .
+                                BIND(<{{iri.value}}> AS ?place) .
+                                BIND(0 as ?order)
+                              } UNION {
+                                ?place crm:P89_falls_within* <{{iri.value}}> .
+                                ?place crm:P168_place_is_defined_by ?wkt .
+                                BIND(1 as ?order)
+                              } UNION {
+                                <{{iri.value}}> crm:P161i_is_spatial_projection_of/crm:P10i_contains/crm:P53i_is_former_or_current_location_of ?place .
+                                ?place crm:P168_place_is_defined_by ?wkt .
+                                BIND(true AS ?isBuilding)
+                                BIND(2 as ?order)
+                              }
+                              BIND(IF(?isBuilding, "rgba(244, 224, 77, 0.7)", "rgba(56, 178, 194, 0.44)") AS ?color)
+                            } ORDER BY ASC(?order)'>
+
+            <template id='popover'>
+              <style>
+                .place-row {
+                  display: flex; 
+                  align-items: center;
+                  gap: 5px;
+                  flex-wrap: wrap;
+                  overflow: hidden;
+                }
+              </style>
+
+              <div style="min-width:200px; font-size: 14.5px; overflow: hidden;">
+                <div class="place-row">
+                  <div>Place:</div>
+                  <mp-draggable iri="{{place.value}}">
+                    <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                              urlqueryparam-view="resource-editor"
+                                              urlqueryparam-resource-iri='{{place.value}}'>
+                      <div><mp-label iri='{{place.value}}' style="text-decoration: underline; cursor: pointer; color:#396EFE; font-weight: 600;"></mp-label></div>
+                    </semantic-link-container>
+                  </mp-draggable>
+                </div>
+              </div>
+            </template>
+          </semantic-map>
           </template>
 
           <template id='map'>

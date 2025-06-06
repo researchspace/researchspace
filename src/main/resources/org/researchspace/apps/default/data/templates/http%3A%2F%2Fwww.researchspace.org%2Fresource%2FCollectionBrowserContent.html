@@ -7,17 +7,23 @@
                                  ?managedByResourceConfig
                             
                         WHERE {
-
+                            {{#if useCollection}}
+                              OPTIONAL {
+                                <{{useCollection}}> crm:P67_refers_to ?refersToResourceConfig .
+                                BIND(<{{useCollection}}> AS ?collection) .
+                              }
+                            {{else}}
+                              OPTIONAL {
+                                <{{useConfig}}> crm:P67_refers_to ?refersToResourceConfig .
+                                BIND(<{{useConfig}}> AS ?collection) .
+                              }
+                            {{/if}}
+                          
                             OPTIONAL {
-                              <{{configOrScheme}}> crm:P67_refers_to ?refersToResourceConfig .
-                              BIND(<{{configOrScheme}}> AS ?collection) .
+                              <{{useConfig}}> a <http://www.researchspace.org/resource/system/resource_configuration> .
+                              BIND(<{{useConfig}}> as ?refersToResourceConfig) .
                             }
-
-                            OPTIONAL {
-                              <{{configOrScheme}}> a <http://www.researchspace.org/resource/system/resource_configuration> .
-                              BIND(<{{configOrScheme}}> as ?refersToResourceConfig) .
-                            }
-
+                          
                             BIND(COALESCE(?refersToResourceConfig [[#if defaultConfig]], <[[defaultConfig]]>[[/if]]) AS ?resourceConfiguration ) .
                             BIND(BOUND(?refersToResourceConfig) as ?managedByResourceConfig) .
                             
@@ -95,13 +101,13 @@
           <semantic-query query='SELECT * WHERE {
 
                                   OPTIONAL {
-                                    <{{configOrScheme}}> crm:P67_refers_to ?refersToResourceConfig .
-                                    BIND(<{{configOrScheme}}> AS ?collection) .
+                                    <{{useConfig}}> crm:P67_refers_to ?refersToResourceConfig .
+                                    BIND(<{{useConfig}}> AS ?collection) .
                                   }
       
                                   OPTIONAL {
-                                    <{{configOrScheme}}> a <http://www.researchspace.org/resource/system/resource_configuration> .
-                                    BIND(<{{configOrScheme}}> as ?refersToResourceConfig) .
+                                    <{{useConfig}}> a <http://www.researchspace.org/resource/system/resource_configuration> .
+                                    BIND(<{{useConfig}}> as ?refersToResourceConfig) .
                                   }
 
                                   BIND(COALESCE(?refersToResourceConfig [[#if defaultConfig]], <[[defaultConfig]]>[[/if]]) AS ?resourceConfiguration ) .

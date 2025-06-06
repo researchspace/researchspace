@@ -87,60 +87,78 @@
             </template>
 
             <template id='actions'>
+              <div> 
+                <div style="display: flex; flex-direction: column; gap: 7px; align-items: end; min-width: 116px;">
                   <semantic-context repository='default'>
-                    <semantic-query query='SELECT DISTINCT ?MetResourceURI ?existingRecord WHERE {
+                    <semantic-query query='SELECT DISTINCT ?MetResourceURI WHERE {
+                                            BIND(IRI(CONCAT("https://www.metmuseum.org/art/collection/search/", STR({{id.value}}))) AS ?MetResourceURI)
+                                          }'
+                                          
+                                    template='{{> template}}'>
+                            
+                      <template id='template'>
+                        <mp-event-trigger id='{{viewId}}-select-api-resource-trigger' 
+                                          type='apiResourceImportInModal' 
+                                          data='{"apiResourceURI": "{{bindings.0.MetResourceURI.value}}", 
+                                                  "apiResourceName": "{{#if title.value}}{{title.value}}{{else}}{{objectType.value}}{{/if}}", 
+                                                  "apiResourceMuseumId": "{{accessionNumber.value}}",
+                                                  "apiResourceMuseumIdType": "http://www.researchspace.org/resource/system/vocab/identifier/accession_number", 
+                                                  "apiResourceSystemId": "{{id.value}}",
+                                                  "apiResourceArtistName": "{{artistName.value}}",
+                                                  "apiResourceArtistRole": "{{artistRole.value}}"
+                                                }' 
+                                    >
+                          <button class="btn btn-action" title="Import as {{label}}">Import as {{label}}</button>
+                        </mp-event-trigger>
+                      </template>
+                    </semantic-query>
+                  </semantic-context>
+
+                  <semantic-context repository='default'>
+                    
+                    <semantic-query query='SELECT DISTINCT ?existingRecord ?existingRecordLabel WHERE {
 
                                             BIND(IRI(CONCAT("https://www.metmuseum.org/art/collection/search/", STR({{id.value}}))) AS ?MetResourceURI)
 
-                                            OPTIONAL {
-                                              ?existingRecord crm:P129i_is_subject_of ?entityFormRecord .
-                                              ?entityFormRecord a crmdig:D1_Digital_Object .
-                                              ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
-                                              ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
-                                              ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
-                                              ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
-                                              ?importFromExternalSource a crmdig:D12_Data_Transfer_Event .
-                                              ?importFromExternalSource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source> .
-                                              ?importFromExternalSource crmdig:L14_transferred ?MetResourceURI .
-                                              ?MetResourceURI a crmdig:D1_Digital_Object .
-                                              ?MetResourceURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
-                                            }
+                                            ?existingRecord crm:P129i_is_subject_of ?entityFormRecord .
+                                            ?entityFormRecord a crmdig:D1_Digital_Object .
+                                            ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                            ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
+                                            ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+                                            ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
+                                            ?importFromExternalSource a crmdig:D12_Data_Transfer_Event .
+                                            ?importFromExternalSource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source> .
+                                            ?importFromExternalSource crmdig:L14_transferred ?MetResourceURI .
+                                            ?MetResourceURI a crmdig:D1_Digital_Object .
+                                            ?MetResourceURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+
+                                            ?existingRecord crm:P1_is_identified_by ?appellation . 
+                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                            ?appellation crm:P190_has_symbolic_content ?existingRecordLabel .
+                                            
                                           }'
                                           
                                     template='{{> template}}'>
                             
                               <template id='template'>
-                                <div>
-                                  {{#if bindings.0.existingRecord.value}}
-                                    <mp-event-trigger id='{{viewId}}-openExistingRecord-in-new-frame-trigger' 
-                                                      type='Dashboard.AddFrame'
-                                                      data='{"viewId":"resource-editor", 
-                                                            "resourceIri":"{{bindings.0.existingRecord.value}}",
-                                                            "entityTypeConfig": "{{domainConfig}}",
-                                                            "editable": true,
-                                                            "mode":"edit" }' 
-                                                      targets='["thinking-frames"]'>
-                                        <button class="btn btn-default" title="Open {{label}} record">Open record</button>
+                                <bs-dropdown-button pull-right=true id='{{viewId}}-open-record-dropdown-{{__semanticTableIndex.value}}' title="Open record">
+                                  {{#each bindings}}
+                                    <mp-event-trigger id='{{../viewId}}-openExistingRecord-in-new-frame-trigger' 
+                                                        type='Dashboard.AddFrame'
+                                                        data='{"viewId":"resource-editor", 
+                                                              "resourceIri":"{{existingRecord.value}}",
+                                                              "entityTypeConfig": "{{domainConfig}}",
+                                                              "mode":"edit" }' 
+                                                        targets='["thinking-frames"]'>
+                                        <bs-menu-item draggable='true'>{{existingRecordLabel.value}}</bs-menu-item>
                                     </mp-event-trigger>
-                                  {{else}}
-                                    <mp-event-trigger id='{{viewId}}-select-api-resource-trigger' 
-                                                      type='apiResourceSelect' 
-                                                      data='{"apiResourceURI": "{{bindings.0.MetResourceURI.value}}", 
-                                                              "apiResourceName": "{{#if title.value}}{{title.value}}{{else}}{{objectType.value}}{{/if}}", 
-                                                              "apiResourceMuseumId": "{{accessionNumber.value}}",
-                                                              "apiResourceMuseumIdType": "http://www.researchspace.org/resource/system/vocab/identifier/accession_number", 
-                                                              "apiResourceSystemId": "{{id.value}}",
-                                                              "apiResourceArtistName": "{{artistName.value}}",
-                                                              "apiResourceArtistRole": "{{artistRole.value}}"
-                                                            }' 
-                                                >
-                                      <button class="btn btn-action" title="Import {{label}}">Import {{label}}</button>
-                                    </mp-event-trigger>
-                                  {{/if}}
-                                </div>
+                                  {{/each}}
+                                </bs-dropdown-button>
                               </template>
                     </semantic-query>
                   </semantic-context>
+                </div>
+              </div>
             </template>
             </semantic-table>
           </semantic-context>

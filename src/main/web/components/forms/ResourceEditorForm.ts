@@ -281,7 +281,7 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
       this.initialState &&
       !this.state.submitting &&
       this.state.modelState === DataState.Ready &&
-      readyToSubmit(this.state.model, FieldError.isPreventSubmit)
+      readyToSubmit(this.state.model, FieldError.isPreventSubmit) 
     );
   }
 
@@ -542,6 +542,7 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
                 message: error,
               });
             });
+          /* TODO: handle itemToRemove+/extended_context graph deletion for SN, KM, etc.*/
         }  
       });  
   }

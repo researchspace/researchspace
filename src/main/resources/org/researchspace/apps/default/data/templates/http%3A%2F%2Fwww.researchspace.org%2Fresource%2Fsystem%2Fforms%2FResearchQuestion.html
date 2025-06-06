@@ -31,6 +31,7 @@
                               thing_general_use="http://www.researchspace.org/pattern/system/thing/had_as_general_use"
                               thing_dimension="http://www.researchspace.org/pattern/system/thing/dimension"
   
+                              entity_motivated_activity="http://www.researchspace.org/pattern/system/entity/motivated_activity"
                               human-made_thing_was_intended_use_of_range="http://www.researchspace.org/pattern/system/human-made_thing/was_intended_use_of_range"
                               thing_used_specific_object_range="http://www.researchspace.org/pattern/system/thing/used_specific_object_range"
                               conceptual_object_created_by="http://www.researchspace.org/pattern/system/conceptual_object/created_by"
@@ -38,7 +39,6 @@
                               persistent_item_brought_into_existence_by="http://www.researchspace.org/pattern/system/persistent_item/brought_into_existence_by"
                               persistent_item_taken_out_of_existence_by="http://www.researchspace.org/pattern/system/persistent_item/taken_out_of_existence_by"
                               entity_influenced_activity="http://www.researchspace.org/pattern/system/entity/influenced_activity"
-                              entity_motivated_activity="http://www.researchspace.org/pattern/system/entity/motivated_activity"
                               entity_attributed_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/attributed_by_attribute_assignment"
                               entity_assigned_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/assigned_by_attribute_assignment"
                               entity_measurement="http://www.researchspace.org/pattern/system/entity/measurement"
@@ -362,6 +362,12 @@
 
       <rs-tab event-key="event" title="Events">
 
+          <semantic-form-autocomplete-input   for='entity_motivated_activity' 
+                                              label="Motivated"
+                                              placeholder="Select activity motivated by the research question" 
+                                              nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
+          </semantic-form-autocomplete-input>
+
           <div class="inline-composite-container">
               <semantic-form-composite-input  for="human-made_thing_was_intended_use_of_range"
                                               label="Made for"
@@ -493,36 +499,16 @@
                                               nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
           </semantic-form-autocomplete-input>
 
-          <semantic-form-autocomplete-input   for='entity_motivated_activity' 
-                                              label="Motivated"
-                                              placeholder="Select activity motivated by the research question" 
-                                              nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
-          </semantic-form-autocomplete-input>
-
           <semantic-form-autocomplete-input   for='entity_attributed_by_attribute_assignment' 
                                               label="Attributed by"
                                               placeholder="Select what assigned attribute to the research question" 
-                                              nested-form-templates='[ 
-                                                  {
-                                                      "label": "Attribute assignment",
-                                                      "nestedForm": "{{{{raw}}}}
-                                                                      {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                  {{{{/raw}}}}"
-                                                  }
-                                              ]'>  
+                                              nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
           </semantic-form-autocomplete-input>
 
           <semantic-form-autocomplete-input   for='entity_assigned_by_attribute_assignment' 
                                               label="Assigned by"
                                               placeholder="Select what assigned the research question" 
-                                              nested-form-templates='[ 
-                                                  {
-                                                      "label": "Attribute assignment",
-                                                      "nestedForm": "{{{{raw}}}}
-                                                                      {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                  {{{{/raw}}}}"
-                                                  }
-                                              ]'>  
+                                              nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
           </semantic-form-autocomplete-input>
 
           <semantic-form-autocomplete-input   for='entity_measurement' 

@@ -3,6 +3,7 @@
                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/publication/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
                fields='[[fieldDefinitions
                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                        entity_resource_type="http://www.researchspace.org/pattern/system/entity/resource_type"
                         inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
                         entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
                         
@@ -65,7 +66,8 @@
 >
 
   <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
-    <semantic-form-hidden-input for="classtype" default-value='http://iflastandards.info/ns/fr/frbr/frbroo/F22_Self-Contained_Expression'></semantic-form-hidden-input>
+    <semantic-form-hidden-input for="classtype" default-value='http://iflastandards.info/ns/lrm/lrmoo/F3_Manifestation'></semantic-form-hidden-input>
+    <semantic-form-hidden-input for="entity_resource_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/publication'> </semantic-form-hidden-input>
 
     {{#if scheme}}
       <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
@@ -156,37 +158,6 @@
                                                                 }'
                                           
             ></semantic-form-tree-picker-input>
-
-            {{#if node}}
-              <semantic-query query='SELECT ?authorityDocument ?authorityDocumentName WHERE {
-                                      <{{node}}> crm:P71i_is_listed_in ?authorityDocument .
-                                      ?authorityDocument a crm:E32_Authority_Document .
-                                      ?authorityDocument crm:P1_is_identified_by ?appellation . 
-                                      ?appellation a crm:E41_Appellation . 
-                                      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                      ?appellation crm:P190_has_symbolic_content ?authorityDocumentName .
-                                  } LIMIT 1'
-                              template='{{> template}}'>
-                              
-                  <template id='template'>
-                      <div>
-                          <div style="margin-top: 20px;">
-                              Listed in authority document:
-                              {{#if scheme}}
-                                {{bindings.0.authorityDocumentName.value}} 
-                              {{else}}
-                                <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                urlqueryparam-view='authority-list' 
-                                                urlqueryparam-resource-iri='{{bindings.0.authorityDocument.value}}'
-                                                class="text-link">
-                                  {{bindings.0.authorityDocumentName.value}}
-                                </semantic-link>
-                              {{/if}}
-                          </div>
-                      </div>  
-                  </template>
-              </semantic-query>
-            {{/if}}
 
             <semantic-form-text-input for="symbolic_object_content" multiline=true label="Content/value" placeholder="Enter the complete, identifying representation of its content"></semantic-form-text-input>
             
@@ -759,27 +730,13 @@
         <semantic-form-autocomplete-input   for='entity_attributed_by_attribute_assignment' 
                                             label="Attributed by"
                                             placeholder="Select what assigned attribute to the publication" 
-                                            nested-form-templates='[ 
-                                                {
-                                                    "label": "Attribute assignment",
-                                                    "nestedForm": "{{{{raw}}}}
-                                                                    {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                {{{{/raw}}}}"
-                                                }
-                                            ]'>  
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_assigned_by_attribute_assignment' 
                                             label="Assigned by"
                                             placeholder="Select what assigned the publication" 
-                                            nested-form-templates='[ 
-                                                {
-                                                    "label": "Attribute assignment",
-                                                    "nestedForm": "{{{{raw}}}}
-                                                                    {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                {{{{/raw}}}}"
-                                                }
-                                            ]'>  
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_measurement' 

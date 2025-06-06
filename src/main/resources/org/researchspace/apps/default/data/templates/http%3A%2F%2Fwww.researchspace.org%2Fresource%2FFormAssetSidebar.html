@@ -201,7 +201,7 @@
             </div>
         </bs-tab-container>
     [[else]]
-        <bs-tab-container id="{{viewId}}-formResourceAsset-tabs" default-active-key="[[#if map]]{{viewId}}-resourceForm-map[[else]]{{viewId}}-resourceForm-images[[/if]]">
+        <bs-tab-container id="{{viewId}}-formResourceAsset-tabs" default-active-key="[[#if map-default-tab]]{{viewId}}-resourceForm-map[[else]]{{viewId}}-resourceForm-images[[/if]]">
             <div class="formResourceAsset-tabs">
                 <bs-nav class="btn btn-secondary" style="width: 100%;">
                     <bs-nav-dropdown event-key="{{viewId}}-resources" title="Media type">
@@ -576,9 +576,7 @@
                                 <semantic-query query='SELECT DISTINCT ?place ?placeName ?osmURI WHERE {
                                                         BIND(<{{node}}> AS ?place)
 
-                                                        ?place crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                                                        ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
-                                                        ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
+                                                        ?place crm:P168_place_is_defined_by ?wkt .
                 
                                                         OPTIONAL {
                                                             ?place crm:P129i_is_subject_of ?entityFormRecord .
@@ -637,9 +635,7 @@
                                             </div>
                                             <div style='height: 350px; width: 100%; margin: 10px 0 0;'>
                                                 <semantic-map   query='SELECT ?wkt WHERE { 
-                                                                        <{{bindings.0.place.value}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                                                                        ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
-                                                                        ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
+                                                                        <{{bindings.0.place.value}}> crm:P168_place_is_defined_by ?wkt .
                                                                     }'
                                                                 tuple-template='<div style="display:flex; flex-direction:column; gap:5px;">
                                                                                     <b style="color:#525156;">{{bindings.0.placeName.value}}</b>
@@ -675,11 +671,22 @@
                             {{else}}
                                 <div class="form-tabs-subtabs-content--title">
                                     <h4>Map</h4>
-                                </div>
-                                {{#if apiResourceosmGeoCoordinates}}
-                                    <div style='height: 350px; width: 100%; margin: 10px 0 0;'>
-                                        <semantic-map query='SELECT ?wkt WHERE { BIND("{{apiResourceosmGeoCoordinates}}" AS ?wkt) }'
-                                                        tuple-template='<div style="display:flex; flex-direction:column; gap:5px;">
+                                </div>                                    
+                                  {{#if apiResourceWikidataId}}
+                                    <div style='height: 350px; width: 100%; margin: 10px 0 0;'>                                    
+                                        <semantic-context repository='ephedra'>
+                                            <semantic-map query='PREFIX osm: <http://www.researchspace.org/resource/system/services/osm/> 
+                                                                SELECT ?wkt WHERE {
+                                                                    service osm:NominatimSearchService {
+                                                                    ?subject <http://www.researchspace.org/resource/system/services/osm/q> "{{apiResourceName}}";
+                                                                        <http://www.researchspace.org/resource/system/services/osm/geotext> ?wkt;                                                                      
+                                                                        <http://www.researchspace.org/resource/system/services/osm/display_name> "{{apiResourceName}}";
+                                                                            <http://www.researchspace.org/resource/system/services/osm/wikidata> ?wikidataId .
+ 
+                                                                    }
+                                                                    FILTER (?wikidataId="{{apiResourceWikidataId}}")
+                                                                }'
+                                                            tuple-template='<div style="display:flex; flex-direction:column; gap:5px;">
                                                                             {{#if apiResourceName}}<b style="color:#525156;">{{apiResourceName}}</b>{{/if}}
                                                                             {{#if apiResourceURI}}
                                                                                 <div>
@@ -692,7 +699,9 @@
                                                                                 </div>
                                                                             {{/if}}
                                                                         </div>'>
-                                        </semantic-map>
+                                            </semantic-map> 
+                                        </semantic-context>
+
                                     </div>
                                 {{else}}
                                     <div class="page__section-container-whiteBg" style="margin-top: 10px; font-size: 12.5px;">Enter the geographic coordinates (OpenStreetMap) in location details to display the place map.</div>
@@ -944,7 +953,7 @@
                                     <div style="display: flex;align-items: center;gap: 20px;">
                                         {{#if node}}
                                             <semantic-if    query='ASK { <{{node}}> crm:P129i_is_subject_of ?video . 
-                                                                        ?video a frbroo:F26_Recording .
+                                                                        ?video a lrmoo:F2_Expression .
                                                                         ?video crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_video> .
                                                                         ?video crm:P1_is_identified_by ?appellation .
                                                                         ?appellation a crm:E41_Appellation .

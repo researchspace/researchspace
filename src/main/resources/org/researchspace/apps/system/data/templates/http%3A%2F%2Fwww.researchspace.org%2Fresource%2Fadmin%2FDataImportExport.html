@@ -78,15 +78,15 @@
         <mp-event-target-refresh id='{{viewId}}-data-export-table'>
           <div>
             <semantic-query
-              query='SELECT (COUNT(*) as ?number) WHERE { { SELECT DISTINCT ?g WHERE{ GRAPH ?g {?s ?p ?o} } LIMIT 1000 } }'
-              template='{{#each bindings}}{{#ifCond number.value ">=" 1000}}<bs-alert bs-style="warning"> The following table is limited to show only <strong>1000</strong> named graphs.</bs-alert> {{else}} <div class="page__section-container"> The repository contains <strong> {{number.value}} </strong> distinct named graphs.</div> {{/ifCond}}{{/each}}'>
+              query='SELECT (COUNT(*) as ?number) WHERE { { SELECT DISTINCT ?g WHERE{ GRAPH ?g {?s ?p ?o} } LIMIT 10000 } }'
+              template='{{#each bindings}}{{#ifCond number.value ">=" 10000}}<bs-alert bs-style="warning"> The following table is limited to show only <strong>10000</strong> named graphs.</bs-alert> {{else}} <div class="page__section-container"> The repository contains <strong> {{number.value}} </strong> distinct named graphs.</div> {{/ifCond}}{{/each}}'>
             </semantic-query>
             
             <semantic-table query='SELECT ?graph WHERE {
                                       {
                                         SELECT DISTINCT ?graph WHERE {
                                           { GRAPH ?graph { ?subject ?predicate ?object. } }
-                                        } LIMIT 1000
+                                        } LIMIT 10000
                                       }
                                   }' 
                             column-configuration='[ {"variableName":"graph", "displayName":"Named Graph", "cellTemplate":"{{> link}}"},
@@ -104,7 +104,7 @@
                   SELECT ?size WHERE {
                     {
                       SELECT (COUNT(*) as ?number) WHERE {
-                        GRAPH <{{graph.value}}> { { SELECT * WHERE{ ?s ?p ?o}  LIMIT 1000 } }
+                        GRAPH <{{graph.value}}> { { SELECT * WHERE{ ?s ?p ?o}  LIMIT 10000 } }
                       } LIMIT 1
                     }
                     BIND(IF(?number>=1000, &apos;>=1000&apos;, ?number) as ?size)

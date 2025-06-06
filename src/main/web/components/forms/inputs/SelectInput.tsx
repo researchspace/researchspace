@@ -293,7 +293,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
   private openSelectedNestedForm(formTemplate: string) {
     tryExtractNestedForm(this.props.children, this.context, formTemplate)
       .then(nestedForm => {
-        if (nestedForm != undefined) {console.log(nestedForm);
+        if (nestedForm != undefined) {
          this.setState({nestedForm});
           this.toggleNestedForm()
         }
@@ -426,7 +426,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
 
   private createDefaultPlaceholder(definition: FieldDefinition): string {
     const fieldName = (getPreferredLabel(definition.label) || 'entity').toLocaleLowerCase();
-    return `Select ${fieldName} here...`;
+    return `Select ${fieldName}`;
   }
 
   static makeHandler = AtomicValueInput.makeAtomicHandler;

@@ -1,0 +1,80 @@
+
+<http://www.researchspace.org/pattern/system/physical_thing/holds_or_supports/context> {
+  _:genid-49face5f10cd4b74b7f9f69c66aeacf4-zdo04v a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+  $subject crm:P198_holds_or_supports $value . 
+  $value crm:P198i_is_held_or_supported_by $subject .
+} WHERE {
+  $subject crm:P198_holds_or_supports $value . 
+  $value crm:P198i_is_held_or_supported_by $subject .
+      
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E18_Physical_Thing .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .   
+  ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  <http://www.researchspace.org/pattern/system/physical_thing/holds_or_supports> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.w3.org/2000/01/rdf-schema#comment> "This property relates one instance of Physical Thing which acts as a container or support to another Physical Thing. For example if the Physical Thing function as a container or support including shelves, folders or boxes. These containers or supports provide a stable surface which is intended for other physical objects to be placed upon for storage, display, transport or other similar functions.";
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E18_Physical_Thing>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-49face5f10cd4b74b7f9f69c66aeacf4-wb8h1o;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Holds or supports";
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-49face5f10cd4b74b7f9f69c66aeacf4-ugcgtr;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-49face5f10cd4b74b7f9f69c66aeacf4-0lagpr;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-49face5f10cd4b74b7f9f69c66aeacf4-vkhsa;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E18_Physical_Thing>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/physical_thing>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-49face5f10cd4b74b7f9f69c66aeacf4-zdo04v;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2025-05-23T20:20:40.939+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-49face5f10cd4b74b7f9f69c66aeacf4-0lagpr a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  $subject crm:P198_holds_or_supports $value . 
+      
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E18_Physical_Thing .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .   
+  ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-49face5f10cd4b74b7f9f69c66aeacf4-wb8h1o a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P198_holds_or_supports $value . 
+  $value crm:P198i_is_held_or_supported_by $subject .
+} WHERE {}""" .
+  
+  _:genid-49face5f10cd4b74b7f9f69c66aeacf4-vkhsa a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E18_Physical_Thing .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .   
+  ?appellation crm:P190_has_symbolic_content ?label .
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-49face5f10cd4b74b7f9f69c66aeacf4-ugcgtr a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E18_Physical_Thing .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .   
+  ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/physical_thing/holds_or_supports> .
+}

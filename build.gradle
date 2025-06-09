@@ -136,6 +136,11 @@ def defaultJvmArgs = [
     "-Dconfig.storage.images.type=nonVersionedFile",
     "-Dconfig.storage.images.mutable=true",
 
+    // delopment storages for other media upload functionality
+    "-Dconfig.storage.media.type=nonVersionedFile",
+    "-Dconfig.storage.media.mutable=true",
+
+
     // tmp storage is needed for image upload functionality
     "-Dconfig.storage.tmp.type=nonVersionedFile",
     "-Dconfig.storage.tmp.mutable=true",
@@ -176,6 +181,8 @@ gretty {
             "-Dconfig.storage.images.root=./runtime-data/images",
             "-Dconfig.storage.tmp.root=./runtime-data/tmp",
 
+            "-Dconfig.storage.media.root=./runtime-data/media",
+
             "-Dlog4j.configurationFile=classpath:org/researchspace/logging/log4j2.xml",
         ]
     } else {
@@ -183,6 +190,8 @@ gretty {
             "-Dconfig.storage.images.root=${project.properties['imageStorageRoot']}",
             "-Dconfig.storage.tmp.root=${java.nio.file.Files.createTempDirectory('images-tmp')}",
 
+            "-Dconfig.storage.media.root=${project.properties['mediaStorageRoot']}",
+          
             // set development mode to true to make sure that assets are always up to date
             // see bindings for AssetsMapProvider in MainGuiceModule.java
             "-DisDevelopmentMode=true",

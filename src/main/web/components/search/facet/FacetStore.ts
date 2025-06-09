@@ -675,7 +675,7 @@ export class FacetStore {
           FILTER(?__baseQuery__)
           # ?subject crm:P2_has_type/crm:P127_has_broader_term* ?value .
           FILTER(?__queryPattern__)
-          MINUS {
+          FILTER NOT EXISTS {
             # ?value crm:P127_has_broader_term ?parent .
             FILTER(?__parentsPattern__)
           }
@@ -769,19 +769,51 @@ ORDER BY DESC (?score) DESC (?count)
 
 
     const prefixes = SparqlUtil.parseQuery('SELECT * WHERE {}').prefixes;
-    const relationPattern =  
+    // fallbackHierarchyPattern is assumed to be of type SearchConfig.Hierarchy (non-null)
+    // due to the original 'as SearchConfig.Hierarchy' cast.
+    const fallbackHierarchyPattern =
       tryGetRelationPatterns(this.config.baseConfig, relation).find(p => p.kind === 'hierarchy') as SearchConfig.Hierarchy;
-    let queryPattern = SparqlUtil.parsePatterns(relationPattern.queryPattern, prefixes);
+
+    let queryPatternString: string;
+    if (relationConfig.queryPattern && relationConfig.queryPattern.trim() !== "") {
+        queryPatternString = relationConfig.queryPattern;
+    } else {
+        queryPatternString = fallbackHierarchyPattern.queryPattern; // Direct access, assumes fallbackHierarchyPattern is not null
+    }
+    let queryPattern = SparqlUtil.parsePatterns(queryPatternString, prefixes);
     queryPattern = transformRelationPatternForFacetValues(queryPattern, 'resource');
-    const childrenPattern = SparqlUtil.parsePatterns(relationPattern.childrenPattern, prefixes);
-    const parentsPattern = SparqlUtil.parsePatterns(relationPattern.parentsPattern, prefixes);
-    const searchPattern = SparqlUtil.parsePatterns(relationPattern.searchPattern, prefixes);
+
+    let childrenPatternString: string;
+    if (relationConfig.childrenPattern && relationConfig.childrenPattern.trim() !== "") {
+        childrenPatternString = relationConfig.childrenPattern;
+    } else {
+        childrenPatternString = fallbackHierarchyPattern.childrenPattern;
+    }
+    const childrenPattern = SparqlUtil.parsePatterns(childrenPatternString, prefixes);
+
+    let parentsPatternString: string;
+    if (relationConfig.parentsPattern && relationConfig.parentsPattern.trim() !== "") {
+        parentsPatternString = relationConfig.parentsPattern;
+    } else {
+        parentsPatternString = fallbackHierarchyPattern.parentsPattern;
+    }
+    const parentsPattern = SparqlUtil.parsePatterns(parentsPatternString, prefixes);
+
+    let searchPatternString: string;
+    if (relationConfig.searchPattern && relationConfig.searchPattern.trim() !== "") {
+        searchPatternString = relationConfig.searchPattern;
+    } else {
+        searchPatternString = fallbackHierarchyPattern.searchPattern;
+    }
+    const searchPattern = SparqlUtil.parsePatterns(searchPatternString, prefixes);
 
 
+    console.log(JSON.stringify(rootsQuery))
     new PatternBinder('__baseQuery__', baseQueryPatterns).sparqlQuery(rootsQuery);
     new PatternBinder('__queryPattern__', queryPattern).sparqlQuery(rootsQuery);
     new PatternBinder('__childrenPattern__', childrenPattern).sparqlQuery(rootsQuery);
     new PatternBinder('__parentsPattern__', parentsPattern).sparqlQuery(rootsQuery);
+    console.log(rootsQuery)
 
 
     new PatternBinder('__baseQuery__', baseQueryPatterns).sparqlQuery(childrenQuery);

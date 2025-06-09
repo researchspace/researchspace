@@ -125,7 +125,11 @@ export class LazyTreeWithSearch extends Component<LazyTreeWithSearchProps, State
       } else {
         this.setState({ searching: true });
         return this.performSearch(text)
-          .map(searchResult => ({ searchResult, searching: false }))
+          .map(searchResult => {
+            console.log('search results')
+            console.log(searchResult)
+            return ({ searchResult, searching: false })
+        })
           .mapErrors(error => ({ searchResult: { error }, searching: false }));
       }
     })

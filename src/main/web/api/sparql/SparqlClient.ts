@@ -22,6 +22,7 @@ import * as Kefir from 'kefir';
 import * as _ from 'lodash';
 import * as SparqlJs from 'sparqljs';
 import * as URI from 'urijs';
+import * as uuid from 'uuid';
 
 import { serializeQuery, parseQuerySync } from './SparqlUtil';
 import { cloneQuery } from './QueryVisitor';
@@ -328,12 +329,25 @@ module SparqlClient {
     const header = assign(
       {
         'Content-Type': 'application/sparql-query; charset=utf-8',
+        'X-Cache-Key': uuid.v5(preparedQuery, '931ab69a-7067-4612-b37a-14c34b912bd1'),
       },
       headers
     );
 
     const req = request.post(parametrizedEndpoint.toString()).send(preparedQuery).set(header);
     return requestAsProperty(req).map((res) => res.text);
+  }
+
+  function hashCode(str: string): number {
+    var hash = 0,
+      i, chr;
+    if (str.length === 0) return hash;
+    for (i = 0; i < str.length; i++) {
+      chr = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + chr;
+      hash |= 0;
+    }
+    return hash;
   }
 
   export function executeSparqlUpdate(

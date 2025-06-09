@@ -834,8 +834,12 @@ export interface NumericRangeFacetValue {
 
 export interface HierarchyFacetValue {
   kind: 'hierarchy';
-  valuesQuery: string;
+  queryPattern?: string;
+  childrenPattern?: string;
+  parentsPattern?: string;
+  searchPattern?: string;
   tupleTemplate?: string;
+  valuesQuery?: string;
 }
 
 export interface FacetCategoryConfig {

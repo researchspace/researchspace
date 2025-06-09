@@ -305,25 +305,61 @@ function restoreGraphFromLeafs(
         .map((result) => ({ result, requested: orphanKeys }));
     };
 
-    Kefir.repeat(() => {
+    const processIteration = () => {
       if (unresolvedOrphans.size === 0) {
-        return false;
+        applyLabels()
+          .onValue(result => {
+            emitter.emit(result);
+            emitter.end();
+          })
+          .onError(error => {
+            emitter.error(error);
+            emitter.end();
+          });
+      } else {
+        request(Array.from(unresolvedOrphans))
+          .onValue(reqResult => {
+            const isComplete = processResult(reqResult);
+            if (isComplete) {
+              applyLabels()
+                .onValue(finalResult => {
+                  emitter.emit(finalResult);
+                  emitter.end();
+                })
+                .onError(error => {
+                  emitter.error(error);
+                  emitter.end();
+                });
+            } else {
+              // Continue iteration only if not complete and there are still orphans
+              // This check is important to prevent infinite loops if processResult doesn't reduce orphans
+              if (unresolvedOrphans.size > 0) {
+                processIteration();
+              } else { // Should ideally be caught by isComplete, but as a safeguard
+                applyLabels()
+                  .onValue(finalResult => {
+                    emitter.emit(finalResult);
+                    emitter.end();
+                  })
+                  .onError(error => {
+                    emitter.error(error);
+                    emitter.end();
+                  });
+              }
+            }
+          })
+          .onError(error => {
+            emitter.error(error);
+            emitter.end();
+          });
       }
-      return request(Array.from(unresolvedOrphans));
-    })
-    .takeWhile(result => !processResult(result))
-    .last()
-    .flatMap(() => applyLabels())
-    .onValue(result => {
-      emitter.emit(result);
-      emitter.end();
-    })
-    .onError(error => {
-      emitter.error(error);
-      emitter.end();
-    });
+    };
 
-    return () => {};
+    processIteration();
+
+    return () => {
+      // Cleanup logic if needed, e.g., cancel ongoing requests
+    };
   }).toProperty();
 }
 

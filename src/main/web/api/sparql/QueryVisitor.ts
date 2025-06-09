@@ -367,6 +367,8 @@ export class QueryVisitor {
       result = this.bgp(expression);
     } else if (expression.type === 'group') {
       result = this.block(expression);
+    } else if (expression.type === 'filter') {
+      result = this.filter(expression as SparqlJs.FilterPattern);
     } else {
       console.warn(`Unknown pattern-like Expression type '${expression.type}'`);
     }

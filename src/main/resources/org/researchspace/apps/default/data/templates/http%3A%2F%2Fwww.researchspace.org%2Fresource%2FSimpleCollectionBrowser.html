@@ -79,6 +79,7 @@
                                                   iri=iri
                                                   resourceEditorButton=true
                                                   hidePreview=true
+                                                  headerButton=true
                   }}
                 </rs-resource-dropdown>
               </div>
@@ -234,7 +235,7 @@
           {{#if resourceMembershipProperty}}
             <mp-splitpane min-size=250 
                           default-size=400 
-                          snap-threshold=10 
+                          snap-threshold=150 
                           default-open=true
                           persist-resize=false 
                           always-render=true >
@@ -325,7 +326,7 @@
                                                       {{/if}}
                                                       
                                                       "schemePattern": "{{#if resourceMembershipProperty}} ?item <{{resourceMembershipProperty}}> ?__scheme__.{{/if}} 
-                                                                        {{#if resourceOntologyClass }} ?item a/rdfs:subClassOf* <{{resourceOntologyClass }}> .{{/if}} 
+                                                                        {{#if resourceOntologyClass }} ?item a/rdfs:subClassOf* {{resourceOntologyClass }} .{{/if}} 
                                                                         {{#if resourceP2Type}} ?item crm:P2_has_type <{{resourceP2Type}}> .{{/if}} 
                                                                         {{#if resourceRestrictionPattern}}{{resourceRestrictionPattern}}{{/if}}"
                                                                         }'>
@@ -703,6 +704,7 @@
                                                             resourceLabel=resourceName
                                                             resourceEditorButton=true
                                                             hidePreview=true
+                                                            headerButton=true
                             }}
                           </rs-resource-dropdown>
                         {{/if}}
@@ -760,6 +762,7 @@
                                       no-result-template='{{> noResults}}'>
 
                         <template id='template'>
+                          <div>
                           [[!--  
                             {{#if (eq resourceConfiguration "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
                               <mp-event-proxy id='{{viewId}}-update-form-on-graph-action-delete' 
@@ -785,6 +788,7 @@
                         </template>
 
                         <template id="noResults">
+                          <div>
                           [[!-- 
                             {{#if (eq resourceConfiguration "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
                               <mp-event-proxy id='{{viewId}}-noResults-on-graph-action-delete' 
@@ -854,6 +858,8 @@
                       {{/ifCond}}
                     {{/if}}
               
+                  {{else}}
+                    <div></div>
                   {{/if}}
                 </template>
               </mp-event-target-template-render>
@@ -891,5 +897,3 @@
     </div>
   </template>
 </mp-event-target-template-render> 
-
-

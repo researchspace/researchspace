@@ -1,8 +1,9 @@
 <semantic-query query=' SELECT  ?collection 
-                                ?resourceConfiguration ?resourceName ?resourceOntologyClass ?resourceP2Type ?resourceFormIRI 
-                                ?resourceMembershipProperty ?resourceBroaderProperty ?resourceOrderPattern 
-                                ?resourceRestrictionPattern ?resourceLabelPattern 
-                                ?resourceIcon
+                                ?resourceConfiguration 
+                                #?resourceName ?resourceOntologyClass ?resourceP2Type ?resourceFormIRI 
+                                #?resourceMembershipProperty ?resourceBroaderProperty ?resourceOrderPattern 
+                                #?resourceRestrictionPattern ?resourceLabelPattern 
+                                #?resourceIcon
                                  ?managedByResourceConfig
                             
                         WHERE {
@@ -26,33 +27,33 @@
                             BIND(COALESCE(?refersToResourceConfig [[#if defaultConfig]], <[[defaultConfig]]>[[/if]]) AS ?resourceConfiguration ) .
                             BIND(BOUND(?refersToResourceConfig) as ?managedByResourceConfig) .
                             
-                            ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceName ;
-                              <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass .
+                            #?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceName ;
+                           #   <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass .
 
                             
-                            ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
+                           # ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
                             
-                            OPTIONAL {
-                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .
-                            }
-                            OPTIONAL {
-                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern .
-                            }
-                            OPTIONAL {
-                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty .
-                            }
-                            OPTIONAL {
-                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property> ?resourceBroaderProperty .
-                            }
-                            OPTIONAL {
-                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_order_sparql_pattern> ?resourceOrderPattern .
-                            }
-                            OPTIONAL {
-                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_label_sparql_pattern> ?resourceLabelPattern .
-                            }
-                            OPTIONAL {
-                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .
-                            }
+                           # OPTIONAL {
+                           #   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .
+                           # }
+                           # OPTIONAL {
+                           #   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern .
+                           # }
+                           # OPTIONAL {
+                           #   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty .
+                           # }
+                           # OPTIONAL {
+                           #   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property> ?resourceBroaderProperty .
+                           # }
+                           # OPTIONAL {
+                           #   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_order_sparql_pattern> ?resourceOrderPattern .
+                           # }
+                           # OPTIONAL {
+                           #   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_label_sparql_pattern> ?resourceLabelPattern .
+                           # }
+                           # OPTIONAL {
+                           #   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .
+                           # }
                           } LIMIT 1'
   >
     <template id='template'>
@@ -62,19 +63,19 @@
           editable=true 
           resourceConfiguration=bindings.0.resourceConfiguration.value 
           collection=bindings.0.collection.value 
-          resourceName=bindings.0.resourceName.value 
-          resourceOntologyClass=bindings.0.resourceOntologyClass.value 
-          resourceP2Type=bindings.0.resourceP2Type.value
-          resourceLabelPattern=bindings.0.resourceLabelPattern.value  
-          resourceRestrictionPattern=bindings.0.resourceRestrictionPattern.value 
-          resourceForm=bindings.0.resourceFormIRI.value 
-          resourceMembershipProperty=bindings.0.resourceMembershipProperty.value 
-          resourceBroaderProperty=bindings.0.resourceBroaderProperty.value 
-          resourceOrderPattern=bindings.0.resourceOrderPattern.value 
-          resourceIcon=bindings.0.resourceIcon.value
+          resourceName=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "label")
+          resourceOntologyClass=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "rdfType")
+          resourceP2Type=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "p2HasType")
+          resourceLabelPattern=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceLabelPattern")
+          resourceRestrictionPattern=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceRestrictionPattern")
+          resourceForm=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceFormIRI")
+          resourceMembershipProperty=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceMembershipProperty")
+          resourceBroaderProperty=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceBroaderProperty")
+          resourceOrderPattern=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceOrderPattern")
+          resourceIcon=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceIcon")   
           mode=mode 
           iri=iri}}
-      {{else}}
+      {{else}} 
         [[!-- if there is no authority configuration for the current authority then we can only guess how to edit it, 
               so we can offer here for user to associate a config with it --]]
         {{> rsp:SimpleCollectionBrowser 
@@ -82,16 +83,16 @@
           editable=false 
           resourceConfiguration=bindings.0.resourceConfiguration.value 
           collection=bindings.0.collection.value 
-          resourceName=bindings.0.resourceName.value 
-          resourceOntologyClass=bindings.0.resourceOntologyClass.value 
-          
-          resourceLabelPattern=bindings.0.resourceLabelPattern.value 
-          resourceRestrictionPattern=bindings.0.resourceRestrictionPattern.value 
-          resourceForm=bindings.0.resourceFormIRI.value 
-          resourceMembershipProperty=bindings.0.resourceMembershipProperty.value 
-          resourceBroaderProperty=bindings.0.resourceBroaderProperty.value 
-          resourceOrderPattern=bindings.0.resourceOrderPattern.value 
-          resourceIcon=bindings.0.resourceIcon.value
+          resourceName=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "label")
+          resourceOntologyClass=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "rdfType")
+          resourceP2Type=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "p2HasType")
+          resourceLabelPattern=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceLabelPattern")
+          resourceRestrictionPattern=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceRestrictionPattern")
+          resourceForm=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceFormIRI")
+          resourceMembershipProperty=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceMembershipProperty")
+          resourceBroaderProperty=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceBroaderProperty")
+          resourceOrderPattern=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceOrderPattern")
+          resourceIcon=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceIcon")   
           selectedEntity=selectedEntity}}
       {{/ifCond}}
     </template>

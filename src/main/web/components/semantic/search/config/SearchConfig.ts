@@ -788,6 +788,7 @@ export const FACET_VARIABLES = {
   VALUE_RESOURCE_LABEL_VAR: 'label',
   VALUE_DATE_RANGE_BEGIN_VAR: 'dateBeginValue',
   VALUE_DATE_RANGE_END_VAR: 'dateEndValue',
+  VALUE_DATE_RANGE_COUNT_VAR: 'count',
   VALUE_LITERAL: 'literal',
   VALUE_NUMERIC_RANGE_BEGIN_VAR: 'numericRangeBeginValue',
   VALUE_NUMERIC_RANGE_END_VAR: 'numericRangeEndValue',

@@ -76,6 +76,7 @@ import {
 import { FacetContext } from 'platform/components/semantic/search/web-components/SemanticSearchApi';
 import * as LabelsService from 'platform/api/services/resource-label';
 import { BuiltInEvents, trigger } from 'platform/api/events';
+import { b } from 'react-dom-factories';
 
 export interface FacetStoreConfig {
   domain: Category;
@@ -210,7 +211,6 @@ export class FacetStore {
       ast: this.ast.$property,
       categories: Kefir.constant(categories),
     })
-      .debounce(200)
       .onValue(this.facetData);
 
     // update list of selected facet values on the selection of new facet value
@@ -899,10 +899,50 @@ ORDER BY DESC (?score) DESC (?count)
   ): Kefir.Property<Array<F.DateRange>> {
     return this.executeValuesQuery(baseQuery, conjuncts, relation, relationConfig.valuesQuery).map((res) =>
       res.results.bindings
-        .map((binding) => ({
-          begin: moment(binding[FACET_VARIABLES.VALUE_DATE_RANGE_BEGIN_VAR].value, moment.ISO_8601),
-          end: moment(binding[FACET_VARIABLES.VALUE_DATE_RANGE_END_VAR].value, moment.ISO_8601),
-        }))
+        .map((binding) => {
+          const processDateString = (dateStr: string | undefined): string | undefined => {
+            if (!dateStr || !dateStr.startsWith('-')) {
+              return dateStr; // Not a negative date string, or empty/undefined
+            }
+
+            const contentAfterSign = dateStr.substring(1); 
+
+            let endOfYearIndex = 0;
+            while (endOfYearIndex < contentAfterSign.length) {
+              const char = contentAfterSign[endOfYearIndex];
+              if (char >= '0' && char <= '9') {
+                endOfYearIndex++;
+              } else {
+                break; 
+              }
+            }
+
+            const yearDigits = contentAfterSign.substring(0, endOfYearIndex);
+            
+            if (yearDigits.length === 0) {
+              // No numeric year found after '-', e.g., "-ABC..." or just "-"
+              return dateStr; 
+            }
+
+            const restOfDate = contentAfterSign.substring(endOfYearIndex);
+            let finalYearDigits = yearDigits;
+
+            if (yearDigits.length < 6) {
+              finalYearDigits = yearDigits.padStart(6, '0');
+            }
+            
+            return '-' + finalYearDigits + restOfDate;
+          };
+
+          const beginValue = binding[FACET_VARIABLES.VALUE_DATE_RANGE_BEGIN_VAR]?.value;
+          const endValue = binding[FACET_VARIABLES.VALUE_DATE_RANGE_END_VAR]?.value;
+
+          return {
+            begin: moment(processDateString(beginValue), moment.ISO_8601),
+            end: moment(processDateString(endValue), moment.ISO_8601),
+            count: parseInt(binding[FACET_VARIABLES.VALUE_DATE_RANGE_COUNT_VAR].value),
+          };
+        })
         .filter(({ begin, end }) => begin.isValid() && end.isValid())
     );
   }

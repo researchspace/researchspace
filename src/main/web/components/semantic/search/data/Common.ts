@@ -74,86 +74,169 @@ export type ValueRange = { begin: string; end: string };
 
 /**
  * Replaces filters which restrict ranges with bind patterns.
+ * This function identifies filters containing specific range comparisons (e.g., ?var <= ?value)
+ * within a SPARQL query pattern, removes those filters, and adds equivalent BIND clauses.
+ * It handles both simple filters and complex filters where these comparisons might be deeply nested.
  *
  * @example
+ * // Input pattern with a complex filter:
  * {
- *    $subject ?__relation__ ?date .
- *    ?date crm:P82a_begin_of_the_begin ?begin ;
- *      crm:P82b_end_of_the_end ?end .
- *    FILTER(?begin <= ?__dateEndValue__) .
- *    FILTER(?end >= ?__dateBeginValue__) .
+ *   $subject crm:P108i_was_produced_by/crm:P9_consists_of* /crm:P4_has_time-span ?timeSpan .
+ *   ?timeSpan crm:P82a_begin_of_the_begin ?begin .
+ *   ?timeSpan crm:P82b_end_of_the_end ?end .
+ *   FILTER ((!BOUND(?begin) || ?begin <= ?__dateEndValue__) && (!BOUND(?end) || ?end >= ?__dateBeginValue__))
  * }
+ * // Given range = { begin: 'begin', end: 'end' }
+ * // and rangeTo = { begin: 'dateBeginValue', end: 'dateEndValue' }
  *
- * // result:
+ * // Resulting pattern:
  * {
- *    $subject ?__relation__ ?date .
- *    ?date crm:P82a_begin_of_the_begin ?begin ;
- *      crm:P82b_end_of_the_end ?end .
- *    BIND(?begin as ?dateEndValue) .
- *    BIND(?end as ?dateBeginValue) .
+ *   $subject crm:P108i_was_produced_by/crm:P9_consists_of* /crm:P4_has_time-span ?timeSpan .
+ *   ?timeSpan crm:P82a_begin_of_the_begin ?begin .
+ *   ?timeSpan crm:P82b_end_of_the_end ?end .
+ *   BIND(?__dateEndValue__ AS ?dateBeginValue) .
+ *   BIND(?__dateBeginValue__ AS ?dateEndValue) .
  * }
  */
 export function transformRangePattern(pattern: SparqlJs.Pattern[], range: ValueRange, rangeTo: ValueRange) {
-  const clonedPattern = _.cloneDeep(pattern);
+  class RangeFilterTransformVisitor extends QueryVisitor {
+    public rangeBeginVar: SparqlJs.Term;
+    public rangeEndVar: SparqlJs.Term;
+    public bindAsBeginVar: SparqlJs.Term;
+    public bindAsEndVar: SparqlJs.Term;
 
-  // Replace range filter patterns with bind patterns
-  // Find variables names in the ranges filters
-  const visitor = new (class extends QueryVisitor {
-    public begin: SparqlJs.Term;
-    public end: SparqlJs.Term;
+    public extractedValueForLTECondition: SparqlJs.Term = null; // Stores X from rangeEndVar <= X
+    public extractedValueForGTECondition: SparqlJs.Term = null; // Stores Y from rangeBeginVar >= Y
+    private _currentFilterContainsRelevantComparison: boolean = false;
 
-    private findSecondVariable(args: SparqlJs.Expression[], variable: string) {
-      return _.find(args, (value) => value !== variable) as SparqlJs.Term;
+    constructor(currentRange: ValueRange, currentRangeTo: ValueRange) {
+      super();
+      this.rangeBeginVar = `?${currentRange.begin}` as SparqlJs.Term;
+      this.rangeEndVar = `?${currentRange.end}` as SparqlJs.Term;
+      this.bindAsBeginVar = `?${currentRangeTo.begin}` as SparqlJs.Term;
+      this.bindAsEndVar = `?${currentRangeTo.end}` as SparqlJs.Term;
+    }
+
+    // Add this overridden method:
+    pattern(p: SparqlJs.Pattern): SparqlJs.Pattern | null {
+      if (p.type === 'filter') {
+        return this.filter(p as SparqlJs.FilterPattern);
+      } else {
+        // For non-filter patterns (bgp, optional, group, etc.),
+        // we still need to traverse them in case they contain nested filters.
+        // The super.pattern(p) call will ensure our overridden 'filter' and 'operation'
+        // methods are invoked for any relevant parts within 'p'.
+        // The base QueryVisitor methods for these patterns (like bgp, block)
+        // often modify 'p' in-place and return undefined.
+        // We must return 'p' itself to keep it in the pattern list.
+        super.pattern(p); // Traverses p, potentially modifying it in-place
+        return p; // Return the (potentially modified) pattern itself
+      }
     }
 
     private hasVariable(args: SparqlJs.Expression[], variable: string): boolean {
       return _.some(args, (value) => value === variable);
     }
 
-    private getBindPattern(variable: SparqlJs.Term, expression: SparqlJs.Expression): SparqlJs.BindPattern {
-      return { type: 'bind', variable, expression };
+    private findSecondVariable(args: SparqlJs.Expression[], variable: string): SparqlJs.Term {
+      return _.find(args, (value) => value !== variable) as SparqlJs.Term;
     }
 
-    filter(pattern: SparqlJs.FilterPattern): SparqlJs.Pattern {
-      const { type, operator, args } = pattern.expression as SparqlJs.OperationExpression;
+    filter(filterPattern: SparqlJs.FilterPattern): SparqlJs.Pattern | null {
+      this._currentFilterContainsRelevantComparison = false; // Reset for this top-level filter
+      // Traverse the expression within the filter. Our overridden 'operation' method will be called.
+      this.expression(filterPattern.expression);
 
-      if (type !== 'operation') {
-        return super.filter(pattern);
+      if (this._currentFilterContainsRelevantComparison) {
+        return null; // Remove this filter pattern as it contained a relevant comparison
       }
-
-      const rangeVariables = {
-        begin: `?${range.begin}` as SparqlJs.Term,
-        end: `?${range.end}` as SparqlJs.Term,
-      };
-      const rangeToVariables = {
-        begin: `?${rangeTo.begin}` as SparqlJs.Term,
-        end: `?${rangeTo.end}` as SparqlJs.Term,
-      };
-
-      if (operator === '>=' && this.hasVariable(args, rangeVariables.begin)) {
-        this.end = this.findSecondVariable(args, rangeVariables.begin);
-        return this.getBindPattern(rangeToVariables.end, this.end);
-      }
-
-      if (operator === '<=' && this.hasVariable(args, rangeVariables.end)) {
-        this.begin = this.findSecondVariable(args, rangeVariables.end);
-        return this.getBindPattern(rangeToVariables.begin, this.begin);
-      }
-
-      return super.filter(pattern);
+      return filterPattern; // Keep other unrelated filters
     }
-  })();
 
-  clonedPattern.forEach((p) => visitor.pattern(p));
+    operation(opExpr: SparqlJs.OperationExpression): SparqlJs.Expression {
+      // Check for ?rangeEndVar <= X (e.g., ?end <= ?__dateEndValue__)
+      if (opExpr.operator === '<=' && this.hasVariable(opExpr.args, this.rangeEndVar)) {
+        if (!this.extractedValueForLTECondition) {
+          this.extractedValueForLTECondition = this.findSecondVariable(opExpr.args, this.rangeEndVar);
+        }
+        this._currentFilterContainsRelevantComparison = true;
+      }
+      // Check for ?rangeBeginVar >= Y (e.g., ?begin >= ?__dateBeginValue__)
+      else if (opExpr.operator === '>=' && this.hasVariable(opExpr.args, this.rangeBeginVar)) {
+        if (!this.extractedValueForGTECondition) {
+          this.extractedValueForGTECondition = this.findSecondVariable(opExpr.args, this.rangeBeginVar);
+        }
+        this._currentFilterContainsRelevantComparison = true;
+      }
 
-  if (!visitor.begin || !visitor.end) {
+      // Continue traversal for nested operations
+      return super.operation(opExpr);
+    }
+  }
+
+  const visitor = new RangeFilterTransformVisitor(range, rangeTo);
+  const clonedPattern = _.cloneDeep(pattern);
+
+  // Apply the visitor to each top-level pattern.
+  // visitor.pattern(p) will return null if p is a filter to be removed,
+  // or p (with its internals potentially modified if p is a group-like pattern)
+  const intermediatePatterns: (SparqlJs.Pattern | null)[] = [];
+  for (const p of clonedPattern) {
+    const result = visitor.pattern(p);
+    intermediatePatterns.push(result);
+  }
+
+  // Recursively remove nulls from the pattern structure
+  function removeNullsRecursively(patterns: (SparqlJs.Pattern | null)[]): SparqlJs.Pattern[] {
+    if (!patterns) return [];
+    const result: SparqlJs.Pattern[] = [];
+    for (const p of patterns) {
+      if (p === null) {
+        continue;
+      }
+      // Check for group-like patterns that have a 'patterns' property
+      // Add other block pattern types if necessary (e.g., union, minus, service)
+      if (p.type === 'group' || p.type === 'optional' || p.type === 'graph' || 
+          p.type === 'service' || p.type === 'union' || p.type === 'minus') {
+        const blockPattern = p as SparqlJs.BlockPattern; // Common base for group, optional etc.
+        if (blockPattern.patterns) {
+          blockPattern.patterns = removeNullsRecursively(blockPattern.patterns);
+        }
+      }
+      result.push(p);
+    }
+    return result;
+  }
+
+  const processedPatterns = removeNullsRecursively(intermediatePatterns);
+
+  // Add BIND clauses based on what the visitor extracted
+  // These are added at the top level of the processed patterns,
+  // consistent with the example where BINDs appear after the group from which a filter was removed.
+  if (visitor.extractedValueForLTECondition) {
+    processedPatterns.push({
+      type: 'bind',
+      variable: visitor.bindAsBeginVar, // This is ?${rangeTo.begin} (e.g. ?dateBeginValue)
+      expression: visitor.extractedValueForLTECondition,
+    });
+  }
+
+  if (visitor.extractedValueForGTECondition) {
+    processedPatterns.push({
+      type: 'bind',
+      variable: visitor.bindAsEndVar, // This is ?${rangeTo.end} (e.g. ?dateEndValue)
+      expression: visitor.extractedValueForGTECondition,
+    });
+  }
+
+  if (!visitor.extractedValueForLTECondition || !visitor.extractedValueForGTECondition) {
     console.warn(
       'The following query pattern',
       JSON.stringify(pattern),
       "can't be automatically used for selection of facet values,",
-      'pattern is expected to have two FILTERs which restrict ranges.'
+      'pattern is expected to have filter conditions restricting both begin and end of the range.'
     );
   }
 
-  return clonedPattern;
+  return processedPatterns;
 }

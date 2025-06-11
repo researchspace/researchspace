@@ -132,7 +132,7 @@ export class FacetBreadcrumbsComponent extends Component<FacetBreadcrumbsProps, 
     return (
       <span>
         {begin}
-        <span className={styles.or}>to</span>
+        <span className={styles.or}> to </span>
         {end}
       </span>
     );

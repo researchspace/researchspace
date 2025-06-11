@@ -163,9 +163,11 @@ export namespace DefaultFacetValuesQueries {
 
   export function forDateRange() {
     return `
-      SELECT ?dateBeginValue ?dateEndValue WHERE {
+      SELECT ?dateBeginValue ?dateEndValue (COUNT(DISTINCT $subject) AS ?count) WHERE {
         FILTER(?${FACET_VARIABLES.RELATION_PATTERN_VAR})
-      } ORDER BY ?dateBeginValue
+      }
+      GROUP BY ?dateBeginValue ?dateEndValue
+      ORDER BY ASC(?dateBeginValue) desc(?dateEndValue)
     `;
   }
 

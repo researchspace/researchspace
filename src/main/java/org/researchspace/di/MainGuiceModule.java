@@ -53,7 +53,6 @@ import org.researchspace.thumbnails.ThumbnailServiceRegistry;
 import org.researchspace.ui.templates.MainTemplate;
 import org.researchspace.upload.UploadHandler;
 import org.researchspace.upload.handlers.FileUploadHandler;
-import org.researchspace.x3ml.X3MLTestRunner;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;

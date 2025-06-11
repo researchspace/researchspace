@@ -34,6 +34,12 @@ export interface ResourceConfig {
   resourceOrderPattern?: string;
   resourceLabelPattern?: string;
   resourceIcon?: string;
+  resourceSearchKPCategory?: string;
+  isSystemConfig?: string;
+  hasResourceType?: string;
+  listInAuthorityDocument?: string;
+  displayInFinder?: string;
+  navigationMenuItem?: string;
 }
 
 export let resourceConfigs: { [key: string]: ResourceConfig };
@@ -54,6 +60,12 @@ CONSTRUCT {
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_order_sparql_pattern> ?resourceOrderPattern .
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_label_sparql_pattern> ?resourceLabelPattern .
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .
+  ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_facet_kpCategory> ?resourceSearchKPCategory .
+  ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/is_system_config>  ?systemConfig .
+  ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/has_resource_type> ?resourceType.
+  ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_list_in_authority> ?listInAuthorityDocument .
+  ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_in_finder> ?displayInFinder.
+  ?resourceConfiguration <http://www.cidoc-crm.org/cidoc-crm/P67i_is_referred_to_by> ?navigationMenuItem  .
   
 } WHERE {
   ?resourceConfiguration a <http://www.researchspace.org/resource/system/resource_configuration> ;
@@ -63,6 +75,7 @@ CONSTRUCT {
 
   OPTIONAL {
     ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?P2_has_type .
+    BIND(true as ?resourceType)
   }
   
   OPTIONAL {
@@ -87,6 +100,23 @@ CONSTRUCT {
   }
   OPTIONAL {
     ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .
+  }
+  OPTIONAL {
+    ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_facet_kpCategory> ?resourceSearchKPCategory .
+  }
+  OPTIONAL {
+    ?resourceConfiguration crm:P2_has_type <http://www.researchspace.org/pattern/system/resource_configuration/configuration_type/system> .
+    BIND(true as ?systemConfig)
+  }
+  OPTIONAL {
+    ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_list_in_authority> ?listInAuthorityDocument .
+  }
+  OPTIONAL {
+    ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_in_finder> ?displayInFinder.
+  }
+  OPTIONAL { 
+    ?navigationMenuItem crm:P67_refers_to ?resourceConfiguration ;
+        a <http://www.researchspace.org/resource/system/FinderNavigationItem> .
   }
 } 
       `
@@ -128,13 +158,31 @@ CONSTRUCT {
             const resourceIcon =
               Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon')], pg).map(l => l.value).getOrElse(undefined);
            
-            
+            const resourceSearchKPCategory = 
+              Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_search_facet_kpCategory')], pg).map(l => l.value).getOrElse(undefined);
+           
+            const isSystemConfig = 
+              Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/is_system_config')], pg).map(l => l.value).getOrElse(undefined);
+          
+            const hasResourceType = 
+              Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/has_resource_type')], pg).map(l => l.value).getOrElse(undefined);
+          
+            const listInAuthorityDocument = 
+              Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_list_in_authority')], pg).map(l => l.value).getOrElse(undefined);
+          
+            const displayInFinder = 
+              Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_in_finder')], pg).map(l => l.value).getOrElse(undefined);
+          
+            const navigationMenuItem = undefined;
+              //Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.cidoc-crm.org/cidoc-crm/P67i_is_referred_to_by')], pg).map(l => l.value).getOrElse(undefined);
+          
             return [
               configIri.value,
               {
                 label, rdfType, p2HasType, restrictionPattern, resourceFormIRI, 
                 resourceMembershipProperty, resourceBroaderProperty, resourceOrderPattern, 
-                resourceLabelPattern, resourceIcon
+                resourceLabelPattern, resourceIcon, resourceSearchKPCategory, isSystemConfig, 
+                listInAuthorityDocument, displayInFinder, hasResourceType, navigationMenuItem
               }
             ];
           });
@@ -147,5 +195,8 @@ CONSTRUCT {
 }
 
 export function getResourceConfiguration(iri: string, key: string) : string {  
+  console.log(key);
+  console.log(iri);
+  console.log(resourceConfigs[iri][key]);
   return resourceConfigs[iri][key];
 }

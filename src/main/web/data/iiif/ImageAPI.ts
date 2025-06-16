@@ -130,12 +130,13 @@ export function constructImageUri(serverAndPrefix: string, params: ImageRequestP
   return r;
 }
 
-export function constructInformationRequestUri(serverAndPrefix: string, imageId: string) {
-  return constructServiceRequestUri(serverAndPrefix, imageId) + `/info.json`;
+export function constructInformationRequestUri(serverAndPrefix: string, imageId: string, proxyUrl?: string) {
+  return constructServiceRequestUri(serverAndPrefix, imageId, proxyUrl) + `/info.json`;
 }
 
-export function constructServiceRequestUri(serverAndPrefix: string, imageId: string) {
-  return serverAndPrefix + '/' + encodeURIComponent(imageId);
+export function constructServiceRequestUri(serverAndPrefix: string, imageId: string, proxyUrl?: string) {
+  return proxyUrl?
+    proxyUrl+serverAndPrefix + '/' + encodeURIComponent(imageId):(serverAndPrefix + '/' + encodeURIComponent(imageId));
 }
 
 export interface ImageBounds {
@@ -143,20 +144,18 @@ export interface ImageBounds {
   height: number;
 }
 
-export function queryImageBounds(serverAndPrefix: string, imageId: string) {
-  const uri = constructInformationRequestUri(serverAndPrefix, imageId);
+export function queryImageBounds(serverAndPrefix: string, imageId: string, proxyUrl?: string) { 
+  const uri = constructInformationRequestUri(serverAndPrefix, imageId, proxyUrl);
   return Kefir.fromNodeCallback<ImageBounds>((cb) => {
-    request
-      .get(uri)
-      .accept('application/ld+json')
-      .end((err, res) => {
-        if (err) {
-          cb(err);
-        } else {
-          const json = JSON.parse(res.text);
-          cb(err, json);
-        }
-      });
+   
+  request
+    .get(uri)
+    .withCredentials()              // xhr.withCredentials = true
+    .accept('application/ld+json')
+    .end((err, res) => {
+      if (err) return cb(err);
+      cb(null, JSON.parse(res.text));
+    });
   }).toProperty();
 }
 

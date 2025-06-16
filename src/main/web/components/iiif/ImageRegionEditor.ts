@@ -50,7 +50,7 @@ export interface ImageRegionEditorConfig {
   imageIdPattern: string;
   iiifServerUrl: string;
   repositories?: Array<string>;
-
+  proxyUrl?: string;
   /**
    * Use details sidebar instead of built-in mirador details view
    */
@@ -86,6 +86,22 @@ interface ImageRegionEditorState {
  *     iiif-server-url='http://example.com/IIIF'>
  *   </rs-iiif-mirador>
  * </div>
+ *
+ * Another example with external manifests Presentation API v2
+ * IMPORTANT a resourceIri is a rso:EX_Digital_Image
+ * <div style='height: 700px'>
+ *    <rs-iiif-mirador 
+ *       image-or-region='[{"resourceIri":"an image iri uploaded via the file upload using a manifest url instead of a file",
+ *                         "images":["same as the resourceIri"]}]'
+ *       image-id-pattern='BIND("2015HW5158" AS ?imageID)'
+ *       iiif-server-url='https://framemark.vam.ac.uk/collections'
+ *       proxy-url="https://api.allorigins.win/raw?url=">                    
+ *    </rs-iiif-mirador>
+ * </div>
+ * image-id-pattern is inferred from parsing the manifest file
+ * iiif-server-url is determined from parsing the server in the manifest file
+ * without this proxy-url we get a CORS error, maybe other workarounds are possible...
+ *
  */
 export class ImageRegionEditorComponentMirador extends Component<ImageRegionEditorProps, ImageRegionEditorState> {
   static defaultProps: Partial<ImageRegionEditorProps> = {
@@ -211,12 +227,12 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
     removeMirador(this.miradorInstance, element);
 
     const iiifServerUrl = ImageApi.getIIIFServerUrl(this.props.iiifServerUrl);
-
+    const proxyUrl = this.props.proxyUrl;
     const manifestQuerying = this.state.allImages.map(({ resourceIri, images }) =>
       this.queryManifestParameters({
         infos: this.state.info,
         iiifImageIds: this.state.iiifImageId,
-        iri: resourceIri, images, iiifServerUrl
+        iri: resourceIri, images, iiifServerUrl, proxyUrl
       }).flatMap((allParams) => {
         const params = allParams.filter((param) => param !== undefined);
         if (params.length === 0) {
@@ -307,12 +323,13 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
             this.setState({ allImages: this.state.allImages })
 
             const iiifServerUrl = ImageApi.getIIIFServerUrl(this.props.iiifServerUrl);
+            const proxyUrl = this.props.proxyUrl;
             this.queryImagesInfo([newImage])
               .flatMap(
                 ({ info, iiifImageId }) => {
                   return this.queryManifestParameters({
                     infos: info, iiifImageIds: iiifImageId,
-                    iri: event.data.resourceIri, images: event.data.imageIris, iiifServerUrl
+                    iri: event.data.resourceIri, images: event.data.imageIris, iiifServerUrl,proxyUrl
                   })
                 }
               )
@@ -497,14 +514,16 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
     images,
     iiifServerUrl,
     infos,
-    iiifImageIds
+    iiifImageIds,
+    proxyUrl
   }: {
     iri: string;
     images: Array<string>;
     iiifServerUrl: string;
     infos?: ReadonlyMap<string, ImageOrRegionInfo>;
     iiifImageIds?: ReadonlyMap<string, string>;
-  }) {
+    proxyUrl?: string;
+  }) { console.log("proxy url"+proxyUrl);
     if (!images.length) {
       return Kefir.constant([]);
     }
@@ -515,7 +534,8 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
         return Kefir.constant(undefined);
       }
       const imageServiceUri = ImageApi.constructServiceRequestUri(iiifServerUrl, iiifImageId);
-      return ImageApi.queryImageBounds(iiifServerUrl, iiifImageId)
+
+      return ImageApi.queryImageBounds(iiifServerUrl, iiifImageId, proxyUrl)
         .flatMap((canvasSize) =>
           Kefir.constant({
             baseIri: imageInfo.isRegion ? imageInfo.imageIRI : Rdf.iri(iri),
@@ -550,7 +570,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
 
     const windowObjects: Mirador.WindowObject[] =
       manifests.length > 1 ? [] : [{
-        loadedManifest: manifests[0]['@id'] as string,
+        loadedManifest: (manifests[0]?.['@id']|| manifests[0]?.['id']) as string,
         viewType: 'ImageView',
         sidePanel: false,
         canvasControls: {

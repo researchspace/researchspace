@@ -102,15 +102,18 @@ interface FileInputConfig {
    * @default false
    */
   fromUrlOrDrop?: boolean;
+  fromManifestUrl?: boolean;
 }
 
 export interface FileInputProps extends AtomicValueInputProps, FileInputConfig {}
+
+type SelectMode = 'url' | 'manifest url' | 'file';
 
 interface State {
   alertState?: AlertConfig;
   progress?: number;
   progressText?: string;
-  selectUrl?: boolean;
+  selectUrl?: SelectMode;
 }
 
 /**
@@ -121,6 +124,7 @@ interface State {
 export class FileInput extends AtomicValueInput<FileInputProps, State> {
   private readonly cancellation = new Cancellation();
   private urlInputRef: HTMLInputElement;
+  private manifestUrlInputRef: HTMLInputElement;
 
   constructor(props: FileInputProps, context: any) {
     super(props, context);
@@ -128,6 +132,7 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
       alertState: undefined,
       progress: undefined,
       progressText: undefined,
+      selectUrl: "file"    
     };
     this.getHandler()._setFileManager(this.getFileManager());
   }
@@ -253,7 +258,14 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
         return (
           <div className={styles.selectorHolder}>
             {this.renderInputSelector()}
-            {this.state.selectUrl ? this.renderUrlInput() : this.renderDropZone()}
+            {this.state.selectUrl === "url"
+              ? this.renderUrlInput()
+              : this.state.selectUrl === "file"
+                ? this.renderDropZone()
+                : this.state.selectUrl === "manifest url"
+                  ? this.renderManifestUrlInput()
+                  : this.renderDropZone()}
+            
           </div>
         );
       } else {
@@ -317,20 +329,44 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
     );
   }
 
+  renderManifestUrlInput = () => {
+    const alert = this.state.alertState ? <Alert {...this.state.alertState}></Alert> : null;
+    return (
+      <React.Fragment>
+        {alert ? <div className={styles.alertComponent}>{alert}</div> : null}
+
+        <div className={styles.urlInputHolder}>
+          <FormControl inputRef={ref => { this.manifestUrlInputRef = ref; }}
+            type='text' placeholder='Enter manifest file URL' />
+          <Button bsStyle='default' 
+                  className='btn-action'
+                  type='submit'
+                  onClick={this.fetchManifestFileFromUrl}
+          >Fetch</Button>
+        </div>
+      </React.Fragment>
+    );
+  }
   renderInputSelector = () => {
     return (
       <div className={styles.selectorContainer}>
         <Radio inline
-          checked={!this.state.selectUrl}
-          onClick={ () => this.setState({selectUrl: false}) }
+          checked={this.state.selectUrl == "file"}
+          onClick={ () => this.setState({selectUrl: "file"}) }
         >
           File upload
         </Radio>{' '}
         <Radio inline
-          checked={this.state.selectUrl}
-          onClick={ () => this.setState({selectUrl: true}) }
+          checked={this.state.selectUrl == "url"}
+          onClick={ () => this.setState({selectUrl: "url"}) }
         >
           URL
+        </Radio>{' '}
+         <Radio inline
+          checked={this.state.selectUrl == "manifest url"}
+          onClick={ () => this.setState({selectUrl: "manifest url"}) }
+        >
+          Manifest URL
         </Radio>{' '}
       </div>
     );
@@ -365,6 +401,7 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
       "image/png": "png",
       "image/gif": "gif",
       "text/plain": "txt",
+      "application/ld+json": "json",
       "application/pdf": "pdf",
       // Add additional mappings as needed.
     };
@@ -405,6 +442,46 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
           blob => { 
             const tmpFileName = this.endsWithFileExtension(this.urlInputRef.value)?
                                 this.urlInputRef.value:this.addExtensionIfMissing(this.urlInputRef.value,blob.type);
+ 
+            this.onDropAccepted([new File([blob], tmpFileName, {type: blob.type})]);
+          }
+        ).catch((e: Error) => {
+          this.setState({
+            alertState: {
+              alert: AlertType.WARNING,
+              message: e.message + ' Try to upload the file manually.',
+            }
+          });
+        });
+
+    }
+  }
+
+  fetchManifestFileFromUrl = () => {
+    /** 
+     * Using AllOrigins Raw Endpoint:
+     *  This solution uses AllOrigins’ raw endpoint (/raw) which is designed to return the fetched content directly. 
+     *  By appending the encoded target URL to the proxy URL, the request is routed through AllOrigins
+     */
+    const proxyUrl = 'https://api.allorigins.win/raw?url=';
+
+    if (!_.isEmpty(this.manifestUrlInputRef?.value)) {
+      fetch(proxyUrl + this.manifestUrlInputRef.value)
+        .then((response) => {
+          if (!response.ok) {
+            this.setState({
+              alertState: {
+                alert: AlertType.WARNING,
+                message: 'Faild to fetch manifest file from URL!',
+              }
+            });
+          }
+          return response.blob();
+        })
+        .then(
+          blob => { 
+            const tmpFileName = this.endsWithFileExtension(this.manifestUrlInputRef.value)?
+                                this.manifestUrlInputRef.value:this.addExtensionIfMissing(this.manifestUrlInputRef.value,blob.type);
  
             this.onDropAccepted([new File([blob], tmpFileName, {type: blob.type})]);
           }

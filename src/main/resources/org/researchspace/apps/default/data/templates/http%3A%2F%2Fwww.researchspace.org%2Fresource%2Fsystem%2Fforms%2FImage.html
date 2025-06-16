@@ -153,7 +153,7 @@
                                                                             }'
                                                     
                         ></semantic-form-tree-picker-input>
-                    
+
                         <semantic-form-autocomplete-input   for='image_is_main_representation' 
                                                             label="Is main image of" 
                                                             placeholder="Select what has the image as main representation" 
@@ -246,7 +246,7 @@
                                             <div data-flex-self="md-full">
                                                 <semantic-search-result id='{{viewId}}-imageForm-annotations-result'>
                                                     <semantic-table id='{{viewId}}-imageForm-annotations-table'
-                                                                    class-name="table-fixed-header table-scrollable-content table-expanded search-table-container table-with-checkbox"
+                                                                    class-name="table-fixed-header table-scrollable-content table-expanded search-table-container"
                                                                     query='SELECT DISTINCT ?subject ?iri ?annotationName ?description WHERE {
                                                                                 BIND(?subject as ?iri) .
 
@@ -285,7 +285,6 @@
                                                                                         </div>'
                                         
                                                                     column-configuration='[
-                                                                                            {"variableName": "subject", "displayName": "", "cellTemplate": "{{> selectionCheckbox}}" },
                                                                                             {"variableName": "annotationName", "displayName": "Image annotation name","cellTemplate": "{{> details}}"},
                                                                                             {"displayName": "Type","cellTemplate": "{{> type}}"},
                                                                                             {"displayName": "Image of","cellTemplate": "{{> imageOf}}"},
@@ -293,56 +292,54 @@
                                                                                         ]'
                                         
                                                     >
-                                                        <template id='selectionCheckbox'>
-                                                            <div>
-                                                                <mp-selection-toggle selection="item-selection-aggregator" tag="{{subject.value}}"></mp-selection-toggle>
-                                                            </div>
-                                                        </template>
 
                                                         <template id='details'>  
                                                             <div>
-                                                                <div style="display: flex; align-items: center; gap: 15px;">                                 
-                                                                
-                                                                    <mp-overlay-dialog  id="{{subject.value}}-resource-preview-dialog"  
-                                                                                        type="modal" 
-                                                                                        class="modal-xlSize preview_modal"
-                                                                                        title="Preview">
-                                                                        <mp-overlay-dialog-trigger>
-                                                                            <div>
-                                                                                <mp-draggable iri='{{subject.value}}'>
-                                                                                    <div class="resource-thumbnail-small-container">
-                                                                                        <rs-iiif-image-thumbnail   class='resource-thumbnail-small'
-                                                                                                                    image-or-region='{{subject.value}}' 
-                                                                                                                    [[> rsp:IIIFConfig]]>
-                                                                                        </rs-iiif-image-thumbnail>     
-                                                                                    </div>
-                                                                                </mp-draggable>
-                                                                            </div>
-                                                                        </mp-overlay-dialog-trigger>
-                                                                        <mp-overlay-dialog-content>
-                                                                            <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
-                                                                                            options='{"resource": "{{subject.value}}", 
-                                                                                                        "resourceConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation", 
-                                                                                                        "resourceConfigLabel": "Image annotation",
-                                                                                                        "resourceDescription": "{{description.value}}",
-                                                                                                        "resourceDetailSection": true
-                                                                                                    }' >
-                                                                            </inline-template> 
-                                                                        </mp-overlay-dialog-content>
-                                                                    </mp-overlay-dialog>
-                                                
-                                                                    <div>
-                                                                        <mp-draggable iri='{{subject.value}}'>
-                                                                            <div>
-                                                                                <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                                                                urlqueryparam-view='resource-editor'
-                                                                                                urlqueryparam-resource='{{subject.value}}'>
-                                                                                    <mp-label iri='{{subject.value}}' class="text-link text-truncate-line1"></mp-label>
-                                                                                </semantic-link>
-                                                                            </div>
-                                                                        </mp-draggable>
-                                                
-                                                                        <div class="color-secondary-light text-font-size__xsmall">Image annotation</div>
+                                                                <div style="display: flex; align-items: center; gap: 5px;">                                 
+                                                                    <mp-selection-toggle selection="item-selection-aggregator" tag="{{subject.value}}"></mp-selection-toggle>
+
+                                                                    <div style="display: flex; align-items: center; gap: 15px;"> 
+                                                                        <mp-overlay-dialog  id="{{subject.value}}-resource-preview-dialog"  
+                                                                                            type="modal" 
+                                                                                            class="modal-xlSize preview_modal"
+                                                                                            title="Preview">
+                                                                            <mp-overlay-dialog-trigger>
+                                                                                <div>
+                                                                                    <mp-draggable iri='{{subject.value}}'>
+                                                                                        <div class="resource-thumbnail-small-container">
+                                                                                            <rs-iiif-image-thumbnail   class='resource-thumbnail-small'
+                                                                                                                        image-or-region='{{subject.value}}' 
+                                                                                                                        [[> rsp:IIIFConfig]]>
+                                                                                            </rs-iiif-image-thumbnail>     
+                                                                                        </div>
+                                                                                    </mp-draggable>
+                                                                                </div>
+                                                                            </mp-overlay-dialog-trigger>
+                                                                            <mp-overlay-dialog-content>
+                                                                                <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
+                                                                                                options='{"resource": "{{subject.value}}", 
+                                                                                                            "resourceConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation", 
+                                                                                                            "resourceConfigLabel": "Image annotation",
+                                                                                                            "resourceDescription": "{{description.value}}",
+                                                                                                            "resourceDetailSection": true
+                                                                                                        }' >
+                                                                                </inline-template> 
+                                                                            </mp-overlay-dialog-content>
+                                                                        </mp-overlay-dialog>
+                                                    
+                                                                        <div>
+                                                                            <mp-draggable iri='{{subject.value}}'>
+                                                                                <div>
+                                                                                    <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                                                    urlqueryparam-view='resource-editor'
+                                                                                                    urlqueryparam-resource='{{subject.value}}'>
+                                                                                        <mp-label iri='{{subject.value}}' class="text-link text-truncate-line1"></mp-label>
+                                                                                    </semantic-link>
+                                                                                </div>
+                                                                            </mp-draggable>
+                                                    
+                                                                            <div class="color-secondary-light text-font-size__xsmall">Image annotation</div>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -1328,7 +1325,8 @@
                                                 label='Image file'
                                                 render-header="false"
                                                 from-url-or-drop='true'
-                                                accept-pattern='image/jpg,image/jpeg,image/png,image/tiff,image/gif' 
+                                                from-manifest='true'
+                                                accept-pattern='image/jpg,image/jpeg,image/png,image/tiff,image/gif,application/json' 
                                                 storage='images'
                                                 temp-storage='tmp'
                                                 name-predicate-iri='http://www.researchspace.org/ontology/PX_has_file_name'

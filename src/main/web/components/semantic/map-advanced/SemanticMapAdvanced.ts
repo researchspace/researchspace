@@ -1205,6 +1205,20 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       } else {
         f.setGeometry(geo);
 
+        // Explicitly set the feature ID using the 'subject' property from the marker data.
+        // The 'subject' property (e.g., an IRI) is often used as a unique identifier in this codebase.
+        if (marker['subject'] && marker['subject'].value) {
+          f.setId(marker['subject'].value);
+        } else {
+          // If 'subject' or 'subject.value' is not available, log a warning.
+          // This helps in debugging if the expected ID field is missing from query results.
+          console.warn('Feature created without a subject-based ID. Marker data:', marker);
+          // As a fallback, a unique ID could be generated here if necessary,
+          // e.g., f.setId(_.uniqueId('feature_'));
+          // However, for consistency with how features are looked up elsewhere (using 'subject'),
+          // ensuring 'subject.value' is present and used is the preferred approach.
+        }
+
         const type = geo.getType();
         geometries[type] = geometries[type] ? geometries[type].concat(f) : [f];
       }
@@ -2176,24 +2190,29 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       // Get features in current viewport
       this.getVectorLayersFromMap().forEach((vectorLayer) => {
         const source = vectorLayer.getSource();
-        let features;
+        let featuresInExtent;
 
         if (source instanceof Cluster) {
-          // For clustered layers, get features from the source of the cluster
-          features = source.getSource().getFeatures();
+          // For clustered layers, get features from the source of the cluster that are within the extent
+          featuresInExtent = source.getSource().getFeaturesInExtent(bufferedExtent);
+        } else if (source instanceof VectorSource) { // Check if it's a VectorSource
+          featuresInExtent = source.getFeaturesInExtent(bufferedExtent);
         } else {
-          features = source.getFeatures();
+          // If it's not a Cluster or a direct VectorSource, we might not be able to get features in extent.
+          // Fallback to all features from this source, though this might not be ideal for performance.
+          console.warn('Source type not directly supported for getFeaturesInExtent, falling back to getFeatures:', source);
+          featuresInExtent = source.getFeatures ? source.getFeatures() : [];
         }
 
-        // Mark all features as visible for now to ensure they display
-        features.forEach((feature) => {
-          if (feature.getId()) {
-            this.visibleFeatures.add(feature.getId().toString());
+        featuresInExtent.forEach((feature) => {
+          const featureId = feature.getId();
+          if (featureId) {
+            this.visibleFeatures.add(featureId.toString());
           }
         });
       });
 
-      console.log(`Visible features: ${this.visibleFeatures.size}`);
+      console.log(`Visible features in extent: ${this.visibleFeatures.size}`);
     } catch (error) {
       console.error('Error updating visible features:', error);
     }

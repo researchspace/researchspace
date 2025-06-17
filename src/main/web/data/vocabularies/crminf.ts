@@ -19,7 +19,7 @@
 import { Rdf } from 'platform/api/rdf';
 
 module crminf {
-  const NAMESPACE = 'http://www.ics.forth.gr/isl/CRMinf/';
+  const NAMESPACE = 'http://www.cidoc-crm.org/extensions/crminf/';
   const iri = (s: string) => Rdf.iri(NAMESPACE + s);
 
   export const I1_Argumentation = iri('I1_Argumentation');
@@ -31,9 +31,11 @@ module crminf {
 
   export const J1_used_as_premise = iri('J1_used_as_premise');
   export const J2_concluded_that = iri('J2_concluded_that');
-  export const J3_applies = iri('J3_applies');
+  export const J3_applied = iri('J3_applied');
   export const J4_that = iri('J4_that');
   export const J5_holds_to_be = iri('J5_holds_to_be');
+
+// TO DO: J6_adopted is depracated in the latest CRMinf version. The mapping needs here to be changed accordingly
   export const J6_adopted = iri('J6_adopted');
 }
 

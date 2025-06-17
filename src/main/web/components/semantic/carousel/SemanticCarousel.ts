@@ -40,7 +40,7 @@ export interface SemanticCarouselConfig {
    */
   query: string;
 
-  /** <a href='http://handlebarsjs.com/' class='text-link-action' target='_blank'>handlebars.js</a>
+  /** <a href='http://handlebarsjs.com/' class='text-link-action' target='_blank' draggable='false'>handlebars.js</a>
    *  HTML slide template.
    * SPARQL query projection variables are available in the template
    */
@@ -53,7 +53,7 @@ export interface SemanticCarouselConfig {
 
   /**
    * Additional carousel config options propagated to underlying library 
-   * <a href='https://github.com/akiran/react-slick' class='text-link-action' target='_blank'>react-slick</a>
+   * <a href='https://github.com/akiran/react-slick' class='text-link-action' target='_blank' draggable='false'>react-slick</a>
    */
   options?: ReactSlickOptions;
 

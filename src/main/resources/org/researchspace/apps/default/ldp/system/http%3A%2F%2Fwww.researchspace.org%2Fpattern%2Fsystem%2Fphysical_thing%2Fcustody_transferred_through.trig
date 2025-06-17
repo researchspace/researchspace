@@ -1,0 +1,80 @@
+
+<http://www.researchspace.org/pattern/system/physical_thing/custody_transferred_through/context> {
+  <http://www.researchspace.org/pattern/system/physical_thing/custody_transferred_through>
+    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
+      <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Custody transferred through";
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E18_Physical_Thing>;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-ad6fb9455d2442f3bc9142905e5da638-k46o3m;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E10_Transfer_of_Custody>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-ad6fb9455d2442f3bc9142905e5da638-mggps;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-ad6fb9455d2442f3bc9142905e5da638-swvl1c;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-ad6fb9455d2442f3bc9142905e5da638-1ubxxm;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-ad6fb9455d2442f3bc9142905e5da638-4mhu8;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/physical_thing>;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2025-05-23T19:56:24.593+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-ad6fb9455d2442f3bc9142905e5da638-swvl1c a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  $subject crm:P30i_custody_transferred_through $value . 
+      
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E10_Transfer_of_Custody .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .   
+  ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-ad6fb9455d2442f3bc9142905e5da638-4mhu8 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+  $subject crm:P30i_custody_transferred_through $value . 
+  $value crm:P30_transferred_custody_of $subject .
+} WHERE {
+  $subject crm:P30i_custody_transferred_through $value . 
+  $value crm:P30_transferred_custody_of $subject .
+      
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E10_Transfer_of_Custody .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .   
+  ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-ad6fb9455d2442f3bc9142905e5da638-k46o3m a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E10_Transfer_of_Custody .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .   
+  ?appellation crm:P190_has_symbolic_content ?label .
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-ad6fb9455d2442f3bc9142905e5da638-mggps a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E10_Transfer_of_Custody .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .   
+  ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-ad6fb9455d2442f3bc9142905e5da638-1ubxxm a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P30i_custody_transferred_through $value . 
+  $value crm:P30_transferred_custody_of $subject .
+} WHERE {}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/physical_thing/custody_transferred_through> .
+}

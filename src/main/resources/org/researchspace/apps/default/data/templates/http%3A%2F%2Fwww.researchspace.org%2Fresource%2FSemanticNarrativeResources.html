@@ -82,10 +82,7 @@
                                                                                 ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                                                                 ?appellation crm:P190_has_symbolic_content ?label .
                                                                             } UNION {
-                                                                                ?subject crm:P170i_time_is_defined_by ?timePrimitive .
-                                                                                ?timePrimitive a crm:E61_Time_Primitive .
-                                                                                ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
-                                                                                ?timePrimitive crm:P190_has_symbolic_content ?label .
+                                                                                ?subject crm:P170i_time_is_defined_by ?label .
                                                                             } UNION {
                                                                                 ?subject skos:prefLabel ?label .
                                                                             } UNION {
@@ -132,7 +129,7 @@
                                                                 targets='["{{viewId}}-search-view-dropdown-area",
                                                                             "{{viewId}}-search-result-views"
                                                                         ]'>
-                                                <bs-menu-item event-key="list" 
+                                                <bs-menu-item event-key="list" draggable="false"
                                                             active='{{#ifCond searchViewType "==" "List"}}true{{else}}false{{/ifCond}}'>
                                                     List
                                                 </bs-menu-item>
@@ -143,7 +140,7 @@
                                                                 targets='["{{viewId}}-search-view-dropdown-area",
                                                                             "{{viewId}}-search-result-views"
                                                                         ]'>
-                                                <bs-menu-item event-key="grid" 
+                                                <bs-menu-item event-key="grid" draggable="false"
                                                             active='{{#ifCond searchViewType "==" "Grid"}}true{{else}}false{{/ifCond}}'>
                                                     Grid
                                                 </bs-menu-item>
@@ -179,7 +176,7 @@
 
                                         <mp-anonymous-hidden>
                                             <semantic-search-action-save-set-result id='{{iri}}-new-set-with-results'>
-                                                <bs-menu-item>
+                                                <bs-menu-item draggable="false">
                                                     <rs-icon icon-type="rounded" icon-name="create_new_folder" class="icon-left" symbol="true"></rs-icon>
                                                     <span>New set with results</span>
                                                 </bs-menu-item>  
@@ -199,10 +196,7 @@
                                                                                 ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                                                                 ?appellation crm:P190_has_symbolic_content ?resourceName .
                                                                             } UNION {
-                                                                                ?subject crm:P170i_time_is_defined_by ?timePrimitive .
-                                                                                ?timePrimitive a crm:E61_Time_Primitive .
-                                                                                ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
-                                                                                ?timePrimitive crm:P190_has_symbolic_content ?resourceName .
+                                                                                ?subject crm:P170i_time_is_defined_by ?resourceName .
                                                                             } UNION {
                                                                                 ?subject skos:prefLabel ?resourceName .
                                                                             } UNION {
@@ -221,7 +215,7 @@
                                                                         }"
                                                                 header="text/csv"
                                                                 filename="{{viewId}}-semantic-narrative-resources.csv">
-                                                <bs-menu-item>
+                                                <bs-menu-item draggable="false">
                                                     <rs-icon icon-type="rounded" icon-name="file_download" class="icon-left" symbol="true"></rs-icon>
                                                     <span>Export as CSV</span>
                                                 </bs-menu-item>
@@ -237,10 +231,7 @@
                                                                             ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                                                             ?appellation crm:P190_has_symbolic_content ?resourceName .
                                                                         } UNION {
-                                                                            ?subject crm:P170i_time_is_defined_by ?timePrimitive .
-                                                                            ?timePrimitive a crm:E61_Time_Primitive .
-                                                                            ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
-                                                                            ?timePrimitive crm:P190_has_symbolic_content ?resourceName .
+                                                                            ?subject crm:P170i_time_is_defined_by ?resourceName .
                                                                         } UNION {
                                                                             ?subject skos:prefLabel ?resourceName .
                                                                         } UNION {
@@ -260,7 +251,7 @@
                                                                 header="application/sparql-results+json"
                                                                 filename="{{viewId}}-semantic-narrative-resources.json"
                                             >
-                                                <bs-menu-item>
+                                                <bs-menu-item draggable="false">
                                                     <rs-icon icon-type="rounded" icon-name="file_download" class="icon-left" symbol="true"></rs-icon>
                                                     <span>Export as JSON</span>
                                                 </bs-menu-item>
@@ -323,7 +314,8 @@
                                                                     query='SELECT DISTINCT ?subject ?iri ?resourceConfig ?resourceLabel ?resourceFormIRI ?resourceIcon ?description WHERE {
                                                                                 BIND(?subject AS ?iri)
                                                                                 ?iri rdf:type ?resourceOntologyClass.
-                                                                                ?resourceOntologyClass rdf:type owl:Class.
+                                                                                ?resourceOntologyClass a ?resourceOntologyClassType .
+                                                                                FILTER(?resourceOntologyClassType in (rdfs:Class, owl:Class))
                                                                                 OPTIONAL {
                                                                                     ?iri crm:P2_has_type ?resourceType .
                                                                                     OPTIONAL {
@@ -466,7 +458,7 @@
                                                                             <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
                                                                                             urlqueryparam-view='authority-list'
                                                                                             urlqueryparam-resource='{{iri.value}}'>
-                                                                            <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
+                                                                                <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
                                                                             </semantic-link>
                                                                         {{else if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
                                                                             <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'

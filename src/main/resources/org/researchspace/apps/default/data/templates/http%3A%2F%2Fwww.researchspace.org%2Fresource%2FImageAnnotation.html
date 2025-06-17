@@ -68,24 +68,58 @@
                                       <div class="all-annotations" id="annotation-viewer-{{windowId}}">
                                         {{#each annotations}}
                                           <div class="annotation-display annotation-tooltip" data-anno-id="{{id}}">
-                                            <div class="button-container">
+                                           
                                               {{#if id}}
                                                 <mp-template-item>
-                                                  <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames" 
-                                                                  draggable="false"
-                                                                  urlqueryparam-view="resource-editor"
-                                                                  urlqueryparam-resource-iri="{{id}}"
-                                                                    >
-                                                      <div style="width: 100%;    
-                                                                  text-decoration: underline;
-                                                                  font-weight: 600;
-                                                                  cursor: pointer;
-                                                                  color: #525156">{{{annoText}}}</div>
-                                                    </semantic-link>
+                                                  <mp-draggable iri="{{id}}">
+                                                    <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                                                              urlqueryparam-view="resource-editor"
+                                                                              urlqueryparam-resource-iri="{{id}}"
+                                                                      >
+                                                        <div style="width: 100%;    
+                                                                    text-decoration: underline;
+                                                                    font-weight: 600;
+                                                                    cursor: pointer;
+                                                                    color: #525156">{{{annoText}}}</div>
+                                                    </semantic-link-container>
+                                                  </mp-draggable>
                                                 </mp-template-item>
                                               {{/if}}
+                                          
+                                            <div>
+                                              <mp-template-item>
+                                                <semantic-query query="SELECT DISTINCT ?resourceHasAnnotationRepresentation {
+                                                                        <{{id}}> rs:PX_main_represents|crm:P138_represents ?resourceHasAnnotationRepresentation .
+                                                                      } ">
+                                                  
+                                                  {{{{raw}}}}
+                                                    <template id="template">
+                                                        <div>
+                                                          <p style="font-size: 13px;">Is image of:</p>  
+                                                          <ul style="padding-inline-start: 20px; margin: 5px 0;">
+                                                            {{#each bindings}}
+                                                              <li>
+                                                                <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                urlqueryparam-resource="{{resourceHasAnnotationRepresentation.value}}"
+                                                                                urlqueryparam-view="resource-editor"
+                                                                                urlqueryparam-open-as-drag-and-drop="true"
+                                                                                style="max-width: 100px;
+                                                                                overflow: hidden;
+                                                                                text-overflow: ellipsis;
+                                                                                text-decoration: underline;
+                                                                                cursor: pointer;
+                                                                                color: #525156">
+                                                                    <div style="margin-bottom: 5px;"><mp-label iri="{{resourceHasAnnotationRepresentation.value}}"></mp-label></div>
+                                                                </semantic-link>
+                                                              </li>
+                                                            {{/each}}
+                                                        </ul>
+                                                        </div>
+                                                    </template>
+                                                  {{{{/raw}}}}
+                                                </semantic-query>
+                                              </mp-template-item>
                                             </div>
-                                            
                                           </div>
                                         {{/each}}
                                       </div>

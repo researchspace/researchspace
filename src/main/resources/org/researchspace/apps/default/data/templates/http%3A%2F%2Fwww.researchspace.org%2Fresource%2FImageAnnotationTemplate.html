@@ -67,7 +67,7 @@
                               <template id='else'>
                                 <mp-overlay-dialog id='{{viewId}}-newImage-dialog-{{resourceIri}}' type="modal" class="modal-xlSize newImageModal" title="New image">
                                   <mp-overlay-dialog-trigger>
-                                    <bs-menu-item>
+                                    <bs-menu-item draggable="false">
                                       <mp-label iri="{{resourceIri}}"></mp-label> 
                                     </bs-menu-item>
                                   </mp-overlay-dialog-trigger>
@@ -238,8 +238,6 @@
       </template>
     </mp-event-target-template-render>
 
-
-
   </div>
 
   [[!-- List of resources is refreshed by `{{viewId}}-refresh-image-list` event-proxy at the top of the template.
@@ -405,6 +403,8 @@
                                             <div style="flex: 1;">
                                               <mp-draggable iri='{{region.value}}'>
                                                 <div>
+                                                  [[!-- Zoom to the current image region in the IIIF Viewer, 
+                                                  creates new slot if the viewer doesn't have active slot with the corresponding image. --]]   
                                                   <mp-event-trigger id='{{viewId}}-focus-event-trigger-{{resourceIri}}-{{region.value}}' 
                                                                     type='IIIFViewer.ZoomToRegion' 
                                                                     targets='["{{viewId}}-image-annotation"]'
@@ -420,8 +420,7 @@
 
                                           <div class='imageAnnotation__resourceAnnotation-result-item-actions'>
 
-                                            [[!-- Zoom to the current image region in the IIIF Viewer, 
-                                            creates new slot if the viewer doesn't have active slot with the corresponding image. --]]                                         
+                                            [[!--                                         
                                             <mp-event-trigger id='{{viewId}}-focus-event-trigger-{{resourceIri}}-{{region.value}}' 
                                                               type='IIIFViewer.ZoomToRegion' 
                                                               targets='["{{viewId}}-image-annotation"]'
@@ -429,7 +428,40 @@
                                               <button class="btn btn-default border-none" title="Focus to annotation">
                                                 <rs-icon icon-type="rounded" icon-name="center_focus_strong" symbol="true"></rs-icon>
                                               </button>
-                                            </mp-event-trigger>
+                                            </mp-event-trigger>--]] 
+
+                                            <semantic-query   query='SELECT DISTINCT ?resourceHasAnnotationRepresentation WHERE {
+                                                                        <{{region.value}}> rs:PX_main_represents|crm:P138_represents ?resourceHasAnnotationRepresentation .
+                                                                      }'
+                                                              template='{{> template}}'
+                                                              no-result-template='{{> noResults}}'>
+
+                                              <template id='template'>
+                                                <bs-dropdown id="{{viewId}}-{{region.value}}-item-resources-dropdown" pull-right=true>
+                                                  <bs-dropdown-toggle class="border-none">
+                                                      <rs-icon icon-type="rounded" icon-name="center_focus_strong" symbol="true"></rs-icon>
+                                                  </bs-dropdown-toggle>
+                                                  <bs-dropdown-menu>
+                                                    <b style="padding: 8px 15px;display: block;width: 175px;font-size: 13px;">Is image of</b>  
+                                                    <bs-menu-item divider="true" draggable="false"></bs-menu-item>
+                                                      {{#each bindings}}
+                                                        <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                                  urlqueryparam-view="resource-editor"                                      
+                                                                                  urlqueryparam-resource-iri='{{resourceHasAnnotationRepresentation.value}}'
+                                                                                  urlqueryparam-open-as-drag-and-drop='true'>
+                                                          <bs-menu-item draggable="true">
+                                                           <mp-label iri='{{resourceHasAnnotationRepresentation.value}}' class="text-truncate-line1"></mp-label>
+                                                          </bs-menu-item>
+                                                        </semantic-link-container>
+                                                      {{/each}}
+                                                  </bs-dropdown-menu>
+                                                </bs-dropdown>
+                                              </template>
+                                                                  
+                                              <template id="noResults">
+                                              </template>
+
+                                            </semantic-query>
 
                                             <rs-resource-dropdown id="{{viewId}}-{{region.value}}-item-actions-dropdown" class-name="dropdown-no-caret" toggle-class-name="border-none">
                                               {{> rsp:ResourceDropdownActions viewId=viewId

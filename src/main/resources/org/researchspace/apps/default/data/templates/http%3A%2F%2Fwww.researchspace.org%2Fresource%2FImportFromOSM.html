@@ -1,0 +1,324 @@
+<semantic-search>
+  <semantic-search-query-keyword  domain='<http://www.cidoc-crm.org/cidoc-crm/E53_Place>'
+                                  placeholder="Search place"
+                                  min-search-term-length=3
+                                  tokenize-lucene-query=false
+                                  escape-lucene-syntax=false
+                                  debounce=500
+                                  debounce=500
+                                  query=' PREFIX osm: <http://www.researchspace.org/resource/system/services/osm/>
+                                          SELECT ?subject WHERE { 
+                                            ?subject osm:q ?__token__ .
+                                            ?subject osm:display_name ?placeName.
+                                            ?subject osm:geotext ?geoText.
+                                            ?subject osm:wikidata ?wikidataId .
+
+                                          }'
+  ></semantic-search-query-keyword>
+  
+  <semantic-search-result-holder>
+    <div style="margin-top: 25px;">
+      <semantic-search-result>
+        <div class="wikipediaResultsTable">
+          <semantic-context repository='osm-nominatim-search'>
+            <semantic-table id='semantic-search-result-table' 
+                            class-name="table-striped"
+                            query='SELECT DISTINCT ?subject ?placeName ?wikidataId ?geoText WHERE {
+                                    BIND(?subject as ?iri) .
+                                  } ORDER BY ?subject'
+
+                            options='{"showFilter":false, "resultsPerPage":4}' 
+                            column-configuration='[
+                                    {"displayName": "Place name", "cellTemplate": "{{> placeName}}" },
+                                    {"displayName": "Description (from Wikidata)", "cellTemplate": "{{> wikidata}}"},
+                                    {"displayName": "Image", "cellTemplate": "{{> images}}"},
+                                    {"displayName": "Map", "cellTemplate": "{{> placeMap}}" },
+                                    {"displayName": "Actions", "cellTemplate": "{{> actions}}" }
+                                  ]'   
+            >
+
+              <template id='placeName'>
+                <div>
+                  <span style="margin-right: 5px;">
+                    {{#if wikidataId.value}}
+                      <a class="text-link-action" 
+                          target="_blank" 
+                          href="http://www.wikidata.org/entity/{{wikidataId.value}}"
+                          title="http://www.wikidata.org/entity/{{wikidataId.value}}">
+                        {{placeName.value}}
+                      </a>
+                    {{else}}
+                      {{placeName.value}}
+                    {{/if}}
+                  </span>
+                  <mp-copy-to-clipboard text='{{placeName.value}}' message='Place name has been copied'>
+                    <rs-icon icon-type="rounded" icon-name="file_copy" symbol="true" style="cursor: pointer;" title="Copy place name"></rs-icon>
+                  </mp-copy-to-clipboard>
+               
+                </div>
+              </template>
+
+              <template id='wikidata'>
+                <div>
+                  {{#if wikidataId.value}}
+                    <semantic-context repository='default'>
+                      <semantic-query query='
+                                        PREFIX wikibase: <http://wikiba.se/ontology#>
+                                        PREFIX bd: <http://www.bigdata.com/rdf#>
+                                        PREFIX mwapi: <https://www.mediawiki.org/ontology#API/>
+                                        PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+                                        PREFIX wd: <http://www.wikidata.org/entity/>
+                                        PREFIX schema: <http://schema.org/>
+
+                                        SELECT ?description WHERE { 
+                                          SERVICE <https://query.wikidata.org/sparql> {  
+                                            BIND(IRI(CONCAT(STR(wd:), "{{wikidataId.value}}")) AS ?osmPlace) .
+                                            SERVICE wikibase:label { 
+                                              bd:serviceParam wikibase:language "en". 
+                                              ?osmPlace rdfs:label ?label .
+                                              ?osmPlace schema:description ?description .
+                                            }
+                                          }
+                                        }'
+                                      >
+                      </semantic-query>
+                    </semantic-context>
+                  {{/if}}
+                </div>
+              </template>
+
+              <template id='placeMap'>
+                <div style='height: 210px; width: 20vw;'>
+                  {{#if wikidataId.value}}
+                    <semantic-context repository='ephedra'>
+                      <semantic-map query='PREFIX osm: <http://www.researchspace.org/resource/system/services/osm/> 
+                                            SELECT ?wkt WHERE {
+                                              service osm:NominatimSearchService {
+                                                ?subject <http://www.researchspace.org/resource/system/services/osm/q> "{{placeName.value}}";
+                                                <http://www.researchspace.org/resource/system/services/osm/geotext> ?wkt;
+                                                <http://www.researchspace.org/resource/system/services/osm/wikidata> ?wikidataId .
+                                            
+                                              } FILTER (?wikidataId="{{wikidataId.value}}")
+                                            }'
+                                        tuple-template='<div style="display:flex; flex-direction:column; gap:5px;">
+                                                      <b style="color:#525156;">{{placeName.value}}</b>
+                                                      {{#if wikidataId.value}}
+                                                        <div>
+                                                          <a style="color:#396EFE;"
+                                                              target="_blank" 
+                                                              href="http://www.wikidata.org/entity/{{wikidataId.value}}"
+                                                              title="http://www.wikidata.org/entity/{{wikidataId.value}}">
+                                                            Open in wikidata
+                                                          </a>
+                                                        </div>
+                                                      {{/if}}
+                                                    </div>'> 
+                      </semantic-map> 
+                    </semantic-context>
+                  {{/if}}
+                </div>
+              </template>
+
+              <template id='images'>
+                <div>
+                  {{#if wikidataId.value}}
+                    <semantic-context repository='default'>
+                      <semantic-query query='
+                                        PREFIX wikibase: <http://wikiba.se/ontology#>
+                                        PREFIX bd: <http://www.bigdata.com/rdf#>
+                                        PREFIX mwapi: <https://www.mediawiki.org/ontology#API/>
+                                        PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+                                        PREFIX wd: <http://www.wikidata.org/entity/>
+                                        PREFIX schema: <http://schema.org/>
+
+                                        SELECT (SAMPLE(?_image) AS ?image) WHERE { 
+                                          SERVICE <https://query.wikidata.org/sparql> {  
+                                            BIND(IRI(CONCAT(STR(wd:), "{{wikidataId.value}}")) AS ?osmPlaceURI) .
+                                            ?osmPlaceURI wdt:P18 ?_image .
+                                          }
+                                        } LIMIT 1'
+
+                                        template='{{> placeImage}}'
+                                        >
+                                          <template id='placeImage'>
+                                            <div>
+                                              <a href="[[decodeUriComponent '{{bindings.0.image.value}}']]"
+                                                title="[[decodeUriComponent '{{bindings.0.image.value}}']]"
+                                                target="_blank">
+                                                
+                                                <img src="[[decodeUriComponent '{{bindings.0.image.value}}']]" 
+                                                    width="auto" height="180" style="max-width: 15vw; object-fit: contain;">
+                                              </a>
+                                            </div>
+                                            
+                                        [[!--    <mp-resource-thumbnail iri='[[decodeUriComponent "{{bindings.0.image.value}}"]]' class=''>
+                                              <mp-resource-thumbnail-fallback>
+                                                  <div>No image available</div>
+                                              </mp-resource-thumbnail-fallback>
+                                          </mp-resource-thumbnail> --]]
+                                          </template>
+                      </semantic-query>
+                    </semantic-context>
+                  {{/if}}
+                </div>
+              </template>
+              
+              <template id='actions'>
+                <div>
+                  {{#if wikidataId.value}}
+                    <semantic-context repository='ephedra'>
+                      <semantic-query query=' PREFIX wikibase: <http://wikiba.se/ontology#>
+                                              PREFIX bd: <http://www.bigdata.com/rdf#>
+                                              PREFIX mwapi: <https://www.mediawiki.org/ontology#API/>
+                                              PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+                                              PREFIX wd: <http://www.wikidata.org/entity/>
+                                              PREFIX schema: <http://schema.org/>
+
+                                              SELECT DISTINCT ?osmPlaceURI ?osmPlaceName ?placeLabel ?placeDescription ?osmWikidataId ?resourceName ?resourceOntologyClass ?resourceP2Type
+                                              # (SAMPLE(?_image) AS ?placeImage) 
+                                              WHERE { 
+                                                BIND("{{wikidataId.value}}" as ?osmWikidataId)
+                                                BIND("{{placeName.value}}" as ?osmPlaceName)
+                                                SERVICE <https://query.wikidata.org/sparql> {  
+                                                  BIND(IRI(CONCAT(STR(wd:), "{{wikidataId.value}}")) AS ?osmPlaceURI) .
+                                                
+                                                #  OPTIONAL { ?osmPlaceURI wdt:P18 ?_image . }
+                                                  SERVICE wikibase:label { 
+                                                    bd:serviceParam wikibase:language "en" . 
+                                                    ?osmPlaceURI rdfs:label ?placeLabel .
+                                                    ?osmPlaceURI schema:description ?placeDescription .
+                                                  }
+                                                }
+
+                                                VALUES(?resourceName ?resourceOntologyClass ?resourceP2Type){
+                                                  ( "place" crm:E53_Place false)
+                                                  ( "organisation" crm:E53_Place <http://www.researchspace.org/resource/system/vocab/resource_type/organisation>)      
+                                                  ( "site" crm:E27_Site false)
+                                                }
+                                              }'
+                                            >
+
+                        <template id='template'>
+                          <div> 
+                            <div style="display: flex; flex-direction: column; gap: 7px; align-items: end; min-width: 116px;">
+                              {{#if importFromModal}}
+                                <mp-event-trigger id='{{viewId}}-select-api-resource-trigger' 
+                                                  type='apiResourceImportInModal' 
+                                                  data='{"apiResourceURI": "{{bindings.0.osmPlaceURI.value}}", 
+                                                          "apiResourceName": "{{bindings.0.osmPlaceName.value}}", 
+                                                          "apiResourceDescription": "{{bindings.0.placeDescription.value}}",
+                                                          "apiResourceWikidataId": "{{bindings.0.osmWikidataId.value}}"                                                                  
+                                                        }' 
+                                            >
+                                  <button class="btn btn-action" title="Import place">Import</button>
+                                </mp-event-trigger>
+                              {{else}}
+                                <bs-dropdown-button pull-right=true id='{{viewId}}-import-dropdown-{{__semanticTableIndex.value}}' title="Import as" class="btn-action">
+                                  {{#each bindings}}
+                                    <mp-event-trigger id='{{../viewId}}-import-from-osm-trigger-{{../__semanticTableIndex.value}}' 
+                                                      type='Form.Save' 
+                                                      targets='["{{../viewId}}-{{resourceName.value}}-import-form-{{../__semanticTableIndex.value}}"]'>
+                                      <bs-menu-item draggable='false' style="text-transform: capitalize;">{{resourceName.value}}</bs-menu-item>
+                                    </mp-event-trigger>
+                                  {{/each}}
+                                </bs-dropdown-button>
+
+                                {{#each bindings}}
+                                  <div style='display: none;'>
+                                    <inline-template  template-iri='http://www.researchspace.org/resource/system/forms/ImportFromOSM' 
+                                                      options='{
+                                                                "formId": "{{../viewId}}-{{resourceName.value}}-import-form-{{../__semanticTableIndex.value}}",
+                                                                "mode": "new",
+                                                                "apiResourceURI": "{{osmPlaceURI.value}}", 
+                                                                "apiResourceName": "{{osmPlaceName.value}}",
+                                                                "apiResourceDescription": "{{placeDescription.value}}",
+                                                                "apiResourceWikidataId": "{{osmWikidataId.value}}",
+                                                                "resourceName": "{{resourceName.value}}",
+                                                                {{#if resourceP2Type}}"resourceP2Type": "{{resourceP2Type.value}}",{{/if}}
+                                                                "resourceOntologyClass": "{{resourceOntologyClass.value}}"
+                                                              }'>
+                                    </inline-template>
+                                  </div>
+
+                                  <mp-event-proxy id='{{../viewId}}-import-on-form-save-{{../__semanticTableIndex.value}}' 
+                                                  on-event-source='{{../viewId}}-{{resourceName.value}}-import-form-{{../__semanticTableIndex.value}}'
+                                                  on-event-types='["Form.ResourceCreated"]'
+                                                  additional-data='{"importedFromOSM": "true"}'
+                                                  proxy-event-type='Component.TemplateUpdate' 
+                                                  proxy-targets='["{{../viewId}}-open-record-dropdown-render-{{../__semanticTableIndex.value}}"]'>
+                                  </mp-event-proxy>
+                                {{/each}}
+                              {{/if}}
+                              <mp-event-target-template-render id='{{viewId}}-open-record-dropdown-render-{{__semanticTableIndex.value}}' template='{{> template}}'>
+                                <template id='template'>
+                                  <semantic-query query='SELECT DISTINCT ?existingRecord ?existingRecordLabel WHERE {
+                                                          BIND("{{bindings.0.osmPlaceName.value}}" as ?osmPlaceName)
+                                                          BIND("{{bindings.0.osmWikidataId.value}}" as ?osmWikidataId)
+                                                            
+                                                          service <http://www.researchspace.org/resource/system/services/osm/NominatimSearchService> {
+                                                            ?subject <http://www.researchspace.org/resource/system/services/osm/q> ?osmPlaceName;
+                                                              <http://www.researchspace.org/resource/system/services/osm/geotext> ?wkt;
+                                                              <http://www.researchspace.org/resource/system/services/osm/wikidata> ?wikidataId .
+                                                            
+                                                          } FILTER (?wikidataId=?osmWikidataId)
+
+                                                          # ?existingRecord crm:P129i_is_subject_of ?entityFormRecord .
+                                                          # ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                          
+                                                          ?existingRecord crm:P168_place_is_defined_by ?wkt .
+                                                          ?existingRecord crm:P1_is_identified_by ?appellation . 
+                                                          ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                          ?appellation crm:P190_has_symbolic_content ?existingRecordLabel .
+                                                          # BIND(IF(STRLEN( STR(?wkt) ) < 100000, true, false) AS ?inLimitGeoCoordinates)
+                                                        }'
+
+                                                  template='{{> template}}'>
+
+                                    <template id='template'>
+                                      <bs-dropdown-button pull-right=true id='{{viewId}}-open-record-dropdown-{{__semanticTableIndex.value}}' title="Open record">
+                                        {{#each bindings}}
+                                          <mp-event-trigger id='{{../viewId}}-openExistingRecord-in-new-frame-trigger' 
+                                                              type='Dashboard.AddFrame'
+                                                              data='{"viewId":"resource-editor", 
+                                                                    "resourceIri":"{{existingRecord.value}}",
+                                                                    "mode":"edit" }' 
+                                                              targets='["thinking-frames"]'>
+                                              <bs-menu-item draggable='true'>{{existingRecordLabel.value}}</bs-menu-item>
+                                          </mp-event-trigger>
+                                        {{/each}}
+                                      </bs-dropdown-button>
+                                    </template>
+                                  </semantic-query>
+                                </template>
+                              </mp-event-target-template-render>
+                            </div> 
+                          </div>
+                        </template>
+                      </semantic-query>
+                    </semantic-context>
+                  {{else}}
+                    <div style="display: flex; flex-direction: column; gap: 7px; align-items: end; min-width: 116px;">
+                      <mp-popover title="Place without geographic coordinates">
+                        <mp-popover-trigger placement="left" trigger='["hover", "click"]'>
+                          <button class="btn btn-default btn-textAndIcon">
+                            <rs-icon icon-type="rounded" icon-name="question_mark" symbol="true"></rs-icon>
+                          </button>
+                        </mp-popover-trigger>
+                        <mp-popover-content>
+                          <div>This place can't be imported because geographic coordinates are not available in the OpenStreetMap record.</div>
+                        </mp-popover-content>
+                      </mp-popover>
+                    </div>
+                  {{/if}}
+                </div>
+              </template>
+
+            </semantic-table>
+          </semantic-context>
+        </div>
+      </semantic-search-result>
+    </div>
+  </semantic-search-result-holder>
+  
+</semantic-search>
+

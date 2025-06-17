@@ -26,8 +26,13 @@
   }
 
   .ontodia,
-  .Toolbar--component {
+  .Toolbar--component,
+  .ontodia__workspace .ontodia-accordion-item--horizontal.ontodia-accordion-item--collapsed {
     background-color: white;
+  }
+
+  .ontodia-link__labels g rect {
+    fill: white !important;
   }
 
   .vis-item-content .btn-default {
@@ -53,163 +58,15 @@
 
 {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map") }}
   <div class="modal-preview-container">
-    <div class="modal-resource-persisted-container" style="padding: 0;">
-      <ontodia  id='ontodia' 
-                diagram='{{resource}}'
-                image-iris='["http://www.researchspace.org/ontology/PX_has_main_representation"]'
-                settings=nostats 
-                post-saving=none 
-                collapse-navigator=true
-                readonly=true
-                hide-panels=true 
-                hide-halo=true
-                default-node-template="{{> default}}"
-            >
-
-        <ontodia-field-configuration  authoring-mode=false
-                                      type-iri='http://www.w3.org/1999/02/22-rdf-syntax-ns#type'
-                                      default-label-iri='http://www.researchspace.org/pattern/system/entity/primary_appellation'
-                                      default-image-iri='http://www.researchspace.org/pattern/system/entity/main_image'
-                                      default-subject-template='/{{{{raw}}}}{{FIELD_VALUE_LOCAL_NAME http://www.w3.org/1999/02/22-rdf-syntax-ns#type}}{{{{/raw}}}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
-                                      force-datatype-fields='["http://www.researchspace.org/ontology/PX_has_video"]'
-
-                                      persistence='{
-                                          "type": "sparql",
-                                          "targetInsertGraphIri": "http://www.researchspace.org/resource/g/data"
-                                      }'>
-
-          <rs-ontodia-metadata-from-fields
-              fields-query='PREFIX field: <http://www.researchspace.org/resource/system/fields/>
-                            SELECT DISTINCT ?field WHERE {
-                            {
-                              ?field a <http://www.researchspace.org/resource/system/fields/Field> .
-                              ?field  a ?type .
-                              VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}
-                              FILTER (!CONTAINS(STR(?field),"http://www.researchspace.org/ontology/"))
-                            } UNION
-                            {
-                              ?field a <http://www.researchspace.org/resource/system/fields/Field> .
-                              ?field  <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/image_annotation> .
-                              }
-                            UNION {
-                              VALUES (?value){(<http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation>)
-                                    (<http://www.researchspace.org/pattern/system/entity/primary_appellation>)
-                                    (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>)
-                                    (<http://www.researchspace.org/pattern/system/entity/main_image>)
-                                    (<http://www.ics.forth.gr/isl/CRMdig/L49_is_primary_area_of>)
-                                    (<http://www.researchspace.org/pattern/system/image_annotation/boundingBox>)
-                                    (<http://www.researchspace.org/pattern/system/image_annotation/value>)
-                                    (<http://www.researchspace.org/pattern/system/image_annotation/viewport>)
-                                    (<http://www.researchspace.org/pattern/system/image_annotation/area_of_image>)}
-
-                              BIND(?value as ?field)
-                            }
-                            MINUS {
-                              VALUES (?value) {
-                              (<http://www.ics.forth.gr/isl/CRMdig/L47_has_comment>)
-                              (<http://www.w3.org/2000/01/rdf-schema#label>)
-                              }
-                            }
-                          }'>
-          </rs-ontodia-metadata-from-fields>
-
-          <ontodia-field-input-override for-field="label">
-          <semantic-form-text-input></semantic-form-text-input>
-          </ontodia-field-input-override>
-
-          <ontodia-field-input-override for-field="http://www.researchspace.org/pattern/system/entity/main_image">
-            <div class="dragAndDrop-input-container">
-              <semantic-form-drag-and-drop-input  for='http://www.researchspace.org/pattern/system/entity/main_image' 
-                                                  label="Main image" 
-                                                  placeholder-item-template="<div class='placeholder-item'>
-                                                                              <rs-icon icon-type='rounded' icon-name='upload' class='upload_icon' symbol='true'></rs-icon>
-                                                                              <div>
-                                                                                  <div style='margin-bottom:3px;'>Drag image from </div>
-                                                                                  <div style='margin-bottom:7px;'>
-                                                                                      <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames' 
-                                                                                                      class='text-link' 
-                                                                                                      urlqueryparam-view='resource-search'
-                                                                                                      urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image'
-                                                                                                      urlqueryparam-custom-label='Search Image'>
-                                                                                                      Image Library
-                                                                                      </semantic-link>
-                                                                                  
-                                                                                      <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                                                                                  urlqueryparam-view='resource-search' 
-                                                                                                                  urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image'
-                                                                                                                  urlqueryparam-open-as-drag-and-drop='true'
-                                                                                                                  urlqueryparam-custom-label='Search Image'
-                                                                                                                  >
-                                                                                          <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding-left: 5px;' title='Open Image Library in new draggable tab'></rs-icon>
-                                                                                      </semantic-link-container>
-                                                                                
-                                                                                      <span style='padding:0 3px;'> or </span>
-                                                                                
-                                                                                      <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames' 
-                                                                                                      class='text-link' 
-                                                                                                      urlqueryparam-view='resource-search'
-                                                                                                      urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation'
-                                                                                                      urlqueryparam-custom-label='Search image annotation'>
-                                                                                          Image Annotation Library
-                                                                                      </semantic-link>
-                                                                                  
-                                                                                      <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                                                                                  urlqueryparam-view='resource-search' 
-                                                                                                                  urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation'
-                                                                                                                  urlqueryparam-open-as-drag-and-drop='true'
-                                                                                                                  urlqueryparam-custom-label='Search image annotation'
-                                                                                                                  >
-                                                                                          <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding-left: 5px;' title='Open Image Annotation Library in new draggable tab'></rs-icon>
-                                                                                      </semantic-link-container>
-                                                                                  </div>
-                                                                                  <span>or </span><span class='text-link'>click to upload</span>
-                                                                              </div>
-                                                                          </div>"
-                                                  nested-form-template='{{{{raw}}}}{{> forms:Image_minimal nested=true editable=true mode="new"}}{{{{/raw}}}}'>
-              </semantic-form-drag-and-drop-input>
-            </div>
-          </ontodia-field-input-override>
-
-        </ontodia-field-configuration>
-
-        <template id="default">
-          {{#if isExpanded }}
-            <div style="width: 270px; height:73px;">
-              {{> rsp:ResourceCard  iri=iri
-                                    viewId='knowledge-map-preview'
-                                    knowledgeMapPreviewCard=true
-                                    hideMediaSection=true
-                                    hidePreview=true
-                                    height=73
-                                    width=270
-                                    props=props
-                                    data=data
-              }}
-            </div>
-          {{else}}
-            <div style="width: 150px; height:190px">
-              {{> rsp:ResourceCard  iri=iri
-                                    viewId='knowledge-map-preview'
-                                    knowledgeMapPreviewCard=true
-                                    hidePreview=true
-                                    props=props
-                                    data=data
-              }}
-            </div>
-          {{/if}}
-        </template>
-
-        <template id="knowledge-map-dropdown">
-          <div></div>
-        </template>
-
-      </ontodia>
+    <div class="modal-resource-media p-0">
+      {{> rsp:KnowledgeMapOntodiaConfig diagram=resource readonly=true hideHalo=true}}
     </div>
     [[> resourceDetails]]
   </div>
-{{else if (or (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart") (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline") )}}
+{{else if (or (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart") 
+              (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline") )}}
   <div class="modal-preview-container">
-    <div class="modal-resource-persisted-container">
+    <div class="modal-resource-media">
       <mp-persisted-component iri='{{resource}}'></mp-persisted-component>
     </div>
     [[> resourceDetails]]
@@ -228,8 +85,168 @@
     </div>
     [[> resourceDetails]]
   </div>
+{{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Video") }}
+  <div class="modal-preview-container">
+    <semantic-query query='SELECT DISTINCT ?video ?fileName ?fileMediaType WHERE {     
+                            {
+                              <{{resource}}> crm:P129i_is_subject_of ?digital_object.
+                              ?digital_object rdf:type crmdig:D1_Digital_Object .
+                              ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                              ?digital_object crm:P190_has_symbolic_content ?video .
+                            } UNION {
+                              <{{resource}}> crmdig:L60i_is_documented_by ?digitizationProcess .
+                              ?digitizationProcess a crmdig:D2_Digitization_Process .    
+                              ?digitizationProcess crmdig:L11_had_output ?file .
+                              ?file crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/video> .
+                              ?file rs:PX_has_file_name ?fileName .
+                              ?file rs:PX_has_media_type ?fileMediaType .
+                            }
+                          }'
+                                              
+                    template='{{> template}}'>
+                
+        <template id='template'>
+          <div class="modal-recording-container h100">
+            {{#ifCond bindings.length ">" "1"}}
+              <div class="modal-resource-media modal-videos">
+                {{#each bindings}}
+                  <div>
+                    {{#if video}}
+                      <iframe src='{{video.value}}' 
+                              frameborder="0" 
+                              allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
+                              width="358" height="230"
+                              allowfullscreen>
+                      </iframe>
+                    {{else if fileName}}
+                      <video controls preload="metadata" width="358" height="230" style="object-fit: cover;">
+                          <source src="/file?storage=media&fileName={{encodeUriComponent fileName.value}}" type="{{fileMediaType.value}}" />
+                          <div class="color-secondary" style="margin-bottom: 10px;">Your browser doesn't support the visualisation of this video.</div>
+                      </video>
+                    {{/if}}
+                  </div>
+                {{/each}}
+              </div>
+            {{else}}
+              <div class="modal-resource-media modal-videos p-0">
+                {{#if bindings.0.video.value}}
+                  <iframe src='{{bindings.0.video.value}}' 
+                          frameborder="0" 
+                          allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
+                          width="100%" height="100%"
+                          allowfullscreen>
+                  </iframe>
+                {{else if bindings.0.fileName.value}}
+                  <video controls preload="metadata" width="100%" height="100%" style="object-fit: cover;">
+                      <source src="/file?storage=media&fileName={{encodeUriComponent bindings.0.fileName.value}}" type="{{bindings.0.fileMediaType.value}}" />
+                      <div class="color-secondary">Your browser doesn't support the visualisation of this video.</div>
+                  </video>
+                {{/if}}
+              </div>
+            {{/ifCond}}
+          </div>
+        </template>
+    </semantic-query>
+    [[> resourceDetails]]
+  </div>
+{{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Audio") }}
+  <div class="modal-preview-container modal-recording-container h100">
+    <semantic-query query='SELECT DISTINCT ?audioURL ?fileName ?fileMediaType WHERE {     
+                            OPTIONAL { 
+                              <{{resource}}> crmdig:L60i_is_documented_by ?digitizationProcess .
+                              ?digitizationProcess a crmdig:D2_Digitization_Process .    
+                              ?digitizationProcess crmdig:L11_had_output ?file .
+                              ?file crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/audio> .
+                              ?file rs:PX_has_file_name ?fileName .
+                              ?file rs:PX_has_media_type ?fileMediaType .
+                            } 
+                            OPTIONAL {
+                              <{{resource}}> crm:P129i_is_subject_of ?digital_object .
+                              ?digital_object a crmdig:D1_Digital_Object .
+                              ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                              ?digital_object crm:P190_has_symbolic_content ?audioURL .
+                            }
+                          }'
+                    template='{{> template}}'>
+                
+        <template id='template'>
+          <div class="modal-resource-media">
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+              {{#if bindings.0.audioURL.value}}
+                <div style="display: flex; gap: 5px; width: 100%;">
+                  <span>Audio URL:</span>
+                  <a  class="text-link" 
+                      style="display: block;"
+                      target="_blank" 
+                      href="{{bindings.0.audioURL.value}}">
+                      {{bindings.0.audioURL.value}}
+                  </a>
+                </div>
+              {{/if}}
+
+              {{#if bindings.0.fileName.value}}
+                <div>
+                  <p>Audio file:</p>
+                  <audio controls preload="metadata" width="100%">
+                    <source src="/file?storage=media&fileName={{encodeUriComponent bindings.0.fileName.value}}" type="{{bindings.0.fileMediaType.value}}">
+                    <div class="color-secondary" style="width: 100%;">Your browser doesn't support the format of this audio.</div>
+                  </audio>
+                </div>
+              {{/if}}
+            </div>
+          </div>
+        </template>
+    </semantic-query>
+    [[> resourceDetails]]
+  </div>
+{{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Document") }}
+  <div class="modal-preview-container">
+        <semantic-query query='SELECT DISTINCT ?doc ?fileName ?fileMediaType WHERE { 
+                                      BIND(<{{resource}}> as ?doc) .
+                                      ?doc crmdig:L60i_is_documented_by ?digitizationProcess .
+                                      ?digitizationProcess a crmdig:D2_Digitization_Process .    
+                                      ?digitizationProcess crmdig:L11_had_output ?file .
+                                      ?file rs:PX_has_file_name ?fileName .
+                                      ?file rs:PX_has_media_type ?fileMediaType .
+                              }'
+                                              
+                    template='{{> template}}'>
+                
+        <template id='template'>
+          {{#if (or (eq bindings.0.fileMediaType.value "application/pdf") 
+                    (eq bindings.0.fileMediaType.value "application/json") 
+                    (eq bindings.0.fileMediaType.value "text/plain")
+                    (eq bindings.0.fileMediaType.value "text/html")
+                    (eq bindings.0.fileMediaType.value "text/xml")
+          )}}
+            <div class="modal-resource-media p-0">
+              <iframe src="/file?fileName={{bindings.0.fileName.value}}&storage=media&mode=open&mediaType={{bindings.0.fileMediaType.value}}"
+                      frameborder="0" 
+                      width="100%" height="100%"
+                      allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
+                      allowfullscreen>
+              </iframe>
+            </div>
+          {{else}}
+            <div class="modal-resource-media">
+              <div style="display: flex; gap: 5px; margin-top: 10px; width: 100%;">
+                <span>Document file:</span>
+                <a href="/file?fileName={{bindings.0.fileName.value}}&storage=media&mode=open&mediaType={{bindings.0.fileMediaType.value}}"
+                    class="text-link" 
+                    style="display: block;"
+                    target="_blank">
+                    {{bindings.0.fileName.value}}
+                </a>
+              </div>
+            </div>
+          {{/if}}
+        </template>
+
+    </semantic-query>
+    [[> resourceDetails]]
+  </div>
 {{else}}
-  <semantic-query query='SELECT ?image ?video ?map WHERE {
+  <semantic-query query='SELECT ?image ?recording ?recordingType ?map WHERE {
                           OPTIONAL {
                             {
                               <{{resource}}> a rs:EX_Digital_Image .
@@ -252,26 +269,14 @@
                           }
                           OPTIONAL {
                             {
-                              <{{resource}}> a frbroo:F26_Recording .
-                              <{{resource}}> crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_video> .
-                              <{{resource}}> crm:P129i_is_subject_of ?digital_object .
-                              ?digital_object a crmdig:D1_Digital_Object .
-                              ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
-                              ?digital_object crm:P190_has_symbolic_content ?video .
-                            } UNION {
-                              <{{resource}}> crm:P129i_is_subject_of ?videoURI . 
-                              ?videoURI a frbroo:F26_Recording .
-                              ?videoURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_video> .
-                              ?videoURI crm:P129i_is_subject_of ?digital_object .
-                              ?digital_object a crmdig:D1_Digital_Object .
-                              ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
-                              ?digital_object crm:P190_has_symbolic_content ?video .
+                              <{{resource}}> crm:P129i_is_subject_of ?recording . 
+                              ?recording a lrmoo:F2_Expression .
+                              ?recording crm:P2_has_type ?recordingType .
+                              FILTER (?recordingType IN (<http://www.researchspace.org/resource/system/vocab/resource_type/recording_video>) ) . 
                             }
                           }
                           OPTIONAL {
-                            <{{resource}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                            ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
-                            ?osm_geoCoordinates crm:P190_has_symbolic_content ?map .
+                            <{{resource}}> crm:P168_place_is_defined_by ?map .
                           }
                         } LIMIT 1'
                   
@@ -280,35 +285,36 @@
 
       <template id='template'>
         <bs-tab-container id="resource-preview-media-tabs"  
-                          default-active-key="{{#if bindings.0.image.value}}image{{else}}{{#if bindings.0.video.value}}{{#if (not bindings.0.image.value)}}video{{/if}}{{/if}}{{#if bindings.0.map.value}}{{#if (not bindings.0.image.value)}}{{#if (not bindings.0.video.value)}}map{{/if}}{{/if}}{{/if}}{{/if}}" 
+                          default-active-key="{{#if bindings.0.image.value}}image{{else}}{{#if bindings.0.recording.value}}{{#if (not bindings.0.image.value)}}video{{/if}}{{/if}}{{#if bindings.0.map.value}}{{#if (not bindings.0.image.value)}}{{#if (not bindings.0.recording.value)}}map{{/if}}{{/if}}{{/if}}{{/if}}" 
                           class="preview-media-tabs">
           <div>
             <bs-nav bs-style="tabs">
               {{#if bindings.0.image.value}}
-                {{#if (or bindings.0.video.value bindings.0.map.value)}}
+                {{#if (or bindings.0.recording.value bindings.0.map.value)}}
                   <bs-nav-item event-key="image">Image</bs-nav-item>
                 {{/if}}
               {{/if}}
 
-              {{#if bindings.0.video.value}}
+              {{#if (eq bindings.0.recordingType.value "http://www.researchspace.org/resource/system/vocab/resource_type/recording_video")}}
                 {{#if (or bindings.0.image.value bindings.0.map.value)}}
                   <bs-nav-item event-key="video">Video</bs-nav-item>
                 {{/if}}
               {{/if}}
 
               {{#if bindings.0.map.value}}
-                {{#if (or bindings.0.image.value bindings.0.video.value)}}
+                {{#if (or bindings.0.image.value bindings.0.recording.value)}}
                   <bs-nav-item event-key="map">Map</bs-nav-item>
                 {{/if}}
               {{/if}}
             </bs-nav>
+
             <bs-tab-content animation="true" mount-on-enter="true">
               <bs-tab-pane event-key="image">
                 {{#if bindings.0.image.value}}
                   <div class="modal-preview-container modal-image-container">
                     <div class="modal-iiif-container">
                       {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation") }}
-                        <div class="modal-image-thumbnail-container">
+                        <div class="modal-resource-media modal-image-thumbnail-container">
                           <rs-iiif-image-thumbnail  height='100%' width='auto' style='height: 100%; width: auto; object-fit: contain;'
                                                     image-or-region='{{resource}}'    
                                                     [[> rsp:IIIFConfig]]>
@@ -348,71 +354,121 @@
                 </semantic-if>
               </bs-tab-pane>
         
-              <bs-tab-pane event-key="video"> 
-                {{#if bindings.0.video.value}}
-                  <semantic-query query='SELECT DISTINCT ?video WHERE { 
+              {{#if (eq bindings.0.recordingType.value "http://www.researchspace.org/resource/system/vocab/resource_type/recording_video")}}
+                <bs-tab-pane event-key="video"> 
+                  <semantic-query query='SELECT DISTINCT ?video ?videoURI ?videoName ?fileName ?fileMediaType WHERE { 
                                           {
                                             <{{resource}}> crm:P129i_is_subject_of ?videoURI . 
-                                            ?videoURI a frbroo:F26_Recording .
+                                            ?videoURI a lrmoo:F2_Expression .
                                             ?videoURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_video> .
-                                            ?videoURI crm:P129i_is_subject_of ?digital_object .
-                                            ?digital_object a crmdig:D1_Digital_Object .
-                                            ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
-                                            ?digital_object crm:P190_has_symbolic_content ?video .
-                                          } UNION {
-                                            <{{resource}}> crm:P129i_is_subject_of ?digital_object.
-                                            ?digital_object rdf:type crmdig:D1_Digital_Object .
-                                            ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
-                                            ?digital_object crm:P190_has_symbolic_content ?video .
+                                            {
+                                              ?videoURI crm:P129i_is_subject_of ?digital_object .
+                                              ?digital_object a crmdig:D1_Digital_Object .
+                                              ?digital_object crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                                              ?digital_object crm:P190_has_symbolic_content ?video .
+                                            } UNION {
+                                                ?videoURI crmdig:L60i_is_documented_by ?digitizationProcess .
+                                                ?digitizationProcess a crmdig:D2_Digitization_Process .    
+                                                ?digitizationProcess crmdig:L11_had_output ?file .
+                                                ?file crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/video> .
+                                                ?file rs:PX_has_file_name ?fileName .
+                                                ?file rs:PX_has_media_type ?fileMediaType .
+                                            }
+
+                                            ?videoURI crm:P1_is_identified_by ?appellation . 
+                                            ?appellation a crm:E41_Appellation . 
+                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                            ?appellation crm:P190_has_symbolic_content ?videoName .
                                           }
                                         }'
                                             
                                 template='{{> template}}'>
               
                     <template id='template'>
-                      {{#if bindings.1.video.value}}
-                        <div class="modal-preview-container modal-video-container">
-                          <div class="modal-videos">
+                      {{#ifCond bindings.length ">" "1"}}
+                        <div class="modal-preview-container modal-recording-container">
+                          <div class="modal-resource-media modal-videos">
                             {{#each bindings}}
-                              <div>
-                                <iframe src='{{video.value}}' 
-                                        frameborder="0" 
-                                        allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
-                                        width="358" height="230"
-                                        allowfullscreen>
-                                </iframe>
+                              <div class="video-card">
+                                <div class="video-card-header">
+                                  <div class="video-card-header-title text-truncate-line1">{{videoName.value}}</div>
+                                  <rs-resource-dropdown id="{{videoURI.value}}-video-actions-dropdown" class-name="dropdown-no-caret" toggle-class-name="border-none">
+                                    {{> rsp:ResourceDropdownActions viewId=viewId
+                                                                    iri=videoURI.value
+                                                                    resourceConfig="http://www.researchspace.org/resource/system/resource_configurations_container/data/Video"
+                                                                    resourceFormIRI="http://www.researchspace.org/resource/system/forms/Video"
+                                                                    resourceLabel="Video"
+                                                                    hidePreview=true
+                                    }}
+                                  </rs-resource-dropdown>
+                                </div>
+                                
+                                <div class="video-card-content"> 
+                                  {{#if video}}
+                                    <iframe src='{{video.value}}' 
+                                            frameborder="0" 
+                                            allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
+                                            width="358" height="230"
+                                            allowfullscreen>
+                                    </iframe>
+                                  {{else if fileName}}
+                                    <video controls preload="metadata" width="358" height="230" style="object-fit: cover;">
+                                        <source src="/file?storage=media&fileName={{encodeUriComponent fileName.value}}" type="{{fileMediaType.value}}" />
+                                        <div class="video-card-content-fallback">Your browser doesn't support the visualisation of this video.</div>
+                                    </video>
+                                  {{/if}}
+                                </div>
                               </div>
                             {{/each}}
                           </div>
                           [[> resourceDetails]]
                         </div>
                       {{else}}
-                        <div class="modal-preview-container modal-video-container modal-single-video-container">
-                          <div class="modal-single-video">
-                            <iframe src='{{bindings.0.video.value}}' 
-                                    frameborder="0" 
-                                    allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
-                                    width="100%" height="100%"
-                                    allowfullscreen>
-                            </iframe>
+                        <div class="modal-preview-container modal-recording-container h100">
+                          <div class="video-card h100" style="width: 100%;">
+                            <div class="video-card-header">
+                              <div class="video-card-header-title text-truncate-line1">{{bindings.0.videoName.value}}</div>
+                              <rs-resource-dropdown id="{{bindings.0.videoURI.value}}-video-actions-dropdown" class-name="dropdown-no-caret" toggle-class-name="border-none">
+                                {{> rsp:ResourceDropdownActions viewId=viewId
+                                                                iri=bindings.0.videoURI.value
+                                                                resourceConfig="http://www.researchspace.org/resource/system/resource_configurations_container/data/Video"
+                                                                resourceFormIRI="http://www.researchspace.org/resource/system/forms/Video"
+                                                                resourceLabel="Video"
+                                                                hidePreview=true
+                                }}
+                              </rs-resource-dropdown>
+                            </div>
+                            
+                            <div class="video-card-content" style="height: 100%;"> 
+                              {{#if bindings.0.video.value}}
+                                <iframe src='{{bindings.0.video.value}}' 
+                                        frameborder="0" 
+                                        allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
+                                        width="100%" height="100%"
+                                        allowfullscreen>
+                                </iframe>
+                              {{else if bindings.0.fileName.value}}
+                                <video controls preload="metadata" width="100%" height="100%" style="object-fit: cover;">
+                                    <source src="/file?storage=media&fileName={{encodeUriComponent bindings.0.fileName.value}}" type="{{bindings.0.fileMediaType.value}}" />
+                                    <div class="color-secondary" style="margin-bottom: 10px;">Your browser doesn't support the visualisation of this video.</div>
+                                </video>
+                              {{/if}}
+                            </div>
                           </div>
                           [[> resourceDetails]]
                         </div>
-                      {{/if}}
+                      {{/ifCond}}
                     </template>
                   </semantic-query>
-                {{/if}}
-              </bs-tab-pane>
+                </bs-tab-pane>
+              {{/if}}
         
               <bs-tab-pane event-key="map">
                 {{#if bindings.0.map.value}}
-                  <div class="modal-preview-container modal-map-container">
-                    <div class="modal-map">
+                  <div class="modal-preview-container">
+                    <div class="modal-resource-media p-0">
                       <semantic-map query='SELECT ?wkt WHERE { 
-                                              <{{resource}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                                              ?osm_geoCoordinates a crm:E94_Space_Primitive .
-                                              ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
-                                              ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
+                                              <{{resource}}> crm:P168_place_is_defined_by ?wkt .
                                               } LIMIT 1'
                                       tuple-template='<b style="color:#525156;"><mp-label iri="{{resource}}"></mp-label></b>'>
                       </semantic-map>

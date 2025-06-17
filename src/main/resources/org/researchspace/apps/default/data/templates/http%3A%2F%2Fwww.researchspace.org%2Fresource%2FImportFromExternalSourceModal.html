@@ -1,0 +1,195 @@
+<semantic-query query='SELECT ?ontologyClass WHERE {
+                        BIND(<{{resourceOntologyClass}}> as ?ontologyClass)
+                        FILTER EXISTS{?ontologyClass rdfs:subClassOf+ crm:E18_Physical_Thing }
+                        FILTER(?ontologyClass != crm:E21_Person )
+                    } LIMIT 1'
+                    
+                    template='{{> importExternalThing}}'
+				    no-result-template='{{> else}}'>
+
+    <template id='importExternalThing'>
+
+        {{#if (eq bindings.0.ontologyClass.value "http://www.cidoc-crm.org/cidoc-crm/E27_Site")}}
+            <mp-overlay-dialog  id='{{viewId}}-importResourceFromAPI-dialog' 
+                                title="Import from external source" 
+                                type="lightbox">
+                <mp-overlay-dialog-trigger>
+                    <button class="btn btn-action btn-textAndIcon">
+                        <rs-icon icon-type='rounded' icon-name='upload' symbol='true'></rs-icon>
+                        <span>Import from external source</span>
+                    </button>
+                </mp-overlay-dialog-trigger>
+                <mp-overlay-dialog-content>
+                    <div class="page__section-container" style="padding-top: 10px;">
+                        <inline-template    template-iri='[[resolvePrefix "rsp:ImportFromExternalSource"]]' 
+                                            options='{
+                                                    "osmImport": "true", 
+                                                    "wikipediaImport": "true", 
+                                                    "museumCollectionImport": "true", 
+                                                    "archiveImport": "true", 
+                                                    "viewId": "{{viewId}}",
+                                                    "defaultActiveTab": "1",
+                                                    "importFromModal": "true",
+                                                    "resourceOntologyClass": "{{resourceOntologyClass}}",
+                                                    "resourceConfiguration": "{{resourceConfiguration}}",
+                                                    "resourceName": "{{resourceName}}"
+                                            }'>
+                        </inline-template>
+                    </div>
+                </mp-overlay-dialog-content>
+            </mp-overlay-dialog>
+        {{else}}
+            <mp-overlay-dialog  id='{{viewId}}-importResourceFromAPI-dialog' 
+                                title="Import from external source" 
+                                type="lightbox">
+                <mp-overlay-dialog-trigger>
+                    <button class="btn btn-action btn-textAndIcon">
+                        <rs-icon icon-type='rounded' icon-name='upload' symbol='true'></rs-icon>
+                        <span>Import from external source</span>
+                    </button>
+                </mp-overlay-dialog-trigger>
+                <mp-overlay-dialog-content>
+                    <div class="page__section-container" style="padding-top: 10px;">
+                        <inline-template    template-iri='[[resolvePrefix "rsp:ImportFromExternalSource"]]' 
+                                            options='{
+                                                    "wikipediaImport": "true", 
+                                                    "museumCollectionImport": "true", 
+                                                    "archiveImport": "true", 
+                                                    "viewId": "{{viewId}}",
+                                                    "defaultActiveTab": "2",
+                                                    "importFromModal": "true",
+                                                    "resourceOntologyClass": "{{resourceOntologyClass}}",
+                                                    "resourceConfiguration": "{{resourceConfiguration}}",
+                                                    "resourceName": "{{resourceName}}"
+                                            }'>
+                        </inline-template>
+                    </div>
+                </mp-overlay-dialog-content>
+            </mp-overlay-dialog>
+        {{/if}}
+
+    </template>
+
+    <template id='else'>
+        <semantic-switch query='SELECT ?resourceClass {
+                                BIND(<{{resourceOntologyClass}}> as ?resourceClass)
+                            }'>
+
+            <template id='http://www.cidoc-crm.org/cidoc-crm/E53_Place'>
+                <mp-overlay-dialog  id='{{viewId}}-importResourceFromAPI-dialog' 
+                                    title="Import from OpenStreetMap" 
+                                    type="lightbox">
+                    <mp-overlay-dialog-trigger>
+                        <button class="btn btn-action btn-textAndIcon">
+                            <rs-icon icon-type='rounded' icon-name='upload' symbol='true'></rs-icon>
+                            <span>Import from OpenStreetMap</span>
+                        </button>
+                    </mp-overlay-dialog-trigger>
+                    <mp-overlay-dialog-content>
+                        <div class="page__section-container" style="padding-top: 10px;">
+                            <inline-template    template-iri='[[resolvePrefix "rsp:ImportFromExternalSource"]]' 
+                                                options='{
+                                                        "osmImport": "true", 
+                                                        "viewId": "{{viewId}}",
+                                                        "defaultActiveTab": "1",
+                                                        "importFromModal": "true"
+                                                }'>
+                            </inline-template>
+                        </div>
+                    </mp-overlay-dialog-content>
+                </mp-overlay-dialog>
+            </template>
+
+            <template id='http://www.cidoc-crm.org/cidoc-crm/E39_Actor'>
+                {{#if (eq resourceP2Type "http://www.researchspace.org/resource/system/vocab/resource_type/user")}}
+                {{else}}
+                    <mp-overlay-dialog  id='{{viewId}}-importResourceFromAPI-dialog' 
+                                        title="Import from Wikidata" 
+                                        type="lightbox">
+                        <mp-overlay-dialog-trigger>
+                            <button class="btn btn-action btn-textAndIcon">
+                                <rs-icon icon-type='rounded' icon-name='upload' symbol='true'></rs-icon>
+                                <span>Import from Wikidata</span>
+                            </button>
+                        </mp-overlay-dialog-trigger>
+                        <mp-overlay-dialog-content>
+                            <div class="page__section-container">
+                                <h6 style="margin: 0px 0 7px;">Search in Wikidata</h6>
+                                <inline-template template-iri='[[resolvePrefix "rsp:ImportFromWikidata"]]' 
+                                                    options='{
+                                                            "scheme": "{{collection}}", 
+                                                            "viewId": "{{viewId}}",
+                                                            "domain": "http://www.cidoc-crm.org/cidoc-crm/E39_Actor",
+                                                            "domainConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor",
+                                                            "label": "actor"
+                                                    }'>
+                                </inline-template>
+                            </div>
+                        </mp-overlay-dialog-content>
+                    </mp-overlay-dialog> 
+                {{/if}}
+            </template>
+
+            <template id='http://www.cidoc-crm.org/cidoc-crm/E74_Group'>
+                <mp-overlay-dialog  id='{{viewId}}-importResourceFromAPI-dialog' 
+                                    title="Import from Wikidata" 
+                                    type="lightbox">
+                    <mp-overlay-dialog-trigger>
+                        <button class="btn btn-action btn-textAndIcon">
+                            <rs-icon icon-type='rounded' icon-name='upload' symbol='true'></rs-icon>
+                            <span>Import from Wikidata</span>
+                        </button>
+                    </mp-overlay-dialog-trigger>
+                    <mp-overlay-dialog-content>
+                        <div class="page__section-container">
+                            <h6 style="margin: 0px 0 7px;">Search in Wikidata</h6>
+                            <inline-template template-iri='[[resolvePrefix "rsp:ImportFromWikidata"]]' 
+                                                options='{
+                                                        "scheme": "{{collection}}", 
+                                                        "viewId": "{{viewId}}",
+                                                        "domain": "http://www.cidoc-crm.org/cidoc-crm/E74_Group",
+                                                        "domainConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Group",
+                                                        "label": "group"
+                                                }'>
+                            </inline-template>
+                        </div>
+                    </mp-overlay-dialog-content>
+                </mp-overlay-dialog> 
+            </template>
+
+            <template id='http://www.cidoc-crm.org/cidoc-crm/E21_Person'>
+                <mp-overlay-dialog  id='{{viewId}}-importResourceFromAPI-dialog' 
+                                    title="Import from Wikidata" 
+                                    type="lightbox">
+                    <mp-overlay-dialog-trigger>
+                        <button class="btn btn-action btn-textAndIcon">
+                            <rs-icon icon-type='rounded' icon-name='upload' symbol='true'></rs-icon>
+                            <span>Import from Wikidata</span>
+                        </button>
+                    </mp-overlay-dialog-trigger>
+                    <mp-overlay-dialog-content>
+                        <div class="page__section-container">
+                            <h6 style="margin: 0px 0 7px;">Search in Wikidata</h6>
+                            <inline-template template-iri='[[resolvePrefix "rsp:ImportFromWikidata"]]' 
+                                                options='{
+                                                        "scheme": "{{collection}}", 
+                                                        "viewId": "{{viewId}}",
+                                                        "domain": "http://www.cidoc-crm.org/cidoc-crm/E21_Person",
+                                                        "domainConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Person",
+                                                        "label": "person"
+                                                }'>
+                            </inline-template>
+                        </div>
+                    </mp-overlay-dialog-content>
+                </mp-overlay-dialog> 
+            </template>
+
+            <template id='default'><div></div></template>
+
+        </semantic-switch>
+    </template>
+
+</semantic-query>  
+
+
+

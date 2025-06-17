@@ -27,7 +27,7 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
  */
 public class CrmInf {
 
-    public static String NAMESPACE = "http://www.ics.forth.gr/isl/CRMinf/";
+    public static String NAMESPACE = "http://www.cidoc-crm.org/extensions/crminf/";
 
     public static final IRI I1_Argumentation;
     public static final IRI I4_Proposition_Set;

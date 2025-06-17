@@ -49,7 +49,7 @@
               >
               
     <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
-        <semantic-form-hidden-input for="classtype" default-value='http://www.ics.forth.gr/isl/CRMdig/D1_Digital_Object'> </semantic-form-hidden-input>
+        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/extensions/crmdig/D1_Digital_Object'> </semantic-form-hidden-input>
         <semantic-form-hidden-input for="entity_resource_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/semantic_chart'> </semantic-form-hidden-input>
 
             <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
@@ -111,12 +111,15 @@
                                                         {{#ifCond __value__.value "==" "Unknown"}}
                                                             {{__value__.value}}
                                                         {{else}}
-                                                            <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                            urlqueryparam-view='resource-editor' 
-                                                                            urlqueryparam-resource-iri='{{__value__.value}}'
-                                                            >
-                                                                <mp-label iri='{{__value__.value}}' class="text-link text-truncate-line1"></mp-label>
-                                                            </semantic-link>
+                                                            <mp-draggable iri="{{__value__.value}}">
+                                                                <div>
+                                                                    <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                    urlqueryparam-view='resource-editor' 
+                                                                                    urlqueryparam-resource-iri='{{__value__.value}}'>
+                                                                        <mp-label iri='{{__value__.value}}' class="text-link text-truncate-line1"></mp-label>
+                                                                    </semantic-link>
+                                                                </div>
+                                                            </mp-draggable>
                                                         {{/ifCond}}
                                                     </template>
                                                 </semantic-table>
@@ -304,27 +307,13 @@
                     <semantic-form-autocomplete-input   for='entity_attributed_by_attribute_assignment' 
                                                         label="Attributed by"
                                                         placeholder="Select what assigned attribute to the chart" 
-                                                        nested-form-templates='[ 
-                                                            {
-                                                                "label": "Attribute assignment",
-                                                                "nestedForm": "{{{{raw}}}}
-                                                                                {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                            {{{{/raw}}}}"
-                                                            }
-                                                        ]'>  
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
                     </semantic-form-autocomplete-input>
         
                     <semantic-form-autocomplete-input   for='entity_assigned_by_attribute_assignment' 
                                                         label="Assigned by"
                                                         placeholder="Select what assigned the chart" 
-                                                        nested-form-templates='[ 
-                                                            {
-                                                                "label": "Attribute assignment",
-                                                                "nestedForm": "{{{{raw}}}}
-                                                                                {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                            {{{{/raw}}}}"
-                                                            }
-                                                        ]'>  
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
                     </semantic-form-autocomplete-input>
     
                     <semantic-form-autocomplete-input   for='entity_measurement' 

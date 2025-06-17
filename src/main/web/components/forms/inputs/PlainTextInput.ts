@@ -300,7 +300,7 @@ export class PlainTextInput extends AtomicValueInput<PlainTextInputProps, State>
   }
 
   private createDefaultPlaceholder(definition: FieldDefinition): string {
-    return `Enter ${(getPreferredLabel(definition.label) || 'value').toLocaleLowerCase()} here...`;
+    return `Enter ${(getPreferredLabel(definition.label) || 'value').toLocaleLowerCase()}`;
   }
 
   static makeHandler = AtomicValueInput.makeAtomicHandler;

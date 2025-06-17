@@ -18,13 +18,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 import * as React from 'react';
-import { OverlayTrigger, Popover, Button, ButtonGroup, Dropdown, MenuItem, SplitButton } from 'react-bootstrap';
+import { OverlayTrigger, Popover, Button, ButtonGroup, Dropdown, DropdownButton, MenuItem, SplitButton } from 'react-bootstrap';
 import * as classnames from 'classnames';
 import { Workspace, ToolbarProps as BaseProps, CommandHistory, EventObserver, ElementTemplate } from 'ontodia';
 
 import { Component } from 'platform/api/components';
 import { VocabPlatform } from 'platform/api/rdf/vocabularies';
 import { Permissions } from 'platform/api/services/security';
+import ResourceLinkContainer from 'platform/api/navigation/components/ResourceLinkContainer';
+import { ConfigHolder } from 'platform/api/services/config-holder';
 
 import { HasPermission } from 'platform/components/security/HasPermission';
 
@@ -93,7 +95,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
           </Button>
           <Dropdown.Toggle bsStyle="default" className="btn-action" />
           <Dropdown.Menu>
-            <MenuItem href="#" onClick={onPersistChangesAndSaveDiagram}>
+            <MenuItem href="#" onClick={onPersistChangesAndSaveDiagram} draggable={false}>
               {persistChangesLabel} &amp; {saveDiagramLabel}
             </MenuItem>
           </Dropdown.Menu>
@@ -107,10 +109,10 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
             {saveDiagramLabel}
           </Dropdown.Toggle>
           <Dropdown.Menu>
-            <MenuItem href="#" onClick={onSaveDiagram}>
+            <MenuItem href="#" onClick={onSaveDiagram} draggable={false}>
               {saveDiagramLabel}
             </MenuItem>
-            <MenuItem href="#" onClick={onSaveDiagramAs}>
+            <MenuItem href="#" onClick={onSaveDiagramAs} draggable={false}>
               {saveDiagramLabel} as...
             </MenuItem>
           </Dropdown.Menu>
@@ -144,7 +146,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
         </Button>
         <Dropdown.Toggle bsStyle="default" className="btn-action" />
         <Dropdown.Menu>
-          <MenuItem href="#" onClick={onPersistChangesAndSaveDiagram}>
+          <MenuItem href="#" onClick={onPersistChangesAndSaveDiagram} draggable={false}>
             <Icon iconType="rounded" iconName="save" symbol className="icon-left" />
             {persistChangesLabel} and map
           </MenuItem>
@@ -167,7 +169,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
         bsStyle="default"
         className="btn-action btn-split"
       >
-        <MenuItem href="#" onClick={onSaveDiagramAs}>
+        <MenuItem href="#" onClick={onSaveDiagramAs} draggable={false}>
           <Icon iconType="rounded" iconName="save" symbol className="icon-left" />
           {saveDiagramLabel} as...
         </MenuItem>
@@ -179,10 +181,10 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
           {saveDiagramLabel}
         </Dropdown.Toggle>
         <Dropdown.Menu>
-        <MenuItem href="#" onClick={onSaveDiagram}>
+        <MenuItem href="#" onClick={onSaveDiagram} draggable={false}>
             {saveDiagramLabel}
           </MenuItem>
-          <MenuItem href="#" onClick={onSaveDiagramAs}>
+          <MenuItem href="#" onClick={onSaveDiagramAs} draggable={false}>
             {saveDiagramLabel} as...
           </MenuItem>
         </Dropdown.Menu>
@@ -286,11 +288,11 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
                 <Icon iconType="rounded" iconName="download" symbol />
               </Dropdown.Toggle>
               <Dropdown.Menu>
-                <MenuItem href="#" onClick={this.onExportPng}>
+                <MenuItem href="#" onClick={this.onExportPng} draggable={false}>
                   <Icon iconType="rounded" iconName="download" symbol className="icon-left" />
                   Export as PNG
                 </MenuItem>
-                <MenuItem href="#" onClick={this.onExportSvg}>
+                <MenuItem href="#" onClick={this.onExportSvg} draggable={false}>
                   <Icon iconType="rounded" iconName="download" symbol className="icon-left" />
                   Export as SVG
                 </MenuItem>
@@ -300,6 +302,44 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
         </div>
 
         <div className={styles.buttonsContainer}>
+            <DropdownButton title="Mapping assistant" pullRight id="mapping-assistant">
+              <ResourceLinkContainer 
+                uri={ConfigHolder.getDashboard().value} 
+                urlqueryparam-resource-iri="http://www.researchspace.org/resource/OntologyElementsSearch"
+                urlqueryparam-view="ontology-page-view"
+                urlqueryparam-open-as-drag-and-drop="true"
+                urlqueryparam-custom-label="Ontology Elements Descriptions" 
+              >
+                <MenuItem draggable={false}>
+                  <Icon iconType="rounded" iconName='search' className="icon-left" symbol />
+                  Ontology Elements descriptions
+                </MenuItem>
+              </ResourceLinkContainer>
+              <ResourceLinkContainer 
+                uri={ConfigHolder.getDashboard().value} 
+                urlqueryparam-resource-iri="http://www.researchspace.org/resource/OntologyPropertiesSearch"
+                urlqueryparam-view="ontology-page-view"
+                urlqueryparam-open-as-drag-and-drop="true"
+                urlqueryparam-custom-label="Ontology Properties by Class" 
+              >
+                <MenuItem draggable={false}>
+                  <Icon iconType="rounded" iconName='search' className="icon-left" symbol />
+                  Ontology Properties by class
+                </MenuItem>
+              </ResourceLinkContainer>
+              <ResourceLinkContainer 
+                uri={ConfigHolder.getDashboard().value} 
+                urlqueryparam-resource-iri="http://www.researchspace.org/resource/OntologyPropertiesBetweenClassesSearch"
+                urlqueryparam-view="ontology-page-view"
+                urlqueryparam-open-as-drag-and-drop="true"
+                urlqueryparam-custom-label="Ontology Properties between Classes" 
+              >
+                <MenuItem draggable={false}>
+                  <Icon iconType="rounded" iconName='search' className="icon-left" symbol />
+                  Ontology Properties between classes
+                </MenuItem>
+              </ResourceLinkContainer>
+            </DropdownButton>
           {this.props.diagramIri && 
             <Button onClick={onRefreshButtonClicked} className='btn-textAndIcon' title='Refresh knowledge map'>
               <Icon iconType="rounded" iconName='refresh' symbol />

@@ -19,30 +19,33 @@
           <div class="page__content-container resource-editView-form-container">
             <mp-event-target-template-render id='{{viewId}}-deleted-collection' template='{{> template}}'>
               <template id='template'>
-                <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%;">
-                  <div class="success-documentation-section-icon-container">
-                    <rs-icon icon-type="rounded" icon-name="done" symbol="true"></rs-icon>
-                  </div>
-
-                  <div style="flex: 1;"> 
-                    <div class="success-documentation-section-title">Success!</div>
-                    <div class="success-documentation-section-content">
-                      <span>
-                        {{#if label}}{{label}}{{else}}<mp-label iri='{{iri}}'></mp-label>{{/if}} has been deleted.
-                      </span>
+                {{#if hideMessage}}
+                {{else}}
+                  <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%;">
+                    <div class="success-documentation-section-icon-container">
+                      <rs-icon icon-type="rounded" icon-name="done" symbol="true"></rs-icon>
                     </div>
+
+                    <div style="flex: 1;"> 
+                      <div class="success-documentation-section-title">Success!</div>
+                      <div class="success-documentation-section-content">
+                        <span>
+                          {{#if label}}{{label}}{{else}}<mp-label iri='{{iri}}'></mp-label>{{/if}} has been deleted.
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <mp-event-trigger id='{{viewId}}-cancel-deleted-state-message-{{iri}}'
+                                      type='Component.TemplateUpdate'
+                                      data='{ "hideMessage": "true" }'
+                                      targets='["{{viewId}}-deleted-collection"]'
+                    >
+                      <button class="btn btn-documentation">
+                        <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
+                      </button>
+                    </mp-event-trigger>
                   </div>
-                  
-                  <mp-event-trigger id='{{viewId}}-cancel-deleted-state-message-{{iri}}'
-                                    type='Component.TemplateUpdate'
-                                    data='{ "hideMessage": "true" }'
-                                    targets='["{{viewId}}-deleted-collection"]'
-                  >
-                    <button class="btn btn-documentation">
-                      <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
-                    </button>
-                  </mp-event-trigger>
-                </div>
+                {{/if}}
               </template>
             </mp-event-target-template-render>
           </div>
@@ -271,7 +274,7 @@
                       {{#if editable}}
                         <mp-event-trigger id='{{viewId}}-form-new-trigger' 
                                           type='Component.TemplateUpdate' 
-                                          data='{"mode": "new" }' 
+                                          data='{"mode": "new", "currentView": "{{viewId}}" }' 
                                           targets='["{{collection}}-mytree", "{{viewId}}-term-forms"]'>
                           <button class="btn btn-action btn-textAndIcon" style="margin-bottom: 10px; justify-content: center;">
                             <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
@@ -286,13 +289,28 @@
                         </mp-event-trigger>
                       {{/if}}
 
+                      <mp-event-proxy id='{{viewId}}-selected-tree-element'
+                                      on-event-source='{{viewId}}-scheme-tree'  
+                                      on-event-type='LazyTree.ItemSelected'
+                                      proxy-event-type='Component.TemplateUpdate' 
+                                      proxy-targets='["{{viewId}}-term-forms"]' 
+                                      additional-data='{"mode": "edit"}'>
+                      </mp-event-proxy>
+                      <mp-event-proxy id='{{viewId}}-focus-selected-tree-element' 
+                                      on-event-source='{{viewId}}-scheme-tree'  
+                                      on-event-type='LazyTree.ItemSelected'
+                                      proxy-event-type='LazyTree.Focus' 
+                                      proxy-targets='["{{viewId}}-scheme-tree"]' 
+                                      additional-data='{"currentView": "{{viewId}}"}'>
+                      </mp-event-proxy>
+
                       <mp-event-target-template-render id='{{collection}}-mytree'  template='{{> treeTemplate}}'>
                         <template id='treeTemplate'>
                           <semantic-lazy-tree id='{{viewId}}-scheme-tree' 
                                               info-template='{{> template}}' 
                                               input-placeholder='Select {{resourceName}}' 
                                               type='simple'  
-                                              focused='{{#if (not (eq mode "deleted"))}}{{iri}}{{/if}}' 
+                                              focused='{{#if currentView}}{{#if (eq viewId currentView)}}{{iri}}{{else}}{{/if}}{{else}}{{#if (not (eq mode "deleted"))}}{{iri}}{{/if}}{{/if}}' 
                                               page-size='10000'
                                               config='{"scheme": "{{collection}}", 
                                                       {{#if resourceLabelPattern}}
@@ -315,7 +333,7 @@
                             <template id='template'>
                               <span class="tree-item-actions-container">
                                 {{#if editable}}
-                                  <mp-event-trigger id='{{viewId}}-form-edit-trigger--{{iri}}' 
+                                 [[!-- <mp-event-trigger id='{{viewId}}-form-edit-trigger--{{iri}}' 
                                                     type='Component.TemplateUpdate'
                                                     data='{"iri":"{{iri}}", 
                                                           "label": "{{label}}", 
@@ -330,15 +348,16 @@
                                                   on-event-source='{{viewId}}-form-edit-trigger--{{iri}}' 
                                                   proxy-event-type='LazyTree.Focus' 
                                                   proxy-targets='["{{viewId}}-scheme-tree"]' 
-                                                  data='{"iri":"{{iri}}"}'>
-                                  </mp-event-proxy>
+                                                  data='{"iri":"{{iri}}",
+                                                          "currentView": "{{viewId}}"}'>
+                                  </mp-event-proxy> --]]
                                   {{#if resourceBroaderProperty}}
                                     <mp-event-trigger id='{{viewId}}-form-newNarrower-trigger--{{iri}}' 
                                                       type='Component.TemplateUpdate' 
                                                       data='{"broader": "{{iri}}", "mode": "new" }' 
                                                       targets='["{{viewId}}-term-forms"]'>
                                       <span class='tree-item-action'>
-                                        <rs-icon icon-type="rounded" icon-name="add" title="Add narrower {{resourceName}}" symbol="true"></rs-icon>
+                                        <rs-icon icon-type="rounded" icon-name="add" title="Narrower to {{label}}" symbol="true"></rs-icon>
                                       </span>
                                     </mp-event-trigger>
                                     
@@ -439,7 +458,7 @@
                             <h2 class="resource-editView-formHeader-title">
                               New 
                               {{#if collectionLabel}}
-                                <span>{{collectionLabel}}</span>
+                                <span style="text-transform: lowercase;">{{collectionLabel}}</span>
                               {{else}}
                                 <mp-label iri='{{collection}}' style="text-transform: lowercase;"></mp-label>
                               {{/if}}
@@ -467,15 +486,15 @@
                             <h2 class="resource-editView-formHeader-title">New
                               {{#if collection}}
                                 {{#if collectionLabel}}
-                                  <span>{{collectionLabel}}</span>
+                                  <span style="text-transform: lowercase;">{{collectionLabel}}</span>
                                 {{else}}
                                   <mp-label iri='{{collection}}' style="text-transform: lowercase;"></mp-label>
                                 {{/if}}
                               {{else}}
                                 {{#if (eq resourceConfiguration "http://www.researchspace.org/resource/system/resource_configurations_container/data/User")}}
-                                  <span>profile</span>
+                                  <span style="text-transform: lowercase;">profile</span>
                                 {{else}}
-                                  <span>{{resourceName}}</span>
+                                  <span style="text-transform: lowercase;">{{resourceName}}</span>
                                 {{/if}}
                               {{/if}}
                             </h2>
@@ -489,7 +508,7 @@
                             
                               <mp-draggable iri='{{iri}}'>
                                 <div class="text-truncate">
-                                  <mp-label iri='{{iri}}' class=""></mp-label>
+                                  <mp-label iri='{{iri}}'></mp-label>
                                   [[!--
                                   {{#if resourceLabelPattern}}
                                       <semantic-query query="SELECT ?label WHERE {
@@ -569,34 +588,73 @@
                         {{/case}}
                       
                         {{#case "deleted" break=true}}
-                          <mp-event-target-template-render id='{{viewId}}-deleted-state' template='{{> template}}'>
-                            <template id='template'>
-                              <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%;">
-                                <div class="success-documentation-section-icon-container">
-                                  <rs-icon icon-type="rounded" icon-name="done" symbol="true"></rs-icon>
-                                </div>
+                          {{#if collection}}
+                            {{#if (eq viewId currentView)}}
+                              <mp-event-target-template-render id='{{viewId}}-deleted-state' template='{{> template}}'>
+                                <template id='template'>
+                                  {{#if hideMessage}}
+                                  {{else}}
+                                    <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%;">
+                                      <div class="success-documentation-section-icon-container">
+                                        <rs-icon icon-type="rounded" icon-name="done" symbol="true"></rs-icon>
+                                      </div>
 
-                                <div style="flex: 1;"> 
-                                  <div class="success-documentation-section-title">Success!</div>
-                                  <div class="success-documentation-section-content">
-                                    <span>
-                                      {{#if label}}{{label}}{{else}}<mp-label iri='{{iri}}'></mp-label>{{/if}} has been deleted.
-                                    </span>
+                                      <div style="flex: 1;"> 
+                                        <div class="success-documentation-section-title">Success!</div>
+                                        <div class="success-documentation-section-content">
+                                          <span>
+                                            {{#if label}}{{label}}{{else}}<mp-label iri='{{iri}}'></mp-label>{{/if}} has been deleted.
+                                          </span>
+                                        </div>
+                                      </div>
+                                      
+                                      <mp-event-trigger id='{{viewId}}-cancel-deleted-state-message-{{iri}}'
+                                                        type='Component.TemplateUpdate'
+                                                        data='{ "hideMessage": "true" }'
+                                                        targets='["{{viewId}}-deleted-state"]'
+                                      >
+                                        <button class="btn btn-documentation">
+                                          <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
+                                        </button>
+                                      </mp-event-trigger>
+                                    </div>
+                                  {{/if}}
+                                </template>
+                              </mp-event-target-template-render>
+                            {{/if}}
+                          {{else}}
+                            <mp-event-target-template-render id='{{viewId}}-deleted-state' template='{{> template}}'>
+                              <template id='template'>
+                                {{#if hideMessage}}
+                                {{else}}
+                                  <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%;">
+                                    <div class="success-documentation-section-icon-container">
+                                      <rs-icon icon-type="rounded" icon-name="done" symbol="true"></rs-icon>
+                                    </div>
+
+                                    <div style="flex: 1;"> 
+                                      <div class="success-documentation-section-title">Success!</div>
+                                      <div class="success-documentation-section-content">
+                                        <span>
+                                          {{#if label}}{{label}}{{else}}<mp-label iri='{{iri}}'></mp-label>{{/if}} has been deleted.
+                                        </span>
+                                      </div>
+                                    </div>
+                                    
+                                    <mp-event-trigger id='{{viewId}}-cancel-deleted-state-message-{{iri}}'
+                                                      type='Component.TemplateUpdate'
+                                                      data='{ "hideMessage": "true" }'
+                                                      targets='["{{viewId}}-deleted-state"]'
+                                    >
+                                      <button class="btn btn-documentation">
+                                        <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
+                                      </button>
+                                    </mp-event-trigger>
                                   </div>
-                                </div>
-                                
-                                <mp-event-trigger id='{{viewId}}-cancel-deleted-state-message-{{iri}}'
-                                                  type='Component.TemplateUpdate'
-                                                  data='{ "hideMessage": "true" }'
-                                                  targets='["{{viewId}}-deleted-state"]'
-                                >
-                                  <button class="btn btn-documentation">
-                                    <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
-                                  </button>
-                                </mp-event-trigger>
-                              </div>
-                            </template>
-                          </mp-event-target-template-render>
+                                {{/if}}
+                              </template>
+                            </mp-event-target-template-render>
+                          {{/if}}
                         {{/case}}
                       {{/switch}}
                     </div>
@@ -605,7 +663,7 @@
                       <div class="btn-inline-container">
 
                         {{#if (eq mode "new")}}
-                          [[> rsp:ImportFromExternalSource]] 
+                          [[> rsp:ImportFromExternalSourceModal]] 
                         {{/if}} 
 
                         {{#if (not (or (eq mode "new") (eq mode "deleted")))}}
@@ -691,7 +749,8 @@
                                     on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
                                     proxy-event-type='Component.TemplateUpdate' 
                                     proxy-targets='[{{#if collection}}"{{collection}}-mytree",{{/if}} "{{viewId}}-term-forms"]'
-                                    additional-data='{"mode": "edit"}'
+                                    additional-data='{"mode": "edit",
+                                                      "currentView": "{{viewId}}"}'
                     ></mp-event-proxy>
 
                     {{#if iri}}
@@ -722,7 +781,8 @@
                                             proxy-targets='[{{#if collection}}"{{collection}}-mytree",{{/if}} "{{viewId}}-term-forms"]'
                                             additional-data='{"mode": "deleted", 
                                                               "iri": "{{iri}}",
-                                                              "label": "{{bindings.0.label.value}}" }'
+                                                              "label": "{{bindings.0.label.value}}",
+                                                              "currentView": "{{viewId}}" }'
                             ></mp-event-proxy>
                           </div>
                         </template>
@@ -747,7 +807,8 @@
                                             proxy-event-type='Component.TemplateUpdate' 
                                             proxy-targets='[{{#if collection}}"{{collection}}-mytree",{{/if}} "{{viewId}}-term-forms"]'
                                             additional-data='{"mode": "deleted",
-                                                            "label": "{{label}}" }'
+                                                            "label": "{{label}}",
+                                                            "currentView": "{{viewId}}" }'
                             ></mp-event-proxy>
                           </div>
                           
@@ -770,7 +831,6 @@
                                                 {{#if selectedApiResource}}
                                                   {{#if apiResourceURI}}"apiResourceURI": "{{apiResourceURI}}",{{/if}}
                                                   {{#if apiResourceName}}"apiResourceName": "{{apiResourceName}}",{{/if}}
-                                                  {{#if apiResourceLabel}}"apiResourceLabel": "{{apiResourceLabel}}",{{/if}}
                                                   {{#if apiResourceDescription}}"apiResourceDescription": "{{apiResourceDescription}}",{{/if}}
 
                                                   {{#if apiResourceMuseumId}}"apiResourceMuseumId": "{{apiResourceMuseumId}}",{{/if}}
@@ -780,7 +840,7 @@
                                                   {{#if apiResourceArtistName}}"apiResourceArtistName": "{{apiResourceArtistName}}",{{/if}}
                                                   {{#if apiResourceArtistRole}}"apiResourceArtistRole": "{{apiResourceArtistRole}}",{{/if}}
 
-                                                  {{#if apiResourceosmGeoCoordinates}}"apiResourceosmGeoCoordinates": "{{apiResourceosmGeoCoordinates}}",{{/if}}
+                                                   {{#if apiResourceWikidataId}}"apiResourceWikidataId": "{{apiResourceWikidataId}}",{{/if}}
                                                 {{/if}}
                                                 "resourceBroaderProperty": {{#if resourceBroaderProperty}}"{{resourceBroaderProperty}}"{{else}}null{{/if}}
                                         }'>
@@ -806,7 +866,7 @@
               
               <mp-event-proxy id='{{viewId}}-closeModal-onSelect-APIResource-proxy'
                               on-event-source='{{viewId}}-select-api-resource-trigger' 
-                              on-event-type='apiResourceSelect'
+                              on-event-type='apiResourceImportInModal'
                               proxy-event-type='OverlayDialog.Close' 
                               proxy-targets='["{{viewId}}-importResourceFromAPI-dialog"]'
               ></mp-event-proxy>
@@ -818,9 +878,9 @@
                               proxy-targets='["{{viewId}}-importResourceFromAPI-dialog"]'
               ></mp-event-proxy>
 
-              <mp-event-proxy id='{{viewId}}-refreshForm-onSelect-apiResource-proxy'
+              <mp-event-proxy id='{{viewId}}-refreshForm-onSelect-APIResource-proxy'
                               on-event-source='{{viewId}}-select-api-resource-trigger' 
-                              on-event-type='apiResourceSelect'
+                              on-event-type='apiResourceImportInModal'
                               proxy-event-type='Component.TemplateUpdate' 
                               proxy-targets='["{{viewId}}-term-forms"]'
                               additional-data='{"mode": "new", "selectedApiResource": "true"}'

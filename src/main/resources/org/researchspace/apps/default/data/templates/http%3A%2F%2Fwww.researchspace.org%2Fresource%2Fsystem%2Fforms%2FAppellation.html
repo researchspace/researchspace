@@ -75,7 +75,15 @@
             <semantic-form-select-input  for='appellation_type' 
                                         label="Appellation type"
                                         placeholder="Select type" 
-                                        nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
+                                        nested-form-templates='[ 
+                                              {
+                                                "label": "Appellation type",
+                                                "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
+                                                                                scheme=\"http://www.researchspace.org/resource/system/vocab/appellation_type\"
+                                                                                entityType=\"appellation type\" }}
+                                                              {{{{/raw}}}}"
+                                              }
+                                            ]'>
             </semantic-form-select-input>
 
             <semantic-form-autocomplete-input for='appellation_identifies' 
@@ -289,12 +297,13 @@
                                                   {{#ifCond bindings.0.node.value "===" symbolicObject}}
                                                       <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
                                                   {{else}}
-                                                      <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                      urlqueryparam-view='resource-editor' 
-                                                                      urlqueryparam-resource-iri='{{node.value}}'
-                                                                      >
+                                                    <mp-draggable iri="{{node.value}}">
+                                                      <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                              urlqueryparam-view='resource-editor' 
+                                                                              urlqueryparam-resource-iri='{{node.value}}'>
                                                           <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                      </semantic-link>
+                                                      </semantic-link-container>
+                                                    </mp-draggable>
                                                   {{/ifCond}}
                                               </div>
                                           </template>
@@ -524,27 +533,13 @@
         <semantic-form-autocomplete-input   for='entity_attributed_by_attribute_assignment' 
                                             label="Attributed by"
                                             placeholder="Select what assigned attribute to the appellation" 
-                                            nested-form-templates='[ 
-                                                {
-                                                    "label": "Attribute assignment",
-                                                    "nestedForm": "{{{{raw}}}}
-                                                                    {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                {{{{/raw}}}}"
-                                                }
-                                            ]'>  
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_assigned_by_attribute_assignment' 
                                             label="Assigned by"
                                             placeholder="Select what assigned the appellation" 
-                                            nested-form-templates='[ 
-                                                {
-                                                    "label": "Attribute assignment",
-                                                    "nestedForm": "{{{{raw}}}}
-                                                                    {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                {{{{/raw}}}}"
-                                                }
-                                            ]'>  
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_measurement' 

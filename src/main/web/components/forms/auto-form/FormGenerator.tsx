@@ -54,11 +54,16 @@ export type FieldInputElement = React.ReactElement<SingleValueInputProps | Multi
 export function generateFormFromFields(params: GenerateFormFromFieldsParams): JSX.Element[] {
   const content: JSX.Element[] = [];
   const contentInputs: JSX.Element[] = [];
+ 
+  const uniqueFields = params.fields.filter((field, index, self) =>
+    index === self.findIndex(f => f.iri === field.iri)
+  );
 
-  for (const field of params.fields) {
+  for (const field of uniqueFields) {
     let lastMatched: FieldInputElement | undefined;
     for (const override of params.overrides) {
-      const { fieldIri, datatype } = override.target;
+      const { fieldIri, datatype} = override.target;
+      
       if (fieldIri && fieldIri === field.iri) {
         lastMatched = override.input;
       } else if (datatype && field.xsdDatatype && field.xsdDatatype.value === datatype) {

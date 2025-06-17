@@ -1,5 +1,5 @@
 <div class='page__grid-container search-page-container'>
-  <div style="font-size: 20px; margin-bottom: 15px;">Entities related to: <semantic-link iri="{{iri}}" class="text-underline"></semantic-link></div>
+  <div style="font-size: 20px; margin-bottom: 15px;">Entities related to: <semantic-link iri="{{iri}}" class="text-underline" draggable="true"></semantic-link></div>
     <bs-tabs id='semantic-search' mount-on-enter=true>
       <bs-tab event-key='text search' title='Objects' class="basicSearch">
         <semantic-search config='[[searchConfigForFieldsFromQuery "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> . ?field <http://www.researchspace.org/resource/system/fields/domain> ?domain . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . ?field <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/category/generic/summary> . }"]]'>
@@ -11,8 +11,8 @@
                   #?type rdfs:subClassOf* crm:E1_CRM_Entity .
                   #?subject rdfs:label ?label .
                 BIND(<{{iri}}> AS ?place)
-                ?subject crmsci:O19i_was_object_found_by ?discovery.
-                ?discovery crmsci:O21_has_found_at ?place.
+                ?subject crmsci:O19i_was_object_encountered_through ?discovery.
+                ?discovery crmsci:O21_encountered_at ?place.
                   SERVICE <http://www.bigdata.com/rdf/search#search> {
                     ?label bds:search ?__token__ ;
                               bds:minRelevance "0.3" ;
@@ -25,8 +25,8 @@
                   #?subject a ?type .
                   #?type rdfs:subClassOf* crm:E1_CRM_Entity .
                   BIND(<{{iri}}> AS ?place)
-                  ?subject crmsci:O19i_was_object_found_by ?discovery.
-                  ?discovery crmsci:O21_has_found_at ?place.
+                  ?subject crmsci:O19i_was_object_encountered_through ?discovery.
+                  ?discovery crmsci:O21_encountered_at ?place.
                   }
               '
               debounce=500

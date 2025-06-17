@@ -43,7 +43,7 @@ export class SetService extends LdpService {
       Rdf.triple(generatedIri, rdfs.label, Rdf.literal(name)),
       Rdf.triple(generatedIri, rdf.type, ldp.Container),
       Rdf.triple(generatedIri, Rdf.iri("http://www.cidoc-crm.org/cidoc-crm/P2_has_type"), VocabPlatform.Set),
-      Rdf.triple(generatedIri, rdf.type, Rdf.iri("http://www.ics.forth.gr/isl/CRMdig/D1_Digital_Object")),
+      Rdf.triple(generatedIri, rdf.type, Rdf.iri("http://www.cidoc-crm.org/extensions/crmdig/D1_Digital_Object")),
     ];
 
     let visibilityResourceIri = "";
@@ -155,7 +155,7 @@ function createItemHolderGraph(holderIri: Rdf.Iri, itemIri: Rdf.Iri, index?: num
               Rdf.triple(holderIri, VocabPlatform.setItem, itemIri),
               Rdf.triple(holderIri, Rdf.iri("http://www.cidoc-crm.org/cidoc-crm/P67_refers_to"), itemIri),
               Rdf.triple(holderIri, Rdf.iri("http://www.cidoc-crm.org/cidoc-crm/P2_has_type"), VocabPlatform.SetItem),
-              Rdf.triple(holderIri, rdf.type, Rdf.iri("http://www.ics.forth.gr/isl/CRMdig/D1_Digital_Object")),
+              Rdf.triple(holderIri, rdf.type, Rdf.iri("http://www.cidoc-crm.org/extensions/crmdig/D1_Digital_Object")),
             ];
         if (typeof index === 'number') {
           triples.push(Rdf.triple(holderIri, VocabPlatform.setItemIndex, Rdf.literal(index.toString(), xsd.integer)));

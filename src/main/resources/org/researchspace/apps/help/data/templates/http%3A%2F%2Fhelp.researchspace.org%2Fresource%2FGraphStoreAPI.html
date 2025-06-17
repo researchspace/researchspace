@@ -82,14 +82,14 @@
     </p>
     <b>Example:</b> Creating a new graph
     <mp-code-block mode='text/x-sh'>
-curl -v -u admin:admin -X POST -H 'Content-Type: application/xml' --data-binary '@foaf.rdf' http://127.0.0.1:10214/rdf-graph-store?graph=http%3A%2F%2Fmy.foaf.graph%2F
+curl -v -u admin:admin -X POST -H 'Content-Type: application/xml' --data-binary '@foaf.rdf' http://localhost:10214/rdf-graph-store?graph=http%3A%2F%2Fmy.foaf.graph%2F
     </mp-code-block>
     
     <p>
       We can check the number of triples with a simple SPARQL query:
     </p>
     <mp-code-block mode='text/x-sh'>
-curl -u admin:admin --data-urlencode 'query=SELECT (COUNT(*) AS ?nrTriples) WHERE { GRAPH&lt;http://my.foaf.graph/&gt;{ ?s ?p ?o } }' -H 'Accept: text/csv' 'http://127.0.0.1:10214/sparql'
+curl -u admin:admin --data-urlencode 'query=SELECT (COUNT(*) AS ?nrTriples) WHERE { GRAPH&lt;http://my.foaf.graph/&gt;{ ?s ?p ?o } }' -H 'Accept: text/csv' 'http://localhost:10214/sparql'
     </mp-code-block>
     <p>
       which will reveal that the graph <code>&lt;http://my.foaf.graph/&gt;</code> contains <code>631</code> statements.
@@ -101,14 +101,14 @@ curl -u admin:admin --data-urlencode 'query=SELECT (COUNT(*) AS ?nrTriples) WHER
       Therefore, we download the <a href="https://www.w3.org/ns/dcat.rdf" class="text-link-action" target="_blank">DCAT vocabulary file</a> (<code>curl https://www.w3.org/ns/dcat.rdf > dcat.rdf</code>) and post it against the  <code>/rdf-graph-store</code>  while specifying the previous <code>?graph=&lt;http://my.foaf.graph/&gt;</code> graph as target.
     </p>
     <mp-code-block mode='text/x-sh'>
-curl -v -u admin:admin -X POST -H 'Content-Type: application/xml' --data-binary '@dcat.rdf' http://127.0.0.1:10214/rdf-graph-store?graph=http%3A%2F%2Fmy.foaf.graph%2F
+curl -v -u admin:admin -X POST -H 'Content-Type: application/xml' --data-binary '@dcat.rdf' http://localhost:10214/rdf-graph-store?graph=http%3A%2F%2Fmy.foaf.graph%2F
     </mp-code-block>
 
     <p>
       If we now check again the numbers of triples within the graph:
     </p>
     <mp-code-block mode='text/x-sh'>
-      curl -u admin:admin --data-urlencode 'query=SELECT (COUNT(*) AS ?nrTriples) WHERE { GRAPH&lt;http://my.foaf.graph/&gt;{ ?s ?p ?o } }' -H 'Accept: text/csv' 'http://127.0.0.1:10214/sparql'
+      curl -u admin:admin --data-urlencode 'query=SELECT (COUNT(*) AS ?nrTriples) WHERE { GRAPH&lt;http://my.foaf.graph/&gt;{ ?s ?p ?o } }' -H 'Accept: text/csv' 'http://localhost:10214/sparql'
     </mp-code-block>
     <p>
       we will see that the graph <code>&lt;http://my.foaf.graph/&gt;</code> contains now <code>1097</code> instead of <code>631</code> statements.
@@ -120,7 +120,7 @@ curl -v -u admin:admin -X POST -H 'Content-Type: application/xml' --data-binary 
     </p>
     <b>Example: </b>
     <mp-code-block mode='text/x-sh'>
-curl -u admin:admin -H 'Accept: text/turtle' -X GET http://127.0.0.1:10214/rdf-graph-store?graph=http%3A%2F%2Fmy.foaf.graph%2F
+curl -u admin:admin -H 'Accept: text/turtle' -X GET http://localhost:10214/rdf-graph-store?graph=http%3A%2F%2Fmy.foaf.graph%2F
     </mp-code-block>
     which will serialize the graph <code>&lt;http://my.foaf.graph/&gt;</code> as turtle statements:<br>
     
@@ -149,7 +149,7 @@ curl -u admin:admin -H 'Accept: text/turtle' -X GET http://127.0.0.1:10214/rdf-g
 
       <b>Example: </b>
       <mp-code-block mode='text/x-sh'>
-curl -v -u admin:admin -I http://127.0.0.1:10214/rdf-graph-store?graph=http%3A%2F%2Fmy.foaf.graph%2F
+curl -v -u admin:admin -I http://localhost:10214/rdf-graph-store?graph=http%3A%2F%2Fmy.foaf.graph%2F
       </mp-code-block>
 
       <hr class="divider">
@@ -165,7 +165,7 @@ curl -v -u admin:admin -I http://127.0.0.1:10214/rdf-graph-store?graph=http%3A%2
 
       <b>Example: </b>
       <mp-code-block mode='text/x-sh'>
-curl -v -u admin:admin -X PUT -H 'Content-Type: application/xml' --data-binary '@dcat.rdf' http://127.0.0.1:10214/rdf-graph-store?graph=http%3A%2F%2Fmy.foaf.graph%2F
+curl -v -u admin:admin -X PUT -H 'Content-Type: application/xml' --data-binary '@dcat.rdf' http://localhost:10214/rdf-graph-store?graph=http%3A%2F%2Fmy.foaf.graph%2F
       </mp-code-block>
       <hr class="divider">
     <h3>DELETE - Delete a Named Graph</h3>
@@ -176,7 +176,7 @@ curl -v -u admin:admin -X PUT -H 'Content-Type: application/xml' --data-binary '
       </p>
       <b>Example: </b>
       <mp-code-block mode='text/x-sh'>
-curl -v -u admin:admin -X DELETE http://127.0.0.1:10214/rdf-graph-store?graph=http%3A%2F%2Fmy.foaf.graph%2F
+curl -v -u admin:admin -X DELETE http://localhost:10214/rdf-graph-store?graph=http%3A%2F%2Fmy.foaf.graph%2F
       </mp-code-block>
       <hr class="divider">
     <h3>PATCH - Updating RDF data within a Named Graph</h3>
@@ -203,7 +203,7 @@ curl -v -u admin:admin -X DELETE http://127.0.0.1:10214/rdf-graph-store?graph=ht
     </p>
     <b>Example: </b><br>
     <mp-code-block mode='text/x-sh'>
-      curl -v -u admin:admin -I "http://127.0.0.1:10214/rdf-graph-store?graph=http%3A%2F%2Fmy.foaf.graph%2F&repository=assets"
+      curl -v -u admin:admin -I "http://localhost:10214/rdf-graph-store?graph=http%3A%2F%2Fmy.foaf.graph%2F&repository=assets"
     </mp-code-block>
     <hr class="divider">
     <h3>Support for TRIG, TRIX and NQUADS</h3>

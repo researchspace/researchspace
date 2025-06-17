@@ -149,7 +149,7 @@ prefix rs: <http://www.researchspace.org/ontology/>
 prefix dcmit: <http://purl.org/dc/dcmitype/>
 prefix cnt: <http://www.w3.org/2011/content#>
 prefix dc: <http://purl.org/dc/elements/1.1/>
-prefix crmdig: <http://www.ics.forth.gr/isl/CRMdig/>
+prefix crmdig: <http://www.cidoc-crm.org/extensions/crmdig/>
 
 CONSTRUCT {
 ?annotation a oa:Annotation ;

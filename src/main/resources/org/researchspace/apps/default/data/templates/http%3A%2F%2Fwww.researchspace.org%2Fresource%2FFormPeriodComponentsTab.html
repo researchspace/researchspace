@@ -104,12 +104,13 @@
                                           {{#ifCond bindings.0.node.value "===" period}}
                                               <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
                                           {{else}}
-                                              <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                              urlqueryparam-view='resource-editor' 
-                                                              urlqueryparam-resource-iri='{{node.value}}'
-                                                              >
+                                            <mp-draggable iri="{{node.value}}">
+                                              <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                        urlqueryparam-view='resource-editor' 
+                                                                        urlqueryparam-resource-iri='{{node.value}}'>
                                                   <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                              </semantic-link>
+                                              </semantic-link-container>
+                                            </mp-draggable>
                                           {{/ifCond}}
                                       </div>
                                   </template>
@@ -192,21 +193,23 @@
                             </mp-resource-thumbnail>
                           </div>
                           <div style='display:flex; flex-direction:column;align-items: flex-start; gap: 2px;'>
-                            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                            [[!-- this link can't be draggable because is inside a timeline --]]
+                            <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
                                             urlqueryparam-view='resource-editor' 
                                             urlqueryparam-resource-iri='{{item.value}}'>
                               <mp-label iri='{{item.value}}' class="text-link-action text-truncate-line1"></mp-label>
                             </semantic-link>
+                        
                             {{#if timespan}}
                               {{#if start.value}}<div>Start date: {{start.value}}</div>{{/if}}
                               {{#if end.value}}<div>End date: {{end.value}}</div>{{/if}}
                               <div style="display: flex; gap: 3px;">
                                 <span>View date:</span>
-                                <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                urlqueryparam-view='resource-editor' 
-                                                urlqueryparam-resource-iri='{{timespan.value}}'>
+                                <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                        urlqueryparam-view='resource-editor' 
+                                                        urlqueryparam-resource-iri='{{timespan.value}}'>
                                     <span><mp-label iri='{{timespan.value}}' class="text-link text-truncate-line1"></mp-label></span>
-                                </semantic-link>
+                                </semantic-link-container>
                               </div> 
                             {{/if}}
                           </div>

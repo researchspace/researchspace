@@ -35,7 +35,7 @@ type Props = MenuProps & ActionProps & TitleProps;
 export class SelectionActionComponent extends Component<Props, {}> {
   render() {
     return (
-      <MenuItem eventKey={1} onSelect={this.onSelect} disabled={this.props.disabled} className='selection-action-choice'>
+      <MenuItem eventKey={1} onSelect={this.onSelect} disabled={this.props.disabled} draggable={false} className='selection-action-choice'>
         {this.props.icon && <Icon iconType='rounded' iconName={this.props.icon} className='icon-left' symbol={true} />}
         {this.props.title}
       </MenuItem>

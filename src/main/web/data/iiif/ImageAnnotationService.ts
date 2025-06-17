@@ -52,7 +52,7 @@ export type ExplicitRegion = {
 
 const IMAGE_REGION_INFO_QUERY = SparqlUtil.Sparql`
   prefix rs: <http://www.researchspace.org/ontology/>
-  prefix crmdig: <http://www.ics.forth.gr/isl/CRMdig/>
+  prefix crmdig: <http://www.cidoc-crm.org/extensions/crmdig/>
 
   select ?type ?imageID ?area ?bbox ?viewport ?svg ?imageIRI ?carrierImageIRI{
     OPTIONAL {

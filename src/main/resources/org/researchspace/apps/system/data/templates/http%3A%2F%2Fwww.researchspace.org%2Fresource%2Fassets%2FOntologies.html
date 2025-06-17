@@ -44,14 +44,20 @@
             <semantic-link-container uri="http://www.researchspace.org/resource/OntologyElementsSearch">
               <button class="btn btn-default btn-textAndIcon">
                 <rs-icon icon-type="rounded" icon-name="search" symbol="true"></rs-icon>
-                Search ontology elements
+                Ontology Elements descriptions
               </button>
             </semantic-link-container>
 
             <semantic-link-container uri="http://www.researchspace.org/resource/OntologyPropertiesSearch">
               <button class="btn btn-default btn-textAndIcon">
                 <rs-icon icon-type="rounded" icon-name="search" symbol="true"></rs-icon>
-                Search ontology properties
+                Ontology Properties by class
+              </button>
+            </semantic-link-container>
+            <semantic-link-container uri="http://www.researchspace.org/resource/OntologyPropertiesBetweenClassesSearch">
+              <button class="btn btn-default btn-textAndIcon">
+                <rs-icon icon-type="rounded" icon-name="search" symbol="true"></rs-icon>
+                Ontology Properties between classes
               </button>
             </semantic-link-container>
           </div>
@@ -107,8 +113,6 @@
                     proxy-event-type='Component.TemplateUpdate' 
                     proxy-targets='["ontology-search-results"]'>
           ></mp-event-proxy>
-        
-          
         </div>
    
         <mp-event-target-template-render id='ontology-search-results' template='{{> template}}'>
@@ -176,7 +180,7 @@
                       
                       <semantic-table id='field-results' 
                                       number-of-displayed-rows=10 
-                                      query='SELECT DISTINCT ?subject (SAMPLE(?g) as ?graph) (SAMPLE(?l) as ?name) (SAMPLE(?v) as ?version) (SAMPLE(?d) AS ?description) WHERE {
+                                      query='SELECT DISTINCT ?subject ?l (SAMPLE(?g) as ?graph) (SAMPLE(?l) as ?name) (SAMPLE(?v) as ?version) (SAMPLE(?d) AS ?description) WHERE {
                                               FILTER(isIRI(?subject)) .
                                               GRAPH ?g {
                                                 ?subject a owl:Ontology .
@@ -184,7 +188,8 @@
                                               OPTIONAL {?subject rdfs:label ?l}
                                               OPTIONAL { ?subject owl:versionInfo ?v } 
                                               OPTIONAL { ?subject rdfs:comment ?d }
-                                            } GROUP BY ?subject ORDER BY ASC(?subject) LIMIT 100' 
+                                            } GROUP BY ?subject ?l
+                                              ORDER BY ASC(LCASE(STR(?l))) ASC(?subject) LIMIT 100' 
                                       tuple-template='{{> ontology}}'
                                       options='{"showFilter": false}'>
 
@@ -211,11 +216,7 @@
                                   
                                   {{#if description}}
                                     <div style="margin-bottom: 10px;">
-                                      <mp-text-truncate lines=4 truncate='...'
-                                        expand='<div style="text-decoration:underline;cursor:pointer; padding-right:5px;">read more</div>'
-                                        collapse='<div style="text-decoration:underline;cursor:pointer; padding-right:5px;">less</div>'>
-                                        {{description.value}}
-                                      </mp-text-truncate>
+                                      {{description.value}}
                                     </div>
                                   {{/if}}
                                   <semantic-query style='font-style:italic'

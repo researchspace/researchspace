@@ -115,7 +115,6 @@ import { none } from 'ol/centerconstraint';
 import VectorSource from 'ol/source/Vector';
 import CircleStyle from 'ol/style/Circle';
 import { options } from 'superagent';
-import GeometryType from 'ol/geom/GeometryType';
 import { __values } from 'tslib';
 import { year } from 'platform/components/search/date/SimpleDateInput.scss';
 
@@ -267,6 +266,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   private mousePosition = null;
   private swipeValue: number;
   registrationIntervalId: number | null = null;
+  private markerPopup: InstanceType<typeof Popup>;
 
   private source: VectorSource;
   private vector: VectorLayer<any>;
@@ -289,6 +289,9 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     this.debouncedUpdateVisibleFeatures = _.debounce(() => {
       this.updateVisibleFeatures();
     }, 100);
+
+    this.markerPopup = new Popup(); // Initialize the popup instance
+
     this.state = {
       tupleTemplate: maybe.Nothing<HandlebarsTemplateDelegate>(),
       noResults: false,
@@ -703,8 +706,8 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   }
 
   private initializeMarkerPopup(map) {
-    const popup = new Popup();
-    map.addOverlay(popup);
+    // this.markerPopup is already initialized in the constructor
+    map.addOverlay(this.markerPopup);
 
     // Add the click handler to the map
     map.on('click', (evt) => {
@@ -716,8 +719,8 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       }
       
       // Hide existing popup and reset it's offset
-      popup.hide();
-      popup.setOffset([0, 0]);
+      this.markerPopup.hide();
+      this.markerPopup.setOffset([0, 0]);
 
       // Attempt to find a feature in one of the visible vector layers
       const feature = map.forEachFeatureAtPixel(evt.pixel, function (f, layer) {
@@ -797,8 +800,8 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
           });
 
           // Offset the popup so it points at the middle of the marker not the tip
-          popup.setOffset([0, -22]);
-          popup.show(coord, `<mp-template-item>${popupContent.join('')}</mp-template-item>`);
+          this.markerPopup.setOffset([0, -22]);
+          this.markerPopup.show(coord, `<mp-template-item>${popupContent.join('')}</mp-template-item>`);
         }
       } else {
         // No feature was clicked, reset selectedFeature to null
@@ -1139,6 +1142,24 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         }
       });
     });
+
+    // After applying filters, check if the selected feature (if any) is now hidden.
+    // If so, hide its popup.
+    if (this.markerPopup && this.state.selectedFeature) {
+      const selectedFeatureStyle = this.state.selectedFeature.getStyle() as Style;
+      // An empty style object (no fill, stroke, or image) signifies a hidden feature.
+      const isSelectedFeatureHidden = !selectedFeatureStyle ||
+                                    (!selectedFeatureStyle.getFill() &&
+                                     !selectedFeatureStyle.getStroke() &&
+                                     !selectedFeatureStyle.getImage());
+      
+      if (isSelectedFeatureHidden) {
+        this.markerPopup.hide();
+        // We don't necessarily need to set this.state.selectedFeature to null here,
+        // as the feature might become visible again with different filters.
+        // The main goal is to hide the popup of a non-visible feature.
+      }
+    }
   }
 
   private updateFeatureColorsByGroups(groupColorsAssociationsNew) {
@@ -1488,22 +1509,40 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   private getFeatureStyleWithFilters(feature: Feature): Style {
     // Check if year filtering is enabled and we have a year set
     if (this.state.yearFiltering && this.state.year) {
-      // Extract year from YYYY-MM-DD format
-      const currentYear = parseInt(this.state.year.split('-')[0]);
-      
-      // Only apply date filtering if the feature has temporal properties
-      if (feature.get('bob') && feature.get('eob') && feature.get('boe') && feature.get('eoe')) {
-        const bob = feature.get('bob').value;
-        const eob = feature.get('eob').value;
-        const boe = feature.get('boe').value;
-        const eoe = feature.get('eoe').value;
-        
-        // Check if the current year is within the feature's date range
-        if (!this.dateInclusion(bob, eob, boe, eoe, currentYear)) {
-          // If not, hide the feature
-          return this.createHiddenFeatureStyle();
+      // Extract selected year, assuming this.state.year could be 'YYYY' or 'YYYY-MM-DD'
+      const selectedYearString = this.state.year.split('-')[0];
+      const selectedYear = parseInt(selectedYearString);
+
+      // Only apply date filtering if the feature has 'bob' and 'eoe' properties
+      if (feature.get('bob') && feature.get('eoe')) {
+        const bobValue = feature.get('bob').value; // e.g., '1696-01-01'
+        const eoeValue = feature.get('eoe').value; // e.g., '1796-12-31'
+
+        // Ensure bobValue and eoeValue are strings and parseable
+        if (typeof bobValue === 'string' && typeof eoeValue === 'string') {
+          const featureBobYearString = bobValue.split('-')[0];
+          const featureEoeYearString = eoeValue.split('-')[0];
+
+          if (featureBobYearString && featureEoeYearString) {
+            const featureBobYear = parseInt(featureBobYearString);
+            const featureEoeYear = parseInt(featureEoeYearString);
+
+            // Apply the user's desired logic: show if selectedYear is between featureBobYear and featureEoeYear (inclusive)
+            if (!(featureBobYear <= selectedYear && selectedYear <= featureEoeYear)) {
+              // If not in range, hide the feature
+              return this.createHiddenFeatureStyle();
+            }
+          } else {
+            console.warn('Could not parse year from bob/eoe values:', feature.get('subject')?.value, bobValue, eoeValue);
+            return this.createHiddenFeatureStyle(); // Hide if years can't be parsed
+          }
+        } else {
+          console.warn('Feature has bob/eoe but values are not strings:', feature.get('subject')?.value, bobValue, eoeValue);
+          return this.createHiddenFeatureStyle(); // Hide if values are not strings
         }
       }
+      // If a feature does not have 'bob' and 'eoe' properties, it is not subject to this year filter.
+      // It will remain visible unless other filters hide it.
     }
     
     // We don't need special handling for selected features anymore
@@ -2791,76 +2830,84 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
             this.zoomToFeature(feature);
           }
         } else {
-          // Set low opacity style for non-highlighted features
-          const originalStyle = this.getFeatureStyleWithFilters(feature);
-          
-          // For polygon features
-          if (feature.getGeometry() instanceof Polygon || feature.getGeometry() instanceof MultiPolygon) {
-            // Get the original fill color
-            const originalFill = originalStyle.getFill();
-            let fillColor = originalFill ? originalFill.getColor() : 'rgba(200,50,50,0.5)';
-            
-            // If the color is in rgba format, set opacity to 0.1 (even lower)
-            if (typeof fillColor === 'string' && fillColor.startsWith('rgba')) {
-              fillColor = fillColor.replace(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*[\d.]+\)/, 'rgba($1, $2, $3, 0.1)');
-            }
-            
-            // Get the original stroke color and reduce its opacity too
-            const originalStroke = originalStyle.getStroke();
-            let strokeColor = originalStroke ? originalStroke.getColor() : fillColor;
-            
-            // If the stroke color is in rgba format, set opacity to 0.1
-            if (typeof strokeColor === 'string' && strokeColor.startsWith('rgba')) {
-              strokeColor = strokeColor.replace(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*[\d.]+\)/, 'rgba($1, $2, $3, 0.1)');
-            } else if (typeof strokeColor === 'string') {
-              // If it's a solid color, add transparency
-              strokeColor = `rgba(${parseInt(strokeColor.slice(1, 3), 16)}, ${parseInt(strokeColor.slice(3, 5), 16)}, ${parseInt(strokeColor.slice(5, 7), 16)}, 0.1)`;
-            }
-            
-            // Create a new style with low opacity
-            const lowOpacityStyle = new Style({
-              fill: new Fill({
-                color: fillColor,
-              }),
-              stroke: new Stroke({
-                color: strokeColor,
-                width: originalStroke ? originalStroke.getWidth() : 1,
-              }),
-              text: originalStyle.getText(),
-            });
-            
-            feature.setStyle(lowOpacityStyle);
-          } 
-          // For point features
-          else if (feature.getGeometry() instanceof Point || feature.getGeometry() instanceof MultiPoint) {
-            // Create a new style with low opacity
-            const lowOpacityStyle = new Style({
-              image: new CircleStyle({
-                radius: 6,
-                fill: new Fill({
-                  color: 'rgba(200, 50, 50, 0.1)', // Low opacity
-                }),
+          // For non-highlighted features, first get their style based on current filters (including year)
+          const baseStyleForNonHighlighted = this.getFeatureStyleWithFilters(feature);
+
+          // Check if the base style is the hidden style
+          // The hidden style is an empty Style object, so its properties would be undefined or default.
+          // A more robust check might be to compare with `this.createHiddenFeatureStyle()` if it's a unique instance,
+          // or check for a specific property/flag if you set one on hidden styles.
+          // For now, we assume an empty style (no fill, no stroke, no image) means hidden.
+          const isHiddenByFilter = !baseStyleForNonHighlighted.getFill() &&
+                                 !baseStyleForNonHighlighted.getStroke() &&
+                                 !baseStyleForNonHighlighted.getImage();
+
+          if (isHiddenByFilter) {
+            // If the feature is already meant to be hidden by filters, keep it hidden
+            feature.setStyle(this.createHiddenFeatureStyle());
+          } else {
+            // If the feature is visible according to filters, apply a low opacity version of its style
+            let lowOpacityStyle;
+            const geometryType = feature.getGeometry().getType();
+
+            if (geometryType === 'Polygon' || geometryType === 'MultiPolygon') {
+              const fill = baseStyleForNonHighlighted.getFill();
+              const stroke = baseStyleForNonHighlighted.getStroke();
+              let fillColor = fill ? fill.getColor() : 'rgba(200,50,50,0.5)';
+              let strokeColor = stroke ? stroke.getColor() : (fillColor || 'rgba(200,50,50,0.5)');
+
+              // Ensure colors are in rgba format and set low alpha
+              fillColor = this.ensureRgbaWithAlpha(fillColor, 0.1);
+              strokeColor = this.ensureRgbaWithAlpha(strokeColor, 0.1);
+              
+              lowOpacityStyle = new Style({
+                fill: new Fill({ color: fillColor }),
                 stroke: new Stroke({
-                  color: 'rgba(255, 255, 255, 0.1)',
-                  width: 1,
+                  color: strokeColor,
+                  width: stroke ? stroke.getWidth() : 1,
                 }),
-              }),
-              text: originalStyle.getText(),
-            });
-            
-            feature.setStyle(lowOpacityStyle);
-          }
-          // For other geometry types
-          else {
-            // Default low opacity style
-            const lowOpacityStyle = new Style({
-              stroke: new Stroke({
-                color: 'rgba(255, 255, 255, 0.1)',
-                width: 1,
-              }),
-              text: originalStyle.getText(),
-            });
-            
+                text: baseStyleForNonHighlighted.getText(), // Preserve text style
+              });
+            } else if (geometryType === 'Point' || geometryType === 'MultiPoint') {
+              const image = baseStyleForNonHighlighted.getImage();
+              if (image instanceof CircleStyle) {
+                const fill = image.getFill();
+                const stroke = image.getStroke();
+                let fillColor = fill ? fill.getColor() : 'rgba(200,50,50,0.5)';
+                
+                fillColor = this.ensureRgbaWithAlpha(fillColor, 0.1);
+
+                lowOpacityStyle = new Style({
+                  image: new CircleStyle({
+                    radius: image.getRadius(),
+                    fill: new Fill({ color: fillColor }),
+                    stroke: stroke ? new Stroke({ // Preserve original stroke color but make it more transparent if needed
+                      color: this.ensureRgbaWithAlpha(stroke.getColor(), 0.2),
+                      width: stroke.getWidth(),
+                    }) : undefined,
+                  }),
+                  text: baseStyleForNonHighlighted.getText(), // Preserve text style
+                });
+              } else { // Fallback for other image types or if no image
+                 lowOpacityStyle = new Style({
+                    image: image, // Keep original image if not CircleStyle
+                    text: baseStyleForNonHighlighted.getText(),
+                 });
+                 // Attempt to make generic style transparent if possible
+                 // This part is tricky without knowing the exact style structure
+              }
+            } else { // For LineString, MultiLineString, etc.
+              const stroke = baseStyleForNonHighlighted.getStroke();
+              let strokeColor = stroke ? stroke.getColor() : 'rgba(200,50,50,0.5)';
+              strokeColor = this.ensureRgbaWithAlpha(strokeColor, 0.1);
+              lowOpacityStyle = new Style({
+                stroke: new Stroke({
+                  color: strokeColor,
+                  width: stroke ? stroke.getWidth() : 1,
+                }),
+                text: baseStyleForNonHighlighted.getText(),
+              });
+            }
             feature.setStyle(lowOpacityStyle);
           }
         }
@@ -2877,6 +2924,72 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     
     // Force a re-render of the map
     this.map.render();
+  }
+
+  /**
+   * Ensures a color string is in rgba format with a specific alpha.
+   * Handles hex, rgb, rgba strings, and OpenLayers color arrays.
+   * @param color The input color (string or array [r,g,b,a?]).
+   * @param alpha The desired alpha value (0-1).
+   * @returns An rgba string e.g., "rgba(255,0,0,0.5)".
+   */
+  private ensureRgbaWithAlpha(color: any, alpha: number): string {
+    let r = 0, g = 0, b = 0;
+
+    if (typeof color === 'string') {
+      const trimmedColor = color.trim();
+      if (trimmedColor.startsWith('#')) { // Hex color
+        const hex = trimmedColor.substring(1);
+        if (hex.length === 3) {
+          r = parseInt(hex[0] + hex[0], 16);
+          g = parseInt(hex[1] + hex[1], 16);
+          b = parseInt(hex[2] + hex[2], 16);
+        } else if (hex.length === 6) {
+          r = parseInt(hex.substring(0, 2), 16);
+          g = parseInt(hex.substring(2, 4), 16);
+          b = parseInt(hex.substring(4, 6), 16);
+        } else {
+          console.warn(`Invalid hex color format: ${trimmedColor}. Defaulting to black.`);
+        }
+      } else if (trimmedColor.startsWith('rgb(')) { // rgb(r,g,b)
+        const parts = trimmedColor.substring(4, trimmedColor.length - 1).split(',');
+        if (parts.length >= 3) {
+          r = parseInt(parts[0].trim());
+          g = parseInt(parts[1].trim());
+          b = parseInt(parts[2].trim());
+        } else {
+          console.warn(`Invalid rgb color format: ${trimmedColor}. Defaulting to black.`);
+        }
+      } else if (trimmedColor.startsWith('rgba(')) { // rgba(r,g,b,a)
+        const parts = trimmedColor.substring(5, trimmedColor.length - 1).split(',');
+        if (parts.length >= 3) { // We only need r,g,b, alpha will be overridden
+          r = parseInt(parts[0].trim());
+          g = parseInt(parts[1].trim());
+          b = parseInt(parts[2].trim());
+        } else {
+          console.warn(`Invalid rgba color format: ${trimmedColor}. Defaulting to black.`);
+        }
+      } else {
+        console.warn(`Unrecognized color string format: ${trimmedColor}. Defaulting to black.`);
+      }
+    } else if (Array.isArray(color) && color.length >= 3) { // OpenLayers color array [r,g,b,a?]
+      r = color[0];
+      g = color[1];
+      b = color[2];
+      // Existing alpha in array (color[3]) is ignored, new alpha is used
+    } else {
+      // Handle CanvasPattern, CanvasGradient, or other unexpected types by returning a default.
+      // It's not feasible to generically apply alpha to these.
+      console.warn(`Cannot apply alpha to color type: ${typeof color}. Value: ${JSON.stringify(color)}. Defaulting to semi-transparent gray.`);
+      return `rgba(128,128,128,${alpha})`;
+    }
+
+    // Ensure r,g,b are valid numbers, default to 0 if NaN
+    r = Number.isNaN(r) ? 0 : r;
+    g = Number.isNaN(g) ? 0 : g;
+    b = Number.isNaN(b) ? 0 : b;
+    
+    return `rgba(${r},${g},${b},${alpha})`;
   }
 
   private setOverlaySwipe = (event: Event<any>) => {

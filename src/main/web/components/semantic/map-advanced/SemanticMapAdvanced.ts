@@ -58,7 +58,8 @@ import { extend, buffer, getWidth, containsExtent } from 'ol/extent';
 import { createEmpty } from 'ol/extent';
 import { Coordinate } from 'ol/coordinate';
 import OSM from 'ol/source/OSM';
-import { getRenderPixel } from 'ol/render';
+import { getRenderPixel, getVectorContext } from 'ol/render';
+import { easeOut } from 'ol/easing';
 import AnimatedCluster from 'ol-ext/layer/AnimatedCluster';
 import XYZ from 'ol/source/XYZ';
 
@@ -81,6 +82,7 @@ import {
   SemanticMapRequestControlsRegistration,
   SemanticMapClearSelectedFeature,
 } from './SemanticMapEvents';
+import { SemanticMapControlsZoomToFeature } from './SemanticMapControlsEvents';
 import { Dictionary } from 'platform/api/sparql/SparqlClient';
 import QueryConstantParameter from '../search/web-components/QueryConstant';
 import { Cancellation } from 'platform/api/async';
@@ -278,6 +280,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   private styleCache: { [key: string]: Style } = {};
   private visibleFeatures: Set<string> = new Set();
   private debouncedUpdateVisibleFeatures: any;
+  private featureCache: any = {}; // Cache for features by ID
 
   constructor(props: SemanticMapAdvancedProps, context: ComponentContext) {
     super(props, context);
@@ -470,6 +473,96 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         })
       )
       .onValue(this.handleHighlightFeatures);
+      
+    // Listen for zoom to feature event
+    this.cancelation
+      .map(
+        listen({
+          eventType: SemanticMapControlsZoomToFeature,
+          target: this.props.id,
+        })
+      )
+      .onValue(this.handleZoomToFeature);
+  }
+
+  /**
+   * Handler for the zoom to feature event
+   * Zooms to the feature specified in the event data
+   */
+  private handleZoomToFeature = (event: Event<any>) => {
+    console.log('Received zoom to feature event:', event);
+    
+    if (!event.data || !this.map) {
+      console.warn('No feature provided or map not initialized');
+      return;
+    }
+    
+    // The event data should be a feature or a feature ID
+    if (event.data instanceof Feature) {
+      // If it's a feature object, zoom to it directly
+      this.zoomToFeature(event.data);
+    } else if (typeof event.data === 'string') {
+      const featureId = event.data;
+      
+      // Check if we have this feature in our cache
+      if (this.featureCache[featureId]) {
+        this.zoomToFeature(this.featureCache[featureId]);
+        return;
+      }
+      
+      // If not in cache, we need to find it
+      // First, check only visible features for better performance
+      const foundFeature = this.findFeatureById(featureId);
+      
+      if (foundFeature) {
+        // Cache the feature for future use
+        this.featureCache[featureId] = foundFeature;
+        this.zoomToFeature(foundFeature);
+      } else {
+        console.warn(`Feature with ID ${featureId} not found in visible features`);
+      }
+    } else {
+      console.warn('Invalid feature data provided, type:', typeof event.data);
+    }
+  };
+  
+  /**
+   * Find a feature by its ID (subject IRI)
+   * This optimized version first checks visible features, then falls back to all features if needed
+   */
+  private findFeatureById(featureId: string): Feature | null {
+    if (!this.map) return null;
+    
+    const vectorLayers = this.getVectorLayersFromMap();
+    let foundFeature = null;
+    
+    // Search through all vector layers
+    for (let i = 0; i < vectorLayers.length; i++) {
+      const vectorLayer = vectorLayers[i];
+      const source = vectorLayer.getSource();
+      let features;
+      
+      if (source instanceof Cluster) {
+        features = source.getSource().getFeatures();
+      } else {
+        features = source.getFeatures();
+      }
+      
+      // Find the feature with the matching ID
+      for (let j = 0; j < features.length; j++) {
+        const feature = features[j];
+        const subject = feature.get('subject');
+        
+        if (subject && subject.value === featureId) {
+          foundFeature = feature;
+          break;
+        }
+      }
+      
+      if (foundFeature) break;
+    }
+    
+    return foundFeature;
   }
 
   /** REACT COMPONENT FUNCTIONS **/
@@ -1148,7 +1241,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   }
 
   /**
-   * Zooms to a feature on the map
+   * Zooms to a feature on the map with a pulsing animation effect
    * @param feature The feature to zoom to
    */
   private zoomToFeature(feature: Feature) {
@@ -1158,40 +1251,147 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     const geometry = feature.getGeometry();
     if (!geometry) return;
 
-    // Create an extent from the geometry
-    const extent = geometry.getExtent();
+    // Start the flash animation
+    this.flashFeature(feature);
 
-    // Add some padding around the extent
-    const padding = [50, 50, 50, 50]; // [top, right, bottom, left] padding in pixels
-
-    // Get the current zoom level
-    const currentZoom = this.map.getView().getZoom();
-
-    // Calculate what the zoom level would be for the feature extent
-    const view = this.map.getView();
-    const resolution = view.getResolutionForExtent(extent, this.map.getSize());
-    const featureZoom = view.getZoomForResolution(resolution);
-
-    // Only zoom if the current zoom is less than what would be calculated
-    // (i.e., don't "dezoom" if we're already zoomed in more)
-    if (currentZoom && featureZoom && currentZoom < featureZoom) {
+    // Check if this is a point feature
+    const isPoint = geometry instanceof Point || geometry instanceof MultiPoint;
+    
+    if (isPoint) {
+      // For point features, use a fixed higher zoom level
+      const coordinates = (geometry as Point).getCoordinates();
+      
+      // Animate to the point with a higher zoom level
+      this.map.getView().animate({
+        center: coordinates,
+        zoom: 18, // Higher zoom for points
+        duration: 500, // Animation duration in milliseconds
+      });
+    } else {
+      // For other geometries, fit the extent with smaller padding
+      const extent = geometry.getExtent();
+      
+      // Use smaller padding for a closer zoom
+      const padding = [20, 20, 20, 20]; // [top, right, bottom, left] padding in pixels
+      
       // Animate to the feature with a smooth transition and zoom
       this.map.getView().fit(extent, {
         padding: padding,
         duration: 500, // Animation duration in milliseconds
-        maxZoom: 18, // Limit maximum zoom level
-      });
-    } else {
-      // Just center on the feature without changing zoom
-      const center = [
-        (extent[0] + extent[2]) / 2, // X center
-        (extent[1] + extent[3]) / 2, // Y center
-      ];
-      this.map.getView().animate({
-        center: center,
-        duration: 500,
+        maxZoom: 19, // Higher maximum zoom level
       });
     }
+  }
+  
+  /**
+   * Zooms to a specified extent with animation
+   * @param extent The extent to zoom to
+   */
+  private zoomToExtent(extent: Extent) {
+    if (!this.map || !extent) return;
+    
+    // Check if the extent is valid (not empty)
+    if (extent[0] === Infinity || extent[1] === Infinity || 
+        extent[2] === -Infinity || extent[3] === -Infinity) {
+      console.warn('Invalid extent for zooming:', extent);
+      return;
+    }
+    
+    // Use padding for a better view
+    const padding = [50, 50, 50, 50]; // [top, right, bottom, left] padding in pixels
+    
+    // Animate to the extent with a smooth transition
+    this.map.getView().fit(extent, {
+      padding: padding,
+      duration: 800, // Animation duration in milliseconds
+      maxZoom: 19, // Higher maximum zoom level
+    });
+  }
+
+  /**
+   * Creates a pulsing animation effect around a feature
+   * @param feature The feature to animate
+   */
+  private flashFeature(feature: Feature) {
+    // Find a suitable layer to use for the animation
+    const vectorLayers = this.getVectorLayersFromMap();
+    if (!vectorLayers.length) return;
+    
+    // Use the first vector layer for the animation
+    const animationLayer = vectorLayers[0];
+    
+    // Clone the geometry to avoid modifying the original
+    const flashGeom = feature.getGeometry().clone();
+    
+    // Animation duration in milliseconds
+    const duration = 1500;
+    
+    // Animation start time
+    const start = Date.now();
+    
+    // Register a postrender listener for the animation
+    const listenerKey = animationLayer.on('postrender', (event) => {
+      const frameState = event.frameState;
+      const elapsed = frameState.time - start;
+      
+      // Stop the animation when duration is reached
+      if (elapsed >= duration) {
+        unByKey(listenerKey);
+        return;
+      }
+      
+      // Get the vector context for drawing
+      const vectorContext = getVectorContext(event);
+      
+      // Calculate the animation progress ratio
+      const elapsedRatio = elapsed / duration;
+      
+      // Use easeOut for a smooth animation curve
+      const easeOutPct = easeOut(elapsedRatio);
+      
+      // Determine the appropriate style based on geometry type
+      let style: Style;
+      
+      if (flashGeom instanceof Point || flashGeom instanceof MultiPoint) {
+        // For point geometries, animate the radius and stroke
+        const radius = easeOutPct * 15 + 5;
+        const opacity = easeOut(1 - elapsedRatio);
+        
+        style = new Style({
+          image: new CircleStyle({
+            radius: radius,
+            stroke: new Stroke({
+              color: `rgba(255, 255, 255, ${opacity})`,
+              width: 2 + opacity * 2,
+            }),
+          }),
+        });
+      } else {
+        // For line and polygon geometries, animate the stroke
+        const opacity = easeOut(1 - elapsedRatio);
+        const width = 1 + easeOutPct * 4;
+        
+        style = new Style({
+          stroke: new Stroke({
+            color: `rgba(255, 255, 255, ${opacity})`,
+          }),
+          // For polygons, add a subtle fill
+          fill: flashGeom instanceof Polygon || flashGeom instanceof MultiPolygon ? 
+            new Fill({
+              color: `rgba(255, 255, 255, ${opacity * 0.2})`,
+            }) : undefined,
+        });
+      }
+      
+      // Apply the style to the vector context
+      vectorContext.setStyle(style);
+      
+      // Draw the geometry
+      vectorContext.drawGeometry(flashGeom);
+      
+      // Request a render on the next animation frame
+      this.map.render();
+    });
   }
 
   /**
@@ -1461,23 +1661,10 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
           // Initial update of visible features
           this.updateVisibleFeatures();
 
-          // Listen for base map loaded event
-          const baseMapLayer = this.state.mapLayers.find((layer) => layer instanceof TileLayer);
-          if (baseMapLayer) {
-            const source = baseMapLayer.getSource();
-            if (source) {
-              // For OSM and XYZ sources
-              source.on('tileloadend', () => {
-                // Set a small timeout to ensure all tiles are loaded
-                setTimeout(() => {
-                  this.setState({ baseMapLoaded: true });
-                }, 500);
-              });
-            }
-          } else {
-            // If no base map layer, consider it loaded
-            this.setState({ baseMapLoaded: true });
-          }
+          // Set baseMapLoaded to true immediately after map initialization
+          // The map is functional once it's created, regardless of tile loading status
+          console.log('[DEBUG] Map initialized, setting baseMapLoaded: true');
+          this.setState({ baseMapLoaded: true });
 
           this.startRegistrationProcess();
 
@@ -2481,6 +2668,12 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     // Track if we found any features to highlight
     let foundFeatures = false;
     
+    // Create an empty extent to combine all highlighted features
+    const combinedExtent = createEmpty();
+    
+    // Collection to store all highlighted features for zooming
+    const highlightedFeatures: Feature[] = [];
+    
     // Process each vector layer
     vectorLayers.forEach(vectorLayer => {
       const source = vectorLayer.getSource();
@@ -2497,6 +2690,15 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         // Check if this feature has a subject property that matches one of our IRIs
         if (feature.get('subject') && subjectIris.includes(feature.get('subject').value)) {
           console.log('Highlighting feature:', feature.get('subject').value);
+          
+          // Add this feature to our collection for zooming
+          highlightedFeatures.push(feature);
+          
+          // Extend the combined extent with this feature's geometry
+          const geometry = feature.getGeometry();
+          if (geometry) {
+            extend(combinedExtent, geometry.getExtent());
+          }
           
           // Create a custom style that preserves the original color but with full opacity
           const originalStyle = this.getFeatureStyleWithFilters(feature);
@@ -2588,12 +2790,12 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
             const originalStroke = originalStyle.getStroke();
             let strokeColor = originalStroke ? originalStroke.getColor() : fillColor;
             
-            // If the stroke color is in rgba format, set opacity to 0.5
+            // If the stroke color is in rgba format, set opacity to 0.1
             if (typeof strokeColor === 'string' && strokeColor.startsWith('rgba')) {
-              strokeColor = strokeColor.replace(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*[\d.]+\)/, 'rgba($1, $2, $3, 0.3)');
+              strokeColor = strokeColor.replace(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*[\d.]+\)/, 'rgba($1, $2, $3, 0.1)');
             } else if (typeof strokeColor === 'string') {
               // If it's a solid color, add transparency
-              strokeColor = `rgba(${parseInt(strokeColor.slice(1, 3), 16)}, ${parseInt(strokeColor.slice(3, 5), 16)}, ${parseInt(strokeColor.slice(5, 7), 16)}, 0.3)`;
+              strokeColor = `rgba(${parseInt(strokeColor.slice(1, 3), 16)}, ${parseInt(strokeColor.slice(3, 5), 16)}, ${parseInt(strokeColor.slice(5, 7), 16)}, 0.1)`;
             }
             
             // Create a new style with low opacity
@@ -2648,6 +2850,10 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     
     if (!foundFeatures) {
       console.warn('No features found on the map matching the highlight IRIs');
+    } else {
+      // If we found features to highlight, zoom to their combined extent
+      console.log('Zooming to combined extent of highlighted features');
+      this.zoomToExtent(combinedExtent);
     }
     
     // Force a re-render of the map

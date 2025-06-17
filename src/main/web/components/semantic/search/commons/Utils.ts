@@ -27,11 +27,14 @@ import { InitialQueryContext } from '../web-components/SemanticSearchApi';
  */
 export function setSearchDomain(domain: string | undefined, context: InitialQueryContext) {
   return context.searchProfileStore
-    .chain((profileStore) =>
-      maybe
+    .chain((profileStore) => {
+      return maybe
         .fromNullable(domain)
         .map(Rdf.fullIri)
-        .chain((iri) => maybe.fromNullable(profileStore.categories.get(iri)))
+        .chain((iri) => {
+          return maybe.fromNullable(profileStore.categories.get(iri))
+    })
+    }
     )
     .map(context.setDomain);
 }

@@ -37,6 +37,7 @@ import * as SearchDefaults from '../config/Defaults';
 import * as Model from '../data/search/Model';
 import { RawState, Deserializer, unpackState, serializeSearch } from '../data/search/Serialization';
 import * as FacetModel from '../data/facet/Model';
+import { SearchDomainSelected } from '../../../search/query-builder/SearchEvents';
 import { Dataset, Alignment } from '../data/datasets/Model';
 import { SemanticSearchContext, ResultOperation, ExtendedSearchValue } from './SemanticSearchApi';
 import { SearchProfileStore, createSearchProfileStore } from '../data/profiles/SearchProfileStore';
@@ -283,7 +284,13 @@ export class SemanticSearch extends Component<Props, State> {
   };
 
   private setDomain = (domain: Model.Category) => {
-    this.setState({ domain: Maybe.Just(domain) });
+    this.setState({ domain: Maybe.Just(domain) }, () => {
+      trigger({ 
+        eventType: SearchDomainSelected, 
+        source: this.props.id, 
+        data: { domain: this.state.domain.map(c => c.iri.value).getOrElse(null) }  
+      });
+    });
   };
 
   private setAvailableDomains = (domains: Model.AvailableDomains) => {

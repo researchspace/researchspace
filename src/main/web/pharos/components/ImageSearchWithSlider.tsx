@@ -19,7 +19,7 @@ import * as React from 'react';
 import * as Maybe from 'data.maybe';
 import * as Kefir from 'kefir';
 import * as _ from 'lodash';
-import { FormControl, FormGroup, Button } from 'react-bootstrap';
+import { FormControl, FormGroup, Button, Dropdown, MenuItem } from 'react-bootstrap';
 import * as SparqlJs from 'sparqljs';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
@@ -27,8 +27,10 @@ import 'rc-slider/assets/index.css';
 import { Rdf } from 'platform/api/rdf';
 import { SparqlUtil, SparqlClient } from 'platform/api/sparql';
 import { Component } from 'platform/api/components';
+import { Cancellation } from 'platform/api/async/Cancellation';
 import { Action } from 'platform/components/utils';
 import { Dropzone } from 'platform/components/ui/dropzone';
+import { defaultKeywordSearchConfig, textConfirmsToConfig } from "platform/components/shared/KeywordSearchConfig";
 
 import { setSearchDomain } from 'platform/components/semantic/search/commons/Utils';
 import { SemanticSimpleSearchBaseConfig } from 'platform/components/semantic/simple-search/Config';
@@ -36,11 +38,64 @@ import { SemanticSearchContext, InitialQueryContext } from 'platform/components/
 import Icon from 'platform/components/ui/icon/Icon';
 
 import * as styles from './ImageSearchWithSlider.scss';
+import { SEMANTIC_SEARCH_VARIABLES } from '../../components/semantic/search/config/SearchConfig';
 
 // Maximum dimensions for image resizing while preserving aspect ratio
 const MAX_IMAGE_DIMENSION = 700;
 
+export interface DomainConfig {
+  /**
+   * Display name for the domain
+   */
+  name: string;
+  
+  /**
+   * URI for the domain (full IRI enclosed in <>)
+   */
+  uri: string;
+  
+  /**
+   * Whether AI features should be enabled for this domain
+   * @default false
+   */
+  withAi?: boolean;
+  
+  /**
+   * Whether image search features should be enabled for this domain
+   * @default false
+   */
+  withImages?: boolean;
+}
+
 export interface BaseConfig<T> extends SemanticSimpleSearchBaseConfig {
+  /**
+   * Query template for text search
+   */
+  query?: string;
+  
+  /**
+   * Query template for image search
+   */
+  imageQuery?: string;
+  
+  /**
+   * Numbered query templates for text search based on domain index
+   * e.g., query0, query1, etc.
+   */
+  [key: `query${number}`]: string;
+  
+  /**
+   * Numbered image query templates based on domain index
+   * e.g., imageQuery0, imageQuery1, etc.
+   */
+  [key: `imageQuery${number}`]: string;
+  
+  /**
+   * Numbered default query templates based on domain index
+   * e.g., defaultQuery0, defaultQuery1, etc.
+   */
+  [key: `defaultQuery${number}`]: string;
+
   /**
    * Custom css styles for the input element
    */
@@ -52,10 +107,20 @@ export interface BaseConfig<T> extends SemanticSimpleSearchBaseConfig {
   className?: string;
 
   /**
-   * Specify search domain category IRI (full IRI enclosed in <>).
+   * Specify initial search domain category IRI (full IRI enclosed in <>).
    * Required, if component is used together with facets.
    */
+  initialDomain?: string;
+  
+  /**
+   * @deprecated Use initialDomain instead
+   */
   domain?: string;
+  
+  /**
+   * Array of available domains for the dropdown
+   */
+  domains?: DomainConfig[];
 
   /**
    * Number of milliseconds to wait after the last keystroke before sending the query.
@@ -102,17 +167,38 @@ export interface BaseConfig<T> extends SemanticSimpleSearchBaseConfig {
   defaultSliderValue?: number;
 
   /**
-   * Initial URL of an image to be used for search when the component is first rendered.
-   * If provided, the component will automatically initialize with this image and trigger the search.
+   * A flag determining whether any special Lucene syntax will be escaped.
+   * When `false` lucene syntax in the user input is not escaped.
+   *
+   * @default true
    */
-  withInitalFileUrl?: string;
+  escapeLuceneSyntax?: boolean;
 
   /**
-   * Name of a window variable that contains base64 encoded image data.
-   * If provided, the component will retrieve the image data from window[withInitialFileData]
-   * and use it to initialize the search.
+   * Minimum number of input characters that triggers the search.
+   *
+   * @default 3
    */
-  withInitialFileData?: string;
+  minSearchTermLength?: number;
+  
+  /**
+   * A flag determining whether the user input is tokenized by whitespace into words postfixed by `*`.
+   * E.g. the search for `Hello World` becomes `Hello* World*`.
+   *
+   * @default true
+   */
+  tokenizeLuceneQuery?: boolean;
+
+  /**
+   * If tokenizeLuceneQuery is true this parameter can be used to
+   * filter out tokens that a shorter then specified lenght.
+   * 
+   * So if minTokenLength=3, and input string is "an apple",
+   * then only "apple*" will be propagated to the query.
+   * 
+   * @default 3
+   */
+  minTokenLength?: number;
 }
 
 export interface ImageSearchWithSliderConfig extends BaseConfig<string> {
@@ -128,11 +214,18 @@ export interface ImageSearchWithSliderConfig extends BaseConfig<string> {
    * @default '__dataType__'
    */
   dataTypeVariable?: string;
+
+  /**
+   * Variable name for the search term in the query
+   * @default '__token__'
+   */
+  searchTermVariable?: string;
 }
 
 interface ImageSearchWithSliderProps extends BaseConfig<React.CSSProperties> {
   dataVariable?: string;
   dataTypeVariable?: string;
+  searchTermVariable?: string;
 }
 
 class ImageSearchWithSlider extends Component<ImageSearchWithSliderProps, {}> {
@@ -155,94 +248,260 @@ interface State {
   imageData?: string;  // Base64 image data from dropped file
   imageUrl?: string;   // URL of the image if entered as URL
   showImage: boolean;  // Whether to show image preview or input
+  isImageMode: boolean; // Whether we're in image mode (true) or keyword mode (false)
+  selectedDomainIndex: number; // Index of the currently selected domain
+  withAi: boolean; // Whether AI features are enabled for the current domain
+  withImages: boolean; // Whether image features are enabled for the current domain
 }
 
 class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
+  private componentCancellation: Cancellation;
+  private activeStreamCancellation: Cancellation;
+
   static defaultProps: Partial<ImageSearchWithSliderProps> = {
-    placeholder: 'Enter image URL or drop an image file',
+    placeholder: 'Enter image URL, keyword, or drop an image file',
     className: "input-image-search",
     dataVariable: '__data__',
     dataTypeVariable: '__dataType__',
+    searchTermVariable: '__token__',
     aiAsistVariable: '__aiAssist__',
     debounce: 300,
     min: 0,
     max: 100,
     step: 1,
+    ...defaultKeywordSearchConfig
   };
 
   private keys: Action<string>;
 
   constructor(props: InnerProps) {
     super(props);
+    const value = props.initialInput || '';
+    const isImageMode = value === 'dndFile' || value.startsWith('http');
+    
+    // Find the initial domain index
+    const initialDomainUri = props.initialDomain || props.domain;
+    let selectedDomainIndex = 0;
+    let withAi = false;
+    let withImages = false;
+    
+    if (props.domains && props.domains.length > 0) {
+      // If domains are provided, find the matching domain
+      const domainIndex = props.domains.findIndex(d => d.uri === initialDomainUri);
+      if (domainIndex !== -1) {
+        selectedDomainIndex = domainIndex;
+        withAi = !!props.domains[domainIndex].withAi;
+        withImages = !!props.domains[domainIndex].withImages;
+      } else {
+        // Use the first domain if no match is found
+        withAi = !!props.domains[0].withAi;
+        withImages = !!props.domains[0].withImages;
+      }
+    }
+    
     this.state = {
-      value: '',
+      value: value === 'dndFile' ? '' : value,
       sliderValue: props.defaultSliderValue !== undefined ? props.defaultSliderValue : (props.min || 0),
       showImage: false,
+      isImageMode: isImageMode,
+      selectedDomainIndex,
+      withAi,
+      withImages
     };
 
-    this.keys = Action<string>(); 
+    this.keys = Action<string>(value === 'dndFile' ? '' : value);
+
+    this.componentCancellation = new Cancellation();
+    this.activeStreamCancellation = this.componentCancellation.derive();
   }
 
   componentDidMount() {
-    setSearchDomain(this.props.domain, this.props.context);
+    setSearchDomain(this.getCurrentDomainUri(), this.props.context);
     this.initialize(this.props);
     this.initializeFromProps();
   }
 
-  private initializeFromProps = () => {
-    const { withInitalFileUrl, withInitialFileData } = this.props;
-    
-    if (withInitalFileUrl) {
-      // For URLs, we don't resize the image
-      this.setState({ 
-        imageUrl: withInitalFileUrl, 
-        imageData: undefined, 
-        value: withInitalFileUrl,
-        showImage: true 
-      }, () => {
-        this.keys(this.state.value);
-      });
-    } else if (withInitialFileData && window[withInitialFileData]) {
-      // Handle file instance initialization with resizing
-      const fileInstance = window[withInitialFileData];
-      this.getFileAsBase64(fileInstance).then((base64Data: string) => {
-        this.resizeImageToMaxDimensions(base64Data, MAX_IMAGE_DIMENSION, MAX_IMAGE_DIMENSION).then((resizedData: string) => {
-          this.setState({ 
-            imageData: resizedData, 
-            imageUrl: undefined,
-            value: 'Initial image data',
-            showImage: true 
-          }, () => {
-            this.keys(this.state.value);
-          });
-        }).catch(error => {
-          console.error('Failed to resize initial image data:', error);
-          // Fallback to original image if resizing fails
-          this.setState({ 
-            imageData: base64Data, 
-            imageUrl: undefined,
-            value: 'Initial image data',
-            showImage: true 
-          }, () => {
-            this.keys(this.state.value);
-          });
-        });
-      });
-    }
-  };
-
   componentWillReceiveProps(props: InnerProps) {
     const { context } = props;
     if (context.searchProfileStore.isJust && context.domain.isNothing) {
-      setSearchDomain(props.domain, context);
+      setSearchDomain(this.getCurrentDomainUri(), context);
     }
   }
 
+  private initializeFromProps = () => {
+    const { initialInput } = this.props;
+    const { withImages } = this.state;
+    
+    // Only process image inputs if images are enabled for this domain
+    if (withImages) {
+      if (initialInput === 'dndFile' && window['dndFile']) {
+        // Handle file instance initialization with resizing
+        const fileInstance = window['dndFile'];
+        this.getFileAsBase64(fileInstance).then((base64Data: string) => {
+          this.resizeImageToMaxDimensions(base64Data, MAX_IMAGE_DIMENSION, MAX_IMAGE_DIMENSION).then((resizedData: string) => {
+            this.setState({ 
+              imageData: resizedData, 
+              imageUrl: undefined,
+              value: 'Initial image data',
+              showImage: true,
+              isImageMode: true
+            }, () => {
+              this.keys(this.state.value);
+            });
+          }).catch(error => {
+            console.error('Failed to resize initial image data:', error);
+            // Fallback to original image if resizing fails
+            this.setState({ 
+              imageData: base64Data, 
+              imageUrl: undefined,
+              value: 'Initial image data',
+              showImage: true,
+              isImageMode: true
+            }, () => {
+              this.keys(this.state.value);
+            });
+          });
+        });
+      } else if (initialInput && initialInput.startsWith('http')) {
+        // For URLs, we don't resize the image
+        this.setState({ 
+          imageUrl: initialInput, 
+          imageData: undefined, 
+          value: initialInput,
+          showImage: true,
+          isImageMode: true
+        }, () => {
+          this.keys(this.state.value);
+        });
+      } else if (initialInput) {
+        // For text input, just set the value
+        this.setState({
+          value: initialInput,
+          isImageMode: false
+        }, () => {
+          this.keys(initialInput);
+        });
+      }
+    } else if (initialInput) {
+      // If images are not enabled, treat all inputs as text
+      this.setState({
+        value: initialInput,
+        isImageMode: false
+      }, () => {
+        this.keys(initialInput);
+      });
+    }
+  };
+  
+  /**
+   * Get the URI of the currently selected domain
+   */
+  private getCurrentDomainUri = (): string => {
+    const { domains, initialDomain, domain } = this.props;
+    
+    if (domains && domains.length > 0) {
+      // If domains are provided, use the selected domain
+      return domains[this.state.selectedDomainIndex].uri;
+    }
+    
+    // Fallback to initialDomain or domain
+    return initialDomain || domain || '';
+  }
+  
+  /**
+   * Handle domain selection change
+   */
+  private handleDomainChange = (index: number) => {
+    if (index === this.state.selectedDomainIndex) {
+      return; // No change
+    }
+    
+    const { domains } = this.props;
+    if (!domains || index >= domains.length) {
+      return; // Invalid index
+    }
+    
+    // Get the new domain settings
+    const newDomain = domains[index];
+    const newWithAi = !!newDomain.withAi;
+    const newWithImages = !!newDomain.withImages;
+
+    // Prepare state updates, considering current image state
+    const stateChanges: Partial<State> = {
+      selectedDomainIndex: index,
+      withAi: newWithAi,
+      withImages: newWithImages
+    };
+
+    if (this.state.isImageMode) { // An image is currently active
+      if (!newWithImages) {
+        // New domain does NOT support images, clear image
+        stateChanges.imageUrl = undefined;
+        stateChanges.imageData = undefined;
+        stateChanges.showImage = false;
+        stateChanges.isImageMode = false;
+        stateChanges.value = ''; // Clear the value as well
+      }
+      // If newWithImages is true, image state (imageUrl, imageData, showImage, isImageMode, value) 
+      // is preserved because these fields are not added to stateChanges,
+      // and setState will merge, keeping their existing values from this.state.
+    }
+    // If not in image mode (text search), this.state.value (the text) is preserved by default
+    // as stateChanges.value is not set in this branch.
+
+    // Update state with new domain settings and potentially modified image/value state
+    this.setState(stateChanges, () => {
+      this.props.context.setBaseQuery(Maybe.Nothing());
+
+      // Set the new domain in the search context
+      setSearchDomain(newDomain.uri, this.props.context);
+      
+      // Re-initialize with the new domain (it will use the updated this.state)
+      this.initialize(this.props);
+      
+      // After state update and re-initialization, trigger search based on the new state.
+      // this.state now reflects the changes made by setState.
+      if (this.state.value === '') { 
+        // If value was explicitly cleared (e.g. image removed and new domain doesn't support images, or user cleared text)
+        this.keys('');
+      } else if (!_.isEmpty(this.state.value) && 
+                 (this.state.isImageMode || textConfirmsToConfig(this.state.value, this.props))) {
+        // If value is non-empty and valid (either current image mode or conforming text)
+        this.keys(this.state.value);
+      }
+      // If value is non-empty but not valid for search (e.g. text that doesn't meet min length), 
+      // this.keys() is not called, preserving the existing behavior.
+    });
+  }
+
   render() {
-    const { placeholder, style, className, min, max, step } = this.props;
+    const { placeholder, style, className, min, max, step, domains } = this.props;
+    const { withAi, withImages, selectedDomainIndex } = this.state;
     
     return (
       <div className={styles.imageSearchWithSlider}>
+        {/* Domain selection dropdown */}
+        {domains && domains.length > 0 && (
+          <div className={styles.domainSelector}>
+            <Dropdown id="domain-selector">
+              <Dropdown.Toggle>
+                {domains[selectedDomainIndex].name}
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                {domains.map((domain, index) => (
+                  <MenuItem 
+                    key={domain.uri} 
+                    eventKey={index}
+                    active={index === selectedDomainIndex}
+                    onSelect={() => this.handleDomainChange(index)}
+                  >
+                    {domain.name}
+                  </MenuItem>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
+          </div>
+        )}
         <div className={styles.imageSearchContainer}>
           {this.state.showImage ? (
             // Image preview with clear button
@@ -251,7 +510,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
                 src={this.state.imageUrl || this.state.imageData} 
                 alt="Selected image" 
                 className={styles.imagePreview}
-              />
+              />              
               <Button 
                 className={styles.clearImageBtn} 
                 onClick={this.handleClearImage}
@@ -269,26 +528,26 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
                     placeholder={placeholder}
                     onChange={this.onKeyPress}
               />
-              <Dropzone
-                accept={"image/*"}
-                onDropAccepted={this.handleDrop}
-                className={styles.imageDropzone}
-              >
-                <div className={styles.dropzoneContent}>
-                  <div className={styles.dropzoneText}>drag and drop</div>
-                </div>
-              </Dropzone>
-              <Button 
-                className={styles.searchButton}
-                onClick={this.handleSearch}
-              >
-                Search
-              </Button>
+              <Icon className={styles.searchButton} iconType='rounded ' iconName='search' symbol onClick={this.handleSearch} />
+              {/* Only show dropzone if images are enabled for this domain */}
+              {withImages && (
+                <Dropzone
+                  accept={"image/*"}
+                  onDropAccepted={this.handleDrop}
+                  className={styles.imageDropzone}
+                  disabled={!withImages}
+                >
+                  <div className={styles.dropzoneContent}>
+                    <Icon iconType='rounded ' iconName='add_photo_alternate' symbol />
+                  </div>
+                </Dropzone>
+              )}
             </div>
           )}
         </div>
-        <div className={styles.sliderField}>
-          <div className={styles.sliderLabel}>AI Assist:</div>
+        {/* Only show slider if AI is enabled for this domain */}
+        <div className={`${styles.sliderField} ${withAi ? '' : 'disabled'}`}>
+          <div className={styles.sliderLabel}>AI assist</div>
           <div className={styles.sliderFieldSliderContainer}>
             <Slider
               min={min}
@@ -298,6 +557,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
               onChange={this.onSliderChange}
               included={false}
               marks={this.props.marks}
+              disabled={!withAi}
             />
           </div>
         </div>
@@ -306,38 +566,125 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
   }
 
   private initialize = (props: InnerProps) => {
-    const query = SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(props.query);
+    // Cancel streams from the previous initialize call and get a new token for this call
+    this.activeStreamCancellation = this.componentCancellation.deriveAndCancel(this.activeStreamCancellation);
 
-    const queryProp = this.keys.$property
+    const { selectedDomainIndex } = this.state;
+    
+    // Get domain-specific queries if available
+    const textQueryKey = `query${selectedDomainIndex}` as `query${number}`;
+    const imageQueryKey = `imageQuery${selectedDomainIndex}` as `imageQuery${number}`;
+    const defaultQueryKey = `defaultQuery${selectedDomainIndex}` as `defaultQuery${number}`;
+    
+    // Use domain-specific queries if available, otherwise fall back to generic queries
+    const textQueryStr = props[textQueryKey] || props.query;
+    const imageQueryStr = props[imageQueryKey] || props.imageQuery;
+    const defaultQueryStr = props[defaultQueryKey] || props.defaultQuery;
+    
+    if (!textQueryStr) {
+      console.error('No text query available for the selected domain');
+      return;
+    }
+    
+    const textQuery = SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(textQueryStr);
+    const imageQuery = imageQueryStr 
+      ? SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(imageQueryStr)
+      : null;
+
+    const defaultQuery = defaultQueryStr
+      ? Maybe.Just(SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(defaultQueryStr))
+      : Maybe.Nothing<SparqlJs.SelectQuery>();
+
+    // Handle image search (starts with http or has image data)
+    const imageQueryProp = this.keys.$property
       .debounce(this.props.debounce)
-      .filter((value) => value !== '')
-      .map(this.buildQuery(query));
+      .filter((value) => value.startsWith('http') || value === 'Dropped image' || value === 'Initial image data')
+      .map(this.buildImageQuery(imageQuery));
 
+    // Handle keyword search (doesn't start with http)
+    const keywordQueryProp = this.keys.$property
+      .filter((value) => !value.startsWith('http') && value !== 'Dropped image' && value !== 'Initial image data')
+      .filter((value) => textConfirmsToConfig(value, this.props))
+      .debounce(this.props.debounce)
+      .map(this.buildKeywordQuery(textQuery));
 
-    queryProp.onValue((q) => this.props.context.setBaseQuery(Maybe.Just(q)));
+    // Handle empty input - use default query if available
+    const defaultQueryProp = this.keys.$property
+      .filter((value) => _.isEmpty(value))
+      .map(() => defaultQuery.isJust ? defaultQuery.get() : null)
+      .filter((q) => q !== null);
+
+    // Merge all query streams
+    const initializers = [imageQueryProp, keywordQueryProp];
+    if (defaultQuery.isJust) {
+      initializers.push(defaultQueryProp);
+    }
+
+    // Map the merged stream through the active cancellation token
+    this.activeStreamCancellation.map(Kefir.merge(initializers))
+      .onValue((q) => {
+        this.props.context.setBaseQuery(Maybe.Just(q));
+      });
   };
+
+  componentWillUnmount() {
+    this.componentCancellation.cancelAll();
+  }
 
   private onKeyPress = (event: React.FormEvent<FormControl>) => {
     const newValue = (event.target as any).value;
-    this.setState({ value: newValue });
+    const isImageMode = newValue.startsWith('http');
+    
+    this.setState({ 
+      value: newValue,
+      isImageMode: isImageMode
+    }, () => {
+      // For keyword search, trigger search on each keystroke
+      if (!isImageMode && textConfirmsToConfig(newValue, this.props)) {
+        this.keys(newValue);
+      } else if (_.isEmpty(newValue)) {
+        // If input is empty, clear the query
+        this.keys('');
+      }
+    });
   }
 
   private handleSearch = () => {
-    const { value } = this.state;
+    const { value, withImages } = this.state;
     
     if (value.startsWith('http')) {
-      // For URLs, we don't resize the image
-      this.setState({ 
-        imageUrl: value, 
-        imageData: undefined, 
-        showImage: true 
-      }, () => {
-        this.keys(this.state.value);
-      });
+      // Only allow image URLs if images are enabled for this domain
+      if (withImages) {
+        // For URLs, we don't resize the image
+        this.setState({ 
+          imageUrl: value, 
+          imageData: undefined, 
+          showImage: true,
+          isImageMode: true
+        }, () => {
+          this.keys(this.state.value);
+        });
+      } else {
+        // If images are not enabled, treat as text search
+        this.setState({
+          isImageMode: false
+        }, () => {
+          this.keys(value);
+        });
+      }
+    } else if (!_.isEmpty(value)) {
+      // For keyword search, just trigger the search
+      this.keys(value);
     }
   };
 
   private handleDrop = (files: File[]) => {
+    // Only process dropped files if images are enabled for this domain
+    if (!this.state.withImages) {
+      console.warn('Image upload is not enabled for this domain');
+      return;
+    }
+    
     if (files && files.length > 0) {
       const file = files[0];
       this.getFileAsBase64(file).then((base64Data: string) => {
@@ -347,7 +694,8 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
             imageData: resizedData, 
             imageUrl: undefined,
             value: 'Dropped image',
-            showImage: true 
+            showImage: true,
+            isImageMode: true
           }, () => {
             this.keys(this.state.value);
           });
@@ -358,7 +706,8 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
             imageData: base64Data, 
             imageUrl: undefined,
             value: 'Dropped image',
-            showImage: true 
+            showImage: true,
+            isImageMode: true
           }, () => {
             this.keys(this.state.value);
           });
@@ -372,7 +721,8 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
       imageUrl: undefined, 
       imageData: undefined, 
       value: '', 
-      showImage: false 
+      showImage: false,
+      isImageMode: false
     }, () => {
       // Notify that the query should be cleared
       this.keys('');
@@ -381,22 +731,37 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
 
   private onSliderChange = (value: number | number[]) => {
     this.setState({ sliderValue: value as number }, () => {
-      if (this.state.showImage) {
+      // Trigger search if we have a valid input
+      if ((this.state.isImageMode && this.state.showImage) || 
+          (!this.state.isImageMode && !_.isEmpty(this.state.value) && 
+           textConfirmsToConfig(this.state.value, this.props))) {
         this.keys(this.state.value);
       }
     });
   }
 
-  private buildQuery = (baseQuery: SparqlJs.SelectQuery) => (token: string): SparqlJs.SelectQuery => {
+  private buildImageQuery = (baseQuery: SparqlJs.SelectQuery) => (token: string): SparqlJs.SelectQuery => {
+    // If image query is null or images are not enabled for this domain, return empty query
+    if (!baseQuery || !this.state.withImages) {
+      console.error('Image search is not enabled for this domain or no image query is available');
+      return baseQuery;
+    }
+    
     const {
       dataVariable,
       dataTypeVariable,
       aiAsistVariable
     } = this.props;
     
-    const bindings: Record<string, any> = {
-      [aiAsistVariable!]: Rdf.literal(this.state.sliderValue.toString(), Rdf.iri('http://www.w3.org/2001/XMLSchema#decimal')),
-    };
+    const bindings: Record<string, any> = {};
+
+    // Bind domain
+    bindings[SEMANTIC_SEARCH_VARIABLES.DOMAIN_VAR] = Rdf.fullIri(this.getCurrentDomainUri());
+
+    // Only add AI assist value if AI is enabled for this domain
+    if (this.state.withAi) {
+      bindings[aiAsistVariable!] = Rdf.literal(this.state.sliderValue.toString(), Rdf.iri('http://www.w3.org/2001/XMLSchema#decimal'));
+    }
 
     // If we have an image URL
     if (this.state.imageUrl) {
@@ -407,6 +772,33 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
     else if (this.state.imageData) {
       bindings[dataVariable!] = Rdf.literal(this.state.imageData);
       bindings[dataTypeVariable!] = Rdf.literal('image');
+    }
+    
+    return SparqlClient.setBindings(baseQuery, bindings);
+  };
+
+  private buildKeywordQuery = (baseQuery: SparqlJs.SelectQuery) => (token: string): SparqlJs.SelectQuery => {
+    const {
+      searchTermVariable, 
+      aiAsistVariable, 
+      escapeLuceneSyntax,
+      tokenizeLuceneQuery, 
+      minTokenLength
+    } = this.props;
+    
+    const value = SparqlUtil.makeLuceneQuery(
+      token, escapeLuceneSyntax, tokenizeLuceneQuery, minTokenLength
+    );
+    
+    // Create bindings with the search term
+    const bindings: Record<string, any> = {
+      [searchTermVariable!]: value,
+      [SEMANTIC_SEARCH_VARIABLES.DOMAIN_VAR]: Rdf.fullIri(this.getCurrentDomainUri())
+    };
+    
+    // Only add AI assist value if AI is enabled for this domain
+    if (this.state.withAi) {
+      bindings[aiAsistVariable!] = Rdf.literal(this.state.sliderValue.toString(), Rdf.iri('http://www.w3.org/2001/XMLSchema#decimal'));
     }
     
     return SparqlClient.setBindings(baseQuery, bindings);
@@ -442,7 +834,9 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+        }
         
         // Get resized image as data URL
         resolve(canvas.toDataURL('image/jpeg'));

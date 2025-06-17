@@ -1,8 +1,8 @@
 declare namespace ImageSearchWithSliderScssNamespace {
   export interface IImageSearchWithSliderScss {
     clearImageBtn: string;
+    domainSelector: string;
     dropzoneContent: string;
-    dropzoneText: string;
     imageDropzone: string;
     imagePreview: string;
     imagePreviewContainer: string;

@@ -120,7 +120,6 @@ class InfiniteScroll extends Component<InfiniteScrollProps, InfiniteScrollState>
     const { visibleValues, hasMore } = this.state;
     const totalHeight = parseFloat(itemHeight) * this.props.values.length;
 
-    console.log(visibleValues)
     return (
       <div ref={this.containerRef} style={{ height: `${totalHeight}px`, position: 'relative' }}>
         <div ref={this.contentRef} style={{ position: 'absolute', top: 0, left: 0, right: 0 }}>

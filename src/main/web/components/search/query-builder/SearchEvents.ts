@@ -20,6 +20,11 @@ import { EventMaker } from 'platform/api/events';
 
 export interface SearchEventData {
   /**
+   * Triggered when search domain is selected/changed.
+   */
+  'Search.DomainSelected': object;
+
+  /**
    * Event which should be triggered when domain or range or predicate is selected.
    */
   'Search.CategoryOrRelationSelected': string;
@@ -62,6 +67,7 @@ export interface SearchEventData {
 }
 const event: EventMaker<SearchEventData> = EventMaker;
 
+export const SearchDomainSelected = event('Search.DomainSelected');
 export const CategoryOrRelationSelected = event('Search.CategoryOrRelationSelected');
 export const SearchTreeInputSelected = event('Search.TreeInputSelected');
 export const SearchAndConjunctSelected = event('Search.AndConjunctSelected');

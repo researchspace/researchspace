@@ -94,6 +94,7 @@ export class OpenSeadragonIIIFViewer extends Component<Props, State> {
     if (this.viewerElement) {
       this.viewer = OpenSeadragon({
         element: this.viewerElement,
+        prefixUrl: '/assets/no_auth/openseadragon/',
         autoResize: true,
         showNavigationControl: this.props.showNavigationControl,
         homeFillsViewer: true,
@@ -103,19 +104,6 @@ export class OpenSeadragonIIIFViewer extends Component<Props, State> {
 
       this.viewer.addTiledImage({
         tileSource: tileSource,
-        success: (event) => {
-          const tiledImage = event.item;
-            
-          // Create a rectangle with the same aspect ratio as the image
-          const contentSize = tiledImage.getContentSize();
-          const aspectRatio = contentSize.x / contentSize.y;
-          
-          // Use the image's natural bounds
-          const imageBounds = new OpenSeadragon.Rect(0, 0, 1, 1/aspectRatio);
-          
-          // Fit those bounds in the viewport
-          this.viewer.viewport.fitBounds(imageBounds, true);
-        }
       });
     }
   }

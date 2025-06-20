@@ -123,6 +123,12 @@ export interface BaseConfig<T> extends SemanticSimpleSearchBaseConfig {
   domains?: DomainConfig[];
 
   /**
+   * If true, domain selection will be disabled and locked to the initial domain
+   * @default false
+   */
+  lockDomain?: boolean;
+
+  /**
    * Number of milliseconds to wait after the last keystroke before sending the query.
    *
    * @default 300
@@ -416,9 +422,9 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
       return; // No change
     }
     
-    const { domains } = this.props;
-    if (!domains || index >= domains.length) {
-      return; // Invalid index
+    const { domains, lockDomain } = this.props;
+    if (!domains || index >= domains.length || lockDomain) {
+      return; // Invalid index or domain is locked
     }
     
     // Get the new domain settings
@@ -475,7 +481,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
   }
 
   render() {
-    const { placeholder, style, className, min, max, step, domains } = this.props;
+    const { placeholder, style, className, min, max, step, domains, lockDomain } = this.props;
     const { withAi, withImages, selectedDomainIndex } = this.state;
     
     return (
@@ -483,7 +489,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
         {/* Domain selection dropdown */}
         {domains && domains.length > 0 && (
           <div className={styles.domainSelector}>
-            <Dropdown id="domain-selector">
+            <Dropdown id="domain-selector" disabled={lockDomain}>
               <Dropdown.Toggle>
                 {domains[selectedDomainIndex].name}
               </Dropdown.Toggle>
@@ -494,6 +500,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
                     eventKey={index}
                     active={index === selectedDomainIndex}
                     onSelect={() => this.handleDomainChange(index)}
+                    disabled={lockDomain}
                   >
                     {domain.name}
                   </MenuItem>

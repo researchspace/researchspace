@@ -423,7 +423,13 @@ public class ResourceInfoService implements PlatformCache {
 
                 // Resolve predicate if it's a prefixed URI
                 if (!predicate.startsWith("<")) {
-                    String[] prefixParts = predicate.split(":");
+                    // Handle property path modifiers like "+"
+                    String predicateForResolution = predicate;
+                    if (predicate.endsWith("+")) {
+                        predicateForResolution = predicate.substring(0, predicate.length() - 1);
+                    }
+                    
+                    String[] prefixParts = predicateForResolution.split(":");
                     String fullURI = this.uniquePrefixes.get(prefixParts[0]) + prefixParts[1];
                     predicate = fullURI;
                 } else {
@@ -431,7 +437,7 @@ public class ResourceInfoService implements PlatformCache {
                 }
 
                 return String.format(
-                        "BIND(IRI(CONCAT(\"http://artresearch.net/resource/e13/\", SHA256(CONCAT(STR(%s), \"%s\", STR(?value))))) AS ?provUri)\n",
+                        "BIND(IRI(CONCAT(\"https://artresearch.net/resource/e13/\", SHA256(CONCAT(STR(%s), \"%s\", STR(?value))))) AS ?provUri)\n",
                         otherVar, predicate);
             }
         }

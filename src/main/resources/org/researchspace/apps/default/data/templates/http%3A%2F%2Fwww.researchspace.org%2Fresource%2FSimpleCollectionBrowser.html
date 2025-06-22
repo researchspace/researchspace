@@ -53,9 +53,9 @@
       {{else if resourceConfigurationError}}
         <div class="page__grid-container">
           <div class="page__content-container resource-editView-form-container">
-            <div class='resource-editView-formHeader'>
-              <div class="resource-editView-formHeader-title-container">
-                <h2 class="resource-editView-formHeader-title">
+            <div class='resource-record-header'>
+              <div class="resource-record-header-title-container">
+                <h2 class="resource-record-header-title">
                   <div class="link-draggable">
                     <mp-draggable iri='{{iri}}'>
                       <div class="text-truncate">
@@ -326,7 +326,7 @@
                                                       {{/if}}
                                                       
                                                       "schemePattern": "{{#if resourceMembershipProperty}} ?item <{{resourceMembershipProperty}}> ?__scheme__.{{/if}} 
-                                                                        {{#if resourceOntologyClass }} ?item a/rdfs:subClassOf* <{{resourceOntologyClass }}> .{{/if}} 
+                                                                        {{#if resourceOntologyClass }} ?item a/rdfs:subClassOf* {{resourceOntologyClass }} .{{/if}} 
                                                                         {{#if resourceP2Type}} ?item crm:P2_has_type <{{resourceP2Type}}> .{{/if}} 
                                                                         {{#if resourceRestrictionPattern}}{{resourceRestrictionPattern}}{{/if}}"
                                                                         }'>
@@ -450,12 +450,12 @@
             <div class="page__content-container resource-editView-form-container">
               <mp-event-target-template-render id='{{viewId}}-term-forms' template='{{> template}}'>
                 <template id='template'>
-                  <div class='resource-editView-formHeader'>
-                    <div class="{{#if (eq mode 'deleted')}}{{else}}resource-editView-formHeader-title-container{{/if}}" style="{{#if (eq mode 'deleted')}}width: 100%;{{/if}}">
+                  <div class='resource-record-header'>
+                    <div class="{{#if (eq mode 'deleted')}}{{else}}resource-record-header-title-container{{/if}}" style="{{#if (eq mode 'deleted')}}width: 100%;{{/if}}">
                       {{#switch mode}}
                         {{#case "new" break=true}}
                           {{#if broader}}
-                            <h2 class="resource-editView-formHeader-title">
+                            <h2 class="resource-record-header-title">
                               New 
                               {{#if collectionLabel}}
                                 <span style="text-transform: lowercase;">{{collectionLabel}}</span>
@@ -483,7 +483,7 @@
                               {{/if}}
                             </h2>
                           {{else}}
-                            <h2 class="resource-editView-formHeader-title">New
+                            <h2 class="resource-record-header-title">New
                               {{#if collection}}
                                 {{#if collectionLabel}}
                                   <span style="text-transform: lowercase;">{{collectionLabel}}</span>
@@ -502,7 +502,7 @@
                         {{/case}}
 
                         {{#case "edit" break=true}}
-                          <h2 class="resource-editView-formHeader-title">
+                          <h2 class="resource-record-header-title">
                             <div class="link-draggable">
                             [[!--  <rs-icon icon-type="rounded" icon-name="drag_indicator" symbol="true"></rs-icon> --]]
                             
@@ -554,7 +554,7 @@
                         {{/case}}
 
                         {{#case "view" break=true}}
-                          <h2 class="resource-editView-formHeader-title">
+                          <h2 class="resource-record-header-title">
                             <div>
                               <div class="link-draggable">
                             [[!--    <rs-icon icon-type="rounded" icon-name="drag_indicator" symbol="true"></rs-icon> --]]
@@ -897,5 +897,3 @@
     </div>
   </template>
 </mp-event-target-template-render> 
-
-

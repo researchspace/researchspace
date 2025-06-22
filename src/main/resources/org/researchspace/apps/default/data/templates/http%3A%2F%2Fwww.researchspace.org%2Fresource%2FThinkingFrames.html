@@ -111,6 +111,16 @@
     },
 
     {
+    	"id": "test",
+      "label": "Entity record",
+      "description": "Drag and drop an entity here to display the entity record",
+      "dropAreaDescription": "Drag and drop any entity here to display the entity record",
+      "iconName": "insert_drive_file",
+      "template": "{{> resourceTemplate2}}",
+      "type": "view"
+    },
+
+    {
     	"id": "resource-editor",
       "label": "Resource editor",
       "description": "Create and author an entity through custom forms",
@@ -462,11 +472,20 @@
         </mp-event-target-template-render>
     </template> --]]
 
-    <template id='resourceTemplate'>
-      <div style='flex: 1 1 0px; overflow: auto;'>
-        <mp-page-loader urlqueryparam-frame=true iri='{{iri}}' context='{{iri}}'>
-        </mp-page-loader>
-    	</div>
+    <template id='resourceTemplate'>  
+      <mp-event-target-template-render id='{{iri}}-resource-view' template='{{> template}}'>
+        <template id='template'>
+          <mp-page-loader urlqueryparam-frame=true iri='{{iri}}' context='{{iri}}' viewId='{{dashboardId}}'></mp-page-loader>
+        </template>
+      </mp-event-target-template-render>
+    </template>
+
+    <template id='resourceTemplate2'>  
+      <mp-event-target-template-render id='{{iri}}-resource-view' template='{{> template}}'>
+        <template id='template'>
+          [[> rsp:ResourceTemplate iri=iri]]
+        </template>
+      </mp-event-target-template-render>
     </template>
 
     <template id='ontologyPageView'>
@@ -653,7 +672,7 @@
     <template id='importFromExternalSource'>
       <div class="page__grid-container">
         <div class="page__content-container">
-          <inline-template  template-iri='[[resolvePrefix "rsp:importFromExternalSource"]]' 
+          <inline-template  template-iri='[[resolvePrefix "rsp:ImportFromExternalSource"]]' 
                             options='{
                                     "osmImport": "true", 
                                     "viewId": "{{dashboardId}}",

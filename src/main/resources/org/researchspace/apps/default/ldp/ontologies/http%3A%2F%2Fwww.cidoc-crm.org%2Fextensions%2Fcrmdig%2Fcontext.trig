@@ -1,0 +1,670 @@
+@prefix rs: <http://www.researchspace.org/ontology/> .
+@prefix User: <http://www.researchspace.org/resource/user/> .
+@prefix Help: <http://help.researchspace.org/resource/> .
+@prefix Platform: <http://www.researchspace.org/resource/system/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix crmdig: <http://www.cidoc-crm.org/extensions/crmdig/> .
+@prefix rsp: <http://www.researchspace.org/resource/> .
+@prefix rshelp: <http://researchspace.org/help/> .
+@prefix crmsci: <http://www.cidoc-crm.org/extensions/crmsci/> .
+@prefix crmgeo: <http://www.cidoc-crm.org/extensions/crmgeo/> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix crminfluence: <http://www.cidoc-crm.org/extensions/influence/> .
+@prefix crm: <http://www.cidoc-crm.org/cidoc-crm/> .
+@prefix crminf: <http://www.cidoc-crm.org/extensions/crminf/> .
+@prefix Admin: <http://www.researchspace.org/resource/admin/> .
+@prefix bds: <http://www.bigdata.com/rdf/search#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix crmba: <http://www.cidoc-crm.org/extensions/crmba/> .
+@prefix ontodia: <http://ontodia.org/schema/v1#> .
+@prefix crmarchaeo: <http://www.cidoc-crm.org/extensions/crmarchaeo/> .
+@prefix forms: <http://www.researchspace.org/resource/system/forms/> .
+@prefix lrmoo: <http://iflastandards.info/ns/lrm/lrmoo/> .
+@prefix crmtex: <http://www.cidoc-crm.org/extensions/crmtex/> .
+
+crmdig:context {
+
+  <http://www.cidoc-crm.org/extensions/crmdig/> a owl:Ontology ;
+    owl:versionInfo "4.0"@en;
+    rdfs:comment "CRM Digital is an ontology to encode metadata about the steps and methods of production ('provenance') of digitization products and synthetic digital representations such as 2D, 3D or even animated Models created by various technologies."@en;
+    rdfs:label "CRMdig v4.0"@en .
+
+  crmdig:D1_Digital_Object
+    a owl:Class ;
+    skos:prefLabel "D1 Digital Object"@en ;
+    skos:notation "D1" ;
+    rdfs:label "Digital Object"@en ;
+    rdfs:subClassOf crm:E73_Information_Object ;
+    rdfs:comment """This class comprises identifiable immaterial items that can be represented as sets of bit sequences, such as data sets, e-texts, images, audio or video items, software, etc., 
+    and are documented as single units.
+  Any aggregation of instances of Digital Object into a whole treated as single unit is also regarded as an instance of Digital Object.
+  This means that for instance, the content of a DVD, an XML file on it, and an element of this file, are regarded as distinct instances of Digital Object, 
+  mutually related by the P106 is composed of (forms part of) property.
+  A Digital Object does not depend on a specific physical carrier, and it can exist on one or more carriers simultaneously."""@en .
+
+  crmdig:D2_Digitization_Process
+    a owl:Class ;
+    skos:prefLabel "D2 Digitization Process"@en ;
+    skos:notation "D2" ;
+    rdfs:label "Digitization Process"@en ;
+    rdfs:subClassOf crmdig:D11_Digital_Measurement_Event ;
+    rdfs:comment """This class comprises events that result in the creation of instances of Data Object that represent the appearance and/or 
+    form of an instance of Physical Thing such as paper documents, statues, buildings, paintings, etc.
+  A particular case is the analogue-to-digital conversion of audiovisual material.
+  This class represents the transition from a material thing to an immaterial representation of it.
+  The characteristic subsequent processing steps on digital objects are regarded as instances of Formal Derivation."""@en .
+
+  crmdig:D3_Formal_Derivation
+    a owl:Class ;
+    skos:prefLabel "D3 Formal Derivation"@en ;
+    skos:notation "D3" ;
+    rdfs:label "Formal Derivation"@en ;
+    rdfs:subClassOf crmdig:D10_Software_Execution ;
+    rdfs:comment """This class comprises events that result in the creation of a Digital Object from another one following a deterministic algorithm, 
+    such that the resulting instance of digital object shares representative properties with the original object.
+  In other words, this class describes the transition from an immaterial object referred to by property 'used as derivation source'
+  (was derivation source for) to another immaterial object referred to by property 'created derivative' (was derivative created by) preserving the 
+  representation of some things but in a different form. Characteristic examples are colour corrections, contrast changes and resizing of images."""@en .
+
+  crmdig:D7_Digital_Machine_Event
+    a owl:Class ;
+    skos:prefLabel "D7 Digital Machine Event"@en ;
+    skos:notation "D7" ;
+    rdfs:label "Digital Machine Event"@en ;
+    rdfs:subClassOf crm:E11_Modification, crm:E65_Creation ;
+    rdfs:comment """This class comprises events that happen on physical digital devices following a human activity that intentionally caused its immediate
+     or delayed initiation and results in the creation of a new instance of Digital Object on behalf of the human actor.
+     The input of a Digital Machine Event may be parameter settings and/or data to be processed. Some Digital Machine Events may form part of a
+   wider Creation event. In this case, all machine output of the partial events is regarded as creation of the overall activity."""@en .
+
+  crmdig:D8_Digital_Device
+    a owl:Class ;
+    skos:prefLabel "D8 Digital Device"@en ;
+    skos:notation "D8" ;
+    rdfs:label "Digital Device"@en ;
+    rdfs:subClassOf crm:E22_Human-Made_Object ;
+    rdfs:comment """This class comprises identifiable material items such as computers, scanners, cameras, etc. that have the capability to process or produce instances of Digital Object."""@en .
+
+  crmdig:D9_Data_Object
+    a owl:Class ;
+    skos:prefLabel "D9 Data Object"@en ;
+    skos:notation "D9" ;
+    rdfs:label "Data Object"@en ;
+    rdfs:subClassOf crm:E54_Dimension, crmdig:D1_Digital_Object ;
+    rdfs:comment """This class comprises instances of Digital Object that are the direct result of a digital measurement or a formal derivative of it, 
+    containing quantitative properties of some physical things or other constellations of matter."""@en .
+
+  crmdig:D10_Software_Execution
+    a owl:Class ;
+    skos:prefLabel "D10 Software Execution"@en ;
+    skos:notation "D10" ;
+    rdfs:label "Software Execution"@en ;
+    rdfs:subClassOf crmdig:D7_Digital_Machine_Event ;
+    rdfs:comment """This class comprises events by which a digital device runs a software program or a series of computing operations on a digital object as 
+    a single task, which is completely determined by its digital input, the software and the generic properties of the device."""@en .
+
+  crmdig:D11_Digital_Measurement_Event
+    a owl:Class ;
+    skos:prefLabel "D11 Digital Measurement Event"@en ;
+    skos:notation "D11" ;
+    rdfs:label "Digital Measurement Event"@en ;
+    rdfs:subClassOf crm:E16_Measurement, crmdig:D7_Digital_Machine_Event ;
+    rdfs:comment """This class comprises actions measuring physical properties using a digital device, that are determined by a systematic procedure and creates an 
+    instance of Data Object, which is stored on an instance of Digital Information Carrier.
+  In contrast to instances of Software Execution, environmental factors have an intended influence on the outcome of an instance of Digital Measurement Event.
+  Measurement devices may include running distinct software, such as the RAW to JPEG conversion in digital cameras.
+  In this case, the event is regarded as instance of both classes, Software Execution and Digital Measurement Event."""@en .
+
+  crmdig:D12_Data_Transfer_Event
+    a owl:Class ;
+    skos:prefLabel "D12 Data Transfer Event"@en ;
+    skos:notation "D12" ;
+    rdfs:label "Data Transfer Event"@en ;
+    rdfs:subClassOf crmdig:D7_Digital_Machine_Event ;
+    rdfs:comment """This class comprises events that transfer a digital object from one digital carrier to another. Normally, the digital object remains the same. 
+  If in general or by observation the transfer implies or has implied some data corruption, the change of the digital objects may 
+  be documented distinguishing input and output rather than instantiating the property L14 transferred (was transferred by)."""@en .
+
+  crmdig:D13_Digital_Information_Carrier
+    a owl:Class ;
+    skos:prefLabel "D13 Digital Information Carrier"@en ;
+    skos:notation "D13" ;
+    rdfs:label "Digital Information Carrier"@en ;
+    rdfs:subClassOf crm:E1_CRM_Entity ;
+    rdfs:comment """This class comprises all instances of Information Carrier that are explicitly designed to be used as persistent digital physical carriers 
+  of instances of Digital Object. A Digital Information Carrier may or may not contain information, e.g., an empty diskette."""@en .
+
+  crmdig:D14_Software
+    a owl:Class ;
+    skos:prefLabel "D14 Software"@en ;
+    skos:notation "D14" ;
+    rdfs:label "Software"@en ;
+    rdfs:subClassOf crmdig:D1_Digital_Object ;
+    rdfs:comment """This class comprises software codes, computer programs, procedures and functions that are used to operate a system of digital objects."""@en .
+
+  crmdig:D29_Annotation_Object
+    a owl:Class ;
+    skos:prefLabel "D29 Annotation Object"@en ;
+    skos:notation "D29" ;
+    rdfs:label "Annotation Object"@en ;
+    rdfs:subClassOf crm:E89_Propositional_Object ;
+    rdfs:comment """This class comprises objects that make propositions about other artefacts.
+  Instances of this class are not the attributes themselves, by which things are annotated, but represent the connection between the concepts 
+  related in a proposition, and the activities of creation, modification and deletion.
+  This class is specialized by appropriate subclasses to express more specific relationships between annotated things, such as knowledge object, same as etc."""@en .
+
+  crmdig:D30_Annotation_Event
+    a owl:Class ;
+    skos:prefLabel "D30 Annotation Event"@en ;
+    skos:notation "D30" ;
+    rdfs:label "Annotation Event"@en ;
+    rdfs:subClassOf crm:E65_Creation ;
+    rdfs:comment """This class comprises events that describe the creation of associations (âAnnotation Objectsâ) between objects or areas 
+  of objects of the Repository, with other objects or regions or persons, places, events. It is the event that creates the Annotation Object."""@en .
+
+  crmdig:D35_Area
+    a owl:Class ;
+    skos:prefLabel "D35 Area"@en ;
+    skos:notation "D35" ;
+    rdfs:label "Area"@en ;
+    rdfs:subClassOf crm:E26_Physical_Feature, crmdig:D1_Digital_Object ;
+    rdfs:comment """This class describes a part (of any shape or size) of interest in basically any media object stored in the Object Repository, 
+  i.e., a text, an image, a video or a 3D model. It points to content consisting of just a portion or area of a file. In some contexts, 
+  however, the area can also point to content represented by an integral (i.e., proper) file. It is equal to the METS AREA element."""@en .
+
+  crmdig:L1_digitized
+    a owl:ObjectProperty ;
+    skos:prefLabel "L1 digitized"@en ;
+    skos:notation "L1" ;
+    rdfs:label "digitized"@en ;
+    rdfs:domain crmdig:D2_Digitization_Process ;
+    rdfs:range crm:E18_Physical_Thing ;
+    owl:inverseOf crmdig:L1i_was_digitized_by ;
+    rdfs:subPropertyOf crm:P39_measured ;
+    rdfs:comment """This property associates an instance of Digitization Process with an instance of Physical Thing which is a material thing."""@en .
+
+  crmdig:L1i_was_digitized_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "L1i was digitized by"@en ;
+    skos:notation "L1i" ;
+    rdfs:label "was digitized by"@en ;
+    rdfs:domain crm:E18_Physical_Thing ;
+    rdfs:range crmdig:D2_Digitization_Process ;
+    owl:inverseOf crmdig:L1_digitized ;
+    rdfs:subPropertyOf crm:P39i_was_measured_by ;
+    rdfs:comment """This property associates an instance of Digitization Process with an instance of Physical Thing which is a material thing."""@en .
+
+  crmdig:L2_used_as_source
+    a owl:ObjectProperty ;
+    skos:prefLabel "L2 used as source"@en ;
+    skos:notation "L2" ;
+    rdfs:label "used as source"@en ;
+    rdfs:domain crmdig:D10_Software_Execution ;
+    rdfs:range crmdig:D1_Digital_Object ;
+    owl:inverseOf crmdig:L2i_was_source_for ;
+    rdfs:subPropertyOf crmdig:L10_had_input ;
+    rdfs:comment """This property associates an instance of Software Execution with an instance of Digital Object which is used as a source, software essential for the performance."""@en .
+
+  crmdig:L2i_was_source_for
+    a owl:ObjectProperty ;
+    skos:prefLabel "L2i was source for"@en ;
+    skos:notation "L2i" ;
+    rdfs:label "was source for"@en ;
+    rdfs:domain crmdig:D1_Digital_Object ;
+    rdfs:range crmdig:D10_Software_Execution ;
+    owl:inverseOf crmdig:L2_used_as_source ;
+    rdfs:subPropertyOf crmdig:L10i_was_input_of ;
+    rdfs:comment """This property associates an instance of Software Execution with an instance of Digital Object which is used as a source, software essential for the performance."""@en .
+
+  crmdig:L10_had_input
+    a owl:ObjectProperty ;
+    skos:prefLabel "L10 had input"@en ;
+    skos:notation "L10" ;
+    rdfs:label "had input"@en ;
+    rdfs:domain crmdig:D7_Digital_Machine_Event ;
+    rdfs:range crmdig:D1_Digital_Object ;
+    owl:inverseOf crmdig:L10i_was_input_of ;
+    rdfs:subPropertyOf crm:P16_used_specific_object ;
+    rdfs:comment """This property associates an instance of Digital Machine Event with an instance of Digital Object which is the input used to specify the machine action."""@en .
+
+  crmdig:L10i_was_input_of
+    a owl:ObjectProperty ;
+    skos:prefLabel "L10i was input of"@en ;
+    skos:notation "L10i" ;
+    rdfs:label "was input of"@en ;
+    rdfs:domain crmdig:D1_Digital_Object ;
+    rdfs:range crmdig:D7_Digital_Machine_Event ;
+    owl:inverseOf crmdig:L10_had_input ;
+    rdfs:subPropertyOf crm:P16i_was_used_for ;
+    rdfs:comment """This property associates an instance of Digital Machine Event with an instance of Digital Object which is the input used to specify the machine action."""@en .
+
+  crmdig:L11_had_output
+    a owl:ObjectProperty ;
+    skos:prefLabel "L11 had output"@en ;
+    skos:notation "L11" ;
+    rdfs:label "had output"@en ;
+    rdfs:domain crmdig:D7_Digital_Machine_Event ;
+    rdfs:range crmdig:D1_Digital_Object ;
+    owl:inverseOf crmdig:L11i_was_output_of ;
+    rdfs:subPropertyOf crm:P94_has_created ;
+    rdfs:comment """This property associates an instance of Digital Machine Event with an instance of Digital Object which is the output of the activity."""@en .
+
+  crmdig:L11i_was_output_of
+    a owl:ObjectProperty ;
+    skos:prefLabel "L11i was output of"@en ;
+    skos:notation "L11i" ;
+    rdfs:label "was output of"@en ;
+    rdfs:domain crmdig:D1_Digital_Object ;
+    rdfs:range crmdig:D7_Digital_Machine_Event ;
+    owl:inverseOf crmdig:L11_had_output ;
+    rdfs:subPropertyOf crm:P94i_was_created_by ;
+    rdfs:comment """This property associates an instance of Digital Machine Event with an instance of Digital Object which is the output of the activity."""@en .
+
+  crmdig:L12_happened_on_device
+    a owl:ObjectProperty ;
+    skos:prefLabel "L12 happened on device"@en ;
+    skos:notation "L12" ;
+    rdfs:label "happened on device"@en ;
+    rdfs:domain crmdig:D7_Digital_Machine_Event ;
+    rdfs:range crmdig:D8_Digital_Device ;
+    owl:inverseOf crmdig:L12i_was_device_for ;
+    rdfs:subPropertyOf crm:P12_occurred_in_the_presence_of ;
+    rdfs:comment """This property associates an instance of Digital Machine Event with an object, the Digital Device, which happened with, 
+    e.g a capturing event that happened on/with a digital camera, etc."""@en .
+
+  crmdig:L12i_was_device_for
+    a owl:ObjectProperty ;
+    skos:prefLabel "L12i was device for"@en ;
+    skos:notation "L12i" ;
+    rdfs:label "was device for"@en ;
+    rdfs:domain crmdig:D8_Digital_Device ;
+    rdfs:range crmdig:D7_Digital_Machine_Event ;
+    owl:inverseOf crmdig:L12_happened_on_device ;
+    rdfs:subPropertyOf crm:P12i_was_present_at ;
+    rdfs:comment """This property associates an instance of Digital Machine Event with an object, the Digital Device, which happened with, 
+    e.g a capturing event that happened on/with a digital camera, etc."""@en .
+
+  crmdig:L13_used_parameters
+    a owl:ObjectProperty ;
+    skos:prefLabel "L13 used parameters"@en ;
+    skos:notation "L13" ;
+    rdfs:label "used parameters"@en ;
+    rdfs:domain crmdig:D10_Software_Execution ;
+    rdfs:range crmdig:D1_Digital_Object ;
+    owl:inverseOf crmdig:L13i_parameters_for ;
+    rdfs:subPropertyOf crmdig:L10_had_input ;
+    rdfs:comment """This property associates an instance of Software Execution with a digital object used as a parameter during the process."""@en .
+
+  crmdig:L13i_parameters_for
+    a owl:ObjectProperty ;
+    skos:prefLabel "L13i parameters for"@en ;
+    skos:notation "L13i" ;
+    rdfs:label "parameters for"@en ;
+    rdfs:domain crmdig:D1_Digital_Object ;
+    rdfs:range crmdig:D10_Software_Execution ;
+    owl:inverseOf crmdig:L13_used_parameters ;
+    rdfs:subPropertyOf crmdig:L10i_was_input_of ;
+    rdfs:comment """This property associates an instance of Software Execution with a digital object used as a parameter during the process."""@en .
+
+  crmdig:L14_transferred
+    a owl:ObjectProperty ;
+    skos:prefLabel "L14 transferred"@en ;
+    skos:notation "L14" ;
+    rdfs:label "transferred"@en ;
+    rdfs:domain crmdig:D12_Data_Transfer_Event ;
+    rdfs:range crmdig:D1_Digital_Object ;
+    owl:inverseOf crmdig:L14i_was_transferred_by ;
+    rdfs:subPropertyOf crmdig:L10_had_input ;
+    rdfs:comment """This property identifies a digital object transferred by a Data Transfer Event."""@en .
+
+  crmdig:L14i_was_transferred_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "L14i was transferred by"@en ;
+    skos:notation "L14i" ;
+    rdfs:label "was transferred by"@en ;
+    rdfs:domain crmdig:D1_Digital_Object ;
+    rdfs:range crmdig:D12_Data_Transfer_Event ;
+    owl:inverseOf crmdig:L14_transferred ;
+    rdfs:subPropertyOf crmdig:L10i_was_input_of ;
+    rdfs:comment """This property identifies a digital object transferred by a Data Transfer Event."""@en .
+
+  crmdig:L15_has_sender
+    a owl:ObjectProperty ;
+    skos:prefLabel "L15 has sender"@en ;
+    skos:notation "L15" ;
+    rdfs:label "has sender"@en ;
+    rdfs:domain crmdig:D12_Data_Transfer_Event ;
+    rdfs:range crmdig:D8_Digital_Device ;
+    owl:inverseOf crmdig:L15i_was_sender_for ;
+    rdfs:subPropertyOf crmdig:L12_happened_on_device ;
+    rdfs:comment """This property identifies a digital device used as a medium on which data are transferred through a Data Transfer Event."""@en .
+
+  crmdig:L15i_was_sender_for
+    a owl:ObjectProperty ;
+    skos:prefLabel "L15i was sender for"@en ;
+    skos:notation "L15i" ;
+    rdfs:label "was sender for"@en ;
+    rdfs:domain crmdig:D8_Digital_Device ;
+    rdfs:range crmdig:D12_Data_Transfer_Event ;
+    owl:inverseOf crmdig:L15_has_sender ;
+    rdfs:subPropertyOf crmdig:L12i_was_device_for ;
+    rdfs:comment """This property identifies a digital device used as a medium on which data are transferred through a Data Transfer Event."""@en .
+
+  crmdig:L16_has_receiver
+    a owl:ObjectProperty ;
+    skos:prefLabel "L16 has receiver"@en ;
+    skos:notation "L16" ;
+    rdfs:label "has receiver"@en ;
+    rdfs:domain crmdig:D12_Data_Transfer_Event ;
+    rdfs:range crmdig:D8_Digital_Device ;
+    owl:inverseOf crmdig:L16i_was_sender_for ;
+    rdfs:subPropertyOf crmdig:L12_happened_on_device ;
+    rdfs:comment """This property identifies a digital device used as a medium to receive data through a Data Transfer Event."""@en .
+
+  crmdig:L16i_was_sender_for
+    a owl:ObjectProperty ;
+    skos:prefLabel "L16i was sender for"@en ;
+    skos:notation "L16i" ;
+    rdfs:label "was sender for"@en ;
+    rdfs:domain crmdig:D8_Digital_Device ;
+    rdfs:range crmdig:D12_Data_Transfer_Event ;
+    owl:inverseOf crmdig:L16_has_receiver ;
+    rdfs:subPropertyOf crmdig:L12i_was_device_for ;
+    rdfs:comment """This property identifies a digital device used as a medium to receive data through a Data Transfer Event."""@en .
+
+  crmdig:L17_measured_thing_of_type
+    a owl:ObjectProperty ;
+    skos:prefLabel "L17 measured thing of type"@en ;
+    skos:notation "L17" ;
+    rdfs:label "measured thing of type"@en ;
+    rdfs:domain crmdig:D11_Digital_Measurement_Event ;
+    rdfs:range crm:E55_Type ;
+    owl:inverseOf crmdig:L17i_was_type_of_thing_measured_by ;
+    rdfs:subPropertyOf crm:P125_used_object_of_type ;
+    rdfs:comment """This property associates an instance of Digital Measurement Event with the instance of Type of object to which it applied."""@en .
+
+  crmdig:L17i_was_type_of_thing_measured_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "L17i was type of thing measured by"@en ;
+    skos:notation "L17i" ;
+    rdfs:label "was type of thing measured by"@en ;
+    rdfs:domain crm:E55_Type ;
+    rdfs:range crmdig:D11_Digital_Measurement_Event ;
+    owl:inverseOf crmdig:L17_measured_thing_of_type ;
+    rdfs:subPropertyOf crm:P125i_was_type_of_object_used_in ;
+    rdfs:comment """This property associates an instance of Digital Measurement Event with the instance of Type of object to which it applied."""@en .
+
+  crmdig:L18_has_modified
+    a owl:ObjectProperty ;
+    skos:prefLabel "L18 has modified"@en ;
+    skos:notation "L18" ;
+    rdfs:label "has modified"@en ;
+    rdfs:domain crmdig:D7_Digital_Machine_Event ;
+    rdfs:range crmdig:D13_Digital_Information_Carrier ;
+    owl:inverseOf crmdig:L18i_was_modified_by ;
+    rdfs:subPropertyOf crm:P31_has_modified ;
+    rdfs:comment """This property identifies a Digital Information Carrier modified in a Digital Machine Event."""@en .
+
+  crmdig:L18i_was_modified_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "L18i was modified by"@en ;
+    skos:notation "L18i" ;
+    rdfs:label "was modified by"@en ;
+    rdfs:domain crmdig:D13_Digital_Information_Carrier ;
+    rdfs:range crmdig:D7_Digital_Machine_Event ;
+    owl:inverseOf crmdig:L18_has_modified ;
+    rdfs:subPropertyOf crm:P31i_was_modified_by ;
+    rdfs:comment """This property identifies a Digital Information Carrier modified in a Digital Machine Event."""@en .
+
+  crmdig:L19_stores
+    a owl:ObjectProperty ;
+    skos:prefLabel "L19 stores"@en ;
+    skos:notation "L19" ;
+    rdfs:label "stores"@en ;
+    rdfs:domain crmdig:D13_Digital_Information_Carrier ;
+    rdfs:range crmdig:D1_Digital_Object ;
+    owl:inverseOf crmdig:L19i_is_stored_on ;
+    rdfs:subPropertyOf crm:P128_carries ;
+    rdfs:comment """This property associates an instance of a Digital Information Carrier with the instance of Digital Object that is stored on it."""@en .
+
+  crmdig:L19i_is_stored_on
+    a owl:ObjectProperty ;
+    skos:prefLabel "L19i is stored on"@en ;
+    skos:notation "L19i" ;
+    rdfs:label "is stored on"@en ;
+    rdfs:domain crmdig:D1_Digital_Object ;
+    rdfs:range crmdig:D13_Digital_Information_Carrier ;
+    owl:inverseOf crmdig:L19_stores ;
+    rdfs:subPropertyOf crm:P128i_is_carried_by ;
+    rdfs:comment """This property associates an instance of a Digital Information Carrier with the instance of Digital Object that is stored on it."""@en .
+
+  crmdig:L20_has_created
+    a owl:ObjectProperty ;
+    skos:prefLabel "L20 has created"@en ;
+    skos:notation "L20" ;
+    rdfs:label "has created"@en ;
+    rdfs:domain crmdig:D11_Digital_Measurement_Event ;
+    rdfs:range crmdig:D9_Data_Object ;
+    owl:inverseOf crmdig:L20i_was_created_by ;
+    rdfs:subPropertyOf crmdig:L11_had_output ;
+    rdfs:comment """This property identifies a Data Object that came into existence as a result of a Digital Measurement Event."""@en .
+
+  crmdig:L20i_was_created_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "L20i was created by"@en ;
+    skos:notation "L20i" ;
+    rdfs:label "was created by"@en ;
+    rdfs:domain crmdig:D9_Data_Object ;
+    rdfs:range crmdig:D11_Digital_Measurement_Event ;
+    owl:inverseOf crmdig:L20_has_created ;
+    rdfs:subPropertyOf crmdig:L11i_was_output_of ;
+    rdfs:comment """This property identifies a Data Object that came into existence as a result of a Digital Measurement Event."""@en .
+
+  crmdig:L21_used_as_derivation_source
+    a owl:ObjectProperty ;
+    skos:prefLabel "L21 used as derivation source"@en ;
+    skos:notation "L21" ;
+    rdfs:label "used as derivation source"@en ;
+    rdfs:domain crmdig:D3_Formal_Derivation ;
+    rdfs:range crmdig:D1_Digital_Object ;
+    owl:inverseOf crmdig:L21i_was_derivation_source_for ;
+    rdfs:subPropertyOf crmdig:L2_used_as_source ;
+    rdfs:comment """This property associates an instance of a Formal Derivation with the instance of Digital Object that is used as a derivation source."""@en .
+
+  crmdig:L21i_was_derivation_source_for
+    a owl:ObjectProperty ;
+    skos:prefLabel "L21i was derivation source for"@en ;
+    skos:notation "L21i" ;
+    rdfs:label "was derivation source for"@en ;
+    rdfs:domain crmdig:D1_Digital_Object ;
+    rdfs:range crmdig:D3_Formal_Derivation ;
+    owl:inverseOf crmdig:L21_used_as_derivation_source ;
+    rdfs:subPropertyOf crmdig:L2i_was_source_for ;
+    rdfs:comment """This property associates an instance of a Formal Derivation with the instance of Digital Object that is used as a derivation source."""@en .
+
+  crmdig:L22_created_derivative
+    a owl:ObjectProperty ;
+    skos:prefLabel "L22 created derivative"@en ;
+    skos:notation "L22" ;
+    rdfs:label "created derivative"@en ;
+    rdfs:domain crmdig:D3_Formal_Derivation ;
+    rdfs:range crmdig:D1_Digital_Object ;
+    owl:inverseOf crmdig:L22i_was_derivative_created_by ;
+    rdfs:subPropertyOf crmdig:L11_had_output ;
+    rdfs:comment """This property associates an instance of Formal Derivation with the Digital Object it used to create a version of."""@en .
+
+  crmdig:L22i_was_derivative_created_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "L22i was derivative created by"@en ;
+    skos:notation "L22i" ;
+    rdfs:label "was derivative created by"@en ;
+    rdfs:domain crmdig:D1_Digital_Object ;
+    rdfs:range crmdig:D3_Formal_Derivation ;
+    owl:inverseOf crmdig:L22_created_derivative ;
+    rdfs:subPropertyOf crmdig:L11i_was_output_of ;
+    rdfs:comment """This property associates an instance of Formal Derivation with the Digital Object it used to create a version of."""@en .
+
+  crmdig:L23_used_software_or_firmware
+    a owl:ObjectProperty ;
+    skos:prefLabel "L23 used software or firmware"@en ;
+    skos:notation "L23" ;
+    rdfs:label "used software or firmware"@en ;
+    rdfs:domain crmdig:D7_Digital_Machine_Event ;
+    rdfs:range crmdig:D14_Software ;
+    owl:inverseOf crmdig:L23i_was_software_or_firmware_used_by ;
+    rdfs:subPropertyOf crm:P16_used_specific_object ;
+    rdfs:comment """This property associates an instance of Digital Machine Event with the instance of Software that had used."""@en .
+
+  crmdig:L23i_was_software_or_firmware_used_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "L23i was software or firmware used by"@en ;
+    skos:notation "L23i" ;
+    rdfs:label "was software or firmware used by"@en ;
+    rdfs:domain crmdig:D14_Software ;
+    rdfs:range crmdig:D7_Digital_Machine_Event ;
+    owl:inverseOf crmdig:L23_used_software_or_firmware ;
+    rdfs:subPropertyOf crm:P16i_was_used_for ;
+    rdfs:comment """This property associates an instance of Digital Machine Event with the instance of Software that had used."""@en .
+
+  crmdig:L24_created_logfile
+    a owl:ObjectProperty ;
+    skos:prefLabel "L24 created logfile"@en ;
+    skos:notation "L24" ;
+    rdfs:label "created logfile"@en ;
+    rdfs:domain crmdig:D10_Software_Execution ;
+    rdfs:range crmdig:D1_Digital_Object ;
+    owl:inverseOf crmdig:L24i_was_logfile_created_by ;
+    rdfs:subPropertyOf crmdig:L11_had_output ;
+    rdfs:comment """This property identifies the logfile that was created by a Software Execution in order to record all the activities in the system."""@en .
+
+  crmdig:L24i_was_logfile_created_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "L24i was logfile created by"@en ;
+    skos:notation "L24i" ;
+    rdfs:label "was logfile created by"@en ;
+    rdfs:domain crmdig:D1_Digital_Object ;
+    rdfs:range crmdig:D10_Software_Execution ;
+    owl:inverseOf crmdig:L24_created_logfile ;
+    rdfs:subPropertyOf crmdig:L11i_was_output_of ;
+    rdfs:comment """This property identifies the logfile that was created by a Software Execution in order to record all the activities in the system."""@en .
+
+  crmdig:L43_annotates
+    a owl:ObjectProperty ;
+    skos:prefLabel "L43 annotates"@en ;
+    skos:notation "L43" ;
+    rdfs:label "annotates"@en ;
+    rdfs:domain crmdig:D29_Annotation_Object ;
+    rdfs:range crm:E1_CRM_Entity ;
+    owl:inverseOf crmdig:L43i_is_annotated_by ;
+    rdfs:comment """This property describes the associations between objects or areas of objects of the RI, with other objects or regions or persons, places, events."""@en .
+
+  crmdig:L43i_is_annotated_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "L43i is annotated by"@en ;
+    skos:notation "L43i" ;
+    rdfs:label "is annotated by"@en ;
+    rdfs:domain crm:E1_CRM_Entity ;
+    rdfs:range crmdig:D29_Annotation_Object ;
+    owl:inverseOf crmdig:L43_annotates ;
+    rdfs:comment """This property describes the associations between objects or areas of objects of the RI, with other objects or regions or persons, places, events."""@en .
+
+  crmdig:L48_created_annotation
+    a owl:ObjectProperty ;
+    skos:prefLabel "L48 created annotation"@en ;
+    skos:notation "L48" ;
+    rdfs:label "created annotation"@en ;
+    rdfs:domain crmdig:D30_Annotation_Event ;
+    rdfs:range crmdig:D29_Annotation_Object ;
+    owl:inverseOf crmdig:L48i_was_annotation_created_by ;
+    rdfs:subPropertyOf crm:P94_has_created ;
+    rdfs:comment """This property identifies the Annotation Object (associations) that came into existence as a result of a Annotation Event."""@en .
+
+  crmdig:L48i_was_annotation_created_by
+    a owl:ObjectProperty ;
+    skos:prefLabel "L48i was annotation created by"@en ;
+    skos:notation "L48i" ;
+    rdfs:label "was annotation created by"@en ;
+    rdfs:domain crmdig:D29_Annotation_Object ;
+    rdfs:range crmdig:D30_Annotation_Event ;
+    owl:inverseOf crmdig:L48_created_annotation ;
+    rdfs:subPropertyOf crm:P94i_was_created_by;
+    rdfs:comment """This property identifies the Annotation Object (associations) that came into existence as a result of a Annotation Event."""@en .
+
+  crmdig:L49_is_primary_area_of
+    a owl:ObjectProperty ;
+    skos:prefLabel "L49 is primary area of"@en ;
+    skos:notation "L49" ;
+    rdfs:label "is primary area of"@en ;
+    rdfs:domain crmdig:D35_Area ;
+    rdfs:range crmdig:D1_Digital_Object ;
+    owl:inverseOf crmdig:L49i_has_primary_area ;
+    rdfs:subPropertyOf crm:P106_is_composed_of ;
+    rdfs:comment """This property describes the association between a particular area declared in an original digital object."""@en .
+
+  crmdig:L49i_has_primary_area
+    a owl:ObjectProperty ;
+    skos:prefLabel "L49i has primary area"@en ;
+    skos:notation "L49i" ;
+    rdfs:label "has primary area"@en ;
+    rdfs:domain crmdig:D1_Digital_Object ;
+    rdfs:range crmdig:D35_Area ;
+    owl:inverseOf crmdig:L49_is_primary_area_of ;
+    rdfs:subPropertyOf crm:P106i_forms_part_of ;
+    rdfs:comment """This property describes the association between a particular area declared in an original digital object."""@en .
+
+  crmdig:L50_is_propagated_area_of
+    a owl:ObjectProperty ;
+    skos:prefLabel "L50 is propagated area of"@en ;
+    skos:notation "L50" ;
+    rdfs:label "is propagated area of"@en ;
+    rdfs:domain crmdig:D35_Area ;
+    rdfs:range crmdig:D1_Digital_Object ;
+    owl:inverseOf crmdig:L50i_has_propagated_area ;
+    rdfs:subPropertyOf crm:P106_is_composed_of ;
+    rdfs:comment """This property describes the association between an area and the digital object to which it is propagated."""@en .
+
+  crmdig:L50i_has_propagated_area
+    a owl:ObjectProperty ;
+    skos:prefLabel "L50i has propagated area"@en ;
+    skos:notation "L50i" ;
+    rdfs:label "has propagated area"@en ;
+    rdfs:domain crmdig:D1_Digital_Object ;
+    rdfs:range crmdig:D35_Area ;
+    owl:inverseOf crmdig:L50_is_propagated_area_of ;
+    rdfs:subPropertyOf crm:P106i_forms_part_of ;
+    rdfs:comment """This property describes the association between an area and the digital object to which it is propagated."""@en .
+
+  crmdig:L54_is_same-as
+    a owl:ObjectProperty ;
+    skos:prefLabel "L54 is same-as"@en ;
+    skos:notation "L54" ;
+    rdfs:label "is same-as"@en ;
+    rdfs:domain crm:E1_CRM_Entity ;
+    rdfs:range crm:E1_CRM_Entity ;
+    owl:inverseOf crmdig:L54i_is_same-as ;
+    rdfs:comment """This property describes a non unique identification applied to Entity."""@en .
+
+  crmdig:L54i_is_same-as
+    a owl:ObjectProperty ;
+    skos:prefLabel "L54i is same-as"@en ;
+    skos:notation "L54i" ;
+    rdfs:label "is same-as"@en ;
+    rdfs:domain crm:E1_CRM_Entity ;
+    rdfs:range crm:E1_CRM_Entity ;
+    owl:inverseOf crmdig:L54_is_same-as ;
+    rdfs:comment """This property describes a non unique identification applied to Entity."""@en .
+
+  crmdig:L60_documents
+    a owl:ObjectProperty ;
+    skos:prefLabel "L60 documents"@en ;
+    skos:notation "L60" ;
+    rdfs:label "documents"@en ;
+    rdfs:domain crmdig:D2_Digitization_Process ;
+    rdfs:range crm:E1_CRM_Entity ;
+    rdfs:subPropertyOf crm:P140_assigned_attribute_to ;
+    rdfs:comment """This property describes the CRM Entities documented by instances of Digitization Processes."""@en .
+}

@@ -361,14 +361,15 @@
                                               <template id='template'>
                                                   <div>
                                                       {{#ifCond bindings.0.node.value "===" propositionalObject}}
-                                                          <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                        <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
                                                       {{else}}
-                                                          <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                          urlqueryparam-view='resource-editor' 
-                                                                          urlqueryparam-resource-iri='{{node.value}}'
-                                                                          >
+                                                        <mp-draggable iri="{{node.value}}">
+                                                          <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                    urlqueryparam-view='resource-editor' 
+                                                                                    urlqueryparam-resource-iri='{{node.value}}'>
                                                               <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                          </semantic-link>
+                                                          </semantic-link-container>
+                                                        </mp-draggable>
                                                       {{/ifCond}}
                                                   </div>
                                               </template>
@@ -515,14 +516,15 @@
                                             <template id='template'>
                                                 <div>
                                                     {{#ifCond bindings.0.node.value "===" informationObject}}
-                                                        <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                      <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
                                                     {{else}}
-                                                        <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                        urlqueryparam-view='resource-editor' 
-                                                                        urlqueryparam-resource-iri='{{node.value}}'
-                                                                        >
+                                                      <mp-draggable iri="{{node.value}}">
+                                                        <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                  urlqueryparam-view='resource-editor' 
+                                                                                  urlqueryparam-resource-iri='{{node.value}}'>
                                                             <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                        </semantic-link>
+                                                        </semantic-link-container>
+                                                      </mp-draggable>
                                                     {{/ifCond}}
                                                 </div>
                                             </template>
@@ -750,27 +752,13 @@
         <semantic-form-autocomplete-input   for='entity_attributed_by_attribute_assignment' 
                                             label="Attributed by"
                                             placeholder="Select what assigned attribute to the title" 
-                                            nested-form-templates='[ 
-                                                {
-                                                    "label": "Attribute assignment",
-                                                    "nestedForm": "{{{{raw}}}}
-                                                                    {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                {{{{/raw}}}}"
-                                                }
-                                            ]'>  
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_assigned_by_attribute_assignment' 
                                             label="Assigned by"
                                             placeholder="Select what assigned the title" 
-                                            nested-form-templates='[ 
-                                                {
-                                                    "label": "Attribute assignment",
-                                                    "nestedForm": "{{{{raw}}}}
-                                                                    {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                {{{{/raw}}}}"
-                                                }
-                                            ]'>  
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_measurement' 

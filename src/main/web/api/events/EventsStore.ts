@@ -71,7 +71,7 @@ export function trigger<Data>(event: Event<Data>) {
           (eventFilter.target ? _.includes(event.targets || [], eventFilter.target) : true)
       ) {
         
-        console.log('TRIGGER', event)
+     //   console.log('TRIGGER', event)
         emitter.emit(event);
       }
     }

@@ -1,40 +1,44 @@
 
 <http://www.researchspace.org/pattern/system/place/approximates_place/context> {
-  _:genid-80aaa135ab7d4c3b948e8e50020268fb-5loor a <http://spinrdf.org/sp#Query>;
+  <http://www.researchspace.org/pattern/system/place/approximates_place> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-15bf71795629452cb265100227c37193-sovip;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-15bf71795629452cb265100227c37193-jjy2;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E53_Place>;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-15bf71795629452cb265100227c37193-hr2ygr;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/place>;
+    <http://www.w3.org/2000/01/rdf-schema#comment> "Place which is defined in the same reference space, and which is used to approximate the former";
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-15bf71795629452cb265100227c37193-v5cypi;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Approximates place"@en;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-15bf71795629452cb265100227c37193-pyo1d;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E53_Place>;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2025-05-01T11:36:33.449+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-15bf71795629452cb265100227c37193-pyo1d a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """INSERT { 
 	$subject crm:P189_approximates $value . 
     $value crm:P189i_is_approximated_by $subject .
 } WHERE {}""" .
   
-  <http://www.researchspace.org/pattern/system/place/approximates_place> a <http://www.researchspace.org/resource/system/fields/Field>,
-      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E53_Place>;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-80aaa135ab7d4c3b948e8e50020268fb-on7ly;
-    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-80aaa135ab7d4c3b948e8e50020268fb-i5zys;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/place>;
-    <http://www.w3.org/2000/01/rdf-schema#comment> "Place which is defined in the same reference space, and which is used to approximate the former";
-    <http://www.w3.org/2000/01/rdf-schema#label> "Approximates place";
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-80aaa135ab7d4c3b948e8e50020268fb-5loor;
-    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-80aaa135ab7d4c3b948e8e50020268fb-t3orxb;
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E53_Place>;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-80aaa135ab7d4c3b948e8e50020268fb-n3is31;
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-10-15T14:57:10.742+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-80aaa135ab7d4c3b948e8e50020268fb-n3is31 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE {
-	$subject crm:P189_approximates $value . 
-    $value crm:P189i_is_approximated_by $subject .
-} WHERE {
-	$subject crm:P189_approximates $value . 
-}""" .
-  
-  _:genid-80aaa135ab7d4c3b948e8e50020268fb-i5zys a <http://spinrdf.org/sp#Query>;
+  _:genid-15bf71795629452cb265100227c37193-v5cypi a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
-  ?value a crm:E53_Place .
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E53_Place .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+   
+  ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-15bf71795629452cb265100227c37193-hr2ygr a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E53_Place .
   ?value crm:P1_is_identified_by ?appellation .
   ?appellation a crm:E41_Appellation .
   ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
@@ -45,19 +49,30 @@
 } ORDER BY ASC(?label)
   LIMIT 10""" .
   
-  _:genid-80aaa135ab7d4c3b948e8e50020268fb-t3orxb a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
-  ?value a crm:E53_Place .
-  ?value crm:P1_is_identified_by ?appellation .
-  ?appellation a crm:E41_Appellation .
-  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-   
-  ?appellation crm:P190_has_symbolic_content ?label .
-} ORDER BY ASC(LCASE(STR(?label)))""" .
-  
-  _:genid-80aaa135ab7d4c3b948e8e50020268fb-on7ly a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+  _:genid-15bf71795629452cb265100227c37193-sovip a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
 	$subject crm:P189_approximates $value . 
+    $value crm:P189i_is_approximated_by $subject .
+} WHERE {
+	$subject crm:P189_approximates $value . 
+   	?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E53_Place .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-15bf71795629452cb265100227c37193-jjy2 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+	$subject crm:P189_approximates $value . 
+      
+   	?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E53_Place .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>

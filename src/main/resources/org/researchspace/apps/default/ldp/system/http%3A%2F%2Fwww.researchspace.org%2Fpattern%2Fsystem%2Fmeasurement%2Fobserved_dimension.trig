@@ -1,10 +1,11 @@
 
 <http://www.researchspace.org/pattern/system/measurement/observed_dimension/context> {
-  _:genid-00a08e953fde4ebca00b24acc605f108-hj4b0f a <http://spinrdf.org/sp#Query>;
+  _:genid-07c210998e9f415caa79e45918f616bb-r1l3ir a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
     $subject crm:P40_observed_dimension $value .
       
-    ?value a crm:E54_Dimension .
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E54_Dimension .
     ?value crm:P1_is_identified_by ?appellation .
     ?appellation a crm:E41_Appellation .
     ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
@@ -12,41 +13,43 @@
 
 }""" .
   
-  _:genid-00a08e953fde4ebca00b24acc605f108-u2awo a <http://spinrdf.org/sp#Query>;
+  _:genid-07c210998e9f415caa79e45918f616bb-9lgei a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+    $subject crm:P40_observed_dimension $value .
+    $value crm:P40i_was_observed_in $subject .
+} WHERE {}""" .
+  
+  <http://www.researchspace.org/pattern/system/measurement/observed_dimension> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-07c210998e9f415caa79e45918f616bb-t3gzh;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E16_Measurement>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-07c210998e9f415caa79e45918f616bb-r1l3ir;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Observed dimension"@en;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-07c210998e9f415caa79e45918f616bb-msq2va;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-07c210998e9f415caa79e45918f616bb-9lgei;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-07c210998e9f415caa79e45918f616bb-7on2cn;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/measurement>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E54_Dimension>;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2025-04-30T11:28:40.531+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-07c210998e9f415caa79e45918f616bb-t3gzh a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
-    ?value a crm:E54_Dimension .
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E54_Dimension .
     ?value crm:P1_is_identified_by ?appellation .
     ?appellation a crm:E41_Appellation .
     ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
     ?appellation crm:P190_has_symbolic_content ?label .
 } ORDER BY ASC(LCASE(STR(?label)))""" .
   
-  <http://www.researchspace.org/pattern/system/measurement/observed_dimension> a <http://www.researchspace.org/resource/system/fields/Field>,
-      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-00a08e953fde4ebca00b24acc605f108-u2awo;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-00a08e953fde4ebca00b24acc605f108-1xuy33;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E16_Measurement>;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-00a08e953fde4ebca00b24acc605f108-3ie9q;
-    <http://www.w3.org/2000/01/rdf-schema#label> "Observed dimension";
-    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-00a08e953fde4ebca00b24acc605f108-r2rly2;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-00a08e953fde4ebca00b24acc605f108-hj4b0f;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/measurement>;
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E54_Dimension>;
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-05T17:40:14.272+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-00a08e953fde4ebca00b24acc605f108-3ie9q a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-    $subject crm:P40_observed_dimension $value .
-    $value crm:P40i_was_observed_in $subject .
-} WHERE {}""" .
-  
-  _:genid-00a08e953fde4ebca00b24acc605f108-r2rly2 a <http://spinrdf.org/sp#Query>;
+  _:genid-07c210998e9f415caa79e45918f616bb-7on2cn a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
-    ?value a crm:E54_Dimension .
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E54_Dimension .
     ?value crm:P1_is_identified_by ?appellation .
     ?appellation a crm:E41_Appellation .
     ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
@@ -56,7 +59,7 @@
 } ORDER BY ASC(?label)
   LIMIT 10""" .
   
-  _:genid-00a08e953fde4ebca00b24acc605f108-1xuy33 a <http://spinrdf.org/sp#Query>;
+  _:genid-07c210998e9f415caa79e45918f616bb-msq2va a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """DELETE { 
     $subject crm:P40_observed_dimension $value .
     $value crm:P40i_was_observed_in $subject .
@@ -64,7 +67,8 @@
     $subject crm:P40_observed_dimension $value .
     $value crm:P40i_was_observed_in $subject .
       
-    ?value a crm:E54_Dimension .
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E54_Dimension .
     ?value crm:P1_is_identified_by ?appellation .
     ?appellation a crm:E41_Appellation .
     ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .

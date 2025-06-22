@@ -293,7 +293,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
   private openSelectedNestedForm(formTemplate: string) {
     tryExtractNestedForm(this.props.children, this.context, formTemplate)
       .then(nestedForm => {
-        if (nestedForm != undefined) {console.log(nestedForm);
+        if (nestedForm != undefined) {
          this.setState({nestedForm});
           this.toggleNestedForm()
         }
@@ -364,7 +364,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
         { showCreateNewDropdown && (
           <DropdownButton title="New" pullRight id="add-form" onSelect={(label) => this.onDropdownSelectHandler(label)}>
             {this.state.nestedFormTemplates.map((e) => {
-                return (<MenuItem key={e.label} eventKey={e.label}>{e.label}</MenuItem>)
+                return (<MenuItem key={e.label} eventKey={e.label} draggable={false}>{e.label}</MenuItem>)
               }
             )}
           </DropdownButton>
@@ -380,7 +380,6 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
               urlqueryparam-view="resource-editor"
               urlqueryparam-open-as-drag-and-drop="true"
               urlqueryparam-resource={(this.props.value.value as Rdf.Iri).value}
-              draggable={false}
             >
               <Button className={`${SELECT_TEXT_CLASS}__open-in-new-tab`} title='Edit in new draggable tab'>
                 <Icon iconType='rounded' iconName='read_more' symbol={true} />
@@ -427,7 +426,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
 
   private createDefaultPlaceholder(definition: FieldDefinition): string {
     const fieldName = (getPreferredLabel(definition.label) || 'entity').toLocaleLowerCase();
-    return `Select ${fieldName} here...`;
+    return `Select ${fieldName}`;
   }
 
   static makeHandler = AtomicValueInput.makeAtomicHandler;

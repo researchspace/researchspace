@@ -70,6 +70,7 @@
 
         .dropdown-menu {
           display: block;
+          max-height: unset;
         }
       }
     }
@@ -359,11 +360,32 @@
   color: $color-dark;
   font-size: 15px;
 
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+
   & .nav.nav-tabs {
     margin: 0;
   }
 
+  .tab-content {
+    flex: 1;
+    overflow: auto;
+    margin-top: 10px;
+    padding-right: 5px;
+
+    .tab-pane {
+      height: 100%;
+      padding: 0;
+    }
+  }
+
   .resources-tab-container {
+
+    display: flex;
+    flex-wrap: wrap;
+    height: 100%;
 
     .griddle-custom-row {
       display: grid !important;
@@ -374,7 +396,13 @@
 
   }
 
+  .resources-tab-table {
+    flex: 1;
+  }
+
   .new-resource-card {
+
+    position: relative;
 
     height: 120px;
     border:1px solid $color-border;
@@ -395,11 +423,90 @@
     &:focus-within {
 
       background-color: $color-lighter;
+
+      i.new-resource-card-info {
+
+        visibility:visible;
+      }
     }
 
     i {
       color: $color-base;
       font-size: 35px;
+    }
+  }
+
+  i.new-resource-card-info {
+
+    position: absolute; 
+    right: 0; 
+    top: 0;
+    font-size: 18px; border-left: 1px solid #e0e0e4; border-bottom:1px solid #e0e0e4;color: #b0b0ba; padding:5px;
+    visibility: hidden;
+  }
+
+  .resource-info-area-container {
+
+    width: 20%;
+    min-width: 300px;
+    margin-left: 10px;
+    border: 1px solid $color-border;
+    background-color: $color-white;
+    border-radius: $border-radius;
+  }
+
+  .resource-info-area-header {
+
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 5px 5px 18px;
+    border-bottom: 1px solid $color-border;
+
+    b::first-letter {
+
+      text-transform: uppercase;
+    }
+
+    .btn-icon {
+      padding: 4px;
+    }
+  }
+
+  .resource-info-area-content {
+    padding: 15px 18px;
+    font-size: $font-size-base;
+    line-height: 1.5;
+
+    .resource-info-area-section-title {
+      margin-bottom: 3px;
+
+      &::first-letter {
+
+        text-transform: uppercase;
+       }
+    }
+
+    p:last-of-type {
+      margin: 0;
+    }
+
+    .text-section {
+      color: $color-dark;
+      border: 1px solid $color-border;
+      border-radius: $border-radius;
+      background-color: $color-lighter;
+
+      display: block;
+      font-size: 14px;
+      line-height: 1.43;
+      margin: 0 0 10px;
+      padding: 10px;
+    }
+
+    .example-section {
+      white-space: pre-line;
     }
   }
 }

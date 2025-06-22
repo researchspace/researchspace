@@ -326,7 +326,7 @@ export class DashboardComponent extends Component<Props, State> {
           },
         });
 
-    if (this.props.initialView) { console.log(this.props.initialView);
+    if (this.props.initialView) { 
       const item = {
         ...this.frameLabel(),
         resourceIri: this.props.initialView.resource,
@@ -442,7 +442,7 @@ export class DashboardComponent extends Component<Props, State> {
 
   private onAddNewItem = (item: Item = this.frameLabel()) => {
     // check if item.resourceIri exists and is an actual iri to prevent errors
-    if (item?.resourceIri && !(item?.resourceIri.startsWith("http://")))
+    if (item?.resourceIri && !(item?.resourceIri.startsWith("http://")) && !(item?.resourceIri.startsWith("https://"))) 
       return;
   
     // check if an item with the same resourceIri is already in the tabset
@@ -860,11 +860,15 @@ export class DashboardComponent extends Component<Props, State> {
 
   private onLayoutAction = (action: Action) => {
     /* Identify DashboardItems that contain an image viewer based on viewId */
-    const images = this.state.items.filter((i) => i.viewId === "image-annotation");
+    const images = this.state.items.filter((i) => i.viewId === "image-annotation");   
     const iiifViewerDashboardItems = []; 
-
+    
     images.forEach(image => iiifViewerDashboardItems.push(image.id+"-image-annotation"));
-  //  console.log(action.type);
+
+    const maps = this.state.items.filter((i) => i.viewId === "map");
+    const mapsDashboardItems = [];
+    maps.forEach(map => mapsDashboardItems.push(map.id));
+
     const actions = [Actions.ADJUST_BORDER_SPLIT, Actions.ADJUST_SPLIT, Actions.MOVE_NODE, Actions.ADD_NODE, Actions.SELECT_TAB, Actions.DELETE_TAB, Actions.MAXIMIZE_TOGGLE]
     if (actions.includes(action.type))
       trigger({
@@ -873,6 +877,12 @@ export class DashboardComponent extends Component<Props, State> {
         targets: iiifViewerDashboardItems,
       });
     
+      trigger({
+        eventType: LayoutChanged,
+        source: 'dashboard',
+        targets: mapsDashboardItems,
+      });
+
     if (action.type === Actions.DELETE_TAB) {
       const tab = this.state.layout.getNodeById(action.data.node) as TabNode;
       return this.onRemoveItem(action, tab.getConfig().itemId);

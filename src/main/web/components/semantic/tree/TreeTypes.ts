@@ -37,4 +37,5 @@ export interface ProviderPropsAdvanced {
   loadingNodes: Set<string>;
   hasChildrenBinding: string;
   loadingTemplate: string;
+  highlightedNodes?: Set<string>;
 }

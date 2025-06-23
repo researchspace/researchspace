@@ -4,6 +4,8 @@ declare namespace TreeScssNamespace {
     leafNode: string;
     tree: string;
     treeNode: string;
+    highlightedTreeNode: string;
+    siblingExpandButton: string;
   }
 }
 

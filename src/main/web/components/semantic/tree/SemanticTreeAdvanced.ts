@@ -24,7 +24,7 @@ import * as D from 'react-dom-factories';
 import * as maybe from 'data.maybe';
 
 import { Cancellation } from 'platform/api/async';
-import { BuiltInEvents, trigger } from 'platform/api/events';
+import { BuiltInEvents, trigger, listen } from 'platform/api/events';
 import { Rdf } from 'platform/api/rdf';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 import { Component } from 'platform/api/components';
@@ -84,6 +84,8 @@ interface StateAdvanced {
   expandedNodes: Map<string, ReadonlyArray<TreeNode>>; // Cache of loaded children
   loadingNodes: Set<string>; // Nodes currently being expanded
   loadingTimers: Map<string, number>; // Timers for delayed loading indicators
+  highlightedNodes: Set<string>; // Set of highlighted node IRIs/keys
+  highlightedTreeData?: ReadonlyArray<TreeNode>; // Filtered tree data showing only highlighted paths
 }
 
 export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced> {
@@ -110,11 +112,13 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       expandedNodes: new Map(),
       loadingNodes: new Set(),
       loadingTimers: new Map(),
+      highlightedNodes: new Set(),
     };
   }
 
   public componentDidMount() {
     this.loadData(this.props);
+    this.setupEventListeners();
   }
 
   public componentWillReceiveProps(props: PropsAdvanced) {
@@ -126,6 +130,183 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
   public componentWillUnmount() {
     this.cancellation.cancelAll();
   }
+
+  private setupEventListeners() {
+    if (this.props.id) {
+      this.cancellation.map(
+        listen({
+          eventType: 'SemanticTreeHighlightNodes',
+          target: this.props.id,
+        })
+      ).onValue(this.handleHighlightNodesEvent);
+    }
+  }
+
+  private handleHighlightNodesEvent = (event: any) => {
+    console.log('SemanticTreeAdvanced received SemanticTreeHighlightNodes event:', event);
+    
+    if (event.data && event.data.nodeIds && Array.isArray(event.data.nodeIds)) {
+      const nodeIds = event.data.nodeIds as string[];
+      console.log('Highlighting nodes:', nodeIds);
+      
+      this.setState({
+        highlightedNodes: new Set(nodeIds)
+      });
+
+      // Trigger highlighting logic
+      this.highlightNodes(nodeIds);
+    } else {
+      console.warn('Invalid event data for SemanticTreeHighlightNodes:', event.data);
+    }
+  };
+
+  private highlightNodes = async (nodeIds: string[]) => {
+    if (!this.state.data) {
+      return;
+    }
+
+    try {
+      if (nodeIds.length === 0) {
+        // Clear highlighting - show original tree
+        this.setState({
+          highlightedTreeData: undefined
+        });
+        return;
+      }
+
+      // For now, we'll use the existing tree data and filter it to show highlighted paths
+      // In a full implementation, you might want to query for the specific nodes and their paths
+      const highlightedTreeData = this.filterTreeForHighlightedNodes(this.state.data, new Set(nodeIds));
+      
+      console.log('Filtered tree data:', highlightedTreeData);
+      
+      // If no nodes were found, don't filter the tree - just highlight what we can find
+      if (highlightedTreeData.length === 0) {
+        console.warn('No matching nodes found for highlighting, keeping original tree structure');
+        // Don't set highlightedTreeData, just keep the highlighting state for visual styling
+        return;
+      }
+      
+      // Collect only keys in paths to highlighted nodes (not all nodes)
+      const keysToExpand = this.collectKeysInPathsToHighlightedNodes(highlightedTreeData, new Set(nodeIds));
+      console.log('Keys to expand (only paths to highlighted nodes):', keysToExpand);
+      
+      this.setState({
+        highlightedTreeData
+      }, () => {
+        // Force a re-render after state update
+        this.forceUpdate();
+      });
+
+      // Update the provider props to include the expanded keys
+      this.updateExpandedKeys(keysToExpand);
+    } catch (error) {
+      console.error('Error highlighting nodes:', error);
+    }
+  };
+
+  private collectKeysInPathsToHighlightedNodes = (nodes: ReadonlyArray<TreeNode>, highlightedIds: Set<string>): string[] => {
+    const keysToExpand: string[] = [];
+    
+    const collectKeys = (nodes: ReadonlyArray<TreeNode>, currentPath: string[]): void => {
+      for (const node of nodes) {
+        const nodeId = node.data[this.props.nodeBindingName].value;
+        const nodeKey = node.key;
+        const isHighlighted = highlightedIds.has(nodeId) || highlightedIds.has(nodeKey);
+        
+        if (isHighlighted) {
+          // Add all keys in the current path to the expansion list
+          keysToExpand.push(...currentPath);
+        }
+        
+        // Continue recursively with this node added to the path
+        if (node.children.length > 0) {
+          collectKeys(node.children, [...currentPath, nodeKey]);
+        }
+      }
+    };
+    
+    collectKeys(nodes, []);
+    return Array.from(new Set(keysToExpand)); // Remove duplicates
+  };
+
+  private collectAllKeysInTree = (nodes: ReadonlyArray<TreeNode>): string[] => {
+    const allKeys: string[] = [];
+    
+    const collectKeys = (nodes: ReadonlyArray<TreeNode>): void => {
+      for (const node of nodes) {
+        // Skip expand siblings buttons
+        if (node.data.expandSiblings && node.data.expandSiblings.value === 'true') {
+          continue;
+        }
+        
+        allKeys.push(node.key);
+        
+        // Continue recursively with children
+        if (node.children.length > 0) {
+          collectKeys(node.children);
+        }
+      }
+    };
+    
+    collectKeys(nodes);
+    return allKeys;
+  };
+
+  private updateExpandedKeys = (keysToExpand: string[]) => {
+    // Update the keysOpened prop to include the keys that should be expanded
+    // This will be passed to the TreeAdvanced component
+    this.expandedKeysForHighlighting = keysToExpand;
+  };
+
+  private expandedKeysForHighlighting: string[] = [];
+
+  private filterTreeForHighlightedNodes = (nodes: ReadonlyArray<TreeNode>, highlightedIds: Set<string>): ReadonlyArray<TreeNode> => {
+    const result: TreeNode[] = [];
+    
+    for (const node of nodes) {
+      const nodeId = node.data[this.props.nodeBindingName].value;
+      const nodeKey = node.key;
+      const isHighlighted = highlightedIds.has(nodeId) || highlightedIds.has(nodeKey);
+      
+      console.log(`Checking node: ${nodeId} (key: ${nodeKey}), highlighted: ${isHighlighted}`);
+      
+      // Check if any descendant is highlighted
+      const filteredChildren = this.filterTreeForHighlightedNodes(node.children, highlightedIds);
+      const hasHighlightedDescendant = filteredChildren.length > 0;
+      
+      if (isHighlighted || hasHighlightedDescendant) {
+        // If this node has children but only some are highlighted, add "expand siblings" functionality
+        const allChildren = node.children;
+        const hiddenSiblingsCount = allChildren.length - filteredChildren.length;
+        
+        let childrenToShow = filteredChildren;
+        
+        // Add "expand siblings" button if there are hidden siblings
+        if (hiddenSiblingsCount > 0 && filteredChildren.length > 0) {
+          const expandSiblingsNode: TreeNode = {
+            key: `${nodeKey}_expand_siblings`,
+            data: {
+              [this.props.nodeBindingName]: Rdf.literal(`expand_${hiddenSiblingsCount}_siblings`),
+              expandSiblings: Rdf.literal('true'),
+              hiddenCount: Rdf.literal(hiddenSiblingsCount.toString()),
+              parentKey: Rdf.literal(nodeKey)
+            },
+            children: []
+          };
+          
+          childrenToShow = [...filteredChildren, expandSiblingsNode];
+        }
+        
+        result.push({
+          ...node,
+          children: childrenToShow
+        });
+      }
+    }
+    
+    return result;
+  };
 
   private loadData(props: PropsAdvanced) {
     const context = this.context.semanticContext;
@@ -255,17 +436,26 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       return createElement(TemplateItem, { template: { source: this.props.noResultTemplate } });
     }
 
+    // Combine original keysOpened with keys that should be expanded for highlighting
+    const allKeysOpened = this.state.highlightedTreeData 
+      ? [...this.props.keysOpened, ...this.expandedKeysForHighlighting]
+      : this.props.keysOpened;
+
+    // When highlighting is active, keep the default collapsed behavior but expand specific paths
+    const shouldCollapseNodes = this.props.collapsed;
+
     const providerProps: ProviderPropsAdvanced = {
       tupleTemplate: this.handleDeprecatedLayout(),
       onNodeClick: this.onNodeClick,
       onNodeExpand: this.props.expandQuery ? this.expandNode : undefined,
-      nodeData: data,
+      nodeData: this.state.highlightedTreeData || data,
       nodeKey: 'key',
-      collapsed: this.props.collapsed,
-      keysOpened: this.props.keysOpened,
+      collapsed: shouldCollapseNodes,
+      keysOpened: allKeysOpened,
       loadingNodes: this.state.loadingNodes,
       hasChildrenBinding: this.props.hasChildrenBinding,
       loadingTemplate: this.props.loadingTemplate,
+      highlightedNodes: this.state.highlightedNodes,
     };
 
     const { provider, d3TreeOptions } = this.props;
@@ -281,7 +471,10 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       console.warn(`Unknown semantic tree provider '${provider}'`);
     }
 
-    return D.div({}, createElement(TreeAdvanced, providerProps));
+    // Force TreeAdvanced to re-initialize when highlighting changes by using a different key
+    const treeKey = this.state.highlightedTreeData ? 'highlighted-tree' : 'normal-tree';
+    
+    return D.div({}, createElement(TreeAdvanced, { ...providerProps, key: treeKey }));
   }
 
   private processSparqlResult = (res: SparqlClient.SparqlSelectResult): void => {
@@ -326,7 +519,120 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
   }
 
   private onNodeClick = (node: any) => {
-    // empty default onNodeClick
+    // Check if this is an "expand siblings" node
+    if (node.data.expandSiblings && node.data.expandSiblings.value === 'true') {
+      this.handleExpandSiblings(node);
+      return;
+    }
+    // empty default onNodeClick for regular nodes
+  };
+
+  private handleExpandSiblings = (expandNode: any) => {
+    const parentKey = expandNode.data.parentKey.value;
+    console.log('Expanding siblings for parent:', parentKey);
+    
+    // Find the parent node in the original data and show all its children
+    const originalParent = this.findNodeInTree(this.state.data, parentKey);
+    if (originalParent) {
+      // Update the highlighted tree data to include all children of this parent
+      this.expandSiblingsForParent(parentKey, originalParent.children);
+    }
+  };
+
+  private findNodeInTree = (nodes: ReadonlyArray<TreeNode>, nodeKey: string): TreeNode | null => {
+    for (const node of nodes) {
+      if (node.key === nodeKey) {
+        return node;
+      }
+      const found = this.findNodeInTree(node.children, nodeKey);
+      if (found) {
+        return found;
+      }
+    }
+    return null;
+  };
+
+  private expandSiblingsForParent = (parentKey: string, allChildren: ReadonlyArray<TreeNode>) => {
+    if (!this.state.highlightedTreeData) {
+      return;
+    }
+
+    // Show ALL children but only expand those that contain highlighted nodes
+    // First, we need to process each child to determine if it should be expanded
+    const processedChildren = allChildren.map(child => {
+      // Check if this child or any of its descendants contain highlighted nodes
+      const childContainsHighlighted = this.nodeContainsHighlightedDescendants(child, this.state.highlightedNodes);
+      
+      if (childContainsHighlighted) {
+        // If it contains highlighted nodes, filter its children to show the highlighted paths
+        const filteredChildChildren = this.filterTreeForHighlightedNodes(child.children, this.state.highlightedNodes);
+        return {
+          ...child,
+          children: filteredChildChildren
+        };
+      } else {
+        // If it doesn't contain highlighted nodes, show it collapsed (no children)
+        return {
+          ...child,
+          children: []
+        };
+      }
+    });
+    
+    // Update the highlighted tree data to replace the filtered children with all processed children
+    const updatedTreeData = this.replaceChildrenInTree(
+      this.state.highlightedTreeData, 
+      parentKey, 
+      processedChildren
+    );
+
+    // Only collect expansion keys from children that actually have content (contain highlighted nodes)
+    const childrenWithContent = processedChildren.filter(child => child.children.length > 0);
+    const additionalKeysToExpand = this.collectKeysInPathsToHighlightedNodes(childrenWithContent, this.state.highlightedNodes);
+    const allKeysToExpand = Array.from(new Set([...this.expandedKeysForHighlighting, ...additionalKeysToExpand]));
+    this.updateExpandedKeys(allKeysToExpand);
+
+    this.setState({
+      highlightedTreeData: updatedTreeData
+    });
+  };
+
+  private nodeContainsHighlightedDescendants = (node: TreeNode, highlightedIds: Set<string>): boolean => {
+    const nodeId = node.data[this.props.nodeBindingName].value;
+    const nodeKey = node.key;
+    const isHighlighted = highlightedIds.has(nodeId) || highlightedIds.has(nodeKey);
+    
+    if (isHighlighted) {
+      return true;
+    }
+    
+    // Check children recursively
+    for (const child of node.children) {
+      if (this.nodeContainsHighlightedDescendants(child, highlightedIds)) {
+        return true;
+      }
+    }
+    
+    return false;
+  };
+
+  private replaceChildrenInTree = (
+    nodes: ReadonlyArray<TreeNode>, 
+    parentKey: string, 
+    newChildren: ReadonlyArray<TreeNode>
+  ): ReadonlyArray<TreeNode> => {
+    return nodes.map(node => {
+      if (node.key === parentKey) {
+        return {
+          ...node,
+          children: newChildren
+        };
+      }
+      return {
+        ...node,
+        children: this.replaceChildrenInTree(node.children, parentKey, newChildren)
+      };
+    });
   };
 
   private handleDeprecatedLayout(): string {

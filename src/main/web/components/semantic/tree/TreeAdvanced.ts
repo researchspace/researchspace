@@ -188,7 +188,7 @@ export class TreeAdvanced extends Component<TreeAdvancedProps, State> {
     const renderedNode = D.span(
       {
         key: this.key + nodeKey + i,
-        className: this.getCssClassesForNode(children !== null, this.state.activeNode === node),
+        className: this.getCssClassesForNode(children !== null, this.state.activeNode === node, node),
         onClick: this.handleClick.bind(null, node),
       },
       nodeLabelTemplate,
@@ -222,9 +222,25 @@ export class TreeAdvanced extends Component<TreeAdvancedProps, State> {
     return false;
   };
 
-  private getCssClassesForNode = (hasChildren: boolean, isActive: boolean): string => {
+  private getCssClassesForNode = (hasChildren: boolean, isActive: boolean, node?: any): string => {
     const base = hasChildren ? styles.treeNode : styles.leafNode;
-    return isActive ? classnames([base, styles.activeNode]) : base;
+    let classes = [base];
+    
+    if (isActive) {
+      classes.push(styles.activeNode);
+    }
+    
+    // Check if this node is highlighted
+    if (node && this.props.highlightedNodes && this.props.highlightedNodes.size > 0) {
+      const nodeId = node.data['node'] ? node.data['node'].value : node.key;
+      const isHighlighted = this.props.highlightedNodes.has(nodeId) || this.props.highlightedNodes.has(node.key);
+      if (isHighlighted) {
+        // Use direct CSS class name instead of CSS modules for highlighting
+        classes.push('highlightedTreeNode');
+      }
+    }
+    
+    return classnames(classes);
   };
 
   private isCollapsed = (nodeKey: any, node: any): boolean => {

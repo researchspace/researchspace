@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -17,5 +18,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export { SemanticTree, SemanticTreeConfig, Props, Props as SemanticTreeProps } from './SemanticTree';
-export { SemanticTreeAdvanced, SemanticTreeAdvancedConfig, PropsAdvanced, PropsAdvanced as SemanticTreeAdvancedProps } from './SemanticTreeAdvanced';
+import { SparqlClient } from 'platform/api/sparql';
+
+export interface TreeNode {
+  readonly key: string;
+  readonly data: SparqlClient.Binding;
+  readonly children: ReadonlyArray<TreeNode>;
+}
+
+export interface ProviderPropsAdvanced {
+  tupleTemplate: string;
+  onNodeClick?: (node: TreeNode) => void;
+  onNodeExpand?: (node: TreeNode) => Promise<ReadonlyArray<TreeNode>>;
+  nodeData: ReadonlyArray<TreeNode>;
+  nodeKey?: string;
+  collapsed: boolean;
+  keysOpened: ReadonlyArray<string>;
+  loadingNodes: Set<string>;
+  hasChildrenBinding: string;
+  loadingTemplate: string;
+}

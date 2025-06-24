@@ -20,8 +20,7 @@ import * as React from 'react';
 import * as CopyToClipboard from 'react-copy-to-clipboard';
 
 import { addNotification } from 'platform/components/ui/notification';
-import Rdf = require('platform/api/rdf/core/Rdf');
-import { constructUrlForResource, NavigationUtils } from 'platform/api/navigation';
+import { NavigationUtils } from 'platform/api/navigation';
 
 export interface Props {
   /**

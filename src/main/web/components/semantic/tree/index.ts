@@ -17,4 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export { SemanticTree, SemanticTreeConfig, Props, Props as SemanticTreeProps } from './SemanticTree';
+export {
+  SemanticTree,
+  type SemanticTreeConfig,
+  type Props,
+  type Props as SemanticTreeProps,
+} from './SemanticTree';

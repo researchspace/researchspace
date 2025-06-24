@@ -19,7 +19,7 @@
 
 import * as Rdf from '../core/Rdf';
 
-module field {
+namespace field {
   const NAMESPACE = 'http://www.researchspace.org/resource/system/fields/';
   const iri = (s: string) => Rdf.iri(NAMESPACE + s);
 

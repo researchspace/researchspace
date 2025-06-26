@@ -1,0 +1,358 @@
+<div class="page__grid-container help-page-container">
+  <div class='page__content-container'>
+    <h1 id="rs-doc_appState">Application State Management</h1>
+    
+    <p>The Application State Management system enables components to share their state through URL parameters or backend storage, allowing users to save and share specific application states. This functionality creates shareable URLs that preserve the exact state of compatible components, enabling collaborative workflows and reproducible views.</p>
+
+    <div class="alert alert-info">
+      <strong>Important:</strong> Only components that have been specifically adapted to support shared state functionality will work with this system. Components must extend <code>SharedStateComponent</code> and implement the required interfaces to participate in state sharing.
+    </div>
+
+    <h2 id="rs-doc_compatibleComponents">Compatible Components</h2>
+    
+    <p>The following components have been adapted to support shared state functionality:</p>
+
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Component</th>
+          <th>Shareable State Variables</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>&lt;semantic-map&gt;</code></td>
+          <td>
+            <ul style="margin: 0;">
+              <li><code>currentExtent</code></li>
+              <li><code>currentZoom</code></li>
+            </ul>
+          </td>
+          <td>
+            <strong>currentExtent:</strong> Array of map bounds [minX, minY, maxX, maxY]<br/>
+            <strong>currentZoom:</strong> Current zoom level of the map
+          </td>
+        </tr>
+        <tr>
+          <td><code>&lt;semantic-table&gt;</code></td>
+          <td>
+            <ul style="margin: 0;">
+              <li><code>currentPage</code></li>
+              <li><code>filterValue</code></li>
+              <li><code>sortColumn</code> <em>(infrastructure ready)</em></li>
+              <li><code>sortDirection</code> <em>(infrastructure ready)</em></li>
+            </ul>
+          </td>
+          <td>
+            <strong>currentPage:</strong> Current page number in paginated results (0-based index)<br/>
+            <strong>filterValue:</strong> Current filter text applied to table data<br/>
+            <strong>sortColumn:</strong> Column currently being sorted <em>(requires Griddle event capture)</em><br/>
+            <strong>sortDirection:</strong> Sort direction: 'asc' or 'desc' <em>(requires Griddle event capture)</em>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="alert alert-warning">
+      <strong>Note:</strong> Additional components will be made compatible in future releases. Only the components listed above currently support state sharing.
+    </div>
+
+    <ul>
+      <li><a href="#rs-doc_overview">Overview</a></li>
+      <li><a href="#rs-doc_usage">Basic Usage</a></li>
+      <li><a href="#rs-doc_storageModes">Storage Modes</a></li>
+      <li><a href="#rs-doc_configuration">Configuration Options</a></li>
+      <li><a href="#rs-doc_permissions">Permissions</a></li>
+      <li><a href="#rs-doc_examples">Examples</a></li>
+    </ul>
+
+    <hr class="divider">
+    <h2 id="rs-doc_overview">Overview</h2>
+    
+    <p>The Application State Management system consists of the <code>&lt;app-state&gt;</code> wrapper component that manages state synchronization between compatible child components. When users interact with these components, their state changes can be captured and encoded into shareable URLs, allowing others to restore the exact same view.</p>
+
+    <h3>Key Features</h3>
+    <ul>
+      <li><strong>State Persistence:</strong> Component states can be saved and restored via URLs</li>
+      <li><strong>Two Storage Modes:</strong> URL-based (real-time sync) or backend-based (manual save)</li>
+      <li><strong>Selective Sharing:</strong> Components declare which state variables should be shared</li>
+      <li><strong>User-Friendly:</strong> Simple save button generates shareable links</li>
+      <li><strong>Collaborative:</strong> Share specific views and configurations with colleagues</li>
+    </ul>
+
+    <hr class="divider">
+    <h2 id="rs-doc_usage">Basic Usage</h2>
+    
+    <p>To enable state sharing, wrap your compatible components with the <code>&lt;app-state&gt;</code> component:</p>
+
+    <mp-code-block mode="text/html">
+<![CDATA[<app-state id="my-app-state" save-button-position="top-right">
+  <semantic-map 
+    id="map-component"
+    shared-state-vars="currentExtent,currentZoom"
+    app-state-id="my-app-state"
+    query="SELECT ?subject ?lat ?lng WHERE { ... }"
+  />
+</app-state>]]>
+    </mp-code-block>
+
+    <h3>Required Attributes</h3>
+    <ul>
+      <li><code>id</code> - Unique identifier for the app-state instance</li>
+      <li><code>shared-state-vars</code> - Comma-separated list of state variables to share (on child components)</li>
+      <li><code>app-state-id</code> - Reference to the parent app-state ID (on child components)</li>
+    </ul>
+
+    <hr class="divider">
+    <h2 id="rs-doc_storageModes">Storage Modes</h2>
+    
+    <p>The system supports two storage modes to accommodate different use cases:</p>
+
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Mode</th>
+          <th>Description</th>
+          <th>Advantages</th>
+          <th>Limitations</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>URL Mode</strong><br/>(default)</td>
+          <td>State is encoded directly in URL parameters with real-time synchronization</td>
+          <td>
+            <ul>
+              <li>Instant sharing without save action</li>
+              <li>No server dependency</li>
+              <li>Works offline once loaded</li>
+              <li>Real-time collaboration</li>
+            </ul>
+          </td>
+          <td>
+            <ul>
+              <li>Limited by URL length (~2KB)</li>
+              <li>Complex states may exceed limits</li>
+              <li>Long URLs can be unwieldy</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Backend Mode</strong></td>
+          <td>State is stored in backend storage, only state ID appears in URL</td>
+          <td>
+            <ul>
+              <li>No size limitations</li>
+              <li>Clean, short URLs</li>
+              <li>Better for complex states</li>
+              <li>Persistent storage</li>
+            </ul>
+          </td>
+          <td>
+            <ul>
+              <li>Requires manual save action</li>
+              <li>Needs server connectivity</li>
+              <li>No real-time sync</li>
+              <li>Requires permissions</li>
+            </ul>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Choosing a Storage Mode</h3>
+    
+    <mp-code-block mode="text/html">
+<![CDATA[<!-- URL Mode (default) - for simple states -->
+<app-state id="my-app" auto-sync="true">
+  <!-- Components -->
+</app-state>
+
+<!-- Backend Mode - for complex states -->
+<app-state id="my-app" storage-mode="backend">
+  <!-- Components -->
+</app-state>]]>
+    </mp-code-block>
+
+    <hr class="divider">
+    <h2 id="rs-doc_configuration">Configuration Options</h2>
+    
+    <h3>AppState Component Properties</h3>
+    
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>id</code></td>
+          <td>string</td>
+          <td>required</td>
+          <td>Unique identifier for the AppState instance</td>
+        </tr>
+        <tr>
+          <td><code>save-button-position</code></td>
+          <td>string</td>
+          <td>top-right</td>
+          <td>Position of the save button. Options: <code>top-right</code>, <code>top-left</code>, <code>bottom-right</code>, <code>bottom-left</code></td>
+        </tr>
+        <tr>
+          <td><code>auto-sync</code></td>
+          <td>boolean</td>
+          <td>false</td>
+          <td>Enable automatic URL synchronization (URL mode only)</td>
+        </tr>
+        <tr>
+          <td><code>storage-mode</code></td>
+          <td>string</td>
+          <td>url</td>
+          <td>Storage mode for states. Options: <code>url</code>, <code>backend</code></td>
+        </tr>
+        <tr>
+          <td><code>url-update-delay</code></td>
+          <td>number</td>
+          <td>500</td>
+          <td>Debounce delay in milliseconds for URL updates (URL mode only)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Child Component Properties</h3>
+    
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>id</code></td>
+          <td>string</td>
+          <td>Unique identifier for the component instance</td>
+        </tr>
+        <tr>
+          <td><code>shared-state-vars</code></td>
+          <td>string</td>
+          <td>Comma-separated list of state variable names to share</td>
+        </tr>
+        <tr>
+          <td><code>app-state-id</code></td>
+          <td>string</td>
+          <td>ID of the parent AppState component</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <hr class="divider">
+    <h2 id="rs-doc_permissions">Permissions</h2>
+    
+    <p>When using backend storage mode, the system uses standard ResearchSpace page permissions:</p>
+
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Permission</th>
+          <th>Required For</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>pages:edit:save</code></td>
+          <td>Saving states</td>
+          <td>Required to save application states to backend storage. This permission is typically granted to users who can edit pages.</td>
+        </tr>
+        <tr>
+          <td><code>pages:view</code></td>
+          <td>Loading states</td>
+          <td>Required to load saved states from backend storage. Most authenticated users have this permission.</td>
+        </tr>
+        <tr>
+          <td><code>pages:info:delete</code></td>
+          <td>Deleting states</td>
+          <td>Optional permission for state cleanup operations (administrative function).</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="alert alert-info">
+      <strong>Design Rationale:</strong> The system uses existing page permissions rather than creating new custom permissions. This ensures users who can already work with pages can use backend storage without additional configuration, maintaining consistency with the ResearchSpace security model.
+    </div>
+
+    <hr class="divider">
+    <h2 id="rs-doc_examples">Examples</h2>
+    
+    <h3>Example 1: Basic Map with URL Storage</h3>
+    
+    <mp-code-block mode="text/html">
+<![CDATA[<app-state id="map-state" auto-sync="true" save-button-position="bottom-right">
+  <div style="width: 100%; height: 600px;">
+    <semantic-map
+      id="city-map"
+      shared-state-vars="currentExtent,currentZoom"
+      app-state-id="map-state"
+      query='
+        SELECT ?place ?lat ?lng ?label WHERE {
+          ?place wdt:P625 ?coords ;
+                 rdfs:label ?label .
+          BIND(geof:latitude(?coords) AS ?lat)
+          BIND(geof:longitude(?coords) AS ?lng)
+        }'
+    />
+  </div>
+</app-state>]]>
+    </mp-code-block>
+
+    <h3>Example 2: Complex Application with Backend Storage</h3>
+    
+    <mp-code-block mode="text/html">
+<![CDATA[<app-state id="research-workspace" storage-mode="backend" save-button-position="top-right">
+  <bs-row>
+    <bs-col md="8">
+      <semantic-map
+        id="main-map"
+        shared-state-vars="currentExtent,currentZoom"
+        app-state-id="research-workspace"
+        query="..."
+      />
+    </bs-col>
+    <bs-col md="4">
+      <!-- Future: Other compatible components -->
+    </bs-col>
+  </bs-row>
+</app-state>]]>
+    </mp-code-block>
+
+    <h3>Workflow Example</h3>
+    
+    <ol>
+      <li><strong>User A</strong> navigates to a specific location on the map and zooms to street level</li>
+      <li>User A clicks the <i class="fa fa-save"></i> save button</li>
+      <li>System generates a shareable URL and copies it to clipboard</li>
+      <li>User A shares the URL with <strong>User B</strong> via email or chat</li>
+      <li>User B opens the URL and sees the exact same map view</li>
+    </ol>
+
+    <hr class="divider">
+    
+    <div class="alert alert-success">
+      <strong>Best Practices:</strong>
+      <ul>
+        <li>Use URL mode for simple states that change frequently</li>
+        <li>Use backend mode for complex states or when URL aesthetics matter</li>
+        <li>Only share state variables that are meaningful to restore</li>
+        <li>Test your shareable URLs in a new browser session to ensure they work correctly</li>
+      </ul>
+    </div>
+
+  </div>
+</div>

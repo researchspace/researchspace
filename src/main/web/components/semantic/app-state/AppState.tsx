@@ -64,6 +64,18 @@ export interface AppStateProps {
   id?: string;
   
   /**
+   * Storage mode for state persistence:
+   * - 'url' (default): State is synced directly in URL parameters, limited by URL length
+   * - 'backend': State is stored in backend, only state ID in URL, no size limits
+   * 
+   * When using 'backend' mode:
+   * - autoSync is ignored (no real-time URL updates)
+   * - State is only saved when "Save States" button is clicked
+   * - Users are warned before leaving page with unsaved changes
+   */
+  storageMode?: 'url' | 'backend';
+  
+  /**
    * Children components that will be wrapped by AppState
    */
   children: React.ReactNode;
@@ -89,6 +101,16 @@ interface AppStateState {
    * Last saved state URL for display
    */
   lastSavedUrl?: string;
+  
+  /**
+   * Track if there are unsaved changes (for backend mode)
+   */
+  hasUnsavedChanges: boolean;
+  
+  /**
+   * Current state ID when loaded from backend
+   */
+  loadedStateId?: string;
 }
 
 export class AppState extends Component<AppStateProps, AppStateState> {
@@ -103,6 +125,8 @@ export class AppState extends Component<AppStateProps, AppStateState> {
       componentRegistry: {},
       globalSharedState: {},
       isSaving: false,
+      hasUnsavedChanges: false,
+      loadedStateId: undefined,
     };
 
     // Listen for component registration events
@@ -149,6 +173,11 @@ export class AppState extends Component<AppStateProps, AppStateState> {
   public componentDidMount() {
     // Parse URL parameters on mount to restore state
     this.parseUrlParameters();
+    
+    // Set up beforeunload warning for backend mode
+    if (this.props.storageMode === 'backend') {
+      window.addEventListener('beforeunload', this.handleBeforeUnload);
+    }
   }
 
   public componentWillUnmount() {
@@ -159,7 +188,24 @@ export class AppState extends Component<AppStateProps, AppStateState> {
     if (this.saveNotificationTimeout) {
       clearTimeout(this.saveNotificationTimeout);
     }
+    
+    // Remove beforeunload listener
+    if (this.props.storageMode === 'backend') {
+      window.removeEventListener('beforeunload', this.handleBeforeUnload);
+    }
   }
+
+  /**
+   * Handle beforeunload event for backend mode
+   */
+  private handleBeforeUnload = (e: BeforeUnloadEvent) => {
+    if (this.state.hasUnsavedChanges) {
+      const message = 'You have unsaved changes. Are you sure you want to leave?';
+      e.preventDefault();
+      e.returnValue = message;
+      return message;
+    }
+  };
 
   /**
    * Handle component registration
@@ -227,11 +273,13 @@ export class AppState extends Component<AppStateProps, AppStateState> {
       };
 
       return {
-        globalSharedState: newGlobalState
+        globalSharedState: newGlobalState,
+        // Mark as having unsaved changes in backend mode
+        hasUnsavedChanges: this.props.storageMode === 'backend' ? true : prevState.hasUnsavedChanges
       };
     }, () => {
-      // Update URL if auto-sync is enabled
-      if (this.props.autoSync) {
+      // Update URL if auto-sync is enabled and not in backend mode
+      if (this.props.autoSync && this.props.storageMode !== 'backend') {
         this.scheduleUrlUpdate();
       }
     });
@@ -270,37 +318,86 @@ export class AppState extends Component<AppStateProps, AppStateState> {
   /**
    * Parse URL parameters and restore component states
    */
-  private parseUrlParameters = () => {
+  private parseUrlParameters = async () => {
     const urlParams = new URLSearchParams(window.location.search);
+    const stateId = urlParams.get('stateId');
     const statesParam = urlParams.get('states');
     
-    if (!statesParam) {
-      return;
-    }
-
-    try {
-      // Decode and parse the states parameter
-      const decodedStates = decodeURIComponent(statesParam);
-      const parsedStates = this.parseStatesString(decodedStates);
-      
-      console.log('AppState: Parsed states from URL:', parsedStates);
-
-      // Update global state
-      this.setState({
-        globalSharedState: parsedStates
-      }, () => {
-        // Sync states to registered components
-        Object.keys(parsedStates).forEach(componentId => {
-          this.syncUrlStateToComponent(componentId);
+    // Check for backend state ID first
+    if (stateId && this.props.storageMode === 'backend') {
+      try {
+        console.log('AppState: Loading state from backend with ID:', stateId);
+        
+        // Load state from backend
+        const response = await fetch(`/rest/app-state/load/${stateId}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+          },
+          credentials: 'same-origin'
         });
-      });
-    } catch (error) {
-      console.error('AppState: Error parsing URL states:', error);
+
+        if (!response.ok) {
+          throw new Error(`Failed to load state: ${response.status} ${response.statusText}`);
+        }
+
+        const stateData = await response.json();
+        console.log('AppState: Raw state data from backend:', stateData);
+        
+        // Parse the states JSON string
+        const parsedStates = typeof stateData.states === 'string' 
+          ? JSON.parse(stateData.states) 
+          : stateData.states;
+        
+        console.log('AppState: Loaded states from backend:', parsedStates);
+
+        // Update global state
+        this.setState({
+          globalSharedState: parsedStates,
+          loadedStateId: stateId,
+          hasUnsavedChanges: false
+        }, () => {
+          // Sync states to registered components
+          Object.keys(parsedStates).forEach(componentId => {
+            this.syncUrlStateToComponent(componentId);
+          });
+        });
+      } catch (error) {
+        console.error('AppState: Error loading state from backend:', error);
+        addNotification({
+          level: 'error',
+          title: 'Failed to Load State',
+          message: 'Unable to load the saved state. The link may be invalid or expired.',
+          autoDismiss: 5
+        });
+      }
+    } else if (statesParam) {
+      // Fallback to URL-based state loading
+      try {
+        // Decode and parse the states parameter
+        const decodedStates = decodeURIComponent(statesParam);
+        const parsedStates = this.parseStatesString(decodedStates);
+        
+        console.log('AppState: Parsed states from URL:', parsedStates);
+
+        // Update global state
+        this.setState({
+          globalSharedState: parsedStates
+        }, () => {
+          // Sync states to registered components
+          Object.keys(parsedStates).forEach(componentId => {
+            this.syncUrlStateToComponent(componentId);
+          });
+        });
+      } catch (error) {
+        console.error('AppState: Error parsing URL states:', error);
+      }
     }
   };
 
   /**
-   * Parse states string format: Component1={var1:value1,var2:value2}&Component2={var3:value3}
+   * Parse states string format: Component1=base64data&Component2=base64data
+   * Also supports legacy format: Component1={var1:value1,var2:value2}&Component2={var3:value3}
    */
   private parseStatesString = (statesString: string): { [componentId: string]: { [varName: string]: any } } => {
     const result: { [componentId: string]: { [varName: string]: any } } = {};
@@ -315,29 +412,40 @@ export class AppState extends Component<AppStateProps, AppStateState> {
       const componentId = part.substring(0, equalIndex);
       const stateString = part.substring(equalIndex + 1);
       
-      // Remove surrounding braces
-      const cleanStateString = stateString.replace(/^\{|\}$/g, '');
-      
-      // Parse key:value pairs
-      const stateObj: { [varName: string]: any } = {};
-      const pairs = cleanStateString.split(',');
-      
-      for (const pair of pairs) {
-        const colonIndex = pair.indexOf(':');
-        if (colonIndex === -1) continue;
+      try {
+        // First try to decode as base64 (new format)
+        const decodedJson = decodeURIComponent(atob(stateString));
+        const stateObj = JSON.parse(decodedJson);
+        result[componentId] = stateObj;
+        console.log(`AppState: Decoded base64 state for ${componentId}:`, stateObj);
+      } catch (e) {
+        // Fallback to legacy format parsing
+        console.log(`AppState: Falling back to legacy format for ${componentId}`);
         
-        const key = pair.substring(0, colonIndex).trim();
-        const valueString = pair.substring(colonIndex + 1).trim();
+        // Remove surrounding braces
+        const cleanStateString = stateString.replace(/^\{|\}$/g, '');
         
-        // Try to parse the value as JSON, fallback to string
-        try {
-          stateObj[key] = JSON.parse(valueString);
-        } catch {
-          stateObj[key] = valueString;
+        // Parse key:value pairs with proper handling of arrays and objects
+        const stateObj: { [varName: string]: any } = {};
+        
+        // Use regex to properly split key:value pairs, respecting arrays and objects
+        const pairRegex = /(\w+):(\[[^\]]*\]|\{[^}]*\}|[^,]+)(?:,|$)/g;
+        let match;
+        
+        while ((match = pairRegex.exec(cleanStateString)) !== null) {
+          const key = match[1].trim();
+          const valueString = match[2].trim();
+          
+          // Try to parse the value as JSON, fallback to string
+          try {
+            stateObj[key] = JSON.parse(valueString);
+          } catch {
+            stateObj[key] = valueString;
+          }
         }
+        
+        result[componentId] = stateObj;
       }
-      
-      result[componentId] = stateObj;
     }
     
     return result;
@@ -368,15 +476,11 @@ export class AppState extends Component<AppStateProps, AppStateState> {
     Object.entries(this.state.globalSharedState).forEach(([componentId, componentState]) => {
       if (Object.keys(componentState).length === 0) return;
       
-      const statePairs: string[] = [];
-      Object.entries(componentState).forEach(([key, value]) => {
-        const serializedValue = typeof value === 'string' ? value : JSON.stringify(value);
-        statePairs.push(`${key}:${serializedValue}`);
-      });
+      // Use base64 encoding for the entire component state to avoid delimiter conflicts
+      const stateJson = JSON.stringify(componentState);
+      const encodedState = btoa(encodeURIComponent(stateJson));
       
-      if (statePairs.length > 0) {
-        parts.push(`${componentId}={${statePairs.join(',')}}`);
-      }
+      parts.push(`${componentId}=${encodedState}`);
     });
     
     return parts.join('&');
@@ -406,32 +510,80 @@ export class AppState extends Component<AppStateProps, AppStateState> {
     this.setState({ isSaving: true });
 
     try {
-      // Create a URL with the current states as parameters
-      const currentUrl = new URL(window.location.href);
-      const statesString = this.serializeStatesForUrl();
+      let shortUrl: string;
       
-      if (statesString) {
-        currentUrl.searchParams.set('states', statesString);
+      if (this.props.storageMode === 'backend') {
+        // Backend mode: Save state to backend and create URL with state ID
+        console.log('AppState: Saving state to backend');
+        
+        const stateData = {
+          pageUrl: window.location.pathname + window.location.search,
+          states: JSON.stringify(this.state.globalSharedState)
+        };
+        
+        const response = await fetch('/rest/app-state/save', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          credentials: 'same-origin',
+          body: JSON.stringify(stateData)
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to save state: ${response.status} ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        const stateId = result.stateId;
+        
+        console.log('AppState: State saved with ID:', stateId);
+        
+        // Create URL with state ID
+        const currentUrl = new URL(window.location.href);
+        // Clear existing state params
+        currentUrl.searchParams.delete('states');
+        currentUrl.searchParams.delete('stateId');
+        // Add state ID
+        currentUrl.searchParams.set('stateId', stateId);
+        
+        shortUrl = currentUrl.toString();
+        
+        // Update state to mark as saved
+        this.setState({ 
+          loadedStateId: stateId,
+          hasUnsavedChanges: false 
+        });
+        
+      } else {
+        // URL mode: Create URL with states in parameters
+        const currentUrl = new URL(window.location.href);
+        const statesString = this.serializeStatesForUrl();
+        
+        if (statesString) {
+          currentUrl.searchParams.set('states', statesString);
+        }
+        
+        const fullUrl = currentUrl.toString();
+        console.log('AppState: Full URL to shorten:', fullUrl);
+
+        // Call the URL minifier service to create a short URL
+        const response = await fetch(`/rest/url-minify/getShort?url=${encodeURIComponent(fullUrl)}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'text/plain',
+          },
+          credentials: 'same-origin'
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to create short URL: ${response.status} ${response.statusText}`);
+        }
+
+        const shortKey = await response.text();
+        shortUrl = `${window.location.origin}/l/${shortKey}`;
       }
-      
-      const fullUrl = currentUrl.toString();
-      console.log('AppState: Full URL to shorten:', fullUrl);
-
-      // Call the URL minifier service to create a short URL
-      const response = await fetch(`/rest/url-minify/getShort?url=${encodeURIComponent(fullUrl)}`, {
-        method: 'GET',
-        headers: {
-          'Accept': 'text/plain',
-        },
-        credentials: 'same-origin'
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to create short URL: ${response.status} ${response.statusText}`);
-      }
-
-      const shortKey = await response.text();
-      const shortUrl = `${window.location.origin}/l/${shortKey}`;
 
       console.log('AppState: Created shareable URL:', shortUrl);
 

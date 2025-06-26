@@ -261,7 +261,7 @@ export class AppState extends Component<AppStateProps, AppStateState> {
    */
   private handleSharedStateUpdate = (event: any) => {
     const { componentId, stateUpdates } = event.data;
-    console.log('AppState: Received state update from', componentId, ':', stateUpdates);
+    // console.log('AppState: Received state update from', componentId, ':', stateUpdates);
 
     this.setState(prevState => {
       const newGlobalState = {
@@ -744,10 +744,10 @@ export class AppState extends Component<AppStateProps, AppStateState> {
       componentId => Object.keys(this.state.globalSharedState[componentId]).length > 0
     );
 
-    // Debug logging
-    console.log('AppState render - globalSharedState:', this.state.globalSharedState);
-    console.log('AppState render - hasSharedState:', hasSharedState);
-    console.log('AppState render - componentRegistry:', this.state.componentRegistry);
+    // // Debug logging
+    // console.log('AppState render - globalSharedState:', this.state.globalSharedState);
+    // console.log('AppState render - hasSharedState:', hasSharedState);
+    // console.log('AppState render - componentRegistry:', this.state.componentRegistry);
 
     return (
       <div className="app-state-container" style={{ position: 'relative', height: '100%', width: '100%' }}>

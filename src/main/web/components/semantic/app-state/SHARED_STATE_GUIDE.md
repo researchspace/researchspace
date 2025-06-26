@@ -189,13 +189,49 @@ AppState supports two storage modes to handle different use cases:
 
 When using backend storage mode:
 
-1. **Permissions**: Uses standard page permissions:
-   - `pages:edit:save` - Required to save states
-   - `pages:view` - Required to load states
-   - `pages:info:delete` - Required to delete states (if implemented)
-2. **Storage**: States are stored in the platform's runtime storage
+1. **Permissions**: The backend storage mode uses standard ResearchSpace page permissions rather than creating new custom permissions. This design choice ensures that:
+   - **No additional configuration needed**: Users who can already work with pages can use backend storage
+   - **Consistent security model**: Follows the existing permission patterns in ResearchSpace
+   - **Logical alignment**: Since app states are typically associated with pages/templates, using page permissions makes semantic sense
+   
+   The specific permissions required are:
+   - **`pages:edit:save`** - Required to save states to backend
+     - Rationale: Saving an app state is conceptually similar to saving page content
+     - Most users who need to save states already have this permission
+   - **`pages:view`** - Required to load states from backend
+     - Rationale: Loading a state is like viewing page content
+     - This is typically a basic permission that most users have
+   - **`pages:info:delete`** - Required to delete states (if cleanup is needed)
+     - Rationale: Deleting states is an administrative action similar to deleting pages
+     - This permission is optional and only needed for state cleanup
+
+2. **Storage**: States are stored in the platform's runtime storage under `/app-states/` folder
+   - Each state is saved as a JSON file with a UUID filename
+   - Includes metadata: creation time, creator, and original page URL
+
 3. **Persistence**: States are persistent but may be subject to cleanup policies
+   - States remain available as long as the runtime storage is maintained
+   - System administrators can implement cleanup policies if needed
+
 4. **Security**: States are associated with the user who created them
+   - The creator's username is stored in the state metadata
+   - Access control follows the standard ResearchSpace security model
+
+### Permission Troubleshooting
+
+If users encounter permission errors when using backend storage mode:
+
+1. **"Permission denied" when saving**: 
+   - Ensure the user has `pages:edit:save` permission
+   - This is typically granted to users who can edit pages/templates
+
+2. **"Permission denied" when loading**:
+   - Ensure the user has `pages:view` permission
+   - This is usually a basic permission most authenticated users have
+
+3. **Granting permissions**:
+   - Permissions can be granted through the ResearchSpace security administration interface
+   - Add the required permissions to the user's role or directly to the user
 
 ## Best Practices
 

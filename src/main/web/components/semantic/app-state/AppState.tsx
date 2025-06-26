@@ -760,20 +760,31 @@ export class AppState extends Component<AppStateProps, AppStateState> {
           style={{
             position: 'fixed',
             zIndex: 10000,
-            padding: '8px 16px',
-            backgroundColor: this.state.isSaving ? '#95a5a6' : '#3498db',
-            color: 'white',
-            border: 'none',
+            padding: '10px 14px',
+            backgroundColor: 'white',
+            color: 'black',
+            border: '1px solid #ddd',
             borderRadius: '4px',
             cursor: this.state.isSaving || !hasSharedState ? 'not-allowed' : 'pointer',
-            fontSize: '14px',
-            fontWeight: 'bold',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+            fontSize: '16px',
+            fontWeight: 'normal',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
             opacity: hasSharedState ? 1 : 0.5,
+            transition: 'all 0.2s ease',
             ...(this.props.saveButtonPosition === 'top-left' && { top: '20px', left: '20px' }),
             ...(this.props.saveButtonPosition === 'bottom-left' && { bottom: '20px', left: '20px' }),
             ...(this.props.saveButtonPosition === 'bottom-right' && { bottom: '20px', right: '20px' }),
             ...(!this.props.saveButtonPosition || this.props.saveButtonPosition === 'top-right') && { top: '20px', right: '20px' },
+          }}
+          onMouseEnter={(e) => {
+            if (!this.state.isSaving && hasSharedState) {
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+              e.currentTarget.style.transform = 'translateY(-1px)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+            e.currentTarget.style.transform = 'translateY(0)';
           }}
         >
           {this.state.isSaving ? (
@@ -783,7 +794,7 @@ export class AppState extends Component<AppStateProps, AppStateState> {
             </>
           ) : (
             <>
-              <i className="fa fa-share-alt" style={{ }}></i>
+              <i className="fa fa-save" style={{ fontSize: '18px' }}></i>
             </>
           )}
         </button>

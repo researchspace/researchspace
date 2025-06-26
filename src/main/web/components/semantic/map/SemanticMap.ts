@@ -56,6 +56,7 @@ import { BuiltInEvents, trigger } from 'platform/api/events';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 import { Component, ComponentContext } from 'platform/api/components';
 import { LayoutChanged } from 'platform/components/dashboard/DashboardEvents';
+import { SharedStateComponent, SharedStateProps } from '../app-state/SharedStateComponent';
 
 import { ErrorNotification } from 'platform/components/ui/notification';
 import { Spinner } from 'platform/components/ui/spinner';
@@ -108,18 +109,20 @@ export interface SemanticMapConfig {
   id?: string;
 }
 
-export type SemanticMapProps = SemanticMapConfig & Props<any>;
+export type SemanticMapProps = SemanticMapConfig & SharedStateProps & Props<any>;
 
 interface MapState {
   tupleTemplate?: Data.Maybe<HandlebarsTemplateDelegate>;
   errorMessage: Data.Maybe<string>;
   noResults?: boolean;
   isLoading?: boolean;
+  currentExtent?: number[];
+  currentZoom?: number;
 }
 
 const MAP_REF = 'researchspace-map-widget';
 
-export class SemanticMap extends Component<SemanticMapProps, MapState> {
+export class SemanticMap extends SharedStateComponent<SemanticMapProps, MapState> {
   private layers: { [id: string]: VectorLayer };
   private map: Map;
 
@@ -130,6 +133,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       noResults: false,
       isLoading: true,
       errorMessage: maybe.Nothing<string>(),
+      currentExtent: undefined,
+      currentZoom: undefined,
     };
   }
 
@@ -147,7 +152,18 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   }
 
   public componentDidMount() {
+    // Call parent to register with AppState
+    super.componentDidMount();
+    
+    // Create the map
     this.createMap();
+    
+    // Request current state from AppState after map is created
+    // This ensures we get any URL state that was already parsed
+    setTimeout(() => {
+      console.log('SemanticMap: Requesting current state from AppState');
+      this.requestCurrentState();
+    }, 100);
   }
 
   public componentWillReceiveProps(props: SemanticMapProps, context: ComponentContext) {
@@ -358,12 +374,19 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           const geometries = this.createGeometries(m);
           this.updateLayers(geometries);
 
-          const view = this.map.getView();
-          const extent = this.calculateExtent();
-          view.fit(extent, { maxZoom: 10 });
+          // Set up extent/zoom tracking for shared state
+          this.setupExtentZoomTracking();
 
-          if (fixZoomLevel) {
-            view.setZoom(fixZoomLevel);
+          // Auto-fit to markers if no stored state
+          const hasStoredState = this.state.currentExtent || this.state.currentZoom;
+          if (!hasStoredState) {
+            const view = this.map.getView();
+            const extent = this.calculateExtent();
+            view.fit(extent, { maxZoom: 10 });
+
+            if (fixZoomLevel) {
+              view.setZoom(fixZoomLevel);
+            }
           }
         }
       });
@@ -489,6 +512,154 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     } else {
       return props.tupleTemplate;
     }
+  }
+
+  /**
+   * Set up extent and zoom tracking for shared state synchronization
+   */
+  private setupExtentZoomTracking = () => {
+    if (!this.map) return;
+
+    const view = this.map.getView();
+    
+    // Check if we have stored state from URL that needs to be applied
+    if (this.state.currentExtent || this.state.currentZoom) {
+      console.log('SemanticMap: Applying stored state from URL:', {
+        extent: this.state.currentExtent,
+        zoom: this.state.currentZoom
+      });
+      this.applyMapState({
+        currentExtent: this.state.currentExtent,
+        currentZoom: this.state.currentZoom
+      });
+    } else {
+      // Initialize current state if no stored state
+      const initialExtent = view.calculateExtent(this.map.getSize());
+      const initialZoom = view.getZoom();
+      
+      this.setState({
+        currentExtent: initialExtent.map(coord => Math.round(coord * 1000000) / 1000000),
+        currentZoom: Math.round(initialZoom * 100) / 100
+      });
+    }
+    
+    // Listen to view changes (pan/zoom) for future updates
+    view.on('change', () => {
+      const extent = view.calculateExtent(this.map.getSize());
+      const zoom = view.getZoom();
+      
+      // Round coordinates to reasonable precision (6 decimal places)
+      const roundedExtent = extent.map(coord => Math.round(coord * 1000000) / 1000000);
+      const roundedZoom = Math.round(zoom * 100) / 100;
+      
+      this.setState({
+        currentExtent: roundedExtent,
+        currentZoom: roundedZoom
+      });
+      
+      console.log('SemanticMap: Updated extent/zoom:', { extent: roundedExtent, zoom: roundedZoom });
+    });
+  };
+
+  /**
+   * Handle shared state synchronization from AppState
+   * Restore map extent and zoom from shared state
+   */
+  protected handleSharedStateSync(syncedState: any): void {
+    if (!syncedState) {
+      return;
+    }
+
+    console.log('SemanticMap: Received shared state sync:', syncedState);
+    console.log('SemanticMap: Current map state:', { 
+      mapExists: !!this.map, 
+      currentState: this.state
+    });
+    
+    // Parse extent if it's a string (from URL parameters)
+    let parsedExtent = syncedState.currentExtent;
+    if (typeof parsedExtent === 'string') {
+      try {
+        parsedExtent = JSON.parse(parsedExtent);
+        console.log('SemanticMap: Parsed extent from string:', parsedExtent);
+      } catch (e) {
+        console.error('SemanticMap: Failed to parse extent string:', parsedExtent, e);
+        parsedExtent = undefined;
+      }
+    }
+    
+    // Store the state regardless of map readiness
+    if (parsedExtent || syncedState.currentZoom) {
+      this.setState({
+        currentExtent: parsedExtent,
+        currentZoom: syncedState.currentZoom
+      }, () => {
+        console.log('SemanticMap: State updated:', this.state);
+        
+        // If map is ready, apply immediately
+        if (this.map) {
+          this.applyMapState({
+            currentExtent: parsedExtent,
+            currentZoom: syncedState.currentZoom
+          });
+        } else {
+          console.log('SemanticMap: Map not ready yet, state will be applied when ready');
+        }
+      });
+    }
+  }
+
+  /**
+   * Apply map state (extent/zoom) to the map view
+   */
+  private applyMapState = (state: any) => {
+    
+    if (!this.map) {
+      console.log('SemanticMap: applyMapState - map not available');
+      return;
+    }
+    
+    if (!state) {
+      console.log('SemanticMap: applyMapState - no state provided');
+      return;
+    }
+
+    const view = this.map.getView();
+    const currentCenter = view.getCenter();
+    const currentZoom = view.getZoom();
+    
+    
+    // Apply extent and zoom together for proper restoration
+    if (state.currentExtent && Array.isArray(state.currentExtent) && state.currentExtent.length === 4) {
+      
+      // Calculate center from extent for more reliable restoration
+      const [minX, minY, maxX, maxY] = state.currentExtent;
+      const centerX = (minX + maxX) / 2;
+      const centerY = (minY + maxY) / 2;
+      
+      
+      // Set center and zoom directly
+      view.setCenter([centerX, centerY]);
+      
+      if (typeof state.currentZoom === 'number') {
+        view.setZoom(state.currentZoom);
+      }
+      
+      // Verify the change
+      setTimeout(() => {
+        const newCenter = view.getCenter();
+        const newZoom = view.getZoom();
+      }, 50);
+    } else if (typeof state.currentZoom === 'number') {
+      // Apply zoom only if no extent provided
+      view.setZoom(state.currentZoom);
+    }
+
+    // Update local state to match applied state
+    this.setState({
+      currentExtent: state.currentExtent,
+      currentZoom: state.currentZoom
+    });
   }
 }
 

@@ -28,6 +28,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.researchspace.rest.endpoint.AppAdminEndpoint;
+import org.researchspace.rest.endpoint.AppStateStorageEndpoint;
 import org.researchspace.rest.endpoint.CacheEndpoint;
 import org.researchspace.rest.endpoint.ConfigurationEndpoint;
 import org.researchspace.rest.endpoint.FieldEndpoint;
@@ -96,6 +97,11 @@ public class RestApplication extends AbstractPlatformApplication {
          * /rest/sets
          */
         register(SetManagementEndpoint.class);
+        
+        /*
+         * /rest/app-state
+         */
+        register(AppStateStorageEndpoint.class);
 
         /*
          * /rest/repositories

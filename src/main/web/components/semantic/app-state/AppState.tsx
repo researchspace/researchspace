@@ -749,10 +749,14 @@ export class AppState extends Component<AppStateProps, AppStateState> {
     // console.log('AppState render - hasSharedState:', hasSharedState);
     // console.log('AppState render - componentRegistry:', this.state.componentRegistry);
 
+    // Only show save button in backend mode or URL mode without auto-sync
+    const showSaveButton = this.props.storageMode === 'backend' || !this.props.autoSync;
+
     return (
       <div className="app-state-container" style={{ position: 'relative', height: '100%', width: '100%' }}>
-        {/* Save States Button */}
-        <button
+        {/* Save States Button - only show when needed */}
+        {showSaveButton && (
+          <button
           className={this.getSaveButtonClasses()}
           onClick={this.handleSaveStates}
           disabled={this.state.isSaving || !hasSharedState}
@@ -798,7 +802,7 @@ export class AppState extends Component<AppStateProps, AppStateState> {
             </>
           )}
         </button>
-
+        )}
 
         {/* Wrapped Children */}
         {this.props.children}

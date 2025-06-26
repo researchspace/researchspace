@@ -200,7 +200,7 @@ export abstract class SharedStateComponent<P extends SharedStateProps, S> extend
     });
     
     if (Object.keys(stateToSync).length > 0) {
-      console.log(`SharedStateComponent: ${this.props.id} auto-syncing state:`, stateToSync);
+      // console.log(`SharedStateComponent: ${this.props.id} auto-syncing state:`, stateToSync);
       this.sharedStateManager.updateSharedState(stateToSync);
     }
   }

@@ -107,7 +107,7 @@ export class SharedStateManager {
       return; // No shared state variables to update
     }
 
-    console.log('SharedStateManager: Updating shared state for', this.componentId, ':', filteredUpdates);
+    // console.log('SharedStateManager: Updating shared state for', this.componentId, ':', filteredUpdates);
 
     trigger({
       eventType: APP_STATE_UPDATE_SHARED_STATE,

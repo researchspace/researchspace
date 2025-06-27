@@ -175,7 +175,7 @@ def main():
             
                     results.append(entry)
                     
-        filtered = filter_out(results, ["Chart","KP category", "Knowledge map", "Semantic narrative", "Set", "Set Item", "Timeline", "User"])         
+        filtered = filter_out(results, ["Chart", "Finder", "Image annotation", "KP category", "Knowledge map", "Semantic narrative", "Set", "Set Item", "Timeline", "User"])         
         no_duplicates_results = remove_duplicates_by_label(results)
         header = "[[!-- "+ nested["url"]+ " --]]"
         

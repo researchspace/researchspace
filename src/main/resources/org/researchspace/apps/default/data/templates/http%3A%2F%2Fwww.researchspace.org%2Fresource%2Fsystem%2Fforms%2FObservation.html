@@ -49,6 +49,7 @@
                           observable_entity_was_observed_by="http://www.researchspace.org/pattern/system/observable_entity/was_observed_by"
                           entity_value_was_observed_by="http://www.researchspace.org/pattern/system/entity/value_was_observed_by"
                           
+                          observation_observed_entity="http://www.researchspace.org/pattern/system/observation/observed_entity"
                           activity_used_specific_object_domain="http://www.researchspace.org/pattern/system/activity/PC16_used_specific_object"
                           activity_was_intended_use_of_domain="http://www.researchspace.org/pattern/system/activity/PC19_was_intended_use_of"
                           event_occurred_in_the_presence_of_thing="http://www.researchspace.org/pattern/system/event/occurred_in_the_presence_of_thing"
@@ -369,18 +370,24 @@
         <semantic-form-autocomplete-input for='observable_entity_was_observed_by' 
                                           label="Observed by"
                                           placeholder="Select observation/measurement" 
-                                          nested-form-templates='[[> Platform:NestedFormTemplates_observations]]'>
+                                          nested-form-templates='[[> Platform:NestedFormTemplates_singleObservations]]'>
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input for='entity_value_was_observed_by' 
                                           label="Value observed by"
                                           placeholder="Select observation/measurement" 
-                                          nested-form-templates='[[> Platform:NestedFormTemplates_observations]]'>
+                                          nested-form-templates='[[> Platform:NestedFormTemplates_singleObservations]]'>
         </semantic-form-autocomplete-input>
         
       </rs-tab>
 
       <rs-tab event-key="thing" title="Things">
+
+        <semantic-form-autocomplete-input   for='observation_observed_entity' 
+                                            label="Observed entity"
+                                            placeholder="Select the thing, feature, phenomenon, or some process, that is observed by the observation" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_observableEntities]]'> 
+        </semantic-form-autocomplete-input>
 
         <div class="inline-composite-container">
           <semantic-form-composite-input  for="activity_used_specific_object_domain" 
@@ -542,7 +549,7 @@
             </div>
           </div>
           </semantic-form-composite-input>
-      </div>
+        </div>
 
         <semantic-form-autocomplete-input   for='entity_subject_of' 
                                             label="Subject of"

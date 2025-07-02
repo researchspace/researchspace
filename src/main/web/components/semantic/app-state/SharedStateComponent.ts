@@ -94,9 +94,11 @@ export abstract class SharedStateComponent<P extends SharedStateProps, S> extend
       console.log(`SharedStateComponent: ${this.props.id} shared vars:`, this.sharedStateManager.getSharedStateVars());
       this.sharedStateManager.register(this.state);
       console.log(`SharedStateComponent: ${this.props.id} registered with AppState`);
-    } else {
+    } else if (this.props.sharedStateVars) {
+      // Only log warning if sharedStateVars were explicitly provided but manager creation failed
       console.log(`SharedStateComponent: ${this.props.id} has no shared state manager - sharedStateVars:`, this.props.sharedStateVars);
     }
+    // If no sharedStateVars provided, component just extends SharedStateComponent for compatibility but doesn't use shared state
   }
 
   public componentWillUnmount() {

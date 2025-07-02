@@ -25,8 +25,12 @@
 </style>
 
 <div class='page_100vh thinking-frames-page'>
-  <rs-dashboard
-    home-page-iri="http://www.researchspace.org/resource/Start"
+  <app-state id="thinking-frames-state" storage-mode="backend" save-button-position="bottom-right">
+    <rs-dashboard
+      id="thinking-frames"
+      shared-state-vars="layoutModel,openFrames,activeFrameId"
+      app-state-id="thinking-frames-state"
+      home-page-iri="http://www.researchspace.org/resource/Start"
 
     [[#if (urlParam "view")]]
       initial-view='{"view": "[[urlParam "view"]]", 
@@ -547,7 +551,10 @@
       </style>
       
       <div style='flex: 1 1 0px; overflow: auto;'>
-        <semantic-map tuple-template='{{> popover}}'
+        <semantic-map id='{{dashboardId}}-map'
+                      shared-state-vars='currentExtent,currentZoom'
+                      app-state-id='thinking-frames-state'
+                      tuple-template='{{> popover}}'
                       query='SELECT DISTINCT ?wkt ?place ?color WHERE {
                               {
                                 <{{iri}}> rdf:type Platform:Set;
@@ -664,5 +671,6 @@
       </div>
     </template>
     
-  </rs-dashboard>
+    </rs-dashboard>
+  </app-state>
 </div>

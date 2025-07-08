@@ -19,6 +19,7 @@
 
 import { Component, ComponentContext } from 'platform/api/components';
 import { SharedStateManager, createSharedStateManager } from './SharedStateUtils';
+import { AppStateContext } from './AppStateContext';
 
 /**
  * Interface for props that support shared state functionality
@@ -70,15 +71,30 @@ export interface SharedStateProps {
 export abstract class SharedStateComponent<P extends SharedStateProps, S> extends Component<P, S> {
   protected sharedStateManager: SharedStateManager | null = null;
 
+  // Add static contextType to consume AppStateContext
+  static contextType = AppStateContext;
+
   constructor(props: P, context: ComponentContext) {
     super(props, context);
     
-    // Initialize shared state manager if shared-state-vars are provided
+    // Check if we're in an AppState context
+    const appStateContext = (this as any).context;
+    const hasContext = appStateContext && appStateContext.appStateId;
+    
+    // Determine the effective app-state-id
+    let effectiveAppStateId = this.props.appStateId;
+    if (!effectiveAppStateId && hasContext) {
+      effectiveAppStateId = appStateContext.appStateId;
+      console.log(`SharedStateComponent: ${this.props.id} using context AppState ID: ${effectiveAppStateId}`);
+    }
+    
+    // Initialize shared state manager with effective ID
     this.sharedStateManager = createSharedStateManager(
       this.props.id,
       this.props.sharedStateVars,
-      this.props.appStateId,
-      this.handleSharedStateSync.bind(this)
+      effectiveAppStateId,
+      this.handleSharedStateSync.bind(this),
+      hasContext ? appStateContext : null // Pass context if available
     );
   }
 

@@ -27,6 +27,7 @@ import {
   APP_STATE_REQUEST_CURRENT_STATE,
   ComponentStateRegistration
 } from './AppState';
+import { AppStateContextValue } from './AppStateContext';
 
 /**
  * Utility class to help components integrate with AppState
@@ -37,17 +38,20 @@ export class SharedStateManager {
   private appStateId?: string;
   private cancelation: Cancellation;
   private onStateSync?: (state: any) => void;
+  private appStateContext?: AppStateContextValue;
 
   constructor(
     componentId: string,
     sharedStateVars: string[],
     appStateId?: string,
-    onStateSync?: (state: any) => void
+    onStateSync?: (state: any) => void,
+    appStateContext?: AppStateContextValue
   ) {
     this.componentId = componentId;
     this.sharedStateVars = sharedStateVars;
     this.appStateId = appStateId;
     this.onStateSync = onStateSync;
+    this.appStateContext = appStateContext;
     this.cancelation = new Cancellation();
 
     // Listen for state sync events from AppState
@@ -73,12 +77,18 @@ export class SharedStateManager {
 
     console.log('SharedStateManager: Registering component', this.componentId);
 
-    trigger({
-      eventType: APP_STATE_REGISTER_COMPONENT,
-      source: this.componentId,
-      targets: this.appStateId ? [this.appStateId] : undefined,
-      data: registration
-    });
+    // Use context if available, otherwise use events
+    if (this.appStateContext) {
+      console.log('SharedStateManager: Using context for registration');
+      this.appStateContext.register(registration);
+    } else {
+      trigger({
+        eventType: APP_STATE_REGISTER_COMPONENT,
+        source: this.componentId,
+        targets: this.appStateId ? [this.appStateId] : undefined,
+        data: registration
+      });
+    }
   }
 
   /**
@@ -87,12 +97,18 @@ export class SharedStateManager {
   public unregister() {
     console.log('SharedStateManager: Unregistering component', this.componentId);
 
-    trigger({
-      eventType: APP_STATE_UNREGISTER_COMPONENT,
-      source: this.componentId,
-      targets: this.appStateId ? [this.appStateId] : undefined,
-      data: this.componentId
-    });
+    // Use context if available, otherwise use events
+    if (this.appStateContext) {
+      console.log('SharedStateManager: Using context for unregistration');
+      this.appStateContext.unregister(this.componentId);
+    } else {
+      trigger({
+        eventType: APP_STATE_UNREGISTER_COMPONENT,
+        source: this.componentId,
+        targets: this.appStateId ? [this.appStateId] : undefined,
+        data: this.componentId
+      });
+    }
 
     this.cancelation.cancelAll();
   }
@@ -109,15 +125,20 @@ export class SharedStateManager {
 
     // console.log('SharedStateManager: Updating shared state for', this.componentId, ':', filteredUpdates);
 
-    trigger({
-      eventType: APP_STATE_UPDATE_SHARED_STATE,
-      source: this.componentId,
-      targets: this.appStateId ? [this.appStateId] : undefined,
-      data: {
-        componentId: this.componentId,
-        stateUpdates: filteredUpdates
-      }
-    });
+    // Use context if available, otherwise use events
+    if (this.appStateContext) {
+      this.appStateContext.updateState(this.componentId, filteredUpdates);
+    } else {
+      trigger({
+        eventType: APP_STATE_UPDATE_SHARED_STATE,
+        source: this.componentId,
+        targets: this.appStateId ? [this.appStateId] : undefined,
+        data: {
+          componentId: this.componentId,
+          stateUpdates: filteredUpdates
+        }
+      });
+    }
   }
 
   /**
@@ -126,14 +147,20 @@ export class SharedStateManager {
   public requestCurrentState() {
     console.log('SharedStateManager: Requesting current state for', this.componentId);
 
-    trigger({
-      eventType: APP_STATE_REQUEST_CURRENT_STATE,
-      source: this.componentId,
-      targets: this.appStateId ? [this.appStateId] : undefined,
-      data: {
-        componentId: this.componentId
-      }
-    });
+    // Use context if available, otherwise use events
+    if (this.appStateContext) {
+      console.log('SharedStateManager: Using context for state request');
+      this.appStateContext.requestCurrentState(this.componentId);
+    } else {
+      trigger({
+        eventType: APP_STATE_REQUEST_CURRENT_STATE,
+        source: this.componentId,
+        targets: this.appStateId ? [this.appStateId] : undefined,
+        data: {
+          componentId: this.componentId
+        }
+      });
+    }
   }
 
   /**
@@ -212,7 +239,8 @@ export function createSharedStateManager(
   componentId: string,
   sharedStateVarsProp?: string | string[],
   appStateId?: string,
-  onStateSync?: (state: any) => void
+  onStateSync?: (state: any) => void,
+  appStateContext?: AppStateContextValue
 ): SharedStateManager | null {
   const sharedStateVars = parseSharedStateVars(sharedStateVarsProp);
   
@@ -220,7 +248,7 @@ export function createSharedStateManager(
     return null; // No shared state variables, no need for manager
   }
 
-  return new SharedStateManager(componentId, sharedStateVars, appStateId, onStateSync);
+  return new SharedStateManager(componentId, sharedStateVars, appStateId, onStateSync, appStateContext);
 }
 
 /**

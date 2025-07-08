@@ -19,7 +19,7 @@
 
 import { Component, ComponentContext } from 'platform/api/components';
 import { SharedStateManager, createSharedStateManager } from './SharedStateUtils';
-import { AppStateContext } from './AppStateContext';
+import * as ReactDOM from 'react-dom';
 
 /**
  * Interface for props that support shared state functionality
@@ -70,32 +70,13 @@ export interface SharedStateProps {
  */
 export abstract class SharedStateComponent<P extends SharedStateProps, S> extends Component<P, S> {
   protected sharedStateManager: SharedStateManager | null = null;
-
-  // Add static contextType to consume AppStateContext
-  static contextType = AppStateContext;
+  private domElement: HTMLElement | null = null;
 
   constructor(props: P, context: ComponentContext) {
     super(props, context);
     
-    // Check if we're in an AppState context
-    const appStateContext = (this as any).context;
-    const hasContext = appStateContext && appStateContext.appStateId;
-    
-    // Determine the effective app-state-id
-    let effectiveAppStateId = this.props.appStateId;
-    if (!effectiveAppStateId && hasContext) {
-      effectiveAppStateId = appStateContext.appStateId;
-      console.log(`SharedStateComponent: ${this.props.id} using context AppState ID: ${effectiveAppStateId}`);
-    }
-    
-    // Initialize shared state manager with effective ID
-    this.sharedStateManager = createSharedStateManager(
-      this.props.id,
-      this.props.sharedStateVars,
-      effectiveAppStateId,
-      this.handleSharedStateSync.bind(this),
-      hasContext ? appStateContext : null // Pass context if available
-    );
+    // Don't create the manager in constructor - wait for componentDidMount
+    // when we have access to the DOM element
   }
 
   public componentDidMount() {
@@ -103,6 +84,22 @@ export abstract class SharedStateComponent<P extends SharedStateProps, S> extend
     if (super.componentDidMount) {
       super.componentDidMount();
     }
+    
+    // Get DOM element reference
+    try {
+      this.domElement = ReactDOM.findDOMNode(this) as HTMLElement;
+    } catch (e) {
+      console.warn(`SharedStateComponent: ${this.props.id} - Could not get DOM element reference:`, e);
+    }
+    
+    // Now create the shared state manager with DOM element reference
+    this.sharedStateManager = createSharedStateManager(
+      this.props.id,
+      this.props.sharedStateVars,
+      this.props.appStateId,
+      this.handleSharedStateSync.bind(this),
+      this.domElement
+    );
     
     // Auto-register with AppState if shared state manager exists
     if (this.sharedStateManager) {

@@ -23,7 +23,6 @@ import { trigger, listen } from 'platform/api/events';
 import { Cancellation } from 'platform/api/async';
 import { addNotification } from 'platform/components/ui/notification';
 import * as _ from 'lodash';
-import { AppStateContext, AppStateContextValue } from './AppStateContext';
 
 // Event types for AppState communication
 export const APP_STATE_REGISTER_COMPONENT = 'AppState.RegisterComponent';
@@ -740,36 +739,6 @@ export class AppState extends Component<AppStateProps, AppStateState> {
     }
   };
 
-  /**
-   * Context method for component registration
-   */
-  private contextRegister = (registration: ComponentStateRegistration) => {
-    console.log('AppState: Context registration for component', registration.componentId);
-    this.handleComponentRegistration({ data: registration });
-  };
-
-  /**
-   * Context method for component unregistration
-   */
-  private contextUnregister = (componentId: string) => {
-    console.log('AppState: Context unregistration for component', componentId);
-    this.handleComponentUnregistration({ data: componentId });
-  };
-
-  /**
-   * Context method for state updates
-   */
-  private contextUpdateState = (componentId: string, stateUpdates: any) => {
-    this.handleSharedStateUpdate({ data: { componentId, stateUpdates } });
-  };
-
-  /**
-   * Context method for requesting current state
-   */
-  private contextRequestState = (componentId: string) => {
-    this.handleCurrentStateRequest({ data: { componentId } });
-  };
-
   public render() {
     const hasSharedState = Object.keys(this.state.globalSharedState).some(
       componentId => Object.keys(this.state.globalSharedState[componentId]).length > 0
@@ -783,18 +752,12 @@ export class AppState extends Component<AppStateProps, AppStateState> {
     // Only show save button in backend mode or URL mode without auto-sync
     const showSaveButton = this.props.storageMode === 'backend' || !this.props.autoSync;
 
-    // Create context value
-    const contextValue: AppStateContextValue = {
-      appStateId: this.props.id || 'default-app-state',
-      register: this.contextRegister,
-      unregister: this.contextUnregister,
-      updateState: this.contextUpdateState,
-      requestCurrentState: this.contextRequestState,
-    };
-
     return (
-      <AppStateContext.Provider value={contextValue}>
-        <div className="app-state-container" style={{ position: 'relative', height: '100%', width: '100%' }}>
+      <div 
+        className="app-state-container" 
+        data-app-state-id={this.props.id || 'default-app-state'}
+        style={{ position: 'relative', height: '100%', width: '100%' }}
+      >
         {/* Save States Button - only show when needed */}
         {showSaveButton && (
           <button
@@ -847,8 +810,7 @@ export class AppState extends Component<AppStateProps, AppStateState> {
 
         {/* Wrapped Children */}
         {this.props.children}
-        </div>
-      </AppStateContext.Provider>
+      </div>
     );
   }
 }

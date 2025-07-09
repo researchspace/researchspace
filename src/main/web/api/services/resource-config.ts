@@ -194,7 +194,7 @@ CONSTRUCT {
  
 }
 
-export function getResourceConfigurationValue(iri: string, key: string)  {
+export function getResourceConfigurationValue(iri: string, key: string)  {console.log("iri "+iri+" "+key+" "+resourceConfigs[iri][key]);
     if (iri in resourceConfigs) { 
       if (key in resourceConfigs[iri]) { 
         return resourceConfigs[iri][key];
@@ -264,7 +264,7 @@ export function getResourceConfiguration(
       .query({ iri: iri.value, repository: repositoryId })
       .accept('text/plain').then(response => {
 
-          const value = res.text;
+          const value = response.text;
           cacheSet(hash.toString(), value);
           console.log('Fetched & cached config for', iri.value);   
           return value;}

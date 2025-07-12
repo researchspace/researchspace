@@ -66,7 +66,17 @@ export class FacetBreadcrumbsComponent extends Component<FacetBreadcrumbsProps, 
 
     return (
       <div className={styles.breadcrumbs}>
-        <div className={styles.container}>{conjuncts.map(this.breadcrumb)}</div>
+        <div className={styles.container}>
+          <div className={styles.conjunct}>
+            <button
+              className={classNames(styles.cancelButton, 'btn', styles.clearAllButton)}
+              onClick={() => this.props.actions.removeAllConjuncts()}
+            >
+              Clear All <Icon iconType='rounded' iconName='delete' symbol />
+            </button>
+          </div>
+          {conjuncts.map(this.breadcrumb)}
+        </div>
       </div>
     );
   }

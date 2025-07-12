@@ -63,6 +63,11 @@ export interface Actions {
    * Action which is triggered when user removes all selected facets for relation.
    */
   removeConjunct: (conjunct: SearchModel.RelationConjunct) => void;
+
+  /**
+   * Action which is triggered when user removes all selected facets for all relations. 
+   */
+  removeAllConjuncts: () => void;
 }
 
 export type Conjuncts = Array<FacetRelationConjunct>;

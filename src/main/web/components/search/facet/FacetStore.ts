@@ -167,6 +167,7 @@ export class FacetStore {
   }>();  
   private selectedValues: Action<SelectedValues>;
   private removeConjunctAction = Action<SearchModel.RelationConjunct>();
+  private removeAllConjunctsAction = Action<void>();
 
   private actions: F.Actions;
   private relationsCache: { [key: string]: boolean } = {};
@@ -192,6 +193,7 @@ export class FacetStore {
       replaceFacetValue: this.replaceFacetValue,
       setBaseQuery: this.setBaseQuery,
       removeConjunct: this.removeConjunct,
+      removeAllConjuncts: this.removeAllConjuncts,
     };
 
     const categories = this.config.searchProfileStore
@@ -375,6 +377,11 @@ export class FacetStore {
     ).onValue(({ selected, conjunct }) => {
       const { relation } = conjunct;
       this.selectedValues(selected.remove(relation));
+    });
+    
+    this.removeAllConjunctsAction.$property
+    .onValue(() => {
+      this.selectedValues(OrderedMap<Relation, List<F.FacetValue>>());
     });
   }
 
@@ -1079,6 +1086,10 @@ ORDER BY DESC (?score) DESC (?count)
   private removeConjunct = (conjunct: SearchModel.RelationConjunct) => {
     this.removeConjunctAction(conjunct);
   };
+
+  private removeAllConjuncts = () => {
+    this.removeAllConjunctsAction();
+  }
 }
 
 /**

@@ -82,6 +82,14 @@ export interface ComplexTreePatterns {
    * Search query with [?__token__] input and [?item, ?score, ?label, ?hasChildren] outputs.
    */
   searchQuery: string;
+
+
+  /**
+   * Use label service to fetch labels for nodes.
+   *
+   * @default false
+   */
+  useLabelService?: boolean;
 }
 
 export interface SemanticTreeInputProps extends ComplexTreePatterns, KeywordSearchConfig {

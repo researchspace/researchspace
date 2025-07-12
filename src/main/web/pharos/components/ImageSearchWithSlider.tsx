@@ -25,12 +25,13 @@ import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 
 import { Rdf } from 'platform/api/rdf';
-import { SparqlUtil, SparqlClient } from 'platform/api/sparql';
+import * as turtle from 'platform/api/rdf/formats/turtle';
+import { SparqlUtil, SparqlClient, PatternBinder, cloneQuery } from 'platform/api/sparql';
 import { Component } from 'platform/api/components';
 import { Cancellation } from 'platform/api/async/Cancellation';
 import { Action } from 'platform/components/utils';
 import { Dropzone } from 'platform/components/ui/dropzone';
-import { defaultKeywordSearchConfig, textConfirmsToConfig } from "platform/components/shared/KeywordSearchConfig";
+import { defaultKeywordSearchConfig, textConfirmsToConfig, luceneTokenize } from "platform/components/shared/KeywordSearchConfig";
 
 import { setSearchDomain } from 'platform/components/semantic/search/commons/Utils';
 import { SemanticSimpleSearchBaseConfig } from 'platform/components/semantic/simple-search/Config';
@@ -69,26 +70,40 @@ export interface DomainConfig {
 
 export interface BaseConfig<T> extends SemanticSimpleSearchBaseConfig {
   /**
-   * Query template for text search
+   * Numbered text query templates for AI assist slider = 0 based on domain index
+   * e.g., textQuery0, textQuery1, etc.
    */
-  query?: string;
+  [key: `textQuery${number}`]: string;
   
   /**
-   * Query template for image search
+   * Numbered text query templates for AI assist slider between 0-100 based on domain index
+   * e.g., textWithAiQuery0, textWithAiQuery1, etc.
    */
-  imageQuery?: string;
+  [key: `textWithAiQuery${number}`]: string;
   
   /**
-   * Numbered query templates for text search based on domain index
-   * e.g., query0, query1, etc.
+   * Numbered text query templates for AI assist slider = 100 based on domain index
+   * e.g., textAiQuery0, textAiQuery1, etc.
    */
-  [key: `query${number}`]: string;
+  [key: `textAiQuery${number}`]: string;
   
   /**
-   * Numbered image query templates based on domain index
+   * Numbered image query templates for AI assist slider = 0 based on domain index
    * e.g., imageQuery0, imageQuery1, etc.
    */
   [key: `imageQuery${number}`]: string;
+  
+  /**
+   * Numbered image query templates for AI assist slider between 0-100 based on domain index
+   * e.g., imageWithAiQuery0, imageWithAiQuery1, etc.
+   */
+  [key: `imageWithAiQuery${number}`]: string;
+  
+  /**
+   * Numbered image query templates for AI assist slider = 100 based on domain index
+   * e.g., imageAiQuery0, imageAiQuery1, etc.
+   */
+  [key: `imageAiQuery${number}`]: string;
   
   /**
    * Numbered default query templates based on domain index
@@ -157,14 +172,14 @@ export interface BaseConfig<T> extends SemanticSimpleSearchBaseConfig {
    * Variable name for the AI assist value in the query
    * @default '__aiAssist__'
    */
-  aiAsistVariable?: string;
+  aiAsistVariable: string;
 
   /**
    * Marks on the slider. Object with keys as slider values and values as mark labels.
    * Example: { 0: 'Metadata', 50: ' ', 100: 'Visual Similarity' }
    * @default undefined
    */
-  marks?: Record<number, string>;
+  marks?: Record<number, string> | { text: Record<number, string>, image: Record<number, string> };
 
   /**
    * Default value for the slider when the component is first rendered
@@ -458,31 +473,40 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
     // Update state with new domain settings and potentially modified image/value state
     this.setState(stateChanges, () => {
       this.props.context.setBaseQuery(Maybe.Nothing());
-
+    
       // Set the new domain in the search context
       setSearchDomain(newDomain.uri, this.props.context);
-      
-      // Re-initialize with the new domain (it will use the updated this.state)
-      this.initialize(this.props);
-      
-      // After state update and re-initialization, trigger search based on the new state.
+    
+      // After state update, trigger search based on the new state.
       // this.state now reflects the changes made by setState.
-      if (this.state.value === '') { 
+      if (this.state.value === '') {
         // If value was explicitly cleared (e.g. image removed and new domain doesn't support images, or user cleared text)
         this.keys('');
-      } else if (!_.isEmpty(this.state.value) && 
+      } else if (!_.isEmpty(this.state.value) &&
                  (this.state.isImageMode || textConfirmsToConfig(this.state.value, this.props))) {
         // If value is non-empty and valid (either current image mode or conforming text)
         this.keys(this.state.value);
       }
-      // If value is non-empty but not valid for search (e.g. text that doesn't meet min length), 
+      // If value is non-empty but not valid for search (e.g. text that doesn't meet min length),
       // this.keys() is not called, preserving the existing behavior.
+    
+      // Re-initialize with the new domain (it will use the updated this.state)
+      this.initialize(this.props);
     });
   }
 
   render() {
-    const { placeholder, style, className, min, max, step, domains, lockDomain } = this.props;
-    const { withAi, withImages, selectedDomainIndex } = this.state;
+    const { placeholder, style, className, min, max, step, domains, lockDomain, marks } = this.props;
+    const { withAi, withImages, selectedDomainIndex, isImageMode } = this.state;
+
+    let sliderMarks: Record<number, string> | undefined;
+    if (marks) {
+      if ('text' in marks && 'image' in marks) {
+        sliderMarks = isImageMode ? marks.image : marks.text;
+      } else {
+        sliderMarks = marks as Record<number, string>;
+      }
+    }
     
     return (
       <div className={styles.imageSearchWithSlider}>
@@ -563,7 +587,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
               value={this.state.sliderValue}
               onChange={this.onSliderChange}
               included={false}
-              marks={this.props.marks}
+              marks={sliderMarks}
               disabled={!withAi}
             />
           </div>
@@ -576,56 +600,30 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
     // Cancel streams from the previous initialize call and get a new token for this call
     this.activeStreamCancellation = this.componentCancellation.deriveAndCancel(this.activeStreamCancellation);
 
-    const { selectedDomainIndex } = this.state;
-    
-    // Get domain-specific queries if available
-    const textQueryKey = `query${selectedDomainIndex}` as `query${number}`;
-    const imageQueryKey = `imageQuery${selectedDomainIndex}` as `imageQuery${number}`;
-    const defaultQueryKey = `defaultQuery${selectedDomainIndex}` as `defaultQuery${number}`;
-    
-    // Use domain-specific queries if available, otherwise fall back to generic queries
-    const textQueryStr = props[textQueryKey] || props.query;
-    const imageQueryStr = props[imageQueryKey] || props.imageQuery;
-    const defaultQueryStr = props[defaultQueryKey] || props.defaultQuery;
-    
-    if (!textQueryStr) {
-      console.error('No text query available for the selected domain');
-      return;
-    }
-    
-    const textQuery = SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(textQueryStr);
-    const imageQuery = imageQueryStr 
-      ? SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(imageQueryStr)
-      : null;
-
-    const defaultQuery = defaultQueryStr
-      ? Maybe.Just(SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(defaultQueryStr))
-      : Maybe.Nothing<SparqlJs.SelectQuery>();
-
     // Handle image search (starts with http or has image data)
     const imageQueryProp = this.keys.$property
       .debounce(this.props.debounce)
       .filter((value) => value.startsWith('http') || value === 'Dropped image' || value === 'Initial image data')
-      .map(this.buildImageQuery(imageQuery));
+      .map(this.buildImageQuery())
+      .filter((q) => q !== null);
 
     // Handle keyword search (doesn't start with http)
     const keywordQueryProp = this.keys.$property
       .filter((value) => !value.startsWith('http') && value !== 'Dropped image' && value !== 'Initial image data')
       .filter((value) => textConfirmsToConfig(value, this.props))
       .debounce(this.props.debounce)
-      .map(this.buildKeywordQuery(textQuery));
+      .map(this.buildKeywordQuery())
+      .filter((q) => q !== null);
 
-    // Handle empty input - use default query if available
+    // Handle empty input - use default query if available and slider is 0
     const defaultQueryProp = this.keys.$property
       .filter((value) => _.isEmpty(value))
-      .map(() => defaultQuery.isJust ? defaultQuery.get() : null)
+      .filter(() => this.state.sliderValue === 0 || !this.state.withAi)
+      .map(this.buildDefaultQuery())
       .filter((q) => q !== null);
 
     // Merge all query streams
-    const initializers = [imageQueryProp, keywordQueryProp];
-    if (defaultQuery.isJust) {
-      initializers.push(defaultQueryProp);
-    }
+    const initializers = [imageQueryProp, keywordQueryProp, defaultQueryProp];
 
     // Map the merged stream through the active cancellation token
     this.activeStreamCancellation.map(Kefir.merge(initializers))
@@ -747,12 +745,39 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
     });
   }
 
-  private buildImageQuery = (baseQuery: SparqlJs.SelectQuery) => (token: string): SparqlJs.SelectQuery => {
-    // If image query is null or images are not enabled for this domain, return empty query
-    if (!baseQuery || !this.state.withImages) {
-      console.error('Image search is not enabled for this domain or no image query is available');
-      return baseQuery;
+  private buildImageQuery = () => (token: string): SparqlJs.SelectQuery | null => {
+    // If images are not enabled for this domain, return null
+    if (!this.state.withImages) {
+      console.error('Image search is not enabled for this domain');
+      return null;
     }
+    
+    const { selectedDomainIndex, sliderValue, withAi } = this.state;
+    
+    // Determine which image query to use based on AI slider value
+    let imageQueryStr: string | undefined;
+    
+    if (withAi && sliderValue === 100) {
+      // Use AI-only image query
+      const imageAiQueryKey = `imageAiQuery${selectedDomainIndex}` as `imageAiQuery${number}`;
+      imageQueryStr = this.props[imageAiQueryKey];
+    } else if (withAi && sliderValue > 0 && sliderValue < 100) {
+      // Use mixed AI image query
+      const imageWithAiQueryKey = `imageWithAiQuery${selectedDomainIndex}` as `imageWithAiQuery${number}`;
+      imageQueryStr = this.props[imageWithAiQueryKey];
+    } else {
+      // Use standard image query (slider = 0 or AI disabled)
+      const imageQueryKey = `imageQuery${selectedDomainIndex}` as `imageQuery${number}`;
+      imageQueryStr = this.props[imageQueryKey];
+    }
+    
+    if (!imageQueryStr) {
+      console.error('No appropriate image query available for the current settings');
+      return null;
+    }
+    
+    // Parse the selected query
+    const baseQuery = SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(imageQueryStr);
     
     const {
       dataVariable,
@@ -766,8 +791,8 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
     bindings[SEMANTIC_SEARCH_VARIABLES.DOMAIN_VAR] = Rdf.fullIri(this.getCurrentDomainUri());
 
     // Only add AI assist value if AI is enabled for this domain
-    if (this.state.withAi) {
-      bindings[aiAsistVariable!] = Rdf.literal(this.state.sliderValue.toString(), Rdf.iri('http://www.w3.org/2001/XMLSchema#decimal'));
+    if (withAi && sliderValue > 0) {
+      bindings[aiAsistVariable!] = Rdf.literal(sliderValue.toString(), Rdf.iri('http://www.w3.org/2001/XMLSchema#decimal'));
     }
 
     // If we have an image URL
@@ -784,29 +809,157 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
     return SparqlClient.setBindings(baseQuery, bindings);
   };
 
-  private buildKeywordQuery = (baseQuery: SparqlJs.SelectQuery) => (token: string): SparqlJs.SelectQuery => {
+  private buildKeywordQuery = () => (token: string): SparqlJs.SelectQuery | null => {
+    const { selectedDomainIndex, sliderValue, withAi } = this.state;
+    
+    // Determine which text query to use based on AI slider value
+    let textQueryStr: string | undefined;
+    
+    if (withAi && sliderValue === 100) {
+      // Use AI-only text query
+      const textAiQueryKey = `textAiQuery${selectedDomainIndex}` as `textAiQuery${number}`;
+      textQueryStr = this.props[textAiQueryKey];
+    } else if (withAi && sliderValue > 0 && sliderValue < 100) {
+      // Use mixed AI text query
+      const textWithAiQueryKey = `textWithAiQuery${selectedDomainIndex}` as `textWithAiQuery${number}`;
+      textQueryStr = this.props[textWithAiQueryKey];
+    } else {
+      // Use standard text query (slider = 0 or AI disabled)
+      const textQueryKey = `textQuery${selectedDomainIndex}` as `textQuery${number}`;
+      textQueryStr = this.props[textQueryKey];
+    }
+    
+    if (!textQueryStr) {
+      console.error('No appropriate text query available for the current settings');
+      return null;
+    }
+    
     const {
-      searchTermVariable, 
+      searchTermVariable,
       aiAsistVariable, 
       escapeLuceneSyntax,
       tokenizeLuceneQuery, 
       minTokenLength
     } = this.props;
     
-    const value = SparqlUtil.makeLuceneQuery(
-      token, escapeLuceneSyntax, tokenizeLuceneQuery, minTokenLength
-    );
+    // Define the QLever text search namespace
+    const TEXT_SEARCH_NS = 'https://qlever.cs.uni-freiburg.de/textSearch/';
+    const TEXT_SEARCH_CONTAINS = turtle.serialize.nodeToN3(Rdf.iri(TEXT_SEARCH_NS + 'contains')) as SparqlJs.Term;
+    const TEXT_SEARCH_ENTITY = turtle.serialize.nodeToN3(Rdf.iri(TEXT_SEARCH_NS + 'entity')) as SparqlJs.Term;
+    const TEXT_SEARCH_WORD = turtle.serialize.nodeToN3(Rdf.iri(TEXT_SEARCH_NS + 'word')) as SparqlJs.Term;
+    const TEXT_SEARCH_SCORE = turtle.serialize.nodeToN3(Rdf.iri(TEXT_SEARCH_NS + 'score')) as SparqlJs.Term;
+
+    // Get keywords from the token
+    const keywords = luceneTokenize(token, escapeLuceneSyntax, tokenizeLuceneQuery, minTokenLength);
+        
+    // Create triples for each keyword
+    const parsedPattern = keywords.map((keyword: string, i) => {
+      // Build triples for the SERVICE block
+      const allTriplesForBgp: any = [];
+
+      const containsNode = turtle.serialize.nodeToN3(Rdf.bnode());
+      const textVariable = `?text_${i}`;
+      // ?text textSearch:contains [textSearch:word "keyword*" ; textSearch:score ?score] .
+      allTriplesForBgp.push({
+        subject: textVariable,
+        predicate: TEXT_SEARCH_CONTAINS,
+        object: containsNode
+      });
+      
+      allTriplesForBgp.push({
+        subject: containsNode,
+        predicate: TEXT_SEARCH_WORD,
+        object: turtle.serialize.nodeToN3(Rdf.literal(keyword)) // keyword already contains *
+      });
+      
+      allTriplesForBgp.push({
+        subject: containsNode,
+        predicate: TEXT_SEARCH_SCORE,
+        object: `?text_score_${i}`
+      });
+
+
+      // Add the entity search pattern: ?text textSearch:contains [textSearch:entity ?subject] .
+      const entityNode = turtle.serialize.nodeToN3(Rdf.bnode());
+      allTriplesForBgp.push({
+        subject: textVariable,
+        predicate: TEXT_SEARCH_CONTAINS,
+        object: entityNode
+      });
+      
+      allTriplesForBgp.push({
+        subject: entityNode,
+        predicate: TEXT_SEARCH_ENTITY,
+        object: '?subject'
+      });
+      
+      // Create the BGP pattern
+      const bgpPattern = {
+        type: 'bgp',
+        triples: allTriplesForBgp
+      };
+      
+      // Create the SERVICE pattern
+      return {
+        type: 'service',
+        name: turtle.serialize.nodeToN3(Rdf.iri(TEXT_SEARCH_NS)),
+        silent: false,
+        patterns: [bgpPattern]
+      };
+    });
     
-    // Create bindings with the search term
+    // Replace score SUM variable
+    const scoreSum = keywords.map((keyword: string, i: number) => `SUM(?text_score_${i})`).join(' + ');
+    textQueryStr = textQueryStr.replaceAll('?__textScoreSumPattern__', scoreSum);
+    // Parse the selected query
+    const baseQuery = SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(textQueryStr);
+
+    // Apply the pattern using PatternBinder
+    new PatternBinder('__textPattern__', parsedPattern).sparqlQuery(baseQuery);
+    
+    // Create bindings
     const bindings: Record<string, any> = {
-      [searchTermVariable!]: value,
-      [SEMANTIC_SEARCH_VARIABLES.DOMAIN_VAR]: Rdf.fullIri(this.getCurrentDomainUri())
+      [SEMANTIC_SEARCH_VARIABLES.DOMAIN_VAR]: Rdf.fullIri(this.getCurrentDomainUri()),
+
+      // Bind the search term variable to actual user input
+      // we propagate it as is to similarity search
+      [searchTermVariable!]: Rdf.literal(token),
     };
     
-    // Only add AI assist value if AI is enabled for this domain
-    if (this.state.withAi) {
-      bindings[aiAsistVariable!] = Rdf.literal(this.state.sliderValue.toString(), Rdf.iri('http://www.w3.org/2001/XMLSchema#decimal'));
+    // Only add AI assist value if AI is enabled for this domain and slider > 0
+    if (withAi && sliderValue > 0) {
+      bindings[aiAsistVariable] = Rdf.literal(sliderValue.toString(), Rdf.iri('http://www.w3.org/2001/XMLSchema#decimal'));
     }
+
+    console.log(
+      'Building keyword query with bindings:',)
+      console.log(parsedPattern)
+    console.log(
+      SparqlClient.setBindings(baseQuery, bindings)
+  );
+    
+    return SparqlClient.setBindings(baseQuery, bindings);
+  };
+
+  private buildDefaultQuery = () => (): SparqlJs.SelectQuery | null => {
+    const { selectedDomainIndex } = this.state;
+    
+    // Get the default query for the current domain
+    const defaultQueryKey = `defaultQuery${selectedDomainIndex}` as `defaultQuery${number}`;
+    const defaultQueryStr = this.props[defaultQueryKey];
+    
+    if (!defaultQueryStr) {
+      console.error('No default query available for the current domain');
+      return null;
+    }
+    
+    // Parse the default query
+    const baseQuery = SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(defaultQueryStr);
+    
+    // Create bindings
+    const bindings: Record<string, any> = {
+      [SEMANTIC_SEARCH_VARIABLES.DOMAIN_VAR]: Rdf.fullIri(this.getCurrentDomainUri()),
+    };
     
     return SparqlClient.setBindings(baseQuery, bindings);
   };

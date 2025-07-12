@@ -88,6 +88,13 @@ interface BaseLazyTreeProps {
    * @default true
    */
   draggable?: boolean
+
+  /**
+   * If true, the tree will expand all nodes by default.
+   * 
+   * @default false
+   */
+  expandedByDefault?: boolean;
 }
 
 export type LazyTreeProps =
@@ -139,6 +146,7 @@ export class LazyTree extends Component<LazyTreeProps, State> {
       parentsQuery: SparqlUtil.parseQuery(patterns.parentsQuery),
       sparqlOptions: () => ({ context: this.context.semanticContext }),
       limit: this.props.pageSize,
+      useLabelService: this.props.config.useLabelService
     });
 
     model.loadMoreChildren(Node.readyToLoadRoot).onValue(
@@ -174,7 +182,7 @@ export class LazyTree extends Component<LazyTreeProps, State> {
 
   renderTree() {
     const { patterns, forest, expandingToScroll, highlightedPath } = this.state;
-    const { focused, config, draggable } = this.props;
+    const { focused, config, draggable, expandedByDefault } = this.props;
     
     let highlightedNodes: ReadonlyArray<Node> = [];
     if (highlightedPath) {
@@ -194,6 +202,7 @@ export class LazyTree extends Component<LazyTreeProps, State> {
       isExpanded: (node) => node.expanded,
       selectionMode: SingleFullSubtree<Node>(),
       onItemClick: this.onItemClick,
+      expandedByDefault
     };
 
     let queryItemLabelConfig = null
@@ -364,7 +373,12 @@ export class LazyTree extends Component<LazyTreeProps, State> {
               (parent) => this.state.model.loadMoreChildren(parent),
               this.state.forest,
               path
-            ).map((forest) => expandPath(forest, path))
+            ).map((forest) => {
+              // First expand the path to the focused node
+              const expandedForest = expandPath(forest, path);
+              // Then also expand the focused node itself to show its children
+              return expandedForest.updateNode(path, (node) => TreeNode.set(node, { expanded: true }));
+            })
           )
           .observe({
             value: (forest) => {

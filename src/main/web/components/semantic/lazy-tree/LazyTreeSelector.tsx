@@ -193,7 +193,7 @@ export class LazyTreeSelector extends Component<LazyTreeSelectorProps, State> {
         return this.renderItem(entry);
       case EntryType.Spinner:
       case EntryType.Anchor:
-        return <Spinner spinnerDelay={0} className={styles.spinner} />;
+        return <Spinner className={styles.spinner} />;
     }
   }
 
@@ -279,11 +279,14 @@ export class LazyTreeSelector extends Component<LazyTreeSelectorProps, State> {
   private toggleExpanded(item: TreeNode, previouslyExpanded: boolean) {
     const { onExpandedOrCollapsed, childrenOf, requestMore } = this.props;
     onExpandedOrCollapsed(item, !previouslyExpanded);
-    // request children when expand an item
+    // request children when expand an item - but only after state update
     if (!previouslyExpanded) {
       const { loading, hasMoreItems } = childrenOf(item);
       if (!loading && hasMoreItems) {
-        requestMore(item);
+        // Use setTimeout to ensure the state update from onExpandedOrCollapsed has completed
+        setTimeout(() => {
+          requestMore(item);
+        }, 0);
       }
     }
   }

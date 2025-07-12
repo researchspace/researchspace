@@ -76,15 +76,18 @@ export function luceneTokenize(
 ): String[] {
   return inputText
     .split(' ')
-    .map((w) => w.trim())
-    .filter((w) => minTokenLength ? w.length >=  minTokenLength : w.length > 0)
+    .map((w) => w.toLowerCase()) // Convert to lowercase
+    .map((w) => w.replace(/['''ʼ`,.;]/g, '')) // Remove specified punctuation
+    .map((w) => w.trim()) // Trim whitespace after punctuation removal
+    .filter((w) => minTokenLength ? w.length >=  minTokenLength : w.length > 0) // Filter by length after trimming
     .map((w) => {
+      let processedWord = w; // Use a new variable to avoid reassigning parameter
       if (escape) {
-        w = w.replace(LUCENE_ESCAPE_REGEX, '\\$1');
+        processedWord = processedWord.replace(LUCENE_ESCAPE_REGEX, '\\$1');
       }
       if (tokenize) {
-        w += '*';
+        processedWord += '*';
       }
-      return w;
+      return processedWord;
     });
 }

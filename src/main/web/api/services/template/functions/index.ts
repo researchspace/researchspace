@@ -25,6 +25,7 @@ import { UriComponentFunctions } from './UriComponentFunctions';
 import { NumbersFunctions } from './NumbersFunctions';
 import { StringsFunctions } from './StringsFunctions';
 import {ResourceConfigurationFunctions} from './ResourceConfigurationFunctions';
+import { NestedFormsFunctions } from './NestedFormsFunctions';
 
 export const DefaultHelpers = {
   ...DataContextFunctions,
@@ -34,7 +35,8 @@ export const DefaultHelpers = {
   ...UriComponentFunctions,
   ...NumbersFunctions,
   ...StringsFunctions,
-  ...ResourceConfigurationFunctions
+  ...ResourceConfigurationFunctions,
+  ...NestedFormsFunctions
 };
 
 export { ContextCapturer, CapturedContext } from './DataContextFunctions';

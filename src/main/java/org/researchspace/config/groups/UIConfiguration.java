@@ -138,6 +138,11 @@ public class UIConfiguration extends ConfigurationGroupBase {
     }
 
     @ConfigurationParameter
+    public List<String> getResourceConfigurations() {
+        return getStringList("resourceConfigurations", Lists.newArrayList());
+    }
+
+    @ConfigurationParameter
     public String getUnsupportedBrowserMessage() {
         return getString("unsupportedBrowserMessage", "");
     }
@@ -178,6 +183,19 @@ public class UIConfiguration extends ConfigurationGroupBase {
         }
     }
 
+    @ConfigurationParameterHook
+    public void onUpdateResourceConfigurations(String configIdInGroup, List<String> configValues,
+            PropertiesConfiguration targetConfig) throws ConfigurationException {
+        try {
+            for (String singlePreferredLabel : configValues) {
+                PropertyPattern.parse(singlePreferredLabel, namespaceRegistry);
+            }
+        } catch (MalformedQueryException e) {
+            throw new ConfigurationException(
+                    "The \"resourceConfigurations\" that you have entered is invalid. Please add a valid value. \n Details: "
+                            + e.getMessage());
+        }
+    }
     @ConfigurationParameterHook
     public void onUpdatePreferredThumbnails(String configIdInGroup, List<String> configValues,
             PropertiesConfiguration targetConfig) throws ConfigurationException {

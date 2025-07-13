@@ -38,4 +38,5 @@ export interface ProviderPropsAdvanced {
   hasChildrenBinding: string;
   loadingTemplate: string;
   highlightedNodes?: Set<string>;
+  preloadedChildren?: Map<string, ReadonlyArray<TreeNode>>;
 }

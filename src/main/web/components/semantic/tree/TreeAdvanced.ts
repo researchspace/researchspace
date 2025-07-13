@@ -49,7 +49,7 @@ export class TreeAdvanced extends Component<TreeAdvancedProps, State> {
     this.key = Math.random().toString(36).slice(2);
     this.state = {
       collapsedBookkeeping: {},
-      expandedChildren: new Map(),
+      expandedChildren: props.preloadedChildren || new Map(),
     };
   }
 
@@ -58,18 +58,46 @@ export class TreeAdvanced extends Component<TreeAdvancedProps, State> {
   }
 
   public componentWillMount() {
+    this.initializeCollapsedState(this.props);
+  }
+
+  public componentWillReceiveProps(nextProps: TreeAdvancedProps) {
+    // Re-initialize collapsed state when keysOpened changes
+    if (nextProps.keysOpened !== this.props.keysOpened || 
+        nextProps.collapsed !== this.props.collapsed ||
+        nextProps.nodeData !== this.props.nodeData) {
+      this.initializeCollapsedState(nextProps);
+    }
+    
+    // Update expanded children if preloaded children are provided
+    if (nextProps.preloadedChildren && nextProps.preloadedChildren !== this.props.preloadedChildren) {
+      this.setState({
+        expandedChildren: nextProps.preloadedChildren
+      });
+    }
+  }
+
+  private initializeCollapsedState(props: TreeAdvancedProps) {
     const bookkeeping: BookeepingDictionary = {};
     // initalize the bookkeeping map with all keys of all nodes
-    const keys = _.reduce(this.props.nodeData, (all, current) => all.concat(this.getAllKeys(current)), []);
-    // set all markers to collapsed by default
+    const keys = _.reduce(props.nodeData, (all, current) => all.concat(this.getAllKeys(current)), []);
+    
+    // Set initial collapsed state based on the collapsed prop
     _.forEach(keys, (k) => {
-      bookkeeping[k] = true;
+      bookkeeping[k] = props.collapsed;
     });
 
     // if there are any keys that should be opened, set them to not collapsed
-    _.forEach(this.collectOpenKeys(this.props.nodeData), (k) => {
+    _.forEach(this.collectOpenKeys(props.nodeData), (k) => {
       bookkeeping[k] = false;
     });
+
+    // Also mark any keys in keysOpened as not collapsed
+    if (props.keysOpened) {
+      _.forEach(props.keysOpened, (k) => {
+        bookkeeping[k] = false;
+      });
+    }
 
     this.setState({ collapsedBookkeeping: bookkeeping });
   }
@@ -244,6 +272,11 @@ export class TreeAdvanced extends Component<TreeAdvancedProps, State> {
   };
 
   private isCollapsed = (nodeKey: any, node: any): boolean => {
+    // First check if this key is in the keysOpened prop
+    if (this.props.keysOpened && this.props.keysOpened.includes(nodeKey)) {
+      return false; // Not collapsed if it's in keysOpened
+    }
+    // Otherwise use the bookkeeping state
     return this.state.collapsedBookkeeping[nodeKey];
   };
 

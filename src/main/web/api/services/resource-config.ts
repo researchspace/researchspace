@@ -194,7 +194,7 @@ CONSTRUCT {
  
 }
 
-export function getResourceConfigurationValue(iri: string, key: string)  {console.log("iri "+iri+" "+key+" "+resourceConfigs[iri][key]);
+export function getResourceConfigurationValue(iri: string, key: string)  {
     if (iri in resourceConfigs) { 
       if (key in resourceConfigs[iri]) { 
         return resourceConfigs[iri][key];
@@ -250,9 +250,8 @@ export function getResourceConfiguration(
   const hash = Rdf.hashString(iri.value);
   const repositoryId = repository||"default";
 
-  return "http://www.researchspace.org/resource/system/resource_configurations_container/data/Project";
   // 1) Try TTL-checked cache
- /* const cached = cacheGet(hash.toString(), TTL_MS);
+  const cached = cacheGet(hash.toString(), TTL_MS);
   if (cached !== null) {
     console.log('Returning cached configuration for', cached+" "+iri.value);
     return cached;
@@ -273,5 +272,5 @@ export function getResourceConfiguration(
   } catch (err) {
     console.error('Error fetching resource configuration for', iri.value, err);
     throw err;
-  }*/
+  }
 }

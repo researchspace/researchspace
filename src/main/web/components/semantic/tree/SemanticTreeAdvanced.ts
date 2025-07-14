@@ -829,24 +829,51 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
         style: { 
           marginBottom: '10px',
           display: 'flex',
-          gap: '8px'
+          gap: '8px',
+          alignItems: 'center'
         } 
       },
-      D.input({
-        type: 'text',
-        placeholder: placeholder,
-        value: this.state.searchText,
-        onChange: this.handleSearchInputChange,
-        onKeyPress: this.handleSearchKeyPress,
+      D.div({
         style: {
           flex: 1,
-          padding: '6px 12px',
-          border: '1px solid #ccc',
-          borderRadius: '4px',
-          fontSize: '14px'
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center'
+        }
+      },
+        D.input({
+          type: 'text',
+          placeholder: placeholder,
+          value: this.state.searchText,
+          onChange: this.handleSearchInputChange,
+          onKeyPress: this.handleSearchKeyPress,
+          style: {
+            width: '100%',
+            padding: '6px 12px',
+            paddingRight: this.state.isSearching ? '36px' : '12px',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+            fontSize: '14px'
+          },
+          disabled: this.state.isSearching
+        }),
+        this.state.isSearching && D.div({
+          style: {
+            position: 'absolute',
+            right: '8px',
+            display: 'flex',
+            alignItems: 'center'
+          }
         },
-        disabled: this.state.isSearching
-      }),
+          D.i({
+            className: 'fa fa-spinner fa-spin',
+            style: {
+              color: '#007bff',
+              fontSize: '16px'
+            }
+          })
+        )
+      ),
       D.button({
         onClick: this.executeSearch,
         disabled: this.state.isSearching || !this.state.searchText.trim(),
@@ -857,18 +884,28 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
           border: 'none',
           borderRadius: '4px',
           cursor: this.state.isSearching || !this.state.searchText.trim() ? 'not-allowed' : 'pointer',
-          fontSize: '14px'
+          fontSize: '14px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px'
         }
-      }, this.state.isSearching ? 'Searching...' : 'Search'),
+      }, 
+        this.state.isSearching && D.i({
+          className: 'fa fa-spinner fa-spin',
+          style: { fontSize: '14px' }
+        }),
+        this.state.isSearching ? 'Searching...' : 'Search'
+      ),
       this.state.searchText && D.button({
         onClick: this.clearSearch,
+        disabled: this.state.isSearching,
         style: {
           padding: '6px 16px',
-          backgroundColor: '#6c757d',
+          backgroundColor: this.state.isSearching ? '#ccc' : '#6c757d',
           color: 'white',
           border: 'none',
           borderRadius: '4px',
-          cursor: 'pointer',
+          cursor: this.state.isSearching ? 'not-allowed' : 'pointer',
           fontSize: '14px'
         }
       }, 'Clear')

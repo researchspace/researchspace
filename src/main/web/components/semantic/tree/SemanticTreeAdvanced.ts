@@ -88,6 +88,33 @@ export interface SemanticTreeAdvancedConfig extends SemanticTreeConfig {
    * ```
    */
   pathToRootQuery?: string;
+
+  /**
+   * Optional SPARQL Select query for searching nodes.
+   * The query should return node IRIs that match the search criteria.
+   * The search text will be injected as $__searchText__ variable.
+   * 
+   * Example:
+   * ```
+   * SELECT DISTINCT ?node WHERE {
+   *   ?node rdfs:label ?label .
+   *   FILTER(CONTAINS(LCASE(?label), LCASE("$__searchText__")))
+   * }
+   * ```
+   */
+  searchQuery?: string;
+
+  /**
+   * Placeholder text for the search input.
+   * @default 'Search...'
+   */
+  searchPlaceholder?: string;
+
+  /**
+   * Whether to show the search bar.
+   * @default true if searchQuery is provided
+   */
+  showSearch?: boolean;
 }
 
 export type PropsAdvanced = SemanticTreeAdvancedConfig & ReactProps<SemanticTreeAdvanced>;
@@ -101,6 +128,8 @@ interface StateAdvanced {
   loadingTimers: Map<string, number>; // Timers for delayed loading indicators
   highlightedNodes: Set<string>; // Set of highlighted node IRIs/keys
   highlightedTreeData?: ReadonlyArray<TreeNode>; // Filtered tree data showing only highlighted paths
+  searchText: string; // Current search input text
+  isSearching: boolean; // Whether a search is in progress
 }
 
 export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced> {
@@ -128,6 +157,8 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       loadingNodes: new Set(),
       loadingTimers: new Map(),
       highlightedNodes: new Set(),
+      searchText: '',
+      isSearching: false,
     };
   }
 
@@ -762,21 +793,154 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
     const { provider, d3TreeOptions } = this.props;
     const isD3Provider = provider === 'd3-sankey' || provider === 'd3-dendrogram' || provider === 'd3-collapsible-tree';
 
+    let treeElement;
     if (isD3Provider) {
-      return createElement(D3Tree, {
+      treeElement = createElement(D3Tree, {
         ...providerProps,
         provider: provider as D3TreeProviderKind,
         options: d3TreeOptions,
       });
     } else if (typeof provider === 'string' && provider !== 'html') {
       console.warn(`Unknown semantic tree provider '${provider}'`);
+    } else {
+      // Force TreeAdvanced to re-initialize when highlighting changes by using a different key
+      const treeKey = this.state.highlightedTreeData ? 'highlighted-tree' : 'normal-tree';
+      treeElement = createElement(TreeAdvanced, { ...providerProps, key: treeKey });
     }
 
-    // Force TreeAdvanced to re-initialize when highlighting changes by using a different key
-    const treeKey = this.state.highlightedTreeData ? 'highlighted-tree' : 'normal-tree';
-    
-    return D.div({}, createElement(TreeAdvanced, { ...providerProps, key: treeKey }));
+    // Check if we should show the search bar
+    const showSearch = this.props.showSearch !== false && this.props.searchQuery;
+
+    if (showSearch) {
+      return D.div({},
+        this.renderSearchBar(),
+        treeElement
+      );
+    } else {
+      return D.div({}, treeElement);
+    }
   }
+
+  private renderSearchBar() {
+    const placeholder = this.props.searchPlaceholder || 'Search...';
+    
+    return D.div(
+      { 
+        style: { 
+          marginBottom: '10px',
+          display: 'flex',
+          gap: '8px'
+        } 
+      },
+      D.input({
+        type: 'text',
+        placeholder: placeholder,
+        value: this.state.searchText,
+        onChange: this.handleSearchInputChange,
+        onKeyPress: this.handleSearchKeyPress,
+        style: {
+          flex: 1,
+          padding: '6px 12px',
+          border: '1px solid #ccc',
+          borderRadius: '4px',
+          fontSize: '14px'
+        },
+        disabled: this.state.isSearching
+      }),
+      D.button({
+        onClick: this.executeSearch,
+        disabled: this.state.isSearching || !this.state.searchText.trim(),
+        style: {
+          padding: '6px 16px',
+          backgroundColor: this.state.isSearching || !this.state.searchText.trim() ? '#ccc' : '#007bff',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: this.state.isSearching || !this.state.searchText.trim() ? 'not-allowed' : 'pointer',
+          fontSize: '14px'
+        }
+      }, this.state.isSearching ? 'Searching...' : 'Search'),
+      this.state.searchText && D.button({
+        onClick: this.clearSearch,
+        style: {
+          padding: '6px 16px',
+          backgroundColor: '#6c757d',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          fontSize: '14px'
+        }
+      }, 'Clear')
+    );
+  }
+
+  private handleSearchInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ searchText: event.target.value });
+  };
+
+  private handleSearchKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter' && this.state.searchText.trim()) {
+      this.executeSearch();
+    }
+  };
+
+  private executeSearch = async () => {
+    if (!this.props.searchQuery || !this.state.searchText.trim()) {
+      return;
+    }
+
+    this.setState({ isSearching: true });
+
+    try {
+      // Replace the search text placeholder in the query
+      const query = this.props.searchQuery.replace(/\$__searchText__/g, this.state.searchText.trim());
+      const context = this.context.semanticContext;
+      
+      const result = await SparqlClient.select(query, { context }).toPromise();
+      
+      if (SparqlUtil.isSelectResultEmpty(result)) {
+        console.log('Search returned no results');
+        // Clear highlighting if no results
+        this.setState({
+          highlightedNodes: new Set()
+        });
+        await this.highlightNodes([]);
+      } else {
+        // Extract node IRIs from the search results
+        const nodeIds = result.results.bindings.map(binding => {
+          // Assume the search query returns nodes in a 'node' binding
+          return binding['node'] ? binding['node'].value : null;
+        }).filter(id => id !== null);
+
+        console.log('Search found nodes:', nodeIds);
+        
+        // Update the highlighted nodes state
+        this.setState({
+          highlightedNodes: new Set(nodeIds)
+        });
+        
+        // Highlight the found nodes using the existing highlighting logic
+        await this.highlightNodes(nodeIds);
+      }
+    } catch (error) {
+      console.error('Error executing search:', error);
+      this.setState({
+        errorMessage: maybe.Just(`Search error: ${error.message || error}`)
+      });
+    } finally {
+      this.setState({ isSearching: false });
+    }
+  };
+
+  private clearSearch = () => {
+    this.setState({ 
+      searchText: '',
+      highlightedNodes: new Set()
+    });
+    // Clear highlighting
+    this.highlightNodes([]);
+  };
 
   private processSparqlResult = (res: SparqlClient.SparqlSelectResult): void => {
     if (SparqlUtil.isSelectResultEmpty(res)) {

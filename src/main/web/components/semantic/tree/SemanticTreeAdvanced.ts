@@ -832,11 +832,17 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
     const parentKey = expandNode.data.parentKey.value;
     console.log('Expanding siblings for parent:', parentKey);
     
-    // Find the parent node in the original data and show all its children
-    const originalParent = this.findNodeInTree(this.state.data, parentKey);
+    // First build the complete tree with cache to find all children
+    const completeTree = this.buildCompleteTreeWithCache(this.state.data);
+    
+    // Find the parent node in the complete tree
+    const originalParent = this.findNodeInTree(completeTree, parentKey);
     if (originalParent) {
+      console.log(`Found parent node with ${originalParent.children.length} children`);
       // Update the highlighted tree data to include all children of this parent
       this.expandSiblingsForParent(parentKey, originalParent.children);
+    } else {
+      console.warn(`Parent node ${parentKey} not found in tree`);
     }
   };
 

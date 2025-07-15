@@ -62,7 +62,7 @@ export function getPrimaryAppellation(
   iri: Rdf.Iri,
   repository?: string
 ): string {
-  const hash = Rdf.hashString(iri.value);
+  const hash = Rdf.hashString(iri.value)+"appellation";
   const repositoryId = repository||"default";
 
   // 1) Try TTL-checked cache
@@ -94,7 +94,7 @@ export function getObservedEntity(
   iri: Rdf.Iri,
   repository?: string
 ): string {
-  const hash = Rdf.hashString(iri.value);
+  const hash = Rdf.hashString(iri.value)+"observed";
   const repositoryId = repository||"default";
 
   // 1) Try TTL-checked cache

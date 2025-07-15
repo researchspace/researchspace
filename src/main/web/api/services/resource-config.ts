@@ -253,8 +253,8 @@ export function getResourceConfiguration(
   // 1) Try TTL-checked cache
   const cached = cacheGet(hash.toString(), TTL_MS);
   if (cached !== null) {
-    console.log('Returning cached configuration for', cached+" "+iri.value);
-    return cached;
+   console.log('Returning cached configuration for', cached+" "+iri.value);
+   return cached;
   }
 
   // 2) Cache miss → fetch from server

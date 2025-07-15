@@ -1,6 +1,6 @@
 {{#if knowledgeMapPreviewCard}}
   [[> resourceCardQuery]]
-{{else if resourceConfig}}
+{{else if resourceConfig}} {{log "bas"}}
   <div>{{> rsp:ResourceCardTemplate resourceConfig=resourceConfig resourceOntologyClass=(getResourceConfigurationValue resourceConfig "resourceOntologyClass")
                 resourceLabel=(getResourceConfigurationValue resourceConfig "resourceLabel")
                 resourceIcon=(getResourceConfigurationValue resourceConfig "resourceIcon")}}</div>
@@ -9,38 +9,11 @@
 {{/if}}
 
 [[#*inline "resourceCardQuery"]]
-<div> 
-    {{#if (getResourceConfiguration iri)}}
-        {{> rsp:ResourceCardTemplate 
-                resourceConfig=(getResourceConfiguration iri) 
-                resourceOntologyClass=(getResourceConfigurationValue (getResourceConfiguration iri) "resourceOntologyClass")
-                resourceLabel=(getResourceConfigurationValue (getResourceConfiguration iri) "resourceLabel")
-                resourceIcon=(getResourceConfigurationValue (getResourceConfiguration iri) "resourceIcon")
-        }}
-    {{else}}
-        <semantic-query query='SELECT ?resourceOntologyClass WHERE {
-                                    BIND(<{{iri}}> as ?iri)
-                                    {{#if data.types}}
-                                    ?iri a <{{data.types}}> . 
-                                    {{else}}
-                                      ?iri a ?resourceOntologyClass .
-                                    {{/if}}
-                                } LIMIT 1'
-                      template='{{> template}}'
-                      no-result-template='{{> noResults}}'>    
-          <template id='template'>
-            <div>{{> rsp:ResourceCardTemplate resourceOntologyClass=bindings.0.resourceOntologyClass.value }}</div>
-          </template>
-          <template id="noResults">
-            <div>{{> rsp:ResourceCardTemplate newKMCard=true }}</div>
-          </template>
-        </semantic-query>
-     {{/if}}
-  </div>
-[[/inline]]
-
-[[!--
-[[#*inline "resourceCardQuery"]]
+ {{#if (getResourceConfiguration iri)}}
+ <div>{{> rsp:ResourceCardTemplate resourceConfig=(getResourceConfiguration iri) resourceOntologyClass=(getResourceConfigurationValue (getResourceConfiguration iri) "resourceOntologyClass")
+  resourceLabel=(getResourceConfigurationValue (getResourceConfiguration iri) "resourceLabel")
+  resourceIcon=(getResourceConfigurationValue (getResourceConfiguration iri) "resourceIcon")}}</div>
+ {{else}}
  <semantic-query query='SELECT ?iri ?resourceOntologyClass ?resourceConfig ?resourceLabel ?resourceIcon WHERE {
                           BIND(<{{iri}}> as ?iri)
                           OPTIONAL {  
@@ -77,6 +50,7 @@
     <template id='template'>
       <div>
         {{#if bindings.0.resourceConfig.value}}
+           
           {{> rsp:ResourceCardTemplate  resourceConfig=bindings.0.resourceConfig.value
                                         resourceOntologyClass=bindings.0.resourceOntologyClass.value
                                         resourceLabel=bindings.0.resourceLabel.value
@@ -107,5 +81,5 @@
     </template>
 
   </semantic-query>
+  {{/if}}
 [[/inline]]
---]]

@@ -58,10 +58,10 @@ function cacheGet(key: string, ttlMs: number): string | null {
   }
 }
 
-export function getPrimaryAppellation(
+export async function getPrimaryAppellation(
   iri: Rdf.Iri,
   repository?: string
-): string {
+): Promise<string> {
   const hash = Rdf.hashString(iri.value)+"appellation";
   const repositoryId = repository||"default";
 
@@ -90,10 +90,10 @@ export function getPrimaryAppellation(
   }
 }
 
-export function getObservedEntity(
+export async function getObservedEntity(
   iri: Rdf.Iri,
   repository?: string
-): string {
+): Promise<string> {
   const hash = Rdf.hashString(iri.value)+"observed";
   const repositoryId = repository||"default";
 

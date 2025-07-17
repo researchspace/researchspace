@@ -37,6 +37,7 @@ import { elementHasInputType, InputKind } from './InputCommpons';
 import { ModuleRegistry } from 'platform/api/module-loader';
 import { TemplateContext } from 'platform/api/components';
 import { CapturedContext } from 'platform/api/services/template';
+import {UtilsFunctionRegistry,  callFunctionsAndBuildJson } from '../UtilsFunctionRegistry';
 
 export interface NestedModalFormProps {
   subject?: Rdf.Iri
@@ -46,7 +47,12 @@ export interface NestedModalFormProps {
   onCancel: () => void;
   children: ReactElement<ResourceEditorFormProps> | undefined;
   parent: React.RefObject<HTMLElement>;
-  modalId?: string
+  modalId?: string,
+  /* specify parent iri */
+  parentIri?: string,
+  /* An array of function registry keys to be called to obtain 
+     specific values to be passed forward to the nested modal */
+  passValuesFor?: string[]
 }
 
 export class NestedModalForm extends Component<NestedModalFormProps, {}> {
@@ -56,8 +62,10 @@ export class NestedModalForm extends Component<NestedModalFormProps, {}> {
     this.cancellation.cancelAll();
   }
 
+  
   render() {
-    const { definition, title, onSubmit, onCancel, children, subject, parent, modalId } = this.props;
+    const { definition, title, onSubmit, onCancel, children, subject, parent, modalId, parentIri, passValuesFor } = this.props;
+    
     const propsOverride: Partial<ResourceEditorFormProps> = {
       id: children.props.id,
       browserPersistence: false,
@@ -102,7 +110,9 @@ export class NestedModalForm extends Component<NestedModalFormProps, {}> {
 }
 
 export async function tryExtractNestedForm(
-  children: ReactNode, templateContext: TemplateContext, nestedFormTemplate?: string
+  children: ReactNode, templateContext: TemplateContext, nestedFormTemplate?: string,  
+  parentIri?: Rdf.Iri,
+  passValuesFor?: string[]
 ): Promise<ReactElement<ResourceEditorFormProps> | undefined> {
   if (React.Children.count(children) === 1) {
     return Promise.resolve(getNestedForm(children));
@@ -110,7 +120,27 @@ export async function tryExtractNestedForm(
     const template = await templateContext.templateScope.compile(nestedFormTemplate);
     // see TemplateItem#compileTemplate, here we need to do the same to make sure that we propagate the context properly
     const capturer = CapturedContext.inheritAndCapture(templateContext.templateDataContext);
-    const parsedTemplate = await ModuleRegistry.parseHtmlToReact(template({"viewId": uuid.v4()}, { capturer, parentContext: templateContext.templateDataContext }));
+    // Always create a unique viewId
+    const baseData = { viewId: uuid.v4() };
+    let templateData = baseData;
+   
+    if (passValuesFor && passValuesFor.length > 0 && parentIri) {
+      console.log("inin");
+      const meta = await callFunctionsAndBuildJson(
+        passValuesFor,
+        UtilsFunctionRegistry,
+        parentIri
+      );
+      templateData = { ...baseData, ...meta,...{parentIri: parentIri.toString()} };
+    }
+
+    const parsedTemplate = await ModuleRegistry.parseHtmlToReact(
+      template(templateData, {
+        capturer,
+        parentContext: templateContext.templateDataContext
+      })
+    );
+
     return getNestedForm(parsedTemplate);
   } else {
     return Promise.resolve(undefined);

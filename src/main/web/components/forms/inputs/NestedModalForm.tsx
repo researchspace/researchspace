@@ -122,26 +122,40 @@ export async function tryExtractNestedForm(
     const capturer = CapturedContext.inheritAndCapture(templateContext.templateDataContext);
     // Always create a unique viewId
     const baseData = { viewId: uuid.v4() };
-    let templateData = baseData;
-   
+    
     if (passValuesFor && passValuesFor.length > 0 && parentIri) {
-      console.log("inin");
+      console.log("inin");console.log(parentIri);
       const meta = await callFunctionsAndBuildJson(
         passValuesFor,
         UtilsFunctionRegistry,
         parentIri
       );
-      templateData = { ...baseData, ...meta,...{parentIri: parentIri.toString()} };
+      
+      const data = {
+        ...baseData,
+        ...meta,
+        parentIri: parentIri.toString()
+      };
+      
+      const parsedTemplate = await ModuleRegistry.parseHtmlToReact(
+        template(data, {
+          capturer,
+          parentContext: templateContext.templateDataContext
+        })
+      );
+  
+      return getNestedForm(parsedTemplate);
+    } else {
+      const parsedTemplate = await ModuleRegistry.parseHtmlToReact(
+        template(baseData, {
+          capturer,
+          parentContext: templateContext.templateDataContext
+        })
+      );
+  
+      return getNestedForm(parsedTemplate);
     }
-
-    const parsedTemplate = await ModuleRegistry.parseHtmlToReact(
-      template(templateData, {
-        capturer,
-        parentContext: templateContext.templateDataContext
-      })
-    );
-
-    return getNestedForm(parsedTemplate);
+    
   } else {
     return Promise.resolve(undefined);
   }

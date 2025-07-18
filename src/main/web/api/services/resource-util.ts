@@ -62,60 +62,40 @@ export async function getPrimaryAppellation(
   iri: Rdf.Iri,
   repository?: string
 ): Promise<string> {
-  const hash = Rdf.hashString(iri.value)+"appellation";
   const repositoryId = repository||"default";
 
-  // 1) Try TTL-checked cache
-  const cached = cacheGet(hash.toString(), TTL_MS);
-  if (cached !== null) {
-    console.log('Returning cached configuration for', cached+" "+iri.value);
-    return cached;
-  }
-
-  // 2) Cache miss → fetch from server
   try {
-    const res = request
-      .get(RESOURCE_UTIL_SERVICE_URL+"/getPrimaryAppellation")
+    const response = await request
+      .get(`${RESOURCE_UTIL_SERVICE_URL}/getPrimaryAppellation`)
       .query({ iri: iri.value, repository: repositoryId })
-      .accept('text/plain').then(response => {
+      .accept('text/plain');
 
-          const value = response.text;
-          cacheSet(hash.toString(), value);
-          console.log('Fetched & cached config for', iri.value);   
-          return value;}
-    );
+    const value = response.text;
+    console.log('Fetched & cached config for', iri.value);
+    return value;
+
   } catch (err) {
     console.error('Error fetching resource configuration for', iri.value, err);
     throw err;
   }
 }
 
-export async function getObservedEntity(
+export async  function getObservedEntity(
   iri: Rdf.Iri,
   repository?: string
 ): Promise<string> {
-  const hash = Rdf.hashString(iri.value)+"observed";
   const repositoryId = repository||"default";
 
-  // 1) Try TTL-checked cache
-  const cached = cacheGet(hash.toString(), TTL_MS);
-  if (cached !== null) {
-    console.log('Returning cached configuration for', cached+" "+iri.value);
-    return cached;
-  }
-
-  // 2) Cache miss → fetch from server
   try {
-    const res = request
-      .get(RESOURCE_UTIL_SERVICE_URL+"/getObservedEntity")
+    const response = await request
+      .get(`${RESOURCE_UTIL_SERVICE_URL}/getObservedEntity`)
       .query({ iri: iri.value, repository: repositoryId })
-      .accept('text/plain').then(response => {
+      .accept('text/plain');
 
-          const value = response.text;
-          cacheSet(hash.toString(), value);
-          console.log('Fetched & cached config for', iri.value);   
-          return value;}
-    );
+    const value = response.text;
+    console.log('Fetched & cached config for', iri.value);
+    return value;
+
   } catch (err) {
     console.error('Error fetching resource configuration for', iri.value, err);
     throw err;

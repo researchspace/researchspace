@@ -78,81 +78,80 @@
             <semantic-form-text-input for="symbolic_object_content" multiline=true label="Name/value" placeholder="Enter the software parameter value"></semantic-form-text-input>
 
             [[> rsp:ThingDimensionTable]]
-            <div class="form-composite-container">
-              <semantic-form-composite-input  for="thing_dimension" 
-                                              label="Dimension"
-                                              new-subject-template="/dimension/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
-                                              fields='[[fieldDefinitions
-                                                          classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
 
-                                                          entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
-                                                          dimension_type="http://www.researchspace.org/pattern/system/dimension/type"
-                                                          dimension_value="http://www.researchspace.org/pattern/system/dimension/value"
-                                                          dimension_lower_value="http://www.researchspace.org/pattern/system/dimension/lower_value"
-                                                          dimension_upper_value="http://www.researchspace.org/pattern/system/dimension/upper_value"
-                                                          dimension_unit="http://www.researchspace.org/pattern/system/dimension/unit"
-                                                          entity_description="http://www.researchspace.org/pattern/system/entity/description"
-                                                      ]]'>
+            <semantic-form-composite-input  for="thing_dimension" 
+                                            label="Dimension"
+                                            new-subject-template="/dimension/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                            fields='[[fieldDefinitions
+                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
 
-                <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E54_Dimension'> </semantic-form-hidden-input>
+                                                        entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
+                                                        dimension_type="http://www.researchspace.org/pattern/system/dimension/type"
+                                                        dimension_value="http://www.researchspace.org/pattern/system/dimension/value"
+                                                        dimension_lower_value="http://www.researchspace.org/pattern/system/dimension/lower_value"
+                                                        dimension_upper_value="http://www.researchspace.org/pattern/system/dimension/upper_value"
+                                                        dimension_unit="http://www.researchspace.org/pattern/system/dimension/unit"
+                                                        entity_description="http://www.researchspace.org/pattern/system/entity/description"
+                                                    ]]'>
 
-                <div class="form-section-first-input">
-                  <semantic-form-text-input for="entity_primary_appellation" label="Dimension name" placeholder="Enter dimension name"></semantic-form-text-input>
-                </div>
-                      
-                <semantic-form-select-input for='dimension_type' 
-                                            label="Dimension type"
-                                            placeholder="Select dimension type" 
-                                            nested-form-templates='[ 
-                                                {
-                                                "label": "Dimension type",
-                                                "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
-                                                                                scheme=\"http://www.researchspace.org/resource/vocab/dimension_type\"
-                                                                                entityType=\"dimension type\" }}
-                                                                {{{{/raw}}}}"
-                                                }
-                                            ]'> 
-                </semantic-form-select-input>
-        
-                <div class="form-inline-inputs">
-                    <div style="flex: 1;">
-                        <semantic-form-text-input for="dimension_value" label="Dimension value" placeholder="Enter measured value"></semantic-form-text-input>
-                    </div>
-                    <div style="flex: 1;">
-                        <semantic-form-text-input for="dimension_lower_value" label="Dimension lower value" placeholder="Enter lower measured value"></semantic-form-text-input>
-                    </div>
-                    <div style="flex: 1;">
-                        <semantic-form-text-input for="dimension_upper_value" label="Dimension upper value" placeholder="Enter upper measured value"></semantic-form-text-input>
-                    </div>
-                </div>
-                
-                <semantic-form-tree-picker-input for='dimension_unit' 
-                                                    label="Dimension unit"
-                                                    placeholder="Select dimension unit" 
-                                                    close-dropdown-on-selection='true'
-                                                    tree-patterns='{"scheme": "http://www.researchspace.org/resource/vocab/dimension_unit",
-                                                                    "schemePattern": "?item crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/dimension_unit> .",
-                                                                    "relationPattern": "?item crm:P127_has_broader_term ?parent",
-                                                                    "labelPattern": "?item skos:prefLabel ?label"
-                                                                }'
+              <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E54_Dimension'> </semantic-form-hidden-input>
 
-                                                    scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                "view": "authority-list",
-                                                                "scheme": "http://www.researchspace.org/resource/vocab/dimension_unit",
-                                                                "tooltip": "Open list of dimension units"
-                                                                }'
-                                    
-                                                    nested-form-template='{{{{raw}}}}{{> forms:MeasurementUnit nested=true editable=true mode="new"
-                                                                                        scheme="http://www.researchspace.org/resource/vocab/dimension_unit"
-                                                                                        entityType="dimension unit" }}{{{{/raw}}}}'
-                                    >
-                </semantic-form-tree-picker-input>
-        
-                <semantic-form-text-input for="entity_description" label="Dimension description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
+              <div class="form-section-first-input">
+                <semantic-form-text-input for="entity_primary_appellation" label="Dimension name" placeholder="Enter dimension name"></semantic-form-text-input>
+              </div>
+                    
+              <semantic-form-select-input for='dimension_type' 
+                                          label="Dimension type"
+                                          placeholder="Select dimension type" 
+                                          nested-form-templates='[ 
+                                              {
+                                              "label": "Dimension type",
+                                              "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
+                                                                              scheme=\"http://www.researchspace.org/resource/vocab/dimension_type\"
+                                                                              entityType=\"dimension type\" }}
+                                                              {{{{/raw}}}}"
+                                              }
+                                          ]'> 
+              </semantic-form-select-input>
+      
+              <div class="form-inline-inputs">
+                  <div style="flex: 1;">
+                      <semantic-form-text-input for="dimension_value" label="Dimension value" placeholder="Enter measured value"></semantic-form-text-input>
+                  </div>
+                  <div style="flex: 1;">
+                      <semantic-form-text-input for="dimension_lower_value" label="Dimension lower value" placeholder="Enter lower measured value"></semantic-form-text-input>
+                  </div>
+                  <div style="flex: 1;">
+                      <semantic-form-text-input for="dimension_upper_value" label="Dimension upper value" placeholder="Enter upper measured value"></semantic-form-text-input>
+                  </div>
+              </div>
+              
+              <semantic-form-tree-picker-input for='dimension_unit' 
+                                                  label="Dimension unit"
+                                                  placeholder="Select dimension unit" 
+                                                  close-dropdown-on-selection='true'
+                                                  tree-patterns='{"scheme": "http://www.researchspace.org/resource/vocab/dimension_unit",
+                                                                  "schemePattern": "?item crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/dimension_unit> .",
+                                                                  "relationPattern": "?item crm:P127_has_broader_term ?parent",
+                                                                  "labelPattern": "?item skos:prefLabel ?label"
+                                                              }'
+
+                                                  scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                              "view": "authority-list",
+                                                              "scheme": "http://www.researchspace.org/resource/vocab/dimension_unit",
+                                                              "tooltip": "Open list of dimension units"
+                                                              }'
+                                  
+                                                  nested-form-template='{{{{raw}}}}{{> forms:MeasurementUnit nested=true editable=true mode="new"
+                                                                                      scheme="http://www.researchspace.org/resource/vocab/dimension_unit"
+                                                                                      entityType="dimension unit" }}{{{{/raw}}}}'
+                                  >
+              </semantic-form-tree-picker-input>
+      
+              <semantic-form-text-input for="entity_description" label="Dimension description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
 
 
-              </semantic-form-composite-input>
-            </div>
+            </semantic-form-composite-input>
 
             <semantic-form-text-input for="entity_description" multiline=true label="Description" placeholder="Enter description/comment"></semantic-form-text-input>
 

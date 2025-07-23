@@ -54,8 +54,7 @@ import { defaults as controlDefaults } from 'ol/control';
 import { Interaction } from 'ol/interaction';
 import { defaults as interactionDefaults } from 'ol/interaction';
 import { Extent } from 'ol/extent';
-import { extend, buffer, getWidth, containsExtent } from 'ol/extent';
-import { createEmpty } from 'ol/extent';
+import { extend, buffer, getWidth, containsExtent, isEmpty, createEmpty } from 'ol/extent';
 import { Coordinate } from 'ol/coordinate';
 import OSM from 'ol/source/OSM';
 import { getRenderPixel, getVectorContext } from 'ol/render';
@@ -1509,40 +1508,52 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   private getFeatureStyleWithFilters(feature: Feature): Style {
     // Check if year filtering is enabled and we have a year set
     if (this.state.yearFiltering && this.state.year) {
-      // Extract selected year, assuming this.state.year could be 'YYYY' or 'YYYY-MM-DD'
       const selectedYearString = this.state.year.split('-')[0];
       const selectedYear = parseInt(selectedYearString);
 
-      // Only apply date filtering if the feature has 'bob' and 'eoe' properties
-      if (feature.get('bob') && feature.get('eoe')) {
-        const bobValue = feature.get('bob').value; // e.g., '1696-01-01'
-        const eoeValue = feature.get('eoe').value; // e.g., '1796-12-31'
+      if (Number.isNaN(selectedYear)) {
+        console.warn('Selected year is not a valid number:', this.state.year);
+        // Potentially hide all features or handle as an error, for now, proceed without year filtering.
+      } else {
+        const bobProperty = feature.get('bob');
+        const eoeProperty = feature.get('eoe');
 
-        // Ensure bobValue and eoeValue are strings and parseable
-        if (typeof bobValue === 'string' && typeof eoeValue === 'string') {
-          const featureBobYearString = bobValue.split('-')[0];
-          const featureEoeYearString = eoeValue.split('-')[0];
+        if (bobProperty && typeof bobProperty.value === 'string') {
+          const featureBobYearString = bobProperty.value.split('-')[0];
+          const featureBobYear = parseInt(featureBobYearString);
 
-          if (featureBobYearString && featureEoeYearString) {
-            const featureBobYear = parseInt(featureBobYearString);
+          if (Number.isNaN(featureBobYear)) {
+            console.warn('Could not parse bob year from value:', bobProperty.value, 'for feature:', feature.get('subject')?.value);
+            return this.createHiddenFeatureStyle(); // Hide if bob year can't be parsed
+          }
+
+          if (eoeProperty && typeof eoeProperty.value === 'string' && eoeProperty.value.trim() !== '') {
+            // Feature has bob and eoe
+            const featureEoeYearString = eoeProperty.value.split('-')[0];
             const featureEoeYear = parseInt(featureEoeYearString);
 
-            // Apply the user's desired logic: show if selectedYear is between featureBobYear and featureEoeYear (inclusive)
+            if (Number.isNaN(featureEoeYear)) {
+              console.warn('Could not parse eoe year from value:', eoeProperty.value, 'for feature:', feature.get('subject')?.value);
+              return this.createHiddenFeatureStyle(); // Hide if eoe year can't be parsed
+            }
+
+            // Standard range check: bob <= selectedYear <= eoe
             if (!(featureBobYear <= selectedYear && selectedYear <= featureEoeYear)) {
-              // If not in range, hide the feature
               return this.createHiddenFeatureStyle();
             }
           } else {
-            console.warn('Could not parse year from bob/eoe values:', feature.get('subject')?.value, bobValue, eoeValue);
-            return this.createHiddenFeatureStyle(); // Hide if years can't be parsed
+            // Feature has bob but no eoe (or eoe is empty string) - treat as ongoing
+            // Show if bob <= selectedYear
+            if (!(featureBobYear <= selectedYear)) {
+              return this.createHiddenFeatureStyle();
+            }
           }
-        } else {
-          console.warn('Feature has bob/eoe but values are not strings:', feature.get('subject')?.value, bobValue, eoeValue);
-          return this.createHiddenFeatureStyle(); // Hide if values are not strings
         }
+        // If a feature does not have a valid 'bob' property, it is not subject to this specific year filter.
+        // It will remain visible unless other filters hide it.
+        // Or, if strict filtering is desired for features missing bob:
+        // else { return this.createHiddenFeatureStyle(); }
       }
-      // If a feature does not have 'bob' and 'eoe' properties, it is not subject to this year filter.
-      // It will remain visible unless other filters hide it.
     }
     
     // We don't need special handling for selected features anymore
@@ -1847,6 +1858,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
     if (!query) return;
 
+    console.log(`[DEBUG] SemanticMapAdvanced Executing Query: ${query}`);
     console.log(`[DEBUG] Query Fired - Timestamp: ${Date.now()}`);
 
     // Track multiple calls
@@ -1864,6 +1876,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     stream.onValue((res) => {
       const endTime = performance.now();
       console.log(`[DEBUG] Query execution time: ${endTime - startTime}ms`);
+      console.log(`Response: ${res}`);
 
       const result = _.map(res.results.bindings, (v) => _.mapValues(v, (x) => x) as any);
 
@@ -1963,8 +1976,36 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         () => {
           let vectorLayers = this.getVectorLayersFromMap();
           let combinedExtents = this.combineExtentsFromLayers(vectorLayers);
-          console.log('Setting the extents to: ', combinedExtents);
-          this.map.getView().fit(combinedExtents, { padding: [100, 100, 100, 100] });
+          console.log('Calculated extents for fitting: ', combinedExtents);
+
+          if (isEmpty(combinedExtents) ||
+              !combinedExtents.every(isFinite) ||
+              combinedExtents[0] >= combinedExtents[2] ||
+              combinedExtents[1] >= combinedExtents[3]) {
+            console.warn('SemanticMapAdvanced: Attempted to fit map to an invalid or empty extent. Extent was:', combinedExtents, '. Skipping fit(). The map will use its current or default view.');
+            // Optionally, fit to a default extent or the current view's extent if it's valid
+            // For example:
+            // if (this.props.mapOptions && this.props.mapOptions.extent && !isEmpty(this.props.mapOptions.extent) && this.props.mapOptions.extent.every(isFinite)) {
+            //   try {
+            //    this.map.getView().fit(this.props.mapOptions.extent, { padding: [100, 100, 100, 100], duration: 0, constrainResolution: false });
+            //   } catch (e) {
+            //     console.warn('SemanticMapAdvanced: Fallback fit to props.mapOptions.extent also failed.', e);
+            //   }
+            // } else if (this.map.getView().calculateExtent && !isEmpty(this.map.getView().calculateExtent())) {
+            //    try {
+            //      this.map.getView().fit(this.map.getView().calculateExtent(), { padding: [100,100,100,100], duration: 0, constrainResolution: false});
+            //    } catch (e) {
+            //      console.warn('SemanticMapAdvanced: Fallback fit to current view extent also failed.', e);
+            //    }
+            // }
+          } else {
+            console.log('SemanticMapAdvanced: Fitting map to valid extent:', combinedExtents);
+            try {
+              this.map.getView().fit(combinedExtents, { padding: [100, 100, 100, 100] });
+            } catch (e) {
+              console.error('SemanticMapAdvanced: Error during map.getView().fit even after extent checks. Extent:', combinedExtents, 'Error:', e);
+            }
+          }
           resolve(); // Resolve the promise once the state is set and the map view is updated
         }
       );

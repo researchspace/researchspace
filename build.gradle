@@ -40,6 +40,27 @@ plugins {
 
 version = findProperty('buildVersion') ?: '4.0-SNAPSHOT'
 
+// Load local secrets from gradle-local.properties file
+def localPropertiesFile = rootProject.file('gradle-local.properties')
+def localProperties = new Properties()
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withInputStream { localProperties.load(it) }
+}
+
+// Helper function to get property from local file, environment variable, or default
+def getSecretProperty = { key, defaultValue = '' ->
+    return localProperties.getProperty(key) ?: System.getenv(key) ?: defaultValue
+}
+
+// Function to convert all properties from local file to JVM arguments
+def getSecretJvmArgs = {
+    def secretArgs = []
+    localProperties.each { key, value ->
+        secretArgs.add("-D${key}=${value}")
+    }
+    return secretArgs
+}
+
 // currently we use Java 11 for development
 sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11
@@ -212,7 +233,7 @@ gretty {
             "-Dlog4j.configurationFile=classpath:org/researchspace/logging/${findProperty('logLevel')}.xml",
 
             "-Dconfig.environment.shiroConfig=${projectDir.getAbsolutePath()}/src/main/resources/org/researchspace/apps/default/config/shiro.ini"
-        ]
+        ] + getSecretJvmArgs()
     }
 }
 

@@ -27,6 +27,7 @@ export interface ResourceConfig {
   resourceLabel: string;
   resourceOntologyClass?: string;
   p2HasType?: string;
+  resourceDescription?: string;
   restrictionPattern?: string;
   resourceFormIRI?: string;
   resourceMembershipProperty?: string;
@@ -53,6 +54,7 @@ CONSTRUCT {
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass .
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceLabel .
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?P2_has_type .
+  ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_description> ?resourceDescription .
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?restrictionPattern .
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty .
@@ -76,6 +78,10 @@ CONSTRUCT {
   OPTIONAL {
     ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?P2_has_type .
     BIND(true as ?resourceType)
+  }
+
+  OPTIONAL {
+    ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_description> ?resourceDescription .
   }
   
   OPTIONAL {
@@ -140,6 +146,9 @@ CONSTRUCT {
             const p2HasType =
               Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_type')], pg).map(l => l.value).getOrElse(undefined);
 
+            const resourceDescription =
+              Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_description')], pg).map(l => l.value).getOrElse(undefined);
+
             const restrictionPattern =
               Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern')], pg).map(l => l.value).getOrElse(undefined);
 
@@ -151,10 +160,13 @@ CONSTRUCT {
             
              const resourceBroaderProperty =
               Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property')], pg).map(l => l.value).getOrElse(undefined);
+
              const resourceOrderPattern =
               Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_order_sparql_pattern')], pg).map(l => l.value).getOrElse(undefined);
+
             const resourceLabelPattern =
               Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_label_sparql_pattern')], pg).map(l => l.value).getOrElse(undefined);
+
             const resourceIcon =
               Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon')], pg).map(l => l.value).getOrElse(undefined);
            
@@ -179,7 +191,7 @@ CONSTRUCT {
             return [
               configIri.value,
               {
-                resourceLabel, resourceOntologyClass, p2HasType, restrictionPattern, resourceFormIRI, 
+                resourceLabel, resourceOntologyClass, p2HasType, resourceDescription, restrictionPattern, resourceFormIRI, 
                 resourceMembershipProperty, resourceBroaderProperty, resourceOrderPattern, 
                 resourceLabelPattern, resourceIcon, resourceSearchKPCategory, isSystemConfig, 
                 listInAuthorityDocument, displayInFinder, hasResourceType, navigationMenuItem

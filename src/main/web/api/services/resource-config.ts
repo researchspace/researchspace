@@ -27,6 +27,7 @@ export interface ResourceConfig {
   resourceLabel: string;
   resourceOntologyClass?: string;
   p2HasType?: string;
+  resourceDescription?: string;
   restrictionPattern?: string;
   resourceFormIRI?: string;
   resourceMembershipProperty?: string;
@@ -53,6 +54,7 @@ CONSTRUCT {
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass .
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceLabel .
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?P2_has_type .
+  ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_description> ?resourceDescription .
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?restrictionPattern .
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty .
@@ -76,6 +78,10 @@ CONSTRUCT {
   OPTIONAL {
     ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?P2_has_type .
     BIND(true as ?resourceType)
+  }
+
+  OPTIONAL {
+    ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_description> ?resourceDescription .
   }
   
   OPTIONAL {
@@ -126,75 +132,79 @@ CONSTRUCT {
   return SparqlClient.construct(query).onValue(
     res => {
      
-          const configGraph = Rdf.graph(res);
-          const allConfigIris = res.filter(t => t.o.equals(FormConfigType)).map(t => t.s);
-          const allConfigs = allConfigIris.map(configIri => {
-            const pg = Rdf.pg(configIri, configGraph);
+      const configGraph = Rdf.graph(res);
+      const allConfigIris = res.filter(t => t.o.equals(FormConfigType)).map(t => t.s);
+      const allConfigs = allConfigIris.map(configIri => {
+        const pg = Rdf.pg(configIri, configGraph);
 
-            const resourceLabel =
-              Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_name')], pg).map(l => l.value).get();
+        const resourceLabel =
+          Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_name')], pg).map(l => l.value).get();
 
-            const resourceOntologyClass =
-              Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class')], pg).map(l => l.value).getOrElse(undefined);
+        const resourceOntologyClass =
+          Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class')], pg).map(l => l.value).getOrElse(undefined);
 
-            const p2HasType =
-              Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_type')], pg).map(l => l.value).getOrElse(undefined);
+        const p2HasType =
+          Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_type')], pg).map(l => l.value).getOrElse(undefined);
 
-            const restrictionPattern =
-              Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern')], pg).map(l => l.value).getOrElse(undefined);
+        const resourceDescription =
+          Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_description')], pg).map(l => l.value).getOrElse(undefined);
 
-            const resourceFormIRI =
-              Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_form')], pg).map(l => l.value).getOrElse(undefined);
-            
-            const resourceMembershipProperty =
-              Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property')], pg).map(l => l.value).getOrElse(undefined);
-            
-             const resourceBroaderProperty =
-              Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property')], pg).map(l => l.value).getOrElse(undefined);
-             const resourceOrderPattern =
-              Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_order_sparql_pattern')], pg).map(l => l.value).getOrElse(undefined);
-            const resourceLabelPattern =
-              Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_label_sparql_pattern')], pg).map(l => l.value).getOrElse(undefined);
-            const resourceIcon =
-              Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon')], pg).map(l => l.value).getOrElse(undefined);
-           
-            const resourceSearchKPCategory = 
-              Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_search_facet_kpCategory')], pg).map(l => l.value).getOrElse(undefined);
-           
-            const isSystemConfig = 
-              Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/is_system_config')], pg).map(l => l.value).getOrElse(undefined);
-          
-            const hasResourceType = 
-              Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/has_resource_type')], pg).map(l => l.value).getOrElse(undefined);
-          
-            const listInAuthorityDocument = 
-              Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_list_in_authority')], pg).map(l => l.value).getOrElse(undefined);
-          
-            const displayInFinder = 
-              Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_in_finder')], pg).map(l => l.value).getOrElse(undefined);
-          
-            const navigationMenuItem = undefined;
-              //Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.cidoc-crm.org/cidoc-crm/P67i_is_referred_to_by')], pg).map(l => l.value).getOrElse(undefined);
-          
-            return [
-              configIri.value,
-              {
-                resourceLabel, resourceOntologyClass, p2HasType, restrictionPattern, resourceFormIRI, 
-                resourceMembershipProperty, resourceBroaderProperty, resourceOrderPattern, 
-                resourceLabelPattern, resourceIcon, resourceSearchKPCategory, isSystemConfig, 
-                listInAuthorityDocument, displayInFinder, hasResourceType, navigationMenuItem
-              }
-            ];
-          });
-          resourceConfigs = _.fromPairs(allConfigs);
-          console.log("initialising configurations");
-          console.dir(resourceConfigs,{"depth":null});
-          
-        });
- 
+        const restrictionPattern =
+          Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern')], pg).map(l => l.value).getOrElse(undefined);
+
+        const resourceFormIRI =
+          Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_form')], pg).map(l => l.value).getOrElse(undefined);
+        
+        const resourceMembershipProperty =
+          Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property')], pg).map(l => l.value).getOrElse(undefined);
+        
+          const resourceBroaderProperty =
+          Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property')], pg).map(l => l.value).getOrElse(undefined);
+
+          const resourceOrderPattern =
+          Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_order_sparql_pattern')], pg).map(l => l.value).getOrElse(undefined);
+
+        const resourceLabelPattern =
+          Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_label_sparql_pattern')], pg).map(l => l.value).getOrElse(undefined);
+
+        const resourceIcon =
+          Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon')], pg).map(l => l.value).getOrElse(undefined);
+        
+        const resourceSearchKPCategory = 
+          Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_search_facet_kpCategory')], pg).map(l => l.value).getOrElse(undefined);
+        
+        const isSystemConfig = 
+          Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/is_system_config')], pg).map(l => l.value).getOrElse(undefined);
+      
+        const hasResourceType = 
+          Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/has_resource_type')], pg).map(l => l.value).getOrElse(undefined);
+      
+        const listInAuthorityDocument = 
+          Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_list_in_authority')], pg).map(l => l.value).getOrElse(undefined);
+      
+        const displayInFinder = 
+          Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_in_finder')], pg).map(l => l.value).getOrElse(undefined);
+      
+        const navigationMenuItem = undefined;
+          //Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.cidoc-crm.org/cidoc-crm/P67i_is_referred_to_by')], pg).map(l => l.value).getOrElse(undefined);
+      
+        return [
+          configIri.value,
+          {
+            resourceLabel, resourceOntologyClass, p2HasType, resourceDescription, restrictionPattern, resourceFormIRI, 
+            resourceMembershipProperty, resourceBroaderProperty, resourceOrderPattern, 
+            resourceLabelPattern, resourceIcon, resourceSearchKPCategory, isSystemConfig, 
+            listInAuthorityDocument, displayInFinder, hasResourceType, navigationMenuItem
+          }
+        ];
+      });
+      resourceConfigs = _.fromPairs(allConfigs);
+      //console.log("initialising configurations");
+      //console.dir(resourceConfigs,{"depth":null});       
+  }); 
 }
 
-export function getResourceConfigurationValue(iri: string, key: string)  {console.log("iri "+iri+" "+key+" "+resourceConfigs[iri][key]);
+export function getResourceConfigurationValue(iri: string, key: string)  {
     if (iri in resourceConfigs) { 
       if (key in resourceConfigs[iri]) { 
         return resourceConfigs[iri][key];
@@ -202,7 +212,6 @@ export function getResourceConfigurationValue(iri: string, key: string)  {consol
     }
     return undefined;
 }
-
 
 import Basil = require('basil.js');
 const RESOURCE_CONFIGURATION_SERVICE_URL = '/rest/data/rdf/utils/getResourceConfiguration';
@@ -244,8 +253,7 @@ function cacheGet(key: string, ttlMs: number): string | null {
 
 export function getResourceConfiguration(
   iri: Rdf.Iri,
-  repository: string,
-  key?:string
+  repository: string
 ): string {
   const hash = Rdf.hashString(iri.value);
   const repositoryId = repository||"default";
@@ -253,8 +261,8 @@ export function getResourceConfiguration(
   // 1) Try TTL-checked cache
   const cached = cacheGet(hash.toString(), TTL_MS);
   if (cached !== null) {
-    console.log('Returning cached configuration for', cached+" "+iri.value);
-    return cached;
+   console.log('Returning cached configuration for', cached+" "+iri.value);
+   return cached;
   }
 
   // 2) Cache miss → fetch from server
@@ -263,11 +271,10 @@ export function getResourceConfiguration(
       .get(RESOURCE_CONFIGURATION_SERVICE_URL)
       .query({ iri: iri.value, repository: repositoryId })
       .accept('text/plain').then(response => {
-
           const value = response.text;
-          cacheSet(hash.toString(), value);
-          console.log('Fetched & cached config for', iri.value);   
-          return value;}
+          cacheSet(hash.toString(), value);          
+          return value;
+      }
     );
   } catch (err) {
     console.error('Error fetching resource configuration for', iri.value, err);

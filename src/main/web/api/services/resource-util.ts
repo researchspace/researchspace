@@ -1,6 +1,6 @@
 /**
  * ResearchSpace
- * Copyright (C) 2022, © Kartography Community Interest Company
+ * Copyright (C) 2025, © Kartography Community Interest Company
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -20,43 +20,7 @@ import * as _ from 'lodash';
 import { Rdf } from 'platform/api/rdf';
 import * as request from 'platform/api/http';
 
-import Basil = require('basil.js');
 const RESOURCE_UTIL_SERVICE_URL = '/rest/data/rdf/utils';
-const TTL_MS = 60 * 60 * 1000; // 1 hour
-
-const storage = new Basil({
-  storages: ['local', 'memory'],
-  namespace: 'rs-resource-util',
-});
-
-interface CacheEntry {
-  value: string;
-  timestamp: number;
-}
-
-function cacheSet(key: string, value: string): void {
-  const entry: CacheEntry = { value, timestamp: Date.now() };
-  storage.set(key, JSON.stringify(entry));
-}
-
-function cacheGet(key: string, ttlMs: number): string | null {
-  const raw = storage.get(key);
-  if (!raw) return null;
-
-  try {
-    const entry = JSON.parse(raw) as CacheEntry;
-    if (Date.now() - entry.timestamp > ttlMs) {
-      storage.remove(key);
-      console.log(`Cache expired for key: ${key}`);
-      return null;
-    }
-    return entry.value;
-  } catch {
-    storage.remove(key);
-    console.warn(`Invalid cache entry for key: ${key}, discarding`);
-    return null;
-  }
-}
 
 export async function getPrimaryAppellation(
   iri: Rdf.Iri,
@@ -71,7 +35,6 @@ export async function getPrimaryAppellation(
       .accept('text/plain');
 
     const value = response.text;
-    console.log('Fetched & cached config for', iri.value);
     return value;
 
   } catch (err) {
@@ -93,9 +56,7 @@ export async  function getObservedEntity(
       .accept('text/plain');
 
     const value = response.text;
-    console.log('Fetched & cached config for', iri.value);
     return value;
-
   } catch (err) {
     console.error('Error fetching resource configuration for', iri.value, err);
     throw err;

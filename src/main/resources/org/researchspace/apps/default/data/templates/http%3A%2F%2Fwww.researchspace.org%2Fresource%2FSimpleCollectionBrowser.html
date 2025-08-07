@@ -680,6 +680,62 @@
                         {{/if}}
 
                         {{#if (not (eq mode "deleted"))}}
+                          <mp-overlay-dialog title="{{resourceName}}" type="modal" bs-size="medium">
+
+                            <mp-overlay-dialog-trigger>
+                              <button class="btn btn-default btn-textAndIcon" title="Resource info">
+                                <rs-icon icon-type="rounded" icon-name="info_i" symbol="true"></rs-icon>
+                              </button>
+                            </mp-overlay-dialog-trigger>
+
+                            <mp-overlay-dialog-content>
+                              <div class="resource-info-area-content color-secondary" style="padding: 0;">
+                                {{#if resourceDescription}}
+                                  <div class="resource-info-area-section-title">{{resourceName}} definition:</div>
+                                  <div class="text-section">{{resourceDescription}}</div>  
+                                {{else}}
+                                  <semantic-query query='SELECT DISTINCT ?resourceName ?ontologyDescription ?ontologyExamples WHERE {
+                                                            BIND("{{resourceName}}" as ?resourceName) .
+                                                            <{{resourceOntologyClass}}> rdfs:comment ?ontologyDescription .
+                                                            OPTIONAL {
+                                                              <{{resourceOntologyClass}}> skos:example ?ontologyExamples .
+                                                            }
+                                                          }'
+                                                  template='{{> template}}'
+                                                  no-result-template='{{> noResults}}'>
+
+                                    <template id='template'>
+                                      <div>
+                                        {{#if bindings.0.ontologyDescription.value}}
+                                          <div class="resource-info-area-section-title">{{bindings.0.resourceName.value}} definition:</div>
+                                          <div class="text-section">
+                                            {{#each bindings}}
+                                              <p>{{ontologyDescription.value}}</p>
+                                            {{/each}}
+                                          </div>
+                                        {{/if}}
+                                        
+                                        {{#if bindings.0.ontologyExamples.value}}
+                                          <div class="resource-info-area-section-title">Examples:</div>
+                                          <div class="text-section example-section">
+                                            {{#each bindings}}
+                                              <p>{{ontologyExamples.value}}</p>
+                                            {{/each}}
+                                          </div>
+                                        {{/if}}
+                                      </div>
+                                    </template>
+                                    
+                                    <template id="noResults">
+                                      <div>No definition available</div>
+                                    </template>
+                                  </semantic-query>
+                                {{/if}}
+                              </div>
+                            </mp-overlay-dialog-content>
+
+                          </mp-overlay-dialog>
+
                           <mp-event-trigger id='{{viewId}}-form-refresh-trigger' 
                                             type='Component.TemplateUpdate' 
                                             targets='["{{#if collection}}{{viewId}}-term-forms{{else}}{{viewId}}-resource-editor-frame{{/if}}"]'
@@ -826,7 +882,8 @@
                                                 {{#if data.additional_data}}"additional-data":{{{stringify data.additional_data}}},{{/if}}
                                                 "editable": {{editable}},
                                                 "mode": "{{mode}}",
-                                                "viewId": "{{#if iri}}{{iri}}{{else}}{{viewId}}{{/if}}",                                           
+                                                "viewId": "{{#if iri}}{{iri}}{{else}}{{viewId}}{{/if}}",  
+                                                "dashboardId": "{{viewId}}",                                           
                                                 {{#if resourceLabelPattern}}"resourceLabelPattern": "{{resourceLabelPattern}}",{{/if}} 
                                                 {{#if selectedApiResource}}
                                                   {{#if apiResourceURI}}"apiResourceURI": "{{apiResourceURI}}",{{/if}}

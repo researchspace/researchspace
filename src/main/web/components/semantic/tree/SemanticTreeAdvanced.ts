@@ -39,6 +39,13 @@ import { D3Tree, D3TreeProviderKind, D3TreeOptions } from './D3Tree';
 import { SemanticTreeConfig, SemanticTreeKind } from './SemanticTree';
 import { TreeNode, ProviderPropsAdvanced } from './TreeTypes';
 
+export interface SortOption {
+  label: string;        // Display name in dropdown
+  binding: string;      // SPARQL binding name to sort by
+  type: 'string' | 'number' | 'date';  // Data type for proper comparison
+  defaultDirection?: 'asc' | 'desc';   // Optional default direction
+}
+
 export interface SemanticTreeAdvancedConfig extends SemanticTreeConfig {
   /**
    * Optional SPARQL Select query for lazy loading child nodes when expanding.
@@ -115,6 +122,40 @@ export interface SemanticTreeAdvancedConfig extends SemanticTreeConfig {
    * @default true if searchQuery is provided
    */
   showSearch?: boolean;
+
+  /**
+   * Array of sort options available to the user.
+   * Each option specifies a SPARQL binding that can be used for sorting.
+   * @example
+   * ```
+   * [
+   *   { label: "Title", binding: "title", type: "string" },
+   *   { label: "Child Count", binding: "childCount", type: "number" },
+   *   { label: "Creation Date", binding: "created", type: "date" }
+   * ]
+   * ```
+   */
+  sortOptions?: SortOption[];
+  
+  /**
+   * Initial sort configuration.
+   * @example { binding: "title", direction: "asc" }
+   */
+  initialSort?: {
+    binding: string;
+    direction: 'asc' | 'desc';
+  };
+  
+  /**
+   * Whether to show sort controls.
+   * @default true if sortOptions are provided
+   */
+  showSortControls?: boolean;
+  
+  /**
+   * Custom CSS class for sort controls container.
+   */
+  sortControlsClass?: string;
 }
 
 export type PropsAdvanced = SemanticTreeAdvancedConfig & ReactProps<SemanticTreeAdvanced>;
@@ -130,6 +171,8 @@ interface StateAdvanced {
   highlightedTreeData?: ReadonlyArray<TreeNode>; // Filtered tree data showing only highlighted paths
   searchText: string; // Current search input text
   isSearching: boolean; // Whether a search is in progress
+  currentSortBinding?: string; // Current field being sorted by
+  currentSortDirection: 'asc' | 'desc'; // Current sort direction
 }
 
 export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced> {
@@ -150,6 +193,14 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
 
   constructor(props: PropsAdvanced, context: any) {
     super(props, context);
+    
+    // Initialize sort state from props
+    const initialSortBinding = props.initialSort?.binding || 
+                              (props.sortOptions && props.sortOptions.length > 0 ? props.sortOptions[0].binding : undefined);
+    const initialSortDirection = props.initialSort?.direction || 
+                                (props.sortOptions?.find(opt => opt.binding === initialSortBinding)?.defaultDirection) || 
+                                'asc';
+    
     this.state = {
       isLoading: true,
       errorMessage: maybe.Nothing<string>(),
@@ -159,6 +210,8 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       highlightedNodes: new Set(),
       searchText: '',
       isSearching: false,
+      currentSortBinding: initialSortBinding,
+      currentSortDirection: initialSortDirection,
     };
   }
 
@@ -712,7 +765,13 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       const parentNode = graph.map.get(node.key);
 
       if (parentNode) {
-        const childNodes = makeImmutableForest(parentNode.children);
+        let childNodes = makeImmutableForest(parentNode.children);
+        
+        // Apply current sorting to newly loaded children
+        if (this.state.currentSortBinding) {
+          childNodes = this.sortTreeNodes(childNodes);
+        }
+        
         this.updateExpandedCache(nodeKey, childNodes);
         return childNodes;
       }
@@ -808,17 +867,15 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       treeElement = createElement(TreeAdvanced, { ...providerProps, key: treeKey });
     }
 
-    // Check if we should show the search bar
+    // Check if we should show the search bar and sort controls
     const showSearch = this.props.showSearch !== false && this.props.searchQuery;
+    const showSort = this.props.sortOptions && this.props.sortOptions.length > 0 && this.props.showSortControls !== false;
 
-    if (showSearch) {
-      return D.div({},
-        this.renderSearchBar(),
-        treeElement
-      );
-    } else {
-      return D.div({}, treeElement);
-    }
+    return D.div({},
+      showSort && this.renderSortControls(),
+      showSearch && this.renderSearchBar(),
+      treeElement
+    );
   }
 
   private renderSearchBar() {
@@ -996,7 +1053,12 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
 
     breakGraphCycles(graph.nodes);
     const { roots, notFound } = this.findRoots(graph);
-    const data = makeImmutableForest(roots);
+    let data = makeImmutableForest(roots);
+
+    // Apply initial sorting if configured
+    if (this.props.sortOptions && this.props.sortOptions.length > 0 && this.state.currentSortBinding) {
+      data = this.sortTreeNodes(data);
+    }
 
     if (notFound.length === 0) {
       this.setState({ data, isLoading: false });
@@ -1161,6 +1223,177 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
         children: this.replaceChildrenInTree(node.children, parentKey, newChildren)
       };
     });
+  };
+
+  private sortTreeNodes = (nodes: ReadonlyArray<TreeNode>): ReadonlyArray<TreeNode> => {
+    if (!this.state.currentSortBinding) {
+      return nodes;
+    }
+
+    const sortOption = this.props.sortOptions?.find(
+      opt => opt.binding === this.state.currentSortBinding
+    );
+    
+    if (!sortOption) {
+      return nodes;
+    }
+
+    const sortedNodes = [...nodes].sort((a, b) => {
+      // Skip "expand siblings" nodes - keep them at the end
+      if (a.data.expandSiblings && a.data.expandSiblings.value === 'true') {
+        return 1;
+      }
+      if (b.data.expandSiblings && b.data.expandSiblings.value === 'true') {
+        return -1;
+      }
+
+      const aValue = a.data[sortOption.binding]?.value;
+      const bValue = b.data[sortOption.binding]?.value;
+
+      // Handle missing values - put them at the end
+      if (!aValue && !bValue) return 0;
+      if (!aValue) return 1;
+      if (!bValue) return -1;
+
+      let comparison = 0;
+      
+      switch (sortOption.type) {
+        case 'number':
+          comparison = parseFloat(aValue) - parseFloat(bValue);
+          break;
+        case 'date':
+          comparison = new Date(aValue).getTime() - new Date(bValue).getTime();
+          break;
+        case 'string':
+        default:
+          // Use localeCompare for better string sorting (handles numbers in strings correctly)
+          comparison = aValue.localeCompare(bValue, undefined, { 
+            numeric: true,
+            sensitivity: 'base' 
+          });
+          break;
+      }
+
+      return this.state.currentSortDirection === 'asc' ? comparison : -comparison;
+    });
+
+    // Recursively sort children
+    return sortedNodes.map(node => ({
+      ...node,
+      children: this.sortTreeNodes(node.children)
+    }));
+  };
+
+  private handleSortFieldChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newBinding = event.target.value;
+    const sortOption = this.props.sortOptions?.find(opt => opt.binding === newBinding);
+    const direction = sortOption?.defaultDirection || 'asc';
+    
+    this.setState({
+      currentSortBinding: newBinding,
+      currentSortDirection: direction
+    }, this.applySortToCurrentData);
+  };
+
+  private toggleSortDirection = () => {
+    this.setState(prevState => ({
+      currentSortDirection: prevState.currentSortDirection === 'asc' ? 'desc' : 'asc'
+    }), this.applySortToCurrentData);
+  };
+
+  private applySortToCurrentData = () => {
+    if (this.state.data) {
+      const sortedData = this.sortTreeNodes(this.state.data);
+      this.setState({ data: sortedData });
+      
+      // Also update highlighted tree if active
+      if (this.state.highlightedTreeData) {
+        const sortedHighlighted = this.sortTreeNodes(this.state.highlightedTreeData);
+        this.setState({ highlightedTreeData: sortedHighlighted });
+      }
+      
+      // Update cached expanded nodes with sorted versions
+      if (this.state.expandedNodes.size > 0) {
+        const sortedCache = new Map<string, ReadonlyArray<TreeNode>>();
+        this.state.expandedNodes.forEach((children, key) => {
+          sortedCache.set(key, this.sortTreeNodes(children));
+        });
+        this.setState({ expandedNodes: sortedCache });
+      }
+    }
+  };
+
+  private renderSortControls = () => {
+    if (!this.props.sortOptions || this.props.sortOptions.length === 0 || this.props.showSortControls === false) {
+      return null;
+    }
+
+    const { currentSortBinding, currentSortDirection } = this.state;
+    
+    return D.div(
+      { 
+        className: this.props.sortControlsClass || 'tree-sort-controls',
+        style: { 
+          marginBottom: '10px',
+          padding: '8px',
+          backgroundColor: '#f8f9fa',
+          borderRadius: '4px',
+          display: 'flex',
+          gap: '8px',
+          alignItems: 'center'
+        } 
+      },
+      D.label({ 
+        style: { 
+          marginRight: '5px',
+          fontWeight: 'bold',
+          fontSize: '14px'
+        } 
+      }, 'Sort by:'),
+      D.select({
+        value: currentSortBinding || '',
+        onChange: this.handleSortFieldChange,
+        style: {
+          padding: '4px 8px',
+          borderRadius: '4px',
+          border: '1px solid #ccc',
+          fontSize: '14px',
+          minWidth: '150px'
+        }
+      },
+        !currentSortBinding && D.option({ 
+          value: '', 
+          disabled: true 
+        }, 'Select field...'),
+        this.props.sortOptions.map(option =>
+          D.option({ 
+            key: option.binding, 
+            value: option.binding 
+          }, option.label)
+        )
+      ),
+      currentSortBinding && D.button({
+        onClick: this.toggleSortDirection,
+        style: {
+          padding: '4px 12px',
+          borderRadius: '4px',
+          border: '1px solid #ccc',
+          backgroundColor: 'white',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+          fontSize: '14px'
+        },
+        title: currentSortDirection === 'asc' ? 'Sort Ascending' : 'Sort Descending'
+      },
+        D.i({
+          className: currentSortDirection === 'asc' ? 'fa fa-sort-amount-asc' : 'fa fa-sort-amount-desc',
+          style: { marginRight: '4px' }
+        }),
+        currentSortDirection === 'asc' ? 'A → Z' : 'Z → A'
+      )
+    );
   };
 
   private handleDeprecatedLayout(): string {

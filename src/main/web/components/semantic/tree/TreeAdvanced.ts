@@ -25,7 +25,7 @@ import * as classnames from 'classnames';
 
 import { TemplateItem } from 'platform/components/ui/template';
 
-import { ProviderPropsAdvanced, TreeNode } from './TreeTypes';
+import { ProviderPropsAdvanced, TreeNode, RelatedNodeCriteria } from './TreeTypes';
 
 import 'react-treeview/react-treeview.css';
 import * as styles from './Tree.scss';
@@ -36,6 +36,8 @@ interface State {
   collapsedBookkeeping?: BookeepingDictionary;
   activeNode?: any;
   expandedChildren: Map<string, ReadonlyArray<TreeNode>>; // Store dynamically loaded children
+  hoveredNodeKey?: string;
+  activeDropdownKey?: string; // Track which dropdown is open
 }
 
 interface BookeepingDictionary {
@@ -76,6 +78,22 @@ export class TreeAdvanced extends Component<TreeAdvancedProps, State> {
       });
     }
   }
+
+  public componentDidMount() {
+    // Add click outside listener to close dropdown
+    document.addEventListener('click', this.handleClickOutside);
+  }
+
+  public componentWillUnmount() {
+    document.removeEventListener('click', this.handleClickOutside);
+  }
+
+  private handleClickOutside = (event: any) => {
+    // Close dropdown if clicking outside
+    if (this.state.activeDropdownKey && !event.target.closest('.related-nodes-dropdown-container')) {
+      this.setState({ activeDropdownKey: null, hoveredNodeKey: null });
+    }
+  };
 
   private initializeCollapsedState(props: TreeAdvancedProps) {
     const bookkeeping: BookeepingDictionary = {};
@@ -213,14 +231,32 @@ export class TreeAdvanced extends Component<TreeAdvancedProps, State> {
         })
       : null;
 
-    const renderedNode = D.span(
-      {
-        key: this.key + nodeKey + i,
-        className: this.getCssClassesForNode(children !== null, this.state.activeNode === node, node),
-        onClick: this.handleClick.bind(null, node),
+    // Wrap the node with hover detection and related nodes icon
+    const nodeWithRelatedButton = D.div({
+      className: 'tree-node-container',
+      style: { 
+        position: 'relative',
+        display: 'inline-flex',
+        alignItems: 'center',
+        width: '100%'
       },
-      nodeLabelTemplate,
-      loadingIndicator
+      onMouseEnter: () => this.setState({ hoveredNodeKey: nodeKey }),
+      onMouseLeave: () => {
+        if (this.state.activeDropdownKey !== nodeKey) {
+          this.setState({ hoveredNodeKey: null });
+        }
+      }
+    },
+      D.span(
+        {
+          key: this.key + nodeKey + i,
+          className: this.getCssClassesForNode(children !== null, this.state.activeNode === node, node),
+          onClick: this.handleClick.bind(null, node),
+        },
+        nodeLabelTemplate,
+        loadingIndicator
+      ),
+      this.renderRelatedNodeIcon(node, nodeKey)
     );
 
     return hasChildren
@@ -228,13 +264,158 @@ export class TreeAdvanced extends Component<TreeAdvancedProps, State> {
           ReactTreeView,
           {
             key: nodeKey + isCollapsed,
-            nodeLabel: renderedNode,
+            nodeLabel: nodeWithRelatedButton,
             collapsed: isCollapsed,
             onClick: () => this.handleCollapsibleClick(nodeKey, node),
           },
           children
         )
-      : renderedNode;
+      : nodeWithRelatedButton;
+  };
+
+  private renderRelatedNodeIcon = (node: TreeNode, nodeKey: string) => {
+    const { relatedNodeCriteria, onFindRelatedNodes } = this.props;
+    
+    if (!relatedNodeCriteria || relatedNodeCriteria.length === 0) {
+      return null;
+    }
+    
+    const isHovered = this.state.hoveredNodeKey === nodeKey;
+    const isDropdownOpen = this.state.activeDropdownKey === nodeKey;
+    const shouldShow = isHovered || isDropdownOpen;
+    
+    if (!shouldShow) {
+      return null;
+    }
+    
+    return D.div({
+      className: 'related-nodes-dropdown-container',
+      style: {
+        marginLeft: '8px',
+        position: 'relative',
+        display: 'inline-block'
+      }
+    },
+      // The icon button
+      D.button({
+        className: 'related-nodes-icon-btn',
+        onClick: (e) => {
+          e.stopPropagation();
+          this.toggleDropdown(nodeKey);
+        },
+        style: {
+          background: 'white',
+          border: '1px solid #ddd',
+          borderRadius: '3px',
+          padding: '2px 6px',
+          cursor: 'pointer',
+          fontSize: '12px',
+          color: '#666',
+          transition: 'all 0.2s ease',
+          opacity: shouldShow ? 1 : 0
+        },
+        title: 'Find related nodes'
+      },
+        D.i({ className: 'fa fa-link' })
+      ),
+      // The dropdown menu
+      isDropdownOpen && this.renderRelatedNodesDropdown(node, nodeKey)
+    );
+  };
+
+  private renderRelatedNodesDropdown = (node: TreeNode, nodeKey: string) => {
+    const { relatedNodeCriteria } = this.props;
+    
+    return D.div({
+      className: 'related-nodes-dropdown',
+      style: {
+        position: 'fixed',  // Changed from 'absolute' to 'fixed' to escape container overflow
+        marginTop: '4px',
+        background: 'white',
+        border: '1px solid #ddd',
+        borderRadius: '4px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+        minWidth: '200px',
+        zIndex: 10000,  // Increased z-index to ensure it's on top
+        maxHeight: '300px',  // Add max height
+        overflowY: 'auto'  // Add scroll if needed
+      },
+      ref: (el) => {
+        // Position the dropdown relative to the button when it's rendered
+        if (el) {
+          const button = el.parentElement?.querySelector('.related-nodes-icon-btn');
+          if (button) {
+            const rect = button.getBoundingClientRect();
+            el.style.top = `${rect.bottom + 4}px`;
+            el.style.left = `${rect.left}px`;
+            
+            // Adjust position if dropdown would go off screen
+            const dropdownRect = el.getBoundingClientRect();
+            
+            // Check if dropdown goes off the right edge of the screen
+            if (dropdownRect.right > window.innerWidth) {
+              el.style.left = `${rect.right - dropdownRect.width}px`;
+            }
+            
+            // Check if dropdown goes off the bottom of the screen
+            if (dropdownRect.bottom > window.innerHeight) {
+              // Position above the button instead
+              el.style.top = `${rect.top - dropdownRect.height - 4}px`;
+            }
+          }
+        }
+      },
+      onClick: (e) => e.stopPropagation()
+    },
+      relatedNodeCriteria.map((criterion, index) =>
+        D.div({
+          key: index,
+          className: 'dropdown-item',
+          style: {
+            padding: '8px 12px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            borderBottom: index < relatedNodeCriteria.length - 1 ? '1px solid #f0f0f0' : 'none',
+            transition: 'background-color 0.2s ease'
+          },
+          onMouseEnter: (e) => {
+            e.currentTarget.style.backgroundColor = '#f8f9fa';
+          },
+          onMouseLeave: (e) => {
+            e.currentTarget.style.backgroundColor = 'transparent';
+          },
+          onClick: () => {
+            this.handleRelatedNodeCriterionClick(node, criterion);
+            this.setState({ activeDropdownKey: null, hoveredNodeKey: null });
+          },
+          title: criterion.description
+        },
+          criterion.icon && D.i({
+            className: criterion.icon,
+            style: { 
+              marginRight: '8px',
+              width: '16px',
+              textAlign: 'center',
+              color: '#666'
+            }
+          }),
+          D.span({}, criterion.label)
+        )
+      )
+    );
+  };
+
+  private toggleDropdown = (nodeKey: string) => {
+    this.setState(prevState => ({
+      activeDropdownKey: prevState.activeDropdownKey === nodeKey ? null : nodeKey
+    }));
+  };
+
+  private handleRelatedNodeCriterionClick = (node: TreeNode, criterion: RelatedNodeCriteria) => {
+    if (this.props.onFindRelatedNodes) {
+      this.props.onFindRelatedNodes(node, criterion);
+    }
   };
 
   private nodeHasChildren = (node: any): boolean => {

@@ -37,7 +37,7 @@ import { TemplateItem } from 'platform/components/ui/template';
 import TreeAdvanced from './TreeAdvanced';
 import { D3Tree, D3TreeProviderKind, D3TreeOptions } from './D3Tree';
 import { SemanticTreeConfig, SemanticTreeKind } from './SemanticTree';
-import { TreeNode, ProviderPropsAdvanced } from './TreeTypes';
+import { TreeNode, ProviderPropsAdvanced, RelatedNodeCriteria } from './TreeTypes';
 
 export interface SortOption {
   label: string;        // Display name in dropdown
@@ -47,6 +47,46 @@ export interface SortOption {
 }
 
 export interface SemanticTreeAdvancedConfig extends SemanticTreeConfig {
+  /**
+   * Array of criteria for finding related nodes.
+   * Each criterion defines a SPARQL query that will be executed
+   * when the user selects it from the hover menu.
+   * The query should return node IRIs in a ?node binding.
+   * The current node's IRI will be injected as $__nodeIri__
+   * 
+   * @example
+   * ```
+   * [
+   *   {
+   *     label: "Same Extension",
+   *     icon: "fa fa-file",
+   *     query: "SELECT ?node WHERE { 
+   *       <$__nodeIri__> ex:hasExtension ?ext . 
+   *       ?node ex:hasExtension ?ext . 
+   *       FILTER(?node != <$__nodeIri__>)
+   *     }"
+   *   }
+   * ]
+   * ```
+   */
+  relatedNodeCriteria?: RelatedNodeCriteria[];
+  
+  /**
+   * Whether to show related node buttons on hover
+   * @default true if relatedNodeCriteria is provided
+   */
+  showRelatedNodeButtons?: boolean;
+  
+  /**
+   * CSS class for the related nodes button container
+   */
+  relatedNodeButtonClass?: string;
+
+  /**
+   * Callback when related nodes are found
+   */
+  onRelatedNodesFound?: (sourceNodeIri: string, criterion: RelatedNodeCriteria, foundNodeIds: string[]) => void;
+
   /**
    * Optional SPARQL Select query for lazy loading child nodes when expanding.
    * When provided, enables lazy loading mode. The query should have the same structure
@@ -847,6 +887,8 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       loadingTemplate: this.props.loadingTemplate,
       highlightedNodes: this.state.highlightedNodes,
       preloadedChildren: this.state.expandedNodes,
+      relatedNodeCriteria: this.props.relatedNodeCriteria,
+      onFindRelatedNodes: this.props.relatedNodeCriteria ? this.handleFindRelatedNodes : undefined,
     };
 
     const { provider, d3TreeOptions } = this.props;
@@ -1089,6 +1131,61 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       return;
     }
     // empty default onNodeClick for regular nodes
+  };
+
+  private handleFindRelatedNodes = async (node: TreeNode, criterion: RelatedNodeCriteria) => {
+    const nodeIri = node.data[this.props.nodeBindingName].value;
+    
+    console.log(`Finding related nodes for ${nodeIri} using criterion: ${criterion.label}`);
+    
+    // Show loading state (reuse search loading state)
+    this.setState({ isSearching: true });
+    
+    try {
+      // Replace placeholder with actual node IRI
+      const query = criterion.query.replace(/\$__nodeIri__/g, nodeIri);
+      
+      const context = this.context.semanticContext;
+      const result = await SparqlClient.select(query, { context }).toPromise();
+      
+      if (!SparqlUtil.isSelectResultEmpty(result)) {
+        const relatedNodeIds = result.results.bindings
+          .map(binding => binding['node']?.value)
+          .filter(id => id !== null && id !== undefined);
+        
+        console.log(`Found ${relatedNodeIds.length} related nodes using criterion: ${criterion.label}`);
+        
+        // Include the source node in highlighting for context
+        const allHighlightedNodes = [nodeIri, ...relatedNodeIds];
+        
+        // Update highlighted nodes
+        this.setState({
+          highlightedNodes: new Set(allHighlightedNodes)
+        });
+        
+        // Trigger highlighting
+        await this.highlightNodes(allHighlightedNodes);
+        
+        // Optional: Call callback if provided
+        if (this.props.onRelatedNodesFound) {
+          this.props.onRelatedNodesFound(nodeIri, criterion, relatedNodeIds);
+        }
+      } else {
+        console.log(`No related nodes found for criterion: ${criterion.label}`);
+        // Clear highlighting to show no results
+        this.setState({
+          highlightedNodes: new Set()
+        });
+        await this.highlightNodes([]);
+      }
+    } catch (error) {
+      console.error(`Error finding related nodes with criterion "${criterion.label}":`, error);
+      this.setState({
+        errorMessage: maybe.Just(`Error finding related nodes: ${error.message || error}`)
+      });
+    } finally {
+      this.setState({ isSearching: false });
+    }
   };
 
   private handleExpandSiblings = (expandNode: any) => {

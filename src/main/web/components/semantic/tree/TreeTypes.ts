@@ -26,6 +26,13 @@ export interface TreeNode {
   readonly children: ReadonlyArray<TreeNode>;
 }
 
+export interface RelatedNodeCriteria {
+  label: string;           // Display name in dropdown
+  icon?: string;          // Optional icon class (e.g., "fa fa-file")
+  query: string;          // SPARQL query with $__nodeIri__ placeholder
+  description?: string;   // Optional tooltip description
+}
+
 export interface ProviderPropsAdvanced {
   tupleTemplate: string;
   onNodeClick?: (node: TreeNode) => void;
@@ -39,4 +46,6 @@ export interface ProviderPropsAdvanced {
   loadingTemplate: string;
   highlightedNodes?: Set<string>;
   preloadedChildren?: Map<string, ReadonlyArray<TreeNode>>;
+  relatedNodeCriteria?: RelatedNodeCriteria[];
+  onFindRelatedNodes?: (node: TreeNode, criterion: RelatedNodeCriteria) => void;
 }

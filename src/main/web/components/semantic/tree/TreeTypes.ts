@@ -48,4 +48,6 @@ export interface ProviderPropsAdvanced {
   preloadedChildren?: Map<string, ReadonlyArray<TreeNode>>;
   relatedNodeCriteria?: RelatedNodeCriteria[];
   onFindRelatedNodes?: (node: TreeNode, criterion: RelatedNodeCriteria) => void;
+  showTreeLines?: boolean;
+  treeLineStyle?: 'solid' | 'dotted';
 }

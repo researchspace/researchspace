@@ -23,6 +23,84 @@
   /**/
 }
 
+/* Tree lines styles */
+.treeWithLines {
+  .tree-view_children {
+    position: relative;
+    margin-left: 12px;
+    padding-left: 16px;
+  }
+
+  /* Vertical line connecting parent to children */
+  .tree-view_children::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: 0;
+    bottom: 10px;
+    width: 1px;
+    background: #d4d4d8;
+    z-index: 0;
+  }
+
+  /* Hide vertical line for last child's children */
+  .tree-view_item:last-child > .tree-view_children::before {
+    bottom: calc(100% - 10px);
+  }
+
+  /* Horizontal line to each child */
+  .tree-view_item {
+    position: relative;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 10px;
+      left: -16px;
+      width: 16px;
+      height: 1px;
+      background: #d4d4d8;
+      z-index: 0;
+    }
+  }
+
+  /* Corner for last child */
+  .tree-view_item:last-child {
+    &::after {
+      content: '';
+      position: absolute;
+      left: -16px;
+      top: -100%;
+      bottom: calc(100% - 10px);
+      width: 1px;
+      background: white;
+      z-index: 1;
+    }
+  }
+
+  /* Ensure content is above lines */
+  .tree-view_arrow,
+  .tree-node-container {
+    position: relative;
+    z-index: 2;
+    background: white;
+  }
+
+  /* Dotted lines variant */
+  &.dottedLines {
+    .tree-view_children::before,
+    .tree-view_item::before {
+      background: none;
+      border-left: 1px dotted #d4d4d8;
+      border-bottom: 1px dotted #d4d4d8;
+    }
+    
+    .tree-view_item::before {
+      border-left: none;
+    }
+  }
+}
+
 .leafNode {
   display: block;
   margin-left: 20px;

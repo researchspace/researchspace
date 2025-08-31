@@ -48,6 +48,18 @@ export interface SortOption {
 
 export interface SemanticTreeAdvancedConfig extends SemanticTreeConfig {
   /**
+   * Whether to show tree connector lines
+   * @default false
+   */
+  showTreeLines?: boolean;
+  
+  /**
+   * Style of tree lines ('solid' or 'dotted')
+   * @default 'solid'
+   */
+  treeLineStyle?: 'solid' | 'dotted';
+  
+  /**
    * Array of criteria for finding related nodes.
    * Each criterion defines a SPARQL query that will be executed
    * when the user selects it from the hover menu.
@@ -889,6 +901,8 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       preloadedChildren: this.state.expandedNodes,
       relatedNodeCriteria: this.props.relatedNodeCriteria,
       onFindRelatedNodes: this.props.relatedNodeCriteria ? this.handleFindRelatedNodes : undefined,
+      showTreeLines: this.props.showTreeLines,
+      treeLineStyle: this.props.treeLineStyle,
     };
 
     const { provider, d3TreeOptions } = this.props;

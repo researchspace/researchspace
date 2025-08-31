@@ -30,7 +30,19 @@ import { ProviderPropsAdvanced, TreeNode, RelatedNodeCriteria } from './TreeType
 import 'react-treeview/react-treeview.css';
 import * as styles from './Tree.scss';
 
-export interface TreeAdvancedProps extends ProviderPropsAdvanced {}
+export interface TreeAdvancedProps extends ProviderPropsAdvanced {
+  /**
+   * Whether to show tree connector lines
+   * @default false
+   */
+  showTreeLines?: boolean;
+  
+  /**
+   * Style of tree lines ('solid' or 'dotted')
+   * @default 'solid'
+   */
+  treeLineStyle?: 'solid' | 'dotted';
+}
 
 interface State {
   collapsedBookkeeping?: BookeepingDictionary;
@@ -56,7 +68,17 @@ export class TreeAdvanced extends Component<TreeAdvancedProps, State> {
   }
 
   public render() {
-    return D.div({ className: styles.tree }, this.getTrees(this.props.nodeData));
+    const treeClasses = [styles.tree];
+    
+    // Add tree lines classes if enabled
+    if (this.props.showTreeLines) {
+      treeClasses.push('treeWithLines');
+      if (this.props.treeLineStyle === 'dotted') {
+        treeClasses.push('dottedLines');
+      }
+    }
+    
+    return D.div({ className: classnames(treeClasses) }, this.getTrees(this.props.nodeData));
   }
 
   public componentWillMount() {
@@ -97,38 +119,43 @@ export class TreeAdvanced extends Component<TreeAdvancedProps, State> {
 
   private initializeCollapsedState(props: TreeAdvancedProps) {
     const bookkeeping: BookeepingDictionary = {};
-    // initalize the bookkeeping map with all keys of all nodes
-    const keys = _.reduce(props.nodeData, (all, current) => all.concat(this.getAllKeys(current)), []);
     
-    // Set initial collapsed state based on the collapsed prop
-    _.forEach(keys, (k) => {
-      bookkeeping[k] = props.collapsed;
-    });
-
-    // Process nodes to ensure lazy-loadable nodes are properly collapsed
+    // Process nodes recursively to set up initial collapsed state
     const processNode = (node: TreeNode) => {
       const nodeKey = this.getNodeKey(node);
       
       // Check if this node has lazy children that haven't been loaded
-      const hasLazyChildren = this.props.onNodeExpand && this.nodeHasLazyChildren(node);
+      const hasLazyChildren = props.onNodeExpand && this.nodeHasLazyChildren(node);
       const hasLoadedChildren = this.nodeHasChildren(node);
+      const hasExpandedChildren = this.state.expandedChildren.has(nodeKey);
       
-      // If node has lazy children but they're not loaded yet, ensure it's collapsed
-      // This fixes the issue where lazy nodes appear with incorrect arrow state
-      if (hasLazyChildren && !hasLoadedChildren) {
-        bookkeeping[nodeKey] = true; // Force collapsed state
+      // Determine initial collapsed state
+      if (hasLazyChildren && !hasLoadedChildren && !hasExpandedChildren) {
+        // Lazy-loadable nodes without loaded children should always start collapsed
+        bookkeeping[nodeKey] = true;
+      } else if (bookkeeping[nodeKey] === undefined) {
+        // For other nodes, use the default collapsed prop
+        bookkeeping[nodeKey] = props.collapsed !== false;
       }
       
-      // Process children recursively
+      // Process static children recursively
       if (hasLoadedChildren) {
         node.children.forEach(child => processNode(child));
       }
+      
+      // Process expanded children if they exist
+      if (hasExpandedChildren) {
+        const expandedChildren = this.state.expandedChildren.get(nodeKey);
+        if (expandedChildren) {
+          expandedChildren.forEach(child => processNode(child));
+        }
+      }
     };
     
-    // Process all nodes to fix lazy-loadable nodes
+    // Process all root nodes
     props.nodeData.forEach(node => processNode(node));
 
-    // if there are any keys that should be opened, set them to not collapsed
+    // Override with any keys that should be opened
     _.forEach(this.collectOpenKeys(props.nodeData), (k) => {
       bookkeeping[k] = false;
     });
@@ -239,7 +266,13 @@ export class TreeAdvanced extends Component<TreeAdvancedProps, State> {
       childrenToRender = this.state.expandedChildren.get(nodeKey) || [];
     }
 
-    const isCollapsed = this.isCollapsed(nodeKey, node);
+    // Get the collapsed state from bookkeeping
+    // For lazy nodes without loaded children, ensure they're collapsed
+    let isCollapsed = this.state.collapsedBookkeeping[nodeKey];
+    if (isCollapsed === undefined) {
+      // If not in bookkeeping yet, default based on whether it has lazy children
+      isCollapsed = hasLazyChildren && !this.state.expandedChildren.has(nodeKey);
+    }
     
     // For nodes with lazy children, we should show them even if no children are loaded yet
     // This ensures the collapse arrow appears correctly
@@ -296,7 +329,7 @@ export class TreeAdvanced extends Component<TreeAdvancedProps, State> {
       ? createElement(
           ReactTreeView,
           {
-            key: nodeKey + isCollapsed,
+            key: `${nodeKey}_${isCollapsed}_${childrenToRender.length}`, // Include children count in key to force re-render
             nodeLabel: nodeWithRelatedButton,
             collapsed: isCollapsed,
             onClick: () => this.handleCollapsibleClick(nodeKey, node),

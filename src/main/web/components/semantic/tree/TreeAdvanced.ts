@@ -105,6 +105,29 @@ export class TreeAdvanced extends Component<TreeAdvancedProps, State> {
       bookkeeping[k] = props.collapsed;
     });
 
+    // Process nodes to ensure lazy-loadable nodes are properly collapsed
+    const processNode = (node: TreeNode) => {
+      const nodeKey = this.getNodeKey(node);
+      
+      // Check if this node has lazy children that haven't been loaded
+      const hasLazyChildren = this.props.onNodeExpand && this.nodeHasLazyChildren(node);
+      const hasLoadedChildren = this.nodeHasChildren(node);
+      
+      // If node has lazy children but they're not loaded yet, ensure it's collapsed
+      // This fixes the issue where lazy nodes appear with incorrect arrow state
+      if (hasLazyChildren && !hasLoadedChildren) {
+        bookkeeping[nodeKey] = true; // Force collapsed state
+      }
+      
+      // Process children recursively
+      if (hasLoadedChildren) {
+        node.children.forEach(child => processNode(child));
+      }
+    };
+    
+    // Process all nodes to fix lazy-loadable nodes
+    props.nodeData.forEach(node => processNode(node));
+
     // if there are any keys that should be opened, set them to not collapsed
     _.forEach(this.collectOpenKeys(props.nodeData), (k) => {
       bookkeeping[k] = false;
@@ -157,16 +180,23 @@ export class TreeAdvanced extends Component<TreeAdvancedProps, State> {
 
   private handleCollapsibleClick = async (nodeKey: string, node: TreeNode) => {
     const isCurrentlyCollapsed = this.state.collapsedBookkeeping[nodeKey];
+    const hasLazyChildren = this.props.onNodeExpand && this.nodeHasLazyChildren(node);
+    const needsToLoadChildren = hasLazyChildren && !this.state.expandedChildren.has(nodeKey);
     
-    // If expanding and we have an expand function and no children loaded yet
-    if (isCurrentlyCollapsed && this.props.onNodeExpand && !this.state.expandedChildren.has(nodeKey)) {
+    // If expanding and we need to load children
+    if (isCurrentlyCollapsed && needsToLoadChildren) {
       try {
         const children = await this.props.onNodeExpand(node);
         const newBookkeeping = { ...this.state.collapsedBookkeeping };
+        
+        // Initialize collapsed state for newly loaded children
         const childKeys = _.reduce(children, (all, current) => all.concat(this.getAllKeys(current)), []);
         _.forEach(childKeys, (k) => {
           newBookkeeping[k] = true;
         });
+        
+        // Expand the current node after loading children
+        newBookkeeping[nodeKey] = false;
 
         this.setState(prevState => ({
           expandedChildren: new Map(Array.from(prevState.expandedChildren.entries()).concat([[nodeKey, children]])),
@@ -176,14 +206,14 @@ export class TreeAdvanced extends Component<TreeAdvancedProps, State> {
         console.error('Error expanding node:', error);
         return; // Don't toggle if expansion failed
       }
+    } else {
+      // Normal toggle for nodes that don't need to load children
+      this.setState((state) => {
+        const collapsedBookkeeping = { ...this.state.collapsedBookkeeping };
+        collapsedBookkeeping[nodeKey] = !collapsedBookkeeping[nodeKey];
+        return { collapsedBookkeeping: collapsedBookkeeping };
+      });
     }
-
-    // Toggle collapsed state
-    this.setState((state) => {
-      const collapsedBookkeeping = { ...this.state.collapsedBookkeeping };
-      collapsedBookkeeping[nodeKey] = !collapsedBookkeeping[nodeKey];
-      return { collapsedBookkeeping: collapsedBookkeeping };
-    });
   };
 
   private getTrees = (data: ReadonlyArray<TreeNode>) => {
@@ -210,6 +240,9 @@ export class TreeAdvanced extends Component<TreeAdvancedProps, State> {
     }
 
     const isCollapsed = this.isCollapsed(nodeKey, node);
+    
+    // For nodes with lazy children, we should show them even if no children are loaded yet
+    // This ensures the collapse arrow appears correctly
     const shouldShowChildren = !isCollapsed && childrenToRender.length > 0;
     const children = shouldShowChildren ? this.getTrees(childrenToRender) : null;
 

@@ -1019,7 +1019,7 @@ export class DashboardComponent extends SharedStateComponent<Props, State> {
     const mapsDashboardItems = [];
     maps.forEach(map => mapsDashboardItems.push(map.id));
 
-    const actions = [Actions.ADJUST_BORDER_SPLIT, Actions.ADJUST_SPLIT, Actions.MOVE_NODE, Actions.ADD_NODE, Actions.SELECT_TAB, Actions.DELETE_TAB, Actions.MAXIMIZE_TOGGLE]
+    const actions = [Actions.ADJUST_BORDER_SPLIT, Actions.ADJUST_SPLIT, Actions.MOVE_NODE, Actions.ADD_NODE, Actions.SELECT_TAB, Actions.DELETE_TAB, Actions.MAXIMIZE_TOGGLE, Actions.RENAME_TAB]
     if (actions.includes(action.type)) {
       trigger({
         eventType: LayoutChanged,
@@ -1047,6 +1047,28 @@ export class DashboardComponent extends SharedStateComponent<Props, State> {
       const tab = this.state.layout.getNodeById(action.data.tabNode) as TabNode;
       if (tab) {
         this.setState({ activeFrameId: tab.getId() });
+      }
+      return action;
+    } else if (action.type === Actions.RENAME_TAB) {
+      // Handle tab rename - update the item label in state
+      const tabNode = this.state.layout.getNodeById(action.data.node) as TabNode;
+      if (tabNode) {
+        const itemId = tabNode.getConfig().itemId;
+        const newName = action.data.text;
+        
+        // Update the item label in state
+        this.setState(prevState => {
+          const newItems = prevState.items.map(item => {
+            if (item.id === itemId) {
+              return { ...item, label: newName };
+            }
+            return item;
+          });
+          return { items: newItems };
+        }, () => {
+          // Sync state after rename
+          this.syncDashboardState();
+        });
       }
       return action;
     } else {

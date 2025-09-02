@@ -80,6 +80,41 @@ export function getResourceConfigurationEditForm(iri:Rdf.Iri, context: any): Pro
   });
 }
  
+export function getResourceConfigurationIri(iri:Rdf.Iri, context: any): Promise<Rdf.Iri> {
+  return new Promise((resolve) => { 
+    if(iri) {
+      const query = SparqlClient.setBindings(SPARQL_QUERY, { __resourceIri__: iri});
+      SparqlClient.select(query, {context: context.semanticContext})
+        .onValue((r) => {
+              let countConfigWithoutP2Type = 0;
+              let countConfigWithP2Type = 0;
+              let configBindingsWithType = null;
+              let configBindingsWithoutType = null;
+              
+              let filteredResults = [];
+              r.results.bindings.forEach((ee) => {
+                  if (ee.config && !ee.resourceP2Type) {configBindingsWithoutType=ee; countConfigWithoutP2Type++; }
+                  if (ee.config && ee.resourceP2Type) {countConfigWithP2Type++; configBindingsWithType=ee; }                                  
+              });
+              
+              if (countConfigWithP2Type == 1) {
+                filteredResults.push(configBindingsWithType); 
+                resolve(Rdf.iri(r.results.bindings[0].config.value));
+
+              }
+              if (countConfigWithP2Type == 0 && countConfigWithoutP2Type == 1) {
+                    filteredResults.push(configBindingsWithoutType);
+                    resolve(Rdf.iri(r.results.bindings[0].config.value));
+                }
+              //else not editable entity
+              resolve(undefined);             
+        })
+        .onError((err) => {console.error('Error during query execution ',err);
+        })
+    }
+  });
+}
+
 export function buildResourceFormIriQuery(queryResultBindings: SparqlClient.Bindings, iri: Rdf.Iri): string {
   const UNION_QUERY = []
     _.forEach(queryResultBindings, (b) => {

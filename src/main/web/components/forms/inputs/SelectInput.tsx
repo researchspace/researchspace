@@ -47,7 +47,9 @@ import { ConfigHolder } from 'platform/api/services/config-holder';
 type nestedFormEl = {
   label?: string,
   nestedForm?: string,
-  modalId?: string
+  modalId?: string,
+  parentIri?: string,
+  passValuesFor?: string[]
 }
 
 export interface SelectInputProps extends AtomicValueInputProps {
@@ -110,7 +112,9 @@ interface State {
   nestedFormTemplates?: nestedFormEl[];
   labelFormSelected?: string;
   valueSelectedWithoutEditForm?: boolean;
-  modalId?: string
+  modalId?: string,
+  parentIri?: string,
+  passValuesFor?: string[]
 }
 
 const SELECT_TEXT_CLASS = 'select-text-field';
@@ -290,8 +294,8 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
     return D.span({ id: v.label, className: OPTION_CLASS }, v.label || v.value.value);
   };
 
-  private openSelectedNestedForm(formTemplate: string) {
-    tryExtractNestedForm(this.props.children, this.context, formTemplate)
+  private openSelectedNestedForm(formTemplate: string, parentIri?: string, passValuesFor?: string[]) {
+    tryExtractNestedForm(this.props.children, this.context, formTemplate, Rdf.iri(parentIri), passValuesFor)
       .then(nestedForm => {
         if (nestedForm != undefined) {
          this.setState({nestedForm});
@@ -315,11 +319,16 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
   private onDropdownSelectHandler(label: string) {
     const nestedFormTemplateSelected = this.state.nestedFormTemplates.filter((e) => e.label === label)[0].nestedForm
     const modalId = this.state.nestedFormTemplates.filter((e) => e.label === label)[0].modalId
+    const parentIri = this.state.nestedFormTemplates.filter((e) => e.label === label)[0].parentIri
+    const passValuesFor = this.state.nestedFormTemplates.filter((e) => e.label === label)[0].passValuesFor
+    
     this.setState({
       labelFormSelected: label,
-      modalId
+      modalId,
+      parentIri,
+      passValuesFor
     })
-    this.openSelectedNestedForm(nestedFormTemplateSelected)
+    this.openSelectedNestedForm(nestedFormTemplateSelected, parentIri, passValuesFor)
   }
 
   render() {
@@ -398,6 +407,8 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
             onSubmit={this.onNestedFormSubmit}
             onCancel={() => this.setState({ nestedFormOpen: false })}
             parent={this.htmlElement}
+            parentIri={this.state.parentIri}
+            passValuesFor={this.state.passValuesFor}
           >
             {this.state.nestedForm}
           </NestedModalForm>

@@ -37,12 +37,14 @@ import { FieldDefinition } from 'platform/components/forms';
 import { xsd, rdf } from 'platform/api/rdf/vocabularies';
 
 import { OwlStatsSettings, OwlNoStatsSettings, WikidataSettings } from './DataProviderProfiles';
+import {RSOwlNoStatsSettings} from './RSOwlNoStatsSettings';
 
 export const RDF_DATA_PROVIDER_NAME = 'rdf';
 
 const SUPPORTED_PROFILES = {
   default: OwlStatsSettings,
   nostats: OwlNoStatsSettings,
+  rsnostats: RSOwlNoStatsSettings,
   wikidata: WikidataSettings,
 };
 

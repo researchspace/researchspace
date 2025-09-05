@@ -1,37 +1,36 @@
 import * as React from 'react';
 
-interface Props<T> {
+interface DropdownWithFilterProps<T> {
   id: string;
   title: React.ReactNode;
   items: T[];
   filterValue: string;
   onFilterChange: (value: string) => void;
-  getLabel: (item: T) => string;
   onSelect: (item: T) => void;
+  getLabel: (item: T) => string;
   placeholder?: string;
   noResultsText?: string;
 }
 
-
-export function DropdownWithFilter<T>(props: Props<T>) {
-  const { title, items, getLabel, placeholder, noResultsText, onFilterChange, onSelect } = props;
+export function DropdownWithFilter<T>({
+  id,
+  title,
+  items,
+  filterValue,
+  onFilterChange,
+  onSelect,
+  getLabel,
+  placeholder,
+  noResultsText
+}: DropdownWithFilterProps<T>) {
   const [open, setOpen] = React.useState(false);
-  const [filter, setFilter] = React.useState('');
-  const wrapperRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
-  React.useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  const filtered = !filterValue
+    ? items
+    : items.filter(item => getLabel(item).toLowerCase().includes(filterValue.toLowerCase()));
 
-  const handleToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
+  const handleToggle = () => {
     setOpen(prev => {
       const next = !prev;
       if (next && inputRef.current) {
@@ -41,22 +40,14 @@ export function DropdownWithFilter<T>(props: Props<T>) {
     });
   };
 
-  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilter(e.target.value);
-    onFilterChange(e.target.value);
-  };
-
   const handleSelect = (item: T) => {
     setOpen(false);
-    setFilter('');
     onSelect(item);
     onFilterChange('');
   };
 
-  const filtered = items.filter(item => !filter || getLabel(item).toLowerCase().includes(filter.toLowerCase()));
-
   return (
-    <div ref={wrapperRef} style={{ display: 'inline-block', position: 'relative', marginLeft: 8 }}>
+    <div style={{ display: 'inline-block', position: 'relative', marginLeft: 8 }} id={id}>
       <button
         type="button"
         className="btn btn-default dropdown-toggle"
@@ -68,14 +59,14 @@ export function DropdownWithFilter<T>(props: Props<T>) {
         {title} <span className="caret" />
       </button>
       {open && (
-        <div className="dropdown-menu" style={{ display: 'block', minWidth: 200, padding: 8, position: 'absolute', zIndex: 1051 }}>
+        <div className="dropdown-menu" style={{ display: 'block', padding: 8, position: 'absolute', zIndex: 1051 }}>
           <input
             ref={inputRef}
             type="text"
             placeholder={placeholder || 'Filter...'}
             style={{ width: '100%', marginBottom: 8 }}
-            value={filter}
-            onChange={handleFilterChange}
+            value={filterValue}
+            onChange={e => onFilterChange(e.target.value)}
             autoComplete="off"
           />
           <ul className="list-unstyled" style={{ maxHeight: 200, overflowY: 'auto', margin: 0, padding: 0 }}>

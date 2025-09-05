@@ -41,6 +41,7 @@ import { DropdownButton, Dropdown, MenuItem } from 'react-bootstrap';
 import { DropdownWithFilter } from './DropdownWithFilter';
 import { RdfLiteral } from 'platform/ontodia/src/ontodia';
 import { ConfigHolder } from 'platform/api/services/config-holder';
+import { item } from 'platform/components/arguments/AssertionComponent.scss';
 
 
 type nestedFormEl = {
@@ -281,11 +282,11 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
           <DropdownWithFilter
             id="add-form"
             title="New A"
-            items={this.state.nestedFormTemplates || []}
+            items={this.state.nestedFormTemplates}
             filterValue={this.state.filterValue || ''}
             onFilterChange={v => this.setState({ filterValue: v })}
-            getLabel={item => item.label || ''}
-            onSelect={item => this.onDropdownSelectHandler(item.label)}
+            onSelect={item => this.onDropdownSelectHandler(String(item.label))}
+            getLabel={item => String(item.label)}
             placeholder="Filter..."
             noResultsText="No results"
           />

@@ -153,7 +153,6 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
   }
 
   private onDropdownSelectHandler(label: string) {
-    console.log('Selected label: ', label);
     const nestedFormTemplateSelected = this.state.nestedFormTemplates.filter((e) => e.label === label)[0].nestedForm
     const modalId = this.state.nestedFormTemplates.filter((e) => e.label === label)[0].modalId
     const parentIri = this.state.nestedFormTemplates.filter((e) => e.label === label)[0].parentIri

@@ -36,7 +36,9 @@ import { ValidationMessages } from './Decorations';
 import Icon from 'platform/components/ui/icon/Icon';
 import ResourceLinkContainer from 'platform/api/navigation/components/ResourceLinkContainer';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
-import { DropdownButton, MenuItem } from 'react-bootstrap';
+
+import { DropdownButton, Dropdown, MenuItem } from 'react-bootstrap';
+import { DropdownWithFilter } from './DropdownWithFilter';
 import { RdfLiteral } from 'platform/ontodia/src/ontodia';
 import { ConfigHolder } from 'platform/api/services/config-holder';
 
@@ -77,6 +79,7 @@ interface State {
   modalId?: string;
   parentIri?: string;
   passValuesFor?: string[];
+  filterValue?: string;
 }
 
 const CLASS_NAME = 'autocomplete-text-field';
@@ -92,7 +95,8 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
     super(props, context);
     this.state = { 
       nestedFormOpen: false ,
-      nestedFormTemplates: []
+      nestedFormTemplates: [],
+      filterValue: ''
     };
     this.tupleTemplate = this.tupleTemplate || this.compileTemplate();
   }
@@ -149,6 +153,7 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
   }
 
   private onDropdownSelectHandler(label: string) {
+    console.log('Selected label: ', label);
     const nestedFormTemplateSelected = this.state.nestedFormTemplates.filter((e) => e.label === label)[0].nestedForm
     const modalId = this.state.nestedFormTemplates.filter((e) => e.label === label)[0].modalId
     const parentIri = this.state.nestedFormTemplates.filter((e) => e.label === label)[0].parentIri
@@ -274,12 +279,17 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
           </Button>
         )}
         { showCreateNewDropdown && (
-          <DropdownButton title="New" pullRight id="add-form" onSelect={(label) => this.onDropdownSelectHandler(label)}>
-            {this.state.nestedFormTemplates.map((e) => {
-                return (<MenuItem key={e.label} eventKey={e.label} draggable={false}>{e.label}</MenuItem>)
-              }
-            )}
-          </DropdownButton>
+          <DropdownWithFilter
+            id="add-form"
+            title="New A"
+            items={this.state.nestedFormTemplates || []}
+            filterValue={this.state.filterValue || ''}
+            onFilterChange={v => this.setState({ filterValue: v })}
+            getLabel={item => item.label || ''}
+            onSelect={item => this.onDropdownSelectHandler(item.label)}
+            placeholder="Filter..."
+            noResultsText="No results"
+          />
         )}
         { showEditButton && 
           <Button className={`${CLASS_NAME}__create-button btn-textAndIcon`} title='Edit' onClick={() => {this.onEditHandler(value.value as Rdf.Iri)}}>
@@ -345,3 +355,4 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
 SingleValueInput.assertStatic(AutocompleteInput);
 
 export default AutocompleteInput;
+

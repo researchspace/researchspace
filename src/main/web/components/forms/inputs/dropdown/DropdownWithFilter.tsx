@@ -19,7 +19,7 @@
  */
 
 import * as React from 'react';
-import './DropdownWithFilter.scss';
+import './DropdownWithFilter.css';
 
 /**
  * Props for DropdownWithFilter.

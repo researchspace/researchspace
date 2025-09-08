@@ -1,17 +1,92 @@
-import * as React from 'react';
+/**
+ * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
+ * Copyright (C) 2020, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, metaphacts GmbH
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
+import * as React from 'react';
+import './DropdownWithFilter.scss';
+
+/**
+ * Props for DropdownWithFilter.
+ *
+ * @template T - The type of each item in the dropdown list. T can be any object or primitive; you provide a getLabel function to extract a string label from each item.
+ */
 interface DropdownWithFilterProps<T> {
+  /**
+   * Unique id for the dropdown root element.
+   */
   id: string;
+  /**
+   * The button label or content for the dropdown toggle.
+   */
   title: React.ReactNode;
+  /**
+   * The array of items to display in the dropdown.
+   */
   items: T[];
+  /**
+   * The current value of the filter input.
+   */
   filterValue: string;
+  /**
+   * Callback when the filter input changes.
+   */
   onFilterChange: (value: string) => void;
+  /**
+   * Callback when an item is selected.
+   */
   onSelect: (item: T) => void;
+  /**
+   * Function to extract the display label from an item.
+   */
   getLabel: (item: T) => string;
+  /**
+   * Optional placeholder for the filter input.
+   */
   placeholder?: string;
+  /**
+   * Optional text to display when no items match the filter.
+   */
   noResultsText?: string;
 }
 
+
+/**
+ * DropdownWithFilter
+ * ------------------
+ * A reusable, generic dropdown component with a filter input, styled for React-Bootstrap v3.
+ *
+ * Renders a dropdown menu with a filterable list of items.
+ *
+ *
+ * @example
+ * <DropdownWithFilter
+ *   id="my-dropdown"
+ *   title="Select Item"
+ *   items={[{ label: 'A' }, { label: 'B' }]}
+ *   filterValue={filterValue}
+ *   onFilterChange={setFilterValue}
+ *   onSelect={item => alert(item.label)}
+ *   getLabel={item => item.label}
+ *   placeholder="Filter..."
+ *   noResultsText="No items found"
+ * />
+ */
 export function DropdownWithFilter<T>({
   id,
   title,
@@ -63,8 +138,7 @@ export function DropdownWithFilter<T>({
   return (
     <div
       ref={dropdownRef}
-      className={`dropdown${open ? ' open' : ''}`}
-      style={{ display: 'inline-block', position: 'relative', marginLeft: 8 }}
+      className={`dropdown dropdown-with-filter${open ? ' open' : ''}`}
       id={id}
     >
       <button
@@ -73,19 +147,17 @@ export function DropdownWithFilter<T>({
         onClick={handleToggle}
         aria-haspopup="true"
         aria-expanded={open}
-        style={{ userSelect: 'none' }}
       >
         {title} <span className="caret" />
       </button>
       {open && (
-        <ul className="dropdown-menu pull-right" style={{ minWidth: 180, maxHeight: 240, overflowY: 'auto', padding: 0 }}>
-          <li style={{ padding: '8px 12px', position: 'sticky', top: 0, background: '#fff', zIndex: 1 }}>
+        <ul className="dropdown-menu pull-right">
+          <li className="dropdown-filter-input">
             <input
               ref={inputRef}
               type="text"
               placeholder={placeholder || 'Filter...'}
               className="form-control"
-              style={{ width: '100%', marginBottom: 4 }}
               value={filterValue}
               onChange={e => onFilterChange(e.target.value)}
               autoComplete="off"
@@ -97,7 +169,7 @@ export function DropdownWithFilter<T>({
                 <a
                   href="#"
                   tabIndex={-1}
-                  style={{ display: 'block', padding: '6px 20px', cursor: 'pointer', whiteSpace: 'normal' }}
+                  className="dropdown-item"
                   onClick={e => { e.preventDefault(); handleSelect(item); }}
                 >
                   {getLabel(item)}
@@ -105,7 +177,7 @@ export function DropdownWithFilter<T>({
               </li>
             ))
           ) : (
-            <li><span style={{ color: '#888', padding: '6px 20px', display: 'block' }}>{noResultsText || 'No results'}</span></li>
+            <li><span className="dropdown-no-results">{noResultsText || 'No results'}</span></li>
           )}
         </ul>
       )}

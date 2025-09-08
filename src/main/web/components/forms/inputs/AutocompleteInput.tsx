@@ -38,7 +38,7 @@ import ResourceLinkContainer from 'platform/api/navigation/components/ResourceLi
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 
 import { DropdownButton, Dropdown, MenuItem } from 'react-bootstrap';
-import { DropdownWithFilter } from './DropdownWithFilter';
+import { DropdownWithFilter } from './dropdown/DropdownWithFilter';
 import { RdfLiteral } from 'platform/ontodia/src/ontodia';
 import { ConfigHolder } from 'platform/api/services/config-holder';
 import { item } from 'platform/components/arguments/AssertionComponent.scss';
@@ -281,7 +281,7 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
         { showCreateNewDropdown && (
           <DropdownWithFilter
             id="add-form"
-            title="New A"
+            title="New"
             items={this.state.nestedFormTemplates}
             filterValue={this.state.filterValue || ''}
             onFilterChange={v => this.setState({ filterValue: v })}

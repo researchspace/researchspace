@@ -1,6 +1,6 @@
 /**
  * ResearchSpace
- * Copyright (C) 2022-2024, © Kartography Community Interest Company
+ * Copyright (C) 2022-2025, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -37,11 +37,9 @@ import Icon from 'platform/components/ui/icon/Icon';
 import ResourceLinkContainer from 'platform/api/navigation/components/ResourceLinkContainer';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 
-import { DropdownButton, Dropdown, MenuItem } from 'react-bootstrap';
 import { DropdownWithFilter } from './dropdown/DropdownWithFilter';
 import { RdfLiteral } from 'platform/ontodia/src/ontodia';
 import { ConfigHolder } from 'platform/api/services/config-holder';
-import { item } from 'platform/components/arguments/AssertionComponent.scss';
 
 
 type nestedFormEl = {

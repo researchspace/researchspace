@@ -1,8 +1,6 @@
 /**
  * ResearchSpace
- * Copyright (C) 2022-2024, © Kartography Community Interest Company
- * Copyright (C) 2020, © Trustees of the British Museum
- * Copyright (C) 2015-2019, metaphacts GmbH
+ * Copyright (C) 2025, © Kartography Community Interest Company
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,9 +15,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 import * as React from 'react';
-import './DropdownWithFilter.css';
+import * as styles from './DropdownWithFilter.scss';
 
 /**
  * Props for DropdownWithFilter.
@@ -138,7 +135,7 @@ export function DropdownWithFilter<T>({
   return (
     <div
       ref={dropdownRef}
-      className={`dropdown dropdown-with-filter${open ? ' open' : ''}`}
+      className={`dropdown ${styles.dropdownWithFilter}${open ? ' open' : ''}`}
       id={id}
     >
       <button
@@ -151,13 +148,13 @@ export function DropdownWithFilter<T>({
         {title} <span className="caret" />
       </button>
       {open && (
-        <ul className="dropdown-menu pull-right">
-          <li className="dropdown-filter-input">
+        <ul className={`dropdown-menu pull-right ${styles.dropdownMenu}`}>
+          <li className={styles.dropdownFilterInput}>
             <input
               ref={inputRef}
               type="text"
               placeholder={placeholder || 'Filter...'}
-              className="form-control"
+              className={styles.dropdownFilterInputInput + ' form-control'}
               value={filterValue}
               onChange={e => onFilterChange(e.target.value)}
               autoComplete="off"
@@ -169,7 +166,7 @@ export function DropdownWithFilter<T>({
                 <a
                   href="#"
                   tabIndex={-1}
-                  className="dropdown-item"
+                  className={styles.dropdownItem}
                   onClick={e => { e.preventDefault(); handleSelect(item); }}
                 >
                   {getLabel(item)}
@@ -177,7 +174,7 @@ export function DropdownWithFilter<T>({
               </li>
             ))
           ) : (
-            <li><span className="dropdown-no-results">{noResultsText || 'No results'}</span></li>
+            <li><span className={styles.dropdownNoResults}>{noResultsText || 'No results'}</span></li>
           )}
         </ul>
       )}

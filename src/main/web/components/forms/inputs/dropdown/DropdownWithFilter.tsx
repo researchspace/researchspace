@@ -60,6 +60,10 @@ interface DropdownWithFilterProps<T> {
    * Optional text to display when no items match the filter.
    */
   noResultsText?: string;
+  /**
+   * Optional to hide or show the filter input entirely.
+   */
+  showFilter?: boolean;
 }
 
 
@@ -93,7 +97,8 @@ export function DropdownWithFilter<T>({
   onSelect,
   getLabel,
   placeholder,
-  noResultsText
+  noResultsText,
+  showFilter = true,
 }: DropdownWithFilterProps<T>) {
   const [open, setOpen] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -149,7 +154,7 @@ export function DropdownWithFilter<T>({
       </button>
       {open && (
         <ul className={`dropdown-menu pull-right ${styles.dropdownMenu}`}>
-          <li className={styles.dropdownFilterInput}>
+          {showFilter && <li className={styles.dropdownFilterInput}>
             <input
               ref={inputRef}
               type="text"
@@ -159,7 +164,7 @@ export function DropdownWithFilter<T>({
               onChange={e => onFilterChange(e.target.value)}
               autoComplete="off"
             />
-          </li>
+          </li>}
           {filtered.length > 0 ? (
             filtered.map(item => (
               <li role="menuitem" key={getLabel(item)}>

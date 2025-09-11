@@ -61,6 +61,11 @@ export interface AutocompleteInputProps extends AtomicValueInputProps {
    * If set to true, the resource can not be edited and the Edit button will not be shown and will not possible to open the resource in a new tab
    */
   readonlyResource?: boolean;
+  /**
+   * If set to false, the filter input in the dropdown will be hidden
+   * @default true
+   */
+  showDropdownFilter?: boolean;
 }
 
 interface SelectValue {
@@ -287,6 +292,7 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
             getLabel={item => String(item.label)}
             placeholder="Filter..."
             noResultsText="No results"
+            showFilter={this.props.showDropdownFilter}
           />
         )}
         { showEditButton && 

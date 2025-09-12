@@ -159,7 +159,7 @@ export function DropdownWithFilter<T>({
               ref={inputRef}
               type="text"
               placeholder={placeholder || 'Filter...'}
-              className={styles.dropdownFilterInputInput + ' form-control'}
+              className={'form-control'}
               value={filterValue}
               onChange={e => onFilterChange(e.target.value)}
               autoComplete="off"

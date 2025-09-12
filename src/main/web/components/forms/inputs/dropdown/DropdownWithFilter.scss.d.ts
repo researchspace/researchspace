@@ -20,7 +20,6 @@ declare namespace DropdownWithFilterScssNamespace {
     dropdownWithFilter: string;
     dropdownMenu: string;
     dropdownFilterInput: string;
-    dropdownFilterInputInput: string;
     dropdownItem: string;
     dropdownNoResults: string;
   }

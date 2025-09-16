@@ -5,7 +5,7 @@
         <bs-tab event-key="metadata" title="Metadata" tab-class-name="tab-right pr-0">
 
             [[!-- creation details --]]
-            <semantic-query query='SELECT DISTINCT ?actor ?actorFullName ?creationDateValue ?importFromExternalSource ?sourceURI WHERE {
+            <semantic-query query='SELECT DISTINCT ?actor ?actorFullName ?actorUser ?actorEmail ?creationDateValue ?importFromExternalSource ?sourceURI WHERE {
                                         BIND(<{{node}}> AS ?entity)
 
                                         ?entity crm:P129i_is_subject_of ?entityFormRecord .
@@ -14,10 +14,12 @@
                                         ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
 
                                         ?entityFormRecordCreation crm:P14_carried_out_by ?actor .
+                                        BIND(IRI(REPLACE(STR(?actor), "%40", "_")) as ?actorUser)
+                                        BIND(REPLACE(REPLACE(STR(?actor), STR(User:), ""), "%40", "@") as ?actorEmail) 
 
                                         OPTIONAL {
-                                            ?actor crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
-                                            ?actor crm:P1_is_identified_by ?actorName .
+                                            ?actorUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                            ?actorUser crm:P1_is_identified_by ?actorName .
                                             ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                                             ?actorName crm:P190_has_symbolic_content ?actorFullName .
                                         }
@@ -45,17 +47,17 @@
                                     <td class="table-description">
                                         {{dateTimeFormat bindings.0.creationDateValue.value "DD/MM/YYYY, h:mm a"}} by
                                         {{#if bindings.0.actorFullName.value}}
-                                            <mp-draggable iri='{{bindings.0.actor.value}}'>
+                                            <mp-draggable iri='{{bindings.0.actorUser.value}}'>
                                                 <semantic-link-container    uri="http://www.researchspace.org/resource/ThinkingFrames"
                                                                             urlqueryparam-view='resource-editor' 
                                                                             urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
-                                                                            urlqueryparam-resource-iri="{{bindings.0.actor.value}}"
+                                                                            urlqueryparam-resource-iri="{{bindings.0.actorUser.value}}"
                                                                             urlqueryparam-mode='edit'>
                                                     <div style="text-decoration: underline; cursor: pointer;">{{bindings.0.actorFullName.value}}</div>
                                                 </semantic-link-container>
                                             </mp-draggable>
                                         {{else}}
-                                            <mp-label iri='{{bindings.0.actor.value}}'></mp-label>
+                                            <div>{{bindings.0.actorEmail.value}}</div>
                                         {{/if}}
                                     </td>
                                 </tr>
@@ -74,7 +76,7 @@
             </semantic-query>
 
             [[!-- last modification details --]]
-            <semantic-query query='SELECT DISTINCT ?actor ?actorFullName (MAX(?modificationDateValue) AS ?lastModificationDate) WHERE {
+            <semantic-query query='SELECT DISTINCT ?actor ?actorFullName ?actorUser ?actorEmail (MAX(?modificationDateValue) AS ?lastModificationDate) WHERE {
                                     BIND(<{{node}}> AS ?entity)
 
                                     ?entity crm:P129i_is_subject_of ?entityFormRecord .
@@ -83,17 +85,19 @@
                                     ?entityFormRecordModification crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_modification> .
 
                                     ?entityFormRecordModification crm:P14_carried_out_by ?actor .
+                                    BIND(IRI(REPLACE(STR(?actor), "%40", "_")) as ?actorUser)
+                                    BIND(REPLACE(REPLACE(STR(?actor), STR(User:), ""), "%40", "@") as ?actorEmail) 
 
                                     OPTIONAL {
-                                        ?actor crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
-                                        ?actor crm:P1_is_identified_by ?actorName .
+                                        ?actorUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                        ?actorUser crm:P1_is_identified_by ?actorName .
                                         ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                                         ?actorName crm:P190_has_symbolic_content ?actorFullName .
                                     }
 
                                     ?entityFormRecordModification crm:P4_has_time-span ?modificationDate .
                                     ?modificationDate crm:P82_at_some_time_within ?modificationDateValue .
-                                } GROUP BY ?actor ?actorFullName'
+                                } GROUP BY ?actor ?actorFullName ?actorUser ?actorEmail'
                                         
                             template='{{> template}}'>
                                 
@@ -107,17 +111,17 @@
                                             <td class="table-description">
                                                 {{dateTimeFormat lastModificationDate.value "DD/MM/YYYY, h:mm a"}} by
                                                 {{#if actorFullName}}
-                                                    <mp-draggable iri='{{actor.value}}'>
+                                                    <mp-draggable iri='{{actorUser.value}}'>
                                                         <semantic-link-container    uri="http://www.researchspace.org/resource/ThinkingFrames"
                                                                                     urlqueryparam-view='resource-editor' 
                                                                                     urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
-                                                                                    urlqueryparam-resource-iri="{{actor.value}}"
+                                                                                    urlqueryparam-resource-iri="{{actorUser.value}}"
                                                                                     urlqueryparam-mode='edit'>
                                                             <div style="text-decoration: underline; cursor: pointer;">{{actorFullName.value}}</div>
                                                         </semantic-link-container>
                                                     </mp-draggable>
                                                 {{else}}
-                                                    <mp-label iri='{{actor.value}}'></mp-label>
+                                                    <div>{{actorEmail.value}}</div>
                                                 {{/if}}
                                             </td>
                                         </tr>
@@ -129,7 +133,7 @@
             </semantic-query>
 
             [[#if imageOverlay]]
-                <semantic-query  query='SELECT DISTINCT ?modifiedByUser ?modifiedByUserFullName ?modifiedAtTime WHERE {
+                <semantic-query  query='SELECT DISTINCT ?modifiedByUser ?modifiedByUserFullName ?actorUser ?actorEmail ?modifiedAtTime WHERE {
                                             BIND(<{{node}}> AS ?overlayImage)
 
                                             ?overlayImage a crmdig:D9_Data_Object .
@@ -140,17 +144,21 @@
             
                                             [[#if (hasPermission "forms:ldp:*")]]
                                                 ?overlayImage <http://www.w3.org/ns/prov#wasAttributedTo> ?modifiedByUser .
+                                                BIND(IRI(REPLACE(STR(?modifiedByUser), "%40", "_")) as ?actorUser)
+
+                                                OPTIONAL {
+                                                    ?actorUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                                    ?actorUser crm:P1_is_identified_by ?actorName .
+                                                    ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                                    ?actorName crm:P190_has_symbolic_content ?modifiedByUserFullName .
+                                                }
                                             [[else]]
                                                 ?overlayImage <http://www.w3.org/ns/prov#wasAttributedTo> ?modifiedByUser .
                                                 FILTER(?modifiedByUser = <http://www.researchspace.org/resource/system/anonymousUser> )
                                             [[/if]]
 
-                                            OPTIONAL {
-                                                ?modifiedByUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
-                                                ?modifiedByUser crm:P1_is_identified_by ?actorName .
-                                                ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
-                                                ?actorName crm:P190_has_symbolic_content ?modifiedByUserFullName .
-                                            }
+                                            BIND(IRI(REPLACE(STR(?modifiedByUser), "%40", "@")) as ?actorEmail)
+                                            
                                         }'
                                 template='{{> template}}'>
                                             
@@ -165,17 +173,17 @@
                                                     <td class="table-description">
                                                         {{dateTimeFormat bindings.0.modifiedAtTime.value "DD/MM/YYYY, h:mm a"}} by
                                                         {{#if bindings.0.modifiedByUserFullName.value}}
-                                                            <mp-draggable iri='{{bindings.0.modifiedByUser.value}}'>
+                                                            <mp-draggable iri='{{bindings.0.actorUser.value}}'>
                                                                 <semantic-link-container    uri="http://www.researchspace.org/resource/ThinkingFrames"
                                                                                             urlqueryparam-view='resource-editor' 
                                                                                             urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
-                                                                                            urlqueryparam-resource-iri="{{bindings.0.modifiedByUser.value}}"
+                                                                                            urlqueryparam-resource-iri="{{bindings.0.actorUser.value}}"
                                                                                             urlqueryparam-mode='edit'>
                                                                     <div style="text-decoration: underline; cursor: pointer;">{{bindings.0.modifiedByUserFullName.value}}</div>
                                                                 </semantic-link-container>
                                                             </mp-draggable>
                                                         {{else}}
-                                                            <mp-label iri='{{bindings.0.modifiedByUser.value}}'></mp-label>
+                                                            <div>{{bindings.0.actorEmail.value}}</div>
                                                         {{/if}}
                                                     </td>
                                                 </tr>
@@ -212,7 +220,7 @@
                                             <div>
                                                 <semantic-table id='{{viewId}}-modification-table'
                                                                 class-name="table-fixed-header table-expanded"
-                                                                query='SELECT DISTINCT ?actor ?actorFullName ?modificationDateValue WHERE {
+                                                                query='SELECT DISTINCT ?actor ?actorFullName ?actorUser ?actorEmail ?modificationDateValue WHERE {
                                                                     BIND(<{{node}}> AS ?entity)
                                 
                                                                     ?entity crm:P129i_is_subject_of ?entityFormRecord .
@@ -221,10 +229,12 @@
                                                                     ?entityFormRecordModification crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_modification> .
                                 
                                                                     ?entityFormRecordModification crm:P14_carried_out_by ?actor .
+                                                                    BIND(IRI(REPLACE(STR(?actor), "%40", "_")) as ?actorUser)
+                                                                    BIND(REPLACE(REPLACE(STR(?actor), STR(User:), ""), "%40", "@") as ?actorEmail) 
                                 
                                                                     OPTIONAL {
-                                                                        ?actor crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
-                                                                        ?actor crm:P1_is_identified_by ?actorName .
+                                                                        ?actorUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                                                        ?actorUser crm:P1_is_identified_by ?actorName .
                                                                         ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                                                                         ?actorName crm:P190_has_symbolic_content ?actorFullName .
                                                                     }
@@ -251,17 +261,17 @@
                                                             <div style="display: flex; gap: 5px; align-items: center;">
                                                                 <rs-icon icon-type="rounded" icon-name="portrait" symbol="true"></rs-icon>
                                                                 {{#if actorFullName.value}}
-                                                                    <mp-draggable iri='{{actor.value}}'>
+                                                                    <mp-draggable iri='{{actorUser.value}}'>
                                                                         <semantic-link-container    uri='http://www.researchspace.org/resource/ThinkingFrames'
                                                                                                     urlqueryparam-view='resource-editor' 
                                                                                                     urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
-                                                                                                    urlqueryparam-resource-iri="{{actor.value}}"
+                                                                                                    urlqueryparam-resource-iri="{{actorUser.value}}"
                                                                                                     urlqueryparam-mode='edit'>
                                                                             <div class="text-link">{{actorFullName.value}}</div>
                                                                         </semantic-link-container>
                                                                     </mp-draggable>
                                                                 {{else}}
-                                                                    <mp-label iri='{{actor.value}}'></mp-label>
+                                                                    <div>{{actorEmail.value}}</div>
                                                                 {{/if}}
                                                             </div>
                                                         </template>
@@ -284,7 +294,7 @@
             </semantic-if>
 
             [[!-- contributors details --]]
-            <semantic-query query='SELECT DISTINCT ?actor ?actorFullName WHERE {
+            <semantic-query query='SELECT DISTINCT ?actor ?actorFullName ?actorUser ?actorEmail WHERE {
                                     BIND(<{{node}}> AS ?entity)
 
                                     ?entity crm:P129i_is_subject_of ?entityFormRecord .
@@ -295,14 +305,16 @@
                                                         <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation>
                                                         ))
                                     ?recordOutput crm:P14_carried_out_by ?actor .
-
+                                    BIND(IRI(REPLACE(STR(?actor), "%40", "_")) as ?actorUser)
+                                    BIND(REPLACE(REPLACE(STR(?actor), STR(User:), ""), "%40", "@") as ?actorEmail) 
+                                    
                                     OPTIONAL {
-                                        ?actor crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
-                                        ?actor crm:P1_is_identified_by ?actorName .
+                                        ?actorUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                        ?actorUser crm:P1_is_identified_by ?actorName .
                                         ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                                         ?actorName crm:P190_has_symbolic_content ?actorFullName .
                                     }
-                                } ORDER BY ?actorFullName ?actor'
+                                } ORDER BY ?actorFullName ?actorEmail'
                             template='{{> template}}'>
 
                 <template id='template'>
@@ -320,17 +332,17 @@
                                                 <div>
                                                     {{#each bindings}}
                                                         {{#if actorFullName.value}}
-                                                            <mp-draggable iri='{{actor.value}}'>
+                                                            <mp-draggable iri='{{actorUser.value}}'>
                                                                 <semantic-link-container    uri='http://www.researchspace.org/resource/ThinkingFrames'
                                                                                             urlqueryparam-view='resource-editor' 
                                                                                             urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
-                                                                                            urlqueryparam-resource-iri="{{actor.value}}"
+                                                                                            urlqueryparam-resource-iri="{{actorUser.value}}"
                                                                                             urlqueryparam-mode='edit'>
                                                                     <div class="text-link">{{actorFullName.value}}</div>
                                                                 </semantic-link-container>
                                                             </mp-draggable>
                                                         {{else}}
-                                                            <mp-label iri='{{actor.value}}'></mp-label>
+                                                            <div>{{actorEmail.value}}</div>
                                                         {{/if}}
                                                     {{/each}}
                                                 </div>

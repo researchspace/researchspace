@@ -1,5 +1,5 @@
 <semantic-query query='SELECT DISTINCT  ?subject ?resourceConfig ?resourceLabel ?resourceType ?resourceIcon ?resourceOntologyClass
-                                        ?actor ?systemActorName ?actorFullName ?viewModification ?recordCreation ?recordModification ?viewModificationDate (MAX(?recordDate) AS ?latestRecordDate)
+                                        ?actor ?actorEmail ?actorFullName ?viewModification ?recordCreation ?recordModification ?viewModificationDate (MAX(?recordDate) AS ?latestRecordDate)
                                  WHERE {
 
                         BIND(<{{iri}}> as ?subject)
@@ -62,11 +62,13 @@
                           BIND("true" as ?recordModification)
                         }
 
-                        BIND(REPLACE(REPLACE(STR(?actor), STR(User:), ""), "%40", "@") as ?systemActorName) 
+                        BIND(IRI(REPLACE(STR(?actor), "%40", "_")) as ?actorUser)
+                        BIND(REPLACE(REPLACE(STR(?actor), STR(User:), ""), "%40", "@") as ?actorEmail) 
+                                        
 
                         OPTIONAL {
-                          ?actor crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
-                          ?actor crm:P1_is_identified_by ?actorName .
+                          ?actorUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                          ?actorUser crm:P1_is_identified_by ?actorName .
                           ?actorName a crm:E41_Appellation .
                           ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                           ?actorName crm:P190_has_symbolic_content ?actorFullName .
@@ -74,7 +76,7 @@
 
                         BIND(IF(BOUND(?dateModification), ?dateModification, ?dateCreation) AS ?recordDate)
 
-                      } GROUP BY ?subject ?resourceConfig ?resourceLabel ?resourceType ?resourceIcon ?resourceOntologyClass ?actor ?systemActorName ?actorFullName ?viewModification ?recordCreation ?recordModification ?viewModificationDate
+                      } GROUP BY ?subject ?resourceConfig ?resourceLabel ?resourceType ?resourceIcon ?resourceOntologyClass ?actor ?actorEmail ?actorFullName ?viewModification ?recordCreation ?recordModification ?viewModificationDate
                       LIMIT 1'
       
                 template='{{> template}}'>
@@ -118,7 +120,7 @@
               {{#if bindings.0.actorFullName.value}}
                 <div class="activity-card-actor-value text-truncate-line1">{{bindings.0.actorFullName.value}}</div>
               {{else}}
-                <div class="activity-card-actor-value text-truncate-line1">{{bindings.0.systemActorName.value}}</div>
+                <div class="activity-card-actor-value text-truncate-line1">{{bindings.0.actorEmail.value}}</div>
               {{/if}}
             
               <div class="activity-card-date-value text-truncate-line1">

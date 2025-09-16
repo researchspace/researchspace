@@ -1,6 +1,6 @@
 /**
  * ResearchSpace
- * Copyright (C) 2022-2024, © Kartography Community Interest Company
+ * Copyright (C) 2022-2025, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -36,7 +36,8 @@ import { ValidationMessages } from './Decorations';
 import Icon from 'platform/components/ui/icon/Icon';
 import ResourceLinkContainer from 'platform/api/navigation/components/ResourceLinkContainer';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
-import { DropdownButton, MenuItem } from 'react-bootstrap';
+
+import { DropdownWithFilter } from './dropdown/DropdownWithFilter';
 import { RdfLiteral } from 'platform/ontodia/src/ontodia';
 import { ConfigHolder } from 'platform/api/services/config-holder';
 
@@ -60,6 +61,11 @@ export interface AutocompleteInputProps extends AtomicValueInputProps {
    * If set to true, the resource can not be edited and the Edit button will not be shown and will not possible to open the resource in a new tab
    */
   readonlyResource?: boolean;
+  /**
+   * If set to false, the filter input in the dropdown will be hidden
+   * @default true
+   */
+  showDropdownFilter?: boolean;
 }
 
 interface SelectValue {
@@ -77,6 +83,7 @@ interface State {
   modalId?: string;
   parentIri?: string;
   passValuesFor?: string[];
+  filterValue?: string;
 }
 
 const CLASS_NAME = 'autocomplete-text-field';
@@ -92,7 +99,8 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
     super(props, context);
     this.state = { 
       nestedFormOpen: false ,
-      nestedFormTemplates: []
+      nestedFormTemplates: [],
+      filterValue: ''
     };
     this.tupleTemplate = this.tupleTemplate || this.compileTemplate();
   }
@@ -274,12 +282,18 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
           </Button>
         )}
         { showCreateNewDropdown && (
-          <DropdownButton title="New" pullRight id="add-form" onSelect={(label) => this.onDropdownSelectHandler(label)}>
-            {this.state.nestedFormTemplates.map((e) => {
-                return (<MenuItem key={e.label} eventKey={e.label} draggable={false}>{e.label}</MenuItem>)
-              }
-            )}
-          </DropdownButton>
+          <DropdownWithFilter
+            id="add-form"
+            title="New"
+            items={this.state.nestedFormTemplates}
+            filterValue={this.state.filterValue || ''}
+            onFilterChange={v => this.setState({ filterValue: v })}
+            onSelect={item => this.onDropdownSelectHandler(String(item.label))}
+            getLabel={item => String(item.label)}
+            placeholder="Filter..."
+            noResultsText="No results"
+            showFilter={this.props.showDropdownFilter}
+          />
         )}
         { showEditButton && 
           <Button className={`${CLASS_NAME}__create-button btn-textAndIcon`} title='Edit' onClick={() => {this.onEditHandler(value.value as Rdf.Iri)}}>
@@ -345,3 +359,4 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
 SingleValueInput.assertStatic(AutocompleteInput);
 
 export default AutocompleteInput;
+

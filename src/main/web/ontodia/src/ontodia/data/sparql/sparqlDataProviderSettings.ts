@@ -220,6 +220,11 @@ export interface SparqlDataProviderSettings {
    * @default false
    */
   openWorldProperties?: boolean;
+
+  /**
+   * Query Optimizer, a sparql statement that can help the query plan evaluation
+   */
+  queryPlanOptimiser?: string;
 }
 
 /**

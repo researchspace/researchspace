@@ -21,14 +21,16 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.subject.SubjectContext;
-import org.apache.shiro.web.mgt.DefaultWebSubjectFactory;
 import org.apache.shiro.web.subject.WebSubjectContext;
+
+import io.buji.pac4j.subject.Pac4jSubjectFactory;
 
 /* 
  * Disable session creation for Basic Auth requests.
  * It is just an additional overhead that doesn't make any sense.
  */
-public class CustomWebSubjectFactory extends DefaultWebSubjectFactory {
+public class CustomWebSubjectFactory extends Pac4jSubjectFactory {
+
     @Override
     public Subject createSubject(SubjectContext context) {
         if (context instanceof WebSubjectContext) {

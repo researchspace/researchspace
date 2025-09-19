@@ -30,6 +30,7 @@ import java.util.function.Function;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
@@ -39,9 +40,13 @@ import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.Literals;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.researchspace.cache.LabelCache;
+import org.researchspace.cache.ResourceConfigurationCache;
 import org.researchspace.repository.RepositoryManager;
 import org.researchspace.rest.feature.CacheControl.NoCache;
 import org.researchspace.thumbnails.ThumbnailServiceRegistry;
@@ -62,6 +67,9 @@ public class ResourceUtilsEndpoint {
 
     @Inject
     private LabelCache labelCache;
+
+    @Inject
+    private ResourceConfigurationCache resourceConfigurationCache;
 
     @Inject
     private ThumbnailServiceRegistry thumbnailServiceRegistry;
@@ -104,6 +112,121 @@ public class ResourceUtilsEndpoint {
             }
         };
         return Response.ok(stream).build();
+    }
+
+    @POST
+    @Path("getResourceConfigurations")
+    @Produces(APPLICATION_JSON)
+    @Consumes(APPLICATION_JSON)
+    public Response getResourceConfiguration(@QueryParam("repository") final Optional<String> repositoryId,
+             final JsonParser jp)
+            throws IOException, RepositoryException {
+        Repository repo = repositoryManager.getRepository(repositoryId).orElse(repositoryManager.getDefault());
+        StreamingOutput stream = new StreamingOutput() {
+            @Override
+            public void write(OutputStream os) throws IOException, WebApplicationException {
+                JsonFactory jsonFactory = new JsonFactory();
+                try (JsonGenerator output = jsonFactory.createGenerator(os)) {
+                    output.writeStartObject();
+
+                    Map<IRI, String> iriToUriString = readResourceIris(jp);                    
+                    Map<IRI, Optional<Literal>> resourceConfigurationsMap = resourceConfigurationCache.getResourceConfigurations(iriToUriString.keySet(), repo);
+                    // write final bulk
+                    for (IRI iri : resourceConfigurationsMap.keySet()) {
+                        Optional<Literal> configuration = resourceConfigurationsMap.get(iri);
+                       
+                        output.writeStringField(iriToUriString.get(iri).toString(),configuration.get().stringValue());
+                    }
+                    // clear temp data structures
+                    output.writeEndObject();
+                }
+            }
+        };
+        return Response.ok(stream).build();
+    }
+
+    @GET
+    @Path("getResourceConfiguration")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response getResourceConfiguration(@QueryParam("iri") IRI iri, @QueryParam("repository") final Optional<String> repositoryId)
+            throws IOException, RepositoryException {
+        
+        Repository repo = repositoryManager.getRepository(repositoryId).orElse(repositoryManager.getDefault());
+        
+        // Unwrap the Optional<Literal>, turn it into a String (or "" if missing)
+        String config = resourceConfigurationCache
+            .getResourceConfiguration(iri, repo)            // returns Optional<Literal>
+            .map(Literal::stringValue)                      // extract the stringValue()
+            .orElse("http://www.researchspace.org/resource/system/resource_configurations_container/data/Entity");
+
+    return Response
+        .ok(config, MediaType.TEXT_PLAIN)               // plain‐text body
+        .build();
+    }
+
+    @GET
+    @Path("getPrimaryAppellation")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response getPrimaryAppellation(@QueryParam("iri") IRI iri, @QueryParam("repository") final Optional<String> repositoryId)
+            throws IOException, RepositoryException {
+        
+        Repository repo = repositoryManager.getRepository(repositoryId).orElse(repositoryManager.getDefault());
+        
+        String query = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" + 
+                        "    SELECT ?label {" + 
+                        "        <"+iri.toString()+"> <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by> ?appellation . \n" + 
+                        "        ?appellation <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.cidoc-crm.org/cidoc-crm/E41_Appellation> . \n" + 
+                        "        ?appellation <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . \n" + //
+                        "        ?appellation <http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?label .\n" + 
+                        "    }" + 
+                        "    LIMIT 1";
+        String primaryAppellation = "";
+        Repository defaultRepository = repositoryManager.getDefault();
+            
+        // connection and to run the sparql query
+        try (RepositoryConnection con = defaultRepository.getConnection()) {
+            try (TupleQueryResult tqr = con.prepareTupleQuery(query).evaluate()) {
+                while (tqr.hasNext()) {
+                    BindingSet bs = tqr.next();
+                    primaryAppellation = bs.getBinding("label").getValue().stringValue();                   
+                }
+            }
+        }
+
+        return Response
+            .ok(primaryAppellation, MediaType.TEXT_PLAIN)               // plain‐text body
+            .build();
+    }
+
+    @GET
+    @Path("getObservedEntity")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response getObservedEntity(@QueryParam("iri") IRI iri, @QueryParam("repository") final Optional<String> repositoryId)
+            throws IOException, RepositoryException {
+        
+        Repository repo = repositoryManager.getRepository(repositoryId).orElse(repositoryManager.getDefault());
+        
+        String query = "    SELECT ?entity {" + 
+                       "        <"+iri.toString()+"> <http://www.cidoc-crm.org/extensions/crmsci/O35_observed_entity> ?entity . \n" + 
+                       "    }" + 
+                       "    LIMIT 1";
+
+        String entityIri = "";
+        Repository defaultRepository = repositoryManager.getDefault();
+            
+        // connection and to run the sparql query
+        try (RepositoryConnection con = defaultRepository.getConnection()) {
+            try (TupleQueryResult tqr = con.prepareTupleQuery(query).evaluate()) {
+                while (tqr.hasNext()) {
+                    BindingSet bs = tqr.next();
+                    entityIri = bs.getBinding("entity").getValue().stringValue();                   
+                }
+            }
+        }
+
+        return Response
+            .ok(entityIri, MediaType.TEXT_PLAIN)               // plain‐text body
+            .build();
     }
 
     /**

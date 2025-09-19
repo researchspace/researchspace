@@ -23,11 +23,11 @@ targetCompatibility = JavaVersion.VERSION_1_8
 repositories {
     // Use jcenter for resolving dependencies.
     jcenter()
-
-    // for blazegraph war
-    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 }
 
 dependencies {
-    compileOnly 'com.blazegraph:bigdata-core:2.2.0-20160908.002748-7'
+    // Add the JAR files from the local blazegraph WAR
+    compileOnly zipTree('../libs/blazegraph-2.2.0.war').matching {
+        include 'WEB-INF/lib/**/*.jar'
+    }
 }

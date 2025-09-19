@@ -83,7 +83,7 @@ java {
 farms {
     farm 'researchspace', {
         // setup blazegraph for local development
-        webapp 'com.blazegraph:blazegraph-war:2.2.0-20160908.003514-6',
+        webapp file('libs/blazegraph-2.2.0.war'),
             contextPath: '/blazegraph',
             overlays: [':blazegraph-vocabularies']
 
@@ -251,9 +251,9 @@ project.afterEvaluate {
 
 
     // for some reason overlay explode task that is needed for farm overlays is not added as a dependency
-    tasks.farmRunresearchspace.dependsOn tasks['farmOverlayArchiveresearchspaceblazegraph-war-2.2.0-20160908.003514-6.war']
-    tasks.farmRunDebugresearchspace.dependsOn tasks['farmOverlayArchiveresearchspaceblazegraph-war-2.2.0-20160908.003514-6.war']
-    tasks.buildProductresearchspace.dependsOn tasks['farmOverlayArchiveresearchspaceblazegraph-war-2.2.0-20160908.003514-6.war']
+    tasks.farmRunresearchspace.dependsOn tasks['farmOverlayArchiveresearchspaceblazegraph-2.2.0.war']
+    tasks.farmRunDebugresearchspace.dependsOn tasks['farmOverlayArchiveresearchspaceblazegraph-2.2.0.war']
+    tasks.buildProductresearchspace.dependsOn tasks['farmOverlayArchiveresearchspaceblazegraph-2.2.0.war']
 
     // connect our custom tasks with tasks from gretty
     tasks.debugAll.dependsOn tasks.farmRunDebugresearchspace
@@ -283,9 +283,6 @@ task runWiremock(type: JavaExec) {
 repositories {
     mavenCentral()
     mavenLocal()
-
-    // for blazegraph war
-    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 
     // for digilib war
     maven { url 'https://robcast.github.io/digilib-repo/maven-repo' }

@@ -20,7 +20,7 @@
 import { Rdf } from 'platform/api/rdf';
 
 module crmdig {
-  const NAMESPACE = 'http://www.ics.forth.gr/isl/CRMdig/';
+  const NAMESPACE = 'http://www.cidoc-crm.org/extensions/crmdig/';
   const iri = (s: string) => Rdf.iri(NAMESPACE + s);
 
   export const D9_Data_Object = iri('D9_Data_Object');

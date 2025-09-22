@@ -26,8 +26,13 @@
   }
 
   .ontodia,
-  .Toolbar--component {
+  .Toolbar--component,
+  .ontodia__workspace .ontodia-accordion-item--horizontal.ontodia-accordion-item--collapsed {
     background-color: white;
+  }
+
+  .ontodia-link__labels g rect {
+    fill: white !important;
   }
 
   .vis-item-content .btn-default {
@@ -54,158 +59,7 @@
 {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map") }}
   <div class="modal-preview-container">
     <div class="modal-resource-media p-0">
-      {{> rsp:KnowledgeMapOntodiaConfig diagram=resource }}
-   [[!--   <ontodia  id='ontodia' 
-                diagram='{{resource}}'
-                image-iris='["http://www.researchspace.org/ontology/PX_has_main_representation"]'
-                settings=nostats 
-                post-saving=none 
-                collapse-navigator=true
-                readonly=true
-                hide-panels=true 
-                hide-halo=true
-                default-node-template="{{> default}}"
-            >
-
-        <ontodia-field-configuration  authoring-mode=false
-                                      type-iri='http://www.w3.org/1999/02/22-rdf-syntax-ns#type'
-                                      default-label-iri='http://www.researchspace.org/pattern/system/entity/primary_appellation'
-                                      default-image-iri='http://www.researchspace.org/pattern/system/entity/main_image'
-                                      default-subject-template='/{{{{raw}}}}{{FIELD_VALUE_LOCAL_NAME http://www.w3.org/1999/02/22-rdf-syntax-ns#type}}{{{{/raw}}}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
-                                      force-datatype-fields='["http://www.researchspace.org/ontology/PX_has_video"]'
-
-                                      persistence='{
-                                          "type": "sparql",
-                                          "targetInsertGraphIri": "http://www.researchspace.org/resource/g/data"
-                                      }'>
-
-          <rs-ontodia-metadata-from-fields
-              fields-query='PREFIX field: <http://www.researchspace.org/resource/system/fields/>
-                            SELECT DISTINCT ?field WHERE {
-                            {
-                              ?field a <http://www.researchspace.org/resource/system/fields/Field> .
-                              ?field  a ?type .
-                              VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}
-                              FILTER (!CONTAINS(STR(?field),"http://www.researchspace.org/ontology/"))
-                            } UNION
-                            {
-                              ?field a <http://www.researchspace.org/resource/system/fields/Field> .
-                              ?field  <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/image_annotation> .
-                              }
-                            UNION {
-                              VALUES (?value){(<http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation>)
-                                    (<http://www.researchspace.org/pattern/system/entity/primary_appellation>)
-                                    (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>)
-                                    (<http://www.researchspace.org/pattern/system/entity/main_image>)
-                                    (<http://www.ics.forth.gr/isl/CRMdig/L49_is_primary_area_of>)
-                                    (<http://www.researchspace.org/pattern/system/image_annotation/boundingBox>)
-                                    (<http://www.researchspace.org/pattern/system/image_annotation/value>)
-                                    (<http://www.researchspace.org/pattern/system/image_annotation/viewport>)
-                                    (<http://www.researchspace.org/pattern/system/image_annotation/area_of_image>)
-                                    (<http://www.researchspace.org/pattern/system/recording/file_url>)}
-
-                              BIND(?value as ?field)
-                            }
-                            MINUS {
-                              VALUES (?value) {
-                              (<http://www.ics.forth.gr/isl/CRMdig/L47_has_comment>)
-                              (<http://www.w3.org/2000/01/rdf-schema#label>)
-                              }
-                            }
-                          }'>
-          </rs-ontodia-metadata-from-fields>
-
-          <ontodia-field-input-override for-field="label">
-          <semantic-form-text-input></semantic-form-text-input>
-          </ontodia-field-input-override>
-
-          <ontodia-field-input-override for-field="http://www.researchspace.org/pattern/system/entity/main_image">
-            <div class="dragAndDrop-input-container">
-              <semantic-form-drag-and-drop-input  for='http://www.researchspace.org/pattern/system/entity/main_image' 
-                                                  label="Main image" 
-                                                  placeholder-item-template="<div class='placeholder-item'>
-                                                                              <rs-icon icon-type='rounded' icon-name='upload' class='upload_icon' symbol='true'></rs-icon>
-                                                                              <div>
-                                                                                  <div style='margin-bottom:3px;'>Drag image from </div>
-                                                                                  <div style='margin-bottom:7px;'>
-                                                                                      <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames' 
-                                                                                                      class='text-link' 
-                                                                                                      urlqueryparam-view='resource-search'
-                                                                                                      urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image'
-                                                                                                      urlqueryparam-custom-label='Search Image'>
-                                                                                                      Image Library
-                                                                                      </semantic-link>
-                                                                                  
-                                                                                      <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                                                                                  urlqueryparam-view='resource-search' 
-                                                                                                                  urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image'
-                                                                                                                  urlqueryparam-open-as-drag-and-drop='true'
-                                                                                                                  urlqueryparam-custom-label='Search Image'
-                                                                                                                  >
-                                                                                          <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding-left: 5px;' title='Open Image Library in new draggable tab'></rs-icon>
-                                                                                      </semantic-link-container>
-                                                                                
-                                                                                      <span style='padding:0 3px;'> or </span>
-                                                                                
-                                                                                      <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames' 
-                                                                                                      class='text-link' 
-                                                                                                      urlqueryparam-view='resource-search'
-                                                                                                      urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation'
-                                                                                                      urlqueryparam-custom-label='Search image annotation'>
-                                                                                          Image Annotation Library
-                                                                                      </semantic-link>
-                                                                                  
-                                                                                      <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                                                                                  urlqueryparam-view='resource-search' 
-                                                                                                                  urlqueryparam-iri='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation'
-                                                                                                                  urlqueryparam-open-as-drag-and-drop='true'
-                                                                                                                  urlqueryparam-custom-label='Search image annotation'
-                                                                                                                  >
-                                                                                          <rs-icon icon-type='rounded' icon-name='tab_move' symbol='true' style='padding-left: 5px;' title='Open Image Annotation Library in new draggable tab'></rs-icon>
-                                                                                      </semantic-link-container>
-                                                                                  </div>
-                                                                                  <span>or </span><span class='text-link'>click to upload</span>
-                                                                              </div>
-                                                                          </div>"
-                                                  nested-form-template='{{{{raw}}}}{{> forms:Image_minimal nested=true editable=true mode="new"}}{{{{/raw}}}}'>
-              </semantic-form-drag-and-drop-input>
-            </div>
-          </ontodia-field-input-override>
-
-        </ontodia-field-configuration>
-
-        <template id="default">
-          {{#if isExpanded }}
-            <div style="width: 270px; height:73px;">
-              {{> rsp:ResourceCard  iri=iri
-                                    viewId='knowledge-map-preview'
-                                    knowledgeMapPreviewCard=true
-                                    hideMediaSection=true
-                                    hidePreview=true
-                                    height=73
-                                    width=270
-                                    props=props
-                                    data=data
-              }}
-            </div>
-          {{else}}
-            <div style="width: 150px; height:190px">
-              {{> rsp:ResourceCard  iri=iri
-                                    viewId='knowledge-map-preview'
-                                    knowledgeMapPreviewCard=true
-                                    hidePreview=true
-                                    props=props
-                                    data=data
-              }}
-            </div>
-          {{/if}}
-        </template>
-
-        <template id="knowledge-map-dropdown">
-          <div></div>
-        </template>
-
-      </ontodia> --]]
+      {{> rsp:KnowledgeMapOntodiaConfig diagram=resource readonly=true hideHalo=true}}
     </div>
     [[> resourceDetails]]
   </div>
@@ -266,7 +120,7 @@
                       </iframe>
                     {{else if fileName}}
                       <video controls preload="metadata" width="358" height="230" style="object-fit: cover;">
-                          <source src="/file?storage=images&fileName={{encodeUriComponent fileName.value}}" type="{{fileMediaType.value}}" />
+                          <source src="/file?storage=media&fileName={{encodeUriComponent fileName.value}}" type="{{fileMediaType.value}}" />
                           <div class="color-secondary" style="margin-bottom: 10px;">Your browser doesn't support the visualisation of this video.</div>
                       </video>
                     {{/if}}
@@ -284,7 +138,7 @@
                   </iframe>
                 {{else if bindings.0.fileName.value}}
                   <video controls preload="metadata" width="100%" height="100%" style="object-fit: cover;">
-                      <source src="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}" type="{{bindings.0.fileMediaType.value}}" />
+                      <source src="/file?storage=media&fileName={{encodeUriComponent bindings.0.fileName.value}}" type="{{bindings.0.fileMediaType.value}}" />
                       <div class="color-secondary">Your browser doesn't support the visualisation of this video.</div>
                   </video>
                 {{/if}}
@@ -334,7 +188,7 @@
                 <div>
                   <p>Audio file:</p>
                   <audio controls preload="metadata" width="100%">
-                    <source src="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}" type="{{bindings.0.fileMediaType.value}}">
+                    <source src="/file?storage=media&fileName={{encodeUriComponent bindings.0.fileName.value}}" type="{{bindings.0.fileMediaType.value}}">
                     <div class="color-secondary" style="width: 100%;">Your browser doesn't support the format of this audio.</div>
                   </audio>
                 </div>
@@ -366,7 +220,7 @@
                     (eq bindings.0.fileMediaType.value "text/xml")
           )}}
             <div class="modal-resource-media p-0">
-              <iframe src="/file?fileName={{bindings.0.fileName.value}}&storage=images&mode=open&mediaType={{bindings.0.fileMediaType.value}}"
+              <iframe src="/file?fileName={{bindings.0.fileName.value}}&storage=media&mode=open&mediaType={{bindings.0.fileMediaType.value}}"
                       frameborder="0" 
                       width="100%" height="100%"
                       allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
@@ -377,7 +231,7 @@
             <div class="modal-resource-media">
               <div style="display: flex; gap: 5px; margin-top: 10px; width: 100%;">
                 <span>Document file:</span>
-                <a href="/file?fileName={{bindings.0.fileName.value}}&storage=images&mode=open&mediaType={{bindings.0.fileMediaType.value}}"
+                <a href="/file?fileName={{bindings.0.fileName.value}}&storage=media&mode=open&mediaType={{bindings.0.fileMediaType.value}}"
                     class="text-link" 
                     style="display: block;"
                     target="_blank">
@@ -416,15 +270,13 @@
                           OPTIONAL {
                             {
                               <{{resource}}> crm:P129i_is_subject_of ?recording . 
-                              ?recording a frbroo:F26_Recording .
+                              ?recording a lrmoo:F2_Expression .
                               ?recording crm:P2_has_type ?recordingType .
                               FILTER (?recordingType IN (<http://www.researchspace.org/resource/system/vocab/resource_type/recording_video>) ) . 
                             }
                           }
                           OPTIONAL {
-                            <{{resource}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                            ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
-                            ?osm_geoCoordinates crm:P190_has_symbolic_content ?map .
+                            <{{resource}}> crm:P168_place_is_defined_by ?map .
                           }
                         } LIMIT 1'
                   
@@ -507,7 +359,7 @@
                   <semantic-query query='SELECT DISTINCT ?video ?videoURI ?videoName ?fileName ?fileMediaType WHERE { 
                                           {
                                             <{{resource}}> crm:P129i_is_subject_of ?videoURI . 
-                                            ?videoURI a frbroo:F26_Recording .
+                                            ?videoURI a lrmoo:F2_Expression .
                                             ?videoURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_video> .
                                             {
                                               ?videoURI crm:P129i_is_subject_of ?digital_object .
@@ -561,7 +413,7 @@
                                     </iframe>
                                   {{else if fileName}}
                                     <video controls preload="metadata" width="358" height="230" style="object-fit: cover;">
-                                        <source src="/file?storage=images&fileName={{encodeUriComponent fileName.value}}" type="{{fileMediaType.value}}" />
+                                        <source src="/file?storage=media&fileName={{encodeUriComponent fileName.value}}" type="{{fileMediaType.value}}" />
                                         <div class="video-card-content-fallback">Your browser doesn't support the visualisation of this video.</div>
                                     </video>
                                   {{/if}}
@@ -597,7 +449,7 @@
                                 </iframe>
                               {{else if bindings.0.fileName.value}}
                                 <video controls preload="metadata" width="100%" height="100%" style="object-fit: cover;">
-                                    <source src="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}" type="{{bindings.0.fileMediaType.value}}" />
+                                    <source src="/file?storage=media&fileName={{encodeUriComponent bindings.0.fileName.value}}" type="{{bindings.0.fileMediaType.value}}" />
                                     <div class="color-secondary" style="margin-bottom: 10px;">Your browser doesn't support the visualisation of this video.</div>
                                 </video>
                               {{/if}}
@@ -616,10 +468,7 @@
                   <div class="modal-preview-container">
                     <div class="modal-resource-media p-0">
                       <semantic-map query='SELECT ?wkt WHERE { 
-                                              <{{resource}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                                              ?osm_geoCoordinates a crm:E94_Space_Primitive .
-                                              ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
-                                              ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
+                                              <{{resource}}> crm:P168_place_is_defined_by ?wkt .
                                               } LIMIT 1'
                                       tuple-template='<b style="color:#525156;"><mp-label iri="{{resource}}"></mp-label></b>'>
                       </semantic-map>

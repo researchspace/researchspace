@@ -82,7 +82,7 @@
       <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
           <rs-tab event-key="detail" title="Details">
             <div class="form-details-container">
-              <div style="overflow-x: auto;">
+              <div class="form-details-inputs-container">
                 {{#if apiResourceName}}
                     <div class="focused-input-container">
                         <semantic-form-text-input for="entity_primary_appellation" label="Full name" placeholder="Enter person full name / known as" default-value="{{apiResourceName}}" force-defaults=true> </semantic-form-text-input>
@@ -129,37 +129,6 @@
                 <semantic-form-text-input for="actor_alsoKnownAs" label="Also known as" placeholder="Enter person additional name / also known as"> </semantic-form-text-input>
                 <semantic-form-text-input for="person_name_native_language" label="Name in native language" placeholder="Enter person name in native language" languages='["ar","de","el","es","fr","ga","it","ja","ko","nl","zh","zh-CN","zh-TW"]' require-language=true> </semantic-form-text-input>
                 <semantic-form-text-input for="person_family_name" label="Family name" placeholder="Enter person family name"> </semantic-form-text-input>
-                
-                {{#if node}}
-                  <semantic-query query='SELECT ?authorityDocument ?authorityDocumentName WHERE {
-                                          <{{node}}> crm:P71i_is_listed_in ?authorityDocument .
-                                          ?authorityDocument a crm:E32_Authority_Document .
-                                          ?authorityDocument crm:P1_is_identified_by ?appellation . 
-                                          ?appellation a crm:E41_Appellation . 
-                                          ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                          ?appellation crm:P190_has_symbolic_content ?authorityDocumentName .
-                                      } LIMIT 1'
-                                  template='{{> template}}'>
-                                  
-                      <template id='template'>
-                          <div>
-                              <div style="margin-top: 20px;">
-                                  Listed in authority document:
-                                  {{#if scheme}}
-                                    {{bindings.0.authorityDocumentName.value}} 
-                                  {{else}}
-                                    <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                    urlqueryparam-view='authority-list' 
-                                                    urlqueryparam-resource-iri='{{bindings.0.authorityDocument.value}}'
-                                                    class="text-link">
-                                      {{bindings.0.authorityDocumentName.value}}
-                                    </semantic-link>
-                                  {{/if}}
-                              </div>
-                          </div>  
-                      </template>
-                  </semantic-query>
-                {{/if}}
 
                 {{#if apiResourceDescription}}
                     <div class="focused-input-container">
@@ -285,6 +254,7 @@
                 <semantic-form-autocomplete-input for='actor_residence' 
                                                 label="Residence" 
                                                 placeholder="Select current or former residence" 
+                                                show-dropdown-filter="false"
                                                 nested-form-templates='[[> Platform:NestedFormTemplates_places]]'>  
                 </semantic-form-autocomplete-input> 
 
@@ -303,6 +273,7 @@
                 <semantic-form-autocomplete-input   for="entity_id" 
                                                     label="Other identifier"
                                                     placeholder="Select other identifier" 
+                                                    show-dropdown-filter="false"
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_appellations]]'>
                 </semantic-form-autocomplete-input>
 
@@ -777,6 +748,7 @@
                 <semantic-form-autocomplete-input   for='persistent_item_taken_out_of_existence_by' 
                                                     label="Taken out of existence by" 
                                                     placeholder="Select event that took the person out of existence" 
+                                                    show-dropdown-filter="false"
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_endOfExistences]]'>  
                 </semantic-form-autocomplete-input>
         
@@ -795,27 +767,13 @@
                 <semantic-form-autocomplete-input   for='entity_attributed_by_attribute_assignment' 
                                                     label="Attributed by"
                                                     placeholder="Select what assigned attribute to the person" 
-                                                    nested-form-templates='[ 
-                                                        {
-                                                            "label": "Attribute assignment",
-                                                            "nestedForm": "{{{{raw}}}}
-                                                                            {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                        {{{{/raw}}}}"
-                                                        }
-                                                    ]'>  
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
                 </semantic-form-autocomplete-input>
         
                 <semantic-form-autocomplete-input   for='entity_assigned_by_attribute_assignment' 
                                                     label="Assigned by"
                                                     placeholder="Select what assigned the person" 
-                                                    nested-form-templates='[ 
-                                                        {
-                                                            "label": "Attribute assignment",
-                                                            "nestedForm": "{{{{raw}}}}
-                                                                            {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                        {{{{/raw}}}}"
-                                                        }
-                                                    ]'>  
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
                 </semantic-form-autocomplete-input>
         
                 <semantic-form-autocomplete-input   for='entity_measurement' 

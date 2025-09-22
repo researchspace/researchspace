@@ -77,7 +77,7 @@
     <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
       <rs-tab event-key="detail" title="Details">
         <div class="form-details-container">
-          <div style="overflow-x: auto;">
+          <div class="form-details-inputs-container">
             <semantic-form-text-input for="entity_prefLabel" label="Preferred name" placeholder="Enter preferred name"></semantic-form-text-input>
             
             <semantic-form-text-input for="entity_altLabel" label="Alternative name" placeholder="Enter alternative name"> </semantic-form-text-input>
@@ -138,6 +138,7 @@
             <semantic-form-autocomplete-input   for="entity_id" 
                                                 label="Other identifier"
                                                 placeholder="Select other identifier" 
+                                                show-dropdown-filter="false"
                                                 nested-form-templates='[[> Platform:NestedFormTemplates_appellations]]'>
             </semantic-form-autocomplete-input>
             
@@ -151,6 +152,7 @@
         <semantic-form-autocomplete-input   for='language_language_of' 
                                             label="Is language of" 
                                             placeholder="Select linguistic object that is expressed, at least partially, in this language" 
+                                            show-dropdown-filter="false"
                                             nested-form-templates='[[> Platform:NestedFormTemplates_linguisticObjects]]'> 
         </semantic-form-autocomplete-input> 
 
@@ -282,14 +284,15 @@
                                         <template id='template'>
                                             <div>
                                                 {{#ifCond bindings.0.node.value "===" type}}
-                                                    <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                  <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
                                                 {{else}}
-                                                    <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                    urlqueryparam-view='resource-editor' 
-                                                                    urlqueryparam-resource-iri='{{node.value}}'
-                                                                    >
+                                                  <mp-draggable iri="{{node.value}}">
+                                                    <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                              urlqueryparam-view='resource-editor' 
+                                                                              urlqueryparam-resource-iri='{{node.value}}'>
                                                         <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                    </semantic-link>
+                                                    </semantic-link-container>
+                                                  </mp-draggable>
                                                 {{/ifCond}}
                                             </div>
                                         </template>
@@ -375,12 +378,13 @@
                                                 {{#ifCond bindings.0.node.value "===" type}}
                                                     <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
                                                 {{else}}
-                                                    <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                    urlqueryparam-view='resource-editor' 
-                                                                    urlqueryparam-resource-iri='{{node.value}}'
-                                                                    >
+                                                  <mp-draggable iri="{{node.value}}">
+                                                    <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                            urlqueryparam-view='resource-editor' 
+                                                                            urlqueryparam-resource-iri='{{node.value}}'>
                                                         <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                    </semantic-link>
+                                                    </semantic-link-container>
+                                                  </mp-draggable>
                                                 {{/ifCond}}
                                             </div>
                                         </template>
@@ -481,6 +485,7 @@
         <semantic-form-autocomplete-input   for='conceptual_object_created_by' 
                                             label="Created by" 
                                             placeholder="Select the event that created the language" 
+                                            show-dropdown-filter="false"
                                             nested-form-templates='[[> Platform:NestedFormTemplates_creations]]'>  
         </semantic-form-autocomplete-input> 
 
@@ -600,6 +605,7 @@
         <semantic-form-autocomplete-input   for='persistent_item_taken_out_of_existence_by' 
                                             label="Taken out of existence by" 
                                             placeholder="Select event that took the language out of existence" 
+                                            show-dropdown-filter="false"
                                             nested-form-templates='[[> Platform:NestedFormTemplates_endOfExistences]]'>  
         </semantic-form-autocomplete-input>
 
@@ -618,27 +624,13 @@
         <semantic-form-autocomplete-input   for='entity_attributed_by_attribute_assignment' 
                                             label="Attributed by"
                                             placeholder="Select what assigned attribute to the {{#if entityType}}{{entityType}}{{else}}language{{/if}}" 
-                                            nested-form-templates='[ 
-                                                {
-                                                    "label": "Attribute assignment",
-                                                    "nestedForm": "{{{{raw}}}}
-                                                                    {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                {{{{/raw}}}}"
-                                                }
-                                            ]'>  
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_assigned_by_attribute_assignment' 
                                             label="Assigned by"
                                             placeholder="Select what assigned the {{#if entityType}}{{entityType}}{{else}}language{{/if}}" 
-                                            nested-form-templates='[ 
-                                                {
-                                                    "label": "Attribute assignment",
-                                                    "nestedForm": "{{{{raw}}}}
-                                                                    {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                {{{{/raw}}}}"
-                                                }
-                                            ]'>  
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_measurement' 

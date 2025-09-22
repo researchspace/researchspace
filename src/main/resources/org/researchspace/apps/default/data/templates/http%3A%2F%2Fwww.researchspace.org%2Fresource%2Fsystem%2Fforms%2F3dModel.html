@@ -57,7 +57,7 @@
               >
               
     <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
-        <semantic-form-hidden-input for='classtype' default-value='http://iflastandards.info/ns/fr/frbr/frbroo/F26_Recording'> </semantic-form-hidden-input>
+        <semantic-form-hidden-input for='classtype' default-value='http://iflastandards.info/ns/lrm/lrmoo/F2_Expression'> </semantic-form-hidden-input>
         <semantic-form-hidden-input for="entity_resource_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/recording_3D_model'> </semantic-form-hidden-input>
         
         {{#if scheme}}
@@ -118,7 +118,7 @@
                             >
                                 <template id='template'>
                                 
-                                    <mp-file-download  post-action="" download-url="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}">
+                                    <mp-file-download  post-action="" download-url="/file?storage=media&fileName={{encodeUriComponent bindings.0.fileName.value}}">
                                         <button class="btn btn-default btn-textAndIcon" style="height: 40px;">
                                             <rs-icon icon-type="rounded" icon-name="download" title="Download document" symbol="true"></rs-icon>
                                         </button>
@@ -306,6 +306,7 @@
                 <semantic-form-autocomplete-input   for="entity_id" 
                                                     label="Other identifier"
                                                     placeholder="Select other identifier" 
+                                                    show-dropdown-filter="false"
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_appellations]]'>
                 </semantic-form-autocomplete-input>
             </rs-tab>
@@ -439,12 +440,13 @@
                                                                     {{#ifCond bindings.0.node.value "===" propositionalObject}}
                                                                         <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
                                                                     {{else}}
-                                                                        <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                                        urlqueryparam-view='resource-editor' 
-                                                                                        urlqueryparam-resource-iri='{{node.value}}'
-                                                                                        >
-                                                                            <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                                        </semantic-link>
+                                                                        <mp-draggable iri="{{node.value}}">
+                                                                            <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                                      urlqueryparam-view='resource-editor' 
+                                                                                                      urlqueryparam-resource-iri='{{node.value}}'>
+                                                                                <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                                            </semantic-link-container>
+                                                                        </mp-draggable>
                                                                     {{/ifCond}}
                                                                 </div>
                                                             </template>
@@ -592,12 +594,13 @@
                                                                 {{#ifCond bindings.0.node.value "===" informationObject}}
                                                                     <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
                                                                 {{else}}
-                                                                    <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                                    urlqueryparam-view='resource-editor' 
-                                                                                    urlqueryparam-resource-iri='{{node.value}}'
-                                                                                    >
-                                                                        <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                                    </semantic-link>
+                                                                    <mp-draggable iri="{{node.value}}">
+                                                                        <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                                urlqueryparam-view='resource-editor' 
+                                                                                                urlqueryparam-resource-iri='{{node.value}}'>
+                                                                            <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                                        </semantic-link-container>
+                                                                    </mp-draggable>
                                                                 {{/ifCond}}
                                                             </div>
                                                         </template>
@@ -666,6 +669,7 @@
                 <semantic-form-autocomplete-input   for='legal_object_right_held_by_actor' 
                                                     label="Right held by" 
                                                     placeholder="Select actor who holds legal right on the 3D model" 
+                                                    show-dropdown-filter="false"
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'> 
                 </semantic-form-autocomplete-input> 
       
@@ -676,6 +680,7 @@
                 <semantic-form-autocomplete-input   for='conceptual_object_created_by' 
                                                     label="Created by" 
                                                     placeholder="Select the event that created the 3D model" 
+                                                    show-dropdown-filter="false"
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_creations]]'>  
                 </semantic-form-autocomplete-input> 
         
@@ -808,6 +813,7 @@
                 <semantic-form-autocomplete-input   for='persistent_item_taken_out_of_existence_by' 
                                                     label="Taken out of existence by" 
                                                     placeholder="Select event that took the 3D model out of existence" 
+                                                    show-dropdown-filter="false"
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_endOfExistences]]'>  
                 </semantic-form-autocomplete-input>
         
@@ -826,27 +832,13 @@
                 <semantic-form-autocomplete-input   for='entity_attributed_by_attribute_assignment' 
                                                     label="Attributed by"
                                                     placeholder="Select what assigned attribute to the 3D model" 
-                                                    nested-form-templates='[ 
-                                                        {
-                                                            "label": "Attribute assignment",
-                                                            "nestedForm": "{{{{raw}}}}
-                                                                            {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                        {{{{/raw}}}}"
-                                                        }
-                                                    ]'>  
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
                 </semantic-form-autocomplete-input>
         
                 <semantic-form-autocomplete-input   for='entity_assigned_by_attribute_assignment' 
                                                     label="Assigned by"
                                                     placeholder="Select what assigned the 3D model" 
-                                                    nested-form-templates='[ 
-                                                        {
-                                                            "label": "Attribute assignment",
-                                                            "nestedForm": "{{{{raw}}}}
-                                                                            {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                        {{{{/raw}}}}"
-                                                        }
-                                                    ]'>  
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
                 </semantic-form-autocomplete-input>
         
                 <semantic-form-autocomplete-input   for='entity_measurement' 

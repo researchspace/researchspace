@@ -2,7 +2,8 @@
                         BIND(<{{iri}}> as ?subject)
                         
                         ?subject a ?resourceOntologyClass .
-                        ?resourceOntologyClass a owl:Class .
+                        ?resourceOntologyClass a ?resourceOntologyClassType .
+                        FILTER(?resourceOntologyClassType in (rdfs:Class, owl:Class))
 
                         ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
                         ?resourceConfig a <http://www.researchspace.org/resource/system/resource_configuration> .
@@ -80,12 +81,15 @@
                             {{#ifCond __value__.value "==" "Unknown"}}
                                 {{__value__.value}}
                             {{else}}
-                                <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                urlqueryparam-view='resource-editor' 
-                                                urlqueryparam-resource-iri='{{__value__.value}}'
-                                >
-                                    <mp-label iri='{{__value__.value}}' class="text-link text-truncate-line1"></mp-label>
-                                </semantic-link>
+                              <mp-draggable iri="{{__value__.value}}">
+                                <div>
+                                    <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                    urlqueryparam-view='resource-editor' 
+                                                    urlqueryparam-resource-iri='{{__value__.value}}'>
+                                      <mp-label iri='{{__value__.value}}' class="text-link text-truncate-line1"></mp-label>
+                                    </semantic-link>
+                                </div>
+                              </mp-draggable>
                             {{/ifCond}}
                         </template>
                     </semantic-table>

@@ -2,7 +2,7 @@
 @prefix crm: <http://www.cidoc-crm.org/cidoc-crm/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix crmdig: <http://www.ics.forth.gr/isl/CRMdig/> .
+@prefix crmdig: <http://www.cidoc-crm.org/extensions/crmdig/> .
 @prefix forms: <http://www.researchspace.org/resource/system/forms/> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -39,14 +39,31 @@
     <http://www.researchspace.org/pattern/system/resource_search_listView_column/title> "Place";
     <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_type> "link" ;
     <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_sparql_pattern>
-    "?item crm:P7_took_place_at ?value . ?value a crm:E53_Place . ?value crm:P1_is_identified_by ?appellation . ?appellation a crm:E41_Appellation . ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . ?appellation crm:P190_has_symbolic_content ?label . " .
+    "?item crm:P7_took_place_at ?value . ?value a ?ontologyClass . ?ontologyClass rdfs:subClassOf* crm:E53_Place . ?value crm:P1_is_identified_by ?appellation . ?appellation a crm:E41_Appellation . ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . ?appellation crm:P190_has_symbolic_content ?label . " .
+
+  <http://www.researchspace.org/resource/system/configuration_change1> a crm:E13_Attribute_Assignment ;
+    crm:P140_assigned_attribute_to     <http://www.researchspace.org/resource/system/resource_configurations_container/data/Creation/resource_search_listView_column/3> ;
+    crm:P141_assigned                  "?item crm:P7_took_place_at ?value . ?value a ?ontologyClass . ?ontologyClass rdfs:subClassOf* crm:E53_Place . ?value crm:P1_is_identified_by ?appellation . ?appellation a crm:E41_Appellation . ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . ?appellation crm:P190_has_symbolic_content ?label . ";
+    crm:P177_assigned_property_of_type <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_sparql_pattern> ;
+    crm:P14_carried_out_by             <http://www.researchspace.org/resource/user/admin> ;
+    crm:P4_has_time-span               <http://www.researchspace.org/resource/system/timespanApril2025> .
+
+  <http://www.researchspace.org/resource/system/timespanApril2025> a crm:E52_Time-Span;
+    crm:P82_at_some_time_within "2025-04-29T00:00:00.000Z"^^xsd:datetime . 
 
   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Creation/resource_search_listView_column/4> a crm:E1_CRM_Entity ;
     <http://www.researchspace.org/pattern/system/resource_search_listView_column/order> "4";
     <http://www.researchspace.org/pattern/system/resource_search_listView_column/title> "Date";
     <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_type> "link" ;
     <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_sparql_pattern>
-    "?item crm:P4_has_time-span ?value . ?value a crm:E52_Time-Span . ?value crm:P170i_time_is_defined_by ?timePrimitive . ?timePrimitive a crm:E61_Time_Primitive . ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> . ?timePrimitive crm:P190_has_symbolic_content ?label ." .
+    "?item crm:P4_has_time-span ?value . ?value a crm:E52_Time-Span . ?value crm:P170i_time_is_defined_by ?label ." .
+
+  <http://www.researchspace.org/resource/system/configuration_change2> a crm:E13_Attribute_Assignment ;
+    crm:P140_assigned_attribute_to     <http://www.researchspace.org/resource/system/resource_configurations_container/data/Creation/resource_search_listView_column/4> ;
+    crm:P141_assigned                  "?item crm:P4_has_time-span ?value . ?value a crm:E52_Time-Span . ?value crm:P170i_time_is_defined_by ?label .";
+    crm:P177_assigned_property_of_type <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_sparql_pattern> ;
+    crm:P14_carried_out_by             <http://www.researchspace.org/resource/user/admin> ;
+    crm:P4_has_time-span               <http://www.researchspace.org/resource/system/timespanApril2025> .
 
   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Creation>
     crm:P129i_is_subject_of <http://www.researchspace.org/resource/system/resource_configurations_container/data/Creation/entity_form_record> .

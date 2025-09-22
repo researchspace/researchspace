@@ -4,11 +4,11 @@ uses client-side templates:
 --]]
 
 <[[#if standalone]]ontodia[[else]]rs-ontodia-panel[[/if]] id='{{ontodiaVariable}}-ontodia' metadata='
-<> a  <http://iflastandards.info/ns/fr/frbr/frbroo/F2_Expression> ;
+<> a  <http://iflastandards.info/ns/lrm/lrmoo/F2_Expression> ;
        <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map> .
   '
   image-iris='["http://www.researchspace.org/ontology/PX_has_main_representation"]'
-  save-diagram-label="Save Map" settings=nostats post-saving=none add-to-default-set=false
+  save-diagram-label="Save Map" settings=rsnostats post-saving=none add-to-default-set=false
   collapse-navigator=true
   request-links-on-init='{{#if miradorVariable}}true{{else}}{{#if diagram}}false{{else}}true{{/if}}{{/if}}'
   default-edge-style='{"editable": true}'
@@ -30,7 +30,7 @@ uses client-side templates:
   iri='{{#if iri}}{{iri}}{{/if}}'
   iris='{{#if iris}}{{iris}}{{/if}}'
 
-  hide-halo=false
+  hide-halo='{{#if hideHalo}}true{{else}}false{{/if}}'
 
   left-panel-initially-open=false
   default-node-template="{{> default}}"
@@ -66,6 +66,7 @@ uses client-side templates:
     	 
   		}
   	",
+    "queryPlanOptimiser":"<http://www.bigdata.com/queryHints#Query> <http://www.bigdata.com/queryHints#optimizer> \"None\" .",
 		"dataLabelProperty":"((crm:P1_is_identified_by/crm:P190_has_symbolic_content)|(crm:P1_is_identified_by/rdfs:label)|rdfs:label|crm:P190_has_symbolic_content|skos:prefLabel)"
   }'>
 
@@ -117,18 +118,16 @@ uses client-side templates:
                               (<http://www.researchspace.org/pattern/system/entity/main_image>)
                               (<http://www.researchspace.org/ontology/PX_has_file_name>)
                               (<http://www.researchspace.org/ontology/PX_has_media_type>)
-                              (<http://www.ics.forth.gr/isl/CRMdig/L49_is_primary_area_of>)
+                              (<http://www.cidoc-crm.org/extensions/crmdig/L49_is_primary_area_of>)
                                	 } 
 
                         BIND(?value as ?field)
                       }
-                      FILTER (!CONTAINS(STR(?field),"http://www.ics.forth.gr/isl/CRMdig/L47_has_comment"))
-                      FILTER (!CONTAINS(STR(?field),"http://www.ics.forth.gr/isl/CRMdig/L59_has_serial_number"))
+                 
                       FILTER (!CONTAINS(STR(?field),"http://www.w3.org/2000/01/rdf-schema#label"))
-                      FILTER (!CONTAINS(STR(?field),"http://www.ics.forth.gr/isl/CRMdig/L53_is_not_uniquely_identified_by"))
-                      FILTER (!CONTAINS(STR(?field),"http://www.ics.forth.gr/isl/CRMdig/L55_has_inventory_no"))
-                      FILTER (!CONTAINS(STR(?field),"http://www.ics.forth.gr/isl/CRMdig/L4_has_preferred_label"))
                       FILTER (!CONTAINS(STR(?field),"http://www.cidoc-crm.org/cidoc-crm/P3_has_note"))
+                      FILTER (!CONTAINS(STR(?field),"http://www.cidoc-crm.org/cidoc-crm/P169i_spacetime_volume_is_defined_by"))
+                      
                     }'>
     </rs-ontodia-metadata-from-fields>
  
@@ -219,7 +218,7 @@ uses client-side templates:
       <semantic-form-file-input for='http://www.researchspace.org/pattern/system/document/file_identifier' 
                                 label='Document file'
                                 accept-pattern='application/*,text/*' 
-                                storage='images'
+                                storage='media'
                                 temp-storage='tmp'
                                 name-predicate-iri='http://www.researchspace.org/ontology/PX_has_file_name'
                                 media-type-predicate-iri='http://www.researchspace.org/ontology/PX_has_media_type'
@@ -250,7 +249,7 @@ uses client-side templates:
                                   label='File'
                                   from-url-or-drop='false'
                                   accept-pattern='video/*,audio/*' 
-                                  storage='images'
+                                  storage='media'
                                   temp-storage='tmp'
                                   name-predicate-iri='http://www.researchspace.org/ontology/PX_has_file_name'
                                   media-type-predicate-iri='http://www.researchspace.org/ontology/PX_has_media_type'
@@ -295,44 +294,71 @@ uses client-side templates:
   </template>
 
   <template id="default">
-    [[!-- Don't add any other explicit style here, only width and height, style is overriden by the resizable component in the KM --]]
-    {{#if isExpanded }}
-      <div style="width: 270px; height:73px;">
-        <div class="resource-card__kmTopButtons">
-          <button name="edit" type="button" class="btn btn-default resource-card__button" title="Edit">
-            <rs-icon icon-type="rounded" icon-name="edit" symbol="true"></rs-icon>
-          </button>
-          <button name="delete" type="button" class="btn btn-default resource-card__button" title="Edit">
-            <rs-icon icon-type="rounded" icon-name="delete" symbol="true"></rs-icon>
-          </button>
+    {{#if readonly}}
+      {{#if isExpanded }}
+        <div style="width: 270px; height:73px;">
+          {{> rsp:ResourceCard  iri=iri
+                                viewId='knowledge-map-preview'
+                                knowledgeMapPreviewCard=true
+                                hideMediaSection=true
+                                hidePreview=true
+                                height=73
+                                width=270
+                                props=props
+                                data=data
+          }}
         </div>
-        {{> rsp:ResourceCard  iri=iri
-                              viewId=ontodiaVariable
-                              knowledgeMapCard=true
-                              hideMediaSection=true
-                              height=73
-                              width=270
-                              props=props
-                              data=data
-        }}
-      </div>
+      {{else}}
+        <div style="width: 150px; height:190px">
+          {{> rsp:ResourceCard  iri=iri
+                                viewId='knowledge-map-preview'
+                                knowledgeMapPreviewCard=true
+                                hidePreview=true
+                                props=props
+                                data=data
+          }}
+        </div>
+      {{/if}}
     {{else}}
-      <div style="width: 150px; height:190px">
-        <div class="resource-card__kmTopButtons">
-          <button name="edit" type="button" class="btn btn-default resource-card__button" title="Edit">
-            <rs-icon icon-type="rounded" icon-name="edit" symbol="true"></rs-icon>
-          </button>
-          <button name="delete" type="button" class="btn btn-default resource-card__button" title="Edit">
-            <rs-icon icon-type="rounded" icon-name="delete" symbol="true"></rs-icon>
-          </button>
+      [[!-- Don't add any other explicit style here, only width and height, style is overriden by the resizable component in the KM --]]
+      {{#if isExpanded }}
+        <div style="width: 270px; height:73px;">
+          <div class="resource-card__kmTopButtons">
+            <button name="edit" type="button" class="btn btn-default resource-card__button" title="Edit">
+              <rs-icon icon-type="rounded" icon-name="edit" symbol="true"></rs-icon>
+            </button>
+            <button name="delete" type="button" class="btn btn-default resource-card__button" title="Edit">
+              <rs-icon icon-type="rounded" icon-name="delete" symbol="true"></rs-icon>
+            </button>
+          </div>
+          {{> rsp:ResourceCard  iri=iri
+                                viewId=ontodiaVariable
+                                knowledgeMapCard=true
+                                hideMediaSection=true
+                                height=73
+                                width=270
+                                props=props
+                                data=data
+          }}
         </div>
-        {{> rsp:ResourceCard  iri=iri
-                              viewId=ontodiaVariable
-                              knowledgeMapCard=true
-                              props=props
-                              data=data
-        }}
-      </div>
+      {{else}}
+        <div style="width: 150px; height:190px">
+          <div class="resource-card__kmTopButtons">
+            <button name="edit" type="button" class="btn btn-default resource-card__button" title="Edit">
+              <rs-icon icon-type="rounded" icon-name="edit" symbol="true"></rs-icon>
+            </button>
+            <button name="delete" type="button" class="btn btn-default resource-card__button" title="Edit">
+              <rs-icon icon-type="rounded" icon-name="delete" symbol="true"></rs-icon>
+            </button>
+          </div>
+          {{> rsp:ResourceCard  iri=iri
+                                viewId=ontodiaVariable
+                                knowledgeMapCard=true
+                                props=props
+                                data=data
+          }}
+        </div>
+      {{/if}}
     {{/if}}
   </template>
 

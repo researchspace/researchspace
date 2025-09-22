@@ -88,7 +88,7 @@
         [[!-- for card in KM --]]
         {{#if props.[http://www.researchspace.org/pattern/system/image/file_identifier].values.0.value}}        
           <div class="resource-card__thumbnail">
-            <img class="resource-card__thumbnail" src="/file?storage=images&fileName={{extractFilename props.[http://www.researchspace.org/pattern/system/image/file_identifier].values.0.value}}"">
+            <img class="resource-card__thumbnail" src="/file?storage=images&fileName={{extractFilename props.[http://www.researchspace.org/pattern/system/image/file_identifier].values.0.value}}">
           </div>
         {{else if props.[http://www.researchspace.org/pattern/system/image_annotation/area_of_image]}}
           [[!-- when the resource is an Image annotation created in Image graph authoring, before saving the data --]]
@@ -145,7 +145,7 @@
                   
               <template id='template'>
                 <video controls preload="metadata" width="152" height="80" class="object-fit-cover">
-                    <source src="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}" type="{{bindings.0.fileMediaType.value}}" />
+                    <source src="/file?storage=media&fileName={{encodeUriComponent bindings.0.fileName.value}}" type="{{bindings.0.fileMediaType.value}}" />
                     <mp-resource-thumbnail iri='{{iri}}' class="resource-card__thumbnail">
                       <mp-resource-thumbnail-fallback>
                         [[> defaultCardIcon]]
@@ -189,7 +189,7 @@
             </mp-resource-thumbnail>
           {{/case}}
 
-          {{#case "http://iflastandards.info/ns/fr/frbr/frbroo/F26_Recording" break=true}}
+          {{#case "http://iflastandards.info/ns/lrm/lrmoo/F2_Expression" break=true}}
             <semantic-query query='SELECT DISTINCT ?video ?fileName ?fileMediaType WHERE { 
                                     <{{iri}}> crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/recording_video> .
                                     {
@@ -222,7 +222,7 @@
                       </div>
                     {{else if bindings.0.fileName.value}}
                         <video controls preload="metadata" width="147" height="80" class="object-fit-cover">
-                          <source src="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}" type="{{bindings.0.fileMediaType.value}}" />
+                          <source src="/file?storage=media&fileName={{encodeUriComponent bindings.0.fileName.value}}" type="{{bindings.0.fileMediaType.value}}" />
                           <mp-resource-thumbnail iri='{{iri}}' class="resource-card__thumbnail">
                             <mp-resource-thumbnail-fallback>
                               [[> defaultCardIcon]]
@@ -290,63 +290,57 @@
       </div>
 
       <div class="resource-card__footer-title text-truncate-line1">
-        <mp-draggable iri='{{iri}}'>
-          <div>
-            {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map")}}
-              <mp-event-trigger id='{{iri}}-open-km-title-trigger' 
-                              type='Dashboard.AddFrame'
-                              data='{"viewId":"knowledge-map", 
-                                      "resourceIri": "{{iri}}"}' 
-                              targets='["thinking-frames"]'>
-              
-                <div><mp-label iri='{{iri}}' class="text-link"></mp-label></div>
-              </mp-event-trigger>
-            {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")}}
-              <mp-event-trigger id='{{iri}}-open-chart-title-trigger' 
-                              type='Dashboard.AddFrame'
-                              data='{"viewId":"chart", 
-                                      "resourceIri": "{{iri}}"}' 
-                              targets='["thinking-frames"]'>
-              
-                <div><mp-label iri='{{iri}}' class="text-link"></mp-label></div>
-              </mp-event-trigger>
-            {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline")}}
-              <mp-event-trigger id='{{iri}}-open-chart-title-trigger' 
-                              type='Dashboard.AddFrame'
-                              data='{"viewId":"timeline", 
-                                      "resourceIri": "{{iri}}"}' 
-                              targets='["thinking-frames"]'>
-              
-                <div><mp-label iri='{{iri}}' class="text-link"></mp-label></div>
-              </mp-event-trigger>
-            {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
-              <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                              urlqueryparam-view='authority-list'
-                              urlqueryparam-resource='{{iri}}'>
-                <mp-label iri='{{iri}}' class="text-link"></mp-label>
-              </semantic-link>
-            {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
-              <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                              urlqueryparam-view='single-set-management'
-                              urlqueryparam-resource='{{iri}}'>
-                <mp-label iri='{{iri}}' class="text-link"></mp-label>
-              </semantic-link>
-            {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item")}}
-              <mp-label iri='{{iri}}' class="text-link" style="text-decoration: none; cursor: initial;"></mp-label>
+        {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map")}}
+          <mp-event-trigger id='{{iri}}-open-km-title-trigger' 
+                          type='Dashboard.AddFrame'
+                          data='{"viewId":"knowledge-map", 
+                                  "resourceIri": "{{iri}}"}' 
+                          targets='["thinking-frames"]'>
+          
+            <div><mp-label iri='{{iri}}' class="text-link"></mp-label></div>
+          </mp-event-trigger>
+        {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")}}
+          <mp-event-trigger id='{{iri}}-open-chart-title-trigger' 
+                          type='Dashboard.AddFrame'
+                          data='{"viewId":"chart", 
+                                  "resourceIri": "{{iri}}"}' 
+                          targets='["thinking-frames"]'>
+            <div><mp-label iri='{{iri}}' class="text-link"></mp-label></div>
+          </mp-event-trigger>
+        {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline")}}
+          <mp-event-trigger id='{{iri}}-open-chart-title-trigger' 
+                            type='Dashboard.AddFrame'
+                            data='{"viewId":"timeline", 
+                                    "resourceIri": "{{iri}}"}' 
+                            targets='["thinking-frames"]'>
+            <div><mp-label iri='{{iri}}' class="text-link"></mp-label></div>
+          </mp-event-trigger>
+        {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
+          <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                    urlqueryparam-view='authority-list'
+                                    urlqueryparam-resource-iri='{{iri}}'>
+            <div><mp-label iri='{{iri}}' class="text-link"></mp-label></div>
+          </semantic-link-container>
+        {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
+          <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                  urlqueryparam-view='single-set-management'
+                                  urlqueryparam-resource='{{iri}}'>
+            <div><mp-label iri='{{iri}}' class="text-link"></mp-label></div>
+          </semantic-link-container>
+        {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item")}}
+          <mp-label iri='{{iri}}' class="text-link" style="text-decoration: none; cursor: initial;"></mp-label>
+        {{else}}
+          <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                    urlqueryparam-view='{{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}semantic-narrative{{else}}resource-editor{{/if}}'
+                                    urlqueryparam-resource='{{iri}}'>
+            {{#if label}}
+              [[!-- Label from KM props --]]
+              <span class="text-link" title="{{label}}">{{label}}</span>
             {{else}}
-              <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                              urlqueryparam-view='{{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}semantic-narrative{{else}}resource-editor{{/if}}'
-                              urlqueryparam-resource='{{iri}}'>
-                {{#if label}}
-                  [[!-- Label from KM props --]]
-                  <span class="text-link" title="{{label}}">{{label}}</span>
-                {{else}}
-                  <mp-label iri='{{iri}}' class="text-link" highlight='{{highlight}}' highlight-props='{"style": {"color": "#396EFE"}}'></mp-label>
-                {{/if}}
-              </semantic-link>
+              <div><mp-label iri='{{iri}}' class="text-link" highlight='{{highlight}}' highlight-props='{"style": {"color": "#396EFE"}}'></mp-label></div>
             {{/if}}
-          </div>
-        </mp-draggable>
+          </semantic-link-container>
+        {{/if}}
       </div>
     [[/if]]
   </div>

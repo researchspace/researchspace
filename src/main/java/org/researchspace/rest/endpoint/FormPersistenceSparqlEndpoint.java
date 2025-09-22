@@ -61,10 +61,12 @@ import org.researchspace.data.rdf.PointedGraph;
 import org.researchspace.repository.MpRepositoryProvider;
 import org.researchspace.repository.RepositoryManager;
 import org.researchspace.security.Permissions.FORMS_SPARQL;
+import org.researchspace.security.SecurityService;
 import org.researchspace.services.files.FileManager;
 import org.researchspace.services.files.ManagedFileName;
 import org.researchspace.services.storage.api.ObjectKind;
 import org.researchspace.services.storage.api.ObjectMetadata;
+import org.researchspace.services.storage.api.ObjectRecord;
 import org.researchspace.services.storage.api.ObjectStorage;
 import org.researchspace.services.storage.api.PlatformStorage;
 import org.researchspace.services.storage.api.PlatformStorage.FindResult;
@@ -128,7 +130,12 @@ public class FormPersistenceSparqlEndpoint {
                                 .resolveUser(nsRegistry.getUserIRI()).build(con);
                         update.execute();
                     }
-                    
+                    logger.info("Updating repository: "+repositoryID);
+                    /* Special rule for the FieldCategories authority */
+                    if (graph.equals("http://www.researchspace.org/resource/system/FieldCategories"))
+                        /* specify a different repositoryId for saving the serialised data i.e. the ldp/authorities were all other authorities are */
+                        repositoryID = "authorities";
+
                     if (graph != "" && (repositoryID.equals("configurations") || repositoryID.equals("authorities"))) {
                         IRI graphIri = vf.createIRI(graph);
                         Model model = new LinkedHashModel(Iterations.asList(con.getStatements(null,null, null,graphIri)));
@@ -145,10 +152,10 @@ public class FormPersistenceSparqlEndpoint {
                         if (toWrite.size()>0) {
                             Rio.write(toWrite, outStream, RDFFormat.TRIG);
                             byte[] bytes = outStream.toByteArray();
-                            
+                             
                             ByteArrayInputStream content = new ByteArrayInputStream(bytes);
                             platformStorage.getStorage(PlatformStorage.DEVELOPMENT_RUNTIME_STORAGE_KEY).appendObject(objectId,
-                            new ObjectMetadata(), content, bytes.length);  
+                            new ObjectMetadata(nsRegistry.getUserIRI().stringValue(),Instant.now()), content, bytes.length);                             
                         } else {
                             try {
                                 platformStorage.getStorage(PlatformStorage.DEVELOPMENT_RUNTIME_STORAGE_KEY).deleteObject(objectId,

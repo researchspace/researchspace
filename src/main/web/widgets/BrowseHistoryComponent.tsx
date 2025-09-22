@@ -144,7 +144,7 @@ export class BrowseHistoryComponent extends React.Component<Props, State> {
             {this.state.links.length > 1 && <li className={'divider'}></li>}
             {this.state.links.length > 1 && (
               <li>
-                <a onClick={this.clearRecent}>Clear recent</a>
+                <a onClick={this.clearRecent} draggable={false}>Clear recent</a>
               </li>
             )}
           </NavDropdown>

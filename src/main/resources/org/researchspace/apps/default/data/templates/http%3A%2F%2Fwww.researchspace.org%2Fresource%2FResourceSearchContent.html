@@ -4,31 +4,31 @@
                             [[#if selectedResource]]BIND(true as ?searchAllPage)[[else]]BIND("false" as ?searchAllPage)[[/if]] .
                             BIND("{{dashboardId}}" as ?viewId)
 
-                            ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceLabel .
-                            ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
+                            #?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceLabel .
+                            #?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
                             
-                            OPTIONAL {
-                              ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceType .
-                            }
+                            #OPTIONAL {
+                            #  ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceType .
+                            #}
 
-                            OPTIONAL {
-                              ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
-                            }
+                            #OPTIONAL {
+                            #  ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
+                            #}
 
-                            OPTIONAL {
-                              ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern .
-                            }
+                            #OPTIONAL {
+                            #  ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern .
+                            #}
 
-                            OPTIONAL {
-                              ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_label_sparql_pattern> ?resourceLabelPattern .
-                            }
+                            #OPTIONAL {
+                            #  ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_label_sparql_pattern> ?resourceLabelPattern .
+                            #}
 
-                            OPTIONAL {
-                              ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_facet_kpCategory> ?resourceSearchKPCategory .
-                            }
-                            OPTIONAL {
-                              ?resourceConfig  <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .
-                            }
+                            #OPTIONAL {
+                            #  ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_facet_kpCategory> ?resourceSearchKPCategory .
+                            #}
+                            #OPTIONAL {
+                            #  ?resourceConfig  <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .
+                            #}
                           }'>
 
     <template id='template'>
@@ -131,15 +131,14 @@
                       urlqueryparam-viewid="{{bindings.0.viewId.value}}"
                       urlqueryparam-resourceconfig="{{bindings.0.resourceConfig.value}}"
                       urlqueryparam-searchall="{{bindings.0.searchAllPage.value}}"
-                      urlqueryparam-resourcelabel="{{bindings.0.resourceLabel.value}}"
-                      urlqueryparam-resourceontologyclass="<{{bindings.0.resourceOntologyClass.value}}>"
-                      urlqueryparam-resourcetype='{{#if bindings.0.resourceType.value}}<{{bindings.0.resourceType.value}}>{{/if}}' 
-                      urlqueryparam-resourceform="{{#if bindings.0.resourceFormIRI.value}}{{bindings.0.resourceFormIRI.value}}{{/if}}"
-                      urlqueryparam-resourcerestrictionpattern='{{#if bindings.0.resourceRestrictionPattern.value}}{{bindings.0.resourceRestrictionPattern.value}}{{/if}}'
-                      urlqueryparam-resourcelabelpattern='{{#if bindings.0.resourceLabelPattern.value}}{{bindings.0.resourceLabelPattern.value}}{{/if}}'
-                      urlqueryparam-searchkpcategory='{{#if bindings.0.resourceSearchKPCategory.value}}<{{bindings.0.resourceSearchKPCategory.value}}>{{/if}}'
-                      urlqueryparam-resourceicon='{{#if bindings.0.resourceIcon.value}}{{bindings.0.resourceIcon.value}}{{/if}}'
+                      urlqueryparam-resourcelabel="{{ getResourceConfigurationValue bindings.0.resourceConfig.value 'resourceLabel' }}"
+                      urlqueryparam-resourceontologyclass="<{{getResourceConfigurationValue bindings.0.resourceConfig.value 'resourceOntologyClass' }}>"
+                      urlqueryparam-resourcetype="{{#if (getResourceConfigurationValue bindings.0.resourceConfig.value 'p2HasType')}}<{{getResourceConfigurationValue bindings.0.resourceConfig.value 'p2HasType'}}>{{/if}}" 
+                      urlqueryparam-resourceform="{{#if (getResourceConfigurationValue bindings.0.resourceConfig.value 'resourceFormIRI')}}{{getResourceConfigurationValue bindings.0.resourceConfig.value 'resourceFormIRI'}}{{/if}}"
+                      urlqueryparam-resourcerestrictionpattern="{{#if (getResourceConfigurationValue bindings.0.resourceConfig.value 'restrictionPattern')}}{{ getResourceConfigurationValue bindings.0.resourceConfig.value 'restrictionPattern' }}{{/if}}"
+                      urlqueryparam-resourcelabelpattern="{{#if (getResourceConfigurationValue bindings.0.resourceConfig.value 'resourceLabelPattern')}}{{getResourceConfigurationValue bindings.0.resourceConfig.value 'resourceLabelPattern'}}{{/if}}"
+                      urlqueryparam-searchkpcategory="{{#if (getResourceConfigurationValue bindings.0.resourceConfig.value 'resourceSearchKPCategory')}}<{{getResourceConfigurationValue bindings.0.resourceConfig.value 'resourceSearchKPCategory'}}>{{/if}}"
+                      urlqueryparam-resourceicon="{{#if (getResourceConfigurationValue bindings.0.resourceConfig.value 'resourceIcon')}}{{getResourceConfigurationValue bindings.0.resourceConfig.value 'resourceIcon'}}{{/if}}"
       ></mp-page-loader>
     </template>
 </semantic-query>
-

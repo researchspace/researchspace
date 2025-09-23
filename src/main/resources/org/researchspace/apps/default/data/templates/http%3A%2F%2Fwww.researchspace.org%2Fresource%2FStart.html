@@ -249,6 +249,11 @@
 
                                                           MINUS { ?subject a Platform:resource_configuration .}
 
+                                                          MINUS {
+                                                            ?subject crm:P71i_is_listed_in|skos:inScheme ?systemAuthorityDoc .
+                                                            ?systemAuthorityDoc crm:P2_has_type Platform:System_Resource .
+                                                          }
+
                                                           ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordOutput .
                                                           ?entityFormRecordOutput crm:P2_has_type ?entityFormRecordOutputType .
                                                           FILTER(?entityFormRecordOutputType IN (<http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation>, 
@@ -313,6 +318,10 @@
                                                                 BIND(IF(BOUND(?complexDate),?complexDate,IF(BOUND(?date1),?date1,IF(BOUND(?date2),?date2,""))) as ?date)
 
                                                                 MINUS { ?subject a Platform:resource_configuration .}
+                                                                MINUS {
+                                                                  ?subject crm:P71i_is_listed_in|skos:inScheme ?systemAuthorityDoc .
+                                                                  ?systemAuthorityDoc crm:P2_has_type Platform:System_Resource .
+                                                                }
                                                                 FILTER (?date > "2024-10-22T00:00:00.000Z"^^xsd:dateTime)
                                                               }'
                                                 debounce=500
@@ -337,7 +346,7 @@
                                       class-name="activity-result-grid"
                                       query='SELECT DISTINCT ?subject ?iri WHERE {
                                                   BIND(?subject as ?iri) .
-                                              } ORDER BY DESC(?date)
+                                              } ORDER BY DESC(?date) ?subject
                                               LIMIT 20'
                                       tuple-template='{{> gridItem }}'
                                       options='{"showFilter":false,
@@ -379,6 +388,10 @@
                                         ?entityFormRecordCreation crm:P4_has_time-span ?creation .
                                         ?creation crm:P82_at_some_time_within ?date .
                                         MINUS { ?subject a Platform:resource_configuration .}
+                                        MINUS {
+                                          ?subject crm:P71i_is_listed_in|skos:inScheme ?systemAuthorityDoc .
+                                          ?systemAuthorityDoc crm:P2_has_type Platform:System_Resource .
+                                        }
                                       }
                                       FILTER (?date > "2024-10-22T00:00:00.000Z"^^xsd:dateTime)
                                     }'

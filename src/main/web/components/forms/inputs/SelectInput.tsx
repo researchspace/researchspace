@@ -375,14 +375,13 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
         <ValidationMessages errors={FieldValue.getErrors(this.props.value)} />
         { showCreateNewButton && (
           <Button className={`${SELECT_TEXT_CLASS}__create-button btn-textAndIcon`} onClick={() => this.onDropdownSelectHandler(this.state.nestedFormTemplates[0].label)}>
-            <Icon iconType='round' iconName='add_box'/>
-            <span>New</span>
+            <Icon iconType='round' iconName='add'/>
           </Button>
         )}
         { showCreateNewDropdown && (
           <DropdownWithFilter
             id="add-form"
-            title="New"
+            title=""
             items={this.state.nestedFormTemplates}
             filterValue={this.state.filterValue || ''}
             onFilterChange={v => this.setState({ filterValue: v })}

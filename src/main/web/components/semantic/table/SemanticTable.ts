@@ -37,6 +37,7 @@ import { ControlledPropsHandler } from 'platform/components/utils';
 import { ErrorNotification } from 'platform/components/ui/notification';
 
 import { ColumnConfiguration, Table, TableConfig, TableLayout } from './Table';
+import { SharedStateComponent, SharedStateProps } from '../app-state/SharedStateComponent';
 
 interface ControlledProps {
   /**
@@ -51,6 +52,10 @@ interface TableState {
   isLoading?: boolean;
   currentPage?: number;
   error?: any;
+  // Additional state variables that can be shared
+  sortColumn?: string;
+  sortDirection?: 'asc' | 'desc';
+  filterValue?: string;
 }
 
 interface Options {
@@ -167,10 +172,11 @@ function isRowConfig(config: SemanticTableConfig): config is RowConfig {
 export type SemanticTableConfig = BaseConfig | ColumnConfig | RowConfig;
 export type SemanticTableProps = SemanticTableConfig &
   ControlledPropsHandler<ControlledProps> &
+  SharedStateProps &
   ComponentProps &
   Props<SemanticTable>;
 
-export class SemanticTable extends Component<SemanticTableProps, TableState> {
+export class SemanticTable extends SharedStateComponent<SemanticTableProps, TableState> {
   static propTypes: Partial<Record<keyof SemanticTableProps, any>> = {
     ...Component.propTypes,
     onControlledPropChange: PropTypes.func,
@@ -207,11 +213,29 @@ export class SemanticTable extends Component<SemanticTableProps, TableState> {
   }
 
   public componentDidMount() {
+    // Call parent's componentDidMount for AppState registration
+    super.componentDidMount();
+    
     this.prepareConfigAndExecuteQuery(this.props, this.context);
+    
+    // Request current state from AppState after initialization
+    setTimeout(() => {
+      this.requestCurrentState();
+    }, 100);
   }
 
   componentWillUnmount() {
+    // Call parent's componentWillUnmount for cleanup
+    super.componentWillUnmount();
     this.cancellation.cancelAll();
+  }
+
+  /**
+   * Handle shared state synchronization from AppState
+   */
+  protected handleSharedStateSync(syncedState: any): void {
+    // Simply apply the synced state directly since the property names match
+    this.setState(syncedState);
   }
 
   public render() {
@@ -239,13 +263,22 @@ export class SemanticTable extends Component<SemanticTableProps, TableState> {
       prefetchLabels: this.props.prefetchLabels,
     };
     layout = this.handleDeprecatedLayout(layout);
+    
     const { onControlledPropChange, ...otherProps } = this.props;
     const controlledProps: Partial<TableConfig> = {
       currentPage: this.state.currentPage,
-      onPageChange: onControlledPropChange ? (page) => {
+      onPageChange: (page) => {
         this.setState({currentPage: page});
-        onControlledPropChange({ currentPage: page });
-      } : undefined,
+        if (onControlledPropChange) {
+          onControlledPropChange({ currentPage: page });
+        }
+      },
+      onFilterChange: (filterValue) => {
+        this.setState({filterValue});
+      },
+      onSortChange: (sortColumn, sortDirection) => {
+        this.setState({sortColumn, sortDirection});
+      },
     };
     return createElement(Table, {
       ...otherProps,
@@ -253,6 +286,7 @@ export class SemanticTable extends Component<SemanticTableProps, TableState> {
       layout: maybe.fromNullable(layout),
       numberOfDisplayedRows: maybe.fromNullable(this.props.numberOfDisplayedRows),
       data: Either.Right<any[], SparqlClient.SparqlSelectResult>(this.state.data),
+      initialFilter: this.state.filterValue,
       ref: this.TABLE_REF,
     });
   }

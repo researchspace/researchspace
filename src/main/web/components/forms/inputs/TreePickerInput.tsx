@@ -299,8 +299,7 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
   private renderCreateNewButton() {
     return (
       <Button className={`${CLASS_NAME}__create-button btn-textAndIcon`} onClick={this.toggleNestedForm}>
-        <Icon iconType='round' iconName='add_box'/>
-        <span>New</span>
+        <Icon iconType='round' iconName='add'/>
       </Button>
     );
   }
@@ -328,7 +327,7 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
               urlqueryparam-open-as-drag-and-drop="true"
             >
             <Button className={`${CLASS_NAME}__create-button`} style={{height: '100%'}}>
-              <span className='fa fa-book'></span>
+              <Icon iconType='rounded' iconName='book' symbol/>
             </Button>
           </ResourceLinkContainer>
           <span style={{visibility: 'hidden'}}></span>

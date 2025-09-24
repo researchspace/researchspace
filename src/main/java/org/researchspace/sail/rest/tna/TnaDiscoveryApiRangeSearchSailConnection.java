@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2025, © Kartography CIC
  * Copyright (C) 2021, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -66,6 +67,7 @@ public class TnaDiscoveryApiRangeSearchSailConnection extends RESTSailConnection
         private String id;
         private String referencePart;
         private boolean isParent;
+        private String catalogueLevel;
 
         private ScopeContent scopeContent;
 
@@ -111,6 +113,14 @@ public class TnaDiscoveryApiRangeSearchSailConnection extends RESTSailConnection
         public void setIsParent(boolean isParent) {
             this.isParent = isParent;
         }
+
+        public String getCatalogueLevel() {
+            return this.catalogueLevel;
+        }
+
+        public void setCatalogueLevel(String catalogueLevel) {
+            this.catalogueLevel = catalogueLevel;
+        }
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -154,6 +164,8 @@ public class TnaDiscoveryApiRangeSearchSailConnection extends RESTSailConnection
             IRI hasDescription = VF
                     .createIRI("http://www.researchspace.org/resource/system/services/tnadiscovery/hasDescription");
             IRI isFound = VF.createIRI("http://www.researchspace.org/resource/system/services/tnadiscovery/isFound");
+            IRI hasCatalogueLevel = VF
+                    .createIRI("http://www.researchspace.org/resource/system/services/tnadiscovery/hasCatalogueLevel");
 
             String crns = parametersHolder.getInputParameters().get("crns");
             boolean includeItems = Boolean.valueOf(parametersHolder.getInputParameters().get("includeItems"));
@@ -171,6 +183,8 @@ public class TnaDiscoveryApiRangeSearchSailConnection extends RESTSailConnection
                                     VF.createLiteral(true));
                             mapBindingSet.addBinding(parametersHolder.getOutputVariables().get(hasCitableReference),
                                     VF.createLiteral(r.getCitableReference()));
+                            mapBindingSet.addBinding(parametersHolder.getOutputVariables().get(hasCatalogueLevel),
+                                    VF.createLiteral(r.getCatalogueLevel()));
                             if (r.getScopeContent() != null && r.getScopeContent().getDescription() != null) {
                                 mapBindingSet.addBinding(parametersHolder.getOutputVariables().get(hasDescription),
                                         VF.createLiteral(r.getScopeContent().getDescription()));

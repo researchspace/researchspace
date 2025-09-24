@@ -277,14 +277,13 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
         />
         { showCreateNewButton && (
           <Button className={`${CLASS_NAME}__create-button btn-textAndIcon`} onClick={() => this.onDropdownSelectHandler(this.state.nestedFormTemplates[0].label)}>
-            <Icon iconType='round' iconName='add_box'/>
-            <span>New</span>
+            <Icon iconType='round' iconName='add'/>
           </Button>
         )}
         { showCreateNewDropdown && (
           <DropdownWithFilter
             id="add-form"
-            title="New"
+            icon="add"
             items={this.state.nestedFormTemplates}
             filterValue={this.state.filterValue || ''}
             onFilterChange={v => this.setState({ filterValue: v })}

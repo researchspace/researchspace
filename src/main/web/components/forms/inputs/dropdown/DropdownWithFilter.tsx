@@ -17,6 +17,7 @@
  */
 import * as React from 'react';
 import * as styles from './DropdownWithFilter.scss';
+import Icon from 'platform/components/ui/icon/Icon';
 
 /**
  * Props for DropdownWithFilter.
@@ -31,7 +32,11 @@ interface DropdownWithFilterProps<T> {
   /**
    * The button label or content for the dropdown toggle.
    */
-  title: React.ReactNode;
+  title?: React.ReactNode;
+  /**
+   * The button label or content for the dropdown toggle.
+   */
+  icon?: string;
   /**
    * The array of items to display in the dropdown.
    */
@@ -91,6 +96,7 @@ interface DropdownWithFilterProps<T> {
 export function DropdownWithFilter<T>({
   id,
   title,
+  icon,
   items,
   filterValue,
   onFilterChange,
@@ -103,6 +109,7 @@ export function DropdownWithFilter<T>({
   const [open, setOpen] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
+  const dropdownIcon = icon ?? 'arrow_drop_down';
 
   React.useEffect(() => {
     if (!open) return;
@@ -145,12 +152,13 @@ export function DropdownWithFilter<T>({
     >
       <button
         type="button"
-        className="btn btn-default dropdown-toggle"
+        className="btn btn-default btn-textAndIcon dropdown-toggle"
         onClick={handleToggle}
         aria-haspopup="true"
         aria-expanded={open}
       >
-        {title} <span className="caret" />
+        {title}
+        <Icon iconType='round' iconName={dropdownIcon} />
       </button>
       {open && (
         <ul className={`dropdown-menu pull-right ${styles.dropdownMenu}`}>

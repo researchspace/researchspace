@@ -296,7 +296,7 @@ render() {
         createElement(
           Button,
           {
-            className: 'btn btn-icon composite-input__subject-button',
+            className: 'btn btn-default composite-input__subject-button',
             title: 'Edit in new draggable tab',
           },
           createElement(Icon, {

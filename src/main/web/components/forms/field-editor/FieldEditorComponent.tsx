@@ -357,7 +357,7 @@ class FieldEditorComponent extends Component<Props, State> {
             {
               className: 'btn btn-default',
             },
-            D.i({ className: 'fa fa-book' })
+            D.i({className: 'material-icons-round'}, 'book')
           ))
           ),],
         }),

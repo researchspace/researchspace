@@ -186,7 +186,7 @@ export class CardinalitySupport extends MultipleValuesInput<CardinalitySupportPr
                 className: COMPONENT_NAME + '__remove-value',
                 onClick: () => this.removeValue(index),
               },
-              createElement(Icon, {iconType:'rounded', iconName: 'close', symbol: true})
+              createElement(Icon, {iconType:'rounded', iconName: 'delete', symbol: true})
             )
           : undefined
       )

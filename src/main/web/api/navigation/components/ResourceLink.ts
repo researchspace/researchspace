@@ -119,7 +119,9 @@ export class ResourceLink extends Component<ResourceLinkProps, State> {
 
       const query = { action: ResourceLinkAction[this.props.action], ...this.props.params };
       navigateToResource(this.props.resource, query, this.getRepository(), this.props.fragment).onValue(() => {
-        /**/
+        if (window['closeMenu']) {
+          _.each(window['closeMenu'], (closeMenu) => closeMenu(e));
+        }
       });
     }
     // otherwise we just let default link action trigger, and for example if

@@ -334,11 +334,12 @@ export class MainAppComponent extends Component<
       const header = this.state.headerHTML.get() as ReactElement<any>;
       // to make sure that page layout can adapt to header of any height we duplicate the header's
       // dom element and re-insert it as a hidden element with relative position.
-      const hiddenHeader = cloneElement(header, {
-        style: { visibility: 'hidden', position: 'relative' },
-        key: 'hidden-header',
-      });
-      return [header, hiddenHeader];
+      //const hiddenHeader = cloneElement(header, {
+      //  style: { visibility: 'hidden', position: 'relative' },
+      //  key: 'hidden-header',
+      //});
+      //return [header, hiddenHeader];
+      return [header];
     }
   }
 }

@@ -170,6 +170,7 @@ export function GenericFunctions(handlebars) {
     },
 
 
+    // PHAROS helpers
     hasAnyValues(data, fields) {
       return fields.some(field => {
         const fieldName = typeof field === 'string' ? field : field.field;
@@ -229,15 +230,18 @@ export function GenericFunctions(handlebars) {
 
     isEmpty: _.isEmpty,
 
-    orderBy: function(array, keyPath, order = 'desc') {    
+    orderBy: function(array, keyPath, order = 'desc') {
       // Create a Handlebars template that evaluates the path expression
       const template = handlebars.compile('{{#with item}}{{' + keyPath + '}}{{/with}}');
-      
-      console.log('in orderBy');
-      return _.orderBy(array, item => {
+
+      const sorted = _.orderBy(array, item => {
         // Use the compiled template to access the value
         const context = { item: item };
         const value = template(context);
+        const num = parseFloat(value);
+        if (!isNaN(num)) {
+          return num;
+        }
         // An empty string is returned by Handlebars when the path doesn't exist
         let returnValue;
         if (value == '') {
@@ -245,10 +249,18 @@ export function GenericFunctions(handlebars) {
         } else {
           returnValue = order === 'desc' ? 1 : 0;
         }
-        console.log(returnValue)
         return returnValue;
       }, [order]);
+      return sorted;
     },
     
+    getPreferredPhoto: function(array, dataset) {
+      const datasetPhoto = 
+        _.find(array, item => 
+          item['https://artresearch.net/resource/field_definition/pharos_model/photo_provider'].values[0]['@id'] === dataset
+        );
+
+      return datasetPhoto ? datasetPhoto : array[0];
+    }
   };  
 };

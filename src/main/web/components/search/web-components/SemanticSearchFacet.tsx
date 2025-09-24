@@ -75,7 +75,8 @@ class SemanticSearchFacetInner extends React.Component<InnerProps, State> {
     super(props);
     this.state = {
       facetData: null,
-      showFacets: props.openByDefault,
+      // on mobile devices we hide facets by default
+      showFacets: window.innerWidth <= 600 ? false : props.openByDefault,
       bigResultSet: false,
     };
   }

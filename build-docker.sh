@@ -2,5 +2,5 @@ export DOCKER_FOLDER="$(pwd)/dist/docker"
 cp build/libs/ROOT-*.war $DOCKER_FOLDER/platform/ROOT.war
 mkdir $DOCKER_FOLDER/platform/config
 cd $DOCKER_FOLDER/platform
-docker build -t artresearch/researchspace:06.06.2025 .
-docker push artresearch/researchspace:06.06.2025
+docker build -t artresearch/researchspace:16.07.2025 .
+docker push artresearch/researchspace:16.07.2025

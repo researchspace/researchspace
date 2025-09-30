@@ -1,14 +1,14 @@
 
 import * as React from 'react';
-import DropdownMenu from 'react-bootstrap/es/DropdownMenu'
+import DropdownMenu from 'react-bootstrap/es/DropdownMenu';
 
 export class BsDropdownMenu extends DropdownMenu {
   componentDidMount(): void {
-    if(this.props.labelledBy === "about-dropdown") {
+    if(((this as any).props as any).labelledBy === "about-dropdown") {
       if (!window['closeMenu']) {
-        window['closeMenu'] = [this.props.onClose];
+        window['closeMenu'] = [((this as any).props as any).onClose];
       } else {
-        window['closeMenu'].push(this.props.onClose);
+        window['closeMenu'].push(((this as any).props as any).onClose);
       }
     }
   }

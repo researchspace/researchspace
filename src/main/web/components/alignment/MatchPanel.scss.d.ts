@@ -4,7 +4,6 @@ declare namespace MatchPanelScssNamespace {
     alignmentNodeRow: string;
     alignmentTree: string;
     alignmentTreeContainer: string;
-    baseTerm: string;
     cancelScrollingTo: string;
     component: string;
     componentSpinner: string;

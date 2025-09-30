@@ -1,6 +1,5 @@
 declare namespace ConfigManagerScssNamespace {
   export interface IConfigManagerScss {
-    component: string;
     "edit-value": string;
     editValue: string;
     "no-value": string;
@@ -15,8 +14,6 @@ declare namespace ConfigManagerScssNamespace {
     propertyValue: string;
     propertyValues: string;
     propertyValuesCell: string;
-    "values-editor": string;
-    valuesEditor: string;
   }
 }
 

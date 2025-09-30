@@ -2,8 +2,6 @@ declare namespace TreeScssNamespace {
   export interface ITreeScss {
     activeNode: string;
     leafNode: string;
-    tree: string;
-    treeNode: string;
   }
 }
 

@@ -6,7 +6,6 @@ declare namespace TextEditorScssNamespace {
     editorContainer: string;
     externalLink: string;
     externalLinkHolder: string;
-    internalLink: string;
     linkPopover: string;
     narrativeHolder: string;
     resourceBlock: string;

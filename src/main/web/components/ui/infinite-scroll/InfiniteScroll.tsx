@@ -8,6 +8,7 @@ interface InfiniteScrollProps extends ComponentProps {
   values: Array<Object>;
   batchSize?: number;
   preloadThreshold?: number; // Percentage of the container height to trigger preloading
+  template?: string;
 }
 
 interface InfiniteScrollState {
@@ -24,8 +25,8 @@ class InfiniteScroll extends Component<InfiniteScrollProps, InfiniteScrollState>
     preloadThreshold: 50 // Start preloading when 50% of the current batch is visible
   };
 
-  constructor(props: InfiniteScrollProps) {
-    super(props);
+  constructor(props: InfiniteScrollProps, context: ComponentContext) {
+    super(props, context);
     this.containerRef = React.createRef();
     this.contentRef = React.createRef();
     this.state = {

@@ -47,8 +47,8 @@ export interface DragAndDropTriggerProps {
  * takes more than 1 second.
  */
 class DragAndDropTrigger extends Component<DragAndDropTriggerProps, {}> {
-  constructor(props: DragAndDropTriggerProps) {
-    super(props);
+  constructor(props: DragAndDropTriggerProps, context: any) {
+    super(props, context);
   }
 
   render() {
@@ -61,15 +61,20 @@ class DragAndDropTrigger extends Component<DragAndDropTriggerProps, {}> {
           className={className}
           style={style}
         >
-          {children}
-        </Dropzone>        
+          {({getRootProps, getInputProps}) => (
+            <div {...getRootProps()}>
+              <input {...getInputProps()} />
+              {children}
+            </div>
+          )}
+        </Dropzone>
     );
   }
 
   private handleDrop = (files: File[]) => {
     if (files && files.length > 0) {
       const file = files[0];
-      window.dndFile = file;
+      (window as any).dndFile = file;
 
       trigger({
         eventType: "DragAndDropTrigger.FileDropped",
@@ -81,7 +86,7 @@ class DragAndDropTrigger extends Component<DragAndDropTriggerProps, {}> {
         }
       })
     }
-  };  
+  };
 }
 
 export default DragAndDropTrigger;

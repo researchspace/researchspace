@@ -121,7 +121,7 @@ class QueryBuilder extends Component<SemanticQueryBuilderConfig, {}> {
 }
 
 interface InnerProps extends SemanticQueryBuilderConfig {
-  context: InitialQueryContext;
+  context: SemanticSearchContext;
 }
 
 interface State {
@@ -779,8 +779,8 @@ class QueryBuilderInner extends React.Component<InnerProps, State> {
     });
   }
 
-  private multiDatasetQuery(searchState: RelationTermSelection, query: string, baseQuery: Data.Maybe<SparqlJs.Query[]>) {
-    let generatedQuery = 
+  private multiDatasetQuery(searchState: RelationTermSelection, query: string, baseQuery: Data.Maybe<SparqlJs.Query>) {
+    let generatedQuery =
       generateQueryForMultipleDatasets(
         this.setClauseBindingsParsed(searchState, query),
         this.props.context.selectedDatasets,

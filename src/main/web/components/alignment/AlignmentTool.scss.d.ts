@@ -7,10 +7,8 @@ declare namespace AlignmentToolScssNamespace {
     controlToolbar: string;
     leftPanel: string;
     rightPanel: string;
-    sourcePanel: string;
     swapTerminologies: string;
     targetHolder: string;
-    targetPanel: string;
   }
 }
 

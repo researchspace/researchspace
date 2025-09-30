@@ -1,7 +1,5 @@
 declare namespace MatchListScssNamespace {
   export interface IMatchListScss {
-    component: string;
-    entry: string;
     scrollTo: string;
     unsaved: string;
   }

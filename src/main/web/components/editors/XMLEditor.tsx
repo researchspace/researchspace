@@ -39,7 +39,7 @@ import {
   evaluateMultipleXPathsOnXml, 
   XPathResultItem 
 } from './XPathEvaluator';
-import CodeMirror from 'codemirror';
+import * as CodeMirror from 'codemirror';
 
 interface Props {
   content?: string;

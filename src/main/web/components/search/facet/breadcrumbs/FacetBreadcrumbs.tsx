@@ -53,6 +53,7 @@ export interface FacetBreadcrumbsProps {
     selectCategory: (category: Category) => void;
     selectRelation: (relation: Relation) => void;
     removeConjunct: (relation: FacetRelationConjunct) => void;
+    removeAllConjuncts: () => void;
   };
 }
 

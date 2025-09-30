@@ -52,6 +52,7 @@ module.exports = function() {
             "components/sets/views",
             "components/ui/highlight",
             "components/ui/reorderable-list",
+            "components/ui/toggle-switch",
             "components/forms/file-manager",
             "components/workflow",
             "components/sparql-editor",

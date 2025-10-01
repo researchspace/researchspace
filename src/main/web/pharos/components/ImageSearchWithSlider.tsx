@@ -50,23 +50,27 @@ export interface DomainConfig {
    * Display name for the domain
    */
   name: string;
-  
+
   /**
    * URI for the domain (full IRI enclosed in <>)
    */
   uri: string;
-  
+
   /**
    * Whether AI features should be enabled for this domain
    * @default false
    */
   withAi?: boolean;
-  
+
   /**
    * Whether image search features should be enabled for this domain
    * @default false
    */
   withImages?: boolean;
+  /**
+   * A color associated to the domain
+   */
+  domainColor?: string;
 }
 
 export interface BaseConfig<T> extends SemanticSimpleSearchBaseConfig {
@@ -75,45 +79,45 @@ export interface BaseConfig<T> extends SemanticSimpleSearchBaseConfig {
    * e.g., textQuery0, textQuery1, etc.
    */
   [key: `textQuery${number}`]: string;
-  
+
   /**
    * Numbered text query templates for AI assist slider between 0-100 based on domain index
    * e.g., textWithAiQuery0, textWithAiQuery1, etc.
    */
   [key: `textWithAiQuery${number}`]: string;
-  
+
   /**
    * Numbered text query templates for AI assist slider = 100 based on domain index
    * e.g., textAiQuery0, textAiQuery1, etc.
    */
   [key: `textAiQuery${number}`]: string;
-  
+
   /**
    * Numbered image query templates for AI assist slider = 0 based on domain index
    * e.g., imageQuery0, imageQuery1, etc.
    */
   [key: `imageQuery${number}`]: string;
-  
+
   /**
    * Numbered image query templates for AI assist slider between 0-100 based on domain index
    * e.g., imageWithAiQuery0, imageWithAiQuery1, etc.
    */
   [key: `imageWithAiQuery${number}`]: string;
-  
+
   /**
    * Numbered image query templates for AI assist slider = 100 based on domain index
    * e.g., imageAiQuery0, imageAiQuery1, etc.
    */
   [key: `imageAiQuery${number}`]: string;
-  
+
   /**
    * Numbered default query templates based on domain index
    * e.g., defaultQuery0, defaultQuery1, etc.
    */
   [key: `defaultQuery${number}`]: string;
-  
+
   initialInput?: string;
-  
+
   placeholder?: string;
 
   /**
@@ -131,12 +135,12 @@ export interface BaseConfig<T> extends SemanticSimpleSearchBaseConfig {
    * Required, if component is used together with facets.
    */
   initialDomain?: string;
-  
+
   /**
    * @deprecated Use initialDomain instead
    */
   domain?: string;
-  
+
   /**
    * Array of available domains for the dropdown
    */
@@ -206,7 +210,7 @@ export interface BaseConfig<T> extends SemanticSimpleSearchBaseConfig {
    * @default 3
    */
   minSearchTermLength?: number;
-  
+
   /**
    * A flag determining whether the user input is tokenized by whitespace into words postfixed by `*`.
    * E.g. the search for `Hello World` becomes `Hello* World*`.
@@ -218,10 +222,10 @@ export interface BaseConfig<T> extends SemanticSimpleSearchBaseConfig {
   /**
    * If tokenizeLuceneQuery is true this parameter can be used to
    * filter out tokens that a shorter then specified lenght.
-   * 
+   *
    * So if minTokenLength=3, and input string is "an apple",
    * then only "apple*" will be propagated to the query.
-   * 
+   *
    * @default 3
    */
   minTokenLength?: number;
@@ -284,6 +288,7 @@ interface State {
   withAi: boolean; // Whether AI features are enabled for the current domain
   withImages: boolean; // Whether image features are enabled for the current domain
   searchWithAI: boolean;
+  domainColor: string;
   searchTypes: string[];
   searchSensitivity: 'precise' | 'balanced' | 'exploratory';
   metadataModel: string;
@@ -317,13 +322,14 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
     super(props);
     const value = props.initialInput || '';
     const isImageMode = value === 'dndFile' || value.startsWith('http');
-    
+
     // Find the initial domain index
     const initialDomainUri = props.initialDomain || props.domain;
     let selectedDomainIndex = 0;
     let withAi = false;
     let withImages = false;
-    
+    let domainColor = "#70E7C5";
+
     if (props.domains && props.domains.length > 0) {
       // If domains are provided, find the matching domain
       const domainIndex = props.domains.findIndex(d => d.uri === initialDomainUri);
@@ -331,13 +337,15 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
         selectedDomainIndex = domainIndex;
         withAi = !!props.domains[domainIndex].withAi;
         withImages = !!props.domains[domainIndex].withImages;
+        domainColor = props.domains[domainIndex].domainColor ;
       } else {
         // Use the first domain if no match is found
         withAi = !!props.domains[0].withAi;
         withImages = !!props.domains[0].withImages;
+        domainColor = props.domains[0].domainColor ;
       }
     }
-    
+
     this.state = {
       value: value === 'dndFile' ? '' : value,
       sliderValue: props.defaultSliderValue !== undefined ? props.defaultSliderValue : (props.min || 0),
@@ -346,6 +354,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
       selectedDomainIndex,
       withAi,
       withImages,
+      domainColor,
       searchWithAI: false,
       searchTypes: ['exact'],
       searchSensitivity: 'precise',
@@ -372,10 +381,19 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
     }
   }
 
+  componentDidUpdate(prevProps: InnerProps, prevState: State) {
+    if (prevState.domainColor !== this.state.domainColor) {
+      document.documentElement.style.setProperty(
+        '--domain-color',
+        this.state.domainColor
+      );
+    }
+  }
+
   private initializeFromProps = () => {
     const { initialInput } = this.props;
     const { withImages } = this.state;
-    
+
     // Only process image inputs if images are enabled for this domain
     if (withImages) {
       if (initialInput === 'dndFile' && window['dndFile']) {
@@ -383,8 +401,8 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
         const fileInstance = window['dndFile'];
         this.getFileAsBase64(fileInstance).then((base64Data: string) => {
           this.resizeImageToMaxDimensions(base64Data, MAX_IMAGE_DIMENSION, MAX_IMAGE_DIMENSION).then((resizedData: string) => {
-            this.setState({ 
-              imageData: resizedData, 
+            this.setState({
+              imageData: resizedData,
               imageUrl: undefined,
               value: 'Initial image data',
               showImage: true,
@@ -395,8 +413,8 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
           }).catch(error => {
             console.error('Failed to resize initial image data:', error);
             // Fallback to original image if resizing fails
-            this.setState({ 
-              imageData: base64Data, 
+            this.setState({
+              imageData: base64Data,
               imageUrl: undefined,
               value: 'Initial image data',
               showImage: true,
@@ -408,9 +426,9 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
         });
       } else if (initialInput && initialInput.startsWith('http')) {
         // For URLs, we don't resize the image
-        this.setState({ 
-          imageUrl: initialInput, 
-          imageData: undefined, 
+        this.setState({
+          imageUrl: initialInput,
+          imageData: undefined,
           value: initialInput,
           showImage: true,
           isImageMode: true
@@ -436,22 +454,22 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
       });
     }
   };
-  
+
   /**
    * Get the URI of the currently selected domain
    */
   private getCurrentDomainUri = (): string => {
     const { domains, initialDomain, domain } = this.props;
-    
+
     if (domains && domains.length > 0) {
       // If domains are provided, use the selected domain
       return domains[this.state.selectedDomainIndex].uri;
     }
-    
+
     // Fallback to initialDomain or domain
     return initialDomain || domain || '';
   }
-  
+
   /**
    * Handle domain selection change
    */
@@ -459,22 +477,24 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
     if (index === this.state.selectedDomainIndex) {
       return; // No change
     }
-    
+
     const { domains, lockDomain } = this.props;
     if (!domains || index >= domains.length || lockDomain) {
       return; // Invalid index or domain is locked
     }
-    
+
     // Get the new domain settings
     const newDomain = domains[index];
     const newWithAi = !!newDomain.withAi;
     const newWithImages = !!newDomain.withImages;
+    const newColor = newDomain.domainColor ;
 
     // Prepare state updates, considering current image state
     const stateChanges: Partial<State> = {
       selectedDomainIndex: index,
       withAi: newWithAi,
-      withImages: newWithImages
+      withImages: newWithImages,
+      domainColor:newColor
     };
 
     if (this.state.isImageMode) { // An image is currently active
@@ -486,7 +506,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
         stateChanges.isImageMode = false;
         stateChanges.value = ''; // Clear the value as well
       }
-      // If newWithImages is true, image state (imageUrl, imageData, showImage, isImageMode, value) 
+      // If newWithImages is true, image state (imageUrl, imageData, showImage, isImageMode, value)
       // is preserved because these fields are not added to stateChanges,
       // and setState will merge, keeping their existing values from this.state.
     }
@@ -496,10 +516,10 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
     // Update state with new domain settings and potentially modified image/value state
     this.setState(stateChanges as State, () => {
       this.props.context.setBaseQuery(Maybe.Nothing());
-    
+
       // Set the new domain in the search context
       setSearchDomain(newDomain.uri, this.props.context);
-    
+
       // After state update, trigger search based on the new state.
       // this.state now reflects the changes made by setState.
       if (this.state.value === '') {
@@ -512,7 +532,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
       }
       // If value is non-empty but not valid for search (e.g. text that doesn't meet min length),
       // this.keys() is not called, preserving the existing behavior.
-    
+
       // Re-initialize with the new domain (it will use the updated this.state)
       this.initialize(this.props);
     });
@@ -584,7 +604,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
 
   render() {
     const { placeholder, style, className, min, max, step, domains, lockDomain, marks, enableModelSelection } = this.props;
-    const { withAi, withImages, selectedDomainIndex, isImageMode, searchWithAI, searchTypes } = this.state;
+    const { withAi, withImages, selectedDomainIndex, domainColor, isImageMode, searchWithAI, searchTypes } = this.state;
     const isAiSearch = searchTypes.includes('metadata') || searchTypes.includes('visual');
 
     let sliderMarks: Record<number, string> | undefined;
@@ -595,7 +615,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
         sliderMarks = marks as Record<number, string>;
       }
     }
-    
+
     return (
       <div className={styles.imageSearchWithSlider}>
         <div className={styles.topRow}>
@@ -608,8 +628,8 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
               </Dropdown.Toggle>
               <Dropdown.Menu>
                 {domains.map((domain, index) => (
-                  <MenuItem 
-                    key={domain.uri} 
+                  <MenuItem
+                    key={domain.uri}
                     eventKey={index}
                     active={index === selectedDomainIndex}
                     onSelect={() => this.handleDomainChange(index)}
@@ -626,13 +646,13 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
           {this.state.showImage ? (
             // Image preview with clear button
             <div className={styles.imagePreviewContainer}>
-              <img 
-                src={this.state.imageUrl || this.state.imageData} 
-                alt="Selected image" 
+              <img
+                src={this.state.imageUrl || this.state.imageData}
+                alt="Selected image"
                 className={styles.imagePreview}
-              />              
-              <Button 
-                className={styles.clearImageBtn} 
+              />
+              <Button
+                className={styles.clearImageBtn}
                 onClick={this.handleClearImage}
               >
                 Clear
@@ -798,8 +818,8 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
   private onKeyPress = (event: React.FormEvent<FormControl>) => {
     const newValue = (event.target as any).value;
     const isImageMode = newValue.startsWith('http');
-    
-    this.setState({ 
+
+    this.setState({
       value: newValue,
       isImageMode: isImageMode
     }, () => {
@@ -815,14 +835,14 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
 
   private handleSearch = () => {
     const { value, withImages } = this.state;
-    
+
     if (value.startsWith('http')) {
       // Only allow image URLs if images are enabled for this domain
       if (withImages) {
         // For URLs, we don't resize the image
-        this.setState({ 
-          imageUrl: value, 
-          imageData: undefined, 
+        this.setState({
+          imageUrl: value,
+          imageData: undefined,
           showImage: true,
           isImageMode: true
         }, () => {
@@ -848,14 +868,14 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
       console.warn('Image upload is not enabled for this domain');
       return;
     }
-    
+
     if (files && files.length > 0) {
       const file = files[0];
       this.getFileAsBase64(file).then((base64Data: string) => {
         // Resize the image to max dimensions
         this.resizeImageToMaxDimensions(base64Data, MAX_IMAGE_DIMENSION, MAX_IMAGE_DIMENSION).then((resizedData: string) => {
-          this.setState({ 
-            imageData: resizedData, 
+          this.setState({
+            imageData: resizedData,
             imageUrl: undefined,
             value: 'Dropped image',
             showImage: true,
@@ -866,8 +886,8 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
         }).catch(error => {
           console.error('Failed to resize image:', error);
           // Fallback to original image if resizing fails
-          this.setState({ 
-            imageData: base64Data, 
+          this.setState({
+            imageData: base64Data,
             imageUrl: undefined,
             value: 'Dropped image',
             showImage: true,
@@ -881,10 +901,10 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
   };
 
   private handleClearImage = () => {
-    this.setState({ 
-      imageUrl: undefined, 
-      imageData: undefined, 
-      value: '', 
+    this.setState({
+      imageUrl: undefined,
+      imageData: undefined,
+      value: '',
       showImage: false,
       isImageMode: false
     }, () => {
@@ -900,14 +920,14 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
       console.error('Image search is not enabled for this domain');
       return null;
     }
-    
+
     const { selectedDomainIndex, searchWithAI, searchTypes, searchSensitivity, withAi } = this.state;
     const isExact = searchTypes.includes('exact');
     const isAi = searchTypes.includes('metadata') || searchTypes.includes('visual');
 
     // Determine which image query to use based on AI slider value
     let imageQueryStr: string | undefined;
-    
+
     if (withAi && searchWithAI && isAi && !isExact) {
       // Use AI-only image query
       const imageAiQueryKey = `imageAiQuery${selectedDomainIndex}` as `imageAiQuery${number}`;
@@ -921,21 +941,21 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
       const imageQueryKey = `imageQuery${selectedDomainIndex}` as `imageQuery${number}`;
       imageQueryStr = this.props[imageQueryKey];
     }
-    
+
     if (!imageQueryStr) {
       console.error('No appropriate image query available for the current settings');
       return null;
     }
-    
+
     // Parse the selected query
     const baseQuery = SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(imageQueryStr);
-    
+
     const {
       dataVariable,
       dataTypeVariable,
       searchSensitivityVariable
     } = this.props;
-    
+
     const bindings: Record<string, any> = {};
 
     // Bind domain
@@ -949,13 +969,13 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
     if (this.state.imageUrl) {
       bindings[dataVariable!] = Rdf.literal(this.state.imageUrl);
       bindings[dataTypeVariable!] = Rdf.literal('url');
-    } 
+    }
     // If we have image data from a drop
     else if (this.state.imageData) {
       bindings[dataVariable!] = Rdf.literal(this.state.imageData);
       bindings[dataTypeVariable!] = Rdf.literal('image');
     }
-    
+
     return SparqlClient.setBindings(baseQuery, bindings);
   };
 
@@ -1126,24 +1146,24 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
 
   private buildDefaultQuery = () => (): SparqlJs.SelectQuery | null => {
     const { selectedDomainIndex } = this.state;
-    
+
     // Get the default query for the current domain
     const defaultQueryKey = `defaultQuery${selectedDomainIndex}` as `defaultQuery${number}`;
     const defaultQueryStr = this.props[defaultQueryKey];
-    
+
     if (!defaultQueryStr) {
       console.error('No default query available for the current domain');
       return null;
     }
-    
+
     // Parse the default query
     const baseQuery = SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(defaultQueryStr);
-    
+
     // Create bindings
     const bindings: Record<string, any> = {
       [SEMANTIC_SEARCH_VARIABLES.DOMAIN_VAR]: Rdf.fullIri(this.getCurrentDomainUri()),
     };
-    
+
     return SparqlClient.setBindings(baseQuery, bindings);
   };
 
@@ -1165,13 +1185,13 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
         // Calculate new dimensions preserving aspect ratio
         let width = img.width;
         let height = img.height;
-        
+
         if (width > maxWidth || height > maxHeight) {
           const ratio = Math.min(maxWidth / width, maxHeight / height);
           width = Math.floor(width * ratio);
           height = Math.floor(height * ratio);
         }
-        
+
         // Create canvas and resize
         const canvas = document.createElement('canvas');
         canvas.width = width;
@@ -1180,7 +1200,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
         if (ctx) {
           ctx.drawImage(img, 0, 0, width, height);
         }
-        
+
         // Get resized image as data URL
         resolve(canvas.toDataURL('image/jpeg'));
       };

@@ -347,12 +347,16 @@ fieldset[disabled] .form-control {
     position: absolute;
     right: 0;
     top: 0;
-    padding: 8px;
+    padding: 0 9px;
     display: flex;
     align-items: center;
     font-size: 17px;
-    border: none;
+
     background-color: transparent;
+    border-right: none;
+    border-top: none;
+    height: 38px;
+    width: 38px;
 
     &:hover,
     &:focus,
@@ -363,7 +367,7 @@ fieldset[disabled] .form-control {
     .material-icons-round,
     .material-symbols-rounded {
 
-      font-size: inherit;
+     // font-size: inherit;
     }
   }
 }
@@ -441,7 +445,7 @@ fieldset[disabled] .form-control {
     height: inherit;
 
     margin-left: -1px;
-    padding: 0 12px;
+    padding: 0 9px;
 
     border: 1px solid $input-border-color;
     border-top-left-radius: 0;
@@ -494,7 +498,7 @@ fieldset[disabled] .form-control {
     height: inherit;
 
     margin-left: -1px;
-    padding: 0 12px;
+    padding: 0 9px;
 
     border: 1px solid $input-border-color;
     border-top-left-radius: 0;
@@ -544,7 +548,7 @@ fieldset[disabled] .form-control {
     box-sizing: border-box;
     margin-left: -2px;
 
-    padding: 0 12px;
+    padding: 0 9px;
     line-height: 0;
 
     &:active,
@@ -611,6 +615,9 @@ fieldset[disabled] .form-control {
 
     margin-left: 5px;
     height: $input-height;
+    padding: 0 9px;
+    display: flex;
+    align-items: center;
   }
 
   &__spinner {
@@ -647,7 +654,7 @@ fieldset[disabled] .form-control {
     height: inherit;
 
     margin-left: -1px;
-    padding: 0 12px;
+    padding: 0 9px;
 
     border: 1px solid $input-border-color;
     border-top-left-radius: 0;
@@ -1082,6 +1089,7 @@ fieldset[disabled] .form-control {
   column-gap: 15px; 
   row-gap: 5px;
   flex-wrap: wrap;
+  flex: 1;
 
   &.first-input {
     margin-top: -20px;
@@ -1738,32 +1746,70 @@ fieldset[disabled] .form-control {
   flex-direction: column;
   height: 100%;
 
-    .semantic-form-input-decorator {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
+  .semantic-form-input-decorator {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
 
-    .semantic-form-input-decorator__container {
+  .semantic-form-input-decorator__container {
+    height: 100%;
+    flex: 1;
+
+    .semantic-form-input-decorator__input {
       height: 100%;
-      flex: 1;
 
-      .semantic-form-input-decorator__input {
+      .cardinality-support {
         height: 100%;
 
-        .cardinality-support {
+        .cardinality-support__group-instance.cardinality-support_no-header {
           height: 100%;
-
-          .cardinality-support__group-instance.cardinality-support_no-header {
-            height: 100%;
-          }
         }
       }
     }
   }
+}
 
+.composite-input__subject-button {
+  width: 38px;
+  height: 38px;
+  cursor: pointer;
+  
+  padding: 0 9px;
+  border-right: none;
+  border-top: none;
+  background-color: transparent;
+
+  display: flex;
+  align-items: center;
+  position: absolute;
+  top: 0;
+  right: 37px;
+
+  i {
+    color: $color-secondary;
+  }
+
+  &:hover,
+  &:focus,
+  &:focus-within {
+      background-color: transparent;
+  }
+}
+
+.cardinality-support__group-instance {
+
+  .inline-composite-container {
+
+    .cardinality-support__group-instance > .cardinality-support__remove-value {
+      background-color: $color-lighter-hover;
+      border-color: $color-border-darker;
+    }
+  }
+}
 
 .inline-composite-container {
+
 
   .cardinality-support__group-instance {
 
@@ -1773,6 +1819,25 @@ fieldset[disabled] .form-control {
     align-items: stretch;
     gap: 5px;
     padding: 0;
+
+    & > .composite-input {
+
+      &:has(.composite-input__subject-button) {
+        flex-direction: row-reverse !important;
+      }
+
+      .composite-input__subject-button {
+        position: unset;
+        padding: 8px;
+        margin-left: 7px;
+        border: 1px solid $color-border;
+        background-color: $color-lighter;
+      }
+    }
+
+    & > .cardinality-support__remove-value {
+      background-color: $color-lighter;
+    }
   }
   
   .cardinality-support__remove-value.btn-default {
@@ -1780,7 +1845,7 @@ fieldset[disabled] .form-control {
     position: relative;
     top: unset;
     right: unset;
-    background-color: $input-color-bg;
+ //   background-color: $input-color-bg;
     border: 1px solid $color-border;
   }
 }
@@ -1820,7 +1885,7 @@ fieldset[disabled] .form-control {
     right: unset;
     background-color: $input-color-bg;
     height: inherit;
-    padding: 0 12px;
+    padding: 0 9px;
     border: 1px solid $color-border;
   }
 

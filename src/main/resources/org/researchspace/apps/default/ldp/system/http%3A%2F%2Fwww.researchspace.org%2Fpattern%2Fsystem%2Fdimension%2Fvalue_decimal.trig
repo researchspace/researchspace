@@ -1,0 +1,38 @@
+
+<http://www.researchspace.org/pattern/system/dimension/value_decimal/context> {
+  <http://www.researchspace.org/pattern/system/dimension/value_decimal> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#decimal>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Value (decimal number)";
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E54_Dimension>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-0b9c3511161c466eaeb1f370bb9d6e79-kxnjfl;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/dimension>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-0b9c3511161c466eaeb1f370bb9d6e79-aptg5b;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-0b9c3511161c466eaeb1f370bb9d6e79-8knph;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2025-07-04T10:18:19.236+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-0b9c3511161c466eaeb1f370bb9d6e79-8knph a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
+  $subject crm:P90_has_value $value . 
+  FILTER(datatype(?value) = xsd:decimal)
+}""" .
+  
+  _:genid-0b9c3511161c466eaeb1f370bb9d6e79-kxnjfl a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P90_has_value $value . 
+} WHERE {}""" .
+  
+  _:genid-0b9c3511161c466eaeb1f370bb9d6e79-aptg5b a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+    $subject crm:P90_has_value $value .
+}  WHERE {
+    $subject crm:P90_has_value $value .
+    FILTER(datatype(?value) = xsd:decimal)
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/dimension/value_decimal> .
+}

@@ -374,11 +374,10 @@ export class SemanticMap extends SharedStateComponent<SemanticMapProps, MapState
           const geometries = this.createGeometries(m);
           this.updateLayers(geometries);
 
-          // Set up extent/zoom tracking for shared state
-          this.setupExtentZoomTracking();
+          // Check for stored state BEFORE setting up tracking
+          const hasStoredState = this.state.currentExtent || this.state.currentZoom;
 
           // Auto-fit to markers if no stored state
-          const hasStoredState = this.state.currentExtent || this.state.currentZoom;
           if (!hasStoredState) {
             const view = this.map.getView();
             const extent = this.calculateExtent();
@@ -388,6 +387,9 @@ export class SemanticMap extends SharedStateComponent<SemanticMapProps, MapState
               view.setZoom(fixZoomLevel);
             }
           }
+
+          // Set up extent/zoom tracking for shared state AFTER auto-fit
+          this.setupExtentZoomTracking();
         }
       });
 

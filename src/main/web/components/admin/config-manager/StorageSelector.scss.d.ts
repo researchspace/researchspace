@@ -14,6 +14,7 @@ declare namespace StorageSelectorScssNamespace {
     overrideArrow: string;
     overrideChain: string;
     selector: string;
+    warning: string;
   }
 }
 

@@ -3,6 +3,7 @@ declare namespace TextAnnotationEditorScssNamespace {
     addAnnotationButton: string;
     addAnnotationIcon: string;
     addAnnotationSideline: string;
+    component: string;
     pointAnnotation: string;
     textEditor: string;
   }

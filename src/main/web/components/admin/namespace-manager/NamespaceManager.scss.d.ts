@@ -1,5 +1,6 @@
 declare namespace NamespaceManagerScssNamespace {
   export interface INamespaceManagerScss {
+    component: string;
     "update-panel": string;
     updatePanel: string;
     updatePanelSubmit: string;

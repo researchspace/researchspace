@@ -27,10 +27,17 @@ export interface TreeNode {
 }
 
 export interface RelatedNodeCriteria {
-  label: string;           // Display name in dropdown
-  icon?: string;          // Optional icon class (e.g., "fa fa-file")
-  query: string;          // SPARQL query with $__nodeIri__ placeholder
-  description?: string;   // Optional tooltip description
+  label: string;
+  icon?: string;
+  query: string;
+  description?: string;
+}
+
+export interface FilterOption {
+  label: string;           // Display text for the checkbox
+  description?: string;    // Optional tooltip/description
+  condition: string;       // SPARQL SELECT query that returns nodes to exclude in ?node binding
+  defaultChecked?: boolean; // Whether checked by default
 }
 
 export interface ProviderPropsAdvanced {

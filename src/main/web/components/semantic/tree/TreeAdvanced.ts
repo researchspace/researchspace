@@ -50,6 +50,8 @@ interface State {
   expandedChildren: Map<string, ReadonlyArray<TreeNode>>; // Store dynamically loaded children
   hoveredNodeKey?: string;
   activeDropdownKey?: string; // Track which dropdown is open
+  dropdownPosition?: { top: number; left: number }; // Track dropdown position
+  dropdownNode?: TreeNode; // Track which node the dropdown is for
 }
 
 interface BookeepingDictionary {
@@ -78,7 +80,15 @@ export class TreeAdvanced extends Component<TreeAdvancedProps, State> {
       }
     }
     
-    return D.div({ className: classnames(treeClasses) }, this.getTrees(this.props.nodeData));
+    return D.div(
+      { 
+        className: classnames(treeClasses),
+        style: { position: 'relative' }
+      }, 
+      this.getTrees(this.props.nodeData),
+      // Render dropdown portal outside of tree structure
+      this.state.activeDropdownKey && this.state.dropdownNode && this.renderDropdownPortal()
+    );
   }
 
   public componentWillMount() {
@@ -112,8 +122,15 @@ export class TreeAdvanced extends Component<TreeAdvancedProps, State> {
 
   private handleClickOutside = (event: any) => {
     // Close dropdown if clicking outside
-    if (this.state.activeDropdownKey && !event.target.closest('.related-nodes-dropdown-container')) {
-      this.setState({ activeDropdownKey: null, hoveredNodeKey: null });
+    if (this.state.activeDropdownKey && 
+        !event.target.closest('.related-nodes-dropdown-portal') && 
+        !event.target.closest('.related-nodes-icon-btn')) {
+      this.setState({ 
+        activeDropdownKey: null, 
+        hoveredNodeKey: null,
+        dropdownPosition: undefined,
+        dropdownNode: undefined
+      });
     }
   };
 
@@ -244,7 +261,10 @@ export class TreeAdvanced extends Component<TreeAdvancedProps, State> {
   };
 
   private getTrees = (data: ReadonlyArray<TreeNode>) => {
-    return data.map((node, i: number) => this.renderNode(node, i));
+    return data.map((node, i: number) => {
+      const nodeKey = _.isUndefined(this.props.nodeKey) ? i : node[this.props.nodeKey];
+      return D.div({ key: `node_${nodeKey}_${i}` }, this.renderNode(node, i));
+    });
   };
 
   private renderNode = (node: any, i: number) => {
@@ -367,7 +387,7 @@ export class TreeAdvanced extends Component<TreeAdvancedProps, State> {
         className: 'related-nodes-icon-btn',
         onClick: (e) => {
           e.stopPropagation();
-          this.toggleDropdown(nodeKey);
+          this.toggleDropdown(nodeKey, node, e.currentTarget as HTMLElement);
         },
         style: {
           background: 'white',
@@ -383,99 +403,121 @@ export class TreeAdvanced extends Component<TreeAdvancedProps, State> {
         title: 'Find related nodes'
       },
         D.i({ className: 'fa fa-link' })
-      ),
-      // The dropdown menu
-      isDropdownOpen && this.renderRelatedNodesDropdown(node, nodeKey)
+      )
     );
   };
 
-  private renderRelatedNodesDropdown = (node: TreeNode, nodeKey: string) => {
+  private renderDropdownPortal = () => {
     const { relatedNodeCriteria } = this.props;
+    const { dropdownPosition, dropdownNode } = this.state;
+    
+    if (!dropdownPosition || !dropdownNode) {
+      return null;
+    }
     
     return D.div({
-      className: 'related-nodes-dropdown',
+      className: 'related-nodes-dropdown-portal',
       style: {
-        position: 'fixed',  // Changed from 'absolute' to 'fixed' to escape container overflow
-        marginTop: '4px',
-        background: 'white',
-        border: '1px solid #ddd',
-        borderRadius: '4px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-        minWidth: '200px',
-        zIndex: 10000,  // Increased z-index to ensure it's on top
-        maxHeight: '300px',  // Add max height
-        overflowY: 'auto'  // Add scroll if needed
-      },
-      ref: (el) => {
-        // Position the dropdown relative to the button when it's rendered
-        if (el) {
-          const button = el.parentElement?.querySelector('.related-nodes-icon-btn');
-          if (button) {
-            const rect = button.getBoundingClientRect();
-            el.style.top = `${rect.bottom + 4}px`;
-            el.style.left = `${rect.left}px`;
-            
-            // Adjust position if dropdown would go off screen
-            const dropdownRect = el.getBoundingClientRect();
-            
-            // Check if dropdown goes off the right edge of the screen
-            if (dropdownRect.right > window.innerWidth) {
-              el.style.left = `${rect.right - dropdownRect.width}px`;
-            }
-            
-            // Check if dropdown goes off the bottom of the screen
-            if (dropdownRect.bottom > window.innerHeight) {
-              // Position above the button instead
-              el.style.top = `${rect.top - dropdownRect.height - 4}px`;
-            }
-          }
-        }
-      },
-      onClick: (e) => e.stopPropagation()
+        position: 'fixed',
+        top: dropdownPosition.top,
+        left: dropdownPosition.left,
+        zIndex: 999999, // Very high z-index to ensure it's always on top
+        pointerEvents: 'auto'
+      }
     },
-      relatedNodeCriteria.map((criterion, index) =>
-        D.div({
-          key: index,
-          className: 'dropdown-item',
-          style: {
-            padding: '8px 12px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            borderBottom: index < relatedNodeCriteria.length - 1 ? '1px solid #f0f0f0' : 'none',
-            transition: 'background-color 0.2s ease'
-          },
-          onMouseEnter: (e) => {
-            e.currentTarget.style.backgroundColor = '#f8f9fa';
-          },
-          onMouseLeave: (e) => {
-            e.currentTarget.style.backgroundColor = 'transparent';
-          },
-          onClick: () => {
-            this.handleRelatedNodeCriterionClick(node, criterion);
-            this.setState({ activeDropdownKey: null, hoveredNodeKey: null });
-          },
-          title: criterion.description
+      D.div({
+        className: 'related-nodes-dropdown',
+        style: {
+          background: 'white',
+          border: '1px solid #ddd',
+          borderRadius: '4px',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.2)',
+          minWidth: '200px',
+          maxHeight: '300px',
+          overflowY: 'auto',
+          animation: 'fadeIn 0.2s ease'
         },
-          criterion.icon && D.i({
-            className: criterion.icon,
-            style: { 
-              marginRight: '8px',
-              width: '16px',
-              textAlign: 'center',
-              color: '#666'
-            }
-          }),
-          D.span({}, criterion.label)
+        onClick: (e) => e.stopPropagation()
+      },
+        relatedNodeCriteria.map((criterion, index) =>
+          D.div({
+            key: index,
+            className: 'dropdown-item',
+            style: {
+              padding: '8px 12px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              borderBottom: index < relatedNodeCriteria.length - 1 ? '1px solid #f0f0f0' : 'none',
+              transition: 'background-color 0.2s ease'
+            },
+            onMouseEnter: (e) => {
+              e.currentTarget.style.backgroundColor = '#f8f9fa';
+            },
+            onMouseLeave: (e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            },
+            onClick: () => {
+              this.handleRelatedNodeCriterionClick(dropdownNode, criterion);
+              this.setState({ 
+                activeDropdownKey: null, 
+                hoveredNodeKey: null,
+                dropdownPosition: undefined,
+                dropdownNode: undefined
+              });
+            },
+            title: criterion.description
+          },
+            criterion.icon && D.i({
+              className: criterion.icon,
+              style: { 
+                marginRight: '8px',
+                width: '16px',
+                textAlign: 'center',
+                color: '#666'
+              }
+            }),
+            D.span({}, criterion.label)
+          )
         )
       )
     );
   };
 
-  private toggleDropdown = (nodeKey: string) => {
-    this.setState(prevState => ({
-      activeDropdownKey: prevState.activeDropdownKey === nodeKey ? null : nodeKey
-    }));
+  private toggleDropdown = (nodeKey: string, node: TreeNode, buttonElement: HTMLElement) => {
+    if (this.state.activeDropdownKey === nodeKey) {
+      // Close dropdown
+      this.setState({ 
+        activeDropdownKey: null,
+        dropdownPosition: undefined,
+        dropdownNode: undefined
+      });
+    } else {
+      // Open dropdown and calculate position
+      const rect = buttonElement.getBoundingClientRect();
+      let top = rect.bottom + 4;
+      let left = rect.left;
+      
+      // Check if dropdown would go off screen
+      const estimatedDropdownHeight = 200; // Approximate height
+      const estimatedDropdownWidth = 200; // Approximate width
+      
+      // Adjust if would go off bottom
+      if (top + estimatedDropdownHeight > window.innerHeight) {
+        top = rect.top - estimatedDropdownHeight - 4;
+      }
+      
+      // Adjust if would go off right
+      if (left + estimatedDropdownWidth > window.innerWidth) {
+        left = rect.right - estimatedDropdownWidth;
+      }
+      
+      this.setState({
+        activeDropdownKey: nodeKey,
+        dropdownPosition: { top, left },
+        dropdownNode: node
+      });
+    }
   };
 
   private handleRelatedNodeCriterionClick = (node: TreeNode, criterion: RelatedNodeCriteria) => {

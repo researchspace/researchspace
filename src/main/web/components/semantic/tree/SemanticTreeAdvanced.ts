@@ -37,7 +37,7 @@ import { TemplateItem } from 'platform/components/ui/template';
 import TreeAdvanced from './TreeAdvanced';
 import { D3Tree, D3TreeProviderKind, D3TreeOptions } from './D3Tree';
 import { SemanticTreeConfig, SemanticTreeKind } from './SemanticTree';
-import { TreeNode, ProviderPropsAdvanced, RelatedNodeCriteria } from './TreeTypes';
+import { TreeNode, ProviderPropsAdvanced, RelatedNodeCriteria, FilterOption } from './TreeTypes';
 
 export interface SortOption {
   label: string;        // Display name in dropdown
@@ -208,6 +208,32 @@ export interface SemanticTreeAdvancedConfig extends SemanticTreeConfig {
    * Custom CSS class for sort controls container.
    */
   sortControlsClass?: string;
+  
+  /**
+   * Array of filter options that allow users to include/exclude nodes based on SPARQL conditions.
+   * Each filter will be rendered as a checkbox. When checked, the filter condition will be
+   * applied to exclude nodes from the tree.
+   * The condition should be a SPARQL ASK query fragment with $__nodeIri__ as placeholder.
+   * 
+   * @example
+   * ```
+   * [
+   *   {
+   *     label: "Exclude omitted",
+   *     description: "Hide nodes with 'Omitted information' as label",
+   *     condition: "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> ASK { <$__nodeIri__> rdfs:label \"Omitted information\" }",
+   *     defaultChecked: false
+   *   }
+   * ]
+   * ```
+   */
+  filterOptions?: FilterOption[];
+  
+  /**
+   * Whether to show filter controls.
+   * @default true if filterOptions are provided
+   */
+  showFilterControls?: boolean;
 }
 
 export type PropsAdvanced = SemanticTreeAdvancedConfig & ReactProps<SemanticTreeAdvanced>;
@@ -225,6 +251,9 @@ interface StateAdvanced {
   isSearching: boolean; // Whether a search is in progress
   currentSortBinding?: string; // Current field being sorted by
   currentSortDirection: 'asc' | 'desc'; // Current sort direction
+  activeFilters: Set<string>; // Set of active filter labels
+  filteredData?: ReadonlyArray<TreeNode>; // Data after applying filters
+  isApplyingFilters: boolean; // Whether filters are being applied
 }
 
 export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced> {
@@ -253,6 +282,16 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
                                 (props.sortOptions?.find(opt => opt.binding === initialSortBinding)?.defaultDirection) || 
                                 'asc';
     
+    // Initialize active filters from defaultChecked
+    const activeFilters = new Set<string>();
+    if (props.filterOptions) {
+      props.filterOptions.forEach(filter => {
+        if (filter.defaultChecked) {
+          activeFilters.add(filter.label);
+        }
+      });
+    }
+    
     this.state = {
       isLoading: true,
       errorMessage: maybe.Nothing<string>(),
@@ -264,6 +303,8 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       isSearching: false,
       currentSortBinding: initialSortBinding,
       currentSortDirection: initialSortDirection,
+      activeFilters,
+      isApplyingFilters: false,
     };
   }
 
@@ -776,7 +817,19 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
     
     // Check cache first
     if (enableCache && this.state.expandedNodes.has(nodeKey)) {
-      return this.state.expandedNodes.get(nodeKey) || [];
+      const cachedChildren = this.state.expandedNodes.get(nodeKey) || [];
+      // Apply filters to cached children if filters are active
+      if (this.state.activeFilters.size > 0) {
+        const activeFilterConfigs = this.props.filterOptions?.filter(f => 
+          this.state.activeFilters.has(f.label)
+        ) || [];
+        if (activeFilterConfigs.length > 0) {
+          // Get the exclusion set from the active filters
+          const excludedNodes = await this.buildExcludedNodesSet(activeFilterConfigs);
+          return this.filterTreeWithExclusions(cachedChildren, excludedNodes);
+        }
+      }
+      return cachedChildren;
     }
 
     // Set up a timer to show the loading indicator after 1 second
@@ -822,6 +875,18 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
         // Apply current sorting to newly loaded children
         if (this.state.currentSortBinding) {
           childNodes = this.sortTreeNodes(childNodes);
+        }
+        
+        // Apply filters to newly loaded children if filters are active
+        if (this.state.activeFilters.size > 0) {
+          const activeFilterConfigs = this.props.filterOptions?.filter(f => 
+            this.state.activeFilters.has(f.label)
+          ) || [];
+          if (activeFilterConfigs.length > 0) {
+            // Get the exclusion set from the active filters
+            const excludedNodes = await this.buildExcludedNodesSet(activeFilterConfigs);
+            childNodes = this.filterTreeWithExclusions(childNodes, excludedNodes);
+          }
         }
         
         this.updateExpandedCache(nodeKey, childNodes);
@@ -878,6 +943,9 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       return createElement(TemplateItem, { template: { source: this.props.noResultTemplate } });
     }
 
+    // Use filtered data if filters are active, otherwise use highlighted or normal data
+    const dataToShow = this.state.filteredData || this.state.highlightedTreeData || data;
+
     // Combine original keysOpened with keys that should be expanded for highlighting
     const allKeysOpened = this.state.highlightedTreeData 
       ? [...this.props.keysOpened, ...this.expandedKeysForHighlighting]
@@ -890,7 +958,7 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       tupleTemplate: this.handleDeprecatedLayout(),
       onNodeClick: this.onNodeClick,
       onNodeExpand: this.props.expandQuery ? this.expandNode : undefined,
-      nodeData: this.state.highlightedTreeData || data,
+      nodeData: dataToShow,
       nodeKey: 'key',
       collapsed: shouldCollapseNodes,
       keysOpened: allKeysOpened,
@@ -923,16 +991,208 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       treeElement = createElement(TreeAdvanced, { ...providerProps, key: treeKey });
     }
 
-    // Check if we should show the search bar and sort controls
+    // Check if we should show the search bar, sort controls, and filter controls
     const showSearch = this.props.showSearch !== false && this.props.searchQuery;
     const showSort = this.props.sortOptions && this.props.sortOptions.length > 0 && this.props.showSortControls !== false;
+    const showFilters = this.props.showFilterControls !== false && this.props.filterOptions && this.props.filterOptions.length > 0;
 
     return D.div({},
+      showFilters && this.renderFilterControls(),
       showSort && this.renderSortControls(),
       showSearch && this.renderSearchBar(),
       treeElement
     );
   }
+
+  private renderFilterControls = () => {
+    if (!this.props.filterOptions || this.props.filterOptions.length === 0 || this.props.showFilterControls === false) {
+      return null;
+    }
+
+    return D.div(
+      {
+        style: {
+          marginBottom: '10px',
+          padding: '8px',
+          backgroundColor: '#f0f8ff',
+          borderRadius: '4px',
+          border: '1px solid #d0e8ff'
+        }
+      },
+      D.div({
+        style: {
+          fontWeight: 'bold',
+          fontSize: '14px',
+          marginBottom: '6px',
+          color: '#333'
+        }
+      }, 'Filters:'),
+      D.div({
+        style: {
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '12px'
+        }
+      },
+        this.props.filterOptions.map(filter =>
+          D.label({
+            key: filter.label,
+            style: {
+              display: 'flex',
+              alignItems: 'center',
+              cursor: 'pointer',
+              userSelect: 'none'
+            },
+            title: filter.description
+          },
+            D.input({
+              type: 'checkbox',
+              checked: this.state.activeFilters.has(filter.label),
+              onChange: () => this.handleFilterToggle(filter.label),
+              disabled: this.state.isApplyingFilters,
+              style: {
+                marginRight: '6px',
+                cursor: this.state.isApplyingFilters ? 'not-allowed' : 'pointer'
+              }
+            }),
+            D.span({
+              style: {
+                fontSize: '14px',
+                color: this.state.isApplyingFilters ? '#999' : '#333'
+              }
+            }, filter.label)
+          )
+        ),
+        this.state.isApplyingFilters && D.div({
+          style: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            color: '#007bff'
+          }
+        },
+          D.i({ className: 'fa fa-spinner fa-spin' }),
+          D.span({ style: { fontSize: '13px' } }, 'Applying filters...')
+        )
+      )
+    );
+  };
+
+  private handleFilterToggle = async (filterLabel: string) => {
+    this.setState(prevState => {
+      const newActiveFilters = new Set(prevState.activeFilters);
+      if (newActiveFilters.has(filterLabel)) {
+        newActiveFilters.delete(filterLabel);
+      } else {
+        newActiveFilters.add(filterLabel);
+      }
+      return { activeFilters: newActiveFilters };
+    }, () => {
+      // Apply filters after state update
+      this.applyFilters();
+    });
+  };
+
+  private applyFilters = async () => {
+    if (!this.props.filterOptions || this.state.activeFilters.size === 0) {
+      // No filters active, clear filtered data and cache
+      this.setState({ 
+        filteredData: undefined,
+        expandedNodes: new Map() // Clear cache when filters are removed
+      });
+      return;
+    }
+
+    this.setState({ isApplyingFilters: true });
+
+    try {
+      const activeFilterConfigs = this.props.filterOptions.filter(f => 
+        this.state.activeFilters.has(f.label)
+      );
+
+      // Build a set of all nodes to exclude by running SELECT queries
+      const excludedNodes = await this.buildExcludedNodesSet(activeFilterConfigs);
+
+      // Apply filters to the tree data using the exclusion set
+      const filteredData = this.filterTreeWithExclusions(this.state.data, excludedNodes);
+      
+      this.setState({ 
+        filteredData,
+        expandedNodes: new Map(), // Clear cache to force re-expansion with filters
+        isApplyingFilters: false 
+      });
+    } catch (error) {
+      console.error('Error applying filters:', error);
+      this.setState({
+        isApplyingFilters: false,
+        errorMessage: maybe.Just(`Filter error: ${error.message || error}`)
+      });
+    }
+  };
+
+  private buildExcludedNodesSet = async (filters: FilterOption[]): Promise<Set<string>> => {
+    const excludedNodes = new Set<string>();
+    
+    // Run each filter's SELECT query to get nodes to exclude
+    for (const filter of filters) {
+      try {
+        const selectQuery = filter.condition;
+        const context = this.context.semanticContext;
+        const result = await SparqlClient.select(selectQuery, { context }).toPromise();
+        
+        if (!SparqlUtil.isSelectResultEmpty(result)) {
+          // Add all returned node IRIs to the exclusion set
+          result.results.bindings.forEach(binding => {
+            if (binding['node']) {
+              const nodeIri = binding['node'].value;
+              excludedNodes.add(nodeIri);
+            }
+          });
+        }
+      } catch (error) {
+        console.error(`Error executing filter "${filter.label}":`, error);
+        // Continue with other filters even if one fails
+      }
+    }
+    
+    return excludedNodes;
+  };
+
+  private filterTreeWithExclusions = (
+    nodes: ReadonlyArray<TreeNode>,
+    excludedNodes: Set<string>
+  ): ReadonlyArray<TreeNode> => {
+    const result: TreeNode[] = [];
+
+    for (const node of nodes) {
+      const nodeIri = node.data[this.props.nodeBindingName].value;
+      
+      // Check if this node is in the exclusion set
+      // For structural nodes (with /structure/), also check the data version (without /structure/)
+      let isExcluded = excludedNodes.has(nodeIri);
+      
+      // If this is a structural node, also check the data node equivalent
+      if (!isExcluded && nodeIri.includes('/structure/')) {
+        const dataNodeIri = nodeIri.replace('/structure/', '/');
+        isExcluded = excludedNodes.has(dataNodeIri);
+      }
+      
+      // Filter children recursively
+      const filteredChildren = node.children.length > 0 
+        ? this.filterTreeWithExclusions(node.children, excludedNodes)
+        : [];
+      
+      // Include node if NOT excluded OR has children that passed filters
+      if (!isExcluded || filteredChildren.length > 0) {
+        result.push({
+          ...node,
+          children: filteredChildren
+        });
+      }
+    }
+    
+    return result;
+  };
 
   private renderSearchBar() {
     const placeholder = this.props.searchPlaceholder || 'Search...';
@@ -1117,13 +1377,23 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
     }
 
     if (notFound.length === 0) {
-      this.setState({ data, isLoading: false });
+      this.setState({ data, isLoading: false }, () => {
+        // Apply filters after data is loaded if there are active filters
+        if (this.state.activeFilters.size > 0) {
+          this.applyFilters();
+        }
+      });
     } else {
       const notFoundRoots = notFound.map((root) => `'${root}'`).join(', ');
       this.setState({
         data,
         isLoading: false,
         errorMessage: maybe.Just(`Expected roots not found: ${notFoundRoots}`),
+      }, () => {
+        // Apply filters after data is loaded if there are active filters
+        if (this.state.activeFilters.size > 0) {
+          this.applyFilters();
+        }
       });
     }
   };

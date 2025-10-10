@@ -552,7 +552,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
     if (checked) {
       this.setState({
         searchWithAI: checked,
-        searchTypes: ['exact', 'metadata', 'visual']
+        searchTypes: this.state.isImageMode ? ['exact', 'visual'] : ['exact', 'metadata', 'visual']
       }, this.triggerSearch);
     } else {
       this.setState({
@@ -575,7 +575,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
     }
 
     if (newSearchTypes.length === 0) {
-      newSearchTypes = ['exact', 'metadata', 'visual'];
+      newSearchTypes = this.state.isImageMode ? ['exact', 'visual'] : ['exact', 'metadata', 'visual'];
     }
 
     this.setState({ searchTypes: newSearchTypes }, this.triggerSearch);
@@ -706,9 +706,10 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
                     checked={this.state.searchTypes.includes('exact')}
                     onChange={this.handleSearchTypeChange}
                   >
-                    Exact Match
+                    {isImageMode ? 'Visual Match' : 'Text Match'}
                   </Checkbox>
                 </div>
+                {!isImageMode && (
                 <div className={styles.modelRow}>
                   <Checkbox
                     name="searchTypes"
@@ -716,7 +717,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
                     checked={this.state.searchTypes.includes('metadata')}
                     onChange={this.handleSearchTypeChange}
                   >
-                    Metadata (AI)
+                    Textual Similarity
                   </Checkbox>
                   {enableModelSelection && (
                     <DropdownButton
@@ -730,6 +731,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
                     </DropdownButton>
                   )}
                 </div>
+                )}
                 <div className={styles.modelRow}>
                   <Checkbox
                     name="searchTypes"
@@ -737,7 +739,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
                     checked={this.state.searchTypes.includes('visual')}
                     onChange={this.handleSearchTypeChange}
                   >
-                    Visual Similarity (AI)
+                    Visual Similarity
                   </Checkbox>
                   {enableModelSelection && (
                     <DropdownButton
@@ -921,7 +923,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
       return null;
     }
 
-    const { selectedDomainIndex, searchWithAI, searchTypes, searchSensitivity, withAi } = this.state;
+    const { selectedDomainIndex, searchWithAI, searchTypes, searchSensitivity, withAi, visualSearchModel } = this.state;
     const isExact = searchTypes.includes('exact');
     const isAi = searchTypes.includes('metadata') || searchTypes.includes('visual');
 
@@ -946,9 +948,6 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
       console.error('No appropriate image query available for the current settings');
       return null;
     }
-
-    // Parse the selected query
-    const baseQuery = SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(imageQueryStr);
 
     const {
       dataVariable,
@@ -975,6 +974,22 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
       bindings[dataVariable!] = Rdf.literal(this.state.imageData);
       bindings[dataTypeVariable!] = Rdf.literal('image');
     }
+
+    const embeddingPattern = `
+      ?uri emb:model "${visualSearchModel}" .
+      ?uri emb:returnValues "work" .
+      ?uri emb:maxWork1 ?${visualSearchModel}_sift_rerank_maxScoreUri .
+      ?uri emb:maxWork2 ?${visualSearchModel}_maxScoreUri .
+    `;
+
+    const prefix = 'PREFIX emb: <https://artresearch.net/embeddings/>\n';
+    if (!imageQueryStr.toLowerCase().includes('prefix emb:')) {
+      imageQueryStr = prefix + imageQueryStr;
+    }
+    imageQueryStr = imageQueryStr.replace('FILTER(?__embeddingPattern__)', embeddingPattern);
+
+    // Parse the selected query
+    const baseQuery = SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(imageQueryStr);
 
     return SparqlClient.setBindings(baseQuery, bindings);
   };
@@ -1115,7 +1130,6 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
     const scoreSum = keywords.map((keyword: string, i: number) => `SUM(?text_score_${i})`).join(' + ');
     textQueryStr = textQueryStr.replace(/\?__textScoreSumPattern__/g, scoreSum);
     // Parse the selected query
-    console.log(textQueryStr);
     const baseQuery = SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(textQueryStr);
 
     // Apply the pattern using PatternBinder

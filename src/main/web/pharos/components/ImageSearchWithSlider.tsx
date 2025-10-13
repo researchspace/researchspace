@@ -19,7 +19,7 @@ import * as React from 'react';
 import * as Maybe from 'data.maybe';
 import * as Kefir from 'kefir';
 import * as _ from 'lodash';
-import { FormControl, FormGroup, Button, Dropdown, MenuItem, ToggleButtonGroup, ToggleButton, Checkbox, DropdownButton } from 'react-bootstrap';
+import { FormControl, FormGroup, Button, Dropdown, MenuItem, ToggleButtonGroup, ToggleButton, Checkbox, DropdownButton, Popover, OverlayTrigger } from 'react-bootstrap';
 import * as SparqlJs from 'sparqljs';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
@@ -38,6 +38,7 @@ import { SemanticSimpleSearchBaseConfig } from 'platform/components/semantic/sim
 import { SemanticSearchContext, InitialQueryContext } from 'platform/components/semantic/search/web-components/SemanticSearchApi';
 import Icon from 'platform/components/ui/icon/Icon';
 import { ToggleSwitch } from 'platform/components/ui/toggle-switch/ToggleSwitch';
+import { TemplateItem } from 'platform/components/ui/template';
 
 import * as styles from './ImageSearchWithSlider.scss';
 import { SEMANTIC_SEARCH_VARIABLES } from '../../components/semantic/search/config/SearchConfig';
@@ -115,6 +116,12 @@ export interface BaseConfig<T> extends SemanticSimpleSearchBaseConfig {
    * e.g., defaultQuery0, defaultQuery1, etc.
    */
   [key: `defaultQuery${number}`]: string;
+
+  textMatchHelp?: string;
+  textVisualMatchHelp?: string;
+  textSimilarityHelp?: string;
+  visualMatchHelp?: string;
+  visualSimilarityHelp?: string;
 
   initialInput?: string;
 
@@ -287,7 +294,6 @@ interface State {
   selectedDomainIndex: number; // Index of the currently selected domain
   withAi: boolean; // Whether AI features are enabled for the current domain
   withImages: boolean; // Whether image features are enabled for the current domain
-  searchWithAI: boolean;
   domainColor: string;
   searchTypes: string[];
   searchSensitivity: 'precise' | 'balanced' | 'exploratory';
@@ -355,8 +361,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
       withAi,
       withImages,
       domainColor,
-      searchWithAI: false,
-      searchTypes: ['exact'],
+      searchTypes: ['exact', 'metadata', 'visual'],
       searchSensitivity: 'precise',
       metadataModel: 'qwen3_8b',
       visualSearchModel: 'siglip2_so400m_patch16_naflex'
@@ -548,20 +553,6 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
     }
   }
 
-  private handleSearchWithAIChange = (checked: boolean) => {
-    if (checked) {
-      this.setState({
-        searchWithAI: checked,
-        searchTypes: this.state.isImageMode ? ['exact', 'visual'] : ['exact', 'metadata', 'visual']
-      }, this.triggerSearch);
-    } else {
-      this.setState({
-        searchWithAI: checked,
-        searchTypes: ['exact']
-      }, this.triggerSearch);
-    }
-  }
-
   private handleSearchTypeChange = (e: React.FormEvent<any>) => {
     const target = e.target as HTMLInputElement;
     const { value, checked } = target;
@@ -602,9 +593,27 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
     this.setState({ visualSearchModel: eventKey }, this.triggerSearch);
   }
 
+  private renderHelpPopover = (content?: string) => {
+    if (!content) {
+      return null;
+    }
+
+    const popover = (
+      <Popover id="search-help-popover" className={styles.helpPopover}>
+        <TemplateItem template={{ source: content }} />
+      </Popover>
+    );
+
+    return (
+      <OverlayTrigger trigger="click" rootClose placement="bottom" overlay={popover}>
+        <Icon iconType="rounded" iconName="help" symbol className={styles.helpIcon} />
+      </OverlayTrigger>
+    );
+  };
+
   render() {
     const { placeholder, style, className, min, max, step, domains, lockDomain, marks, enableModelSelection } = this.props;
-    const { withAi, withImages, selectedDomainIndex, domainColor, isImageMode, searchWithAI, searchTypes } = this.state;
+    const { withAi, withImages, selectedDomainIndex, domainColor, isImageMode, searchTypes } = this.state;
     const isAiSearch = searchTypes.includes('metadata') || searchTypes.includes('visual');
 
     let sliderMarks: Record<number, string> | undefined;
@@ -685,17 +694,8 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
             </div>
           )}
         </div>
-        <div className={styles.aiToggle}>
-          <label>Search with AI:</label>
-          <ToggleSwitch
-            checked={this.state.searchWithAI}
-            onChange={this.handleSearchWithAIChange}
-            disabled={!withAi}
-          />
-        </div>
         </div>
         <div className={styles.searchControls}>
-          {searchWithAI && (
             <div className={styles.sliderField}>
               <div className={styles.sliderLabel}>Search Types:</div>
               <div className={styles.modelSelection}>
@@ -708,6 +708,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
                   >
                     {isImageMode ? 'Visual Match' : 'Text Match'}
                   </Checkbox>
+                  {this.renderHelpPopover(isImageMode ? this.props.visualMatchHelp : this.props.textMatchHelp)}
                 </div>
                 {!isImageMode && (
                 <div className={styles.modelRow}>
@@ -719,6 +720,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
                   >
                     Textual Similarity
                   </Checkbox>
+                  {this.renderHelpPopover(this.props.textSimilarityHelp)}
                   {enableModelSelection && (
                     <DropdownButton
                       bsSize="small"
@@ -741,6 +743,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
                   >
                     Visual Similarity
                   </Checkbox>
+                  {this.renderHelpPopover(isImageMode ? this.props.visualSimilarityHelp : this.props.textVisualMatchHelp)}
                   {enableModelSelection && (
                     <DropdownButton
                       bsSize="small"
@@ -755,9 +758,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
                 </div>
               </div>
             </div>
-          )}
 
-          {searchWithAI && (
             <div className={`${styles.sliderField} ${withAi && isAiSearch ? '' : 'disabled'}`}>
               <div className={styles.sliderLabel}>AI Search Sensitivity: </div>
               <div className={styles.sliderFieldSliderContainer}>
@@ -772,7 +773,6 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
                 />
               </div>
             </div>
-          )}
         </div>
       </div>
     );
@@ -923,18 +923,18 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
       return null;
     }
 
-    const { selectedDomainIndex, searchWithAI, searchTypes, searchSensitivity, withAi, visualSearchModel } = this.state;
+    const { selectedDomainIndex, searchTypes, searchSensitivity, withAi, visualSearchModel } = this.state;
     const isExact = searchTypes.includes('exact');
     const isAi = searchTypes.includes('metadata') || searchTypes.includes('visual');
 
     // Determine which image query to use based on AI slider value
     let imageQueryStr: string | undefined;
 
-    if (withAi && searchWithAI && isAi && !isExact) {
+    if (withAi && isAi && !isExact) {
       // Use AI-only image query
       const imageAiQueryKey = `imageAiQuery${selectedDomainIndex}` as `imageAiQuery${number}`;
       imageQueryStr = this.props[imageAiQueryKey];
-    } else if (withAi && searchWithAI && isAi && isExact) {
+    } else if (withAi && isAi && isExact) {
       // Use mixed AI image query
       const imageWithAiQueryKey = `imageWithAiQuery${selectedDomainIndex}` as `imageWithAiQuery${number}`;
       imageQueryStr = this.props[imageWithAiQueryKey];
@@ -960,7 +960,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
     // Bind domain
     bindings[SEMANTIC_SEARCH_VARIABLES.DOMAIN_VAR] = Rdf.fullIri(this.getCurrentDomainUri());
 
-    if (withAi && searchWithAI) {
+    if (withAi) {
       bindings[searchSensitivityVariable!] = Rdf.literal(searchSensitivity);
     }
 
@@ -995,7 +995,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
   };
 
   private buildKeywordQuery = () => (token: string): SparqlJs.SelectQuery | null => {
-    const { selectedDomainIndex, searchWithAI, searchTypes, searchSensitivity, withAi, metadataModel, visualSearchModel } = this.state;
+    const { selectedDomainIndex, searchTypes, searchSensitivity, withAi, metadataModel, visualSearchModel } = this.state;
     const isExact = searchTypes.includes('exact');
     const isMetadata = searchTypes.includes('metadata');
     const isVisual = searchTypes.includes('visual');
@@ -1003,11 +1003,11 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
     // Determine which text query to use based on AI slider value
     let textQueryStr: string | undefined;
 
-    if (withAi && searchWithAI && (isMetadata || isVisual) && !isExact) {
+    if (withAi && (isMetadata || isVisual) && !isExact) {
       // Use AI-only text query
       const textAiQueryKey = `textAiQuery${selectedDomainIndex}` as `textAiQuery${number}`;
       textQueryStr = this.props[textAiQueryKey];
-    } else if (withAi && searchWithAI && (isMetadata || isVisual) && isExact) {
+    } else if (withAi && (isMetadata || isVisual) && isExact) {
       // Use mixed AI text query
       const textWithAiQueryKey = `textWithAiQuery${selectedDomainIndex}` as `textWithAiQuery${number}`;
       textQueryStr = this.props[textWithAiQueryKey];
@@ -1030,7 +1030,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
       minTokenLength
     } = this.props;
 
-    if (withAi && searchWithAI) {
+    if (withAi) {
       let embeddingPattern = '';
 
       if (isMetadata && isVisual) {
@@ -1144,7 +1144,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
       [searchTermVariable!]: Rdf.literal(token),
     };
 
-    if (withAi && searchWithAI) {
+    if (withAi) {
       bindings[searchSensitivityVariable!] = Rdf.literal(searchSensitivity);
     }
 

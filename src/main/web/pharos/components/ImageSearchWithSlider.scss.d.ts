@@ -4,6 +4,8 @@ declare namespace ImageSearchWithSliderScssNamespace {
     clearImageBtn: string;
     domainSelector: string;
     dropzoneContent: string;
+    helpIcon: string;
+    helpPopover: string;
     imageDropzone: string;
     imagePreview: string;
     imagePreviewContainer: string;

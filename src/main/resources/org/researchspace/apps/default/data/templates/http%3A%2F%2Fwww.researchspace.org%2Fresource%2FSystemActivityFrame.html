@@ -56,6 +56,10 @@
                                                                             ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
                   
                                                                             MINUS { ?subject a Platform:resource_configuration .}
+                                                                            MINUS {
+                                                                              ?subject crm:P71i_is_listed_in|skos:inScheme ?systemAuthorityDoc .
+                                                                              ?systemAuthorityDoc crm:P2_has_type Platform:System_Resource .
+                                                                            }
                   
                                                                             ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordOutput .
                                                                             ?entityFormRecordOutput crm:P2_has_type ?entityFormRecordOutputType .
@@ -69,9 +73,7 @@
                                                                               ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                                                               ?appellation crm:P190_has_symbolic_content ?label .
                                                                             } UNION {
-                                                                              ?subject crm:P170i_time_is_defined_by ?timePrimitive .
-                                                                              ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
-                                                                              ?timePrimitive crm:P190_has_symbolic_content ?label .
+                                                                              ?subject crm:P170i_time_is_defined_by ?label .
                                                                             } UNION {
                                                                               ?subject skos:prefLabel ?label .
                                                                             } UNION {
@@ -86,10 +88,10 @@
                                                                                     bds:minRelevance "0.3" ;
                                                                                     bds:matchAllTerms "true"  .
                                                                           }
-                                                                        } ORDER BY DESC(?date)'
+                                                                        } ORDER BY DESC(?date) ?label'
                                                                   default-query='SELECT DISTINCT ?subject WHERE {
                                                                                   {
-                                                                                    ?subject prov:generatedAtTime ?date .
+                                                                                    ?subject prov:generatedAtTime ?date1 .
                                                                                     ?subject crm:P2_has_type ?type .
                                                                                     FILTER(?type IN (<http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map>, 
                                                                                                       <http://www.researchspace.org/resource/system/vocab/resource_type/set>,
@@ -101,7 +103,7 @@
                                                                                     MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
                                                                                   } UNION {
                                                                                     ?subject a rs:EX_Digital_Image .
-                                                                                    ?subject prov:generatedAtTime ?date .
+                                                                                    ?subject prov:generatedAtTime ?date2 .
                                                                                   } UNION {
                                                                                     ?subject crm:P129i_is_subject_of ?entityFormRecord .
                                                                                     ?entityFormRecord a crmdig:D1_Digital_Object .
@@ -119,8 +121,15 @@
                                                                                     ?entityFormRecordModification crm:P4_has_time-span ?entityFormRecordModificationTimespan .
                                                                                     ?entityFormRecordModificationTimespan crm:P82_at_some_time_within ?dateModification .
                                                                                   } 
-                                                                                  BIND(IF(BOUND(?dateModification), ?dateModification, ?dateCreation) AS ?date)
+                                                                                  BIND(IF(BOUND(?dateModification), ?dateModification, ?dateCreation) AS ?complexDate)
+                                                                                  BIND(IF(BOUND(?complexDate),?complexDate,IF(BOUND(?date1),?date1,IF(BOUND(?date2),?date2,""))) as ?date)
+
                                                                                   MINUS { ?subject a Platform:resource_configuration .}
+                                                                                  MINUS {
+                                                                                    ?subject crm:P71i_is_listed_in|skos:inScheme ?systemAuthorityDoc .
+                                                                                    ?systemAuthorityDoc crm:P2_has_type Platform:System_Resource .
+                                                                                  }
+
                                                                                   FILTER (?date > "2024-10-22T00:00:00.000Z"^^xsd:dateTime)
                                                                                 }'
                                                                   debounce=500
@@ -162,7 +171,7 @@
                                                             class-name="semantic-search-result-grid"
                                                             query='SELECT DISTINCT ?subject ?iri WHERE {
                                                                         BIND(?subject as ?iri) .
-                                                                    } ORDER BY DESC(?date)
+                                                                    } ORDER BY DESC(?date) ?subject
                                                                     LIMIT 300'
                                                             tuple-template='{{> gridItem }}'
                                                             options='{"showFilter":false,

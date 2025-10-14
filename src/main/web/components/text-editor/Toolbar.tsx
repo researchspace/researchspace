@@ -294,11 +294,11 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
               Links
             </Dropdown.Toggle>
             <Dropdown.Menu>
-            <MenuItem href="#" onMouseDown={this.onInternalLinkClick}>
+            <MenuItem href="#" onMouseDown={this.onInternalLinkClick} draggable={false}>
               <Icon iconType='rounded' iconName='insert_link' symbol className='icon-left'/>
               Resource link
             </MenuItem>
-            <MenuItem href="#" onMouseDown={this.onExternalLinkClick}>
+            <MenuItem href="#" onMouseDown={this.onExternalLinkClick} draggable={false}>
               <Icon iconType='rounded' iconName='public' symbol className='icon-left'/>
               External link
             </MenuItem>
@@ -353,7 +353,7 @@ class ResourceDropdown extends React.Component<ResourceDropdownProps> {
   actionButton = (selectedTemplate: ResourceSelection) => (selection: ResourceSelection) => {
     const isActive = selectedTemplate.id === selection.id;
     return (
-      <MenuItem key={selection.id} eventKey={selection.id} active={isActive}
+      <MenuItem key={selection.id} eventKey={selection.id} active={isActive} draggable={false}
         onSelect={this.onSelect as any}>
         <span className={styles.dropdownMenuItem}>
           <span>{selection.label}</span>
@@ -471,7 +471,7 @@ export class BlockDropdown extends React.Component<BlockDropdownProps> {
   actionButton = (blockType: Block) => {
     const isActive = this.props.anchorBlock?.type === blockType;
     return (
-      <MenuItem eventKey={blockType} active={isActive}
+      <MenuItem eventKey={blockType} active={isActive} draggable={false}
         onSelect={this.onBlockButtonClick as any}>
 
         {this.actionDescription(blockType)}
@@ -517,11 +517,11 @@ export class BlockDropdown extends React.Component<BlockDropdownProps> {
         </Dropdown.Toggle>
         <Dropdown.Menu>
           {this.actionButton(Block.p)}
-          <MenuItem divider />
+          <MenuItem divider draggable={false} />
           {this.actionButton(Block.h1)}
           {this.actionButton(Block.h2)}
           {this.actionButton(Block.h3)}
-          <MenuItem divider />
+          <MenuItem divider draggable={false} />
           {this.actionButton(Block.ol)}
           {this.actionButton(Block.ul)}
         </Dropdown.Menu>

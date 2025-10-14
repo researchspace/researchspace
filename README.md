@@ -189,7 +189,7 @@ See [installation instruction](https://chocolatey.org/install) for [Chocolatey](
 
 In development mode we recommend to run ResearchSpace with bundled blazegraph and digilib, but you can also run it with your own triplestore and iiif server.
 
-When build is completed go to [http://127.0.0.1:10214/](http://127.0.0.1:10214/), where you should see the login screen. Default platform access username and password are  `admin:admin`
+When build is completed go to [http://localhost:10214/](http://localhost:10214/), where you should see the login screen. Default platform access username and password are  `admin:admin`
 
 ### ResearchSpace with bundled Blazegraph triplestore and Digilib IIIF Server
 

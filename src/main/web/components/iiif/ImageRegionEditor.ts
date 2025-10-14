@@ -667,7 +667,7 @@ class AnnotationEndpointProxy implements AnnotationEndpoint {
 
   remove(annotation: OARegionAnnotation) {
     return this.endpoint.remove(annotation)
-      .onValue(() => {console.log("annotation");this.onRemoved(Rdf.iri(annotation['@id']), annotation); });
+      .onValue(() => {this.onRemoved(Rdf.iri(annotation['@id']), annotation); });
   }
 
   userAuthorize = this.endpoint.userAuthorize ? (action: any, annotation: OARegionAnnotation) => {

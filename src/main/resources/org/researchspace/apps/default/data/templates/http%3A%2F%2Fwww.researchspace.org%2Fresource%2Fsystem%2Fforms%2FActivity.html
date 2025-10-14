@@ -70,7 +70,7 @@
     <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs"> 
       <rs-tab event-key="detail" title="Details">
         <div class="form-details-container">
-          <div style="overflow-x: auto;">
+          <div class="form-details-inputs-container">
             <semantic-form-text-input for="entity_primary_appellation" label="Activity name" placeholder="Enter activity name"></semantic-form-text-input>
 
             <semantic-form-text-input for="entity_description" multiline="true" label="Description" placeholder="Enter description/comment"></semantic-form-text-input>
@@ -143,15 +143,8 @@
             <semantic-form-autocomplete-input for="period_place" 
                                               label="Place" 
                                               placeholder="Select place"
-                                              nested-form-templates='[ 
-                                                {
-                                                    "label": "Place",
-                                                    "nestedForm": "{{{{raw}}}}
-                                                                    {{> \"http://www.researchspace.org/resource/system/forms/Place\" nested=true editable=true mode=\"new\"
-                                                                    apiResourceURI=false apiResourceName=false apiResourceLabel=false apiResourceDescription=false apiResourceosmGeoCoordinates=false}}
-                                                                {{{{/raw}}}}"
-                                                }
-                                              ]'>
+                                              show-dropdown-filter="false"
+                                              nested-form-templates='[[> Platform:NestedFormTemplates_places]]'>
             </semantic-form-autocomplete-input>
 
             <semantic-form-autocomplete-input   for="entity_preferred_id" 
@@ -169,6 +162,7 @@
             <semantic-form-autocomplete-input   for="entity_id" 
                                                 label="Other identifier"
                                                 placeholder="Select other identifier" 
+                                                show-dropdown-filter="false"
                                                 nested-form-templates='[[> Platform:NestedFormTemplates_appellations]]'>
             </semantic-form-autocomplete-input>
           </div>
@@ -198,6 +192,7 @@
                 <semantic-form-autocomplete-input for='carried_out_by_range'  
                                                   render-header="false"
                                                   placeholder="Select actor" 
+                                                  show-dropdown-filter="false"
                                                   nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'> 
                 </semantic-form-autocomplete-input> 
               </div>
@@ -248,6 +243,7 @@
                     <semantic-form-autocomplete-input for='participant_range'  
                                                       render-header="false"
                                                       placeholder="Select actor" 
+                                                      show-dropdown-filter="false"
                                                       nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'> 
                     </semantic-form-autocomplete-input> 
                   </div>
@@ -283,6 +279,7 @@
         <semantic-form-autocomplete-input   for='event_occurred_in_the_presence_of_actor' 
                                             label="Occurred in the presence of" 
                                             placeholder="Select actor" 
+                                            show-dropdown-filter="false"
                                             nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'> 
         </semantic-form-autocomplete-input> 
 
@@ -329,27 +326,13 @@
         <semantic-form-autocomplete-input for='entity_attributed_by_attribute_assignment' 
                                           label="Attributed by"
                                           placeholder="Select what assigned attribute to the activity" 
-                                          nested-form-templates='[ 
-                                              {
-                                                  "label": "Attribute assignment",
-                                                  "nestedForm": "{{{{raw}}}}
-                                                                  {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                              {{{{/raw}}}}"
-                                              }
-                                          ]'>  
+                                          nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input for='entity_assigned_by_attribute_assignment' 
                                           label="Assigned by"
                                           placeholder="Select what assigned the activity" 
-                                          nested-form-templates='[ 
-                                              {
-                                                  "label": "Attribute assignment",
-                                                  "nestedForm": "{{{{raw}}}}
-                                                                  {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                              {{{{/raw}}}}"
-                                              }
-                                          ]'>  
+                                          nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input for='entity_measurement' 
@@ -587,7 +570,7 @@
 
       </rs-tab>
 
-      <rs-tab event-key="type" title="Types/techniques">
+      <rs-tab event-key="type" title="Types/Techniques">
 
         <semantic-form-tree-picker-input  for='activity_used_general_technique_type' 
                                           label="Used technique"  

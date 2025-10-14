@@ -1,6 +1,6 @@
 /**
  * ResearchSpace
- * Copyright (C) 2022-2024, © Kartography Community Interest Company
+ * Copyright (C) 2022-2025, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -25,13 +25,13 @@ import * as Immutable from 'immutable';
 import * as React from 'react';
 import { Button } from 'react-bootstrap';
 import * as _ from 'lodash';
-import { DropdownButton, MenuItem } from 'react-bootstrap';
 
 import { Cancellation } from 'platform/api/async/Cancellation';
 import { Rdf } from 'platform/api/rdf';
 
 import { TemplateItem } from 'platform/components/ui/template';
 
+import { DropdownWithFilter } from './dropdown/DropdownWithFilter';
 import { FieldDefinition, getPreferredLabel } from '../FieldDefinition';
 import { FieldValue, AtomicValue, EmptyValue, SparqlBindingValue, ErrorKind, DataState } from '../FieldValues';
 import { SingleValueInput, AtomicValueInput, AtomicValueInputProps } from './SingleValueInput';
@@ -47,7 +47,9 @@ import { ConfigHolder } from 'platform/api/services/config-holder';
 type nestedFormEl = {
   label?: string,
   nestedForm?: string,
-  modalId?: string
+  modalId?: string,
+  parentIri?: string,
+  passValuesFor?: string[]
 }
 
 export interface SelectInputProps extends AtomicValueInputProps {
@@ -100,6 +102,13 @@ export interface SelectInputProps extends AtomicValueInputProps {
    * If set to true, the resource can not be edited and the Edit button will not be shown and will not possible to open the resource in a new tab
    */
   readonlyResource?: boolean;
+
+  /**
+   * If set to false, the filter input in the dropdown will be hidden
+   * @default true
+   */
+  showDropdownFilter?: boolean;
+
 }
 
 interface State {
@@ -110,7 +119,10 @@ interface State {
   nestedFormTemplates?: nestedFormEl[];
   labelFormSelected?: string;
   valueSelectedWithoutEditForm?: boolean;
-  modalId?: string
+  modalId?: string,
+  parentIri?: string,
+  passValuesFor?: string[]
+  filterValue?: string;
 }
 
 const SELECT_TEXT_CLASS = 'select-text-field';
@@ -127,7 +139,8 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
     this.state = {
       valueSet: Immutable.List<SparqlBindingValue>(),
       nestedFormOpen: false,
-      nestedFormTemplates: []
+      nestedFormTemplates: [],
+      filterValue: ''
     };
   }
 
@@ -290,10 +303,10 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
     return D.span({ id: v.label, className: OPTION_CLASS }, v.label || v.value.value);
   };
 
-  private openSelectedNestedForm(formTemplate: string) {
-    tryExtractNestedForm(this.props.children, this.context, formTemplate)
+  private openSelectedNestedForm(formTemplate: string, parentIri?: string, passValuesFor?: string[]) {
+    tryExtractNestedForm(this.props.children, this.context, formTemplate, Rdf.iri(parentIri), passValuesFor)
       .then(nestedForm => {
-        if (nestedForm != undefined) {console.log(nestedForm);
+        if (nestedForm != undefined) {
          this.setState({nestedForm});
           this.toggleNestedForm()
         }
@@ -315,11 +328,16 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
   private onDropdownSelectHandler(label: string) {
     const nestedFormTemplateSelected = this.state.nestedFormTemplates.filter((e) => e.label === label)[0].nestedForm
     const modalId = this.state.nestedFormTemplates.filter((e) => e.label === label)[0].modalId
+    const parentIri = this.state.nestedFormTemplates.filter((e) => e.label === label)[0].parentIri
+    const passValuesFor = this.state.nestedFormTemplates.filter((e) => e.label === label)[0].passValuesFor
+    
     this.setState({
       labelFormSelected: label,
-      modalId
+      modalId,
+      parentIri,
+      passValuesFor
     })
-    this.openSelectedNestedForm(nestedFormTemplateSelected)
+    this.openSelectedNestedForm(nestedFormTemplateSelected, parentIri, passValuesFor)
   }
 
   render() {
@@ -362,12 +380,18 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
           </Button>
         )}
         { showCreateNewDropdown && (
-          <DropdownButton title="New" pullRight id="add-form" onSelect={(label) => this.onDropdownSelectHandler(label)}>
-            {this.state.nestedFormTemplates.map((e) => {
-                return (<MenuItem key={e.label} eventKey={e.label}>{e.label}</MenuItem>)
-              }
-            )}
-          </DropdownButton>
+          <DropdownWithFilter
+            id="add-form"
+            title="New"
+            items={this.state.nestedFormTemplates}
+            filterValue={this.state.filterValue || ''}
+            onFilterChange={v => this.setState({ filterValue: v })}
+            onSelect={item => this.onDropdownSelectHandler(String(item.label))}
+            getLabel={item => String(item.label)}
+            placeholder="Filter..."
+            noResultsText="No results"
+            showFilter={this.props.showDropdownFilter}
+          />
         )}
         { showEditButton && 
           <Button className={`${SELECT_TEXT_CLASS}__create-button btn-textAndIcon`} title='Edit' onClick={() => {this.onEditHandler(selectedValue)}}>
@@ -380,7 +404,6 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
               urlqueryparam-view="resource-editor"
               urlqueryparam-open-as-drag-and-drop="true"
               urlqueryparam-resource={(this.props.value.value as Rdf.Iri).value}
-              draggable={false}
             >
               <Button className={`${SELECT_TEXT_CLASS}__open-in-new-tab`} title='Edit in new draggable tab'>
                 <Icon iconType='rounded' iconName='read_more' symbol={true} />
@@ -399,6 +422,8 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
             onSubmit={this.onNestedFormSubmit}
             onCancel={() => this.setState({ nestedFormOpen: false })}
             parent={this.htmlElement}
+            parentIri={this.state.parentIri}
+            passValuesFor={this.state.passValuesFor}
           >
             {this.state.nestedForm}
           </NestedModalForm>
@@ -427,7 +452,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
 
   private createDefaultPlaceholder(definition: FieldDefinition): string {
     const fieldName = (getPreferredLabel(definition.label) || 'entity').toLocaleLowerCase();
-    return `Select ${fieldName} here...`;
+    return `Select ${fieldName}`;
   }
 
   static makeHandler = AtomicValueInput.makeAtomicHandler;

@@ -33,6 +33,8 @@
                             physical_thing_former_owner="http://www.researchspace.org/pattern/system/physical_thing/former_owner"
                             physical_thing_current_keeper="http://www.researchspace.org/pattern/system/physical_thing/current_keeper"
                             physical_thing_former_keeper="http://www.researchspace.org/pattern/system/physical_thing/former_keeper"
+                            physical_thing_changed_ownership_through="http://www.researchspace.org/pattern/system/physical_thing/changed_ownership_through"
+                            physical_thing_custody_transferred_through="http://www.researchspace.org/pattern/system/physical_thing/custody_transferred_through"
                             legal_object_subject_to_right="http://www.researchspace.org/pattern/system/legal_object/subject_to_right"
                             legal_object_right_held_by_actor="http://www.researchspace.org/pattern/system/legal_object/right_held_by"
 
@@ -40,17 +42,26 @@
                             physical_thing_has_section="http://www.researchspace.org/pattern/system/physical_thing/has_section"
                             physical_thing_occupies="http://www.researchspace.org/pattern/system/physical_thing/occupies"
 
-                            physical_thing_modified_by="http://www.researchspace.org/pattern/system/physical_thing/modified_by"
                             thing_used_specific_object_range="http://www.researchspace.org/pattern/system/thing/used_specific_object_range"
-                            persistent_item_present_at="http://www.researchspace.org/pattern/system/persistent_item/present_at"
+                            physical_thing_assessed_by="http://www.researchspace.org/pattern/system/physical_thing/assessed_by"
                             persistent_item_brought_into_existence_by="http://www.researchspace.org/pattern/system/persistent_item/brought_into_existence_by"
+                            physical_thing_modified_by="http://www.researchspace.org/pattern/system/physical_thing/modified_by"
+                            physical_thing_transformed_by="http://www.researchspace.org/pattern/system/physical_thing/transformed_by"
+                            physical_thing_resulted_from="http://www.researchspace.org/pattern/system/physical_thing/resulted_from"
+                            physical_thing_added_by="http://www.researchspace.org/pattern/system/physical_thing/added_by"
+                            physical_thing_removed_by="http://www.researchspace.org/pattern/system/physical_thing/removed_by"
+                            physical_thing_destroyed_by="http://www.researchspace.org/pattern/system/physical_thing/destroyed_by"
                             persistent_item_taken_out_of_existence_by="http://www.researchspace.org/pattern/system/persistent_item/taken_out_of_existence_by"
+                            physical_thing_witnessed_period="http://www.researchspace.org/pattern/system/physical_thing/witnessed_period"
+                            persistent_item_present_at="http://www.researchspace.org/pattern/system/persistent_item/present_at"
                             entity_influenced_activity="http://www.researchspace.org/pattern/system/entity/influenced_activity"
                             entity_motivated_activity="http://www.researchspace.org/pattern/system/entity/motivated_activity"
                             entity_attributed_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/attributed_by_attribute_assignment"
                             entity_assigned_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/assigned_by_attribute_assignment"
                             entity_measurement="http://www.researchspace.org/pattern/system/entity/measurement"
 
+                            physical_thing_holds_or_supports="http://www.researchspace.org/pattern/system/physical_thing/holds_or_supports"
+                            physical_thing_held_or_supported_by="http://www.researchspace.org/pattern/system/physical_thing/held_or_supported_by"
                             physical_thing_carries_symbolic_object="http://www.researchspace.org/pattern/system/physical_thing/carries_symbolic_object"
                             thing_shows_features_of_thing="http://www.researchspace.org/pattern/system/thing/PC130_shows_features_of"
                             thing_has_features_of_thing="http://www.researchspace.org/pattern/system/thing/PC130_shows_features_of_range"
@@ -71,7 +82,7 @@
         <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
             <rs-tab event-key="detail" title="Details">
                 <div class="form-details-container">
-                    <div style="overflow-x: auto;">
+                    <div class="form-details-inputs-container">
                         <semantic-form-text-input for="entity_primary_appellation" label="Physical thing name" placeholder="Enter physical thing name"> </semantic-form-text-input>
                         <semantic-form-text-input for="entity_description" label="Description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
 
@@ -90,6 +101,7 @@
                         <semantic-form-autocomplete-input   for="entity_id" 
                                                             label="Other identifier"
                                                             placeholder="Select other identifier" 
+                                                            show-dropdown-filter="false"
                                                             nested-form-templates='[[> Platform:NestedFormTemplates_appellations]]'>
                         </semantic-form-autocomplete-input>
                         
@@ -207,12 +219,13 @@
                                                                     {{#ifCond bindings.0.node.value "===" physicalThing}}
                                                                         <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
                                                                     {{else}}
-                                                                        <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                                        urlqueryparam-view='resource-editor' 
-                                                                                        urlqueryparam-resource-iri='{{node.value}}'
-                                                                                        >
-                                                                            <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                                        </semantic-link>
+                                                                        <mp-draggable iri="{{node.value}}">
+                                                                            <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                                    urlqueryparam-view='resource-editor' 
+                                                                                                    urlqueryparam-resource-iri='{{node.value}}'>
+                                                                                <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                                            </semantic-link-container>
+                                                                        </mp-draggable>
                                                                     {{/ifCond}}
                                                                 </div>
                                                             </template>
@@ -292,12 +305,14 @@
                                 <semantic-form-autocomplete-input   for='physical_thing_current_owner'
                                                                     label="Current owner"
                                                                     placeholder="Select current legal owner of the physical thing at the time of validity of the record" 
+                                                                    show-dropdown-filter="false"
                                                                     nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'>
                                 </semantic-form-autocomplete-input>
                             </div>
                             <semantic-form-autocomplete-input   for='physical_thing_former_owner' 
                                                                 label="Former owner" 
                                                                 placeholder="Select actor that is or had been the legal owner of the physical thing" 
+                                                                show-dropdown-filter="false"
                                                                 nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'>
                             </semantic-form-autocomplete-input>
                         </div>
@@ -310,6 +325,7 @@
                                 <semantic-form-autocomplete-input   for='physical_thing_current_keeper' 
                                                                     label="Current keeper" 
                                                                     placeholder="Select actor that has custody of the physical thing at the time of validity of the record"
+                                                                    show-dropdown-filter="false"
                                                                     nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'>
                                 </semantic-form-autocomplete-input>
                             </div>    
@@ -317,11 +333,42 @@
                             <semantic-form-autocomplete-input   for='physical_thing_former_keeper' 
                                                                 label="Former keeper" 
                                                                 placeholder="Select actor that has or has had custody of the physical thing"
+                                                                show-dropdown-filter="false"
                                                                 nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'>
                             </semantic-form-autocomplete-input>
                         </div>
                     </div>
                 </div>
+
+                <semantic-form-autocomplete-input   for='physical_thing_changed_ownership_through' 
+                                                    label="Changed ownership through" 
+                                                    placeholder="Select acquisition that changed ownership of the physical thing"
+                                                    nested-form-templates='[ 
+                                                        {
+                                                        "label": "Acquisition",
+                                                        "nestedForm": "{{{{raw}}}}
+                                                                            {{> \"http://www.researchspace.org/resource/system/forms/Acquisition\" nested=true editable=true mode=\"new\"}}
+                                                                        {{{{/raw}}}}"
+                                                        },
+                                                        {
+                                                        "label": "Purchase",
+                                                        "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Purchase\" nested=true editable=true mode=\"new\" }}{{{{/raw}}}}"
+                                                        }
+                                                    ]'>
+                 </semantic-form-autocomplete-input>
+
+                <semantic-form-autocomplete-input   for='physical_thing_custody_transferred_through' 
+                                                    label="Custody transferred through" 
+                                                    placeholder="Select transfer of custody of the physical thing" 
+                                                    nested-form-templates='[ 
+                                                        {
+                                                        "label": "Transfer of custody",
+                                                        "nestedForm": "{{{{raw}}}}
+                                                                            {{> \"http://www.researchspace.org/resource/system/forms/TransferOfCustody\" nested=true editable=true mode=\"new\"}}
+                                                                        {{{{/raw}}}}"
+                                                        }
+                                                    ]'>
+                 </semantic-form-autocomplete-input>
 
                 <semantic-form-autocomplete-input   for='legal_object_subject_to_right' 
                                                     label="Legal rights"
@@ -339,6 +386,7 @@
                 <semantic-form-autocomplete-input   for='legal_object_right_held_by_actor' 
                                                     label="Right held by" 
                                                     placeholder="Select actor who holds legal right on the physical thing" 
+                                                    show-dropdown-filter="false"
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'> 
                 </semantic-form-autocomplete-input> 
 
@@ -349,30 +397,27 @@
                 <semantic-form-autocomplete-input   for='physical_thing_former_location' 
                                                     label="Former or current location" 
                                                     placeholder="Select a place as the former or current location of the physical thing"
+                                                    show-dropdown-filter="false"
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_places]]'>
                 </semantic-form-autocomplete-input>
 
                 <semantic-form-autocomplete-input   for='physical_thing_has_section' 
                                                     label="Has section" 
                                                     placeholder="Select a place as the area upon which the physical thing is found"
+                                                    show-dropdown-filter="false"
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_places]]'>
                 </semantic-form-autocomplete-input>
 
                 <semantic-form-autocomplete-input   for='physical_thing_occupies' 
                                                     label="Occupies space" 
                                                     placeholder="Select a place as the volume that contains all the points which the physical thing has covered at some time during its existence"
+                                                    show-dropdown-filter="false"
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_places]]'>
                 </semantic-form-autocomplete-input>
                 
             </rs-tab>
 
             <rs-tab event-key="event" title="Events">
-
-                <semantic-form-autocomplete-input   for='physical_thing_modified_by' 
-                                                    label="Modified by" 
-                                                    placeholder="Select modification"
-                                                    nested-form-templates='[[> Platform:NestedFormTemplates_modifications]]'>
-                </semantic-form-autocomplete-input>
 
                 <div class="inline-composite-container">
                     <semantic-form-composite-input  for="thing_used_specific_object_range" 
@@ -388,48 +433,55 @@
                         <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC16_used_specific_object'> </semantic-form-hidden-input>
                         
                         <div class="form-inline-inputs">
-                        <div style="flex: 1;">
-                            <semantic-form-autocomplete-input for='used_specific_object_activity_domain' 
-                                                            label="Used for" 
-                                                            render-header="false"
-                                                            placeholder="Select activity in which the use of the physical thing was essential to the performance or outcome" 
-                                                            nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'> 
-                            </semantic-form-autocomplete-input> 
-                        </div>
-                        <div style="flex: 1;">
-                            <semantic-form-tree-picker-input  for="mode_of_use" 
-                                                            label="Mode of use" 
-                                                            render-header="false"
-                                                            placeholder="Select mode of use"
-                                                            close-dropdown-on-selection='true'
-                                                            tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/mode_of_use>", 
-                                                                            "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/mode_of_use>",
-                                                                            "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
-        
-                                                            scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                        "view": "authority-list",
-                                                                                        "scheme": "http://www.researchspace.org/resource/vocab/mode_of_use",
-                                                                                        "tooltip": "Open list of modes of use"
-                                                                                        }'
-                                                            
-                                                            nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                                    scheme="http://www.researchspace.org/resource/vocab/mode_of_use"
-                                                                                                    entityType="mode of use" }}{{{{/raw}}}}'
-        
-                                                            query-item-label='SELECT ?label WHERE {
-                                                                                ?item skos:prefLabel ?label .
-                                                                            }'>
-                            </semantic-form-tree-picker-input>
-                        </div>
+                            <div style="flex: 1;">
+                                <semantic-form-autocomplete-input for='used_specific_object_activity_domain' 
+                                                                label="Used for" 
+                                                                render-header="false"
+                                                                placeholder="Select activity in which the use of the physical thing was essential to the performance or outcome" 
+                                                                nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'> 
+                                </semantic-form-autocomplete-input> 
+                            </div>
+                            <div style="flex: 1;">
+                                <semantic-form-tree-picker-input  for="mode_of_use" 
+                                                                label="Mode of use" 
+                                                                render-header="false"
+                                                                placeholder="Select mode of use"
+                                                                close-dropdown-on-selection='true'
+                                                                tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/mode_of_use>", 
+                                                                                "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/mode_of_use>",
+                                                                                "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+            
+                                                                scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                            "view": "authority-list",
+                                                                                            "scheme": "http://www.researchspace.org/resource/vocab/mode_of_use",
+                                                                                            "tooltip": "Open list of modes of use"
+                                                                                            }'
+                                                                
+                                                                nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                        scheme="http://www.researchspace.org/resource/vocab/mode_of_use"
+                                                                                                        entityType="mode of use" }}{{{{/raw}}}}'
+            
+                                                                query-item-label='SELECT ?label WHERE {
+                                                                                    ?item skos:prefLabel ?label .
+                                                                                }'>
+                                </semantic-form-tree-picker-input>
+                            </div>
                         </div>
                     </semantic-form-composite-input>
                 </div>
 
-                <semantic-form-autocomplete-input   for='persistent_item_present_at' 
-                                                    label="Present at" 
-                                                    placeholder="Select event in which the physical thing had an active or passive presence" 
-                                                    nested-form-templates='[[> Platform:NestedFormTemplates_events]]'>  
-                </semantic-form-autocomplete-input> 
+                <semantic-form-autocomplete-input   for='physical_thing_assessed_by' 
+                                                    label="Assessed by" 
+                                                    placeholder="Select condition assessment"
+                                                    nested-form-templates='[ 
+                                                        {
+                                                            "label": "Condition assessment",
+                                                            "nestedForm": "{{{{raw}}}}
+                                                                            {{> \"http://www.researchspace.org/resource/system/forms/ConditionAssessment\" nested=true editable=true mode=\"new\"}}
+                                                                        {{{{/raw}}}}"
+                                                        }
+                                                    ]'> 
+                </semantic-form-autocomplete-input>
 
                 <semantic-form-autocomplete-input   for='persistent_item_brought_into_existence_by' 
                                                     label="Brought into existence by" 
@@ -437,11 +489,95 @@
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_beginningOfExistences]]'>  
                 </semantic-form-autocomplete-input>
 
+                <semantic-form-autocomplete-input   for='physical_thing_modified_by' 
+                                                    label="Modified by" 
+                                                    placeholder="Select modification"
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_modifications]]'>
+                </semantic-form-autocomplete-input>
+
+                <semantic-form-autocomplete-input   for='physical_thing_transformed_by' 
+                                                    label="Transformed by" 
+                                                    placeholder="Select transformation"
+                                                    nested-form-templates='[ 
+                                                        {
+                                                        "label": "Transformation",
+                                                        "nestedForm": "{{{{raw}}}}
+                                                                            {{> \"http://www.researchspace.org/resource/system/forms/Transformation\" nested=true editable=true mode=\"new\"}}
+                                                                        {{{{/raw}}}}"
+                                                        }
+                                                    ]'> 
+                </semantic-form-autocomplete-input>
+
+                <semantic-form-autocomplete-input   for='physical_thing_resulted_from' 
+                                                    label="Resulted from" 
+                                                    placeholder="Select transformation"
+                                                    nested-form-templates='[ 
+                                                        {
+                                                        "label": "Transformation",
+                                                        "nestedForm": "{{{{raw}}}}
+                                                                            {{> \"http://www.researchspace.org/resource/system/forms/Transformation\" nested=true editable=true mode=\"new\"}}
+                                                                        {{{{/raw}}}}"
+                                                        }
+                                                    ]'> 
+                </semantic-form-autocomplete-input>
+
+                <semantic-form-autocomplete-input   for='physical_thing_added_by' 
+                                                    label="Added by" 
+                                                    placeholder="Select part addition"
+                                                    nested-form-templates='[ 
+                                                        {
+                                                        "label": "Part addition",
+                                                        "nestedForm": "{{{{raw}}}}
+                                                                            {{> \"http://www.researchspace.org/resource/system/forms/PartAddition\" nested=true editable=true mode=\"new\"}}
+                                                                        {{{{/raw}}}}"
+                                                        }
+                                                    ]'> 
+                </semantic-form-autocomplete-input>
+
+                <semantic-form-autocomplete-input   for='physical_thing_removed_by' 
+                                                    label="Removed by" 
+                                                    placeholder="Select part removal"
+                                                    nested-form-templates='[ 
+                                                        {
+                                                        "label": "Part removal",
+                                                        "nestedForm": "{{{{raw}}}}
+                                                                            {{> \"http://www.researchspace.org/resource/system/forms/PartRemoval\" nested=true editable=true mode=\"new\"}}
+                                                                        {{{{/raw}}}}"
+                                                        }
+                                                    ]'> 
+                </semantic-form-autocomplete-input>
+
+                <semantic-form-autocomplete-input   for='physical_thing_destroyed_by' 
+                                                    label="Destroyed by" 
+                                                    placeholder="Select destruction"
+                                                    nested-form-templates='[ 
+                                                        {
+                                                        "label": "Destruction",
+                                                        "nestedForm": "{{{{raw}}}}
+                                                                            {{> \"http://www.researchspace.org/resource/system/forms/Destruction\" nested=true editable=true mode=\"new\"}}
+                                                                        {{{{/raw}}}}"
+                                                        }
+                                                    ]'> 
+                </semantic-form-autocomplete-input>
+
                 <semantic-form-autocomplete-input   for='persistent_item_taken_out_of_existence_by' 
                                                     label="Taken out of existence by" 
                                                     placeholder="Select event that took the physical thing out of existence" 
+                                                    show-dropdown-filter="false"
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_endOfExistences]]'>  
                 </semantic-form-autocomplete-input>
+
+                <semantic-form-autocomplete-input   for='physical_thing_witnessed_period' 
+                                                    label="Witnessed" 
+                                                    placeholder="Select period/event/activity that took place on or within the physical thing" 
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_periods]]'> 
+                </semantic-form-autocomplete-input> 
+
+                <semantic-form-autocomplete-input   for='persistent_item_present_at' 
+                                                    label="Present at" 
+                                                    placeholder="Select event in which the physical thing had an active or passive presence" 
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_events]]'>  
+                </semantic-form-autocomplete-input> 
 
                 <semantic-form-autocomplete-input   for='entity_influenced_activity' 
                                                     label="Influenced"
@@ -458,27 +594,13 @@
                 <semantic-form-autocomplete-input   for='entity_attributed_by_attribute_assignment' 
                                                     label="Attributed by"
                                                     placeholder="Select what assigned attribute to the physical thing" 
-                                                    nested-form-templates='[ 
-                                                        {
-                                                            "label": "Attribute assignment",
-                                                            "nestedForm": "{{{{raw}}}}
-                                                                            {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                        {{{{/raw}}}}"
-                                                        }
-                                                    ]'>  
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
                 </semantic-form-autocomplete-input>
 
                 <semantic-form-autocomplete-input   for='entity_assigned_by_attribute_assignment' 
                                                     label="Assigned by"
                                                     placeholder="Select what assigned the physical thing" 
-                                                    nested-form-templates='[ 
-                                                        {
-                                                            "label": "Attribute assignment",
-                                                            "nestedForm": "{{{{raw}}}}
-                                                                            {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                        {{{{/raw}}}}"
-                                                        }
-                                                    ]'>  
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
                 </semantic-form-autocomplete-input>
 
                 <semantic-form-autocomplete-input   for='entity_measurement' 
@@ -496,6 +618,18 @@
             </rs-tab>
 
             <rs-tab event-key="thing" title="Things">
+
+                <semantic-form-autocomplete-input   for='physical_thing_holds_or_supports' 
+                                                    label="Holds or supports"
+                                                    placeholder="Select what the physical thing supports or contains" 
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
+                </semantic-form-autocomplete-input>
+
+                <semantic-form-autocomplete-input   for='physical_thing_held_or_supported_by' 
+                                                    label="Held or supported by"
+                                                    placeholder="Select what supports or contains the physical thing" 
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
+                </semantic-form-autocomplete-input>
 
                 <semantic-form-autocomplete-input   for='physical_thing_carries_symbolic_object' 
                                                     label="Carries" 

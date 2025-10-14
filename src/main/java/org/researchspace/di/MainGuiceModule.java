@@ -32,6 +32,7 @@ import org.apache.shiro.authc.credential.PasswordMatcher;
 import org.apache.shiro.authc.credential.PasswordService;
 import org.researchspace.cache.LabelCache;
 import org.researchspace.cache.QueryTemplateCache;
+import org.researchspace.cache.ResourceConfigurationCache;
 import org.researchspace.cache.TemplateIncludeCache;
 import org.researchspace.config.Configuration;
 import org.researchspace.data.rdf.container.LDPApiInternal;
@@ -95,6 +96,7 @@ public class MainGuiceModule extends AbstractModule {
         bind(QueryTemplateCache.class).in(Singleton.class);
         bind(QueryCatalogRESTServiceRegistry.class).in(Singleton.class);
         bind(LabelCache.class).in(Singleton.class);
+        bind(ResourceConfigurationCache.class).in(Singleton.class);
         bind(TemplateIncludeCache.class).in(Singleton.class);
         bind(SparqlServlet.class).in(Singleton.class);
         bind(MProxyServlet.class).in(Singleton.class);

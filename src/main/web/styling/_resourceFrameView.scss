@@ -1,0 +1,143 @@
+/**
+ * ResearchSpace
+ * Copyright (C) 2022-2025, © Kartography Community Interest Company
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.Dashboard--template:has(.resource-frameView-container) {
+
+  container-name: resource-frameView-container;
+  container-type: inline-size;
+}
+
+.Dashboard--template:has(.page__grid-container) {
+
+  overflow: hidden;
+
+  .page__grid-container {
+    overflow: auto;
+  }
+
+}
+
+ .resource-frameView-container {
+
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+
+  display: grid;
+ // grid-template-columns: 100%;
+  grid-template-columns: 4fr minmax(280px, 1fr);
+
+//  grid-template-rows: min-content auto;
+  grid-template-areas: 'visualisation details';
+
+  gap: 10px;
+  padding: 25px;
+
+  .resource-frameView-details {
+    grid-area: details;
+  }
+
+  .resource-frameView-visualisation {
+  
+    grid-area: visualisation;
+
+  //  min-height: 100px;
+    overflow: auto;
+
+    & .semantic-chart,
+    & .semantic-chart__renderer {
+      height: 100% !important;
+    }
+  }
+
+  .resource-frameView-resources-container {
+
+    display: flex; 
+    gap: 20px;
+    flex-wrap: wrap;
+   // overflow: auto;
+  }
+
+  .resource-frameView-visualisation,
+  .resource-frameView-details {
+
+    background-color: $color-white;
+    border: 1px solid $color-border;
+    height: 100%;
+    padding: 20px 30px;
+
+    display: flex;
+    flex-direction: column;
+    
+  }
+
+  .resource-frameView-details-hearder {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-start; 
+    gap: 10px;
+
+    h3 {
+      margin-top: 5px; 
+      margin-bottom: 5px; 
+      text-transform: capitalize; 
+      flex: 1;
+    }
+  }
+ }
+
+@container resource-frameView-container (width <= 950px) {
+
+  .resource-frameView-container {
+
+    grid-template-columns: 100%;
+    grid-template-rows: min-content auto;
+    grid-template-areas: 'details'
+                        'visualisation';
+
+    &.resource-persisted-container {
+      overflow-y: auto;
+    }
+
+    .resource-frameView-visualisation,
+    .resource-frameView-details {
+      padding: 20px;
+    }
+
+    .dropdown-menu.resource-actions__dropdown-menu {
+      max-height: 100px;
+    }
+  }
+
+  .resource-frameView-container:has(.SemanticTimeline--timeline) {
+    grid-template-rows: min-content auto;
+  }
+
+}
+
+@container resource-frameView-container (height < 300px) {
+
+  .resource-frameView-visualisation,
+  .resource-frameView-details {
+    padding: 20px;
+  }
+
+  .dropdown-menu.resource-actions__dropdown-menu {
+    max-height: 100px;
+  }
+}

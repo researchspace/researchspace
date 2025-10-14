@@ -1,50 +1,59 @@
 <semantic-query query=' SELECT  ?collection 
-                                ?resourceConfiguration ?resourceName ?resourceOntologyClass ?resourceP2Type ?resourceFormIRI 
-                                ?resourceMembershipProperty ?resourceBroaderProperty ?resourceOrderPattern 
-                                ?resourceRestrictionPattern ?resourceLabelPattern 
-                                ?resourceIcon
+                                ?resourceConfiguration 
+                                #?resourceName ?resourceOntologyClass ?resourceP2Type ?resourceFormIRI 
+                                #?resourceMembershipProperty ?resourceBroaderProperty ?resourceOrderPattern 
+                                #?resourceRestrictionPattern ?resourceLabelPattern 
+                                #?resourceIcon
                                  ?managedByResourceConfig
                             
                         WHERE {
-
+                            {{#if useCollection}}
+                              OPTIONAL {
+                                <{{useCollection}}> crm:P67_refers_to ?refersToResourceConfig .
+                                BIND(<{{useCollection}}> AS ?collection) .
+                              }
+                            {{else}}
+                              OPTIONAL {
+                                <{{useConfig}}> crm:P67_refers_to ?refersToResourceConfig .
+                                BIND(<{{useConfig}}> AS ?collection) .
+                              }
+                            {{/if}}
+                          
                             OPTIONAL {
-                              <{{configOrScheme}}> crm:P67_refers_to ?refersToResourceConfig .
-                              BIND(<{{configOrScheme}}> AS ?collection) .
+                              <{{useConfig}}> a <http://www.researchspace.org/resource/system/resource_configuration> .
+                              BIND(<{{useConfig}}> as ?refersToResourceConfig) .
                             }
-
-                            OPTIONAL {
-                              <{{configOrScheme}}> a <http://www.researchspace.org/resource/system/resource_configuration> .
-                              BIND(<{{configOrScheme}}> as ?refersToResourceConfig) .
-                            }
-
+                          
                             BIND(COALESCE(?refersToResourceConfig [[#if defaultConfig]], <[[defaultConfig]]>[[/if]]) AS ?resourceConfiguration ) .
                             BIND(BOUND(?refersToResourceConfig) as ?managedByResourceConfig) .
                             
-                            ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceName ;
-                              <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass ;
-                              <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
+                            #?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceName ;
+                           #   <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass .
+
                             
-                            OPTIONAL {
-                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .
-                            }
-                            OPTIONAL {
-                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern .
-                            }
-                            OPTIONAL {
-                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty .
-                            }
-                            OPTIONAL {
-                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property> ?resourceBroaderProperty .
-                            }
-                            OPTIONAL {
-                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_order_sparql_pattern> ?resourceOrderPattern .
-                            }
-                            OPTIONAL {
-                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_label_sparql_pattern> ?resourceLabelPattern .
-                            }
-                            OPTIONAL {
-                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .
-                            }
+                           # ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
+                            
+                           # OPTIONAL {
+                           #   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .
+                           # }
+                           # OPTIONAL {
+                           #   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern .
+                           # }
+                           # OPTIONAL {
+                           #   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty .
+                           # }
+                           # OPTIONAL {
+                           #   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property> ?resourceBroaderProperty .
+                           # }
+                           # OPTIONAL {
+                           #   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_order_sparql_pattern> ?resourceOrderPattern .
+                           # }
+                           # OPTIONAL {
+                           #   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_label_sparql_pattern> ?resourceLabelPattern .
+                           # }
+                           # OPTIONAL {
+                           #   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .
+                           # }
                           } LIMIT 1'
   >
     <template id='template'>
@@ -54,19 +63,20 @@
           editable=true 
           resourceConfiguration=bindings.0.resourceConfiguration.value 
           collection=bindings.0.collection.value 
-          resourceName=bindings.0.resourceName.value 
-          resourceOntologyClass =bindings.0.resourceOntologyClass.value 
-          resourceP2Type=bindings.0.resourceP2Type.value
-          resourceLabelPattern=bindings.0.resourceLabelPattern.value  
-          resourceRestrictionPattern=bindings.0.resourceRestrictionPattern.value 
-          resourceForm=bindings.0.resourceFormIRI.value 
-          resourceMembershipProperty=bindings.0.resourceMembershipProperty.value 
-          resourceBroaderProperty=bindings.0.resourceBroaderProperty.value 
-          resourceOrderPattern=bindings.0.resourceOrderPattern.value 
-          resourceIcon=bindings.0.resourceIcon.value
+          resourceName=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceLabel")
+          resourceOntologyClass=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceOntologyClass")
+          resourceP2Type=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "p2HasType")
+          resourceDescription=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceDescription")
+          resourceLabelPattern=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceLabelPattern")
+          resourceRestrictionPattern=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceRestrictionPattern")
+          resourceForm=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceFormIRI")
+          resourceMembershipProperty=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceMembershipProperty")
+          resourceBroaderProperty=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceBroaderProperty")
+          resourceOrderPattern=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceOrderPattern")
+          resourceIcon=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceIcon")   
           mode=mode 
           iri=iri}}
-      {{else}}
+      {{else}} 
         [[!-- if there is no authority configuration for the current authority then we can only guess how to edit it, 
               so we can offer here for user to associate a config with it --]]
         {{> rsp:SimpleCollectionBrowser 
@@ -74,19 +84,99 @@
           editable=false 
           resourceConfiguration=bindings.0.resourceConfiguration.value 
           collection=bindings.0.collection.value 
-          resourceName=bindings.0.resourceName.value 
-          resourceOntologyClass =bindings.0.resourceOntologyClass.value 
-          
-          resourceLabelPattern=bindings.0.resourceLabelPattern.value 
-          resourceRestrictionPattern=bindings.0.resourceRestrictionPattern.value 
-          resourceForm=bindings.0.resourceFormIRI.value 
-          resourceMembershipProperty=bindings.0.resourceMembershipProperty.value 
-          resourceBroaderProperty=bindings.0.resourceBroaderProperty.value 
-          resourceOrderPattern=bindings.0.resourceOrderPattern.value 
-          resourceIcon=bindings.0.resourceIcon.value
+          resourceName=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceLabel")
+          resourceOntologyClass=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceOntologyClass")
+          resourceP2Type=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "p2HasType")
+          resourceDescription=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceDescription")
+          resourceLabelPattern=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceLabelPattern")
+          resourceRestrictionPattern=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceRestrictionPattern")
+          resourceForm=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceFormIRI")
+          resourceMembershipProperty=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceMembershipProperty")
+          resourceBroaderProperty=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceBroaderProperty")
+          resourceOrderPattern=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceOrderPattern")
+          resourceIcon=(getResourceConfigurationValue bindings.0.resourceConfiguration.value "resourceIcon")   
           selectedEntity=selectedEntity}}
       {{/ifCond}}
     </template>
     <template id='noResultTemplate'>
+      
+          <semantic-query query='SELECT * WHERE {
+
+                                  OPTIONAL {
+                                    <{{useConfig}}> crm:P67_refers_to ?refersToResourceConfig .
+                                    BIND(<{{useConfig}}> AS ?collection) .
+                                  }
+      
+                                  OPTIONAL {
+                                    <{{useConfig}}> a <http://www.researchspace.org/resource/system/resource_configuration> .
+                                    BIND(<{{useConfig}}> as ?refersToResourceConfig) .
+                                  }
+
+                                  BIND(COALESCE(?refersToResourceConfig [[#if defaultConfig]], <[[defaultConfig]]>[[/if]]) AS ?resourceConfiguration ) .
+
+                                  OPTIONAL {
+                                    ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceConfigName .
+                                  }
+                                  
+                                  OPTIONAL {
+                                    ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
+                                  }
+
+                                  OPTIONAL {
+                                    ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?membershipProperty .
+                                  }
+                                } LIMIT 1'
+                          template='{{> template}}'>
+                                      
+            <template id='template'>
+              {{#if bindings.0.collection.value}}
+                <div class="page__grid-container">
+                  <div class="page__content-container">
+                    <div class="warning-documentation-section warning-documentation-section-withIcon" style="margin-top: 15px;">
+                      <div class="warning-documentation-section-icon-container">
+                        <rs-icon icon-type="rounded" icon-name="priority_high" symbol="true"></rs-icon>
+                      </div>
+                      <div>
+                          <div class="warning-documentation-section-title" style="margin-bottom: 5px;">Missing Resource Configuration 
+                            applicable to create resources in the authority!</div>
+                          <div class="warning-documentation-section-content">
+                            <div>
+                              The authority document <mp-label iri='{{bindings.0.collection.value}}'></mp-label> 
+                              has Resource Type {{bindings.0.resourceConfiguration.value}}.
+                            </div>
+                            {{#if (not bindings.0.resourceConfigName.value)}}
+                            <div>
+                              Create a new <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames" 
+                              urlqueryparam-view="resource-configuration" title="Resource Configuration">Resource Configuration</semantic-link> of IRI
+                              {{bindings.0.resourceConfiguration.value}} to create and edit resources in the authority.
+                            </div>
+                            {{else}}
+                              Go to the 
+                              <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames" 
+                              urlqueryparam-view="resource-configuration" title="Resource Configuration">Resource Configuration {{bindings.0.resourceConfigName.value}}</semantic-link>
+                              and check that:
+                              <ul>
+                                {{#if (not bindings.0.resourceFormIRI.value)}}
+                                  <li>There is a resource form in the section Resource edit/visualisation.</li>
+                                {{/if}}
+                                {{#if (not bindings.0.membershipProperty.value)}}
+                                  <li>There is a membership value in the section Resource in authority document.</li>
+                                {{/if}}
+                              </ul>
+                            {{/if}}
+                          </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              {{else}}
+                {{#if (not bindings.0.resourceFormIRI.value)}}
+                  {{> rsp:SimpleCollectionBrowser resourceConfigurationError=true missingForm=true resourceName=bindings.0.resourceConfigName.value }}
+                {{/if}}    
+              {{/if}}
+            </template>
+          </semantic-query>
+        
     </template>
 </semantic-query>
+

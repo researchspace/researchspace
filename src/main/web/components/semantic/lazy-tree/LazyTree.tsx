@@ -48,7 +48,7 @@ import {
   queryMoreChildren
 } from 'platform/components/semantic/lazy-tree';
 
-import { ItemSelected, Focus } from './LazyTreeEvents';
+import { ItemToggleSelected, Focus, ItemSelected } from './LazyTreeEvents';
 
 import * as styles from './LazyTree.scss';
 import { Rdf } from 'platform/api/rdf';
@@ -193,6 +193,7 @@ export class LazyTree extends Component<LazyTreeProps, State> {
       onExpandedOrCollapsed: this.onExpandedOrCollapsed,
       isExpanded: (node) => node.expanded,
       selectionMode: SingleFullSubtree<Node>(),
+      onItemToggleClick: this.onItemToggleClick,
       onItemClick: this.onItemClick,
     };
 
@@ -305,8 +306,12 @@ export class LazyTree extends Component<LazyTreeProps, State> {
     }
   };
 
+  private onItemToggleClick = (item: Node) => {
+    trigger({ eventType: ItemToggleSelected, source: this.props.id, data: { iri: item.iri.value}});
+  }
+
   private onItemClick = (item: Node) => {
-    trigger({ eventType: ItemSelected, source: this.props.id, data: { iri: item.iri.value}});
+    trigger({ eventType: ItemSelected, source: this.props.id, data: { iri: item.iri.value, label: item.label.value}});
   }
 
   private isLeaf = (item: Node) => {

@@ -49,7 +49,7 @@
               >
               
     <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
-        <semantic-form-hidden-input for="classtype" default-value='http://www.ics.forth.gr/isl/CRMdig/D1_Digital_Object'> </semantic-form-hidden-input>
+        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/extensions/crmdig/D1_Digital_Object'> </semantic-form-hidden-input>
         <semantic-form-hidden-input for="entity_resource_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/semantic_chart'> </semantic-form-hidden-input>
 
             <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
@@ -74,6 +74,7 @@
                             <semantic-form-autocomplete-input   for="entity_id" 
                                                                 label="Other identifier"
                                                                 placeholder="Select other identifier" 
+                                                                show-dropdown-filter="false"
                                                                 nested-form-templates='[[> Platform:NestedFormTemplates_appellations]]'>
                             </semantic-form-autocomplete-input>
                             [[> rsp:FormAssetSidebar]]
@@ -111,12 +112,15 @@
                                                         {{#ifCond __value__.value "==" "Unknown"}}
                                                             {{__value__.value}}
                                                         {{else}}
-                                                            <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                            urlqueryparam-view='resource-editor' 
-                                                                            urlqueryparam-resource-iri='{{__value__.value}}'
-                                                            >
-                                                                <mp-label iri='{{__value__.value}}' class="text-link text-truncate-line1"></mp-label>
-                                                            </semantic-link>
+                                                            <mp-draggable iri="{{__value__.value}}">
+                                                                <div>
+                                                                    <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                    urlqueryparam-view='resource-editor' 
+                                                                                    urlqueryparam-resource-iri='{{__value__.value}}'>
+                                                                        <mp-label iri='{{__value__.value}}' class="text-link text-truncate-line1"></mp-label>
+                                                                    </semantic-link>
+                                                                </div>
+                                                            </mp-draggable>
                                                         {{/ifCond}}
                                                     </template>
                                                 </semantic-table>
@@ -146,6 +150,7 @@
                     <semantic-form-autocomplete-input   for='legal_object_right_held_by_actor' 
                                                         label="Right held by" 
                                                         placeholder="Select actor who holds legal right on the chart" 
+                                                        show-dropdown-filter="false"
                                                         nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'> 
                     </semantic-form-autocomplete-input> 
                 </rs-tab>
@@ -154,6 +159,7 @@
                     <semantic-form-autocomplete-input   for='conceptual_object_created_by' 
                                                         label="Created by" 
                                                         placeholder="Select the event that created the chart" 
+                                                        show-dropdown-filter="false"
                                                         nested-form-templates='[[> Platform:NestedFormTemplates_creations]]'>  
                     </semantic-form-autocomplete-input> 
         
@@ -286,6 +292,7 @@
                     <semantic-form-autocomplete-input   for='persistent_item_taken_out_of_existence_by' 
                                                         label="Taken out of existence by" 
                                                         placeholder="Select event that took the chart out of existence" 
+                                                        show-dropdown-filter="false"
                                                         nested-form-templates='[[> Platform:NestedFormTemplates_endOfExistences]]'>  
                     </semantic-form-autocomplete-input>
         
@@ -304,27 +311,13 @@
                     <semantic-form-autocomplete-input   for='entity_attributed_by_attribute_assignment' 
                                                         label="Attributed by"
                                                         placeholder="Select what assigned attribute to the chart" 
-                                                        nested-form-templates='[ 
-                                                            {
-                                                                "label": "Attribute assignment",
-                                                                "nestedForm": "{{{{raw}}}}
-                                                                                {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                            {{{{/raw}}}}"
-                                                            }
-                                                        ]'>  
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
                     </semantic-form-autocomplete-input>
         
                     <semantic-form-autocomplete-input   for='entity_assigned_by_attribute_assignment' 
                                                         label="Assigned by"
                                                         placeholder="Select what assigned the chart" 
-                                                        nested-form-templates='[ 
-                                                            {
-                                                                "label": "Attribute assignment",
-                                                                "nestedForm": "{{{{raw}}}}
-                                                                                {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                            {{{{/raw}}}}"
-                                                            }
-                                                        ]'>  
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
                     </semantic-form-autocomplete-input>
     
                     <semantic-form-autocomplete-input   for='entity_measurement' 

@@ -183,6 +183,7 @@
         <semantic-form-autocomplete-input   for="entity_id" 
                                             label="Other identifier"
                                             placeholder="Select other identifier" 
+                                            show-dropdown-filter="false"
                                             nested-form-templates='[[> Platform:NestedFormTemplates_appellations]]'>
         </semantic-form-autocomplete-input>
 
@@ -193,31 +194,7 @@
       <rs-tab event-key="lists" title="List of resources" >
         <div style="display: flex; height: 100%;  flex-direction: column; overflow: hidden; ">
 
-          <div style="display: flex; align-items: baseline; justify-content: space-between;">
-            <div class="customFormHeader">Resource type<span style="margin-bottom: 2px; margin-left: 2px;">*</span></div>
-            <div class="btn-inline-container">
-              <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                      urlqueryparam-view='resource-configuration'>
-                <button class="btn btn-default btn-textAndIcon" style="padding: 4px 10px; font-size: 13px;">
-                  <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
-                  New resource type
-                </button>
-              </semantic-link-container>
-              <mp-popover title="Resource type">
-                <mp-popover-trigger placement="bottom" trigger='["hover", "click"]'>
-                  <div class="badge badge--default">
-                    <rs-icon icon-type="rounded" icon-name="question_mark" symbol="true"></rs-icon>
-                  </div>
-                </mp-popover-trigger>
-                <mp-popover-content>
-                  <div>Resource types are defined in the Resource Configuration. Go to tab
-                    <b>Resource in authority document</b>, enable <b>List in authority document</b> and enter a
-                    <b>membership property</b> to list that type of resource in the authority document.
-                  </div>
-                </mp-popover-content>
-              </mp-popover>
-            </div>
-          </div>
+          <div class="customFormHeader">Resource type<span style="margin-bottom: 2px; margin-left: 2px;">*</span></div>
 
           <semantic-form-select-input for="vocabulary_refersto_resourceConfig" render-header="false" placeholder='Select the type of the resources listed in the document' readonly-resource="true" readonly="true"></semantic-form-select-input>
 
@@ -240,10 +217,7 @@
                                                                       ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                                                       ?appellation crm:P190_has_symbolic_content ?label .
                                                                     } UNION {
-                                                                      ?subject crm:P170i_time_is_defined_by ?timePrimitive .
-                                                                      ?timePrimitive a crm:E61_Time_Primitive .
-                                                                      ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
-                                                                      ?timePrimitive crm:P190_has_symbolic_content ?label .
+                                                                      ?subject crm:P170i_time_is_defined_by ?label .
                                                                     } UNION {
                                                                       ?subject skos:prefLabel ?label .
                                                                     } UNION {
@@ -277,7 +251,7 @@
                                   </mp-selection-action-choice>
 
                                   <semantic-search-action-save-set-result id='{{node}}-new-set-with-results'>
-                                      <bs-menu-item>
+                                      <bs-menu-item draggable="false">
                                           <rs-icon icon-type="rounded" icon-name="create_new_folder" class="icon-left" symbol="true"></rs-icon>
                                           <span>New set with all resources</span>
                                       </bs-menu-item>  
@@ -307,10 +281,7 @@
                                                                 ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                                                 ?appellation crm:P190_has_symbolic_content ?resourceLabel .
                                                               } UNION {
-                                                                ?subject crm:P170i_time_is_defined_by ?timePrimitive .
-                                                                ?timePrimitive a crm:E61_Time_Primitive .
-                                                                ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_time_primitive> .
-                                                                ?timePrimitive crm:P190_has_symbolic_content ?resourceLabel .
+                                                                ?subject crm:P170i_time_is_defined_by ?resourceLabel .
                                                               } UNION {
                                                                 ?subject skos:prefLabel ?resourceLabel .
                                                               } UNION {
@@ -851,12 +822,13 @@
                                                   {{#ifCond bindings.0.node.value "===" propositionalObject}}
                                                       <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
                                                   {{else}}
-                                                      <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                      urlqueryparam-view='resource-editor' 
-                                                                      urlqueryparam-resource-iri='{{node.value}}'
-                                                                      >
+                                                    <mp-draggable iri="{{node.value}}">
+                                                      <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                              urlqueryparam-view='resource-editor' 
+                                                                              urlqueryparam-resource-iri='{{node.value}}'>
                                                           <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                      </semantic-link>
+                                                      </semantic-link-container>
+                                                    </mp-draggable>
                                                   {{/ifCond}}
                                               </div>
                                           </template>
@@ -1005,12 +977,13 @@
                                                   {{#ifCond bindings.0.node.value "===" informationObject}}
                                                       <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
                                                   {{else}}
-                                                      <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                      urlqueryparam-view='resource-editor' 
-                                                                      urlqueryparam-resource-iri='{{node.value}}'
-                                                                      >
+                                                    <mp-draggable iri="{{node.value}}">
+                                                      <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                              urlqueryparam-view='resource-editor' 
+                                                                              urlqueryparam-resource-iri='{{node.value}}'>
                                                           <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                      </semantic-link>
+                                                      </semantic-link-container>
+                                                    </mp-draggable>
                                                   {{/ifCond}}
                                               </div>
                                           </template>
@@ -1078,6 +1051,7 @@
         <semantic-form-autocomplete-input   for='legal_object_right_held_by_actor' 
                                             label="Right held by" 
                                             placeholder="Select actor who holds legal right on the authority document" 
+                                            show-dropdown-filter="false"
                                             nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'> 
         </semantic-form-autocomplete-input> 
 
@@ -1088,6 +1062,7 @@
         <semantic-form-autocomplete-input   for='conceptual_object_created_by' 
                                             label="Created by" 
                                             placeholder="Select the event that created the authority document" 
+                                            show-dropdown-filter="false"
                                             nested-form-templates='[[> Platform:NestedFormTemplates_creations]]'>  
         </semantic-form-autocomplete-input> 
 
@@ -1220,6 +1195,7 @@
         <semantic-form-autocomplete-input   for='persistent_item_taken_out_of_existence_by' 
                                             label="Taken out of existence by" 
                                             placeholder="Select event that took the authority document out of existence" 
+                                            show-dropdown-filter="false"
                                             nested-form-templates='[[> Platform:NestedFormTemplates_endOfExistences]]'>  
         </semantic-form-autocomplete-input>
 
@@ -1238,27 +1214,13 @@
         <semantic-form-autocomplete-input   for='entity_attributed_by_attribute_assignment' 
                                             label="Attributed by"
                                             placeholder="Select what assigned attribute to the authority document" 
-                                            nested-form-templates='[ 
-                                                {
-                                                    "label": "Attribute assignment",
-                                                    "nestedForm": "{{{{raw}}}}
-                                                                    {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                {{{{/raw}}}}"
-                                                }
-                                            ]'>  
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_assigned_by_attribute_assignment' 
                                             label="Assigned by"
                                             placeholder="Select what assigned the authority document" 
-                                            nested-form-templates='[ 
-                                                {
-                                                    "label": "Attribute assignment",
-                                                    "nestedForm": "{{{{raw}}}}
-                                                                    {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                                {{{{/raw}}}}"
-                                                }
-                                            ]'>  
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_attributeAssignments]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_measurement' 

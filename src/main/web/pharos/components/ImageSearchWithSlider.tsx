@@ -304,6 +304,7 @@ interface State {
 class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
   private componentCancellation: Cancellation;
   private activeStreamCancellation: Cancellation;
+  private textInput: HTMLInputElement | null = null;
 
   static defaultProps: Partial<ImageSearchWithSliderProps> = {
     placeholder: 'Enter image URL, keyword, or drop an image file',
@@ -670,13 +671,25 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
           ) : (
             // Input, dropzone, and button in one row
             <div className={styles.inputDropzoneContainer}>
-              <FormControl
-                    className={className}
-                    style={style}
-                    value={this.state.value}
-                    placeholder={placeholder}
-                    onChange={this.onKeyPress}
-              />
+              <div className={styles.inputWithClear}>
+                <FormControl
+                      inputRef={(ref) => { this.textInput = ref; }}
+                      className={className}
+                      style={style}
+                      value={this.state.value}
+                      placeholder={placeholder}
+                      onChange={this.onKeyPress}
+                />
+                {this.state.value &&
+                  <Icon
+                    className={styles.clearTextBtn}
+                    iconType="rounded"
+                    iconName="close"
+                    symbol
+                    onClick={this.handleClearText}
+                  />
+                }
+              </div>
               <Icon className={styles.searchButton} iconType='rounded ' iconName='search' symbol onClick={this.handleSearch} />
               {/* Only show dropzone if images are enabled for this domain */}
               {withImages && (
@@ -760,7 +773,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
             </div>
 
             <div className={`${styles.sliderField} ${withAi && isAiSearch ? '' : 'disabled'}`}>
-              <div className={styles.sliderLabel}>AI Search Sensitivity: </div>
+              <div className={styles.sliderLabel}>Search Sensitivity: </div>
               <div className={styles.sliderFieldSliderContainer}>
                 <Slider
                   min={0}
@@ -912,6 +925,21 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
     }, () => {
       // Notify that the query should be cleared
       this.keys('');
+      if (this.textInput) {
+        this.textInput.focus();
+      }
+    });
+  };
+
+  private handleClearText = () => {
+    this.setState({
+      value: '',
+      isImageMode: false
+    }, () => {
+      this.keys('');
+      if (this.textInput) {
+        this.textInput.focus();
+      }
     });
   };
 

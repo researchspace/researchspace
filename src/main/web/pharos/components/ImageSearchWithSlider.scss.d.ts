@@ -2,6 +2,7 @@ declare namespace ImageSearchWithSliderScssNamespace {
   export interface IImageSearchWithSliderScss {
     aiToggle: string;
     clearImageBtn: string;
+    clearTextBtn: string;
     domainSelector: string;
     dropzoneContent: string;
     helpIcon: string;
@@ -12,10 +13,10 @@ declare namespace ImageSearchWithSliderScssNamespace {
     imageSearchContainer: string;
     imageSearchWithSlider: string;
     inputDropzoneContainer: string;
+    inputWithClear: string;
     modelRow: string;
     modelSelection: string;
     modelTypeGroup: string;
-    rsIcon: string;
     searchButton: string;
     searchControls: string;
     sliderField: string;

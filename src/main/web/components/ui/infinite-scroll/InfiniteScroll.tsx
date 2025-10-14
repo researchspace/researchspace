@@ -2,10 +2,14 @@ import * as React from 'react';
 import { Component, ComponentProps, ComponentContext } from 'platform/api/components';
 import { createElement } from 'react';
 import { TemplateItem } from 'platform/components/ui/template';
+import { getResourceInfo } from 'platform/api/services/resource-info';
+import { Rdf } from 'platform/api/rdf';
+import { getPreferredUserLanguage } from 'platform/api/services/language';
 
 interface InfiniteScrollProps extends ComponentProps {
   itemHeight: string;
-  values: Array<Object>;
+  values: Array<{ subject: { value: string } }>;
+  profile: string;
   batchSize?: number;
   preloadThreshold?: number; // Percentage of the last batch of items that should be visible before preloading the next batch
   template?: string;
@@ -13,9 +17,15 @@ interface InfiniteScrollProps extends ComponentProps {
   itemWidth?: number;
 }
 
+interface VisibleItem {
+  subject: { value: string };
+  data: any;
+}
+
 interface InfiniteScrollState {
-  visibleValues: Object[];
+  visibleValues: VisibleItem[];
   hasMore: boolean;
+  isLoading: boolean;
   calculatedItemsPerRow: number;
   rowHeights: number[];
 }
@@ -29,7 +39,7 @@ class InfiniteScroll extends Component<InfiniteScrollProps, InfiniteScrollState>
   
   static defaultProps = {
     batchSize: 20,
-    preloadThreshold: 30, // Start preloading when 30% of the last batch is visible
+    preloadThreshold: 50, // Start preloading when 30% of the last batch is visible
     itemPerRow: 1,
   };
 
@@ -40,6 +50,7 @@ class InfiniteScroll extends Component<InfiniteScrollProps, InfiniteScrollState>
     this.state = {
       visibleValues: [],
       hasMore: true,
+      isLoading: false,
       calculatedItemsPerRow: this.props.itemPerRow === 'auto' ? 1 : this.props.itemPerRow!,
       rowHeights: [],
     };
@@ -52,7 +63,7 @@ class InfiniteScroll extends Component<InfiniteScrollProps, InfiniteScrollState>
   }
 
   componentDidUpdate(prevProps: InfiniteScrollProps) {
-    if (prevProps.values !== this.props.values) {
+    if (prevProps.values !== this.props.values || prevProps.profile !== this.props.profile) {
       this.initializeValues();
     }
     if (this.props.itemPerRow === 'auto' && prevProps.itemWidth !== this.props.itemWidth) {
@@ -128,7 +139,6 @@ class InfiniteScroll extends Component<InfiniteScrollProps, InfiniteScrollState>
   initializeValues() {
     const allValues = this.props.values;
     const itemsPerRow = this.getItemsPerRow();
-    const initialBatchSize = Math.ceil(this.props.batchSize! / itemsPerRow) * itemsPerRow;
     const totalRows = Math.ceil(allValues.length / itemsPerRow);
     const initialRowHeights = Array(totalRows).fill(parseFloat(this.props.itemHeight));
 
@@ -138,16 +148,22 @@ class InfiniteScroll extends Component<InfiniteScrollProps, InfiniteScrollState>
     }
 
     this.setState({
-      visibleValues: allValues.slice(0, initialBatchSize),
-      hasMore: allValues.length > initialBatchSize,
+      visibleValues: [],
+      hasMore: allValues.length > 0,
       rowHeights: initialRowHeights,
+      isLoading: false,
+    }, () => {
+      // Load the initial batch of items when the component mounts or values change.
+      if (allValues.length > 0) {
+        this.loadMoreItems();
+      }
     });
   }
 
 
   handleScroll = () => {
     const scrollParent = this.getScrollParent();
-    if (!scrollParent || !this.state.hasMore) {
+    if (!scrollParent || !this.state.hasMore || this.state.isLoading) {
       return;
     }
 
@@ -184,21 +200,59 @@ class InfiniteScroll extends Component<InfiniteScrollProps, InfiniteScrollState>
   }
 
   loadMoreItems = () => {
+    if (this.state.isLoading) {
+      return;
+    }
+
+    this.setState({ isLoading: true });
+
     const { visibleValues } = this.state;
     const allValues = this.props.values;
     const itemsPerRow = this.getItemsPerRow();
     const batchSize = Math.ceil(this.props.batchSize! / itemsPerRow) * itemsPerRow;
-    const nextBatch = allValues.slice(
+    const nextBatchItems = allValues.slice(
       visibleValues.length,
       visibleValues.length + batchSize
     );
-  
-    this.setState(prevState => {
-      const newVisibleValues = [...prevState.visibleValues, ...nextBatch];
-      return {
-        visibleValues: newVisibleValues,
-        hasMore: newVisibleValues.length < allValues.length,
-      };
+
+    if (nextBatchItems.length === 0) {
+      this.setState({ hasMore: false, isLoading: false });
+      return;
+    }
+
+    // Add placeholders for the next batch
+    const placeholders = nextBatchItems.map(item => ({ ...item, data: null }));
+    const startIndex = visibleValues.length;
+    this.setState(prevState => ({
+      visibleValues: [...prevState.visibleValues, ...placeholders],
+      hasMore: (prevState.visibleValues.length + placeholders.length) < allValues.length,
+    }));
+
+    const repository = this.context.semanticContext.repository;
+    const defaultGraphs = this.context.semanticContext.defaultGraphs;
+
+    const promises = nextBatchItems.map((item, index) =>
+      getResourceInfo(Rdf.iri(item.subject.value), this.props.profile, getPreferredUserLanguage(), repository, defaultGraphs)
+        .then(data => {
+          this.setState(prevState => {
+            const newVisibleValues = [...prevState.visibleValues];
+            // Ensure we are updating the correct item, in case of list changes
+            if (newVisibleValues[startIndex + index] && newVisibleValues[startIndex + index].subject.value === item.subject.value) {
+              newVisibleValues[startIndex + index] = { ...item, data };
+              return { visibleValues: newVisibleValues };
+            }
+            return null; // No state update if item not found or changed
+          });
+        })
+        .catch(error => {
+          console.error(`Failed to load item ${item.subject.value}`, error);
+          // Optionally update the item to show an error state
+        })
+    );
+
+    // When all items in the batch are settled (either resolved or rejected)
+    Promise.allSettled(promises).then(() => {
+      this.setState({ isLoading: false });
     });
   };
 
@@ -225,11 +279,6 @@ class InfiniteScroll extends Component<InfiniteScrollProps, InfiniteScrollState>
               })}
             </div>
           ))}
-          {hasMore && (
-            <div style={{ textAlign: 'center', padding: '20px' }}>
-              Loading more items...
-            </div>
-          )}
         </div>
       </div>
     );

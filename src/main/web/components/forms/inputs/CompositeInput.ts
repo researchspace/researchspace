@@ -18,6 +18,7 @@
  */
 
 import { createElement, Props, ReactNode } from 'react';
+import { Button } from 'react-bootstrap';
 import * as Immutable from 'immutable';
 import * as Kefir from 'kefir';
 
@@ -53,11 +54,19 @@ import {
 } from './MultipleValuesInput';
 
 import { InputKind } from './InputCommpons';
+import ResourceLinkContainer from 'platform/api/navigation/components/ResourceLinkContainer';
+import { ConfigHolder } from 'platform/api/services/config-holder';
+import Icon from 'platform/components/ui/icon/Icon';
 
 export interface CompositeInputProps extends SingleValueInputProps {
   fields: ReadonlyArray<FieldDefinitionProp>;
   newSubjectTemplate?: string;
   children?: ReactNode;
+
+/**
+   * Optional to hide or show the subject link button.
+   */
+  showSubjectLink?: boolean;
 }
 
 type ComponentProps = CompositeInputProps & Props<CompositeInput>;
@@ -259,7 +268,7 @@ export class CompositeInput extends SingleValueInput<ComponentProps, {}> {
     return state.dataState;
   };
 
-  render() {
+render() {
     const composite = this.props.value;
     if (!FieldValue.isComposite(composite)) {
       return createElement(Spinner);
@@ -273,8 +282,33 @@ export class CompositeInput extends SingleValueInput<ComponentProps, {}> {
       this.onFieldValuesChanged,
       this.onMountInput
     );
+    
+    const subject = (this.props.value as any)?.['subject'];
+    const subjectLinkComponent = subject && subject.value !== '' && this.props.showSubjectLink
+      ? createElement(
+        ResourceLinkContainer as React.ComponentType<any>,
+        {
+          uri: ConfigHolder.getDashboard().value,
+          'urlqueryparam-view': 'resource-editor',
+          'urlqueryparam-open-as-drag-and-drop': 'true',
+          'urlqueryparam-resource': subject.value
+        },
+        createElement(
+          Button,
+          {
+            className: 'btn btn-default composite-input__subject-button',
+            title: 'Edit in new draggable tab',
+          },
+          createElement(Icon, {
+            iconType: 'rounded',
+            iconName: 'read_more',
+            symbol: true,
+          })
+        )
+      )
+      : null;
 
-    return createElement('div', { className: 'composite-input' }, children);
+     return createElement('div', { className: 'composite-input' }, subjectLinkComponent, children);
   }
 
   private onMountInput = (

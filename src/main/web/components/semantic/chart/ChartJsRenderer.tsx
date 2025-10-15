@@ -624,14 +624,17 @@ function defaultPalette(index: number, opacity: number) {
 }
 
 function getLinearSeriesDefaultStyle(index: number, fillOpacity: number) {
+  const c = defaultPalette(index, 1);
   return {
     backgroundColor: defaultPalette(index, fillOpacity),
-    borderColor: defaultPalette(index, 1),
-    borderWidth: 1,
-    pointBackgroundColor: defaultPalette(index, 1),
-    pointBorderColor: '#fff',
-    pointHoverBackgroundColor: '#fff',
-    pointHoverBorderColor: defaultPalette(index, 1),
+    borderColor: c,
+    borderWidth: 0.7,
+
+    // Points (match stroke color instead of white)
+    pointBackgroundColor: c,
+    pointBorderColor: c,            // <- was '#fff'
+    pointHoverBackgroundColor: c,   // <- was '#fff'
+    pointHoverBorderColor: c,
   };
 }
 

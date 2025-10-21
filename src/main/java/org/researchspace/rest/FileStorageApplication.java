@@ -21,6 +21,7 @@ package org.researchspace.rest;
 
 import org.glassfish.hk2.api.ServiceLocator;
 import org.researchspace.rest.endpoint.FileStorageEndpoint;
+import org.researchspace.rest.endpoint.ImageUploadEndpoint;
 
 import javax.inject.Inject;
 import javax.ws.rs.ApplicationPath;
@@ -32,6 +33,7 @@ public class FileStorageApplication extends AbstractPlatformApplication {
     public FileStorageApplication(ServiceLocator serviceLocator) {
         super(serviceLocator);
         register(FileStorageEndpoint.class);
+        register(ImageUploadEndpoint.class);
     }
 
 }

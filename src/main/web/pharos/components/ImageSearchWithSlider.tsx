@@ -31,7 +31,9 @@ import { Component } from 'platform/api/components';
 import { Cancellation } from 'platform/api/async/Cancellation';
 import { Action } from 'platform/components/utils';
 import { Dropzone } from 'platform/components/ui/dropzone';
+import { ProgressBar, ProgressState } from '../../ontodia/src/ontodia/widgets/progressBar';
 import { defaultKeywordSearchConfig, textConfirmsToConfig, luceneTokenize } from "platform/components/shared/KeywordSearchConfig";
+import { ImageUploadService } from './ImageUploadService';
 
 import { setSearchDomain } from 'platform/components/semantic/search/commons/Utils';
 import { SemanticSimpleSearchBaseConfig } from 'platform/components/semantic/simple-search/Config';
@@ -259,6 +261,7 @@ export interface ImageSearchWithSliderConfig extends BaseConfig<string> {
   searchTermVariable?: string;
   modelTypeVariable?: string;
   searchSensitivityVariable?: string;
+  imageStorage: string;
 }
 
 interface ImageSearchWithSliderProps extends BaseConfig<React.CSSProperties> {
@@ -268,6 +271,7 @@ interface ImageSearchWithSliderProps extends BaseConfig<React.CSSProperties> {
   modelTypeVariable?: string;
   searchSensitivityVariable?: string;
   enableModelSelection?: boolean;
+  imageStorage: string;
 }
 
 class ImageSearchWithSlider extends Component<ImageSearchWithSliderProps, {}> {
@@ -289,6 +293,10 @@ interface State {
   sliderValue: number;
   imageData?: string;  // Base64 image data from dropped file
   imageUrl?: string;   // URL of the image if entered as URL
+  fileName?: string;
+  storageId?: string;
+  thumbnailUrl?: string;
+  progress: number;
   showImage: boolean;  // Whether to show image preview or input
   isImageMode: boolean; // Whether we're in image mode (true) or keyword mode (false)
   selectedDomainIndex: number; // Index of the currently selected domain
@@ -305,6 +313,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
   private componentCancellation: Cancellation;
   private activeStreamCancellation: Cancellation;
   private textInput: HTMLInputElement | null = null;
+  private imageUploadService: ImageUploadService;
 
   static defaultProps: Partial<ImageSearchWithSliderProps> = {
     placeholder: 'Enter image URL, keyword, or drop an image file',
@@ -356,6 +365,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
     this.state = {
       value: value === 'dndFile' ? '' : value,
       sliderValue: props.defaultSliderValue !== undefined ? props.defaultSliderValue : (props.min || 0),
+      progress: 0,
       showImage: false,
       isImageMode: isImageMode,
       selectedDomainIndex,
@@ -370,6 +380,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
 
     this.keys = Action<string>(value === 'dndFile' ? '' : value);
 
+    this.imageUploadService = new ImageUploadService();
     this.componentCancellation = new Cancellation();
     this.activeStreamCancellation = this.componentCancellation.derive();
   }
@@ -657,7 +668,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
             // Image preview with clear button
             <div className={styles.imagePreviewContainer}>
               <img
-                src={this.state.imageUrl || this.state.imageData}
+                src={this.state.thumbnailUrl || this.state.imageUrl || this.state.imageData}
                 alt="Selected image"
                 className={styles.imagePreview}
               />
@@ -669,6 +680,11 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
               </Button>
             </div>
           ) : (
+           this.state.progress > 0 && this.state.progress < 100 ? (
+            <div className={styles.progressContainer}>
+              <ProgressBar percent={this.state.progress} state={ProgressState.loading} />
+            </div>
+            ) :
             // Input, dropzone, and button in one row
             <div className={styles.inputDropzoneContainer}>
               <div className={styles.inputWithClear}>
@@ -798,13 +814,13 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
     // Handle image search (starts with http or has image data)
     const imageQueryProp = this.keys.$property
       .debounce(this.props.debounce)
-      .filter((value) => value.startsWith('http') || value === 'Dropped image' || value === 'Initial image data')
+      .filter((value) => value.startsWith('http') || value === 'Dropped image' || value === 'Initial image data' || value === 'Uploaded image')
       .map(this.buildImageQuery())
       .filter((q) => q !== null);
 
     // Handle keyword search (doesn't start with http)
     const keywordQueryProp = this.keys.$property
-      .filter((value) => !value.startsWith('http') && value !== 'Dropped image' && value !== 'Initial image data')
+      .filter((value) => !value.startsWith('http') && value !== 'Dropped image' && value !== 'Initial image data' && value !== 'Uploaded image')
       .filter((value) => textConfirmsToConfig(value, this.props))
       .debounce(this.props.debounce)
       .map(this.buildKeywordQuery())
@@ -827,6 +843,9 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
   };
 
   componentWillUnmount() {
+    if (this.state.fileName && this.state.storageId) {
+      this.imageUploadService.deleteImage(this.state.fileName, this.state.storageId);
+    }
     this.componentCancellation.cancelAll();
   }
 
@@ -878,7 +897,6 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
   };
 
   private handleDrop = (files: File[]) => {
-    // Only process dropped files if images are enabled for this domain
     if (!this.state.withImages) {
       console.warn('Image upload is not enabled for this domain');
       return;
@@ -886,39 +904,38 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
 
     if (files && files.length > 0) {
       const file = files[0];
-      this.getFileAsBase64(file).then((base64Data: string) => {
-        // Resize the image to max dimensions
-        this.resizeImageToMaxDimensions(base64Data, MAX_IMAGE_DIMENSION, MAX_IMAGE_DIMENSION).then((resizedData: string) => {
+      this.setState({ progress: 0 });
+      this.imageUploadService.uploadImage(file, this.props.imageStorage, (progress) => this.setState({ progress }))
+        .then(response => {
           this.setState({
-            imageData: resizedData,
-            imageUrl: undefined,
-            value: 'Dropped image',
+            fileName: response.fileName,
+            storageId: response.storageId,
+            thumbnailUrl: response.thumbnailUrl,
+            progress: 100,
             showImage: true,
-            isImageMode: true
+            isImageMode: true,
+            value: 'Uploaded image'
           }, () => {
             this.keys(this.state.value);
           });
-        }).catch(error => {
-          console.error('Failed to resize image:', error);
-          // Fallback to original image if resizing fails
-          this.setState({
-            imageData: base64Data,
-            imageUrl: undefined,
-            value: 'Dropped image',
-            showImage: true,
-            isImageMode: true
-          }, () => {
-            this.keys(this.state.value);
-          });
+        })
+        .catch(error => {
+          console.error('Failed to upload image:', error);
+          this.setState({ progress: 0 });
         });
-      });
     }
   };
 
   private handleClearImage = () => {
+    if (this.state.fileName && this.state.storageId) {
+      this.imageUploadService.deleteImage(this.state.fileName, this.state.storageId);
+    }
     this.setState({
       imageUrl: undefined,
       imageData: undefined,
+      fileName: undefined,
+      storageId: undefined,
+      thumbnailUrl: undefined,
       value: '',
       showImage: false,
       isImageMode: false
@@ -992,8 +1009,12 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
       bindings[searchSensitivityVariable!] = Rdf.literal(searchSensitivity);
     }
 
-    // If we have an image URL
-    if (this.state.imageUrl) {
+    // If we have an image ID
+    if (this.state.fileName) {
+        bindings[dataVariable!] = Rdf.literal(this.state.fileName);
+        bindings[dataTypeVariable!] = Rdf.literal('file');
+    } else if (this.state.imageUrl) {
+      // If we have an image URL
       bindings[dataVariable!] = Rdf.literal(this.state.imageUrl);
       bindings[dataTypeVariable!] = Rdf.literal('url');
     }

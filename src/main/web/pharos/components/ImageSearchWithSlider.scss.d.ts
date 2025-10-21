@@ -17,6 +17,7 @@ declare namespace ImageSearchWithSliderScssNamespace {
     modelRow: string;
     modelSelection: string;
     modelTypeGroup: string;
+    progressContainer: string;
     searchButton: string;
     searchControls: string;
     sliderField: string;

@@ -336,38 +336,64 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
 
   constructor(props: InnerProps) {
     super(props);
-    const value = props.initialInput || '';
-    const isImageMode = value === 'dndFile' || value.startsWith('http');
 
-    // Find the initial domain index
-    const initialDomainUri = props.initialDomain || props.domain;
+    const { initialInput, initialDomain, domain, domains } = props;
+    const urlParams = new URLSearchParams(window.location.search);
+    const fileParam = urlParams.get('file');
+
+    // Determine initial domain and its settings
+    const initialDomainUri = initialDomain || domain;
     let selectedDomainIndex = 0;
     let withAi = false;
     let withImages = false;
     let domainColor = "#70E7C5";
 
-    if (props.domains && props.domains.length > 0) {
-      // If domains are provided, find the matching domain
-      const domainIndex = props.domains.findIndex(d => d.uri === initialDomainUri);
+    if (domains && domains.length > 0) {
+      const domainIndex = domains.findIndex(d => d.uri === initialDomainUri);
       if (domainIndex !== -1) {
         selectedDomainIndex = domainIndex;
-        withAi = !!props.domains[domainIndex].withAi;
-        withImages = !!props.domains[domainIndex].withImages;
-        domainColor = props.domains[domainIndex].domainColor ;
+        withAi = !!domains[domainIndex].withAi;
+        withImages = !!domains[domainIndex].withImages;
+        domainColor = domains[domainIndex].domainColor;
       } else {
-        // Use the first domain if no match is found
-        withAi = !!props.domains[0].withAi;
-        withImages = !!props.domains[0].withImages;
-        domainColor = props.domains[0].domainColor ;
+        withAi = !!domains[0].withAi;
+        withImages = !!domains[0].withImages;
+        domainColor = domains[0].domainColor;
       }
     }
 
+    // Determine initial value and mode based on params
+    let value = initialInput || '';
+    let isImageMode = false;
+    let showImage = false;
+    let fileName: string | undefined;
+    let imageUrl: string | undefined;
+
+    if (withImages) {
+      if (fileParam) {
+        fileName = fileParam;
+        value = 'Uploaded image';
+        showImage = true;
+        isImageMode = true;
+      } else if (initialInput && initialInput.startsWith('http')) {
+        imageUrl = initialInput;
+        value = initialInput;
+        showImage = true;
+        isImageMode = true;
+      }
+    }
+    
+    if (!isImageMode) {
+        isImageMode = value.startsWith('http');
+    }
+
+
     this.state = {
-      value: value === 'dndFile' ? '' : value,
+      value,
       sliderValue: props.defaultSliderValue !== undefined ? props.defaultSliderValue : (props.min || 0),
       progress: 0,
-      showImage: false,
-      isImageMode: isImageMode,
+      showImage,
+      isImageMode,
       selectedDomainIndex,
       withAi,
       withImages,
@@ -375,11 +401,12 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
       searchTypes: ['exact', 'metadata', 'visual'],
       searchSensitivity: 'precise',
       metadataModel: 'qwen3_8b',
-      visualSearchModel: 'siglip2_so400m_patch16_naflex'
+      visualSearchModel: 'siglip2_so400m_patch16_naflex',
+      fileName,
+      imageUrl
     };
 
-    this.keys = Action<string>(value === 'dndFile' ? '' : value);
-
+    this.keys = Action<string>(value);
     this.imageUploadService = new ImageUploadService();
     this.componentCancellation = new Cancellation();
     this.activeStreamCancellation = this.componentCancellation.derive();
@@ -388,7 +415,6 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
   componentDidMount() {
     setSearchDomain(this.getCurrentDomainUri(), this.props.context);
     this.initialize(this.props);
-    this.initializeFromProps();
   }
 
   componentWillReceiveProps(props: InnerProps) {
@@ -406,71 +432,6 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
       );
     }
   }
-
-  private initializeFromProps = () => {
-    const { initialInput } = this.props;
-    const { withImages } = this.state;
-
-    // Only process image inputs if images are enabled for this domain
-    if (withImages) {
-      if (initialInput === 'dndFile' && window['dndFile']) {
-        // Handle file instance initialization with resizing
-        const fileInstance = window['dndFile'];
-        this.getFileAsBase64(fileInstance).then((base64Data: string) => {
-          this.resizeImageToMaxDimensions(base64Data, MAX_IMAGE_DIMENSION, MAX_IMAGE_DIMENSION).then((resizedData: string) => {
-            this.setState({
-              imageData: resizedData,
-              imageUrl: undefined,
-              value: 'Initial image data',
-              showImage: true,
-              isImageMode: true
-            }, () => {
-              this.keys(this.state.value);
-            });
-          }).catch(error => {
-            console.error('Failed to resize initial image data:', error);
-            // Fallback to original image if resizing fails
-            this.setState({
-              imageData: base64Data,
-              imageUrl: undefined,
-              value: 'Initial image data',
-              showImage: true,
-              isImageMode: true
-            }, () => {
-              this.keys(this.state.value);
-            });
-          });
-        });
-      } else if (initialInput && initialInput.startsWith('http')) {
-        // For URLs, we don't resize the image
-        this.setState({
-          imageUrl: initialInput,
-          imageData: undefined,
-          value: initialInput,
-          showImage: true,
-          isImageMode: true
-        }, () => {
-          this.keys(this.state.value);
-        });
-      } else if (initialInput) {
-        // For text input, just set the value
-        this.setState({
-          value: initialInput,
-          isImageMode: false
-        }, () => {
-          this.keys(initialInput);
-        });
-      }
-    } else if (initialInput) {
-      // If images are not enabled, treat all inputs as text
-      this.setState({
-        value: initialInput,
-        isImageMode: false
-      }, () => {
-        this.keys(initialInput);
-      });
-    }
-  };
 
   /**
    * Get the URI of the currently selected domain
@@ -730,6 +691,8 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
               <div className={styles.modelSelection}>
                 <div className={styles.modelRow}>
                   <Checkbox
+                    label={isImageMode ? 'Visual Match' : 'Text Match'}
+                    title={isImageMode ? 'Visual Match' : 'Text Match'}
                     name="searchTypes"
                     value="exact"
                     checked={this.state.searchTypes.includes('exact')}
@@ -742,6 +705,8 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
                 {!isImageMode && (
                 <div className={styles.modelRow}>
                   <Checkbox
+                    label="Textual Similarity"
+                    title="Textual Similarity"
                     name="searchTypes"
                     value="metadata"
                     checked={this.state.searchTypes.includes('metadata')}
@@ -765,6 +730,8 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
                 )}
                 <div className={styles.modelRow}>
                   <Checkbox
+                    label="Visual Similarity"
+                    title="Visual Similarity"
                     name="searchTypes"
                     value="visual"
                     checked={this.state.searchTypes.includes('visual')}

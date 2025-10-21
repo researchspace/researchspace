@@ -19,40 +19,44 @@ import * as React from 'react';
 import { Component } from 'platform/api/components';
 import { Dropzone } from 'platform/components/ui/dropzone';
 import { trigger } from 'platform/api/events';
-import { tr } from 'react-dom-factories';
+import { ImageUploadService } from './ImageUploadService';
+import { ProgressBar, ProgressState } from '../../ontodia/src/ontodia/widgets/progressBar';
 
 export interface DragAndDropTriggerProps {
   id: string;
-
-  /**
-   * Children elements to be wrapped by the drag and drop area
-   */
   children: React.ReactNode;
-    
-  /**
-   * Optional CSS class name for styling
-   */
   className?: string;
-  
-  /**
-   * Optional inline styles
-   */
   style?: React.CSSProperties;
+  imageStorage: string;
+}
+
+interface DragAndDropTriggerState {
+  progress: number;
 }
 
 /**
  * A component that can be wrapped around any HTML content to provide
- * drag and drop functionality for file input. It stores the file object
- * in a global variable on window and shows a progress bar if the upload
- * takes more than 1 second.
+ * drag and drop functionality for file input. It uploads the file and
+ * shows a progress bar.
  */
-class DragAndDropTrigger extends Component<DragAndDropTriggerProps, {}> {
+class DragAndDropTrigger extends Component<DragAndDropTriggerProps, DragAndDropTriggerState> {
+  private imageUploadService: ImageUploadService;
+
   constructor(props: DragAndDropTriggerProps, context: any) {
     super(props, context);
+    this.state = {
+      progress: 0,
+    };
+    this.imageUploadService = new ImageUploadService();
   }
 
   render() {
     const { children, className, style } = this.props;
+    const { progress } = this.state;
+
+    if (progress > 0 && progress < 100) {
+      return <ProgressBar percent={progress} state={ProgressState.loading} />;
+    }
 
     return (
         <Dropzone
@@ -74,17 +78,24 @@ class DragAndDropTrigger extends Component<DragAndDropTriggerProps, {}> {
   private handleDrop = (files: File[]) => {
     if (files && files.length > 0) {
       const file = files[0];
-      (window as any).dndFile = file;
-
-      trigger({
-        eventType: "DragAndDropTrigger.FileDropped",
-        source: this.props.id,
-        data: {
-          queryParams: {
-            withFile: "dndFile"
-          }
-        }
-      })
+      this.setState({ progress: 0 });
+      this.imageUploadService.uploadImage(file, this.props.imageStorage, (progress) => this.setState({ progress }))
+        .then(response => {
+          this.setState({ progress: 100 });
+          trigger({
+            eventType: "DragAndDropTrigger.FileDropped",
+            source: this.props.id,
+            data: {
+              queryParams: {
+                file: response.fileName
+              }
+            }
+          });
+        })
+        .catch(error => {
+          console.error('Failed to upload image:', error);
+          this.setState({ progress: 0 });
+        });
     }
   };
 }

@@ -835,12 +835,11 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       const nodeKey = node.key;
       const isHighlighted = highlightedIds.has(nodeId) || highlightedIds.has(nodeKey);
       
-      console.log(`Checking node: ${nodeId} (key: ${nodeKey}), highlighted: ${isHighlighted}`);
-      
       // Get children from cache if available, otherwise use node's children
       let nodeChildren = node.children;
       if (this.state.expandedNodes.has(nodeKey)) {
         nodeChildren = this.state.expandedNodes.get(nodeKey) || node.children;
+        console.log(`Node ${nodeKey} has ${nodeChildren.length} cached children`);
       }
       
       // Check if any descendant is highlighted
@@ -852,10 +851,13 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
         const allChildren = nodeChildren;
         const hiddenSiblingsCount = allChildren.length - filteredChildren.length;
         
+        console.log(`Node ${nodeKey}: total children=${allChildren.length}, filtered=${filteredChildren.length}, hidden=${hiddenSiblingsCount}`);
+        
         let childrenToShow = filteredChildren;
         
         // Add "expand siblings" button if there are hidden siblings
         if (hiddenSiblingsCount > 0 && filteredChildren.length > 0) {
+          console.log(`Adding expand siblings button for ${nodeKey} with ${hiddenSiblingsCount} hidden siblings`);
           const expandSiblingsNode: TreeNode = {
             key: `${nodeKey}_expand_siblings`,
             data: {
@@ -1046,6 +1048,23 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
     return this.state.isLoading ? createElement(Spinner) : this.renderTree();
   }
 
+  private buildFilteredCacheFromTree(nodes: ReadonlyArray<TreeNode>): Map<string, ReadonlyArray<TreeNode>> {
+    const filteredCache = new Map<string, ReadonlyArray<TreeNode>>();
+    
+    const extractChildren = (nodes: ReadonlyArray<TreeNode>) => {
+      for (const node of nodes) {
+        if (node.children.length > 0) {
+          filteredCache.set(node.key, node.children);
+          // Recursively extract from children
+          extractChildren(node.children);
+        }
+      }
+    };
+    
+    extractChildren(nodes);
+    return filteredCache;
+  }
+
   private renderTree() {
     const { data } = this.state;
     if (data.length === 0) {
@@ -1063,6 +1082,11 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
     // When highlighting is active, don't collapse nodes by default
     const shouldCollapseNodes = this.state.highlightedTreeData ? false : this.props.collapsed;
 
+    // Build a filtered cache from the highlighted tree data
+    const cacheToUse = this.state.highlightedTreeData 
+      ? this.buildFilteredCacheFromTree(this.state.highlightedTreeData)
+      : this.state.expandedNodes;
+
     const providerProps: ProviderPropsAdvanced = {
       tupleTemplate: this.handleDeprecatedLayout(),
       onNodeClick: this.onNodeClick,
@@ -1075,7 +1099,8 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       hasChildrenBinding: this.props.hasChildrenBinding,
       loadingTemplate: this.props.loadingTemplate,
       highlightedNodes: this.state.highlightedNodes,
-      preloadedChildren: this.state.expandedNodes,
+      // Use filtered cache when highlighting to show filtered tree structure with expand siblings buttons
+      preloadedChildren: cacheToUse,
       relatedNodeCriteria: this.props.relatedNodeCriteria,
       onFindRelatedNodes: this.props.relatedNodeCriteria ? this.handleFindRelatedNodes : undefined,
       showTreeLines: this.props.showTreeLines,

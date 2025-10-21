@@ -37,4 +37,16 @@ export class ImageUploadService {
         });
     });
   }
+
+  /**
+   * Constructs the thumbnail URL locally based on the file name and storage ID.
+   * This avoids an extra network call by replicating the server-side URL generation logic.
+   * @param fileName - The name of the original uploaded file.
+   * @param storageId - The ID of the storage where the file is located.
+   * @returns The formatted thumbnail URL.
+   */
+  public getThumbnailUrl(fileName: string, storageId: string): string {
+    const thumbnailFileName = "thumb_" + fileName;
+    return `/file/image-upload/thumbnail?fileName=${thumbnailFileName}&storageId=${storageId}`;
+  }
 }

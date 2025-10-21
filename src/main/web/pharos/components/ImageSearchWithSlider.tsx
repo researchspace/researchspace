@@ -368,6 +368,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
     let showImage = false;
     let fileName: string | undefined;
     let imageUrl: string | undefined;
+    let thumbnailUrl: string | undefined;
 
     if (withImages) {
       if (fileParam) {
@@ -375,6 +376,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
         value = 'Uploaded image';
         showImage = true;
         isImageMode = true;
+        thumbnailUrl = new ImageUploadService().getThumbnailUrl(fileName, props.imageStorage);
       } else if (initialInput && initialInput.startsWith('http')) {
         imageUrl = initialInput;
         value = initialInput;
@@ -403,7 +405,8 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
       metadataModel: 'qwen3_8b',
       visualSearchModel: 'siglip2_so400m_patch16_naflex',
       fileName,
-      imageUrl
+      imageUrl,
+      thumbnailUrl
     };
 
     this.keys = Action<string>(value);
@@ -633,12 +636,13 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
                 alt="Selected image"
                 className={styles.imagePreview}
               />
-              <Button
+              <Icon
                 className={styles.clearImageBtn}
+                iconType="rounded"
+                iconName="close"
+                symbol
                 onClick={this.handleClearImage}
-              >
-                Clear
-              </Button>
+              />
             </div>
           ) : (
            this.state.progress > 0 && this.state.progress < 100 ? (

@@ -359,51 +359,69 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
 
     try {
       if (nodeIds.length === 0) {
-        // Clear highlighting - show original tree
+        // Clear highlighting - show original tree with preserved cache
         this.setState({
           highlightedTreeData: undefined,
-          expandedNodes: new Map() // Clear cache when clearing highlights
+          highlightedNodes: new Set()
         });
+        this.expandedKeysForHighlighting = [];
         return;
       }
 
-      // First, check if we have a pathToRootQuery to load missing paths
-      if (this.props.pathToRootQuery) {
-        // Load paths for all highlighted nodes
+      console.log('Starting highlight process for nodes:', nodeIds);
+      
+      // Update highlighted nodes state immediately for visual feedback
+      this.setState({
+        highlightedNodes: new Set(nodeIds)
+      });
+      
+      // First, ensure all paths to highlighted nodes are loaded
+      if (this.props.pathToRootQuery && this.props.expandQuery) {
+        console.log('Loading paths for highlighted nodes...');
         await this.loadPathsToHighlightedNodes(nodeIds);
+        console.log('Path loading complete. Cache size:', this.state.expandedNodes.size);
+        
+        // Wait for state updates to propagate
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
 
       // Build a complete tree that includes cached nodes
       const completeTree = this.buildCompleteTreeWithCache(this.state.data);
       
       // Now filter the complete tree data
-      console.log('Cache state before filtering:', Array.from(this.state.expandedNodes.keys()));
+      console.log('Filtering tree for highlighted nodes...');
       const highlightedTreeData = this.filterTreeForHighlightedNodes(completeTree, new Set(nodeIds));
       
-      console.log('Filtered tree data:', highlightedTreeData);
+      console.log('Filtered tree contains', highlightedTreeData.length, 'root nodes');
       
-      // If no nodes were found, don't filter the tree - just highlight what we can find
+      // Check if any nodes were found
       if (highlightedTreeData.length === 0) {
-        console.warn('No matching nodes found for highlighting, keeping original tree structure');
-        // Don't set highlightedTreeData, just keep the highlighting state for visual styling
+        console.warn('No matching nodes found for highlighting');
+        // Keep highlighting state for visual styling but don't filter the tree
+        this.setState({
+          highlightedTreeData: undefined
+        });
         return;
       }
       
-      // Collect only keys in paths to highlighted nodes (not all nodes)
+      // Collect keys in paths to highlighted nodes
       const keysToExpand = this.collectKeysInPathsToHighlightedNodes(highlightedTreeData, new Set(nodeIds));
-      console.log('Keys to expand (only paths to highlighted nodes):', keysToExpand);
+      console.log('Keys to expand:', keysToExpand.length, 'nodes');
       
+      // Update expanded keys for highlighting
+      this.updateExpandedKeys(keysToExpand);
+      
+      // Update state with filtered tree
       this.setState({
         highlightedTreeData
-      }, () => {
-        // Force a re-render after state update
-        this.forceUpdate();
       });
-
-      // Update the provider props to include the expanded keys
-      this.updateExpandedKeys(keysToExpand);
+      
     } catch (error) {
       console.error('Error highlighting nodes:', error);
+      // Keep highlighted nodes for visual feedback even if path loading fails
+      this.setState({
+        highlightedTreeData: undefined
+      });
     }
   };
 
@@ -488,24 +506,48 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
   private expandedKeysForHighlighting: string[] = [];
 
   private loadPathsToHighlightedNodes = async (nodeIds: string[]): Promise<void> => {
-    if (!this.props.pathToRootQuery) {
+    if (!this.props.pathToRootQuery || !this.props.expandQuery) {
+      console.warn('pathToRootQuery or expandQuery not configured');
       return;
     }
 
     console.log('Loading paths for highlighted nodes:', nodeIds);
 
     try {
-      // For each highlighted node, query its path to root
+      // Step 1: Get all paths to root for each highlighted node
+      let isFirstQuery = true;
       const pathPromises = nodeIds.map(async (nodeId) => {
         const query = this.props.pathToRootQuery.replace(/\$__node__/g, nodeId);
         const context = this.context.semanticContext;
         
         try {
           const result = await SparqlClient.select(query, { context }).toPromise();
+          
+          // Log only the first query for debugging
+          if (isFirstQuery) {
+            isFirstQuery = false;
+            console.log('=== FIRST pathToRootQuery DEBUG ===');
+            console.log('Node:', nodeId);
+            console.log('Query:', query);
+            console.log('Result:', result);
+            console.log('Bindings:', result.results?.bindings);
+            console.log('===================================');
+          }
+          
           if (!SparqlUtil.isSelectResultEmpty(result)) {
+            const ancestors = result.results.bindings
+              .map(binding => binding['ancestor'].value)
+              .filter(ancestor => ancestor !== nodeId) // Remove self from ancestors
+              .reverse(); // Reverse to get root-to-node order
+            
+            // Log ancestors for first node
+            if (nodeId === nodeIds[0]) {
+              console.log('Ancestors found for first node:', ancestors);
+            }
+            
             return {
-              nodeId,
-              ancestors: result.results.bindings.map(binding => binding['ancestor'].value)
+              nodeId: nodeId,
+              ancestors: ancestors
             };
           }
         } catch (error) {
@@ -516,123 +558,180 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
 
       const pathResults = await Promise.all(pathPromises);
       const validPaths = pathResults.filter(p => p !== null);
-
-      // Now we need to load all the missing nodes in these paths
-      await this.loadMissingNodesInPaths(validPaths);
+      
+      console.log('Found paths for', validPaths.length, 'nodes');
+      
+      // Step 2: Build a tree of paths to load
+      const pathTree = this.buildPathTree(validPaths);
+      
+      // Step 3: Load nodes level by level
+      await this.loadPathTreeSequentially(pathTree);
 
     } catch (error) {
       console.error('Error loading paths to highlighted nodes:', error);
     }
   };
 
-  private loadMissingNodesInPaths = async (paths: Array<{nodeId: string, ancestors: string[]}>) => {
-    // Build a map of parent-child relationships from the paths
-    const parentChildMap = new Map<string, Set<string>>();
-    const allNodesInPaths = new Set<string>();
+  private buildPathTree = (paths: Array<{nodeId: string, ancestors: string[]}>) => {
+    // Build a tree structure representing all paths that need to be loaded
+    const pathTree = new Map<string, Set<string>>();
     
     paths.forEach(path => {
-      // Add the target node
-      allNodesInPaths.add(path.nodeId);
-      
-      // Process ancestors to build parent-child relationships
+      // Create full path from root to target
       const fullPath = [...path.ancestors, path.nodeId];
+      
+      // Build parent-child relationships
       for (let i = 0; i < fullPath.length - 1; i++) {
         const parent = fullPath[i];
         const child = fullPath[i + 1];
         
-        allNodesInPaths.add(parent);
-        allNodesInPaths.add(child);
-        
-        if (!parentChildMap.has(parent)) {
-          parentChildMap.set(parent, new Set());
+        if (!pathTree.has(parent)) {
+          pathTree.set(parent, new Set());
         }
-        parentChildMap.get(parent).add(child);
+        pathTree.get(parent).add(child);
       }
     });
-
-    console.log('Parent-child relationships:', Array.from(parentChildMap.entries()).map(([p, c]) => ({ parent: p, children: Array.from(c) })));
-
-    // Now we need to ensure all nodes in the paths are loaded
-    // We'll do this by expanding nodes level by level
-    await this.ensurePathsAreLoaded(parentChildMap, allNodesInPaths);
+    
+    console.log('Path tree structure:', Array.from(pathTree.entries()).map(([p, c]) => ({ 
+      parent: p, 
+      children: Array.from(c) 
+    })));
+    
+    return pathTree;
   };
 
-  private ensurePathsAreLoaded = async (parentChildMap: Map<string, Set<string>>, targetNodes: Set<string>) => {
-    console.log('Ensuring paths are loaded');
-    console.log('Parent-child map keys:', Array.from(parentChildMap.keys()));
-    console.log('Target nodes:', Array.from(targetNodes));
+  private loadPathTreeSequentially = async (pathTree: Map<string, Set<string>>) => {
+    // Find root nodes (nodes that are not children of any other node)
+    const allChildren = new Set<string>();
+    pathTree.forEach(children => {
+      Array.from(children).forEach(child => allChildren.add(child));
+    });
     
-    // Instead of starting from roots, find all nodes in the current tree that have children to load
-    const processNode = async (node: TreeNode) => {
-      const nodeId = node.data[this.props.nodeBindingName].value;
-      
-      // Check if this node has children in our parent-child map
-      if (parentChildMap.has(nodeId)) {
-        console.log(`Node ${nodeId} has children to load in parent-child map`);
-        await this.loadPathFromNode(node, parentChildMap, targetNodes);
-      }
-      
-      // Process children recursively
-      for (const child of node.children) {
-        await processNode(child);
-      }
-    };
+    const roots = Array.from(pathTree.keys()).filter(node => !allChildren.has(node));
     
-    // Process all nodes in the tree
-    if (this.state.data) {
-      for (const rootNode of this.state.data) {
-        await processNode(rootNode);
-      }
+    console.log('Starting sequential load from roots:', roots);
+    
+    // Load paths starting from each root
+    for (const root of roots) {
+      await this.loadPathFromRoot(root, pathTree);
     }
   };
 
-  private loadPathFromNode = async (node: TreeNode, parentChildMap: Map<string, Set<string>>, targetNodes: Set<string>) => {
-    const nodeId = node.data[this.props.nodeBindingName].value;
-    const childrenToLoad = parentChildMap.get(nodeId);
+  private loadPathFromRoot = async (nodeIri: string, pathTree: Map<string, Set<string>>, parentNode?: TreeNode) => {
+    console.log(`Loading path from node: ${nodeIri}`);
     
-    console.log(`loadPathFromNode called for ${nodeId}, children to load:`, childrenToLoad ? Array.from(childrenToLoad) : 'none');
+    // Find the tree node - simplified approach
+    let treeNode: TreeNode | null = await this.findOrLoadNode(nodeIri, parentNode);
     
-    if (!childrenToLoad || childrenToLoad.size === 0) {
+    if (!treeNode) {
+      console.warn(`Could not find or load node ${nodeIri}`);
       return;
     }
-
-    // Check if we need to expand this node
-    const hasChildrenValue = node.data[this.props.hasChildrenBinding];
-    const hasLazyChildren = hasChildrenValue && hasChildrenValue.value === 'true';
     
-    console.log(`Node ${nodeId} - hasLazyChildren: ${hasLazyChildren}, current children count: ${node.children ? node.children.length : 0}`);
+    // Check if this node has children in the path tree that need to be loaded
+    const childrenToLoad = pathTree.get(nodeIri);
+    if (childrenToLoad && childrenToLoad.size > 0) {
+      console.log(`Node ${nodeIri} has ${childrenToLoad.size} children to load`);
+      
+      // Ensure the node is expanded if it has lazy children
+      const hasLazyChildren = treeNode.data[this.props.hasChildrenBinding]?.value === 'true';
+      const cachedChildren = this.state.expandedNodes.get(treeNode.key);
+      
+      if (hasLazyChildren && !cachedChildren) {
+        console.log(`Expanding node ${nodeIri} to load children`);
+        await this.expandNode(treeNode);
+      }
+      
+      // Process each child that needs to be loaded
+      for (const childIri of Array.from(childrenToLoad)) {
+        await this.loadPathFromRoot(childIri, pathTree, treeNode);
+      }
+    }
+  };
+  
+  private findOrLoadNode = async (nodeIri: string, parentNode?: TreeNode): Promise<TreeNode | null> => {
+    // First check in the appropriate scope
+    let searchScope: ReadonlyArray<TreeNode>;
     
-    if (hasLazyChildren && (!node.children || node.children.length === 0)) {
-      // Load children for this node
-      console.log(`Loading children for node: ${nodeId}`);
-      const loadedChildren = await this.expandNode(node);
+    if (parentNode) {
+      // Look in parent's children (cached or regular)
+      const cachedChildren = this.state.expandedNodes.get(parentNode.key);
+      searchScope = cachedChildren || parentNode.children;
+    } else {
+      // Look in root nodes
+      searchScope = this.state.data || [];
+    }
+    
+    // Try to find the node directly
+    let node = this.findNodeByIriInTree(searchScope, nodeIri);
+    
+    if (node) {
+      return node;
+    }
+    
+    // If not found and we have a parent, try expanding it
+    if (parentNode) {
+      const hasLazyChildren = parentNode.data[this.props.hasChildrenBinding]?.value === 'true';
+      const alreadyExpanded = this.state.expandedNodes.has(parentNode.key);
       
-      console.log(`Loaded ${loadedChildren.length} children for node ${nodeId}`);
-      
-      if (loadedChildren.length > 0) {
-        // Update our cache
-        this.updateExpandedCache(node.key, loadedChildren);
+      if (hasLazyChildren && !alreadyExpanded) {
+        console.log(`Expanding parent ${parentNode.key} to find ${nodeIri}`);
+        const expandedChildren = await this.expandNode(parentNode);
         
-        // Continue loading paths for children that are in our target set
-        for (const child of loadedChildren) {
-          const childId = child.data[this.props.nodeBindingName].value;
-          console.log(`Checking child ${childId}, is in target nodes: ${targetNodes.has(childId)}`);
-          if (targetNodes.has(childId) || childrenToLoad.has(childId)) {
-            await this.loadPathFromNode(child, parentChildMap, targetNodes);
+        // Search again in the expanded children
+        node = this.findNodeByIriInTree(expandedChildren, nodeIri);
+        if (node) {
+          return node;
+        }
+      }
+    } else if (this.state.data) {
+      // If no parent, try expanding all root nodes to find it
+      for (const rootNode of this.state.data) {
+        const hasLazyChildren = rootNode.data[this.props.hasChildrenBinding]?.value === 'true';
+        const alreadyExpanded = this.state.expandedNodes.has(rootNode.key);
+        
+        if (hasLazyChildren && !alreadyExpanded) {
+          console.log(`Expanding root ${rootNode.key} to search for ${nodeIri}`);
+          const expandedChildren = await this.expandNode(rootNode);
+          
+          node = this.findNodeByIriInTree(expandedChildren, nodeIri);
+          if (node) {
+            console.log(`Found ${nodeIri} as a child of ${rootNode.key}`);
+            return node;
           }
         }
       }
-    } else if (node.children && node.children.length > 0) {
-      // Node already has children, check if any need their paths loaded
-      console.log(`Node ${nodeId} already has ${node.children.length} children`);
-      for (const child of node.children) {
-        const childId = child.data[this.props.nodeBindingName].value;
-        if (targetNodes.has(childId) || childrenToLoad.has(childId)) {
-          await this.loadPathFromNode(child, parentChildMap, targetNodes);
-        }
+    }
+    
+    return null;
+  };
+
+  private findNodeByIriInTree = (nodes: ReadonlyArray<TreeNode>, nodeIri: string): TreeNode | null => {
+    if (!nodes) return null;
+    
+    for (const node of nodes) {
+      const currentNodeIri = node.data[this.props.nodeBindingName]?.value;
+      
+      // Direct IRI comparison only - no pattern matching
+      if (currentNodeIri === nodeIri) {
+        return node;
+      }
+      
+      // Also check by key if different from the IRI
+      if (node.key === nodeIri) {
+        return node;
+      }
+      
+      // Search in children recursively
+      const found = this.findNodeByIriInTree(node.children, nodeIri);
+      if (found) {
+        return found;
       }
     }
+    return null;
   };
+
+  // These methods are now replaced by the new implementation above
 
   private collectExistingNodeIds = (nodes: ReadonlyArray<TreeNode>, existingNodes: Set<string>) => {
     nodes.forEach(node => {
@@ -732,7 +831,7 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
     const result: TreeNode[] = [];
     
     for (const node of nodes) {
-      const nodeId = node.data[this.props.nodeBindingName].value;
+      const nodeId = node.data[this.props.nodeBindingName]?.value;
       const nodeKey = node.key;
       const isHighlighted = highlightedIds.has(nodeId) || highlightedIds.has(nodeKey);
       
@@ -847,12 +946,15 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       // Inject the clicked node IRI into the expand query
       const queryWithNode = expandQuery.replace(/\{\{clickedNode\}\}/g, node.data[this.props.nodeBindingName].value);
       
+      console.log('Executing expandQuery for node:', node.data[this.props.nodeBindingName].value);
+      console.log('Query:', queryWithNode);
+      
       const context = this.context.semanticContext;
       const result = await SparqlClient.select(queryWithNode, { context }).toPromise();
       
       if (SparqlUtil.isSelectResultEmpty(result)) {
         const emptyResult: ReadonlyArray<TreeNode> = [];
-        this.updateExpandedCache(nodeKey, emptyResult);
+        await this.updateExpandedCache(nodeKey, emptyResult);
         return emptyResult;
       }
 
@@ -889,7 +991,7 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
           }
         }
         
-        this.updateExpandedCache(nodeKey, childNodes);
+        await this.updateExpandedCache(nodeKey, childNodes);
         return childNodes;
       }
       
@@ -918,16 +1020,23 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
     }
   };
 
-  private updateExpandedCache(nodeKey: string, children: ReadonlyArray<TreeNode>) {
-    if (this.props.enableCache) {
-      // Update the cache immediately in the state
-      this.state.expandedNodes.set(nodeKey, children);
-      
-      // Also update via setState for React
-      this.setState(prevState => ({
-        expandedNodes: new Map(prevState.expandedNodes)
-      }));
-    }
+  private updateExpandedCache = (nodeKey: string, children: ReadonlyArray<TreeNode>): Promise<void> => {
+    return new Promise((resolve) => {
+      if (this.props.enableCache) {
+        console.log(`Updating cache for ${nodeKey}, adding ${children.length} children`);
+        
+        this.setState(prevState => {
+          const newCache = new Map(prevState.expandedNodes);
+          newCache.set(nodeKey, children);
+          return { expandedNodes: newCache };
+        }, () => {
+          console.log(`Cache successfully updated for ${nodeKey}`);
+          resolve();
+        });
+      } else {
+        resolve();
+      }
+    });
   }
 
   public render() {
@@ -1168,14 +1277,7 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       const nodeIri = node.data[this.props.nodeBindingName].value;
       
       // Check if this node is in the exclusion set
-      // For structural nodes (with /structure/), also check the data version (without /structure/)
-      let isExcluded = excludedNodes.has(nodeIri);
-      
-      // If this is a structural node, also check the data node equivalent
-      if (!isExcluded && nodeIri.includes('/structure/')) {
-        const dataNodeIri = nodeIri.replace('/structure/', '/');
-        isExcluded = excludedNodes.has(dataNodeIri);
-      }
+      const isExcluded = excludedNodes.has(nodeIri) || excludedNodes.has(node.key);
       
       // Filter children recursively
       const filteredChildren = node.children.length > 0 
@@ -1306,6 +1408,9 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       // Replace the search text placeholder in the query
       const query = this.props.searchQuery.replace(/\$__searchText__/g, this.state.searchText.trim());
       const context = this.context.semanticContext;
+      
+      console.log('Executing searchQuery with text:', this.state.searchText.trim());
+      console.log('Query:', query);
       
       const result = await SparqlClient.select(query, { context }).toPromise();
       

@@ -250,6 +250,8 @@ interface StateAdvanced {
   searchText: string; // Current search input text
   isSearching: boolean; // Whether a search is in progress
   isExpanding: boolean; // Whether tree expansion is in progress after search
+  expandingProgress: number; // Current number of nodes expanded
+  expandingTotal: number; // Total number of nodes to expand
   currentSortBinding?: string; // Current field being sorted by
   currentSortDirection: 'asc' | 'desc'; // Current sort direction
   activeFilters: Set<string>; // Set of active filter labels
@@ -304,6 +306,8 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       searchText: '',
       isSearching: false,
       isExpanding: false,
+      expandingProgress: 0,
+      expandingTotal: 0,
       currentSortBinding: initialSortBinding,
       currentSortDirection: initialSortDirection,
       activeFilters,
@@ -587,6 +591,19 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
   };
 
   private loadPathTreeSequentially = async (pathTree: Map<string, Set<string>>) => {
+    // Count total unique nodes to expand
+    const nodesToExpand = new Set<string>();
+    pathTree.forEach((children, parent) => {
+      nodesToExpand.add(parent);
+      children.forEach(child => nodesToExpand.add(child));
+    });
+    
+    // Initialize progress tracking
+    this.setState({ 
+      expandingProgress: 0, 
+      expandingTotal: nodesToExpand.size 
+    });
+    
     // Find root nodes (nodes that are not children of any other node)
     const allChildren = new Set<string>();
     pathTree.forEach(children => {
@@ -604,6 +621,8 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
     let treeNode: TreeNode | null = await this.findOrLoadNode(nodeIri, parentNode);
     
     if (!treeNode) {
+      // Increment progress even if node not found
+      this.setState(prev => ({ expandingProgress: prev.expandingProgress + 1 }));
       return;
     }
     
@@ -614,11 +633,19 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       
       if (hasLazyChildren && !cachedChildren) {
         await this.expandNode(treeNode);
+        // Increment progress after successful expansion
+        this.setState(prev => ({ expandingProgress: prev.expandingProgress + 1 }));
+      } else {
+        // Node already cached, still count as progress
+        this.setState(prev => ({ expandingProgress: prev.expandingProgress + 1 }));
       }
       
       for (const childIri of Array.from(childrenToLoad)) {
         await this.loadPathFromRoot(childIri, pathTree, treeNode);
       }
+    } else {
+      // Leaf node, increment progress
+      this.setState(prev => ({ expandingProgress: prev.expandingProgress + 1 }));
     }
   };
   
@@ -1331,7 +1358,7 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
           className: 'fa fa-spinner fa-spin',
           style: { fontSize: '14px' }
         }),
-        this.state.isSearching ? 'Searching...' : this.state.isExpanding ? 'Expanding...' : 'Search'
+        this.state.isSearching ? 'Searching...' : this.state.isExpanding ? `Expanding... ${Math.round((this.state.expandingProgress / this.state.expandingTotal) * 100)}%` : 'Search'
       ),
       this.state.highlightedNodes.size > 0 && D.div({
         style: {

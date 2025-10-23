@@ -359,7 +359,6 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
 
     try {
       if (nodeIds.length === 0) {
-        // Clear highlighting - show original tree with preserved cache
         this.setState({
           highlightedTreeData: undefined,
           highlightedNodes: new Set()
@@ -367,61 +366,51 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
         this.expandedKeysForHighlighting = [];
         return;
       }
-
-      console.log('Starting highlight process for nodes:', nodeIds);
       
       // Update highlighted nodes state immediately for visual feedback
       this.setState({
         highlightedNodes: new Set(nodeIds)
       });
       
-      // First, ensure all paths to highlighted nodes are loaded
+      // Phase 2: Load paths to highlighted nodes
       if (this.props.pathToRootQuery && this.props.expandQuery) {
-        console.log('Loading paths for highlighted nodes...');
+        const pathLoadStart = performance.now();
         await this.loadPathsToHighlightedNodes(nodeIds);
-        console.log('Path loading complete. Cache size:', this.state.expandedNodes.size);
+        const pathLoadTime = performance.now() - pathLoadStart;
+        console.log(`  Phase 2 - Path Loading: ${pathLoadTime.toFixed(2)}ms (Cache size: ${this.state.expandedNodes.size})`);
         
-        // Wait for state updates to propagate
         await new Promise(resolve => setTimeout(resolve, 100));
       }
 
-      // Build a complete tree that includes cached nodes
+      // Phase 3: Build complete tree with cache
+      const buildTreeStart = performance.now();
       const completeTree = this.buildCompleteTreeWithCache(this.state.data);
+      const buildTreeTime = performance.now() - buildTreeStart;
+      console.log(`  Phase 3 - Build Complete Tree: ${buildTreeTime.toFixed(2)}ms`);
       
-      // Now filter the complete tree data
-      console.log('Filtering tree for highlighted nodes...');
+      // Phase 4: Filter tree for highlighted nodes
+      const filterStart = performance.now();
       const highlightedTreeData = this.filterTreeForHighlightedNodes(completeTree, new Set(nodeIds));
+      const filterTime = performance.now() - filterStart;
+      console.log(`  Phase 4 - Filter Tree: ${filterTime.toFixed(2)}ms (${highlightedTreeData.length} root nodes)`);
       
-      console.log('Filtered tree contains', highlightedTreeData.length, 'root nodes');
-      
-      // Check if any nodes were found
       if (highlightedTreeData.length === 0) {
-        console.warn('No matching nodes found for highlighting');
-        // Keep highlighting state for visual styling but don't filter the tree
-        this.setState({
-          highlightedTreeData: undefined
-        });
+        this.setState({ highlightedTreeData: undefined });
         return;
       }
       
-      // Collect keys in paths to highlighted nodes
+      // Phase 5: Collect keys to expand
+      const collectStart = performance.now();
       const keysToExpand = this.collectKeysInPathsToHighlightedNodes(highlightedTreeData, new Set(nodeIds));
-      console.log('Keys to expand:', keysToExpand.length, 'nodes');
+      const collectTime = performance.now() - collectStart;
+      console.log(`  Phase 5 - Collect Expansion Keys: ${collectTime.toFixed(2)}ms (${keysToExpand.length} keys)`);
       
-      // Update expanded keys for highlighting
       this.updateExpandedKeys(keysToExpand);
-      
-      // Update state with filtered tree
-      this.setState({
-        highlightedTreeData
-      });
+      this.setState({ highlightedTreeData });
       
     } catch (error) {
       console.error('Error highlighting nodes:', error);
-      // Keep highlighted nodes for visual feedback even if path loading fails
-      this.setState({
-        highlightedTreeData: undefined
-      });
+      this.setState({ highlightedTreeData: undefined });
     }
   };
 
@@ -507,15 +496,12 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
 
   private loadPathsToHighlightedNodes = async (nodeIds: string[]): Promise<void> => {
     if (!this.props.pathToRootQuery || !this.props.expandQuery) {
-      console.warn('pathToRootQuery or expandQuery not configured');
       return;
     }
 
-    console.log('Loading paths for highlighted nodes:', nodeIds);
-
     try {
-      // Step 1: Get all paths to root for each highlighted node
-      let isFirstQuery = true;
+      // Sub-phase 2a: Execute path-to-root queries
+      const pathQueryStart = performance.now();
       const pathPromises = nodeIds.map(async (nodeId) => {
         const query = this.props.pathToRootQuery.replace(/\$__node__/g, nodeId);
         const context = this.context.semanticContext;
@@ -523,32 +509,13 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
         try {
           const result = await SparqlClient.select(query, { context }).toPromise();
           
-          // Log only the first query for debugging
-          if (isFirstQuery) {
-            isFirstQuery = false;
-            console.log('=== FIRST pathToRootQuery DEBUG ===');
-            console.log('Node:', nodeId);
-            console.log('Query:', query);
-            console.log('Result:', result);
-            console.log('Bindings:', result.results?.bindings);
-            console.log('===================================');
-          }
-          
           if (!SparqlUtil.isSelectResultEmpty(result)) {
             const ancestors = result.results.bindings
               .map(binding => binding['ancestor'].value)
-              .filter(ancestor => ancestor !== nodeId) // Remove self from ancestors
-              .reverse(); // Reverse to get root-to-node order
+              .filter(ancestor => ancestor !== nodeId)
+              .reverse();
             
-            // Log ancestors for first node
-            if (nodeId === nodeIds[0]) {
-              console.log('Ancestors found for first node:', ancestors);
-            }
-            
-            return {
-              nodeId: nodeId,
-              ancestors: ancestors
-            };
+            return { nodeId, ancestors };
           }
         } catch (error) {
           console.error(`Error loading path for node ${nodeId}:`, error);
@@ -558,14 +525,20 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
 
       const pathResults = await Promise.all(pathPromises);
       const validPaths = pathResults.filter(p => p !== null);
+      const pathQueryTime = performance.now() - pathQueryStart;
+      console.log(`    Sub-phase 2a - Path Queries: ${pathQueryTime.toFixed(2)}ms (${validPaths.length}/${nodeIds.length} successful)`);
       
-      console.log('Found paths for', validPaths.length, 'nodes');
-      
-      // Step 2: Build a tree of paths to load
+      // Sub-phase 2b: Build path tree structure
+      const buildPathStart = performance.now();
       const pathTree = this.buildPathTree(validPaths);
+      const buildPathTime = performance.now() - buildPathStart;
+      console.log(`    Sub-phase 2b - Build Path Tree: ${buildPathTime.toFixed(2)}ms`);
       
-      // Step 3: Load nodes level by level
+      // Sub-phase 2c: Expand nodes sequentially
+      const expandStart = performance.now();
       await this.loadPathTreeSequentially(pathTree);
+      const expandTime = performance.now() - expandStart;
+      console.log(`    Sub-phase 2c - Sequential Expansion: ${expandTime.toFixed(2)}ms`);
 
     } catch (error) {
       console.error('Error loading paths to highlighted nodes:', error);
@@ -573,14 +546,11 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
   };
 
   private buildPathTree = (paths: Array<{nodeId: string, ancestors: string[]}>) => {
-    // Build a tree structure representing all paths that need to be loaded
     const pathTree = new Map<string, Set<string>>();
     
     paths.forEach(path => {
-      // Create full path from root to target
       const fullPath = [...path.ancestors, path.nodeId];
       
-      // Build parent-child relationships
       for (let i = 0; i < fullPath.length - 1; i++) {
         const parent = fullPath[i];
         const child = fullPath[i + 1];
@@ -591,11 +561,6 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
         pathTree.get(parent).add(child);
       }
     });
-    
-    console.log('Path tree structure:', Array.from(pathTree.entries()).map(([p, c]) => ({ 
-      parent: p, 
-      children: Array.from(c) 
-    })));
     
     return pathTree;
   };
@@ -609,40 +574,27 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
     
     const roots = Array.from(pathTree.keys()).filter(node => !allChildren.has(node));
     
-    console.log('Starting sequential load from roots:', roots);
-    
-    // Load paths starting from each root
-    for (const root of roots) {
-      await this.loadPathFromRoot(root, pathTree);
-    }
+    // Expand all root paths in parallel
+    const rootPromises = roots.map(root => this.loadPathFromRoot(root, pathTree));
+    await Promise.all(rootPromises);
   };
 
   private loadPathFromRoot = async (nodeIri: string, pathTree: Map<string, Set<string>>, parentNode?: TreeNode) => {
-    console.log(`Loading path from node: ${nodeIri}`);
-    
-    // Find the tree node - simplified approach
     let treeNode: TreeNode | null = await this.findOrLoadNode(nodeIri, parentNode);
     
     if (!treeNode) {
-      console.warn(`Could not find or load node ${nodeIri}`);
       return;
     }
     
-    // Check if this node has children in the path tree that need to be loaded
     const childrenToLoad = pathTree.get(nodeIri);
     if (childrenToLoad && childrenToLoad.size > 0) {
-      console.log(`Node ${nodeIri} has ${childrenToLoad.size} children to load`);
-      
-      // Ensure the node is expanded if it has lazy children
       const hasLazyChildren = treeNode.data[this.props.hasChildrenBinding]?.value === 'true';
       const cachedChildren = this.state.expandedNodes.get(treeNode.key);
       
       if (hasLazyChildren && !cachedChildren) {
-        console.log(`Expanding node ${nodeIri} to load children`);
         await this.expandNode(treeNode);
       }
       
-      // Process each child that needs to be loaded
       for (const childIri of Array.from(childrenToLoad)) {
         await this.loadPathFromRoot(childIri, pathTree, treeNode);
       }
@@ -650,53 +602,41 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
   };
   
   private findOrLoadNode = async (nodeIri: string, parentNode?: TreeNode): Promise<TreeNode | null> => {
-    // First check in the appropriate scope
     let searchScope: ReadonlyArray<TreeNode>;
     
     if (parentNode) {
-      // Look in parent's children (cached or regular)
       const cachedChildren = this.state.expandedNodes.get(parentNode.key);
       searchScope = cachedChildren || parentNode.children;
     } else {
-      // Look in root nodes
       searchScope = this.state.data || [];
     }
     
-    // Try to find the node directly
     let node = this.findNodeByIriInTree(searchScope, nodeIri);
     
     if (node) {
       return node;
     }
     
-    // If not found and we have a parent, try expanding it
     if (parentNode) {
       const hasLazyChildren = parentNode.data[this.props.hasChildrenBinding]?.value === 'true';
       const alreadyExpanded = this.state.expandedNodes.has(parentNode.key);
       
       if (hasLazyChildren && !alreadyExpanded) {
-        console.log(`Expanding parent ${parentNode.key} to find ${nodeIri}`);
         const expandedChildren = await this.expandNode(parentNode);
-        
-        // Search again in the expanded children
         node = this.findNodeByIriInTree(expandedChildren, nodeIri);
         if (node) {
           return node;
         }
       }
     } else if (this.state.data) {
-      // If no parent, try expanding all root nodes to find it
       for (const rootNode of this.state.data) {
         const hasLazyChildren = rootNode.data[this.props.hasChildrenBinding]?.value === 'true';
         const alreadyExpanded = this.state.expandedNodes.has(rootNode.key);
         
         if (hasLazyChildren && !alreadyExpanded) {
-          console.log(`Expanding root ${rootNode.key} to search for ${nodeIri}`);
           const expandedChildren = await this.expandNode(rootNode);
-          
           node = this.findNodeByIriInTree(expandedChildren, nodeIri);
           if (node) {
-            console.log(`Found ${nodeIri} as a child of ${rootNode.key}`);
             return node;
           }
         }
@@ -835,29 +775,20 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       const nodeKey = node.key;
       const isHighlighted = highlightedIds.has(nodeId) || highlightedIds.has(nodeKey);
       
-      // Get children from cache if available, otherwise use node's children
       let nodeChildren = node.children;
       if (this.state.expandedNodes.has(nodeKey)) {
         nodeChildren = this.state.expandedNodes.get(nodeKey) || node.children;
-        console.log(`Node ${nodeKey} has ${nodeChildren.length} cached children`);
       }
       
-      // Check if any descendant is highlighted
       const filteredChildren = this.filterTreeForHighlightedNodes(nodeChildren, highlightedIds);
       const hasHighlightedDescendant = filteredChildren.length > 0;
       
       if (isHighlighted || hasHighlightedDescendant) {
-        // If this node has children but only some are highlighted, add "expand siblings" functionality
         const allChildren = nodeChildren;
         const hiddenSiblingsCount = allChildren.length - filteredChildren.length;
-        
-        console.log(`Node ${nodeKey}: total children=${allChildren.length}, filtered=${filteredChildren.length}, hidden=${hiddenSiblingsCount}`);
-        
         let childrenToShow = filteredChildren;
         
-        // Add "expand siblings" button if there are hidden siblings
         if (hiddenSiblingsCount > 0 && filteredChildren.length > 0) {
-          console.log(`Adding expand siblings button for ${nodeKey} with ${hiddenSiblingsCount} hidden siblings`);
           const expandSiblingsNode: TreeNode = {
             key: `${nodeKey}_expand_siblings`,
             data: {
@@ -910,22 +841,18 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
     const { expandQuery, enableCache } = this.props;
     
     if (!expandQuery) {
-      // No expand query provided, return empty array
       return [];
     }
 
     const nodeKey = node.key;
     
-    // Check cache first
     if (enableCache && this.state.expandedNodes.has(nodeKey)) {
       const cachedChildren = this.state.expandedNodes.get(nodeKey) || [];
-      // Apply filters to cached children if filters are active
       if (this.state.activeFilters.size > 0) {
         const activeFilterConfigs = this.props.filterOptions?.filter(f => 
           this.state.activeFilters.has(f.label)
         ) || [];
         if (activeFilterConfigs.length > 0) {
-          // Get the exclusion set from the active filters
           const excludedNodes = await this.buildExcludedNodesSet(activeFilterConfigs);
           return this.filterTreeWithExclusions(cachedChildren, excludedNodes);
         }
@@ -933,7 +860,6 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       return cachedChildren;
     }
 
-    // Set up a timer to show the loading indicator after 1 second
     const timer = window.setTimeout(() => {
       this.setState(prevState => ({
         loadingNodes: new Set(Array.from(prevState.loadingNodes).concat([nodeKey]))
@@ -945,12 +871,7 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
     }));
 
     try {
-      // Inject the clicked node IRI into the expand query
       const queryWithNode = expandQuery.replace(/\{\{clickedNode\}\}/g, node.data[this.props.nodeBindingName].value);
-      
-      console.log('Executing expandQuery for node:', node.data[this.props.nodeBindingName].value);
-      console.log('Query:', queryWithNode);
-      
       const context = this.context.semanticContext;
       const result = await SparqlClient.select(queryWithNode, { context }).toPromise();
       
@@ -960,7 +881,6 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
         return emptyResult;
       }
 
-      // Process the expansion result
       const { nodeBindingName, parentBindingName } = this.props;
       const graph = transformBindingsToGraph({
         bindings: result.results.bindings,
@@ -969,25 +889,20 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       });
 
       breakGraphCycles(graph.nodes);
-
-      // Get the parent node from the graph, which is the node that was clicked
       const parentNode = graph.map.get(node.key);
 
       if (parentNode) {
         let childNodes = makeImmutableForest(parentNode.children);
         
-        // Apply current sorting to newly loaded children
         if (this.state.currentSortBinding) {
           childNodes = this.sortTreeNodes(childNodes);
         }
         
-        // Apply filters to newly loaded children if filters are active
         if (this.state.activeFilters.size > 0) {
           const activeFilterConfigs = this.props.filterOptions?.filter(f => 
             this.state.activeFilters.has(f.label)
           ) || [];
           if (activeFilterConfigs.length > 0) {
-            // Get the exclusion set from the active filters
             const excludedNodes = await this.buildExcludedNodesSet(activeFilterConfigs);
             childNodes = this.filterTreeWithExclusions(childNodes, excludedNodes);
           }
@@ -997,7 +912,6 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
         return childNodes;
       }
       
-      // If for some reason the parent node is not found, return empty
       return [];
       
     } catch (error) {
@@ -1007,7 +921,6 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       }));
       return [];
     } finally {
-      // Clear the timer and remove loading state
       this.setState(prevState => {
         const timer = prevState.loadingTimers.get(nodeKey);
         if (timer) {
@@ -1025,16 +938,11 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
   private updateExpandedCache = (nodeKey: string, children: ReadonlyArray<TreeNode>): Promise<void> => {
     return new Promise((resolve) => {
       if (this.props.enableCache) {
-        console.log(`Updating cache for ${nodeKey}, adding ${children.length} children`);
-        
         this.setState(prevState => {
           const newCache = new Map(prevState.expandedNodes);
           newCache.set(nodeKey, children);
           return { expandedNodes: newCache };
-        }, () => {
-          console.log(`Cache successfully updated for ${nodeKey}`);
-          resolve();
-        });
+        }, resolve);
       } else {
         resolve();
       }
@@ -1428,41 +1336,39 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
     }
 
     this.setState({ isSearching: true });
+    
+    // Performance tracking
+    const perfStart = performance.now();
+    console.log(`\n=== SEARCH PERFORMANCE: "${this.state.searchText.trim()}" ===`);
 
     try {
-      // Replace the search text placeholder in the query
+      // Phase 1: Execute search query
+      const queryStart = performance.now();
       const query = this.props.searchQuery.replace(/\$__searchText__/g, this.state.searchText.trim());
       const context = this.context.semanticContext;
-      
-      console.log('Executing searchQuery with text:', this.state.searchText.trim());
-      console.log('Query:', query);
-      
       const result = await SparqlClient.select(query, { context }).toPromise();
+      const queryTime = performance.now() - queryStart;
       
       if (SparqlUtil.isSelectResultEmpty(result)) {
-        console.log('Search returned no results');
-        // Clear highlighting if no results
-        this.setState({
-          highlightedNodes: new Set()
-        });
+        console.log(`No results found (Query: ${queryTime.toFixed(2)}ms)`);
+        this.setState({ highlightedNodes: new Set() });
         await this.highlightNodes([]);
       } else {
-        // Extract node IRIs from the search results
-        const nodeIds = result.results.bindings.map(binding => {
-          // Assume the search query returns nodes in a 'node' binding
-          return binding['node'] ? binding['node'].value : null;
-        }).filter(id => id !== null);
+        const nodeIds = result.results.bindings
+          .map(binding => binding['node'] ? binding['node'].value : null)
+          .filter(id => id !== null);
 
-        console.log('Search found nodes:', nodeIds);
+        console.log(`Found ${nodeIds.length} nodes (Query: ${queryTime.toFixed(2)}ms)`);
+        this.setState({ highlightedNodes: new Set(nodeIds) });
         
-        // Update the highlighted nodes state
-        this.setState({
-          highlightedNodes: new Set(nodeIds)
-        });
-        
-        // Highlight the found nodes using the existing highlighting logic
+        // Phase 2: Highlight nodes (includes path loading and tree filtering)
         await this.highlightNodes(nodeIds);
       }
+      
+      const totalTime = performance.now() - perfStart;
+      console.log(`TOTAL SEARCH TIME: ${totalTime.toFixed(2)}ms`);
+      console.log(`=== END SEARCH PERFORMANCE ===\n`);
+      
     } catch (error) {
       console.error('Error executing search:', error);
       this.setState({

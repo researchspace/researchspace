@@ -1358,7 +1358,7 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
           className: 'fa fa-spinner fa-spin',
           style: { fontSize: '14px' }
         }),
-        this.state.isSearching ? 'Searching...' : this.state.isExpanding ? `Expanding... ${Math.round((this.state.expandingProgress / this.state.expandingTotal) * 100)}%` : 'Search'
+        this.state.isSearching ? 'Searching...' : this.state.isExpanding ? `Expanding... ${this.state.expandingTotal > 0 ? Math.round((this.state.expandingProgress / this.state.expandingTotal) * 100) : 0}%` : 'Search'
       ),
       this.state.highlightedNodes.size > 0 && D.div({
         style: {
@@ -1431,7 +1431,13 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
           .filter(id => id !== null);
 
         console.log(`Found ${nodeIds.length} nodes (Query: ${queryTime.toFixed(2)}ms)`);
-        this.setState({ highlightedNodes: new Set(nodeIds), isSearching: false, isExpanding: true });
+        this.setState({ 
+          highlightedNodes: new Set(nodeIds), 
+          isSearching: false, 
+          isExpanding: true,
+          expandingProgress: 0,
+          expandingTotal: 0
+        });
         
         // Phase 2: Highlight nodes (includes path loading and tree filtering)
         await this.highlightNodes(nodeIds);
@@ -1556,13 +1562,18 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
         // Include the source node in highlighting for context
         const allHighlightedNodes = [nodeIri, ...relatedNodeIds];
         
-        // Update highlighted nodes
+        // Update highlighted nodes and switch to expanding phase
         this.setState({
-          highlightedNodes: new Set(allHighlightedNodes)
+          highlightedNodes: new Set(allHighlightedNodes),
+          isSearching: false,
+          isExpanding: true,
+          expandingProgress: 0,
+          expandingTotal: 0
         });
         
-        // Trigger highlighting
+        // Trigger highlighting (includes path loading and tree expansion)
         await this.highlightNodes(allHighlightedNodes);
+        this.setState({ isExpanding: false });
         
         // Optional: Call callback if provided
         if (this.props.onRelatedNodesFound) {
@@ -1582,7 +1593,7 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
         errorMessage: maybe.Just(`Error finding related nodes: ${error.message || error}`)
       });
     } finally {
-      this.setState({ isSearching: false });
+      this.setState({ isSearching: false, isExpanding: false });
     }
   };
 

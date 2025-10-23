@@ -249,6 +249,7 @@ interface StateAdvanced {
   highlightedTreeData?: ReadonlyArray<TreeNode>; // Filtered tree data showing only highlighted paths
   searchText: string; // Current search input text
   isSearching: boolean; // Whether a search is in progress
+  isExpanding: boolean; // Whether tree expansion is in progress after search
   currentSortBinding?: string; // Current field being sorted by
   currentSortDirection: 'asc' | 'desc'; // Current sort direction
   activeFilters: Set<string>; // Set of active filter labels
@@ -301,6 +302,7 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       highlightedNodes: new Set(),
       searchText: '',
       isSearching: false,
+      isExpanding: false,
       currentSortBinding: initialSortBinding,
       currentSortDirection: initialSortDirection,
       activeFilters,
@@ -1284,25 +1286,41 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       ),
       D.button({
         onClick: this.executeSearch,
-        disabled: this.state.isSearching || !this.state.searchText.trim(),
+        disabled: (this.state.isSearching || this.state.isExpanding) || !this.state.searchText.trim(),
         style: {
           padding: '6px 16px',
-          backgroundColor: this.state.isSearching || !this.state.searchText.trim() ? '#ccc' : '#007bff',
+          backgroundColor: (this.state.isSearching || this.state.isExpanding) || !this.state.searchText.trim() ? '#ccc' : '#007bff',
           color: 'white',
           border: 'none',
           borderRadius: '4px',
-          cursor: this.state.isSearching || !this.state.searchText.trim() ? 'not-allowed' : 'pointer',
+          cursor: (this.state.isSearching || this.state.isExpanding) || !this.state.searchText.trim() ? 'not-allowed' : 'pointer',
           fontSize: '14px',
           display: 'flex',
           alignItems: 'center',
           gap: '6px'
         }
       }, 
-        this.state.isSearching && D.i({
+        (this.state.isSearching || this.state.isExpanding) && D.i({
           className: 'fa fa-spinner fa-spin',
           style: { fontSize: '14px' }
         }),
-        this.state.isSearching ? 'Searching...' : 'Search'
+        this.state.isSearching ? 'Searching...' : this.state.isExpanding ? 'Expanding...' : 'Search'
+      ),
+      this.state.highlightedNodes.size > 0 && D.div({
+        style: {
+          padding: '6px 12px',
+          backgroundColor: '#e7f3ff',
+          color: '#0066cc',
+          borderRadius: '4px',
+          fontSize: '14px',
+          fontWeight: 'bold',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px'
+        }
+      },
+        D.i({ className: 'fa fa-check-circle' }),
+        D.span({}, `${this.state.highlightedNodes.size} result${this.state.highlightedNodes.size === 1 ? '' : 's'}`)
       ),
       this.state.searchText && D.button({
         onClick: this.clearSearch,
@@ -1359,10 +1377,11 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
           .filter(id => id !== null);
 
         console.log(`Found ${nodeIds.length} nodes (Query: ${queryTime.toFixed(2)}ms)`);
-        this.setState({ highlightedNodes: new Set(nodeIds) });
+        this.setState({ highlightedNodes: new Set(nodeIds), isSearching: false, isExpanding: true });
         
         // Phase 2: Highlight nodes (includes path loading and tree filtering)
         await this.highlightNodes(nodeIds);
+        this.setState({ isExpanding: false });
       }
       
       const totalTime = performance.now() - perfStart;
@@ -1375,7 +1394,7 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
         errorMessage: maybe.Just(`Search error: ${error.message || error}`)
       });
     } finally {
-      this.setState({ isSearching: false });
+      this.setState({ isSearching: false, isExpanding: false });
     }
   };
 

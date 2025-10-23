@@ -52,6 +52,7 @@ export interface ProviderPropsAdvanced {
   hasChildrenBinding: string;
   loadingTemplate: string;
   highlightedNodes?: Set<string>;
+  selectedNodeKey?: string;
   preloadedChildren?: Map<string, ReadonlyArray<TreeNode>>;
   relatedNodeCriteria?: RelatedNodeCriteria[];
   onFindRelatedNodes?: (node: TreeNode, criterion: RelatedNodeCriteria) => void;

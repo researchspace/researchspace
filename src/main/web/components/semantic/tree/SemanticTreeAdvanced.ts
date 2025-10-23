@@ -255,6 +255,7 @@ interface StateAdvanced {
   activeFilters: Set<string>; // Set of active filter labels
   filteredData?: ReadonlyArray<TreeNode>; // Data after applying filters
   isApplyingFilters: boolean; // Whether filters are being applied
+  selectedNodeKey?: string; // Key of the currently selected node
 }
 
 export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced> {
@@ -307,6 +308,7 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       currentSortDirection: initialSortDirection,
       activeFilters,
       isApplyingFilters: false,
+      selectedNodeKey: undefined,
     };
   }
 
@@ -333,8 +335,25 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
           target: this.props.id,
         })
       ).onValue(this.handleHighlightNodesEvent);
+      
+      this.cancellation.map(
+        listen({
+          eventType: 'Component.TemplateUpdate',
+          target: this.props.id,
+        })
+      ).onValue(this.handleTemplateUpdateEvent);
     }
   }
+  
+  private handleTemplateUpdateEvent = (event: any) => {
+    if (event.data && event.data.iri) {
+      const nodeKey = event.data.iri;
+      console.log('Template update event received, setting selection:', nodeKey);
+      this.setState({ selectedNodeKey: nodeKey }, () => {
+        console.log('Selected node key is now:', this.state.selectedNodeKey);
+      });
+    }
+  };
 
   private handleHighlightNodesEvent = (event: any) => {
     console.log('SemanticTreeAdvanced received SemanticTreeHighlightNodes event:', event);
@@ -1009,6 +1028,7 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       hasChildrenBinding: this.props.hasChildrenBinding,
       loadingTemplate: this.props.loadingTemplate,
       highlightedNodes: this.state.highlightedNodes,
+      selectedNodeKey: this.state.selectedNodeKey,
       // Use filtered cache when highlighting to show filtered tree structure with expand siblings buttons
       preloadedChildren: cacheToUse,
       relatedNodeCriteria: this.props.relatedNodeCriteria,
@@ -1044,7 +1064,14 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       showFilters && this.renderFilterControls(),
       showSort && this.renderSortControls(),
       showSearch && this.renderSearchBar(),
-      treeElement
+      D.div({
+        style: {
+          position: 'relative',
+          opacity: (this.state.isSearching || this.state.isExpanding) ? 0.4 : 1,
+          pointerEvents: (this.state.isSearching || this.state.isExpanding) ? 'none' : 'auto',
+          transition: 'opacity 0.3s ease'
+        }
+      }, treeElement)
     );
   }
 
@@ -1469,7 +1496,12 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
       this.handleExpandSiblings(node);
       return;
     }
-    // empty default onNodeClick for regular nodes
+    
+    // Set this node as selected
+    console.log('Node clicked, setting as selected:', node.key);
+    this.setState({ selectedNodeKey: node.key }, () => {
+      console.log('Selected node key is now:', this.state.selectedNodeKey);
+    });
   };
 
   private handleFindRelatedNodes = async (node: TreeNode, criterion: RelatedNodeCriteria) => {

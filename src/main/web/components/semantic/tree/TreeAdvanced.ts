@@ -547,7 +547,12 @@ export class TreeAdvanced extends Component<TreeAdvancedProps, State> {
       classes.push(styles.activeNode);
     }
     
-    // Check if this node is highlighted
+    // Check if this node is selected
+    if (node && this.props.selectedNodeKey && node.key === this.props.selectedNodeKey) {
+      classes.push('selectedTreeNode');
+    }
+    
+    // Check if this node is highlighted (from search)
     if (node && this.props.highlightedNodes && this.props.highlightedNodes.size > 0) {
       const nodeId = node.data['node'] ? node.data['node'].value : node.key;
       const isHighlighted = this.props.highlightedNodes.has(nodeId) || this.props.highlightedNodes.has(node.key);

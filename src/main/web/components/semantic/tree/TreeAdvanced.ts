@@ -495,22 +495,32 @@ export class TreeAdvanced extends Component<TreeAdvancedProps, State> {
     } else {
       // Open dropdown and calculate position
       const rect = buttonElement.getBoundingClientRect();
+      const estimatedDropdownHeight = 200;
+      const estimatedDropdownWidth = 200;
+      
+      // Calculate vertical position - always try to place below first
       let top = rect.bottom + 4;
+      
+      // If dropdown would go off bottom of screen, place it above
+      if (top + estimatedDropdownHeight > window.innerHeight) {
+        top = Math.max(4, rect.top - estimatedDropdownHeight - 4);
+      }
+      
+      // Ensure dropdown doesn't go above viewport
+      top = Math.max(4, top);
+      // Ensure dropdown doesn't go below viewport
+      top = Math.min(top, window.innerHeight - estimatedDropdownHeight - 4);
+      
+      // Calculate horizontal position - prefer right-aligned to button
       let left = rect.left;
       
-      // Check if dropdown would go off screen
-      const estimatedDropdownHeight = 200; // Approximate height
-      const estimatedDropdownWidth = 200; // Approximate width
-      
-      // Adjust if would go off bottom
-      if (top + estimatedDropdownHeight > window.innerHeight) {
-        top = rect.top - estimatedDropdownHeight - 4;
-      }
-      
-      // Adjust if would go off right
+      // If dropdown would go off right edge, align to right side of button
       if (left + estimatedDropdownWidth > window.innerWidth) {
-        left = rect.right - estimatedDropdownWidth;
+        left = Math.max(4, rect.right - estimatedDropdownWidth);
       }
+      
+      // Final safety check - ensure it doesn't go off left edge
+      left = Math.max(4, left);
       
       this.setState({
         activeDropdownKey: nodeKey,

@@ -48,6 +48,12 @@ import { SEMANTIC_SEARCH_VARIABLES } from '../../components/semantic/search/conf
 // Maximum dimensions for image resizing while preserving aspect ratio
 const MAX_IMAGE_DIMENSION = 700;
 
+export interface EmbeddingConfig {
+  joinOn?: string;
+  returnValues?: string;
+  addMaxWork?: boolean;
+}
+
 export interface DomainConfig {
   /**
    * Display name for the domain
@@ -74,6 +80,21 @@ export interface DomainConfig {
    * A color associated to the domain
    */
   domainColor?: string;
+
+  // New granular controls for AI search types
+  withTextualSimilarity?: boolean;
+  withVisualSimilarity?: boolean;
+
+  // This new structure will hold the specific embedding parameters
+  // for each combination of search types.
+  embeddingParams?: {
+    // For when ONLY "Textual Similarity" is checked
+    metadata?: EmbeddingConfig;
+    // For when ONLY "Visual Similarity" is checked
+    visual?: EmbeddingConfig;
+    // For when BOTH are checked
+    metadata_visual?: EmbeddingConfig;
+  };
 }
 
 export interface BaseConfig<T> extends SemanticSimpleSearchBaseConfig {
@@ -302,6 +323,8 @@ interface State {
   selectedDomainIndex: number; // Index of the currently selected domain
   withAi: boolean; // Whether AI features are enabled for the current domain
   withImages: boolean; // Whether image features are enabled for the current domain
+  withTextualSimilarity: boolean;
+  withVisualSimilarity: boolean;
   domainColor: string;
   searchTypes: string[];
   searchSensitivity: 'precise' | 'balanced' | 'exploratory';
@@ -346,6 +369,8 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
     let selectedDomainIndex = 0;
     let withAi = false;
     let withImages = false;
+    let withTextualSimilarity = false;
+    let withVisualSimilarity = false;
     let domainColor = "#70E7C5";
 
     if (domains && domains.length > 0) {
@@ -354,12 +379,24 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
         selectedDomainIndex = domainIndex;
         withAi = !!domains[domainIndex].withAi;
         withImages = !!domains[domainIndex].withImages;
+        withTextualSimilarity = !!domains[domainIndex].withTextualSimilarity;
+        withVisualSimilarity = !!domains[domainIndex].withVisualSimilarity;
         domainColor = domains[domainIndex].domainColor;
       } else {
         withAi = !!domains[0].withAi;
         withImages = !!domains[0].withImages;
+        withTextualSimilarity = !!domains[0].withTextualSimilarity;
+        withVisualSimilarity = !!domains[0].withVisualSimilarity;
         domainColor = domains[0].domainColor;
       }
+    }
+
+    const initialSearchTypes = ['exact'];
+    if (withTextualSimilarity) {
+        initialSearchTypes.push('metadata');
+    }
+    if (withVisualSimilarity) {
+        initialSearchTypes.push('visual');
     }
 
     // Determine initial value and mode based on params
@@ -399,8 +436,10 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
       selectedDomainIndex,
       withAi,
       withImages,
+      withTextualSimilarity,
+      withVisualSimilarity,
       domainColor,
-      searchTypes: ['exact', 'metadata', 'visual'],
+      searchTypes: initialSearchTypes,
       searchSensitivity: 'precise',
       metadataModel: 'qwen3_8b',
       visualSearchModel: 'siglip2_so400m_patch16_naflex',
@@ -433,6 +472,26 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
         '--domain-color',
         this.state.domainColor
       );
+    }
+
+    if (prevState.isImageMode !== this.state.isImageMode) {
+      const { withTextualSimilarity, withVisualSimilarity, isImageMode } = this.state;
+      const newSearchTypes = ['exact'];
+      if (isImageMode) {
+        if (withVisualSimilarity) {
+          newSearchTypes.push('visual');
+        }
+      } else {
+        if (withTextualSimilarity) {
+          newSearchTypes.push('metadata');
+        }
+        if (withVisualSimilarity) {
+          newSearchTypes.push('visual');
+        }
+      }
+      if (!_.isEqual(this.state.searchTypes, newSearchTypes)) {
+        this.setState({ searchTypes: newSearchTypes }, this.triggerSearch);
+      }
     }
   }
 
@@ -468,28 +527,43 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
     const newDomain = domains[index];
     const newWithAi = !!newDomain.withAi;
     const newWithImages = !!newDomain.withImages;
-    const newColor = newDomain.domainColor ;
+    const newWithTextualSimilarity = !!newDomain.withTextualSimilarity;
+    const newWithVisualSimilarity = !!newDomain.withVisualSimilarity;
+    const newColor = newDomain.domainColor;
+
+    const isImageModeAfterChange = this.state.isImageMode && newWithImages;
+    const newSearchTypes = ['exact'];
+    if (isImageModeAfterChange) {
+      if (newWithVisualSimilarity) {
+        newSearchTypes.push('visual');
+      }
+    } else {
+      if (newWithTextualSimilarity) {
+        newSearchTypes.push('metadata');
+      }
+      if (newWithVisualSimilarity) {
+        newSearchTypes.push('visual');
+      }
+    }
 
     // Prepare state updates, considering current image state
     const stateChanges: Partial<State> = {
       selectedDomainIndex: index,
       withAi: newWithAi,
       withImages: newWithImages,
-      domainColor:newColor
+      withTextualSimilarity: newWithTextualSimilarity,
+      withVisualSimilarity: newWithVisualSimilarity,
+      domainColor: newColor,
+      searchTypes: newSearchTypes,
     };
 
-    if (this.state.isImageMode) { // An image is currently active
-      if (!newWithImages) {
-        // New domain does NOT support images, clear image
-        stateChanges.imageUrl = undefined;
-        stateChanges.imageData = undefined;
-        stateChanges.showImage = false;
-        stateChanges.isImageMode = false;
-        stateChanges.value = ''; // Clear the value as well
-      }
-      // If newWithImages is true, image state (imageUrl, imageData, showImage, isImageMode, value)
-      // is preserved because these fields are not added to stateChanges,
-      // and setState will merge, keeping their existing values from this.state.
+    if (this.state.isImageMode && !newWithImages) { // An image is currently active
+      // New domain does NOT support images, clear image
+      stateChanges.imageUrl = undefined;
+      stateChanges.imageData = undefined;
+      stateChanges.showImage = false;
+      stateChanges.isImageMode = false;
+      stateChanges.value = ''; // Clear the value as well
     }
     // If not in image mode (text search), this.state.value (the text) is preserved by default
     // as stateChanges.value is not set in this branch.
@@ -542,7 +616,21 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
     }
 
     if (newSearchTypes.length === 0) {
-      newSearchTypes = this.state.isImageMode ? ['exact', 'visual'] : ['exact', 'metadata', 'visual'];
+      // This is a fallback in case the user unchecks the last option.
+      // We will reset to the default available options for the current mode and domain.
+      newSearchTypes = ['exact'];
+      if (this.state.isImageMode) {
+        if (this.state.withVisualSimilarity) {
+          newSearchTypes.push('visual');
+        }
+      } else {
+        if (this.state.withTextualSimilarity) {
+          newSearchTypes.push('metadata');
+        }
+        if (this.state.withVisualSimilarity) {
+          newSearchTypes.push('visual');
+        }
+      }
     }
 
     this.setState({ searchTypes: newSearchTypes }, this.triggerSearch);
@@ -589,7 +677,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
 
   render() {
     const { placeholder, style, className, min, max, step, domains, lockDomain, marks, enableModelSelection } = this.props;
-    const { withAi, withImages, selectedDomainIndex, domainColor, isImageMode, searchTypes } = this.state;
+    const { withAi, withImages, withTextualSimilarity, withVisualSimilarity, selectedDomainIndex, domainColor, isImageMode, searchTypes } = this.state;
     const isAiSearch = searchTypes.includes('metadata') || searchTypes.includes('visual');
 
     let sliderMarks: Record<number, string> | undefined;
@@ -689,7 +777,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
           )}
         </div>
         </div>
-        <div className={styles.searchControls}>
+        {withAi && <div className={styles.searchControls}>
             <div className={styles.sliderField}>
               <div className={styles.sliderLabel}>Search Types:</div>
               <div className={styles.modelSelection}>
@@ -706,7 +794,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
                   </Checkbox>
                   {this.renderHelpPopover(isImageMode ? this.props.visualMatchHelp : this.props.textMatchHelp)}
                 </div>
-                {!isImageMode && (
+                {!isImageMode && withTextualSimilarity && (
                 <div className={styles.modelRow}>
                   <Checkbox
                     label="Textual Similarity"
@@ -732,6 +820,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
                   )}
                 </div>
                 )}
+                { withVisualSimilarity && (
                 <div className={styles.modelRow}>
                   <Checkbox
                     label="Visual Similarity"
@@ -756,6 +845,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
                     </DropdownButton>
                   )}
                 </div>
+                )}
               </div>
             </div>
 
@@ -773,7 +863,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
                 />
               </div>
             </div>
-        </div>
+        </div>}
       </div>
     );
   }
@@ -939,6 +1029,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
       return null;
     }
 
+    const { domains } = this.props;
     const { selectedDomainIndex, searchTypes, searchSensitivity, withAi, visualSearchModel } = this.state;
     const isExact = searchTypes.includes('exact');
     const isAi = searchTypes.includes('metadata') || searchTypes.includes('visual');
@@ -995,12 +1086,26 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
       bindings[dataTypeVariable!] = Rdf.literal('image');
     }
 
-    const embeddingPattern = `
-      ?uri emb:model "${visualSearchModel}" .
-      ?uri emb:returnValues "work" .
-      ?uri emb:maxWork1 ?${visualSearchModel}_sift_rerank_maxScoreUri .
-      ?uri emb:maxWork2 ?${visualSearchModel}_maxScoreUri .
-    `;
+    const currentDomainConfig = domains[selectedDomainIndex];
+    let embeddingPattern = '';
+    if (currentDomainConfig.withAi) {
+        const embeddingParams = currentDomainConfig.embeddingParams?.visual;
+        if (embeddingParams) {
+            const patterns = [];
+            patterns.push(`?uri emb:model "${visualSearchModel}" .`);
+            if (embeddingParams.joinOn) {
+                patterns.push(`?uri emb:joinOn "${embeddingParams.joinOn}" .`);
+            }
+            if (embeddingParams.returnValues) {
+                patterns.push(`?uri emb:returnValues "${embeddingParams.returnValues}" .`);
+            }
+            if (embeddingParams.addMaxWork) {
+                patterns.push(`?uri emb:maxWork1 ?${visualSearchModel}_sift_rerank_maxScoreUri .`);
+                patterns.push(`?uri emb:maxWork2 ?${visualSearchModel}_maxScoreUri .`);
+            }
+            embeddingPattern = patterns.join('\n');
+        }
+    }
 
     const prefix = 'PREFIX emb: <https://artresearch.net/embeddings/>\n';
     if (!imageQueryStr.toLowerCase().includes('prefix emb:')) {
@@ -1015,6 +1120,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
   };
 
   private buildKeywordQuery = () => (token: string): SparqlJs.SelectQuery | null => {
+    const { domains } = this.props;
     const { selectedDomainIndex, searchTypes, searchSensitivity, withAi, metadataModel, visualSearchModel } = this.state;
     const isExact = searchTypes.includes('exact');
     const isMetadata = searchTypes.includes('metadata');
@@ -1050,34 +1156,48 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
       minTokenLength
     } = this.props;
 
+    const currentDomainConfig = domains[selectedDomainIndex];
     if (withAi) {
-      let embeddingPattern = '';
+        let embeddingPattern = '';
+        const embeddingParams = currentDomainConfig.embeddingParams;
 
-      if (isMetadata && isVisual) {
-        const models = `${metadataModel},${visualSearchModel}`;
-        embeddingPattern = `
-          ?uri emb:model "${models}" .
-          ?uri emb:joinOn "uri,work" .
-          ?uri emb:returnValues "uri,work" .
-          ?uri emb:maxWork ?${visualSearchModel}_maxScoreUri .
-        `;
-      } else if (isMetadata) {
-        embeddingPattern = `?uri emb:model "${metadataModel}" .`;
-      } else if (isVisual) {
-        embeddingPattern = `
-          ?uri emb:model "${visualSearchModel}" .
-          ?uri emb:returnValues "work" .
-          ?uri emb:maxWork ?${visualSearchModel}_maxScoreUri .
-        `;
-      }
+        if (embeddingParams) {
+            let config: EmbeddingConfig | undefined;
+            let models = '';
+            if (isMetadata && isVisual) {
+                config = embeddingParams.metadata_visual;
+                models = `${metadataModel},${visualSearchModel}`;
+            } else if (isMetadata) {
+                config = embeddingParams.metadata;
+                models = metadataModel;
+            } else if (isVisual) {
+                config = embeddingParams.visual;
+                models = visualSearchModel;
+            }
 
-      if (embeddingPattern) {
-        const prefix = 'PREFIX emb: <https://artresearch.net/embeddings/>\n';
-        if (!textQueryStr.toLowerCase().includes('prefix emb:')) {
-          textQueryStr = prefix + textQueryStr;
+            if (config) {
+                const patterns = [];
+                patterns.push(`?uri emb:model "${models}" .`);
+                if (config.joinOn) {
+                    patterns.push(`?uri emb:joinOn "${config.joinOn}" .`);
+                }
+                if (config.returnValues) {
+                    patterns.push(`?uri emb:returnValues "${config.returnValues}" .`);
+                }
+                if (config.addMaxWork) {
+                    patterns.push(`?uri emb:maxWork ?${visualSearchModel}_maxScoreUri .`);
+                }
+                embeddingPattern = patterns.join('\n');
+            }
         }
-        textQueryStr = textQueryStr.replace('FILTER(?__embeddingPattern__)', embeddingPattern);
-      }
+
+        if (embeddingPattern) {
+            const prefix = 'PREFIX emb: <https://artresearch.net/embeddings/>\n';
+            if (!textQueryStr.toLowerCase().includes('prefix emb:')) {
+                textQueryStr = prefix + textQueryStr;
+            }
+            textQueryStr = textQueryStr.replace('FILTER(?__embeddingPattern__)', embeddingPattern);
+        }
     }
 
     // Define the QLever text search namespace

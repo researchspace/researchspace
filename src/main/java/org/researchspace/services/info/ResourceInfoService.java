@@ -36,7 +36,7 @@ public class ResourceInfoService implements PlatformCache {
     private static final Logger logger = LogManager.getLogger(ResourceInfoService.class);
 
 
-    private static final int MAX_RECURSION_DEPTH = 10000;
+    private static final int MAX_RECURSION_DEPTH = 100;
     public static final StoragePath INFO_PROFILES = StoragePath.parse("config/resource-info-profiles");
 
     private final FieldDefinitionManager fieldDefinitionManager;
@@ -697,18 +697,18 @@ public class ResourceInfoService implements PlatformCache {
     private void buildJsonStructure(ObjectNode rootNode, Map<IRI, List<BindingSet>> bindingIndex,
             Map<IRI, Optional<Literal>> labels, Map<IRI, Optional<Literal>> fieldLabels, ObjectMapper om, IRI rootIri) {
         Deque<Pair<ObjectNode, IRI>> stack = new ArrayDeque<>();
-        stack.push(new Pair<>(rootNode, rootIri));
+        stack.push(new Pair<>(rootNode, rootIri, 0));
 
-        int depth = 0;
         while (!stack.isEmpty()) {
-            if (depth > MAX_RECURSION_DEPTH) {
-                throw new RuntimeException("Maximum recursion depth exceeded.");
-            }
-            depth++;
-    
             Pair<ObjectNode, IRI> current = stack.pop();
             ObjectNode currentNode = current.getLeft();
             IRI currentIri = current.getRight();
+            int currentDepth = current.getDepth();
+
+            if (currentDepth > MAX_RECURSION_DEPTH) {
+                logger.warn("Max recursion depth {} exceeded for IRI {}. Stopping this branch.", MAX_RECURSION_DEPTH, currentIri);
+                continue;
+            }
 
             List<BindingSet> relevantBindings = bindingIndex.get(currentIri);
             if (relevantBindings == null) {
@@ -738,7 +738,7 @@ public class ResourceInfoService implements PlatformCache {
                     valueNode.put("@id", valueIri.stringValue());
                     String valueLabel = labels.get(valueIri).map(Literal::stringValue).orElse(valueIri.getLocalName());
                     valueNode.put("label", valueLabel);
-                    stack.push(new Pair<>(valueNode, valueIri));
+                    stack.push(new Pair<>(valueNode, valueIri, currentDepth + 1));
                 } else {
                     valueNode.put("@value", value.stringValue());
                 }
@@ -753,7 +753,7 @@ public class ResourceInfoService implements PlatformCache {
                     provenanceArray.add(provNode);
 
                     // Push provenance to stack for later processing
-                    stack.push(new Pair<>(provNode, provUri));
+                    stack.push(new Pair<>(provNode, provUri, currentDepth + 1));
                 }
 
                 // Add the value node to the values array, avoiding duplicates
@@ -805,10 +805,12 @@ public class ResourceInfoService implements PlatformCache {
     private static class Pair<L, R> {
         private final L left;
         private final R right;
+        private final int depth;
 
-        public Pair(L left, R right) {
+        public Pair(L left, R right, int depth) {
             this.left = left;
             this.right = right;
+            this.depth = depth;
         }
 
         public L getLeft() {
@@ -817,6 +819,10 @@ public class ResourceInfoService implements PlatformCache {
 
         public R getRight() {
             return right;
+        }
+
+        public int getDepth() {
+            return depth;
         }
     }
 

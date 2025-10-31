@@ -24,7 +24,6 @@ import * as classNames from 'classnames';
 import * as Maybe from 'data.maybe';
 import * as _ from 'lodash';
 
-import { Cancellation } from 'platform/api/async';
 import { Component } from 'platform/api/components';
 import { Rdf } from 'platform/api/rdf';
 import { Draggable } from 'platform/components/dnd';
@@ -55,12 +54,10 @@ interface ResourceLinkProps extends Props<ResourceLink> {
 }
 
 interface State {
-  readonly url?: uri.URI;
+  readonly url: uri.URI;
 }
 
 export class ResourceLink extends Component<ResourceLinkProps, State> {
-  private readonly cancellation = new Cancellation();
-
   constructor(props: ResourceLinkProps, context: any) {
     super(props, context);
     this.state = {
@@ -78,16 +75,9 @@ export class ResourceLink extends Component<ResourceLinkProps, State> {
   };
 
   componentDidMount() {
-    this.cancellation
-      .map(constructUrlForResource(this.props.resource, this.props.params, this.getRepository(), this.props.fragment))
-      .observe({
-        value: (url) => this.setState({ url }),
-        error: (error) => console.error(error),
-      });
-  }
-
-  componentWillUnmount() {
-    this.cancellation.cancelAll();
+    this.setState({
+      url: constructUrlForResource(this.props.resource, this.props.params, this.getRepository(), this.props.fragment),
+    });
   }
 
   public render() {

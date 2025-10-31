@@ -126,7 +126,7 @@ export function navigateToResource(
   if (inFrame && inFrameNavigationHandler(iri, props, repository)) {
     return Kefir.constant(null);
   } else {
-    return constructUrlForResource(iri, props, repository, fragment).flatMap(navigateToUrl).toProperty();
+    return navigateToUrl(constructUrlForResource(iri, props, repository, fragment));
   }
 }
 
@@ -189,19 +189,18 @@ export function constructUrlForResource(
   props: {} = {},
   repository = 'default',
   fragment = ''
-): Kefir.Property<uri.URI> {
+): uri.URI {
   const simpleUrl = constructSimpleUrl(iri, props, repository, fragment);
   if (simpleUrl) {
-    return Kefir.constant(simpleUrl);
+    return simpleUrl;
   } else {
-    return getPrefixedUri(iri).map((mUri) => {
-      if (mUri.isJust) {
-        const resourcePath = ConfigHolder.getEnvironmentConfig().resourceUrlMapping.value;
-        return constructUrl(`${resourcePath}${mUri.get()}`, props, repository, fragment);
-      } else {
-        return construcUrlForResourceSync(iri, props, repository, fragment);
-      }
-    });
+    const mUri = getPrefixedUri(iri);
+    if (mUri.isJust) {
+      const resourcePath = ConfigHolder.getEnvironmentConfig().resourceUrlMapping.value;
+      return constructUrl(`${resourcePath}${mUri.get()}`, props, repository, fragment);
+    } else {
+      return construcUrlForResourceSync(iri, props, repository, fragment);
+    }
   }
 }
 
@@ -332,7 +331,7 @@ export function resolveResourceIri(url: uri.URI): Kefir.Property<Data.Maybe<Rdf.
     // request to http://localhost:10214/resource/person/Bob URL will be properly resolved
     // to <http://localhost:10214/resource/person/Bob> resource
     const prefixedIriStr = url.path().substring('/resource/'.length);
-    return getFullIri(prefixedIriStr);
+    return Kefir.constant(getFullIri(prefixedIriStr));
   }
 }
 

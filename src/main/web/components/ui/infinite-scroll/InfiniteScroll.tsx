@@ -114,7 +114,12 @@ class InfiniteScroll extends Component<InfiniteScrollProps, InfiniteScrollState>
       const containerWidth = this.containerRef.current.offsetWidth;
       const newItemsPerRow = Math.max(1, Math.floor(containerWidth / this.props.itemWidth));
       if (newItemsPerRow !== this.state.calculatedItemsPerRow) {
-        this.setState({ calculatedItemsPerRow: newItemsPerRow });
+        const totalRows = Math.ceil(this.props.values.length / newItemsPerRow);
+        const newRowHeights = Array(totalRows).fill(parseFloat(this.props.itemHeight));
+        this.setState({
+          calculatedItemsPerRow: newItemsPerRow,
+          rowHeights: newRowHeights
+        });
       }
     }
   };

@@ -69,8 +69,6 @@ export class FacetComponent extends Component<FacetProps, {}> {
   }
 
   private renderRelations() {
-    console.log('relations');
-    console.log(this.props.data.relations);
     return D.div(
       { className: 'facet-relations' },
       ...this.renderLoadingIndicator(),

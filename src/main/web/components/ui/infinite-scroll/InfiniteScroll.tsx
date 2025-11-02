@@ -31,6 +31,8 @@ interface InfiniteScrollState {
 }
 
 class InfiniteScroll extends Component<InfiniteScrollProps, InfiniteScrollState> {
+  context: ComponentContext;
+
   private containerRef: React.RefObject<HTMLDivElement>;
   private contentRef: React.RefObject<HTMLDivElement>;
   private resizeObserver: ResizeObserver | null = null;
@@ -279,7 +281,9 @@ class InfiniteScroll extends Component<InfiniteScrollProps, InfiniteScrollState>
               {React.createElement(TemplateItem, {
                 template: {
                   source: this.getTemplateString(),
-                  options: rowItems,
+                  options: {
+                    rows: rowItems,
+                  },
                 },
               })}
             </div>

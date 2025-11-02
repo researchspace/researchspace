@@ -455,6 +455,12 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
   }
 
   componentDidMount() {
+    if (this.state.domainColor) {
+      document.documentElement.style.setProperty(
+        '--domain-color',
+        this.state.domainColor
+      );
+    }
     setSearchDomain(this.getCurrentDomainUri(), this.props.context);
     this.initialize(this.props);
   }
@@ -904,6 +910,7 @@ class ImageSearchWithSliderInner extends React.Component<InnerProps, State> {
   };
 
   componentWillUnmount() {
+    document.documentElement.style.removeProperty('--domain-color');
     if (this.state.fileName && this.state.storageId) {
       this.imageUploadService.deleteImage(this.state.fileName, this.state.storageId);
     }

@@ -63,7 +63,7 @@ export const OverlayDialog: SFC<OverlayDialogProps> = (props: OverlayDialogProps
   return Modal(
     assign(
       {},
-      props,
+      _.omit(props, 'title'),
       // we don't want to have backdrop for lightbox
       {
         onHide: props.onHide,

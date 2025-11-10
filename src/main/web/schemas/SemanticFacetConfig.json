@@ -125,6 +125,51 @@
             ],
             "type": "object"
         },
+        "PresetFacetValueConfig": {
+            "properties": {
+                "datatype": {
+                    "description": "Literal datatype IRI (only used when `kind` is `literal`).",
+                    "type": "string"
+                },
+                "kind": {
+                    "description": "Value kind; defaults to `resource`.",
+                    "enum": [
+                        "literal",
+                        "resource"
+                    ],
+                    "type": "string"
+                },
+                "label": {
+                    "description": "Optional label shown for the pre-selected value before facet values are loaded.",
+                    "type": "string"
+                },
+                "language": {
+                    "description": "Literal language tag (only used when `kind` is `literal`).",
+                    "type": "string"
+                },
+                "relation": {
+                    "description": "Relation IRI (full IRI enclosed in <> recommended) that should be pre-populated in the facet.",
+                    "type": "string"
+                },
+                "value": {
+                    "description": "Value IRI (for resource facets) or literal value (for literal facets).",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "relation",
+                "value",
+                "label",
+                "kind",
+                "language",
+                "datatype"
+            ],
+            "required": [
+                "relation",
+                "value"
+            ],
+            "type": "object"
+        },
         "ResourceFacetValue": {
             "properties": {
                 "kind": {
@@ -221,6 +266,17 @@
             "description": "Flag to open the facet by default.",
             "type": "boolean"
         },
+        "presetFacet": {
+            "$ref": "#/definitions/PresetFacetValueConfig",
+            "description": "Optional preset facet that will be pre-selected before a user interacts with the filter UI."
+        },
+        "presetFacets": {
+            "description": "Multiple preset facets applied together when no saved facet state is present.",
+            "items": {
+                "$ref": "#/definitions/PresetFacetValueConfig"
+            },
+            "type": "array"
+        },
         "relations": {
             "$ref": "#/definitions/FacetRelationConfig",
             "description": "Settings determining the display of relations in the sidebar."
@@ -251,7 +307,9 @@
         "defaultValueTemplate",
         "facetValuesThreshold",
         "listenToContextSwitch",
-        "hideToggleButton"
+        "hideToggleButton",
+        "presetFacet",
+        "presetFacets"
     ],
     "type": "object"
 }

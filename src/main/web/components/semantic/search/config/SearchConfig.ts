@@ -647,6 +647,38 @@ export interface NumericRange {
   datatype?: string;
 }
 
+export interface PresetFacetValueConfig {
+  /**
+   * Relation IRI (full IRI enclosed in <> recommended) that should be pre-populated in the facet.
+   */
+  relation: string;
+
+  /**
+   * Value IRI (for resource facets) or literal value (for literal facets).
+   */
+  value: string;
+
+  /**
+   * Optional label shown for the pre-selected value before facet values are loaded.
+   */
+  label?: string;
+
+  /**
+   * Value kind; defaults to `resource`.
+   */
+  kind?: 'resource' | 'literal';
+
+  /**
+   * Literal language tag (only used when `kind` is `literal`).
+   */
+  language?: string;
+
+  /**
+   * Literal datatype IRI (only used when `kind` is `literal`).
+   */
+  datatype?: string;
+}
+
 export interface SemanticFacetConfig {
   /**
    * Unique HTML id that is used by all nested search-related components, used when one need to have multiple search interfaces on the same page.
@@ -767,6 +799,16 @@ export interface SemanticFacetConfig {
    * @default false
    */
   hideToggleButton?: boolean;
+
+  /**
+   * Optional preset facet that will be pre-selected before a user interacts with the filter UI.
+   */
+  presetFacet?: PresetFacetValueConfig;
+
+  /**
+   * Multiple preset facets applied together when no saved facet state is present.
+   */
+  presetFacets?: Array<PresetFacetValueConfig>;
 }
 
 /**

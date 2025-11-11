@@ -20,9 +20,11 @@
 import * as React from 'react';
 import * as D from 'react-dom-factories';
 import * as _ from 'lodash';
+import * as Maybe from 'data.maybe';
 import * as classNames from 'classnames';
 import * as SparqlJs from 'sparqljs';
 
+import { Action } from 'platform/components/utils';
 import { trigger } from 'platform/api/events';
 import { Component, SemanticContext } from 'platform/api/components';
 import { SemanticFacetConfig } from 'platform/components/semantic/search/config/SearchConfig';
@@ -70,6 +72,7 @@ interface State {
 
 class SemanticSearchFacetInner extends React.Component<InnerProps, State> {
   private facetStore: FacetStore;
+  private persistFacet = Action<void>();
 
   constructor(props: InnerProps) {
     super(props);
@@ -78,6 +81,7 @@ class SemanticSearchFacetInner extends React.Component<InnerProps, State> {
       showFacets: props.openByDefault,
       bigResultSet: false,
     };
+    this.initializePersistence();
   }
 
   static defaultProps: Partial<SemanticFacetConfig> = {
@@ -156,6 +160,9 @@ class SemanticSearchFacetInner extends React.Component<InnerProps, State> {
       value: (facetData) => {
         this.setState({ facetData });
         this.props.context.setFacetStructure(facetData.ast);
+        if (facetData && facetData.ast) {
+          this.persistFacet(undefined);
+        }
       },
     });
 
@@ -196,6 +203,26 @@ class SemanticSearchFacetInner extends React.Component<InnerProps, State> {
       return null;
     }
   }
+
+  private initializePersistence = () => {
+    this.persistFacet.$property.debounce(300).onValue((_) => this.saveFacetStateIntoHistory());
+  }
+
+  private saveFacetStateIntoHistory = () => {
+    const { context } = this.props;
+    const domain = context.domain.isJust ? context.domain.get() : null;
+    if (!domain) return;
+
+    const existing = (context as any).baseQueryStructure && (context as any).baseQueryStructure.isJust ? (context as any).baseQueryStructure.get() : null;
+
+    if (existing) {
+      const cloned = _.cloneDeep(existing);
+      (context as any).setBaseQueryStructure(Maybe.Just(cloned));
+    } else {
+      const search: Model.Search = { domain, conjuncts: [] } as any;
+      (context as any).setBaseQueryStructure(Maybe.Just(search));
+    }
+  };
 
   private toggleFilter = () => {
     this.setState((state) => ({ showFacets: !state.showFacets }));

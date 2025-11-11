@@ -23,7 +23,7 @@ import * as _ from 'lodash';
 import { FormControl, FormGroup } from 'react-bootstrap';
 import * as SparqlJs from 'sparqljs';
 
-import { Rdf } from 'platform/api/rdf';
+import * as Model from 'platform/components/semantic/search/data/search/Model';
 import { SparqlUtil, SparqlClient } from 'platform/api/sparql';
 import { Component } from 'platform/api/components';
 import { Action } from 'platform/components/utils';
@@ -56,6 +56,13 @@ export interface BaseConfig<T> extends SemanticSimpleSearchBaseConfig {
    * @default 300
    */
   debounce?: number;
+
+  /**
+   * Persist search term in URL history state
+   * 
+   * @default true
+   */
+  persistInHistory?: boolean;
 }
 
 export interface SemanticSearchKeywordConfig extends BaseConfig<string> {}
@@ -90,10 +97,12 @@ class KeywordSearchInner extends React.Component<InnerProps, State> {
     searchTermVariable: '__token__',
     minSearchTermLength: 3,
     debounce: 300,
+    persistInHistory: true,
     escapeLuceneSyntax: true,
   };
 
   private keys = Action<string>();
+  private persist = Action<string>();
 
   constructor(props: InnerProps) {
     super(props);
@@ -105,12 +114,19 @@ class KeywordSearchInner extends React.Component<InnerProps, State> {
   componentDidMount() {
     setSearchDomain(this.props.domain, this.props.context);
     this.initialize(this.props);
+    this.retrieveStateFromHistory(true);
   }
 
-  componentWillReceiveProps(props: InnerProps) {
-    const { context } = props;
-    if (context.searchProfileStore.isJust && context.domain.isNothing) {
-      setSearchDomain(props.domain, context);
+  componentDidUpdate(prevProps: InnerProps) {
+    const prevContext = prevProps.context;
+    const nextContext = this.props.context;
+
+    if (!_.isEqual(prevContext.baseQueryStructure, nextContext.baseQueryStructure)) {
+      this.retrieveStateFromHistory(true);
+    }
+
+    if (nextContext.searchProfileStore.isJust && nextContext.domain.isNothing) {
+      setSearchDomain(this.props.domain, nextContext);
     }
   }
 
@@ -127,6 +143,18 @@ class KeywordSearchInner extends React.Component<InnerProps, State> {
         />
       </FormGroup>
     );
+  }
+
+  private extractTextFromBaseQueryStructure(): string | null {
+    const { baseQueryStructure } = this.props.context;
+    if (baseQueryStructure.isNothing) return null;
+    const search = baseQueryStructure.get();
+    const first = search?.conjuncts?.[0];
+    if (!first || first.kind !== Model.ConjunctKinds.Text) return null;
+    const d0 = first.disjuncts?.[0];
+    if (!d0 || d0.kind !== Model.TextDisjunctKind) return null;
+    const val = d0.value as string;
+    return typeof val === 'string' ? val : null;
   }
 
   private initialize = (props: InnerProps) => {
@@ -150,14 +178,59 @@ class KeywordSearchInner extends React.Component<InnerProps, State> {
     }
 
     Kefir.merge(initializers).onValue((q) => this.props.context.setBaseQuery(Maybe.Just(q)));
+    
+    if (this.props.persistInHistory) {
+      this.persist.$property
+        .debounce(this.props.debounce)
+        .onValue((val) => this.saveStateIntoHistory(val));
+    }
   };
 
-  private onKeyPress = (event: React.FormEvent<FormControl>) => this.keys((event.target as any).value);
+  private onKeyPress = (event: React.FormEvent<FormControl>) => {
+    const v = (event.target as any).value as string;
+    this.setState({ value: v });
+    this.keys(v);
+    this.persist(v);
+  }
+
+  private retrieveStateFromHistory = (emit: boolean) => {
+    const text = this.extractTextFromBaseQueryStructure();
+    if (text != null && text !== this.state.value) {
+      this.setState({ value: text });
+      if (emit) {
+        this.keys(text);
+        this.persist(text)
+      }
+    }
+  };
 
   private buildQuery = (baseQuery: SparqlJs.SelectQuery) => (token: string): SparqlJs.SelectQuery => {
     const { searchTermVariable, escapeLuceneSyntax, tokenizeLuceneQuery } = this.props;
     const value = SparqlUtil.makeLuceneQuery(token, escapeLuceneSyntax, tokenizeLuceneQuery);
     return SparqlClient.setBindings(baseQuery, { [searchTermVariable]: value });
+  };
+  
+  private saveStateIntoHistory = (text: string) => {
+    const { context } = this.props;
+    const domain = context.domain.isJust ? context.domain.get() : null;
+    if (!domain) return;
+
+    const search: Model.Search = {
+      domain,
+      conjuncts: [{
+        uniqueId: 0,
+        kind: Model.ConjunctKinds.Text,
+        range: domain,
+        conjunctIndex: [0],
+        disjuncts: [{
+          kind: Model.TextDisjunctKind,
+          value: text,
+          disjunctIndex: [0, 0],
+        }],
+      }],
+    } as any;
+
+    context.setBaseQueryStructure(Maybe.Just(search));
   };
 }
 

@@ -27,7 +27,6 @@ import * as maybe from 'data.maybe';
 import Map from 'ol/Map';
 import View from 'ol/View';
 import TileLayer from 'ol/layer/Tile';
-import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import Cluster from 'ol/source/Cluster';
 import Style from 'ol/style/Style';
@@ -46,12 +45,10 @@ import WKT from 'ol/format/WKT';
 import {transform} from 'ol/proj';
 import {defaults as controlDefaults} from 'ol/control';
 import {defaults as interactionDefaults} from 'ol/interaction';
-import {extend} from 'ol/extent';
-import {createEmpty} from 'ol/extent';
+import {createEmpty, getCenter} from 'ol/extent';
 import { Coordinate } from 'ol/coordinate';
 import OSM from 'ol/source/OSM';
 import AnimatedCluster from 'ol-ext/layer/AnimatedCluster';
-import {getUid} from 'ol/util.js';
 
 import { BuiltInEvents, trigger } from 'platform/api/events';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
@@ -293,6 +290,10 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           }
           if (geometry instanceof MultiPolygon) {
             return geometry.getInteriorPoints().getPoint(0);
+          }
+          if (geometry instanceof GeometryCollection) {
+            // For a collection, get the center of its bounding box.
+            return new Point(getCenter(geometry.getExtent()));
           }
           return null;
         },
@@ -590,10 +591,10 @@ function getPopupCoordinate(geometry: Geometry, coordinate: [number, number]) {
   } else if (geometry instanceof GeometryCollection) {
     const geometries = geometry.getGeometries();
     for (let i = 0; i < geometries.length; i++) {
-      const geom = geometries[i];
-      if (typeof (geom as any).intersectsCoordinate === 'function' && (geom as any).intersectsCoordinate(coordinate)) {
-        return getPopupCoordinate(geom, coordinate);
-      }
+      const geometry = geometries[i];
+      if (geometry.intersectsCoordinate(coordinate)) {
+        return getPopupCoordinate(geometry, coordinate);
+      }    
     }
   }
   return geometry.getClosestPoint(coordinate);

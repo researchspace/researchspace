@@ -95,6 +95,7 @@ import { isValidChild, universalChildren } from 'platform/components/utils';
 import { getPreferredUserLanguage, selectPreferredLabel } from 'platform/api/services/language';
 import { ConfigHolder } from 'platform/api/services/config-holder';
 import { getLabels } from 'platform/api/services/resource-label';
+import { getResourceInfo } from '../../../api/services/resource-info';
 import { componentHasType } from 'platform/components/utils';
 
 import * as DiagramService from './data/DiagramService';
@@ -122,6 +123,7 @@ import { FormBasedPersistence, FormBasedPersistenceProps } from './authoring/For
 
 import { deriveCancellationToken } from './AsyncAdapters';
 import * as OntodiaEvents from './OntodiaEvents';
+import { jsonToTriples } from './data/ResourceInfoGraph';
 
 export interface EdgeStyle {
   markerSource?: LinkMarkerStyle;
@@ -158,6 +160,13 @@ export interface OntodiaConfig {
    * Elements to display on initialization
    */
   iris?: string[];
+  /**
+   * Initialization with resource info object
+   */
+  resourceInfo?: {
+    iri: string;
+    profile: string;
+  };
 
   /**
    * Controls if component should re-request all links from data provider when showing existing
@@ -1120,7 +1129,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
   private setLayout(): Promise<void> {
     return this.importProvisionData()
       .then(() => {
-        const { query, iri, linkSettings, iris } = this.props;
+        const { query, iri, linkSettings, iris, resourceInfo } = this.props;
         const { diagramIri } = this.state;
         let linkOptions = linkSettings as ReadonlyArray<LinkTypeOptions>;
 
@@ -1128,6 +1137,8 @@ export class Ontodia extends Component<OntodiaProps, State> {
           return this.setLayoutByDiagram(diagramIri);
         } else if (query) {
           return this.setLayoutBySparqlQuery(query, linkOptions);
+        } else if (resourceInfo) {
+          return this.setLayoutByResourceInfo(resourceInfo, linkOptions);
         } else if (iri) {
           return this.setLayoutByIri(iri, linkOptions);
         } else if (iris) {
@@ -1143,6 +1154,36 @@ export class Ontodia extends Component<OntodiaProps, State> {
       })
       .then(() => {
         this.workspace.getModel().history.reset();
+      });
+  }
+
+  private setLayoutByResourceInfo(resourceInfo: { iri: string, profile: string }, linkSettings: ReadonlyArray<LinkTypeOptions>): Promise<void> {
+    const { onNewDigaramInitialized: performDiagramLayout } = DEFAULT_FACTORY;
+    const { iri, profile } = resourceInfo;
+    const repository = this.context.semanticContext.repository;
+    const defaultGraphs = this.context.semanticContext.defaultGraphs;
+    const loadingLayout = getResourceInfo(Rdf.iri(iri), profile, getPreferredUserLanguage(), repository, defaultGraphs).then(json => {
+      const triples = jsonToTriples(json);
+      const layoutProvider = new GraphBuilder(this.dataProvider, linkSettings);
+      const ontodiaTriples = triples.map(t => ({
+          subject: toOntodiaNode(t.s),
+          predicate: toOntodiaNode(t.p) as { type: 'uri', value: string },
+          object: toOntodiaNode(t.o),
+      }));
+      return layoutProvider.getGraphFromRDFGraph(ontodiaTriples as Triple[]);
+    });
+
+    this.workspace.showWaitIndicatorWhile(loadingLayout);
+
+    return loadingLayout
+      .then((res) =>
+        this.importModelLayout({
+          preloadedElements: res.preloadedElements,
+          diagram: res.diagram,
+        })
+      )
+      .then(() => {
+        performDiagramLayout(this.props, this.workspace);
       });
   }
 
@@ -1501,6 +1542,27 @@ export class Ontodia extends Component<OntodiaProps, State> {
     }
     return undefined;
   };
+}
+
+function toOntodiaNode(node: Rdf.Node): { type: string, value: string, lang?: string, datatype?: string } {
+    if (node.isIri()) {
+        return { type: 'uri', value: node.value };
+    }
+    if (node.isLiteral()) {
+        const literal = node as Rdf.Literal;
+        const result: any = { type: 'literal', value: literal.value };
+        if (literal.language) {
+            result.lang = literal.language;
+        } else if (literal.datatype && literal.datatype.value !== 'http://www.w3.org/2001/XMLSchema#string') {
+            result.datatype = literal.datatype.value;
+        }
+        return result;
+    }
+    if (node.isBnode()) {
+        const bnode = node as Rdf.BNode;
+        return { type: 'blank', value: bnode.value.startsWith('_:') ? bnode.value.substring(2) : bnode.value };
+    }
+    throw new Error('Unknown node type');
 }
 
 function makePersistenceFromConfig(mode: OntodiaPersistenceMode = { type: 'form' }) {

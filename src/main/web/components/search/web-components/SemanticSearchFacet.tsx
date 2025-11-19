@@ -22,6 +22,7 @@ import * as D from 'react-dom-factories';
 import * as _ from 'lodash';
 import * as classNames from 'classnames';
 import * as SparqlJs from 'sparqljs';
+import * as moment from 'moment';
 
 import { trigger } from 'platform/api/events';
 import { Component, SemanticContext } from 'platform/api/components';
@@ -30,6 +31,10 @@ import { Rdf } from 'platform/api/rdf';
 import {
   SemanticFacetConfig,
   PresetFacetValueConfig,
+  PresetLiteralFacetValue,
+  PresetResourceFacetValue,
+  PresetDateRangeFacetValue,
+  PresetNumericRangeFacetValue,
 } from 'platform/components/semantic/search/config/SearchConfig';
 import {
   DefaultFacetValueTemplate,
@@ -239,13 +244,36 @@ function collectPresetConfigs(props: SemanticFacetConfig): Array<PresetFacetValu
   return presets;
 }
 
+function isLiteralPreset(preset: PresetFacetValueConfig): preset is PresetLiteralFacetValue {
+  return preset.kind === 'literal';
+}
+
+function isDateRangePreset(preset: PresetFacetValueConfig): preset is PresetDateRangeFacetValue {
+  return preset.kind === 'date-range';
+}
+
+function isNumericRangePreset(preset: PresetFacetValueConfig): preset is PresetNumericRangeFacetValue {
+  return preset.kind === 'numeric-range';
+}
+
+function isResourcePreset(preset: PresetFacetValueConfig): preset is PresetResourceFacetValue {
+  return !preset.kind || preset.kind === 'resource';
+}
+
 function createPresetDisjunct(
   preset: PresetFacetValueConfig,
   relation: Model.Relation,
   conjunctIndex: number
 ): FacetModel.FacetRelationDisjunct | undefined {
+  if (!preset) {
+    return undefined;
+  }
   const disjunctIndex: Model.DisjunctIndex = [conjunctIndex, 0];
-  if (preset && preset.kind === 'literal') {
+
+  if (isLiteralPreset(preset)) {
+    if (!preset.value) {
+      return undefined;
+    }
     const literalNode = preset.language
       ? Rdf.langLiteral(preset.value, preset.language)
       : Rdf.literal(preset.value, preset.datatype ? toIri(preset.datatype) : undefined);
@@ -257,7 +285,40 @@ function createPresetDisjunct(
     };
   }
 
-  if (!preset || !preset.value) {
+  if (isDateRangePreset(preset)) {
+    if (!preset.dateRange) {
+      return undefined;
+    }
+    const begin = moment(preset.dateRange.begin);
+    const end = moment(preset.dateRange.end);
+    if (!begin.isValid() || !end.isValid()) {
+      return undefined;
+    }
+    const value: Model.DateRange = { begin, end };
+    return {
+      kind: Model.TemporalDisjunctKinds.DateRange,
+      disjunctIndex,
+      value,
+    } as FacetModel.FacetRelationDisjunct;
+  }
+
+  if (isNumericRangePreset(preset)) {
+    if (!preset.numericRange) {
+      return undefined;
+    }
+    const { begin, end } = preset.numericRange;
+    if (!_.isFinite(begin) || !_.isFinite(end)) {
+      return undefined;
+    }
+    const value: Model.NumericRange = { begin, end };
+    return {
+      kind: Model.NumericRangeDisjunctKind,
+      disjunctIndex,
+      value,
+    } as FacetModel.FacetRelationDisjunct;
+  }
+
+  if (!isResourcePreset(preset) || !preset.value) {
     return undefined;
   }
 

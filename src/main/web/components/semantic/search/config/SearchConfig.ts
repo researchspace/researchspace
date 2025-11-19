@@ -647,36 +647,37 @@ export interface NumericRange {
   datatype?: string;
 }
 
-export interface PresetFacetValueConfig {
-  /**
-   * Relation IRI (full IRI enclosed in <> recommended) that should be pre-populated in the facet.
-   */
+export type PresetFacetValueConfig =
+  | PresetResourceFacetValue
+  | PresetLiteralFacetValue
+  | PresetDateRangeFacetValue
+  | PresetNumericRangeFacetValue;
+
+interface BasePresetFacetValue {
   relation: string;
-
-  /**
-   * Value IRI (for resource facets) or literal value (for literal facets).
-   */
-  value: string;
-
-  /**
-   * Optional label shown for the pre-selected value before facet values are loaded.
-   */
   label?: string;
+}
 
-  /**
-   * Value kind; defaults to `resource`.
-   */
-  kind?: 'resource' | 'literal';
+export interface PresetResourceFacetValue extends BasePresetFacetValue {
+  kind?: 'resource';
+  value: string;
+}
 
-  /**
-   * Literal language tag (only used when `kind` is `literal`).
-   */
+export interface PresetLiteralFacetValue extends BasePresetFacetValue {
+  kind: 'literal';
+  value: string;
   language?: string;
-
-  /**
-   * Literal datatype IRI (only used when `kind` is `literal`).
-   */
   datatype?: string;
+}
+
+export interface PresetDateRangeFacetValue extends BasePresetFacetValue {
+  kind: 'date-range';
+  dateRange: { begin: string; end: string };
+}
+
+export interface PresetNumericRangeFacetValue extends BasePresetFacetValue {
+  kind: 'numeric-range';
+  numericRange: { begin: number; end: number };
 }
 
 export interface SemanticFacetConfig {

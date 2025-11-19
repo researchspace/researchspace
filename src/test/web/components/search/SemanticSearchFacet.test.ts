@@ -97,6 +97,40 @@ describe('SemanticSearchFacet preset facets', () => {
     expect(literalValue.language).to.equal('en');
   });
 
+  it('builds date-range preset ast when kind is date-range', () => {
+    const relations = createRelations();
+    const preset: PresetFacetValueConfig = {
+      relation: relationIri,
+      kind: 'date-range',
+      dateRange: { begin: '2020-01-01', end: '2021-01-01' },
+    };
+
+    const ast = buildPresetFacetAst([preset], relations);
+    expect(ast).to.exist;
+    const disjunct = ast!.conjuncts[0].disjuncts[0];
+    expect(disjunct.kind).to.equal(Model.TemporalDisjunctKinds.DateRange);
+    const value = disjunct.value as Model.DateRange;
+    expect(value.begin.format('YYYY-MM-DD')).to.equal('2020-01-01');
+    expect(value.end.format('YYYY-MM-DD')).to.equal('2021-01-01');
+  });
+
+  it('builds numeric-range preset ast when kind is numeric-range', () => {
+    const relations = createRelations();
+    const preset: PresetFacetValueConfig = {
+      relation: relationIri,
+      kind: 'numeric-range',
+      numericRange: { begin: 10, end: 20 },
+    };
+
+    const ast = buildPresetFacetAst([preset], relations);
+    expect(ast).to.exist;
+    const disjunct = ast!.conjuncts[0].disjuncts[0];
+    expect(disjunct.kind).to.equal(Model.NumericRangeDisjunctKind);
+    const numericValue = disjunct.value as Model.NumericRange;
+    expect(numericValue.begin).to.equal(10);
+    expect(numericValue.end).to.equal(20);
+  });
+
   it('returns undefined when relation cannot be resolved', () => {
     const relations = createRelations();
     const preset: PresetFacetValueConfig = {

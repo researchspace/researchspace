@@ -126,49 +126,142 @@
             "type": "object"
         },
         "PresetFacetValueConfig": {
-            "properties": {
-                "datatype": {
-                    "description": "Literal datatype IRI (only used when `kind` is `literal`).",
-                    "type": "string"
-                },
-                "kind": {
-                    "description": "Value kind; defaults to `resource`.",
-                    "enum": [
-                        "literal",
-                        "resource"
+            "oneOf": [
+                {
+                    "description": "Resource preset",
+                    "properties": {
+                        "kind": {
+                            "enum": [
+                                "resource"
+                            ],
+                            "type": "string"
+                        },
+                        "label": {
+                            "description": "Optional label shown for the pre-selected value before facet values are loaded.",
+                            "type": "string"
+                        },
+                        "relation": {
+                            "description": "Relation IRI (full IRI enclosed in <> recommended) that should be pre-populated in the facet.",
+                            "type": "string"
+                        },
+                        "value": {
+                            "description": "Value IRI for the pre-selected resource.",
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "relation",
+                        "value"
                     ],
-                    "type": "string"
+                    "type": "object"
                 },
-                "label": {
-                    "description": "Optional label shown for the pre-selected value before facet values are loaded.",
-                    "type": "string"
+                {
+                    "description": "Literal preset",
+                    "properties": {
+                        "kind": {
+                            "enum": [
+                                "literal"
+                            ],
+                            "type": "string"
+                        },
+                        "label": {
+                            "type": "string"
+                        },
+                        "language": {
+                            "type": "string"
+                        },
+                        "datatype": {
+                            "type": "string"
+                        },
+                        "relation": {
+                            "type": "string"
+                        },
+                        "value": {
+                            "description": "Literal value",
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "relation",
+                        "value"
+                    ],
+                    "type": "object"
                 },
-                "language": {
-                    "description": "Literal language tag (only used when `kind` is `literal`).",
-                    "type": "string"
+                {
+                    "description": "Date range preset",
+                    "properties": {
+                        "kind": {
+                            "enum": [
+                                "date-range"
+                            ],
+                            "type": "string"
+                        },
+                        "label": {
+                            "type": "string"
+                        },
+                        "relation": {
+                            "type": "string"
+                        },
+                        "dateRange": {
+                            "properties": {
+                                "begin": {
+                                    "type": "string"
+                                },
+                                "end": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "begin",
+                                "end"
+                            ],
+                            "type": "object"
+                        }
+                    },
+                    "required": [
+                        "relation",
+                        "dateRange"
+                    ],
+                    "type": "object"
                 },
-                "relation": {
-                    "description": "Relation IRI (full IRI enclosed in <> recommended) that should be pre-populated in the facet.",
-                    "type": "string"
-                },
-                "value": {
-                    "description": "Value IRI (for resource facets) or literal value (for literal facets).",
-                    "type": "string"
+                {
+                    "description": "Numeric range preset",
+                    "properties": {
+                        "kind": {
+                            "enum": [
+                                "numeric-range"
+                            ],
+                            "type": "string"
+                        },
+                        "label": {
+                            "type": "string"
+                        },
+                        "relation": {
+                            "type": "string"
+                        },
+                        "numericRange": {
+                            "properties": {
+                                "begin": {
+                                    "type": "number"
+                                },
+                                "end": {
+                                    "type": "number"
+                                }
+                            },
+                            "required": [
+                                "begin",
+                                "end"
+                            ],
+                            "type": "object"
+                        }
+                    },
+                    "required": [
+                        "relation",
+                        "numericRange"
+                    ],
+                    "type": "object"
                 }
-            },
-            "propertyOrder": [
-                "relation",
-                "value",
-                "label",
-                "kind",
-                "language",
-                "datatype"
-            ],
-            "required": [
-                "relation",
-                "value"
-            ],
-            "type": "object"
+            ]
         },
         "ResourceFacetValue": {
             "properties": {
@@ -313,4 +406,3 @@
     ],
     "type": "object"
 }
-

@@ -19,7 +19,7 @@
 
 import * as request from 'superagent';
 
-export { SuperAgentRequest, Response } from 'superagent';
+export type { SuperAgentRequest, Response } from 'superagent';
 
 let baseUrl = null;
 export function init(base?: string) {

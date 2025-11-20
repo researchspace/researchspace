@@ -136,8 +136,6 @@ export class ViewModel {
     getContext: () => QueryContext;
     trigger: Trigger;
   }) {
-    bindAllMethods(this, ViewModel);
-
     this.props = options.props;
     this.getState = options.getState;
     this.setState = options.setState;
@@ -150,7 +148,7 @@ export class ViewModel {
     this.fetchingSetNameToRename = this.cancellation.derive();
   }
 
-  itemConfig(kind: Rdf.Node) {
+  itemConfig = (kind: Rdf.Node) => {
     if (this.props.itemConfig) {
       return this.props.itemConfig[kind.toString()];
     } else {
@@ -158,7 +156,7 @@ export class ViewModel {
     }
   }
 
-  templateForKind(kind: Rdf.Node, expectedToBeSet: boolean) {
+  templateForKind = (kind: Rdf.Node, expectedToBeSet: boolean) => {
     const config = this.itemConfig(kind);
     const viewMode = this.getState().itemViewMode;
     if (viewMode === 'list') {
@@ -173,23 +171,23 @@ export class ViewModel {
     }
   }
 
-  isSet(kind: Rdf.Node) {
+  isSet = (kind: Rdf.Node) => {
     const config = this.itemConfig(kind);
     return config && config.isSet;
   }
 
-  minSearchTermLength() {
+  minSearchTermLength = () => {
     const minLength = this.props.keywordFilter.minSearchTermLength;
     return minLength === undefined ? Defaults.MinSearchTermLength : minLength;
   }
 
-  rootSetIri(): Kefir.Property<Rdf.Iri> {
+  rootSetIri = (): Kefir.Property<Rdf.Iri> => {
     return this.props.rootSetIri
       ? Kefir.constant(Rdf.iri(this.props.rootSetIri))
       : Kefir.fromPromise(getUserSetRootContainerIri()).toProperty();
   }
 
-  defaultSetIri(): Kefir.Property<Rdf.Iri> {
+  defaultSetIri = (): Kefir.Property<Rdf.Iri> => {
     return this.props.defaultSetIri
       ? Kefir.constant(Rdf.iri(this.props.defaultSetIri))
       : Kefir.fromPromise(getUserDefaultSetIri()).toProperty();
@@ -215,14 +213,14 @@ export class ViewModel {
     };
   }
 
-  setItemViewMode(itemViewMode: ItemViewMode) {
+  setItemViewMode = (itemViewMode: ItemViewMode) => {
     if (this.props.persistViewMode) {
       LocalStorageState.update(ViewModel.localStorageId(this.props), { itemViewMode });
     }
     this.setState({ itemViewMode });
   }
 
-  loadSets(params: { keepItems: boolean }) {
+  loadSets = (params: { keepItems: boolean }) => {
     const { setItemsQuery, setItemsMetadataQuery, setCountQuery } = this.props;
     const context = this.getContext();
 
@@ -326,7 +324,7 @@ export class ViewModel {
     });
   }
 
-  openAndLoadSet(setIri: Rdf.Iri) {
+  openAndLoadSet = (setIri: Rdf.Iri) => {
     const state = this.getState();
     if (state.openedSet && state.openedSet.equals(setIri)) {
       return;
@@ -335,7 +333,7 @@ export class ViewModel {
     this.setState({ openedSet: setIri, search: {}, itemsOrdering: undefined });
   }
 
-  onDropItemToSet(item: Rdf.Iri, targetSet: Rdf.Iri,sourceSetManager:string) {
+  onDropItemToSet = (item: Rdf.Iri, targetSet: Rdf.Iri,sourceSetManager:string) => {
     this.cancellation
       .map(getSetServiceForUser(this.getContext()).flatMap((service) => service.addToExistingSet(targetSet, item, this.props.id)))
       .observe({
@@ -362,7 +360,7 @@ export class ViewModel {
       });
   }
 
-  onFilterChanged(textInput: boolean, searchText: string, filterValues: Immutable.List<FilterValue> | undefined) {
+  onFilterChanged = (textInput: boolean, searchText: string, filterValues: Immutable.List<FilterValue> | undefined) => {
     const cancellation = this.cancellation.derive();
     this.searching.cancelAll();
     this.searching = cancellation;
@@ -427,7 +425,7 @@ export class ViewModel {
       });
   }
 
-  startCreatingNewSet() {
+  startCreatingNewSet = () => {
     const newSet: PlatformSet = {
       ...emptySet(Rdf.iri('')),
       editing: { type: EditType.Create, newName: 'My New Set' },
@@ -439,7 +437,7 @@ export class ViewModel {
     this.setState({ sets, openedSet: undefined, search: {} });
   }
 
-  onSetEditCompleted(modifiedSet: PlatformSet, newName: string | undefined) {
+  onSetEditCompleted = (modifiedSet: PlatformSet, newName: string | undefined) => {
     const state = this.getState();
     const { editing } = modifiedSet;
     if (editing && editing.type === EditType.Create) {
@@ -465,7 +463,7 @@ export class ViewModel {
     }
   }
 
-  private createNewSet(placeholderSetIri: Rdf.Iri, name: string) {
+  private createNewSet = (placeholderSetIri: Rdf.Iri, name: string) => {
     const { sets } = this.getState();
 
     const visibleInViewForTemplateWithId = maybe.Just(this.props.id);
@@ -518,7 +516,7 @@ export class ViewModel {
       });
   }
 
-  removeSetFromView(set: Rdf.Iri) {  
+  removeSetFromView = (set: Rdf.Iri) => {  
     this.cancellation
       .map(getSetServiceForUser(this.getContext()).flatMap((service) => service.removeSetVisibleTriples(set, this.props.id)))
       .observe({
@@ -539,7 +537,7 @@ export class ViewModel {
       });
   }
 
-  removeSet(set: Rdf.Iri) { 
+  removeSet = (set: Rdf.Iri) => { 
     this.cancellation
       .map(getSetServiceForUser(this.getContext()).flatMap((service) => service.deleteResource(set)))
       .observe({
@@ -560,7 +558,7 @@ export class ViewModel {
       });
   }
 
-  removeSetItem(set: Rdf.Iri | undefined, item: Rdf.Iri) {
+  removeSetItem = (set: Rdf.Iri | undefined, item: Rdf.Iri) => {
     const actionableSet = set || this.getState().defaultSet;
     this.cancellation.map(
       getSetServiceForUser(this.getContext()).flatMap(
@@ -584,7 +582,7 @@ export class ViewModel {
     });
   }
 
-  startRenamingSet(targetSet: Rdf.Iri) {
+  startRenamingSet = (targetSet: Rdf.Iri) => {
     const state = this.getState();
     this.setState({
       search: {},
@@ -619,7 +617,7 @@ export class ViewModel {
     });
   }
 
-  applyItemsOrder() {
+  applyItemsOrder = () => {
     const state = this.getState();
     const displayedSet = ViewState.displayedSet(state);
     if (!displayedSet) {
@@ -662,7 +660,7 @@ export class ViewModel {
       });
   }
 
-  fetchSetItems(setIri: Rdf.Iri) {
+  fetchSetItems = (setIri: Rdf.Iri) => {
     return fetchSetItems(
       this.props.setItemsQuery,
       this.props.setItemsMetadataQuery,
@@ -670,17 +668,6 @@ export class ViewModel {
       setIri,
       (kind) => !this.isSet(kind)
     ).map((allSetsItems) => allSetsItems.get(setIri.value) || []);
-  }
-}
-
-function bindAllMethods<T>(instance: T, type: { prototype: T }) {
-  for (const methodName in type.prototype) {
-    if (type.prototype.hasOwnProperty(methodName)) {
-      const method: Function | void = (type.prototype as any)[methodName];
-      if (typeof method === 'function') {
-        (instance as any)[methodName] = method.bind(instance);
-      }
-    }
   }
 }
 

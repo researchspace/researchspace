@@ -46,6 +46,7 @@ import org.researchspace.repository.RepositoryManager;
 import org.researchspace.security.ShiroTextRealm;
 import org.researchspace.services.fields.FieldDefinitionManager;
 import org.researchspace.services.fields.FieldsBasedSearch;
+import org.researchspace.services.info.ResourceInfoService;
 import org.researchspace.servlet.MProxyServlet;
 import org.researchspace.servlet.SparqlServlet;
 import org.researchspace.thumbnails.DefaultThumbnailService;
@@ -104,6 +105,7 @@ public class MainGuiceModule extends AbstractModule {
         bind(DefaultThumbnailService.class).asEagerSingleton();
         bind(FieldDefinitionManager.class).in(Singleton.class);
         bind(FieldsBasedSearch.class).in(Singleton.class);
+        bind(ResourceInfoService.class).in(Singleton.class);
 
         bind(LDPImplManager.class).in(Singleton.class);
         bind(LDPAssetsLoader.class).in(Singleton.class);

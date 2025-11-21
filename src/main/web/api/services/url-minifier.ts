@@ -23,24 +23,20 @@ import { get } from 'platform/api/http';
 import { Rdf } from 'platform/api/rdf';
 import { constructUrlForResource } from 'platform/api/navigation';
 
-module URLMinifierService {
-  const URL_MINIFIER_SERVICE_URL = '/rest/url-minify/getShort';
+const URL_MINIFIER_SERVICE_URL = '/rest/url-minify/getShort';
 
-  export function getShortKey(url: string): Kefir.Property<string> {
-    const request = get(URL_MINIFIER_SERVICE_URL).query({ url }).accept('text/plain');
-    return Kefir.fromNodeCallback<string>((cb) => request.end((err, res) => cb(err, res.text))).toProperty();
-  }
-
-  export function getShortURLForResource(iri: Rdf.Iri, repository?: string): Kefir.Property<string> {
-    return constructUrlForResource(iri, {}, repository)
-      .map((url) => url.absoluteTo(location.origin).valueOf())
-      .flatMap(makeShortURL)
-      .toProperty();
-  }
-
-  export function makeShortURL(fullUrl: string): Kefir.Property<string> {
-    return URLMinifierService.getShortKey(fullUrl).map((key) => location.origin + '/l/' + key);
-  }
+export function getShortKey(url: string): Kefir.Property<string> {
+  const request = get(URL_MINIFIER_SERVICE_URL).query({ url }).accept('text/plain');
+  return Kefir.fromNodeCallback<string>((cb) => request.end((err, res) => cb(err, res.text))).toProperty();
 }
 
-export = URLMinifierService;
+export function getShortURLForResource(iri: Rdf.Iri, repository?: string): Kefir.Property<string> {
+  return constructUrlForResource(iri, {}, repository)
+    .map((url) => url.absoluteTo(location.origin).valueOf())
+    .flatMap(makeShortURL)
+    .toProperty();
+}
+
+export function makeShortURL(fullUrl: string): Kefir.Property<string> {
+  return getShortKey(fullUrl).map((key) => location.origin + '/l/' + key);
+}

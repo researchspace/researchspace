@@ -28,7 +28,7 @@ import { Component, ComponentContext } from 'platform/api/components';
 import { AutoCompletionInput, AutoCompletionInputProps } from 'platform/components/ui/inputs';
 
 import { SemanticSimpleSearchConfig } from './Config';
-export { SemanticSimpleSearchConfig } from './Config';
+export type { SemanticSimpleSearchConfig } from './Config';
 import './SimpleSearch.scss';
 
 export interface SimpleSearchProps extends SemanticSimpleSearchConfig {

@@ -19,7 +19,7 @@
 
 import * as Rdf from '../core/Rdf';
 
-module ldp {
+namespace ldp {
   export const _NAMESPACE = 'http://www.w3.org/ns/ldp#';
   export const iri = (s: string) => Rdf.iri(_NAMESPACE + s);
 
